@@ -62,8 +62,8 @@ class TestScatterViewer(object):
         # Check defaults when we add data
         self.viewer.add_data(self.data)
 
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_y_att) == 'x:y:z'
 
         assert viewer_state.x_att is self.data.id['x']
         assert viewer_state.x_min == -1.1
@@ -117,11 +117,11 @@ class TestScatterViewer(object):
 
     def test_remove_data(self):
         self.viewer.add_data(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z'
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_y_att) == 'x:y:z'
         self.data_collection.remove(self.data)
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == ''
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == ''
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == ''
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_y_att) == ''
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
@@ -134,8 +134,8 @@ class TestScatterViewer(object):
         self.data.add_component([3, 4, 1, 2], 'a')
         assert self.viewer.state.x_att is self.data.id['x']
         assert self.viewer.state.y_att is self.data.id['y']
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'x:y:z:a'
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_y_att) == 'x:y:z:a'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'x:y:z:a'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_y_att) == 'x:y:z:a'
 
     def test_nonnumeric_first_component(self):
         # regression test for #208. Shouldn't complain if
@@ -221,7 +221,7 @@ class TestScatterViewer(object):
         test = ComponentID('test')
         self.data.update_id(self.viewer.state.x_att, test)
         assert self.viewer.state.x_att is test
-        assert combo_as_string(self.viewer.options_widget().ui.combodata_x_att) == 'test:y:z'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'test:y:z'
 
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):

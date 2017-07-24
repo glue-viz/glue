@@ -1,18 +1,22 @@
 from glue.core import Data
 
-from ..state import ImageViewerState
+from ..state import ImageViewerState, ImageLayerState
+
 
 class TestImageViewerState(object):
 
     def setup_method(self, method):
         self.state = ImageViewerState()
         self.data = Data(label='data', x=[[1, 2], [3, 4]], y=[[5, 6], [7, 8]])
+        self.layer_state = ImageLayerState(layer=self.data)
+        self.state.layers.append(self.layer_state)
 
     def test_pixel_world_linking(self):
 
         w1, w2 = self.data.world_component_ids
         p1, p2 = self.data.pixel_component_ids
 
+        # TODO: following should raise explicit error that has to be in layers
         self.state.reference_data = self.data
 
         # Setting world components should set the pixel ones

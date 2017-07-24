@@ -104,8 +104,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.image1)
 
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1'
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combosel_y_att_world) == 'World 0:World 1'
 
         assert self.viewer.axes.get_xlabel() == 'World 1'
         assert self.viewer.state.x_att_world is self.image1.id['World 1']
@@ -132,8 +132,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.image2)
 
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'Banana:Apple'
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'Banana:Apple'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Banana:Apple'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Banana:Apple'
 
         assert self.viewer.axes.get_xlabel() == 'Apple'
         assert self.viewer.state.x_att_world is self.image2.id['Apple']
@@ -239,8 +239,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.hypercube)
 
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1:World 2:World 3'
-        assert combo_as_string(self.options_widget.ui.combodata_x_att_world) == 'World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1:World 2:World 3'
 
         assert self.viewer.axes.get_xlabel() == 'World 3'
         assert self.viewer.state.x_att_world is self.hypercube.id['World 3']
@@ -415,9 +415,6 @@ class TestImageViewer(object):
     @pytest.mark.parametrize('wcs', [False, True])
     def test_change_reference_data_dimensionality(self, capsys, wcs):
 
-        if wcs:
-            pytest.xfail()
-
         # Regression test for a bug that caused an exception when changing
         # the dimensionality of the reference data
 
@@ -490,16 +487,10 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 1']
         assert viewer1.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer1.state.x_min < 0.
-            assert viewer1.state.x_max > 1.5
-            assert_allclose(viewer1.state.y_min, 0)
-            assert_allclose(viewer1.state.y_max, 2)
-        else:
-            assert viewer1.state.x_min < -0.5
-            assert viewer1.state.x_max > 1.5
-            assert viewer1.state.y_min <= -0.5
-            assert viewer1.state.y_max >= 1.5
+        assert viewer1.state.x_min < -0.5
+        assert viewer1.state.x_max > 1.5
+        assert viewer1.state.y_min <= -0.5
+        assert viewer1.state.y_max >= 1.5
 
         layer_state = viewer1.state.layers[0]
         assert isinstance(layer_state, ImageLayerState)
@@ -524,16 +515,10 @@ class TestSessions(object):
         assert viewer2.state.x_att_world is dc[0].id['World 1']
         assert viewer2.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer2.state.x_min < 0.
-            assert viewer2.state.x_max > 1.5
-            assert_allclose(viewer2.state.y_min, 0)
-            assert_allclose(viewer2.state.y_max, 2)
-        else:
-            assert viewer2.state.x_min < -0.5
-            assert viewer2.state.x_max > 1.5
-            assert viewer2.state.y_min <= -0.5
-            assert viewer2.state.y_max >= 1.5
+        assert viewer2.state.x_min < -0.5
+        assert viewer2.state.x_max > 1.5
+        assert viewer2.state.y_min <= -0.5
+        assert viewer2.state.y_max >= 1.5
 
         layer_state = viewer2.state.layers[0]
         assert layer_state.visible
@@ -551,16 +536,10 @@ class TestSessions(object):
         assert viewer3.state.x_att_world is dc[0].id['World 1']
         assert viewer3.state.y_att_world is dc[0].id['World 0']
 
-        if protocol == 0:
-            assert viewer3.state.x_min < 0.0
-            assert viewer3.state.x_max > 1.5
-            assert_allclose(viewer3.state.y_min, 0)
-            assert_allclose(viewer3.state.y_max, 2)
-        else:
-            assert viewer3.state.x_min < -0.5
-            assert viewer3.state.x_max > 1.5
-            assert viewer3.state.y_min <= -0.5
-            assert viewer3.state.y_max >= 1.5
+        assert viewer3.state.x_min < -0.5
+        assert viewer3.state.x_max > 1.5
+        assert viewer3.state.y_min <= -0.5
+        assert viewer3.state.y_max >= 1.5
 
         layer_state = viewer3.state.layers[0]
         assert layer_state.visible

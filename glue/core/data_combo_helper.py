@@ -1,39 +1,110 @@
+# Combo helpers independent of GUI framework - these operate on
+# SelectionCallbackProperty objects.
+
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data, DataCollection, Subset
-from qtpy import QtGui, QtWidgets
-from qtpy.QtCore import Qt
+import weakref
+
+from glue.core import Subset
 from glue.core.hub import HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
                                ComponentReplacedMessage)
+from glue.external.echo import delay_callback, ChoiceSeparator
 from glue.utils import nonpartial
-from glue.utils.qt import update_combobox
-from glue.utils.qt.widget_properties import CurrentComboDataProperty
-from glue.external.echo.qt.connect import _find_combo_data
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
 
 
-class ComponentIDComboHelper(HubListener):
+class ComboHelper(HubListener):
     """
-    The purpose of this class is to set up a combo showing componentIDs for
-    one or more datasets, and to update these componentIDs if needed, for
-    example if new components are added to a dataset, or if componentIDs are
-    renamed.
+    Base class for any combo helper represented by a SelectionCallbackProperty.
+
+    This stores the state and selection property and exposes the ``state``,
+    ``selection`` and ``choices`` properties.
 
     Parameters
     ----------
-    component_id_combo : Qt combo widget
-        The Qt widget for the component ID combo box
-    data_collection : :class:`~glue.core.DataCollection`
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
+    """
+
+    def __init__(self, state, selection_property):
+
+        self._state = weakref.ref(state)
+        self.selection_property = selection_property
+
+    @property
+    def state(self):
+        """
+        The state to which the selection property belongs.
+        """
+        return self._state()
+
+    @property
+    def selection(self):
+        """
+        The current selected value.
+        """
+        return getattr(self.state, self.selection_property)
+
+    @selection.setter
+    def selection(self, selection):
+        return setattr(self.state, self.selection_property, selection)
+
+    @property
+    def choices(self):
+        """
+        The current valid choices for the combo.
+        """
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.get_choices(self.state)
+
+    @choices.setter
+    def choices(self, choices):
+        with delay_callback(self.state, self.selection_property):
+            prop = getattr(type(self.state), self.selection_property)
+            return prop.set_choices(self.state, choices)
+
+    @property
+    def display(self):
+        """
+        The current display function for the combo (the function that relates
+        the Python objects to the display label)
+        """
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.get_display_func(self.state)
+
+    @display.setter
+    def display(self, display):
+        prop = getattr(type(self.state), self.selection_property)
+        return prop.set_display_func(self.state, display)
+
+
+class ComponentIDComboHelper(ComboHelper):
+    """
+    The purpose of this class is to set up a combo (represented by a
+    SelectionCallbackProperty) showing componentIDs for one or more datasets, and to
+    update these componentIDs if needed, for example if new components are added
+    to a dataset, or if componentIDs are renamed. This is a GUI
+    framework-independent implementation.
+
+    Parameters
+    ----------
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
+    data_collection : :class:`~glue.core.DataCollection`, optional
         The data collection to which the datasets belong - if specified,
         this is used to remove datasets from the combo when they are removed
         from the data collection.
-    data : :class:`~glue.core.Data`
+    data : :class:`~glue.core.Data`, optional
         If specified, set up the combo for this dataset only and don't allow
         datasets to be added/removed
     visible : bool, optional
@@ -48,18 +119,20 @@ class ComponentIDComboHelper(HubListener):
         Show world coordinate components
     """
 
-    def __init__(self, component_id_combo, data_collection=None, data=None,
+    def __init__(self, state, selection_property,
+                 data_collection=None, data=None,
                  visible=True, numeric=True, categorical=True,
-                 pixel_coord=False, world_coord=False, default_index=0,):
+                 pixel_coord=False, world_coord=False):
 
-        super(ComponentIDComboHelper, self).__init__()
+        super(ComponentIDComboHelper, self).__init__(state, selection_property)
+
+        self.display = lambda x: x.label
 
         self._visible = visible
         self._numeric = numeric
         self._categorical = categorical
         self._pixel_coord = pixel_coord
         self._world_coord = world_coord
-        self._component_id_combo = component_id_combo
 
         if data is None:
             self._manual_data = False
@@ -74,8 +147,8 @@ class ComponentIDComboHelper(HubListener):
                 raise ValueError("Hub on data collection is not set")
             else:
                 self.hub = data_collection.hub
-
-        self.default_index = default_index
+        else:
+            self.hub = None
 
         if data is not None:
             self.refresh()
@@ -191,17 +264,17 @@ class ComponentIDComboHelper(HubListener):
         if value is not None:
             self.register_to_hub(value)
 
-    def refresh(self):
+    def refresh(self, *args):
 
-        label_data = []
+        choices = []
 
         for data in self._data:
 
             if len(self._data) > 1:
                 if data.label is None or data.label == '':
-                    label_data.append(("Untitled Data", None))
+                    choices.append(ChoiceSeparator('Untitled Data'))
                 else:
-                    label_data.append((data.label, None))
+                    choices.append(ChoiceSeparator(data.label))
 
             if self.visible:
                 all_component_ids = data.visible_components
@@ -217,71 +290,75 @@ class ComponentIDComboHelper(HubListener):
                         (cid in data.world_component_ids and self.world_coord)):
                     component_ids.append(cid)
 
-            label_data.extend([(cid.label, cid) for cid in component_ids])
+            choices.extend(component_ids)
 
-        update_combobox(self._component_id_combo, label_data, default_index=self.default_index)
+        self.choices = choices
 
-        # Disable header rows
-        model = self._component_id_combo.model()
-        for index in range(self._component_id_combo.count()):
-            if self._component_id_combo.itemData(index) is None:
-                item = model.item(index)
-                palette = self._component_id_combo.palette()
-                item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
-                item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
-
-        index = self._component_id_combo.currentIndex()
-        if self._component_id_combo.itemData(index) is None:
-            for index in range(index + 1, self._component_id_combo.count()):
-                if self._component_id_combo.itemData(index) is not None:
-                    self._component_id_combo.setCurrentIndex(index)
-                    break
+    def _filter_msg(self, msg):
+        return msg.data in self._data or msg.sender in self._data_collection
 
     def register_to_hub(self, hub):
         hub.subscribe(self, ComponentReplacedMessage,
-                      handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.data in self._data)
+                      handler=self.refresh)
         hub.subscribe(self, ComponentsChangedMessage,
-                      handler=nonpartial(self.refresh),
-                      filter=lambda msg: msg.data in self._data)
+                      handler=self.refresh)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,
-                          handler=lambda msg: self.remove_data(msg.data),
-                          filter=lambda msg: msg.sender is self._data_collection)
+                          handler=self._remove_data)
+
+    def _remove_data(self, msg):
+        self.remove_data(msg.data)
 
     def unregister(self, hub):
         hub.unsubscribe_all(self)
 
 
-class BaseDataComboHelper(HubListener):
+class BaseDataComboHelper(ComboHelper):
     """
     This is a base class for helpers for combo boxes that need to show a list
     of data objects.
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
+    data_collection : :class:`~glue.core.DataCollection`
+        The data collection to which the datasets belong - this is needed
+        because if a dataset is removed from the data collection, we want to
+        remove it here.
     """
 
-    _data = CurrentComboDataProperty('_data_combo')
+    def __init__(self, state, selection_property, data_collection=None):
 
-    def __init__(self, data_combo):
-        super(BaseDataComboHelper, self).__init__()
-        self._data_combo = data_combo
+        super(BaseDataComboHelper, self).__init__(state, selection_property)
+
+        self.display = lambda x: x.label
+
         self._component_id_helpers = []
-        self._data_combo.currentIndexChanged.connect(self.refresh_component_ids)
+        self.state.add_callback(self.selection_property, self.refresh_component_ids)
+
+        self._data_collection = data_collection
+
+        if data_collection is not None:
+            if data_collection.hub is None:
+                raise ValueError("Hub on data collection is not set")
+            else:
+                self.hub = data_collection.hub
+        else:
+            self.hub = None
 
     def refresh(self):
-        label_data = [(data.label, data) for data in self._datasets]
-        update_combobox(self._data_combo, label_data)
+        self.choices = [data for data in self._datasets]
         self.refresh_component_ids()
 
-    def refresh_component_ids(self):
+    def refresh_component_ids(self, *args):
+        data = getattr(self.state, self.selection_property)
         for helper in self._component_id_helpers:
             helper.clear()
-            if self._data is not None:
-                helper.append_data(self._data)
+            if data is not None:
+                helper.append_data(data)
             helper.refresh()
 
     def add_component_id_combo(self, combo):
@@ -315,23 +392,22 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
     data_collection : :class:`~glue.core.DataCollection`
         The data collection to which the datasets belong - this is needed
         because if a dataset is removed from the data collection, we want to
         remove it here.
     """
 
-    def __init__(self, data_combo, data_collection):
-        super(ManualDataComboHelper, self).__init__(data_combo)
+    def __init__(self, state, selection_property, data_collection=None):
 
-        if data_collection.hub is None:
-            raise ValueError("Hub on data collection is not set")
+        super(ManualDataComboHelper, self).__init__(state, selection_property,
+                                                    data_collection=data_collection)
 
-        self._data_collection = data_collection
         self._datasets = []
-        self.hub = data_collection.hub
 
     def set_multiple_data(self, datasets):
         """
@@ -382,20 +458,21 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
     Parameters
     ----------
-    data_combo : Qt combo widget
-        The Qt widget for the data combo box
+    state : :class:`~glue.core.state_objects.State`
+        The state to which the selection property belongs
+    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+        The selection property representing the combo.
     data_collection : :class:`~glue.core.DataCollection`
         The data collection with which to stay in sync
     """
 
-    def __init__(self, data_combo, data_collection):
-        super(DataCollectionComboHelper, self).__init__(data_combo)
+    def __init__(self, state, selection_property, data_collection):
 
-        if data_collection.hub is None:
-            raise ValueError("Hub on data collection is not set")
+        super(DataCollectionComboHelper, self).__init__(state, selection_property,
+                                                        data_collection=data_collection)
 
         self._datasets = data_collection
-        self.register_to_hub(data_collection.hub)
+
         self.refresh()
 
     def register_to_hub(self, hub):
@@ -403,44 +480,9 @@ class DataCollectionComboHelper(BaseDataComboHelper):
         hub.subscribe(self, DataUpdateMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.sender in self._datasets)
-        hub.subscribe(self,DataCollectionAddMessage,
+        hub.subscribe(self, DataCollectionAddMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.sender is self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=nonpartial(self.refresh),
                       filter=lambda msg: msg.sender is self._datasets)
-
-
-if __name__ == "__main__":
-
-    from glue.utils.qt import get_qapp
-
-    app = get_qapp()
-
-    window = QtWidgets.QWidget()
-
-    layout = QtWidgets.QVBoxLayout()
-
-    window.setLayout(layout)
-
-    data_combo = QtWidgets.QComboBox()
-    layout.addWidget(data_combo)
-
-    cid1_combo = QtWidgets.QComboBox()
-    layout.addWidget(cid1_combo)
-
-    cid2_combo = QtWidgets.QComboBox()
-    layout.addWidget(cid2_combo)
-
-    d1 = Data(x=[1,2,3], y=[2,3,4], label='banana')
-    d2 = Data(a=[0,1,1], b=[2,1,1], label='apple')
-    dc = DataCollection([d1, d2])
-
-    helper = DataCollectionComboHelper(data_combo, dc)
-
-    helper.add_component_id_combo(cid1_combo)
-    helper.add_component_id_combo(cid2_combo)
-
-    window.show()
-    window.raise_()
-    # app.exec_()

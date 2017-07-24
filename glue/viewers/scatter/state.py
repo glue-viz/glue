@@ -1,12 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data
+from glue.core import Data, Subset
 
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
-                                           DeferredDrawCallbackProperty as DDCProperty)
+                                           DeferredDrawCallbackProperty as DDCProperty,
+                                           DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.external.echo import keep_in_sync
+from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['ScatterViewerState', 'ScatterLayerState']
 
@@ -16,8 +19,8 @@ class ScatterViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for a scatter viewer.
     """
 
-    x_att = DDCProperty(docstring='The attribute to show on the x-axis')
-    y_att = DDCProperty(docstring='The attribute to show on the y-axis')
+    x_att = DDSCProperty(docstring='The attribute to show on the x-axis', default_index=0)
+    y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
 
     def __init__(self, **kwargs):
 
@@ -25,15 +28,20 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.limits_cache = {}
 
-        self.x_att_helper = StateAttributeLimitsHelper(self, attribute='x_att',
+        self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
                                                        log='x_log',
                                                        limits_cache=self.limits_cache)
 
-        self.y_att_helper = StateAttributeLimitsHelper(self, attribute='y_att',
+        self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
                                                        lower='y_min', upper='y_max',
                                                        log='y_log',
                                                        limits_cache=self.limits_cache)
+
+        self.add_callback('layers', self._layers_changed)
+
+        self.x_att_helper = ComponentIDComboHelper(self, 'x_att')
+        self.y_att_helper = ComponentIDComboHelper(self, 'y_att')
 
         self.update_from_dict(kwargs)
 
@@ -51,13 +59,13 @@ class ScatterViewerState(MatplotlibDataViewerState):
         """
         Flip the x_min/x_max limits.
         """
-        self.x_att_helper.flip_limits()
+        self.x_lim_helper.flip_limits()
 
     def flip_y(self):
         """
         Flip the y_min/y_max limits.
         """
-        self.y_att_helper.flip_limits()
+        self.y_lim_helper.flip_limits()
 
     def _get_x_components(self):
         return self._get_components(self.x_att)
@@ -66,14 +74,41 @@ class ScatterViewerState(MatplotlibDataViewerState):
         return self._get_components(self.y_att)
 
     def _get_components(self, cid):
+
         # Construct list of components over all layers
+
         components = []
+
+        for layer_state in self.layers:
+
+            if isinstance(layer_state.layer, Data):
+                layer = layer_state.layer
+            else:
+                layer = layer_state.layer.data
+
+            try:
+                components.append(layer.data.get_component(cid))
+            except IncompatibleAttribute:
+                pass
+
+        return components
+
+    def _layers_changed(self, *args):
+
+        layers = []
+
         for layer_state in self.layers:
             if isinstance(layer_state.layer, Data):
-                components.append(layer_state.layer.get_component(cid))
-            else:
-                components.append(layer_state.layer.data.get_component(cid))
-        return components
+                if layer_state.layer not in layers:
+                    layers.append(layer_state.layer)
+
+        for layer_state in self.layers:
+            if isinstance(layer_state.layer, Subset) and layer_state.layer.data not in layers:
+                if layer_state.layer not in layers:
+                    layers.append(layer_state.layer)
+
+        self.x_att_helper.set_multiple_data(layers)
+        self.y_att_helper.set_multiple_data(layers)
 
 
 class ScatterLayerState(MatplotlibLayerState):

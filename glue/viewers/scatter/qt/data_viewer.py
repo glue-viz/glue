@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from glue.utils import nonpartial
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core import Data
 from glue.core.util import update_ticks
 from glue.utils import defer_draw
 
@@ -31,8 +30,8 @@ class ScatterViewer(MatplotlibDataViewer):
              'select:yrange', 'select:circle',
              'select:polygon']
 
-    def __init__(self, session, parent=None):
-        super(ScatterViewer, self).__init__(session, parent)
+    def __init__(self, session, parent=None, state=None):
+        super(ScatterViewer, self).__init__(session, parent, state=state)
         self.state.add_callback('x_att', nonpartial(self._update_axes))
         self.state.add_callback('y_att', nonpartial(self._update_axes))
         self.state.add_callback('x_log', nonpartial(self._update_axes))

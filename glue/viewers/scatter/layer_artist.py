@@ -35,6 +35,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def _update_scatter_data(self):
 
+        if len(self.mpl_artists) == 0:
+            return
+
         try:
             x = self.layer[self._viewer_state.x_att].ravel()
         except (IncompatibleAttribute, IndexError):

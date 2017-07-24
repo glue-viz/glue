@@ -24,10 +24,6 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
 
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
-        viewer_state.add_callback('layers', self._update_combo_data)
-
-        self.x_att_helper = ComponentIDComboHelper(self.ui.combodata_x_att,
-                                                  session.data_collection)
 
         self.viewer_state = viewer_state
 
@@ -39,9 +35,3 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
         self.ui.bool_x_log.setEnabled(log_enabled)
         if not log_enabled:
             self.ui.bool_x_log.setChecked(False)
-
-    def _update_combo_data(self, *args):
-        # TODO: what about if only subset and not data is present?
-        layers = [layer_state.layer for layer_state in self.viewer_state.layers
-                  if isinstance(layer_state.layer, Data)]
-        self.x_att_helper.set_multiple_data(layers)

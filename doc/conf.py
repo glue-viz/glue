@@ -342,7 +342,9 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:mod', 'glue.viewers.common'),
                   ('py:mod', 'glue.viewers.common.qt.mouse_mode'),
                   ('py:mod', 'glue.dialogs.custom_component'),
-                  ('py:class', 'glue.external.echo.core.HasCallbackProperties')
+                  ('py:class', 'glue.external.echo.core.HasCallbackProperties'),
+                  ('py:class', 'glue.external.echo.core.CallbackProperty'),
+                  ('py:class', 'glue.external.echo.selection.SelectionCallbackProperty')
               ]
 
 # coax Sphinx into treating descriptors as attributes

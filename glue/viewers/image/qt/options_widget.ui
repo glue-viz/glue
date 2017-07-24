@@ -21,7 +21,7 @@
     <number>5</number>
    </property>
    <item row="1" column="0">
-    <widget class="QComboBox" name="combodata_reference_data"/>
+    <widget class="QComboBox" name="combosel_reference_data"/>
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label_4">
@@ -118,14 +118,14 @@
         <widget class="QComboBox" name="combodata_aspect"/>
        </item>
        <item row="0" column="2" colspan="3">
-        <widget class="QComboBox" name="combodata_x_att_world">
+        <widget class="QComboBox" name="combosel_x_att_world">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="2" colspan="3">
-        <widget class="QComboBox" name="combodata_y_att_world">
+        <widget class="QComboBox" name="combosel_y_att_world">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
