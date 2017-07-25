@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from collections import OrderedDict
 
 import numpy as np
 from astropy.io import fits
@@ -15,13 +16,11 @@ def fits_subset_mask_importer(filename):
     if not is_fits(filename):
         raise IOError("File {0} is not a valid FITS file".format(filename))
 
-    masks = {}
+    masks = OrderedDict()
 
     label = os.path.basename(filename).rpartition('.')[0]
 
     with fits.open(filename) as hdulist:
-
-        masks = {}
 
         for ihdu, hdu in enumerate(hdulist):
             if hdu.data is not None and hdu.data.dtype.kind == 'i':

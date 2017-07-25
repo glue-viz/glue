@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
+
 from glue.core import Subset
 from glue.core.subset import MaskSubsetState
 
@@ -68,7 +70,7 @@ class SubsetMaskExporter(object):
             return
 
         # Prepare dictionary of masks
-        masks = {}
+        masks = OrderedDict()
 
         if isinstance(data_or_subset, Subset):
 
