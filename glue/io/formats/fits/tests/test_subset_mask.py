@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
 import pytest
 
 from numpy.testing import assert_equal
@@ -79,7 +80,7 @@ def test_writer(tmpdir):
 
     mask_filename = tmpdir.join('subset_mask.fits').strpath
 
-    masks = {}
+    masks = OrderedDict()
     masks['subset 1'] = [[0, 1], [1, 0]]
     masks['subset 2'] = [[0, 1, 3], [1, 0, 2]]
 
