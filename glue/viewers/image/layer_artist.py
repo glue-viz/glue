@@ -235,9 +235,9 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         super(ImageSubsetLayerArtist, self).__init__(axes, viewer_state,
                                                      layer_state=layer_state, layer=layer)
 
-        self.mpl_image = self.axes.imshow([[0.]],
-                                          origin='lower', interpolation='nearest',
-                                          vmin=0, vmax=1, aspect=self._viewer_state.aspect)
+        self.mpl_artists = [self.axes.imshow([[0.]],
+                                             origin='lower', interpolation='nearest',
+                                             vmin=0, vmax=1, aspect=self._viewer_state.aspect)]
 
     def _get_image_data(self):
 
@@ -269,8 +269,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         else:
             data = np.array([[np.nan]])
 
-        self.mpl_image.set_data(data)
-        self.mpl_image.set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
+        self.mpl_artists[0].set_data(data)
+        self.mpl_artists[0].set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
         self.redraw()
 
     @defer_draw
@@ -278,9 +278,9 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         # TODO: deal with color using a colormap instead of having to change data
 
-        self.mpl_image.set_visible(self.state.visible)
-        self.mpl_image.set_zorder(self.state.zorder)
-        self.mpl_image.set_alpha(self.state.alpha)
+        self.mpl_artists[0].set_visible(self.state.visible)
+        self.mpl_artists[0].set_zorder(self.state.zorder)
+        self.mpl_artists[0].set_alpha(self.state.alpha)
 
         self.redraw()
 
