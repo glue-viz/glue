@@ -7,7 +7,7 @@ from glue.core import Data
 from ..dialog import export_data
 
 
-def test_save_session(tmpdir):
+def test_export(tmpdir):
 
     filename = tmpdir.join('data')
 
@@ -26,4 +26,4 @@ def test_save_session(tmpdir):
             dialog.return_value = filename, 'Test (*)'
             export_data(data)
 
-    assert test_exporter.function.called_with(data, filename)
+    assert test_exporter.function.call_args[0] == (filename, data)

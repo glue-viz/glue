@@ -10,7 +10,7 @@ __all__ = []
 
 
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
-def fits_writer(data, filename):
+def fits_writer(filename, data):
     """
     Write a dataset or a subset to a FITS file.
 

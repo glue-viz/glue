@@ -4,6 +4,12 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Changed order of arguments for data exporters from (data, filename)
+  to (filename, data). [#1251]
+
+* Added registry decorators to define subset mask importers and
+  exporters. [#1251]
+
 * Get rid of QTimers for updating the data collection and layer artist
   lists, and instead refresh whenever a message is sent from the hub
   (which results in immediate changes rather than waiting up to a

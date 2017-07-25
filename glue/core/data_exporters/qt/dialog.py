@@ -23,4 +23,4 @@ def export_data(data):
     if not filename:
         return
 
-    exporters[fltr](data, filename)
+    exporters[fltr](filename, data)

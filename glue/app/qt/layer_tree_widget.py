@@ -219,7 +219,7 @@ class MaskifySubsetAction(LayerAction):
 
 class ExportDataAction(LayerAction):
 
-    _title = "Export data"
+    _title = "Export data values"
     _tooltip = "Save the data to a file"
 
     def _can_trigger(self):
@@ -234,7 +234,7 @@ class ExportDataAction(LayerAction):
 
 class ExportSubsetAction(ExportDataAction):
 
-    _title = "Export subset"
+    _title = "Export subset values"
     _tooltip = "Save the data subset to a file"
 
     def _can_trigger(self):
