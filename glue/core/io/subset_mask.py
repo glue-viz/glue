@@ -60,7 +60,7 @@ class SubsetMaskExporter(object):
     def get_filename_and_writer(self):
         raise NotImplementedError
 
-    def run(self, data_or_subset, data_collection):
+    def run(self, data_or_subset):
 
         filename, writer = self.get_filename_and_writer()
 
@@ -82,4 +82,4 @@ class SubsetMaskExporter(object):
             for subset in data.subsets:
                 masks[subset.label] = subset.to_mask()
 
-        writer(masks)
+        writer(filename, masks)

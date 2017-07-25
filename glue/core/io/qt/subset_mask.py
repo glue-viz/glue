@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy import compat
 from glue import config
-
+from glue.utils.qt import messagebox_on_error
 from glue.core.io.subset_mask import SubsetMaskImporter, SubsetMaskExporter
 
 __all__ = ['QtSubsetMaskImporter', 'QtSubsetMaskExporter']
@@ -39,6 +39,10 @@ class QtSubsetMaskImporter(SubsetMaskImporter):
         else:
             return None, None
 
+    @messagebox_on_error('An error occurred when importing the subset mask file:', sep=' ')
+    def run(self, data_or_subset, data_collection):
+        super(QtSubsetMaskImporter, self).run(data_or_subset, data_collection)
+
 
 class QtSubsetMaskExporter(SubsetMaskExporter):
 
@@ -57,3 +61,7 @@ class QtSubsetMaskExporter(SubsetMaskExporter):
             return filename, subset_mask_exporters[fltr]
         else:
             return None, None
+
+    @messagebox_on_error('An error occurred when exporting the subset mask:', sep=' ')
+    def run(self, data_or_subset):
+        super(QtSubsetMaskExporter, self).run(data_or_subset)

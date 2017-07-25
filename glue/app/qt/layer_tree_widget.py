@@ -40,7 +40,7 @@ class LayerAction(QtWidgets.QAction):
 
     def __init__(self, layer_tree_widget):
         self._parent = layer_tree_widget.ui.layerTree
-        super(LayerAction, self).__init__(self._title.title(), self._parent)
+        super(LayerAction, self).__init__(self._title.capitalize(), self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
             self.setIcon(get_icon(self._icon))
@@ -252,7 +252,7 @@ class ImportSubsetMaskAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        from glue.io.qt.subset_mask import QtSubsetMaskImporter
+        from glue.core.io.qt.subset_mask import QtSubsetMaskImporter
         QtSubsetMaskImporter().run(data, self._layer_tree._data_collection)
 
 
@@ -262,12 +262,13 @@ class ExportSubsetMaskAction(LayerAction):
     _tooltip = "Export subset mask to a file"
 
     def _can_trigger(self):
-        return self.single_selection_subset() or self.single_selection_data()
+        return (len(self.data_collection.subset_groups) > 0 and
+                (self.single_selection_subset() or self.single_selection_data()))
 
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        from glue.io.qt.subset_mask import QtSubsetMaskExporter
+        from glue.core.io.qt.subset_mask import QtSubsetMaskExporter
         QtSubsetMaskExporter().run(data)
 
 
