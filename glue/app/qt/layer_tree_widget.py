@@ -252,8 +252,8 @@ class ImportSubsetMaskAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        from glue.io.qt.dialog import import_subset_mask
-        import_subset_mask(data, self._layer_tree._data_collection)
+        from glue.io.qt.subset_mask import QtSubsetMaskImporter
+        QtSubsetMaskImporter().run(data, self._layer_tree._data_collection)
 
 
 class ExportSubsetMaskAction(LayerAction):
@@ -267,8 +267,8 @@ class ExportSubsetMaskAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        from glue.io.qt.dialog import export_subset_mask
-        export_subset_mask(data)
+        from glue.io.qt.subset_mask import QtSubsetMaskExporter
+        QtSubsetMaskExporter().run(data)
 
 
 class CopyAction(LayerAction):
