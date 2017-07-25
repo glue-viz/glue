@@ -31,7 +31,7 @@ class SubsetMaskImporter(object):
             raise ValueError("Not all subsets have the same shape")
 
         if list(shapes)[0] != data_or_subset.shape:
-            raise ValueError("Mask shape(s) {0} does not match data shape {1}".format(list(shapes)[0], data_or_subset.shape))
+            raise ValueError("Mask shape {0} does not match data shape {1}".format(list(shapes)[0], data_or_subset.shape))
 
         if isinstance(data_or_subset, Subset):
 
@@ -78,6 +78,9 @@ class SubsetMaskExporter(object):
         else:
 
             data = data_or_subset
+
+            if len(data.subsets) == 0:
+                raise ValueError("Data has no subsets")
 
             for subset in data.subsets:
                 masks[subset.label] = subset.to_mask()
