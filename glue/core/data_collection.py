@@ -275,21 +275,15 @@ class DataCollection(HubListener):
                 master.coords = d.coords
                 break
 
-        ambiguous = []
-
         # Find ambiguous components (ones which have labels in more than one
         # dataset
+
         from collections import Counter
-        clabel_count = Counter([c.label for c in d.components for d in data])
+        clabel_count = Counter([c.label for d in data for c in d.visible_components])
 
         for d in data:
 
-            skip = d.pixel_component_ids + d.world_component_ids
-
             for c in d.components:
-
-                if c in skip:
-                    continue
 
                 if c in master.components:  # already present (via a link)
                     continue

@@ -491,3 +491,16 @@ class TestDataCollection(object):
         assert len(messages) == 3
         assert messages[1].data is data1
         assert messages[2].data is data2
+
+    def test_merge_duplicate(self):
+
+        x = Data(x=[1, 2, 3], label='d1')
+        y = Data(x=[2, 3, 4], label='d2')
+        z = Data(y=[2, 3, 4], label='d3')
+        dc = DataCollection([x, y])
+
+        dc.merge(x, y, z)
+
+        assert dc[0].main_components[0].label == 'x [d1]'
+        assert dc[0].main_components[1].label == 'x [d2]'
+        assert dc[0].main_components[2].label == 'y'
