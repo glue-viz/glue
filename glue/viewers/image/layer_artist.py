@@ -256,6 +256,10 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     def _update_image_data(self):
 
+        # Layer artist has been cleared already
+        if len(self.mpl_artists) == 0:
+            return
+
         if self._compatible_with_reference_data:
 
             try:
@@ -275,6 +279,10 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def _update_visual_attributes(self):
+
+        # Layer artist has been cleared already
+        if len(self.mpl_artists) == 0:
+            return
 
         # TODO: deal with color using a colormap instead of having to change data
 

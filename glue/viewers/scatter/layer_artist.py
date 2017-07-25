@@ -35,6 +35,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def _update_scatter_data(self):
 
+        # Layer artist has been cleared already
         if len(self.mpl_artists) == 0:
             return
 
