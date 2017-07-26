@@ -40,7 +40,7 @@ class LayerAction(QtWidgets.QAction):
 
     def __init__(self, layer_tree_widget):
         self._parent = layer_tree_widget.ui.layerTree
-        super(LayerAction, self).__init__(self._title.title(), self._parent)
+        super(LayerAction, self).__init__(self._title.capitalize(), self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
             self.setIcon(get_icon(self._icon))
@@ -219,7 +219,7 @@ class MaskifySubsetAction(LayerAction):
 
 class ExportDataAction(LayerAction):
 
-    _title = "Export data"
+    _title = "Export data values"
     _tooltip = "Save the data to a file"
 
     def _can_trigger(self):
@@ -231,13 +231,45 @@ class ExportDataAction(LayerAction):
         from glue.core.data_exporters.qt.dialog import export_data
         export_data(data)
 
+
 class ExportSubsetAction(ExportDataAction):
 
-    _title = "Export subset"
+    _title = "Export subset values"
     _tooltip = "Save the data subset to a file"
 
     def _can_trigger(self):
         return self.single_selection_subset()
+
+
+class ImportSubsetMaskAction(LayerAction):
+
+    _title = "Import subset mask(s)"
+    _tooltip = "Import subset mask from a file"
+
+    def _can_trigger(self):
+        return self.single_selection_subset() or self.single_selection_data()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        from glue.io.qt.subset_mask import QtSubsetMaskImporter
+        QtSubsetMaskImporter().run(data, self._layer_tree._data_collection)
+
+
+class ExportSubsetMaskAction(LayerAction):
+
+    _title = "Export subset mask(s)"
+    _tooltip = "Export subset mask to a file"
+
+    def _can_trigger(self):
+        return (len(self.data_collection.subset_groups) > 0 and
+                (self.single_selection_subset() or self.single_selection_data()))
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        from glue.io.qt.subset_mask import QtSubsetMaskExporter
+        QtSubsetMaskExporter().run(data)
 
 
 class CopyAction(LayerAction):
@@ -486,8 +518,12 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         sep.setSeparator(True)
         tree.addAction(sep)
 
+        # Actions relating to I/O
         self._actions['save_data'] = ExportDataAction(self)
         self._actions['save_subset'] = ExportSubsetAction(self)
+        self._actions['import_subset_mask'] = ImportSubsetMaskAction(self)
+        self._actions['export_subset_mask'] = ExportSubsetMaskAction(self)
+
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
         self._actions['paste_special'] = PasteSpecialAction(self)
@@ -500,9 +536,9 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions['maskify'] = MaskifySubsetAction(self)
 
         # new component definer
-        sep = QtWidgets.QAction("", tree)
-        sep.setSeparator(True)
-        tree.addAction(sep)
+        separator = QtWidgets.QAction("sep", tree)
+        separator.setSeparator(True)
+        tree.addAction(separator)
 
         a = action("Define new component", self,
                  tip="Define a new component using python expressions")

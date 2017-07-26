@@ -18,7 +18,7 @@ EXPORTERS['fits'] = fits_exporter
 def test_astropy_table(tmpdir, fmt):
     filename = tmpdir.join('test').strpath
     data = Data(x=[1, 2, 3], y=[b'a', b'b', b'c'])
-    EXPORTERS[fmt](data, filename)
+    EXPORTERS[fmt](filename, data)
     t = Table.read(filename, format=fmt)
     np.testing.assert_equal(t['x'], [1, 2, 3])
     np.testing.assert_equal(t['y'].astype(bytes), [b'a', b'b', b'c'])

@@ -143,6 +143,11 @@ The label in the ``@importer`` decorator is the text that will appear in the
 Custom Data/Subset Exporters
 ----------------------------
 
+.. note:: This section is about exporting the numerical values for datasets and
+          subsets. To export the *masks* for subsets, see
+          :ref:`custom_subset_mask_importer` and
+          :ref:`custom_subset_mask_exporter`.
+
 In addition to allowing you to create custom loaders and importers, glue lets
 you create custom exporters for datasets and subsets. These exporters can be
 accessed by control-clicking on specific datasets or subsets:
@@ -158,7 +163,7 @@ A custom exporter looks like the following::
      from glue.config import data_exporter
 
      @data_exporter('My exporter')
-     def export_custom(data, filename):
+     def export_custom(filename, data):
         # write out the data here
 
 The ``data`` argument to the function can be either a
@@ -169,6 +174,47 @@ file in any way you like. Note that if you get a
 data subset, not just the mask itself. For e.g. 2-dimensional datasets, we find
 that it is more intuitive to export arrays the same size as the original data
 but with the values not in the subset masked or set to NaN.
+
+.. _custom_subset_mask_importer:
+
+Custom subset mask importers
+----------------------------
+
+When right-clicking on datasets or subsets, it is possible to select to import
+subset *masks* from files (as well as export them). To define a new importer
+format, use the ``@subset_mask_importer`` decorator::
+
+    from glue.config import subset_mask_importer
+
+    @subset_mask_importer(label='My Format')
+    def my_subset_mask_importer(filename):
+        # write code that reads in subset masks here
+
+The function should return a dictionary where the labels are the names of the
+subsets, and the values are Numpy boolean arrays. The ``@subset_mask_importer``
+decorator can also take an optional ``extension`` argument that takes a list of
+extensions (e.g. ``['fits', 'fit']``).
+
+.. _custom_subset_mask_exporter:
+
+Custom subset mask exporters
+----------------------------
+
+When right-clicking on datasets or subsets, it is also possible to select to
+export subset *masks* to files. To define a new exporter format, use the
+``@subset_mask_exporter`` decorator::
+
+    from glue.config import subset_mask_exporter
+
+    @subset_mask_exporter(label='My Format')
+    def my_subset_mask_exporter(filename, masks):
+        # write code that writes out subset masks here
+
+The ``masks`` argument will be given a dictionary where each key is the name of
+a subset, and each value is a Numpy boolean array. The ``@subset_mask_exporter``
+decorator can also take an optional ``extension`` argument that takes a list of
+extensions (e.g. ``['fits', 'fit']``).
+
 
 .. _custom_menubar_tools:
 

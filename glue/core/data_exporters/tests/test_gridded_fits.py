@@ -14,7 +14,7 @@ def test_fits_writer(tmpdir):
     data = Data(x=np.arange(6).reshape(2, 3),
                 y=(np.arange(6) * 2).reshape(2, 3))
 
-    fits_writer(data, filename)
+    fits_writer(filename, data)
 
     hdulist = fits.open(filename)
 

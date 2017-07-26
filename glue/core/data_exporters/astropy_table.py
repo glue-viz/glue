@@ -38,7 +38,7 @@ def data_to_astropy_table(data):
 def table_exporter(fmt, label, extension):
 
     @data_exporter(label=label, extension=extension)
-    def factory(data, filename):
+    def factory(filename, data):
         if os.path.exists(filename):
             os.remove(filename)
         return data_to_astropy_table(data).write(filename, format=fmt)
@@ -48,6 +48,7 @@ def table_exporter(fmt, label, extension):
     factory.__name__ = '%s_factory' % fmt.replace('.', '_')
 
     return factory
+
 
 ipac_exporter = table_exporter('ascii.ipac', 'IPAC Catalog', ['tbl'])
 latex_exporter = table_exporter('ascii.latex', 'LaTeX Table', ['tex'])
