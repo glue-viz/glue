@@ -60,7 +60,7 @@ class TestImporter():
         self.importer.reader.return_value = OrderedDict([('subset 1', np.array([0, 1, 0, 1]))])
         with pytest.raises(ValueError) as exc:
             self.importer.run(self.data, self.data_collection)
-        assert exc.value.args[0] == "Mask shape (4,) does not match data shape (3,)"
+        assert exc.value.args[0].replace('L', '') == "Mask shape (4,) does not match data shape (3,)"
 
     def test_multiple_inconsistent_shapes(self):
         self.importer.reader.return_value = OrderedDict([('subset 1', np.array([0, 1, 0])),
