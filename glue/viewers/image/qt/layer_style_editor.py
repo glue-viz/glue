@@ -2,9 +2,6 @@ import os
 
 from qtpy import QtWidgets
 
-from astropy.visualization import (LinearStretch, SqrtStretch,
-                                   LogStretch, AsinhStretch)
-
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, update_combobox
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
@@ -20,8 +17,8 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
                           directory=os.path.dirname(__file__))
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1)),
-                          'contrast': dict(value_range=(-2, 4)),
-                          'bias': dict(value_range=(-2, 3))}
+                          'contrast': dict(value_range=(0.1, 10), log=True),
+                          'bias': dict(value_range=(1.5, -0.5))}
 
         percentiles = [('Min/Max', 100),
                        ('99.5%', 99.5),

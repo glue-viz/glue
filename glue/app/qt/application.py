@@ -226,6 +226,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._ui.data_layers.setLayout(self._vb)
         self._layer_widget = lw
 
+        self._ui.layout_top.setSpacing(0)
+
         # log window + status light
         self._log = GlueLogger(button_console=self._ui.button_console)
         self._log.window().setWindowTitle("Console Log")
@@ -236,8 +238,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """Maximize window by default."""
         if maximized:
             self.setWindowState(Qt.WindowMaximized)
-        self._ui.main_splitter.setSizes([100, 800])
-        self._ui.data_plot_splitter.setSizes([100, 150, 250])
+        self._ui.main_splitter.setStretchFactor(0, 0)
+        self._ui.main_splitter.setStretchFactor(1, 1)
+        self._ui.data_plot_splitter.setStretchFactor(0, 0.25)
+        self._ui.data_plot_splitter.setStretchFactor(1, 0.5)
+        self._ui.data_plot_splitter.setStretchFactor(2, 0.25)
 
     @property
     def tab_widget(self):
@@ -371,7 +376,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 widget.setLayout(layout)
             while layout.count():
                 layout.takeAt(0).widget().hide()
-            widget.setTitle(title)
+
+        self._ui.plot_options_label.setText("Plot Options")
+        self._ui.plot_layers_label.setText("Plot Layers")
 
     def _update_plot_dashboard(self, sub_window):
         self._clear_dashboard()
@@ -392,11 +399,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         options_widget.show()
 
         if title:
-            self._ui.plot_options.setTitle("Plot Options - %s" % title)
-            self._ui.plot_layers.setTitle("Plot Layers - %s" % title)
+            self._ui.plot_options_label.setText("Plot Options - %s" % title)
+            self._ui.plot_layers_label.setText("Plot Layers - %s" % title)
         else:
-            self._ui.plot_options.setTitle("Plot Options")
-            self._ui.plot_layers.setTitle("Plot Layers")
+            self._ui.plot_options_label.setText("Plot Options")
+            self._ui.plot_layers_label.setText("Plot Layers")
 
         self._update_focus_decoration()
 

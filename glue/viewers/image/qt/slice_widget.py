@@ -143,7 +143,7 @@ if __name__ == "__main__":
     viewer_state.y_att = data.get_pixel_component_id(3)
     viewer_state.slices = [0] * 5
 
-    widget = MultiSliceWidget(viewer_state)
+    widget = MultiSliceWidgetHelper(viewer_state)
     widget.show()
 
     app.exec_()

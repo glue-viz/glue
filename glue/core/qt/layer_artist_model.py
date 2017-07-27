@@ -24,6 +24,7 @@ from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
 from glue.core.message import Message
 
+
 class LayerArtistModel(PythonListModel):
 
     """A Qt model to manage a list of LayerArtists. Multiple
@@ -187,6 +188,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
+        self.setMinimumSize(200, 50)
         self._actions = {}
         self._create_actions()
 
