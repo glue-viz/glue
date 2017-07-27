@@ -256,16 +256,12 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     def _update_image_data(self):
 
-        # Layer artist has been cleared already
-        if len(self.mpl_artists) == 0:
-            return
-
         if self._compatible_with_reference_data:
 
             try:
                 data = self._get_image_data()
             except IncompatibleAttribute:
-                self.disable_invalid_attributes(self.state.attribute)
+                self.disable("Cannot compute mask for this layer")
                 data = np.array([[np.nan]])
             else:
                 self._enabled = True
@@ -273,22 +269,21 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         else:
             data = np.array([[np.nan]])
 
-        self.mpl_artists[0].set_data(data)
-        self.mpl_artists[0].set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
+        if len(self.mpl_artists) > 0:
+            self.mpl_artists[0].set_data(data)
+            self.mpl_artists[0].set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
+
         self.redraw()
 
     @defer_draw
     def _update_visual_attributes(self):
 
-        # Layer artist has been cleared already
-        if len(self.mpl_artists) == 0:
-            return
-
         # TODO: deal with color using a colormap instead of having to change data
 
-        self.mpl_artists[0].set_visible(self.state.visible)
-        self.mpl_artists[0].set_zorder(self.state.zorder)
-        self.mpl_artists[0].set_alpha(self.state.alpha)
+        if len(self.mpl_artists) > 0:
+            self.mpl_artists[0].set_visible(self.state.visible)
+            self.mpl_artists[0].set_zorder(self.state.zorder)
+            self.mpl_artists[0].set_alpha(self.state.alpha)
 
         self.redraw()
 
