@@ -392,8 +392,7 @@ class ViewerBase(HubListener, PropertySetMixin):
         roi : :class:`~glue.core.roi.Roi`
             The ROI to apply.
         """
-        cmd = command.ApplyROI(client=self.client, roi=roi)
-        self._session.command_stack.do(cmd)
+        raise NotImplementedError
 
     @property
     def session(self):

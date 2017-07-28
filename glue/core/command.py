@@ -239,29 +239,31 @@ class AddLayer(Command):
 
 
 class ApplyROI(Command):
-
     """
-    Apply an ROI to a client, updating subset states
+    Apply an ROI to a data collection, updating subset states
 
-    :param client: Client to work on
-    :type client: :class:`~glue.core.client.Client`
-
-    :param roi: Roi to apply
-    :type roi: :class:`~glue.core.roi.Roi`
+    Parameters
+    ----------
+    data_collection: :class:`~glue.core.data_collection.DataCollection`
+        DataCollection to operate on
+    roi: :class:`~glue.core.roi.Roi`
+        ROI to apply
+    apply_func: callable
+        The function to call which takes the ROI and actually applies it.
     """
-    kwargs = ['client', 'roi']
+    kwargs = ['data_collection', 'roi', 'apply_func']
     label = 'apply ROI'
 
     def do(self, session):
         self.old_states = {}
-        for data in self.client.data:
+        for data in self.data_collection:
             for subset in data.subsets:
                 self.old_states[subset] = subset.subset_state
 
-        self.client.apply_roi(self.roi)
+        self.apply_func(self.roi)
 
     def undo(self, session):
-        for data in self.client.data:
+        for data in self.data_collection:
             for subset in data.subsets:
                 if subset not in self.old_states:
                     subset.delete()

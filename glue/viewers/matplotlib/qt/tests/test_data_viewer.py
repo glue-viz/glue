@@ -5,9 +5,9 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from glue.core import Data
-from glue.core.tests.util import simple_session
 from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
+from glue.core.roi import XRangeROI
 
 
 class MatplotlibDrawCounter(object):
@@ -41,7 +41,8 @@ class BaseTestMatplotlibDataViewer(object):
 
         self.data = self.init_data()
 
-        self.session = simple_session()
+        self.application = GlueApplication()
+        self.session = self.application.session
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
@@ -449,3 +450,41 @@ class BaseTestMatplotlibDataViewer(object):
 
         assert viewer2.layers[0].layer is data2
         assert viewer2.layers[1].layer is data2.subsets[0]
+
+    def test_apply_roi_undo(self):
+
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+
+        roi = XRangeROI(1, 2)
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+
+        lo1 = self.data.subsets[0].subset_state.lo
+        hi1 = self.data.subsets[0].subset_state.hi
+
+        roi = XRangeROI(0, 3)
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+
+        lo2 = self.data.subsets[0].subset_state.lo
+        hi2 = self.data.subsets[0].subset_state.hi
+
+        assert lo2 != lo1
+        assert hi2 != hi1
+
+        self.application.undo()
+
+        assert len(self.data.subsets) == 1
+
+        assert self.data.subsets[0].subset_state.lo == lo1
+        assert self.data.subsets[0].subset_state.hi == hi1
+
+        self.application.redo()
+
+        assert len(self.data.subsets) == 1
+
+        assert self.data.subsets[0].subset_state.lo == lo2
+        assert self.data.subsets[0].subset_state.hi == hi2

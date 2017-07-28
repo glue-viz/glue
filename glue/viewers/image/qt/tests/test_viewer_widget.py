@@ -17,7 +17,6 @@ from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI
 from glue.core.subset import RoiSubsetState
-from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
@@ -25,6 +24,8 @@ from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.core.link_helpers import LinkSame
+from glue.app.qt import GlueApplication
+from glue.core.session import Session
 
 from ..data_viewer import ImageViewer
 
@@ -77,7 +78,10 @@ class TestImageViewer(object):
         self.hypercube_wcs = Data(label='hypercube_wcs', x=self.hypercube['x'],
                                   coords=WCSCoordinates(wcs=WCS(naxis=4)))
 
-        self.session = simple_session()
+        self.application = GlueApplication()
+
+        self.session = self.application.session
+
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
