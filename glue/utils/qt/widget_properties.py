@@ -30,7 +30,7 @@ from glue.external.echo.qt import (connect_checkable_button as connect_bool_butt
                                    connect_combo_data as connect_current_combo,
                                    connect_combo_text as connect_current_combo_text,
                                    connect_float_text as connect_float_edit,
-                                   connect_value, connect_text)
+                                   connect_value, connect_text)  # noqa
 
 connect_int_spin = connect_value
 

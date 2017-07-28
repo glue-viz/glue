@@ -208,6 +208,20 @@ class TestImageViewer(object):
         assert self.viewer.state.x_att_world is self.image2.id['Apple']
         assert self.viewer.state.y_att_world is self.image2.id['Banana']
 
+    def test_duplicate_subsets(self):
+
+        # Regression test: make sure that when adding a seconda layer for the
+        # same dataset, we don't add the subsets all over again.
+
+        self.viewer.add_data(self.image1)
+        self.data_collection.new_subset_group(subset_state=self.image1.id['x'] > 1, label='A')
+
+        assert len(self.viewer.layers) == 2
+
+        self.viewer.add_data(self.image1)
+
+        assert len(self.viewer.layers) == 3
+
     def test_aspect_subset(self):
 
         self.viewer.add_data(self.image1)
@@ -458,6 +472,7 @@ class TestImageViewer(object):
 
         assert out.strip() == ""
         assert err.strip() == ""
+
 
 class TestSessions(object):
 

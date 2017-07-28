@@ -5,9 +5,7 @@ import os
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.core import Data, Subset
 from glue.utils.qt import load_ui
-from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 __all__ = ['ScatterOptionsWidget']
 

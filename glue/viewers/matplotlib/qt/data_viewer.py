@@ -24,6 +24,7 @@ class MatplotlibDataViewer(DataViewer):
     _state_cls = MatplotlibDataViewerState
 
     allow_duplicate_data = False
+    allow_duplicate_subset = False
 
     @defer_draw
     def __init__(self, session, parent=None, wcs=None, state=None):
@@ -125,6 +126,7 @@ class MatplotlibDataViewer(DataViewer):
     @defer_draw
     def add_data(self, data):
 
+        # Check if data already exists in viewer
         if not self.allow_duplicate_data and data in self._layer_artist_container:
             return True
 
@@ -161,6 +163,10 @@ class MatplotlibDataViewer(DataViewer):
 
     @defer_draw
     def add_subset(self, subset):
+
+        # Check if subset already exists in viewer
+        if not self.allow_duplicate_subset and subset in self._layer_artist_container:
+            return True
 
         # Make sure we add the data first if it doesn't already exist in viewer.
         # This will then auto add the subsets so can just return.
@@ -208,8 +214,8 @@ class MatplotlibDataViewer(DataViewer):
         self.remove_data(message.data)
 
     def _is_appearance_settings(self, msg):
-        return ('BACKGROUND_COLOR' in msg.settings
-                or 'FOREGROUND_COLOR' in msg.settings)
+        return ('BACKGROUND_COLOR' in msg.settings or
+                'FOREGROUND_COLOR' in msg.settings)
 
     def register_to_hub(self, hub):
 

@@ -74,41 +74,21 @@ def _fix_ipython_pylab():
         pass
 
 
-def status_pixmap(attention=False):
-    """
-    A small icon to grab attention
-
-    :param attention: If True, return attention-grabbing pixmap
-    """
-    color = Qt.red if attention else Qt.lightGray
-
-    pm = QtGui.QPixmap(15, 15)
-    p = QtGui.QPainter(pm)
-    b = QtGui.QBrush(color)
-    p.fillRect(-1, -1, 20, 20, b)
-    return pm
-
-
-class ClickableLabel(QtWidgets.QLabel):
-
-    """
-    A QtWidgets.QLabel you can click on to generate events
-    """
-
-    clicked = QtCore.Signal()
-
-    def mousePressEvent(self, event):
-        self.clicked.emit()
-
-
 class GlueLogger(QtWidgets.QWidget):
 
     """
     A window to display error messages
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, button_console, parent=None):
+
         super(GlueLogger, self).__init__(parent)
+
+        self.button_console = button_console
+        self.button_stylesheet = button_console.styleSheet()
+
+        self.button_console.clicked.connect(self._show)
+
         self._text = QtWidgets.QTextEdit()
         self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
@@ -120,12 +100,6 @@ class GlueLogger(QtWidgets.QWidget):
 
         self.stderr = sys.stderr
         sys.stderr = self
-
-        self._status = ClickableLabel()
-        self._status.setToolTip("View Errors and Warnings")
-        self._status.clicked.connect(self._show)
-        self._status.setPixmap(status_pixmap())
-        self._status.setContentsMargins(0, 0, 0, 0)
 
         l = QtWidgets.QVBoxLayout()
         h = QtWidgets.QHBoxLayout()
@@ -141,12 +115,11 @@ class GlueLogger(QtWidgets.QWidget):
 
         self.setLayout(l)
 
-    @property
-    def status_light(self):
-        """
-        The icon representing the status of the log
-        """
-        return self._status
+    def _set_console_button(self, attention):
+        if attention:
+            self.button_console.setStyleSheet('background: red;')
+        else:
+            self.button_console.setStyleSheet(self.button_stylesheet)
 
     def write(self, message):
         """
@@ -155,7 +128,7 @@ class GlueLogger(QtWidgets.QWidget):
         self.stderr.write(message)
         self._text.moveCursor(QtGui.QTextCursor.End)
         self._text.insertPlainText(message)
-        self._status.setPixmap(status_pixmap(attention=True))
+        self._set_console_button(attention=True)
 
     def flush(self):
         """
@@ -175,7 +148,7 @@ class GlueLogger(QtWidgets.QWidget):
         Erase the log
         """
         self._text.setText('')
-        self._status.setPixmap(status_pixmap(attention=False))
+        self._set_console_button(attention=False)
         self.close()
 
     def _show(self):
@@ -253,20 +226,23 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._ui.data_layers.setLayout(self._vb)
         self._layer_widget = lw
 
+        self._ui.layout_top.setSpacing(0)
+
         # log window + status light
-        self._log = GlueLogger()
+        self._log = GlueLogger(button_console=self._ui.button_console)
         self._log.window().setWindowTitle("Console Log")
         self._log.resize(550, 550)
-        self.statusBar().addPermanentWidget(self._log.status_light)
-        self.statusBar().setContentsMargins(2, 0, 20, 2)
-        self.statusBar().setSizeGripEnabled(False)
+        self._log.hide()
 
     def _tweak_geometry(self, maximized=True):
         """Maximize window by default."""
         if maximized:
             self.setWindowState(Qt.WindowMaximized)
-        self._ui.main_splitter.setSizes([100, 800])
-        self._ui.data_plot_splitter.setSizes([100, 150, 250])
+        self._ui.main_splitter.setStretchFactor(0, 0)
+        self._ui.main_splitter.setStretchFactor(1, 1)
+        self._ui.data_plot_splitter.setStretchFactor(0, 0.25)
+        self._ui.data_plot_splitter.setStretchFactor(1, 0.5)
+        self._ui.data_plot_splitter.setStretchFactor(2, 0.25)
 
     @property
     def tab_widget(self):
@@ -400,7 +376,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 widget.setLayout(layout)
             while layout.count():
                 layout.takeAt(0).widget().hide()
-            widget.setTitle(title)
+
+        self._ui.plot_options_label.setText("Plot Options")
+        self._ui.plot_layers_label.setText("Plot Layers")
 
     def _update_plot_dashboard(self, sub_window):
         self._clear_dashboard()
@@ -421,11 +399,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         options_widget.show()
 
         if title:
-            self._ui.plot_options.setTitle("Plot Options - %s" % title)
-            self._ui.plot_layers.setTitle("Plot Layers - %s" % title)
+            self._ui.plot_options_label.setText("Plot Options - %s" % title)
+            self._ui.plot_layers_label.setText("Plot Layers - %s" % title)
         else:
-            self._ui.plot_options.setTitle("Plot Options")
-            self._ui.plot_layers.setTitle("Plot Layers")
+            self._ui.plot_options_label.setText("Plot Options")
+            self._ui.plot_layers_label.setText("Plot Layers")
 
         self._update_focus_decoration()
 
@@ -499,9 +477,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu = QtWidgets.QMenu(mbar)
         menu.setTitle("&Toolbars")
         tbar = EditSubsetModeToolBar()
+        tbar.setStyle(QtWidgets.QStyleFactory.create("windows"));
         self._mode_toolbar = tbar
-        self.addToolBar(tbar)
-        tbar.hide()
+        self._ui.layout_top.insertWidget(0, tbar)
         a = QtWidgets.QAction("Selection Mode &Toolbar", menu)
         a.setCheckable(True)
         a.toggled.connect(tbar.setVisible)

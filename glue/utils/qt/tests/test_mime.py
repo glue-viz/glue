@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
-from qtpy.QtTest import QTest
-from qtpy.QtCore import Qt
-from qtpy import QtWidgets
+# import pytest
+#
+# from qtpy.QtTest import QTest
+# from qtpy.QtCore import Qt
+# from qtpy import QtWidgets
 
 from .. import mime
 

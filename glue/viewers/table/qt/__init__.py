@@ -1,1 +1,1 @@
-from .viewer_widget import TableWidget
+from .viewer_widget import TableWidget  # noqa

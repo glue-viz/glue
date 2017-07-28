@@ -112,8 +112,9 @@ class VizClient(Client):
         Sync the location and visual properties
         of each point in each subset
         """
-        junk = [self._update_subset_single(s) for d in self.data
-                for s in d.subsets]
+        for d in self.data:
+            for s in d.subsets:
+                self._update_subset_single(s)
         if redraw:
             self._redraw()
 
@@ -142,6 +143,7 @@ class VizClient(Client):
 def set_background_color(axes, color):
     axes.figure.set_facecolor(color)
     axes.patch.set_facecolor(color)
+
 
 def set_foreground_color(axes, color):
     if hasattr(axes, 'coords'):
@@ -318,8 +320,8 @@ class GenericMplClient(Client):
         super(GenericMplClient, self).register_to_hub(hub)
 
         def is_appearance_settings(msg):
-            return ('BACKGROUND_COLOR' in msg.settings
-                    or 'FOREGROUND_COLOR' in msg.settings)
+            return ('BACKGROUND_COLOR' in msg.settings or
+                    'FOREGROUND_COLOR' in msg.settings)
 
         hub.subscribe(self, SettingsChangeMessage,
                       self._update_appearance_from_settings,

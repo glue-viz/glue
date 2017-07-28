@@ -24,6 +24,7 @@ from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
 from glue.core.message import Message
 
+
 class LayerArtistModel(PythonListModel):
 
     """A Qt model to manage a list of LayerArtists. Multiple
@@ -187,7 +188,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
-        self._set_palette()
+        self.setMinimumSize(200, 50)
         self._actions = {}
         self._create_actions()
 
@@ -240,13 +241,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         if len(rows) != 1:
             return
         return rows[0].row()
-
-    def _set_palette(self):
-        p = self.palette()
-        c = QtGui.QColor(240, 240, 240)
-        p.setColor(QtGui.QPalette.Highlight, c)
-        p.setColor(QtGui.QPalette.HighlightedText, QtGui.QColor(Qt.black))
-        self.setPalette(p)
 
     def _update_actions(self):
         pass
@@ -332,9 +326,6 @@ class LayerArtistWidget(QtWidgets.QWidget):
                 self.layer_options_layout.addWidget(self.layout_style_widgets[layer_artist])
 
     def on_selection_change(self, layer_artist):
-
-        if layer_artist is None:
-            return
 
         if layer_artist in self.layout_style_widgets:
             self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])

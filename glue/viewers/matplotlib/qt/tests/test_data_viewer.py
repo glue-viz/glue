@@ -11,9 +11,11 @@ from glue.app.qt.application import GlueApplication
 
 
 class MatplotlibDrawCounter(object):
+
     def __init__(self, figure):
         self.draw_count = 0
         figure.canvas.mpl_connect('draw_event', self.on_draw)
+
     def on_draw(self, event):
         self.draw_count += 1
 

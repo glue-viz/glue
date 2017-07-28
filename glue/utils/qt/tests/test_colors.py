@@ -5,8 +5,8 @@ from mock import MagicMock
 from glue.external.echo import CallbackProperty
 from qtpy import QtGui
 
-from ..helpers import process_dialog
 from ..colors import qt4_to_mpl_color, QColorBox, connect_color, QColormapCombo
+
 
 def test_colors():
     assert qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'

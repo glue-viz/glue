@@ -1,4 +1,4 @@
-from ..geometry import polygon_line_intersections, points_inside_poly
+from ..geometry import polygon_line_intersections
 
 
 def test_square_nonclosed():

@@ -1,11 +1,7 @@
-import operator
-
-import pytest
 import numpy as np
 
 from qtpy import QtWidgets
 from glue.core import Data, DataCollection
-from glue.core.subset import InequalitySubsetState
 from glue.core.qt.data_combo_helper import ComponentIDComboHelper
 
 from ..attribute_limits_helper import AttributeLimitsHelper

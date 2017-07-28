@@ -8,67 +8,65 @@ The end user typically interacts with this code via
 :func:`glue.custom_viewer`
 """
 
+# Implementation notes:
+#
+# Here's a high-level summary of how this code works right now:
+#
+# The user creates a custom viewer using either of the following
+# syntaxes:
+#
+#
+# from glue import custom_viewer
+# my_viewer = custom_viewer('my viewer', checked=True, x='att', ...)
+# @my_viewer.plot_data
+# def plot_data(x, checked, axes):
+#     if checked:
+#         axes.plot(x)
+#     ...
+#
+# or
+#
+# from glue.viewers.custom.qt import CustomViewer
+# class MyViewer(CustomViewer):
+#
+#     checked = True
+#     x = 'att'
+#
+#     def plot_data(self, x, checked, axes):
+#         if checked:
+#             axes.plot(x)
+#
+# This code has two "magic" features:
+#
+# 1. Attributes like 'checked' and 'x', passed as kwargs to custom_viewer
+#    or set as class-level attributes in the subclass, are turned
+#    into widgets based on their value
+#
+# 2. Functions like plot_data can take these settings as input (as well
+#    as some general purpose arguments like axes). Glue takes care of
+#    passing the proper arguments to these functions by introspecting
+#    their call signature. Furthermore, it extracts the current
+#    value of each setting (ie checked is set to True or False depending
+#    on what if the box is checked).
+#
+# The intention of all of this magic is to let a user write "simple" functions
+# to draw custom plots, without having to use Glue or Qt logic directly.
+#
+# Internally, Glue accomlishes this magic as follows:
+#
+#  `FormElement`s are created for each attribute in (1). They build the widget
+#   and have a method of extracting the current value of the widget
+#
+#  Functions like `plot_data` that are designed to be overriden by users
+#  are defined as custom descriptors -- when called at the class level,
+#  they become decorators that wrap and register the user-defined function.
+#  When called at the instance level, they become dispatch functions which
+#  deal with the logic in (2). The metaclass deals with registering
+#  UDFs when they are overridden in a subclass.
+
 from __future__ import print_function, division
 
-
-"""
-Implementation notes:
-
-Here's a high-level summary of how this code works right now:
-
-The user creates a custom viewer using either of the following
-syntaxes:
-
-
-from glue import custom_viewer
-my_viewer = custom_viewer('my viewer', checked=True, x='att', ...)
-@my_viewer.plot_data
-def plot_data(x, checked, axes):
-    if checked:
-        axes.plot(x)
-    ...
-
-or
-
-from glue.viewers.custom.qt import CustomViewer
-class MyViewer(CustomViewer):
-
-    checked = True
-    x = 'att'
-
-    def plot_data(self, x, checked, axes):
-        if checked:
-            axes.plot(x)
-
-This code has two "magic" features:
-
-1. Attributes like 'checked' and 'x', passed as kwargs to custom_viewer
-   or set as class-level attributes in the subclass, are turned
-   into widgets based on their value
-
-2. Functions like plot_data can take these settings as input (as well
-   as some general purpose arguments like axes). Glue takes care of
-   passing the proper arguments to these functions by introspecting
-   their call signature. Furthermore, it extracts the current
-   value of each setting (ie checked is set to True or False depending
-   on what if the box is checked).
-
-The intention of all of this magic is to let a user write "simple" functions
-to draw custom plots, without having to use Glue or Qt logic directly.
-
-Internally, Glue accomlishes this magic as follows:
-
- `FormElement`s are created for each attribute in (1). They build the widget
-  and have a method of extracting the current value of the widget
-
- Functions like `plot_data` that are designed to be overriden by users
- are defined as custom descriptors -- when called at the class level,
- they become decorators that wrap and register the user-defined function.
- When called at the instance level, they become dispatch functions which
- deal with the logic in (2). The metaclass deals with registering
- UDFs when they are overridden in a subclass.
-"""
-
+from functools import partial
 from inspect import getmodule, getargspec
 from types import FunctionType, MethodType
 from copy import copy
@@ -93,7 +91,6 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
-from glue.viewers.common.qt.mouse_mode import PolyMode, RectangleMode
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
            "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
@@ -173,8 +170,6 @@ class ViewerState(object):
         for k in rec:
             setattr(result, k, context.object(rec[k]))
         return result
-
-from functools import partial
 
 
 class UserDefinedFunction(object):
@@ -272,8 +267,10 @@ class SettingsOracleInterface(object):
     def setting_names(self):
         return NotImplementedError()
 
+
 class MissingSettingError(KeyError):
     pass
+
 
 class SettingsOracle(SettingsOracleInterface):
 
@@ -1162,6 +1159,7 @@ class FloatElement(FormElement):
     @classmethod
     def recognizes(cls, params):
         return isinstance(params, (int, float)) and not isinstance(params, bool)
+
 
 class GenericTextBox(QtWidgets.QWidget):
 

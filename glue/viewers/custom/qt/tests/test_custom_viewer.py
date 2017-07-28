@@ -28,6 +28,7 @@ def _make_widget(viewer):
     s = simple_session()
     return viewer._widget_cls(s)
 
+
 viewer = custom_viewer('Testing Custom Viewer',
                        a=(0, 100),
                        b='att',
@@ -196,7 +197,7 @@ class TestCustomViewer(object):
 
     def test_register(self):
         with patch('glue.viewers.custom.qt.FormElement.register_to_hub') as r:
-            w = self.build()
+            self.build()
         assert r.call_count > 0
 
     def test_component(self):
@@ -217,7 +218,7 @@ class TestCustomViewer(object):
         assert w._coordinator._settings['b'].ui.count() == 3
 
     def test_settings_changed_called_on_init(self):
-        w = self.build()
+        self.build()
         assert settings_changed.call_count == 1
 
     def test_selections_enabled(self):
@@ -229,7 +230,7 @@ class TestCustomViewer(object):
 
 def test_state_save():
     app = GlueApplication()
-    w = app.new_data_viewer(viewer._widget_cls)
+    w = app.new_data_viewer(viewer._widget_cls)  # noqa
     check_clone_app(app)
 
 
@@ -352,7 +353,7 @@ class TestFormElements(object):
 
     def test_unrecognized(self):
         with pytest.raises(ValueError):
-            e = FormElement.auto(None)
+            FormElement.auto(None)
 
 
 class TestAttributeInfo(object):

@@ -6,7 +6,6 @@ from qtpy.QtWidgets import QMessageBox
 
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core import Data
 from glue.utils import defer_draw
 
 from glue.core.coordinates import WCSCoordinates
@@ -33,7 +32,6 @@ IDENTITY_WCS.wcs.ctype = ["X", "Y"]
 IDENTITY_WCS.wcs.crval = [0., 0.]
 IDENTITY_WCS.wcs.crpix = [1., 1.]
 IDENTITY_WCS.wcs.cdelt = [1., 1.]
-
 
 
 class ImageViewer(MatplotlibDataViewer):

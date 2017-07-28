@@ -1,1 +1,1 @@
-from .data_viewer import ScatterViewer
+from .data_viewer import ScatterViewer  # noqa

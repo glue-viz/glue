@@ -2,10 +2,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
 from mock import MagicMock
 
-from glue.utils.qt import process_dialog
+# from glue.utils.qt import process_dialog
 
 from ..mouse_mode import (MouseMode, RectangleMode, CircleMode, PolyMode,
                           ContrastMode, LassoMode)

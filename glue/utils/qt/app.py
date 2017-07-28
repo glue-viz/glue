@@ -13,6 +13,10 @@ def get_qapp(icon_path=None):
         qapp.setQuitOnLastWindowClosed(True)
         if icon_path is not None:
             qapp.setWindowIcon(QtGui.QIcon(icon_path))
+        font = qapp.font()
+        font.setPointSize(font.pointSize() - 2)
+        qapp.setFont(font)
+
 
     # Make sure we use high resolution icons with PyQt5 for HDPI
     # displays. TODO: check impact on non-HDPI displays.

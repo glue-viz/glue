@@ -4,7 +4,6 @@ from qtpy import QtCore
 from qtpy import PYQT5
 
 from glue.icons.qt import get_icon
-from glue.utils import nonpartial
 from glue.viewers.common.qt.tool import CheckableTool, Tool
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.common.qt.toolbar import BasicToolbar

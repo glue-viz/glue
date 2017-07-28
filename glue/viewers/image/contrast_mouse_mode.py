@@ -2,16 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
-
-from qtpy import QtGui, QtWidgets
-from glue.core.callback_property import CallbackProperty
-from glue.core import roi
-from glue.core.qt import roi as qt_roi
-from glue.utils.qt import get_qapp
-from glue.utils import nonpartial
-from glue.utils.qt import load_ui, cmap2pixmap
-from glue.viewers.common.qt.tool import Tool, CheckableTool
 from glue.external.echo import delay_callback
 from glue.config import viewer_tool
 from glue.viewers.common.qt.mouse_mode import MouseMode
@@ -29,6 +19,8 @@ class ContrastBiasMode(MouseMode):
     tool_id = 'image:contrast_bias'
     action_text = 'Contrast/Bias'
     tool_tip = 'Adjust the bias/contrast'
+    status_tip = ('CLICK and DRAG on image from left to right to adjust '
+                  'bias and up and down to adjust contrast')
 
     def move(self, event):
         """
@@ -38,15 +30,11 @@ class ContrastBiasMode(MouseMode):
         if event.button not in (1, 3):
             return
 
-        x, y = event.x, event.y
-        dx, dy = self._axes.figure.canvas.get_width_height()
-        x = 1.0 * x / dx
-        y = 1.0 * y / dy
-
+        x, y = self.viewer.axes.transAxes.inverted().transform((event.x, event.y))
         state = self.viewer.selected_layer.state
 
         with delay_callback(state, 'bias', 'contrast'):
-            state.bias = x
-            state.contrast = (1 - y) * 10
+            state.bias = -(x * 2 - 1.5)
+            state.contrast = 10. ** (y * 2 - 1)
 
         super(ContrastBiasMode, self).move(event)

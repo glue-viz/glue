@@ -20,6 +20,7 @@ STRETCHES = {
     'log': LogStretch
 }
 
+
 class CompositeArray(object):
 
     def __init__(self, **kwargs):

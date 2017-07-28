@@ -25,7 +25,6 @@ from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
-from glue.core import roi as core_roi
 from glue.core.subset import RoiSubsetState
 from glue.core.qt import roi as qt_roi
 from .profile_viewer import ProfileViewer
@@ -687,6 +686,11 @@ class SpectrumExtractorMode(RoiMode):
         self._release_callback = self._tool._update_profile
         self._move_callback = self._tool._move_profile
         self._roi_callback = None
+        self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+
+    def _on_reference_data_change(self, reference_data):
+        if reference_data is not None:
+            self.enabled = reference_data.ndim == 3
 
     def menu_actions(self):
 

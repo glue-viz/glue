@@ -32,4 +32,4 @@ class ImageOptionsWidget(QtWidgets.QWidget):
         self.viewer_state = viewer_state
 
         self.slice_helper = MultiSliceWidgetHelper(viewer_state=self.viewer_state,
-                                                   widget=self.ui.slice_tab)
+                                                   layout=self.ui.layout_slices)

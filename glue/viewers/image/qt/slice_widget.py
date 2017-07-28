@@ -11,12 +11,11 @@ __all__ = ['MultiSliceWidgetHelper']
 
 class MultiSliceWidgetHelper(object):
 
-    def __init__(self, viewer_state=None, widget=None):
+    def __init__(self, viewer_state=None, layout=None):
 
-        self.widget = widget
         self.viewer_state = viewer_state
 
-        self.layout = widget.layout()
+        self.layout = layout
         self.layout.setSpacing(4)
         self.layout.setContentsMargins(0, 3, 0, 3)
 
@@ -39,7 +38,8 @@ class MultiSliceWidgetHelper(object):
             self.layout.takeAt(0)
 
         for s in self._sliders:
-            s.close()
+            if s is not None:
+                s.close()
 
         self._sliders = []
 
@@ -47,7 +47,10 @@ class MultiSliceWidgetHelper(object):
     def sync_state_from_sliders(self, *args):
         slices = []
         for i, slider in enumerate(self._sliders):
-            slices.append(slider.state.slice_center)
+            if slider is not None:
+                slices.append(slider.state.slice_center)
+            else:
+                slices.append(self.viewer_state.slices[i])
         self.viewer_state.slices = tuple(slices)
 
     @avoid_circular
@@ -63,9 +66,31 @@ class MultiSliceWidgetHelper(object):
         # we should need to add @avoid_circular)
 
         # Update number of sliders if needed
+
         if self.data.ndim != len(self._sliders):
-            self._clear()
+            reinitialize = True
+        else:
             for i in range(self.data.ndim):
+                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
+                    if self._sliders[i] is not None:
+                        reinitialize = True
+                        break
+                else:
+                    if self._sliders[i] is None:
+                        reinitialize = True
+                        break
+            else:
+                reinitialize = False
+
+        if reinitialize:
+
+            self._clear()
+
+            for i in range(self.data.ndim):
+
+                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
+                    self._sliders.append(None)
+                    continue
 
                 # TODO: For now we simply pass a single set of world coordinates,
                 # but we will need to generalize this in future. We deliberately
@@ -89,14 +114,9 @@ class MultiSliceWidgetHelper(object):
                 self._sliders.append(slider)
                 self.layout.addWidget(slider)
 
-        # Disable sliders that correspond to visible axes and sync position
-
-        for i, slider in enumerate(self._sliders):
-            if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
-                slider.setEnabled(False)
-            else:
-                slider.setEnabled(True)
-                slider.state.slice_center = self.viewer_state.slices[i]
+        for i in range(self.data.ndim):
+            if self._sliders[i] is not None:
+                self._sliders[i].state.slice_center = self.viewer_state.slices[i]
 
 
 if __name__ == "__main__":
@@ -123,7 +143,7 @@ if __name__ == "__main__":
     viewer_state.y_att = data.get_pixel_component_id(3)
     viewer_state.slices = [0] * 5
 
-    widget = MultiSliceWidget(viewer_state)
+    widget = MultiSliceWidgetHelper(viewer_state)
     widget.show()
 
     app.exec_()

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 
-from glue.external.six import string_types, PY2
+from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast)
