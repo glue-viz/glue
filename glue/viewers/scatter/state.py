@@ -7,7 +7,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.external.echo import keep_in_sync
+from glue.external.echo import keep_in_sync, delay_callback
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -103,12 +103,78 @@ class ScatterLayerState(MatplotlibLayerState):
     A state class that includes all the attributes for layers in a scatter plot.
     """
 
+    # General properties
+
+    style = DDSCProperty(docstring="The layer style")
     size = DDCProperty(docstring="The size of the markers")
 
-    def __init__(self, viewer_state=None, **kwargs):
+    # Scatter layer
 
-        super(ScatterLayerState, self).__init__(viewer_state=viewer_state, **kwargs)
+    cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
+    cmap_att = DDSCProperty(docstring="The attribute to use for the color")
+    cmap_vmin = DDCProperty(docstring="The lower level for the colormap")
+    cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
+    cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
+
+    size_mode = DDSCProperty(docstring="Whether to use size to encode an attribute")
+    size_att = DDSCProperty(docstring="The attribute to use for the size")
+    size_vmin = DDCProperty(docstring="The lower level for the size mapping")
+    size_vmax = DDCProperty(docstring="The upper level for the size mapping")
+    size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
+
+    # Line plot layer
+
+    linewidth = DDCProperty(1, docstring="The line width")
+    linestyle = DDSCProperty(docstring="The line style")
+
+    def __init__(self, viewer_state=None, layer=None, **kwargs):
+
+        super(ScatterLayerState, self).__init__(viewer_state=viewer_state, layer=layer)
+
+        self.limits_cache = {}
+
+        self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_att',
+                                                          lower='cmap_vmin', upper='cmap_vmax',
+                                                          limits_cache=self.limits_cache)
+
+        self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_att',
+                                                          lower='size_vmin', upper='size_vmax',
+                                                          limits_cache=self.limits_cache)
+
+        self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
+                                                      numeric=True, categorical=False)
+
+        self.size_att_helper = ComponentIDComboHelper(self, 'size_att',
+                                                      numeric=True, categorical=False)
+
+        ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
+        ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        linestyle_display = {'solid': '–––––––',
+                             'dashed': '– – – – –',
+                             'dotted': '· · · · · · · ·',
+                             'dashdot': '– · – · – ·'}
+
+        ScatterLayerState.linestyle.set_choices(self, ['solid', 'dashed', 'dotted', 'dashdot'])
+        ScatterLayerState.linestyle.set_display_func(self, linestyle_display.get)
+
+        self.add_callback('layer', self._on_layer_change)
+        if layer is not None:
+            self._on_layer_change()
 
         self.size = self.layer.style.markersize
 
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
+
+        self.update_from_dict(kwargs)
+
+    def _on_layer_change(self, layer=None):
+
+        with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
+            if self.layer is None:
+                self.cmap_att_helper.set_multiple_data([])
+                self.size_att_helper.set_multiple_data([])
+            else:
+                self.cmap_att_helper.set_multiple_data([self.layer])
+                self.size_att_helper.set_multiple_data([self.layer])
