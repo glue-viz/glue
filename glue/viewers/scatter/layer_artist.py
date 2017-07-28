@@ -121,6 +121,11 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             else:
 
+                # TEMPORARY: Matplotlib has a bug that causes set_alpha to
+                # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
+                if 'alpha' in changed:
+                    force = True
+
                 if force or any(prop in changed for prop in CMAP_PROPERTIES):
 
                     if self.state.cmap_mode == 'Fixed':
@@ -136,8 +141,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         self.scatter_artist.set_facecolors(c)
                     else:
                         self.scatter_artist.set_array(c)
-                        self.scatter_artist.set_cmap(cmap)
-                        self.scatter_artist.set_clim(vmin, vmax)
+                        if vmin > vmax:
+                            self.scatter_artist.set_cmap(cmap.reversed())
+                            self.scatter_artist.set_clim(vmax, vmin)
+                        else:
+                            self.scatter_artist.set_cmap(cmap)
+                            self.scatter_artist.set_clim(vmin, vmax)
 
                     self.scatter_artist.set_edgecolor('none')
 
@@ -145,7 +154,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if self.state.size_mode == 'Fixed':
                         s = self.state.size * self.state.size_scaling
-                        s = np.broadcast_to(s, self.self.scatter_artist.get_sizes().shape)
+                        s = np.broadcast_to(s, self.scatter_artist.get_sizes().shape)
                     else:
                         s = self.layer[self.state.size_att]
                         s = ((s - self.state.size_vmin) /

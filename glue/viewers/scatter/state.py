@@ -181,3 +181,15 @@ class ScatterLayerState(MatplotlibLayerState):
             else:
                 self.cmap_att_helper.set_multiple_data([self.layer])
                 self.size_att_helper.set_multiple_data([self.layer])
+
+    def flip_cmap(self):
+        """
+        Flip the cmap_vmin/cmap_vmax limits.
+        """
+        self.cmap_lim_helper.flip_limits()
+
+    def flip_size(self):
+        """
+        Flip the size_vmin/size_vmax limits.
+        """
+        self.size_lim_helper.flip_limits()

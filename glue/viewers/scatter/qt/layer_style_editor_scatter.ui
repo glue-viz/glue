@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>255</width>
-    <height>129</height>
+    <width>241</width>
+    <height>126</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -100,6 +100,19 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>limits:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLineEdit" name="valuetext_size_vmin"/>
           </item>
           <item>
@@ -132,6 +145,19 @@
           <property name="margin">
            <number>0</number>
           </property>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>scaling: </string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSlider" name="value_size_scaling">
             <property name="maximum">
@@ -248,6 +274,19 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QLabel" name="label_4">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>limits:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLineEdit" name="valuetext_cmap_vmin"/>
           </item>
           <item>
@@ -281,7 +320,26 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>colormap:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QColormapCombo" name="combodata_cmap">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToMinimumContentsLength</enum>
             </property>
