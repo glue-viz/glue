@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.core import Data, Subset
 
 from glue.config import colormaps
@@ -99,6 +101,13 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_att_helper.set_multiple_data(self.layers_data)
 
 
+def display_func_slow(x):
+    if x == 'Linear':
+        return 'Linear (WARNING: may be slow due to data size)'
+    else:
+        return x
+
+
 class ScatterLayerState(MatplotlibLayerState):
     """
     A state class that includes all the attributes for layers in a scatter plot.
@@ -175,12 +184,33 @@ class ScatterLayerState(MatplotlibLayerState):
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
+
             if self.layer is None:
                 self.cmap_att_helper.set_multiple_data([])
                 self.size_att_helper.set_multiple_data([])
             else:
                 self.cmap_att_helper.set_multiple_data([self.layer])
                 self.size_att_helper.set_multiple_data([self.layer])
+
+            if self.layer is None:
+                n_points = 0
+            else:
+                n_points = np.product(self.layer.shape)
+
+            if n_points > 10000:
+                display_func = display_func_slow
+            else:
+                display_func = str
+
+            ScatterLayerState.size_mode.set_display_func(self, display_func)
+
+            if n_points > 40000:
+                display_func = display_func_slow
+            else:
+                display_func = str
+
+            ScatterLayerState.cmap_mode.set_display_func(self, display_func)
+
 
     def flip_cmap(self):
         """

@@ -158,7 +158,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     else:
                         s = self.layer[self.state.size_att]
                         s = ((s - self.state.size_vmin) /
-                             (self.state.size_vmax - self.state.size_vmin)) * 100
+                             (self.state.size_vmax - self.state.size_vmin)) * 30
                         s *= self.state.size_scaling
 
                     # Note, we need to square here because for scatter, s is actually
