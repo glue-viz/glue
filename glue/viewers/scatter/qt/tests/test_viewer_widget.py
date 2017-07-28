@@ -125,9 +125,9 @@ class TestScatterViewer(object):
 
     def test_update_component_updates_title(self):
         self.viewer.add_data(self.data)
-        assert self.viewer.windowTitle() == '2D Scatter'
+        assert self.viewer.windowTitle() == '2D Scatter/Line'
         self.viewer.state.x_att = self.data.id['y']
-        assert self.viewer.windowTitle() == '2D Scatter'
+        assert self.viewer.windowTitle() == '2D Scatter/Line'
 
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.data)

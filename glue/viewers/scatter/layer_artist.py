@@ -33,13 +33,18 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # Scatter
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
+        self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
 
         # Line
         self.line_artist = self.axes.plot([], [], '-')[0]
 
-        self.mpl_artists = [self.scatter_artist, self.plot_artist, self.line_artist]
+        self.mpl_artists = [self.scatter_artist, self.plot_artist,
+                            self.errorbar_artist, self.line_artist]
+        self.errorbar_index = 2
 
         self.reset_cache()
+
+
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -91,6 +96,25 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 offsets = np.vstack((x, y)).transpose()
                 self.scatter_artist.set_offsets(offsets)
+
+            if self.state.xerr_visible or self.state.yerr_visible:
+
+                if self.state.xerr_visible and self.state.xerr_att is not None:
+                    xerr = self.layer[self.state.xerr_att].ravel()
+                else:
+                    xerr = None
+
+                if self.state.yerr_visible and self.state.yerr_att is not None:
+                    yerr = self.layer[self.state.yerr_att].ravel()
+                else:
+                    yerr = None
+
+                try:
+                    self.mpl_artists[self.errorbar_index].remove()
+                except TypeError:
+                    pass
+                self.errorbar_artist = self.axes.errorbar(x, y, xerr=xerr, yerr=yerr)
+                self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
         elif self.state.style == 'Line':
 
@@ -167,6 +191,22 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                 artist = self.scatter_artist
 
+            if self.state.xerr_visible or self.state.yerr_visible:
+
+                for eartist in [self.errorbar_artist[0]] + list(self.errorbar_artist[2]):
+
+                    if force or 'color' in changed:
+                        eartist.set_color(self.state.color)
+
+                    if force or 'alpha' in changed:
+                        eartist.set_alpha(self.state.alpha)
+
+                    if force or 'visible' in changed:
+                        eartist.set_visible(self.state.visible)
+
+                    if force or 'zorder' in changed:
+                        eartist.set_zorder(self.state.zorder)
+
         elif self.state.style == 'Line':
 
             if force or 'color' in changed:
@@ -229,7 +269,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             force = True
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'y_att',
-                                                     'cmap_mode', 'size_mode')):
+                                                     'cmap_mode', 'size_mode',
+                                                     'xerr_att', 'yerr_att')):
             self._update_data(changed)
             force = True
 

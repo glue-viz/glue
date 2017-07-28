@@ -22,6 +22,10 @@ v0.11.0 (unreleased)
 * Give an error if the user selects a session file when going through
   the 'Open Data Set' menu. [#1364]
 
+* Improved scatter plot viewer to be able to show points with color or
+  size based on other attributes. Also added a 'line' style to make line
+  plots, and added the ability to show error bars. [#1358]
+
 * Changed order of arguments for data exporters from (data, filename)
   to (filename, data). [#1251]
 

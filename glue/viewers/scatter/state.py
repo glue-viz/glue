@@ -132,6 +132,11 @@ class ScatterLayerState(MatplotlibLayerState):
     size_vmax = DDCProperty(docstring="The upper level for the size mapping")
     size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
 
+    xerr_visible = DDCProperty(docstring="Whether to show x error bars")
+    yerr_visible = DDCProperty(docstring="Whether to show y error bars")
+    xerr_att = DDSCProperty(docstring="The attribute to use for the x error bars")
+    yerr_att = DDSCProperty(docstring="The attribute to use for the y error bars")
+
     # Line plot layer
 
     linewidth = DDCProperty(1, docstring="The line width")
@@ -157,6 +162,12 @@ class ScatterLayerState(MatplotlibLayerState):
         self.size_att_helper = ComponentIDComboHelper(self, 'size_att',
                                                       numeric=True, categorical=False)
 
+        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_att',
+                                                      numeric=True, categorical=False)
+
+        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att',
+                                                      numeric=True, categorical=False)
+
         ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -168,6 +179,9 @@ class ScatterLayerState(MatplotlibLayerState):
 
         ScatterLayerState.linestyle.set_choices(self, ['solid', 'dashed', 'dotted', 'dashdot'])
         ScatterLayerState.linestyle.set_display_func(self, linestyle_display.get)
+
+        self.add_callback('xerr_visible', self._on_xerr_visible_change)
+        self.add_callback('yerr_visible', self._on_yerr_visible_change)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -181,6 +195,18 @@ class ScatterLayerState(MatplotlibLayerState):
 
         self.update_from_dict(kwargs)
 
+    def _on_xerr_visible_change(self, visible=None):
+        if self.xerr_visible and self.layer is not None:
+            self.xerr_att_helper.set_multiple_data([self.layer])
+        else:
+            self.xerr_att_helper.set_multiple_data([])
+
+    def _on_yerr_visible_change(self, visible=None):
+        if self.yerr_visible and self.layer is not None:
+            self.yerr_att_helper.set_multiple_data([self.layer])
+        else:
+            self.yerr_att_helper.set_multiple_data([])
+
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
@@ -192,24 +218,8 @@ class ScatterLayerState(MatplotlibLayerState):
                 self.cmap_att_helper.set_multiple_data([self.layer])
                 self.size_att_helper.set_multiple_data([self.layer])
 
-            if self.layer is None:
-                n_points = 0
-            else:
-                n_points = np.product(self.layer.shape)
-
-            if n_points > 10000:
-                display_func = display_func_slow
-            else:
-                display_func = str
-
-            ScatterLayerState.size_mode.set_display_func(self, display_func)
-
-            if n_points > 40000:
-                display_func = display_func_slow
-            else:
-                display_func = str
-
-            ScatterLayerState.cmap_mode.set_display_func(self, display_func)
+            self._on_xerr_visible_change()
+            self._on_yerr_visible_change()
 
 
     def flip_cmap(self):

@@ -1,6 +1,8 @@
 import os
 from collections import OrderedDict
 
+import numpy as np
+
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
@@ -20,9 +22,33 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state.add_callback('size_mode', self._update_size_mode)
         self.layer_state.add_callback('cmap_mode', self._update_cmap_mode)
+        self.layer_state.add_callback('layer', self._update_warnings)
 
         self._update_size_mode()
         self._update_cmap_mode()
+        self._update_warnings()
+
+    def _update_warnings(self):
+
+        if self.layer_state.layer is None:
+            n_points = 0
+        else:
+            n_points = np.product(self.layer_state.layer.shape)
+
+        if n_points > 10000:
+            self.ui.label_warning_size.show()
+        else:
+            self.ui.label_warning_size.hide()
+
+        if n_points > 50000:
+            self.ui.label_warning_color.show()
+        else:
+            self.ui.label_warning_color.hide()
+
+        if n_points > 10000:
+            self.ui.label_warning_errorbar.show()
+        else:
+            self.ui.label_warning_errorbar.hide()
 
     def _update_size_mode(self, size_mode=None):
 
