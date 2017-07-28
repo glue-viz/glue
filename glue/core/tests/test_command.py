@@ -129,7 +129,8 @@ class TestCommandStack(object):
         client = MagicMock(core.client.Client)
         client.data = dc
 
-        cmd = c.ApplyROI(client=client, roi=r)
+        cmd = c.ApplyROI(data_collection=dc, roi=r,
+                         apply_func=client.apply_roi)
 
         self.stack.do(cmd)
         client.apply_roi.assert_called_once_with(r)

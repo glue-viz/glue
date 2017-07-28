@@ -8,6 +8,7 @@ from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import defer_draw
 
+from glue.core import command
 from glue.core.coordinates import WCSCoordinates
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
@@ -115,13 +116,14 @@ class ImageViewer(MatplotlibDataViewer):
         self._update_appearance_from_settings()
         self._update_axes()
 
+    # TODO: move some of the ROI stuff to state class?
+
     def apply_roi(self, roi):
+        cmd = command.ApplyROI(data_collection=self._data,
+                               roi=roi, apply_func=self._apply_roi)
+        self._session.command_stack.do(cmd)
 
-        # TODO: move this to state class?
-
-        # TODO: add back command stack here so as to be able to undo?
-        # cmd = command.ApplyROI(client=self.client, roi=roi)
-        # self._session.command_stack.do(cmd)
+    def _apply_roi(self, roi):
 
         # TODO Does subset get applied to all data or just visible data?
 

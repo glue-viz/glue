@@ -6,6 +6,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.utils import defer_draw
+from glue.core import command
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -55,13 +56,14 @@ class HistogramViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
+    # TODO: move some of the ROI stuff to state class?
+
     def apply_roi(self, roi):
+        cmd = command.ApplyROI(data_collection=self._data,
+                               roi=roi, apply_func=self._apply_roi)
+        self._session.command_stack.do(cmd)
 
-        # TODO: move this to state class?
-
-        # TODO: add back command stack here so as to be able to undo?
-        # cmd = command.ApplyROI(client=self.client, roi=roi)
-        # self._session.command_stack.do(cmd)
+    def _apply_roi(self, roi):
 
         # TODO Does subset get applied to all data or just visible data?
 

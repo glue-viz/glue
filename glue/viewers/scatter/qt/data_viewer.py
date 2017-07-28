@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core import command
 from glue.utils import nonpartial
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
@@ -62,13 +63,14 @@ class ScatterViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
+    # TODO: move some of the ROI stuff to state class?
+
     def apply_roi(self, roi):
+        cmd = command.ApplyROI(data_collection=self._data,
+                               roi=roi, apply_func=self._apply_roi)
+        self._session.command_stack.do(cmd)
 
-        # TODO: move this to state class?
-
-        # TODO: add back command stack here so as to be able to undo?
-        # cmd = command.ApplyROI(client=self.client, roi=roi)
-        # self._session.command_stack.do(cmd)
+    def _apply_roi(self, roi):
 
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
