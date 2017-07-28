@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core import Data, Subset
 
+from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
@@ -162,6 +163,8 @@ class ScatterLayerState(MatplotlibLayerState):
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
+
+        self.cmap = colormaps.members[0][1]
 
         self.size = self.layer.style.markersize
 

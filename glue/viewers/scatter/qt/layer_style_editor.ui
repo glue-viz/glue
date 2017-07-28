@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>253</width>
-    <height>130</height>
+    <height>84</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,26 +17,18 @@
    <property name="margin">
     <number>5</number>
    </property>
+   <item row="3" column="1">
+    <widget class="QSlider" name="value_alpha">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="2">
     <widget class="QComboBox" name="combosel_style"/>
    </item>
    <item row="1" column="0" colspan="2">
     <widget class="QWidget" name="placeholder" native="true"/>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QCheckBox" name="bool_link_other">
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Link properties with other similar layers</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label">
@@ -48,13 +40,6 @@
      </property>
      <property name="text">
       <string>opacity:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QSlider" name="value_alpha">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
