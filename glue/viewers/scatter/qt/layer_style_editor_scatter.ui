@@ -130,11 +130,6 @@
           </item>
           <item>
            <widget class="QToolButton" name="button_flip_size">
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
             <property name="styleSheet">
              <string notr="true">padding: 0px</string>
             </property>
@@ -317,11 +312,6 @@
           </item>
           <item>
            <widget class="QToolButton" name="button_flip_cmap">
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
             <property name="styleSheet">
              <string notr="true">padding: 0px</string>
             </property>
