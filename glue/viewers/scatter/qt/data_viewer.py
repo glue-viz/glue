@@ -19,7 +19,7 @@ __all__ = ['ScatterViewer']
 
 class ScatterViewer(MatplotlibDataViewer):
 
-    LABEL = '2D Scatter/Line'
+    LABEL = '2D Scatter'
     _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = GenericLayerStyleEditor
     _state_cls = ScatterViewerState
