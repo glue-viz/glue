@@ -304,7 +304,7 @@ class TestScatterViewer(object):
         assert viewer_state.y_min == 5
         assert viewer_state.y_max == 8
 
-        assert len(self.viewer.layers[0].mpl_artists) == 1
+        assert self.viewer.layers[0].plot_artist.get_xdata().shape == (4,)
 
     def test_apply_roi_single(self):
 
