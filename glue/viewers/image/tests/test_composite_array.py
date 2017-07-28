@@ -66,7 +66,6 @@ class TestCompositeArray(object):
         expected_b = np.array([[cm.Reds(0.), cm.Reds(1.)],
                                [cm.Reds(0.), cm.Reds(0.)]])
 
-
         # If both layers have alpha=1, the top layer should be the only one visible
 
         assert_allclose(self.composite[...], expected_b)

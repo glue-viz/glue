@@ -1,3 +1,5 @@
+# DEPREACTED
+
 import numpy as np
 
 from qtpy import QtWidgets

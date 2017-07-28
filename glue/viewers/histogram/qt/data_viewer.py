@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from glue.utils import nonpartial
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.core import Data
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.utils import defer_draw
@@ -14,8 +13,6 @@ from glue.viewers.histogram.layer_artist import HistogramLayerArtist
 from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget
 from glue.viewers.histogram.state import HistogramViewerState
 from glue.viewers.histogram.compat import update_histogram_viewer_state
-
-from glue.core.state import lookup_class_with_patches
 
 __all__ = ['HistogramViewer']
 

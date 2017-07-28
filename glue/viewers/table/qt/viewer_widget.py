@@ -5,7 +5,6 @@ import numpy as np
 
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, QtWidgets
-from qtpy import PYQT5
 from matplotlib.colors import ColorConverter
 
 from glue.utils.qt import get_qapp
@@ -297,7 +296,7 @@ class TableWidget(DataViewer):
         # for this viewer are from dataset, so we just get Data object
         # then just sync the layers.
         for layer in rec:
-            c = lookup_class_with_patches(layer.pop('_type'))
+            c = lookup_class_with_patches(layer.pop('_type'))  # noqa
             props = dict((k, context.object(v)) for k, v in layer.items())
             layer = props['layer']
             if isinstance(layer, Data):

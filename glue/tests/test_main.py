@@ -7,8 +7,7 @@ from mock import patch
 from glue.tests.helpers import requires_qt
 
 from ..core import Data
-from ..main import (die_on_error, restore_session, load_data_files,
-                    main, start_glue)
+from ..main import die_on_error, load_data_files, main, start_glue
 
 
 @requires_qt

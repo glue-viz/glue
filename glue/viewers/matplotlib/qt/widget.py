@@ -2,8 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from functools import wraps
-
 import warnings
 import matplotlib
 from matplotlib.figure import Figure
@@ -11,17 +9,13 @@ from matplotlib.figure import Figure
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy import PYQT5
-from glue.utils import DeferredMethod
 from glue.config import settings
 
 if PYQT5:
     from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 else:
-    try:
-        from matplotlib.backends.backend_qt4agg import FigureManagerQT as FigureManager
-    except ImportError:  # mpl < 1.4
-        from matplotlib.backends.backend_qt4agg import FigureManagerQTAgg as FigureManager
+    from matplotlib.backends.backend_qt4 import FigureManagerQT as FigureManager
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 # We want to ignore warnings about left==right and bottom==top since these are

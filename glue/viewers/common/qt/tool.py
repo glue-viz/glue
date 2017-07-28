@@ -51,7 +51,6 @@ class Tool(object):
         pass
 
 
-
 class CheckableTool(Tool):
     """
     A tool that is checkable.

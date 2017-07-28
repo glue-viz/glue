@@ -112,11 +112,9 @@ def test_table_widget(tmpdir):
     # We now check what the data and colors of the table are, and try various
     # sorting methods to make sure that things are still correct.
 
-    data = {
-        'a': [1, 2, 3, 4, 5],
-        'b': [3.2, 1.2, 4.5, 3.3, 2.2],
-        'c': ['e', 'b', 'c', 'a', 'f']
-    }
+    data = {'a': [1, 2, 3, 4, 5],
+            'b': [3.2, 1.2, 4.5, 3.3, 2.2],
+            'c': ['e', 'b', 'c', 'a', 'f']}
 
     colors = ['#aa0000', '#380088', '#380088', None, None]
 
@@ -124,11 +122,9 @@ def test_table_widget(tmpdir):
 
     model.sort(1, Qt.AscendingOrder)
 
-    data = {
-        'a': [2, 5, 1, 4, 3],
-        'b': [1.2, 2.2, 3.2, 3.3, 4.5],
-        'c': ['b', 'f', 'e', 'a', 'c']
-    }
+    data = {'a': [2, 5, 1, 4, 3],
+            'b': [1.2, 2.2, 3.2, 3.3, 4.5],
+            'c': ['b', 'f', 'e', 'a', 'c']}
 
     colors = ['#380088', None, '#aa0000', None, '#380088']
 
@@ -136,11 +132,9 @@ def test_table_widget(tmpdir):
 
     model.sort(2, Qt.AscendingOrder)
 
-    data = {
-        'a': [4, 2, 3, 1, 5],
-        'b': [3.3, 1.2, 4.5, 3.2, 2.2],
-        'c': ['a', 'b', 'c', 'e', 'f']
-    }
+    data = {'a': [4, 2, 3, 1, 5],
+            'b': [3.3, 1.2, 4.5, 3.2, 2.2],
+            'c': ['a', 'b', 'c', 'e', 'f']}
 
     colors = [None, '#380088', '#380088', '#aa0000', None]
 
@@ -148,11 +142,9 @@ def test_table_widget(tmpdir):
 
     model.sort(0, Qt.DescendingOrder)
 
-    data = {
-        'a': [5, 4, 3, 2, 1],
-        'b': [2.2, 3.3, 4.5, 1.2, 3.2],
-        'c': ['f', 'a', 'c', 'b', 'e']
-    }
+    data = {'a': [5, 4, 3, 2, 1],
+            'b': [2.2, 3.3, 4.5, 1.2, 3.2],
+            'c': ['f', 'a', 'c', 'b', 'e']}
 
     colors = [None, None, '#380088', '#380088', '#aa0000']
 
@@ -254,11 +246,9 @@ def test_table_widget(tmpdir):
 
     model2 = widget2.ui.table.model()
 
-    data = {
-        'a': [1, 2, 3, 4, 5],
-        'b': [3.2, 1.2, 4.5, 3.3, 2.2],
-        'c': ['e', 'b', 'c', 'a', 'f']
-    }
+    data = {'a': [1, 2, 3, 4, 5],
+            'b': [3.2, 1.2, 4.5, 3.3, 2.2],
+            'c': ['e', 'b', 'c', 'a', 'f']}
 
     # Need to take into account new selections above
     colors = ['#aa0000', '#380088', '#aa0000', "#aa0000", "#bababa"]
@@ -271,7 +261,7 @@ def test_table_widget_session_no_subset(tmpdir):
     # Regression test for a bug that caused table viewers with no subsets to
     # not be restored correctly and instead raise an exception.
 
-    app = get_qapp()
+    app = get_qapp()  # noqa
 
     d = Data(a=[1, 2, 3, 4, 5],
              b=[3.2, 1.2, 4.5, 3.3, 2.2],
@@ -291,6 +281,5 @@ def test_table_widget_session_no_subset(tmpdir):
     gapp2 = GlueApplication.restore_session(session_file)
     gapp2.show()
 
-    d = gapp2.data_collection[0]
-
-    widget2 = gapp2.viewers[0][0]
+    gapp2.data_collection[0]
+    gapp2.viewers[0][0]

@@ -214,8 +214,8 @@ class MatplotlibDataViewer(DataViewer):
         self.remove_data(message.data)
 
     def _is_appearance_settings(self, msg):
-        return ('BACKGROUND_COLOR' in msg.settings
-                or 'FOREGROUND_COLOR' in msg.settings)
+        return ('BACKGROUND_COLOR' in msg.settings or
+                'FOREGROUND_COLOR' in msg.settings)
 
     def register_to_hub(self, hub):
 

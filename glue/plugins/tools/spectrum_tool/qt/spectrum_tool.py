@@ -25,7 +25,6 @@ from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.utils import nonpartial, Pointer
 from glue.utils.qt import Worker, messagebox_on_error
-from glue.core import roi as core_roi
 from glue.core.subset import RoiSubsetState
 from glue.core.qt import roi as qt_roi
 from .profile_viewer import ProfileViewer

@@ -205,9 +205,9 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         if self._warn_close and (not os.environ.get('GLUE_TESTING')) and self.isVisible():
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(self, "Confirm Close",
-                                               "Do you want to close this window?",
-                                               buttons=buttons,
-                                               defaultButton=QtWidgets.QMessageBox.Cancel)
+                                                   "Do you want to close this window?",
+                                                   buttons=buttons,
+                                                   defaultButton=QtWidgets.QMessageBox.Cancel)
             return dialog == QtWidgets.QMessageBox.Ok
         return True
 
@@ -223,8 +223,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             cancel = QtWidgets.QMessageBox.Cancel
             buttons = ok | cancel
             result = QtWidgets.QMessageBox.question(self, title, warn_msg,
-                                                buttons=buttons,
-                                                defaultButton=cancel)
+                                                    buttons=buttons,
+                                                    defaultButton=cancel)
             return result == ok
 
     def layer_view(self):

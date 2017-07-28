@@ -473,6 +473,7 @@ class TestImageViewer(object):
         assert out.strip() == ""
         assert err.strip() == ""
 
+
 class TestSessions(object):
 
     @pytest.mark.parametrize('protocol', [0, 1])
