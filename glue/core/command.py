@@ -239,15 +239,17 @@ class AddLayer(Command):
 
 
 class ApplyROI(Command):
-
     """
     Apply an ROI to a data collection, updating subset states
 
-    :param data_collection: DataCollection to work on
-    :type data_collection: :class:`~glue.core.data_collection.DataCollection`
-
-    :param roi: Roi to apply
-    :type roi: :class:`~glue.core.roi.Roi`
+    Parameters
+    ----------
+    data_collection: :class:`~glue.core.data_collection.DataCollection`
+        DataCollection to operate on
+    roi: :class:`~glue.core.roi.Roi`
+        ROI to apply
+    apply_func: callable
+        The function to call which takes the ROI and actually applies it.
     """
     kwargs = ['data_collection', 'roi', 'apply_func']
     label = 'apply ROI'
