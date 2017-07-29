@@ -108,6 +108,28 @@ class TestComponentLink(object):
         assert exc.value.args[0].startswith('from argument is not a list '
                                             'of ComponentIDs')
 
+    def test_compute_scalar(self):
+
+        # Regression test - in some cases, link functions can return Python
+        # scalars rather than Numpy objects if a scalar is passed in, so we need
+        # to make sure that works properly.
+
+        data, from_, to_ = self.toy_data()
+        from_id = data.add_component(from_, 'from_label')
+        to_id = ComponentID('to_label')
+
+        def using(x):
+            if np.isscalar(x):
+                return float(x) * 2
+            else:
+                return x * 2
+
+        link = ComponentLink([from_id], to_id, using)
+
+        result = link.compute(data, view=(0,))
+        assert_array_equal(result, 2)
+
+
 l = ComponentLink([ComponentID('a')], ComponentID('b'))
 cid = ComponentID('a')
 scalar = 3
