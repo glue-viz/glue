@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from ..component import DerivedComponent
 from ..component_link import ComponentLink, BinaryComponentLink
 from ..data import ComponentID, Data, Component
 from ..data_collection import DataCollection
@@ -128,6 +129,10 @@ class TestComponentLink(object):
 
         result = link.compute(data, view=(0,))
         assert_array_equal(result, 2)
+
+        data.add_component(DerivedComponent(data, link), to_id)
+
+        assert data.get_component(to_id).numeric
 
 
 l = ComponentLink([ComponentID('a')], ComponentID('b'))
