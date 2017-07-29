@@ -9,7 +9,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - rubygems
+      - ruby
 
 notifications:
   email: false

@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from ..component import DerivedComponent
 from ..component_link import ComponentLink, BinaryComponentLink
 from ..data import ComponentID, Data, Component
 from ..data_collection import DataCollection
@@ -107,6 +108,32 @@ class TestComponentLink(object):
             ComponentLink([cid, None], None, using=lambda x, y: None)
         assert exc.value.args[0].startswith('from argument is not a list '
                                             'of ComponentIDs')
+
+    def test_compute_scalar(self):
+
+        # Regression test - in some cases, link functions can return Python
+        # scalars rather than Numpy objects if a scalar is passed in, so we need
+        # to make sure that works properly.
+
+        data, from_, to_ = self.toy_data()
+        from_id = data.add_component(from_, 'from_label')
+        to_id = ComponentID('to_label')
+
+        def using(x):
+            if np.isscalar(x):
+                return float(x) * 2
+            else:
+                return x * 2
+
+        link = ComponentLink([from_id], to_id, using)
+
+        result = link.compute(data, view=(0,))
+        assert_array_equal(result, 2)
+
+        data.add_component(DerivedComponent(data, link), to_id)
+
+        assert data.get_component(to_id).numeric
+
 
 l = ComponentLink([ComponentID('a')], ComponentID('b'))
 cid = ComponentID('a')

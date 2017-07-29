@@ -148,6 +148,8 @@ class ComponentLink(object):
         args = [data[join_component_view(f, view)] for f in self._from]
         logger.debug("shape of first argument: %s", args[0].shape)
         result = self._using(*args)
+        # We call asarray since link functions may return Python scalars in some cases
+        result = np.asarray(result)
         logger.debug("shape of result: %s", result.shape)
         if result.shape != args[0].shape:
             logger.warn("ComponentLink function %s changed shape. Fixing",
