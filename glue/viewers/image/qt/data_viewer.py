@@ -109,8 +109,10 @@ class ImageViewer(MatplotlibDataViewer):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
         ref_coords = self.state.reference_data.coords
-        if isinstance(ref_coords, WCSCoordinates):
-            self.axes.reset_wcs(ref_coords.wcs, slices=self.state.wcsaxes_slice)
+        if hasattr(ref_coords, 'wcs'):
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords.wcs)
+        elif hasattr(ref_coords, 'wcsaxes_dict'):
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, **ref_coords.wcsaxes_dict)
         else:
             self.axes.reset_wcs(IDENTITY_WCS)
         self._update_appearance_from_settings()

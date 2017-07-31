@@ -251,6 +251,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     attribute : str
         The attribute name - this will be populated once a dataset is assigned
         to the helper.
+    percentile_subset : int
+        How many points to use at most for the percentile calculation (using all
+        values is highly inefficient and not needed)
     lower, upper : str
         The fields for the lower/upper levels
     percentile : ``QComboBox`` instance, optional
@@ -276,9 +279,11 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper')
     modifiers_names = ('log', 'percentile')
 
-    def __init__(self, state, attribute, cache=None, **kwargs):
+    def __init__(self, state, attribute, percentile_subset=10000, cache=None, **kwargs):
 
         super(StateAttributeLimitsHelper, self).__init__(state, attribute, cache=cache, **kwargs)
+
+        self.percentile_subset = percentile_subset
 
         if self.attribute is not None:
 
@@ -314,6 +319,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             exclude = (100 - percentile) / 2.
 
             data_values = self.data_values
+
+            if data_values.size > self.percentile_subset:
+                data_values = np.random.choice(data_values.ravel(), self.percentile_subset)
 
             if log:
                 data_values = data_values[data_values > 0]
