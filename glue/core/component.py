@@ -286,9 +286,17 @@ class CoordinateComponent(Component):
 
             pix_coords = []
             dep_coords = self._data.coords.dependent_axes(self.axis)
+            final_slice = []
             for i in range(self._data.ndim):
                 if i in dep_coords:
-                    pix_coords.append(np.arange(self._data.shape[i]))
+                    pix_coord = np.arange(self._data.shape[i])
+                    if view is not None and view is not Ellipsis and i < len(view):
+                        pix_coord = pix_coord[view[i]]
+                        if np.isscalar(pix_coord):
+                            final_slice.append(0)
+                        else:
+                            final_slice.append(slice(None))
+                    pix_coords.append(pix_coord)
                 else:
                     pix_coords.append(0)
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
@@ -296,15 +304,9 @@ class CoordinateComponent(Component):
             world_coords = self._data.coords.pixel2world_single_axis(*pix_coords[::-1],
                                                                axis=self._data.ndim - 1 - self.axis)
 
-            world_coords = broadcast_to(world_coords, self._data.shape)
+            world_coords = world_coords[tuple(final_slice)]
 
-            if view is None:
-                view = Ellipsis
-
-            # FIXME: this is inefficient if view is only a small fraction of the
-            # whole array, and should be optimized.
-
-            return world_coords[view]
+            return world_coords
 
         else:
 
