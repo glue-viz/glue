@@ -316,20 +316,21 @@ class CoordinateComponent(Component):
                     if not np.isscalar(v) and not isinstance(v, slice):
                         optimize_view = False
                         break
-
                 else:
                     optimize_view = True
 
             pix_coords = []
             dep_coords = self._data.coords.dependent_axes(self.axis)
 
-            final_slice = [slice(None) for i in range(self._data.ndim)]
+            final_slice = []
             final_shape = []
 
             for i in range(self._data.ndim):
 
                 if optimize_view and i < len(view) and np.isscalar(view[i]):
-                    final_slice[i] = 0
+                    final_slice.append(0)
+                else:
+                    final_slice.append(slice(None))
 
                 # We set up a 1D pixel axis along that dimension.
                 pix_coord = np.arange(self._data.shape[i])
@@ -338,9 +339,7 @@ class CoordinateComponent(Component):
                 # that axis.
                 if optimize_view and i < len(view):
                     pix_coord = pix_coord[view[i]]
-                    if np.isscalar(view[i]):
-                        final_slice[i] = 0
-                    else:
+                    if not np.isscalar(view[i]):
                         final_shape.append(len(pix_coord))
                 else:
                     final_shape.append(self._data.shape[i])
