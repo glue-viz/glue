@@ -12,6 +12,7 @@ from glue.utils import color2rgb
 from glue.core.link_manager import is_equivalent_cid
 from glue.core import Data, HubListener
 from glue.core.message import ComponentsChangedMessage
+from glue.external.modest_image import imshow
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -115,7 +116,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.uuid = str(uuid.uuid4())
         self.composite = self.axes._composite
         self.composite.allocate(self.uuid)
-        self.composite.set(self.uuid, array=self.get_image_data)
+        self.composite.set(self.uuid, array=self.get_image_data,
+                           shape=self.get_image_shape)
         self.composite_image = self.axes._composite_image
 
     def enable(self):
@@ -123,14 +125,44 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self.composite_image.invalidate_cache()
         super(ImageLayerArtist, self).enable()
 
-    def get_image_data(self):
+    def get_image_shape(self):
 
         if not self._compatible_with_reference_data:
             return None
 
+        if self._viewer_state.x_att is None or self._viewer_state.y_att is None:
+            return None
+
+        x_axis = self._viewer_state.x_att.axis
+        y_axis = self._viewer_state.y_att.axis
+
+        full_shape = self.layer.shape
+
+        return full_shape[y_axis], full_shape[x_axis]
+
+    def get_image_data(self, view=None):
+
+        if not self._compatible_with_reference_data:
+            return None
+
+        slices, transpose = self._viewer_state.numpy_slice_and_transpose
+
+        if view is not None and len(view) == 2:
+
+            full_view = slices
+
+            x_axis = self._viewer_state.x_att.axis
+            y_axis = self._viewer_state.y_att.axis
+
+            full_view[x_axis] = view[1]
+            full_view[y_axis] = view[0]
+
+        else:
+
+            full_view = None
+
         try:
-            # FIXME: is the following slow? Should slide at same time?
-            image = self.layer[self.state.attribute]
+            image = self.layer[self.state.attribute, full_view]
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
@@ -138,13 +170,16 @@ class ImageLayerArtist(BaseImageLayerArtist):
         else:
             self._enabled = True
 
-        slices, transpose = self._viewer_state.numpy_slice_and_transpose
-
-        image = image[slices]
         if transpose:
             image = image.transpose()
 
-        return image
+        if view is None:
+            view = Ellipsis
+
+        if view is None or full_view is not None:
+            return image
+        else:
+            return image[view]
 
     def _update_image_data(self):
         self.composite_image.invalidate_cache()
@@ -226,6 +261,77 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.redraw()
 
 
+class ImageSubsetArray(object):
+
+    def __init__(self, viewer_state, layer_artist):
+        self.viewer_state = viewer_state
+        self.layer_artist = layer_artist
+        self.layer_state = layer_artist.state
+
+    @property
+    def shape(self):
+        x_axis = self.viewer_state.x_att.axis
+        y_axis = self.viewer_state.y_att.axis
+        full_shape = self.layer_state.layer.shape
+        return full_shape[y_axis], full_shape[x_axis]
+
+    @property
+    def nan_array(self):
+        return np.ones(self.shape) * np.nan
+
+    def __getitem__(self, view=None):
+
+        if not self.layer_artist._compatible_with_reference_data:
+            return self.nan_array
+
+        slices, transpose = self.viewer_state.numpy_slice_and_transpose
+
+        if view is not None and len(view) == 2:
+
+            full_view = slices
+
+            x_axis = self.viewer_state.x_att.axis
+            y_axis = self.viewer_state.y_att.axis
+
+            full_view[x_axis] = view[1]
+            full_view[y_axis] = view[0]
+
+        else:
+            full_view = None
+
+        try:
+            mask = self.layer_state.layer.to_mask(view=tuple(full_view))
+        except IncompatibleAttribute:
+            self.layer_artist.disable("Cannot compute mask for this layer")
+            return self.nan_array
+        else:
+            self.layer_artist._enabled = True
+
+        if transpose:
+            mask = mask.transpose()
+
+        if view is not None and full_view is None:
+            mask = mask[view]
+
+        r, g, b = color2rgb(self.layer_state.color)
+        mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
+        mask = (255 * mask).astype(np.uint8)
+
+        return mask
+
+    @property
+    def dtype(self):
+        return np.uint8
+
+    @property
+    def ndim(self):
+        return 2
+
+    @property
+    def size(self):
+        return np.product(self.shape)
+
+
 class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     _layer_state_cls = ImageSubsetLayerState
@@ -235,45 +341,11 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         super(ImageSubsetLayerArtist, self).__init__(axes, viewer_state,
                                                      layer_state=layer_state, layer=layer)
 
-        self.mpl_artists = [self.axes.imshow([[0.]],
-                                             origin='lower', interpolation='nearest',
-                                             vmin=0, vmax=1, aspect=self._viewer_state.aspect)]
+        self.subset_array = ImageSubsetArray(self._viewer_state, self)
 
-    def _get_image_data(self):
-
-        view, transpose = self._viewer_state.numpy_slice_and_transpose
-
-        mask = self.layer.to_mask(view=view)
-
-        if transpose:
-            mask = mask.transpose()
-
-        r, g, b = color2rgb(self.state.color)
-        mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
-        mask = (255 * mask).astype(np.uint8)
-
-        return mask
-
-    def _update_image_data(self):
-
-        if self._compatible_with_reference_data:
-
-            try:
-                data = self._get_image_data()
-            except IncompatibleAttribute:
-                self.disable("Cannot compute mask for this layer")
-                data = np.array([[np.nan]])
-            else:
-                self._enabled = True
-
-        else:
-            data = np.array([[np.nan]])
-
-        if len(self.mpl_artists) > 0:
-            self.mpl_artists[0].set_data(data)
-            self.mpl_artists[0].set_extent([-0.5, data.shape[1] - 0.5, -0.5, data.shape[0] - 0.5])
-
-        self.redraw()
+        self.mpl_artists = [imshow(self.axes, self.subset_array,
+                                   origin='lower', interpolation='nearest',
+                                   vmin=0, vmax=1, aspect=self._viewer_state.aspect)]
 
     @defer_draw
     def _update_visual_attributes(self):
@@ -319,7 +391,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
-            self._update_image_data()
+            self.mpl_artists[0].invalidate_cache()
+            self.redraw()  # forces subset to be recomputed
             force = True  # make sure scaling and visual attributes are updated
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):

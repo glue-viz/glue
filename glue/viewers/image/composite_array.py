@@ -36,6 +36,7 @@ class CompositeArray(object):
         self.layers[uuid] = {'zorder': 0,
                              'visible': True,
                              'array': None,
+                             'shape': None,
                              'color': '0.5',
                              'alpha': 1,
                              'clim': (0, 1),
@@ -56,12 +57,12 @@ class CompositeArray(object):
     @property
     def shape(self):
         for layer in self.layers.values():
-            if callable(layer['array']):
-                array = layer['array']()
+            if callable(layer['shape']):
+                shape = layer['shape']()
             else:
-                array = layer['array']
-            if array is not None:
-                return array.shape
+                shape = layer['shape']
+            if shape is not None:
+                return shape
         return None
 
     def __getitem__(self, view):
@@ -80,21 +81,23 @@ class CompositeArray(object):
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
 
             if callable(layer['array']):
-                array = layer['array']()
+                array = layer['array'](view=view)
             else:
                 array = layer['array']
 
             if array is None:
                 continue
 
-            array_sub = array[view]
-            if np.isscalar(array_sub):
+            if not callable(layer['array']):
+                array = array[view]
+
+            if np.isscalar(array):
                 scalar = True
-                array_sub = np.atleast_2d(array_sub)
+                array = np.atleast_2d(array)
             else:
                 scalar = False
 
-            data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array_sub)))
+            data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array)))
 
             if isinstance(layer['color'], Colormap):
 
