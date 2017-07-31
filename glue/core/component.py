@@ -280,33 +280,100 @@ class CoordinateComponent(Component):
 
         if self.world:
 
-            # This can be a bottleneck if we aren't careful, so we need to make
-            # sure that if not all dimensions depend on each other, we use smart
-            # broadcasting
+            # Calculating the world coordinates can be a bottleneck if we aren't
+            # careful, so we need to make sure that if not all dimensions depend
+            # on each other, we use smart broadcasting.
+
+            # The unoptimized way to do this for an N-dimensional dataset would
+            # be to construct N-dimensional arrays of pixel values for each
+            # coordinate. However, if we are computing the coordinates for axis
+            # i, and axis i is not dependent on any other axis, then the result
+            # will be an N-dimensional array where the same 1D array of
+            # coordinates will be repeated over and over.
+
+            # To optimize this, we therefore essentially consider only the
+            # dependent dimensions and then broacast the result to the full
+            # array size at the very end.
+
+            # view=None actually adds a dimension which is never what we really
+            # mean, at least in glue.
+            if view is None:
+                view = Ellipsis
+
+            # For 1D arrays, slice can be given as a single slice but we need
+            # to wrap it in a list to make the following code work correctly,
+            # as it is then consistent with higher-dimensional cases.
+            if isinstance(view, slice) or np.isscalar(view):
+                view = [view]
+
+            # Some views, e.g. with lists of integer arrays, can give arbitrarily
+            # complex (copied) subsets of arrays, so in this case we don't do any
+            # optimization
+            if view is Ellipsis:
+                optimize_view = False
+            else:
+                for v in view:
+                    if not np.isscalar(v) and not isinstance(v, slice):
+                        optimize_view = False
+                        break
+
+                else:
+                    optimize_view = True
 
             pix_coords = []
             dep_coords = self._data.coords.dependent_axes(self.axis)
-            final_slice = []
+
+            final_slice = [slice(None) for i in range(self._data.ndim)]
+            final_shape = []
+
             for i in range(self._data.ndim):
-                if i in dep_coords:
-                    pix_coord = np.arange(self._data.shape[i])
-                    if view is not None and view is not Ellipsis and i < len(view):
-                        pix_coord = pix_coord[view[i]]
-                        if np.isscalar(pix_coord):
-                            final_slice.append(0)
-                        else:
-                            final_slice.append(slice(None))
-                    pix_coords.append(pix_coord)
+
+                if optimize_view and i < len(view) and np.isscalar(view[i]):
+                    final_slice[i] = 0
+
+                # We set up a 1D pixel axis along that dimension.
+                pix_coord = np.arange(self._data.shape[i])
+
+                # If a view was specified, we need to take it into account for
+                # that axis.
+                if optimize_view and i < len(view):
+                    pix_coord = pix_coord[view[i]]
+                    if np.isscalar(view[i]):
+                        final_slice[i] = 0
+                    else:
+                        final_shape.append(len(pix_coord))
                 else:
-                    pix_coords.append(0)
+                    final_shape.append(self._data.shape[i])
+
+                if i not in dep_coords:
+                    # The axis is not dependent on this instance's axis, so we
+                    # just compute the values once and broadcast along this
+                    # dimension later.
+                    pix_coord = 0
+
+                pix_coords.append(pix_coord)
+
+            # We build the list of N arrays, one for each pixel coordinate
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
 
+            # Finally we convert these to world coordinates
+            axis = self._data.ndim - 1 - self.axis
             world_coords = self._data.coords.pixel2world_single_axis(*pix_coords[::-1],
-                                                               axis=self._data.ndim - 1 - self.axis)
+                                                                     axis=axis)
 
-            world_coords = world_coords[tuple(final_slice)]
+            # We get rid of any dimension for which using the view should get
+            # rid of that dimension.
+            if optimize_view:
+                world_coords = world_coords[tuple(final_slice)]
 
-            return world_coords
+            # We then broadcast the final array back to what it should be
+            world_coords = broadcast_to(world_coords, tuple(final_shape))
+
+            # We apply the view if we weren't able to optimize before
+            if optimize_view:
+                return world_coords
+            else:
+                return world_coords[view]
 
         else:
 
