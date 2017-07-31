@@ -32,7 +32,7 @@ from glue.core.data import Component, Data
 from glue.config import auto_refresh, data_factory
 from glue.backends import get_timer
 from glue.utils import as_list
-
+from glue.logger import logger
 
 __all__ = ['FileWatcher', 'LoadLog',
            'auto_data', 'data_label', 'find_factory',
@@ -290,6 +290,8 @@ def find_factory(filename, **kwargs):
 
     for df in data_factory:
 
+        logger.info('Trying data factory {0}'.format(df.label))
+
         # Once we've found a match, and iterated through the rest of the
         # importers with the same priority, we can exit the loop.
         if best_priority is not None and df.priority < best_priority:
@@ -308,6 +310,8 @@ def find_factory(filename, **kwargs):
         if is_format:
             valid_formats.append(df)
             best_priority = df.priority
+
+    logger.info('Valid formats: {0}'.format(valid_formats))
 
     if len(valid_formats) == 0:
         return None
