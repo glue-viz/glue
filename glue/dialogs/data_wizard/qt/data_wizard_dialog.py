@@ -103,6 +103,18 @@ class GlueDataDialog(object):
         paths, fac = self._get_paths_and_factory()
         result = []
 
+        # Check that the user didn't select a .glu file by mistake
+        for path in paths:
+            if path.endswith('.glu'):
+                mb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical,
+                                           "Error loading data",
+                                           "It looks like you have selected "
+                                           "a .glu session file. You should open "
+                                           "this using 'Open Session' under the "
+                                           "'File' menu instead")
+                mb.exec_()
+                return []
+
         with set_cursor_cm(Qt.WaitCursor):
             for path in paths:
                 self._curfile = path
