@@ -292,6 +292,10 @@ class TestImageViewer(object):
 
         self.viewer.add_data(hypercube2)
 
+    def test_incompatible_subset(self):
+        self.viewer.add_data(self.image1)
+        self.data_collection.new_subset_group(subset_state=self.catalog.id['c'] > 1, label='A')
+
     def test_apply_roi_single(self):
 
         # Regression test for a bug that caused mode.update to be called
