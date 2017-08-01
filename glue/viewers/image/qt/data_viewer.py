@@ -88,17 +88,29 @@ class ImageViewer(MatplotlibDataViewer):
 
     @defer_draw
     def _set_wcs(self, *args):
+
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
+
         ref_coords = self.state.reference_data.coords
+
         if hasattr(ref_coords, 'wcs'):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords.wcs)
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice, **ref_coords.wcsaxes_dict)
         else:
             self.axes.reset_wcs(IDENTITY_WCS)
+
         self._update_appearance_from_settings()
         self._update_axes()
+
+        ny, nx = self.state.reference_data.shape
+
+        with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.state.x_min = -0.5
+            self.state.x_max = nx - 0.5
+            self.state.y_min = -0.5
+            self.state.y_max = ny - 0.5
 
     # TODO: move some of the ROI stuff to state class?
 
