@@ -59,8 +59,16 @@ class CompositeArray(object):
         for layer in self.layers.values():
             if callable(layer['shape']):
                 shape = layer['shape']()
-            else:
+            elif layer['shape'] is not None:
                 shape = layer['shape']
+            elif callable(layer['array']):
+                array = layer['array']()
+                if array is None:
+                    return None
+                else:
+                    shape = array.shape
+            else:
+                shape = layer['array'].shape
             if shape is not None:
                 return shape
         return None

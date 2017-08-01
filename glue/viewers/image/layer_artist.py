@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 import uuid
+import weakref
+
 import numpy as np
 
 from glue.utils import defer_draw
@@ -264,9 +266,9 @@ class ImageLayerArtist(BaseImageLayerArtist):
 class ImageSubsetArray(object):
 
     def __init__(self, viewer_state, layer_artist):
-        self.viewer_state = viewer_state
-        self.layer_artist = layer_artist
-        self.layer_state = layer_artist.state
+        self.viewer_state = weakref.proxy(viewer_state)
+        self.layer_artist = weakref.proxy(layer_artist)
+        self.layer_state = weakref.proxy(layer_artist.state)
 
     @property
     def shape(self):
@@ -391,8 +393,9 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
-            self.mpl_artists[0].invalidate_cache()
-            self.redraw()  # forces subset to be recomputed
+            if len(self.mpl_artists) > 0:
+                self.mpl_artists[0].invalidate_cache()
+                self.redraw()  # forces subset to be recomputed
             force = True  # make sure scaling and visual attributes are updated
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):
