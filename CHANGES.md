@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Give an error if the user selects a session file when going through
+  the 'Open Data Set' menu. [#1364]
+
 * Changed order of arguments for data exporters from (data, filename)
   to (filename, data). [#1251]
 
