@@ -71,6 +71,9 @@ class ModestImage(mi.AxesImage):
         self._pixel2world_cache = None
         self._world2pixel_cache = None
 
+    def get_cursor_data(self, event):
+        return None
+
     def set_extent(self, extent):
         self._full_extent = extent
         self.invalidate_cache()
