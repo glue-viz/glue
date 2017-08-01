@@ -48,6 +48,8 @@ class MatplotlibDataViewerState(State):
     x_log = DeferredDrawCallbackProperty(False, docstring='Whether the x axis is logarithmic')
     y_log = DeferredDrawCallbackProperty(False, docstring='Whether the y axis is logarithmic')
 
+    aspect = DeferredDrawCallbackProperty('auto', docstring='Aspect ratio for the axes')
+
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
 
 
