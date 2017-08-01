@@ -190,6 +190,9 @@ class ImageLayerArtist(BaseImageLayerArtist):
     @defer_draw
     def _update_visual_attributes(self):
 
+        if not self.enabled:
+            return
+
         if self._viewer_state.color_mode == 'Colormaps':
             color = self.state.cmap
         else:
@@ -345,19 +348,22 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         self.subset_array = ImageSubsetArray(self._viewer_state, self)
 
-        self.mpl_artists = [imshow(self.axes, self.subset_array,
+        self.image_artist = imshow(self.axes, self.subset_array,
                                    origin='lower', interpolation='nearest',
-                                   vmin=0, vmax=1, aspect=self._viewer_state.aspect)]
+                                   vmin=0, vmax=1, aspect=self._viewer_state.aspect)
+        self.mpl_artists = [self.image_artist]
 
     @defer_draw
     def _update_visual_attributes(self):
 
+        if not self.enabled:
+            return
+
         # TODO: deal with color using a colormap instead of having to change data
 
-        if len(self.mpl_artists) > 0:
-            self.mpl_artists[0].set_visible(self.state.visible)
-            self.mpl_artists[0].set_zorder(self.state.zorder)
-            self.mpl_artists[0].set_alpha(self.state.alpha)
+        self.image_artist.set_visible(self.state.visible)
+        self.image_artist.set_zorder(self.state.zorder)
+        self.image_artist.set_alpha(self.state.alpha)
 
         self.redraw()
 
@@ -393,9 +399,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
-            if len(self.mpl_artists) > 0:
-                self.mpl_artists[0].invalidate_cache()
-                self.redraw()  # forces subset to be recomputed
+            self.image_artist.invalidate_cache()
+            self.redraw()  # forces subset to be recomputed
             force = True  # make sure scaling and visual attributes are updated
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):

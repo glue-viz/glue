@@ -40,10 +40,9 @@ class MatplotlibLayerArtist(LayerArtistBase):
     def clear(self):
         for artist in self.mpl_artists:
             try:
-                artist.remove()
+                artist.set_visible(False)
             except ValueError:  # already removed
                 pass
-        self.mpl_artists = []
 
     def redraw(self):
         self.axes.figure.canvas.draw()

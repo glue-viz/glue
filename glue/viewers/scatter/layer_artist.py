@@ -62,6 +62,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _update_visual_attributes(self):
 
+        if not self.enabled:
+            return
+
         for mpl_artist in self.mpl_artists:
             mpl_artist.set_visible(self.state.visible)
             mpl_artist.set_zorder(self.state.zorder)
@@ -76,7 +79,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if (self._viewer_state.x_att is None or
             self._viewer_state.y_att is None or
-            self.state.layer is None):
+                self.state.layer is None):
             return
 
         # Figure out which attributes are different from before. Ideally we shouldn't
