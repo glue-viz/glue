@@ -104,7 +104,8 @@ class ImageViewer(MatplotlibDataViewer):
         self._update_appearance_from_settings()
         self._update_axes()
 
-        ny, nx = self.state.reference_data.shape
+        nx = self.state.reference_data.shape[self.state.x_att.axis]
+        ny = self.state.reference_data.shape[self.state.y_att.axis]
 
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
             self.state.x_min = -0.5
