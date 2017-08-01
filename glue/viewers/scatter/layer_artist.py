@@ -8,8 +8,14 @@ from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
-CMAP_PROPERTIES = ('cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap')
-SIZE_PROPERTIES = ('size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size')
+CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
+SIZE_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
+LINE_PROPERTIES = set(['linewidth', 'linestyle'])
+VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
+                     LINE_PROPERTIES | set(['alpha', 'zorder', 'visible']))
+
+DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
+                       'xerr_att', 'yerr_att'])
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
@@ -43,8 +49,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.errorbar_index = 2
 
         self.reset_cache()
-
-
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -268,13 +272,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.reset_artists()
             force = True
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'y_att',
-                                                     'cmap_mode', 'size_mode',
-                                                     'xerr_att', 'yerr_att')):
+        if force or len(changed & DATA_PROPERTIES) > 0:
             self._update_data(changed)
             force = True
 
-        self._update_visual_attributes(changed, force=force)
+        if force or len(changed & VISUAL_PROPERTIES) > 0:
+            self._update_visual_attributes(changed, force=force)
 
     @defer_draw
     def update(self):
