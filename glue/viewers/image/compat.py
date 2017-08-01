@@ -66,6 +66,8 @@ def update_image_viewer_state(rec, context):
         viewer_state['y_min'] = -0.5
         viewer_state['y_max'] = data.shape[0] - 0.5
 
+        viewer_state['aspect'] = 'st__equal'
+
         # Slicing with cubes
         viewer_state['slices'] = [s if np.isreal(s) else 0 for s in properties['slice']]
 

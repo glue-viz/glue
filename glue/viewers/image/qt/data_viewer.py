@@ -9,7 +9,6 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import defer_draw
 
 from glue.core import command
-from glue.core.coordinates import WCSCoordinates
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -19,6 +18,7 @@ from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerAr
 from glue.viewers.image.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
+from glue.external.echo import delay_callback
 
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
@@ -53,18 +53,18 @@ class ImageViewer(MatplotlibDataViewer):
              'select:yrange', 'select:circle',
              'select:polygon', 'image:contrast_bias']
 
+    @defer_draw
     def __init__(self, session, parent=None, state=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
-        self.state.add_callback('aspect', self._set_aspect)
         self.state.add_callback('x_att', self._set_wcs)
         self.state.add_callback('y_att', self._set_wcs)
         self.state.add_callback('slices', self._set_wcs)
         self.state.add_callback('reference_data', self._set_wcs)
-        self.state.add_callback('reference_data', self._set_aspect)
         self.axes._composite = CompositeArray()
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
+        self._set_wcs()
 
     @defer_draw
     def _update_axes(self, *args):
@@ -81,28 +81,10 @@ class ImageViewer(MatplotlibDataViewer):
     def add_data(self, data):
         result = super(ImageViewer, self).add_data(data)
         # If this is the first layer (or the first after all layers were)
-        # removed, set the WCS for the axes and the aspect (which also sets)
-        # the limits.
+        # removed, set the WCS for the axes.
         if len(self.layers) == 1:
             self._set_wcs()
-            self._set_aspect()
         return result
-
-    @defer_draw
-    def _set_aspect(self, *args):
-        self.axes.set_aspect(self.state.aspect)
-        if self.axes._composite.shape is not None:
-            ny, nx = self.axes._composite.shape
-            self.axes.set_xlim(-0.5, nx - 0.5)
-            self.axes.set_ylim(-0.5, ny - 0.5)
-            # FIXME: for a reason I don't quite understand, dataLim doesn't
-            # get updated immediately here, which means that there are then
-            # issues in the first draw of the image (the limits are such that
-            # only part of the image is shown). We just set dataLim manually
-            # to avoid this issue.
-            self.axes.dataLim.intervalx = self.axes.get_xlim()
-            self.axes.dataLim.intervaly = self.axes.get_ylim()
-        self.axes.figure.canvas.draw()
 
     @defer_draw
     def _set_wcs(self, *args):
