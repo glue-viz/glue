@@ -19,7 +19,8 @@ from warnings import warn
 
 from glue.external import six
 from glue.core.contracts import contract
-from glue.core.message import (DataCollectionAddMessage,
+from glue.core.message import (SubsetUpdateMessage,
+                               DataCollectionAddMessage,
                                DataCollectionDeleteMessage)
 from glue.core.visual import VisualAttributes
 from glue.core.hub import HubListener
@@ -147,10 +148,25 @@ class SubsetGroup(HubListener):
                 self.subsets.remove(s)
 
     def register_to_hub(self, hub):
+
         hub.subscribe(self, DataCollectionAddMessage,
                       lambda x: self._add_data(x.data))
+
         hub.subscribe(self, DataCollectionDeleteMessage,
                       lambda x: self._remove_data(x.data))
+
+        def has_subset(msg):
+            return msg.attribute == 'style' and msg.subset in self.subsets
+
+        hub.subscribe(self, SubsetUpdateMessage,
+                      self._sync_style_from_subset,
+                      filter=has_subset)
+
+    def _sync_style_from_subset(self, msg):
+        if settings.INDIVIDUAL_SUBSET_COLOR:
+            return
+        self._style.set(msg.subset.style)
+        self.broadcast('style')
 
     @property
     def style(self):
