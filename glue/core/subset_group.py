@@ -163,6 +163,8 @@ class SubsetGroup(HubListener):
                       filter=has_subset)
 
     def _sync_style_from_subset(self, msg):
+        if settings.INDIVIDUAL_SUBSET_COLOR:
+            return
         self._style.set(msg.subset.style)
         self.broadcast('style')
 

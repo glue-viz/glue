@@ -3,11 +3,21 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from mock import MagicMock, patch
 
+from ...config import settings
 from .. import DataCollection, Data, SubsetGroup
 from .. import subset
 from ..subset import SubsetState
 from ..subset_group import coerce_subset_groups
 from .test_state import clone
+
+
+def restore_settings(func):
+    def wrapper(*args, **kwargs):
+        settings.reset_defaults()
+        results = func(*args, **kwargs)
+        settings.reset_defaults()
+        return results
+    return wrapper
 
 
 class TestSubsetGroup(object):
@@ -40,12 +50,21 @@ class TestSubsetGroup(object):
             assert sub.subset_state is sg.subset_state
             assert sub.label is sg.label
 
+    @restore_settings
     def test_set_style_overrides(self):
+
+        # Test to make sure that if the user has selected to allow individual
+        # subset colors, the subset color can become out of sync with the
+        # group color.
+
+        settings.INDIVIDUAL_SUBSET_COLOR = True
+
         self.sg.register(self.dc)
         sg = self.sg
         sg.subsets[0].style.color = 'blue'
         for sub in sg.subsets[1:]:
             assert sub.style.color != 'blue'
+
         assert sg.subsets[0].style.color == 'blue'
 
     def test_new_subset_group_syncs_style(self):
@@ -53,7 +72,9 @@ class TestSubsetGroup(object):
         for sub in sg.subsets:
             assert sub.style == sg.style
 
+    @restore_settings
     def test_set_group_style_clears_override(self):
+        settings.INDIVIDUAL_SUBSET_COLOR = True
         sg = self.dc.new_subset_group()
         style = sg.style.copy()
         style.parent = sg.subsets[0]
@@ -61,6 +82,51 @@ class TestSubsetGroup(object):
         style.color = 'blue'
         sg.style.color = 'red'
         assert sg.subsets[0].style.color == 'red'
+
+    def test_changing_subset_style_changes_group(self):
+
+        # Test to make sure that if a subset's visual properties are changed,
+        # the visual properties of all subsets in the same subset group are changed
+
+        # This is just to make sure the default setting is still False
+        assert not settings.INDIVIDUAL_SUBSET_COLOR
+
+        d1 = Data(x=[1, 2, 3], label='d1')
+        d2 = Data(y=[2, 3, 4], label='d2')
+        d3 = Data(y=[2, 3, 4], label='d3')
+
+        dc = DataCollection([d1, d2, d3])
+
+        sg = dc.new_subset_group(subset_state=d1.id['x'] > 1, label='A')
+
+        # Changing d1 subset properties changes group and other subsets
+
+        d1.subsets[0].style.color = '#c0b4a1'
+        assert sg.style.color == '#c0b4a1'
+        assert d2.subsets[0].style.color == '#c0b4a1'
+        assert d3.subsets[0].style.color == '#c0b4a1'
+
+        d2.subsets[0].style.alpha = 0.2
+        assert sg.style.alpha == 0.2
+        assert d1.subsets[0].style.alpha == 0.2
+        assert d3.subsets[0].style.alpha == 0.2
+
+        d3.subsets[0].style.markersize = 16
+        assert sg.style.markersize == 16
+        assert d1.subsets[0].style.markersize == 16
+        assert d2.subsets[0].style.markersize == 16
+
+        # Changing subset group changes subsets
+
+        sg.style.color = '#abcdef'
+        assert d1.subsets[0].style.color == '#abcdef'
+        assert d2.subsets[0].style.color == '#abcdef'
+        assert d3.subsets[0].style.color == '#abcdef'
+
+        sg.style.linewidth = 12
+        assert d1.subsets[0].style.linewidth == 12
+        assert d2.subsets[0].style.linewidth == 12
+        assert d3.subsets[0].style.linewidth == 12
 
     def test_new_data_creates_subset(self):
         sg = self.dc.new_subset_group()

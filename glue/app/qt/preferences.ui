@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
-    <height>357</height>
+    <width>617</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,10 +30,13 @@
        <property name="verticalSpacing">
         <number>15</number>
        </property>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_2">
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Background color:</string>
+          <string>Allow subsets within a subset group to have different visual properties</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -44,7 +47,21 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Default data transparency:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="3">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
         <widget class="QCheckBox" name="checkbox_apply">
          <property name="text">
           <string/>
@@ -54,42 +71,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QColorBox" name="color_background">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Default data transparency:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Foreground color:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Default data color:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
+       <item row="0" column="2">
         <widget class="QComboBox" name="combo_theme">
          <item>
           <property name="text">
@@ -108,38 +90,42 @@
          </item>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Theme for viewers:</string>
+          <string>Background color:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="QSlider" name="slider_alpha">
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Foreground color:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Default data color:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
         <widget class="QColorBox" name="color_default_data">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="3" column="2">
         <widget class="QColorBox" name="color_foreground">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
+       <item row="1" column="0" colspan="3">
         <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -159,7 +145,7 @@
          </property>
         </spacer>
        </item>
-       <item row="8" column="1">
+       <item row="8" column="2">
         <widget class="QCheckBox" name="checkbox_show_large_data_warning">
          <property name="text">
           <string/>
@@ -170,6 +156,37 @@
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Show warnings for large data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Theme for viewers:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2">
+        <widget class="QSlider" name="slider_alpha">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QColorBox" name="color_background">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="2">
+        <widget class="QCheckBox" name="checkbox_individual_subset_color">
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
