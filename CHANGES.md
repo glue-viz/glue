@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* If a subset's visual properties are changed, change the visual
+  properties of the parent SubsetGroup.
+
 * Give an error if the user selects a session file when going through
   the 'Open Data Set' menu. [#1364]
 
