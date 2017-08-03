@@ -11,12 +11,12 @@ from glue.utils import defer_draw
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 
-__all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
+__all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
 
 class AggregateSlice(object):
 
-    def __init__(self, slice, center, function):
+    def __init__(self, slice=None, center=None, function=None):
         self.slice = slice
         self.center = center
         self.function = function
@@ -224,7 +224,10 @@ class ImageViewerState(MatplotlibDataViewerState):
             elif i == self.y_att.axis:
                 slices.append('y')
             else:
-                slices.append(self.slices[i])
+                if isinstance(self.slices[i], AggregateSlice):
+                    slices.append(self.slices[i].center)
+                else:
+                    slices.append(self.slices[i])
         return slices[::-1]
 
     def flip_x(self):
@@ -242,13 +245,13 @@ class ImageViewerState(MatplotlibDataViewerState):
 
 class BaseImageLayerState(MatplotlibLayerState):
 
-    def get_sliced_data(self, view):
+    def get_sliced_data(self, view=None):
 
         slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
-        if view is not None and len(view) == 2:
+        full_view = slices
 
-            full_view = slices
+        if view is not None and len(view) == 2:
 
             x_axis = self.viewer_state.x_att.axis
             y_axis = self.viewer_state.y_att.axis
@@ -256,16 +259,22 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[x_axis] = view[1]
             full_view[y_axis] = view[0]
 
+            view_applied = True
+
         else:
 
-            full_view = None
+            view_applied = False
+
+        print(full_view)
 
         image = self._get_image(view=full_view)
 
         # Apply aggregation functions if needed
 
         if image.ndim != len(agg_func):
-            raise ValueError("Sliced image dimensions does not match aggregation function list")
+            raise ValueError("Sliced image dimensions ({0}) does not match "
+                             "aggregation function list ({1})"
+                             .format(image.ndim, len(agg_func)))
 
         for axis in range(image.ndim - 1, -1, -1):
             func = agg_func[axis]
@@ -278,10 +287,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         if transpose:
             image = image.transpose()
 
-        if view is None:
-            view = Ellipsis
-
-        if view is None or full_view is not None:
+        if view_applied or view is None:
             return image
         else:
             return image[view]
