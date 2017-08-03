@@ -16,10 +16,9 @@ __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
 
 class AggregateSlice(object):
 
-    def __init__(self, start, center, end, function):
-        self.start = start
+    def __init__(self, slice, center, function):
+        self.slice = slice
         self.center = center
-        self.end = end
         self.function = function
 
 
@@ -183,7 +182,7 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.slices = (0,) * self.reference_data.ndim
 
     @property
-    def numpy_slice_and_transpose(self):
+    def numpy_slice_aggregation_transpose(self):
         """
         Returns slicing information usable by Numpy.
 
@@ -194,13 +193,19 @@ class ImageViewerState(MatplotlibDataViewerState):
         if self.reference_data is None:
             return None
         slices = []
+        agg_func = []
         for i in range(self.reference_data.ndim):
             if i == self.x_att.axis or i == self.y_att.axis:
                 slices.append(slice(None))
+                agg_func.append(None)
             else:
-                slices.append(self.slices[i])
+                if isinstance(self.slices[i], AggregateSlice):
+                    slices.append(self.slices[i].slice)
+                    agg_func.append(self.slices[i].function)
+                else:
+                    slices.append(self.slices[i])
         transpose = self.y_att.axis > self.x_att.axis
-        return slices, transpose
+        return slices, agg_func, transpose
 
     @property
     def wcsaxes_slice(self):
@@ -239,7 +244,7 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view):
 
-        slices, transpose = self.viewer_state.numpy_slice_and_transpose
+        slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         if view is not None and len(view) == 2:
 
@@ -256,6 +261,19 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view = None
 
         image = self._get_image(view=full_view)
+
+        # Apply aggregation functions if needed
+
+        if image.ndim != len(agg_func):
+            raise ValueError("Sliced image dimensions does not match aggregation function list")
+
+        for axis in range(image.ndim - 1, -1, -1):
+            func = agg_func[axis]
+            if func is not None:
+                image = func(image, axis=axis)
+
+        if image.ndim != 2:
+            raise ValueError("Image after aggregation should have two dimensions")
 
         if transpose:
             image = image.transpose()
