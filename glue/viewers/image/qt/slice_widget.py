@@ -4,6 +4,7 @@ import numpy as np
 
 from glue.core.coordinates import Coordinates
 from glue.viewers.common.qt.data_slice_widget import SliceWidget
+from glue.viewers.image.state import AggregateSlice
 from glue.utils.decorators import avoid_circular
 
 __all__ = ['MultiSliceWidgetHelper']
@@ -116,7 +117,10 @@ class MultiSliceWidgetHelper(object):
 
         for i in range(self.data.ndim):
             if self._sliders[i] is not None:
-                self._sliders[i].state.slice_center = self.viewer_state.slices[i]
+                if isinstance(self.viewer_state.slices[i], AggregateSlice):
+                    self._sliders[i].state.slice_center = self.viewer_state.slices[i].center
+                else:
+                    self._sliders[i].state.slice_center = self.viewer_state.slices[i]
 
 
 if __name__ == "__main__":

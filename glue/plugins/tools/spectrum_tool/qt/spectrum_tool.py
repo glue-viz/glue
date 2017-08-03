@@ -10,7 +10,6 @@ from qtpy import QtCore, QtGui, QtWidgets, compat
 from qtpy.QtCore import Qt
 
 from glue.external.six.moves import range as xrange
-from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
@@ -28,6 +27,8 @@ from glue.utils.qt import Worker, messagebox_on_error
 from glue.core.subset import RoiSubsetState
 from glue.core.qt import roi as qt_roi
 from .profile_viewer import ProfileViewer
+from glue.viewers.image.state import AggregateSlice
+from glue.core.aggregate import mom1, mom2
 
 
 class Extractor(object):
@@ -88,7 +89,6 @@ class Extractor(object):
         x = Extractor.abcissa(data, zaxis)
 
         return x, spectrum
-
 
     @staticmethod
     def world2pixel(data, axis, value):
@@ -236,8 +236,7 @@ class NavContext(SpectrumContext):
             slc[self.profile_axis] = value
 
             # prevent callback bouncing. Fixes #298
-            with ignore_callback(self.grip, 'value'):
-                self.viewer_state.slices = tuple(slc)
+            self.viewer_state.slices = tuple(slc)
 
         def _set_grip_from_state(slc):
             """Update grip.value given state.slices"""
@@ -246,12 +245,16 @@ class NavContext(SpectrumContext):
 
             # grip.value is stored in world coordinates
             val = slc[self.profile_axis]
+
+            if isinstance(val, AggregateSlice):
+                val = val.center
+
             val = Extractor.pixel2world(self.data, self.profile_axis, val)
 
             # If pix2world not monotonic, this can trigger infinite recursion.
             # Avoid by disabling callback loop
             # XXX better to specifically ignore _set_state_from_grip
-            with ignore_callback(self.viewer_state, 'slices'):
+            with ignore_callback(self.grip, 'value'):
                 self.grip.value = val
 
         self.grip = self.main.profile.new_value_grip()
@@ -288,11 +291,11 @@ class CollapseContext(SpectrumContext):
         w.setLayout(l)
 
         combo = QtWidgets.QComboBox()
-        combo.addItem("Mean", userData=Aggregate.mean)
-        combo.addItem("Median", userData=Aggregate.median)
-        combo.addItem("Max", userData=Aggregate.max)
-        combo.addItem("Centroid", userData=Aggregate.mom1)
-        combo.addItem("Linewidth", userData=Aggregate.mom2)
+        combo.addItem("Mean", userData=np.mean)
+        combo.addItem("Median", userData=np.median)
+        combo.addItem("Max", userData=np.max)
+        combo.addItem("Centroid", userData=mom1)
+        combo.addItem("Linewidth", userData=mom2)
 
         run = QtWidgets.QPushButton("Collapse")
         save = QtWidgets.QPushButton("Save as FITS file")
@@ -311,40 +314,48 @@ class CollapseContext(SpectrumContext):
         self._combo = combo
         self._agg = None
 
+        self._collapsed_viewer = None
+
     def _connect(self):
         self._run.clicked.connect(nonpartial(self._aggregate))
         self._save.clicked.connect(nonpartial(self._choose_save))
 
     @property
     def aggregator(self):
-        return self._combo.itemData(self._combo.currentIndex())
+        return self._combo.currentData()
 
     @property
     def aggregator_label(self):
         return self._combo.currentText()
 
     def _aggregate(self):
+
         func = self.aggregator
 
         rng = list(self.grip.range)
         rng[1] += 1
+
         rng = Extractor.world2pixel(self.data,
                                     self.profile_axis,
                                     rng)
 
-        agg = Aggregate(self.data, self.viewer_state.layers[0].attribute,
-                        self.main.profile_axis, self.viewer_state.wcsaxes_slice[::-1], rng)
+        slices = list(self.viewer_state.slices)
 
-        im = func(agg)
-        self._agg = im
-        # TODO: reinstate this?
-        # self.client.override_image(im)
+        current_slice = slices[self.profile_axis]
+        if isinstance(current_slice, AggregateSlice):
+            current_slice = current_slice.center
+
+        slices[self.profile_axis] = AggregateSlice(slice(*rng),
+                                                   current_slice,
+                                                   func)
+
+        self.viewer_state.slices = tuple(slices)
 
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
 
         out, _ = compat.getsavefilename(filters='FITS Files (*.fits)')
-        if out is None:
+        if not out:
             return
 
         self.save_to(out)

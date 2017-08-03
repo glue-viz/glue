@@ -265,8 +265,6 @@ class BaseImageLayerState(MatplotlibLayerState):
 
             view_applied = False
 
-        print(full_view)
-
         image = self._get_image(view=full_view)
 
         # Apply aggregation functions if needed
