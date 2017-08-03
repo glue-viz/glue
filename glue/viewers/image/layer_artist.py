@@ -147,24 +147,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
         if not self._compatible_with_reference_data:
             return None
 
-        slices, transpose = self._viewer_state.numpy_slice_and_transpose
-
-        if view is not None and len(view) == 2:
-
-            full_view = slices
-
-            x_axis = self._viewer_state.x_att.axis
-            y_axis = self._viewer_state.y_att.axis
-
-            full_view[x_axis] = view[1]
-            full_view[y_axis] = view[0]
-
-        else:
-
-            full_view = None
-
         try:
-            image = self.layer[self.state.attribute, full_view]
+            image = self.state.get_sliced_data(view=view)
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
@@ -172,16 +156,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         else:
             self._enabled = True
 
-        if transpose:
-            image = image.transpose()
-
-        if view is None:
-            view = Ellipsis
-
-        if view is None or full_view is not None:
-            return image
-        else:
-            return image[view]
+        return image
 
     def _update_image_data(self):
         self.composite_image.invalidate_cache()
@@ -289,34 +264,13 @@ class ImageSubsetArray(object):
         if not self.layer_artist._compatible_with_reference_data:
             return self.nan_array
 
-        slices, transpose = self.viewer_state.numpy_slice_and_transpose
-
-        if view is not None and len(view) == 2:
-
-            full_view = slices
-
-            x_axis = self.viewer_state.x_att.axis
-            y_axis = self.viewer_state.y_att.axis
-
-            full_view[x_axis] = view[1]
-            full_view[y_axis] = view[0]
-
-        else:
-            full_view = None
-
         try:
-            mask = self.layer_state.layer.to_mask(view=tuple(full_view))
+            mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable("Cannot compute mask for this layer")
             return self.nan_array
         else:
             self.layer_artist._enabled = True
-
-        if transpose:
-            mask = mask.transpose()
-
-        if view is not None and full_view is None:
-            mask = mask[view]
 
         r, g, b = color2rgb(self.layer_state.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))

@@ -321,6 +321,7 @@ class MatplotlibDataViewer(DataViewer):
                 cls = lookup_class_with_patches(l.pop('_type'))
                 layer_state = context.object(l['state'])
                 layer_artist = cls(viewer.axes, viewer.state, layer_state=layer_state)
+                layer_state.viewer_state = viewer.state
                 viewer._layer_artist_container.append(layer_artist)
 
         return viewer

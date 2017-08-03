@@ -14,6 +14,15 @@ from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboH
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
 
 
+class AggregateSlice(object):
+
+    def __init__(self, start, center, end, function):
+        self.start = start
+        self.center = center
+        self.end = end
+        self.function = function
+
+
 class ImageViewerState(MatplotlibDataViewerState):
     """
     A state class that includes all the attributes for an image viewer.
@@ -226,7 +235,44 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.y_lim_helper.flip_limits()
 
 
-class ImageLayerState(MatplotlibLayerState):
+class BaseImageLayerState(MatplotlibLayerState):
+
+    def get_sliced_data(self, view):
+
+        slices, transpose = self.viewer_state.numpy_slice_and_transpose
+
+        if view is not None and len(view) == 2:
+
+            full_view = slices
+
+            x_axis = self.viewer_state.x_att.axis
+            y_axis = self.viewer_state.y_att.axis
+
+            full_view[x_axis] = view[1]
+            full_view[y_axis] = view[0]
+
+        else:
+
+            full_view = None
+
+        image = self._get_image(view=full_view)
+
+        if transpose:
+            image = image.transpose()
+
+        if view is None:
+            view = Ellipsis
+
+        if view is None or full_view is not None:
+            return image
+        else:
+            return image[view]
+
+    def _get_image(self, view=None):
+        raise NotImplementedError()
+
+
+class ImageLayerState(BaseImageLayerState):
     """
     A state class that includes all the attributes for data layers in an image plot.
     """
@@ -247,9 +293,9 @@ class ImageLayerState(MatplotlibLayerState):
                                               'should be synced with the global '
                                               'color and transparency for the data')
 
-    def __init__(self, layer=None, **kwargs):
+    def __init__(self, layer=None, viewer_state=None, **kwargs):
 
-        super(ImageLayerState, self).__init__(layer=layer)
+        super(ImageLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
 
         self.attribute_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                            percentile='percentile',
@@ -292,6 +338,9 @@ class ImageLayerState(MatplotlibLayerState):
             self._sync_color.disable_syncing()
             self._sync_alpha.disable_syncing()
 
+    def _get_image(self, view=None):
+        return self.layer[self.attribute, view]
+
     def flip_limits(self):
         """
         Flip the image levels.
@@ -304,7 +353,10 @@ class ImageLayerState(MatplotlibLayerState):
             self.bias = 0.5
 
 
-class ImageSubsetLayerState(MatplotlibLayerState):
+class ImageSubsetLayerState(BaseImageLayerState):
     """
     A state class that includes all the attributes for subset layers in an image plot.
     """
+
+    def _get_image(self, view=None):
+        return self.layer.to_mask(view=view)
