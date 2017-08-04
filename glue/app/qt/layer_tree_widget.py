@@ -445,6 +445,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._data_collection = None
         self._hub = None
         self.ui.layerTree.setDragEnabled(True)
+        self.setMinimumSize(300, 0)
 
     @property
     def data_collection(self):

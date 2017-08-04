@@ -144,18 +144,6 @@
        </layout>
       </widget>
      </widget>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <layout class="QVBoxLayout" name="layout_right">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="enabled">
           <bool>true</bool>
@@ -194,9 +182,6 @@
           <bool>true</bool>
          </property>
         </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>
