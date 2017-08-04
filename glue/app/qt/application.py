@@ -810,7 +810,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._terminal_button.setIcon(i)
         self._terminal_button.setIconSize(QtCore.QSize(25, 25))
 
-        print("ADDING WIDGET")
         self._layer_widget.ui.button_row.addWidget(self._terminal_button)
 
         widget = glue_terminal(data_collection=self._data,
@@ -888,16 +887,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return self.app.exec_()
 
     exec_ = start
-
-    def keyPressEvent(self, event):
-        """Hold down modifier keys to temporarily set edit mode"""
-        mod = event.modifiers()
-        if mod == Qt.ShiftModifier:
-            self._mode_toolbar.set_mode('or')
-
-    def keyReleaseEvent(self, event):
-        """Unset any temporary edit mode"""
-        self._mode_toolbar.unset_mode()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
