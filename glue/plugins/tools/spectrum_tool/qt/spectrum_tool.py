@@ -17,7 +17,7 @@ from glue.config import fit_plugin, viewer_tool
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import RoiMode
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, get_qapp
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.app.qt.mdi_area import GlueMdiSubWindow
@@ -827,7 +827,14 @@ class SpectrumTool(object):
                           FitContext(self),
                           CollapseContext(self)]
 
-        tabs = QtWidgets.QTabWidget()
+        tabs = QtWidgets.QTabWidget(parent=self.widget)
+
+        # The following is needed because of a bug in Qt which means that
+        # tab titles don't get scaled right.
+        app = get_qapp()
+        app_font = app.font()
+        tabs.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+
         tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
         tabs.addTab(self._contexts[2].widget, 'Collapse')
