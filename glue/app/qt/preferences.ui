@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>617</width>
-    <height>420</height>
+    <width>513</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,6 +73,9 @@
        </item>
        <item row="0" column="2">
         <widget class="QComboBox" name="combo_theme">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
          <item>
           <property name="text">
            <string>Black on White</string>

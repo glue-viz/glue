@@ -85,7 +85,11 @@
     </widget>
    </item>
    <item row="1" column="1" colspan="3">
-    <widget class="QComboBox" name="combodata_aspect"/>
+    <widget class="QComboBox" name="combodata_aspect">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="9" column="2">
     <widget class="QToolButton" name="button_flip_x">
@@ -124,7 +128,11 @@
     </widget>
    </item>
    <item row="7" column="1" colspan="3">
-    <widget class="QComboBox" name="combosel_reference_data"/>
+    <widget class="QComboBox" name="combosel_reference_data">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label">
@@ -178,7 +186,11 @@
     </widget>
    </item>
    <item row="0" column="1" colspan="3">
-    <widget class="QComboBox" name="combotext_color_mode"/>
+    <widget class="QComboBox" name="combotext_color_mode">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+     </property>
+    </widget>
    </item>
    <item row="8" column="1" colspan="3">
     <widget class="QComboBox" name="combosel_x_att_world">
