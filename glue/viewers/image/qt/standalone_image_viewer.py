@@ -9,6 +9,7 @@ from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.image.composite_array import CompositeArray
 from glue.external.modest_image import imshow
+from glue.utils import defer_draw
 
 # Import the mouse mode to make sure it gets registered
 from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
@@ -53,6 +54,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 
+    @defer_draw
     def set_image(self, image=None, wcs=None, **kwargs):
         """
         Update the image shown in the widget
@@ -76,7 +78,8 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
 
         self._composite.set('image', array=image, color=colormaps.members[0][1])
         self._im = imshow(self._axes, self._composite, **kwargs)
-        self._im_data = image
+        self._im_array = image
+        self._set_norm(self._contrast_mode)
 
         if 'extent' in kwargs:
             self.axes.set_xlim(kwargs['extent'][:2])
@@ -142,8 +145,8 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         if pmin is None:
             clim = mode.get_vmin_vmax()
         else:
-            clim = (np.nanpercentile(self._im_data, pmin),
-                    np.nanpercentile(self._im_data, pmax))
+            clim = (np.nanpercentile(self._im_array, pmin),
+                    np.nanpercentile(self._im_array, pmax))
 
         stretch = mode.stretch
         self._composite.set('image', clim=clim, stretch=stretch,
@@ -162,6 +165,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
             mode_cls = viewer_tool.members[tool_id]
             if tool_id == 'image:contrast':
                 mode = mode_cls(self, move_callback=self._set_norm)
+                self._contrast_mode = mode
             else:
                 mode = mode_cls(self)
             self.toolbar.add_tool(mode)
