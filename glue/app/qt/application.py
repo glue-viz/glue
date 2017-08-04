@@ -33,7 +33,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
-from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
+from glue.app.qt.terminal import glue_terminal
 
 
 __all__ = ['GlueApplication']
@@ -753,7 +753,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.app.processEvents()
 
         ga = GlueApplication()
-        ga.show()
+        ga.start(block=False)
 
         # We need to close this after we open the next application otherwise
         # Qt will quit since there are no actively open windows.
@@ -780,14 +780,15 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """
         ga = Application.restore_session(path)
         if show:
-            ga.show()
+            ga.start(block=False)
         return ga
 
-    def has_terminal(self):
+    def has_terminal(self, create_if_not=True):
         """
         Returns True if the IPython terminal is present.
         """
-        self._create_terminal()  # ensure terminal is setup
+        if self._terminal is None and create_if_not:
+            self._create_terminal()
         return self._terminal is not None
 
     def _create_terminal(self):
@@ -804,21 +805,15 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._terminal_button.setIcon(i)
         self._terminal_button.setIconSize(QtCore.QSize(25, 25))
 
+        print("ADDING WIDGET")
         self._layer_widget.ui.button_row.addWidget(self._terminal_button)
 
-        try:
-            widget = glue_terminal(data_collection=self._data,
-                                   dc=self._data,
-                                   hub=self._hub,
-                                   session=self.session,
-                                   application=self,
-                                   **vars(env))
-        except IPythonTerminalError as exc:
-            self._terminal = None
-            self._terminal_button.setEnabled(False)
-            self._terminal_button.setToolTip(str(exc))
-            self._terminal_exception = str(exc)
-            return
+        widget = glue_terminal(data_collection=self._data,
+                               dc=self._data,
+                               hub=self._hub,
+                               session=self.session,
+                               application=self,
+                               **vars(env))
 
         self._terminal_button.clicked.connect(self._toggle_terminal)
         self._terminal = self.add_widget(widget)
@@ -857,7 +852,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._terminal.show()
         self._terminal.widget().show()
 
-    def start(self, size=None, position=None):
+    def start(self, size=None, position=None, block=True):
         """
         Show the GUI and start the application.
 
@@ -884,7 +879,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # XXX find out a better place for this
         _fix_ipython_pylab()
 
-        return self.app.exec_()
+        if block:
+            return self.app.exec_()
 
     exec_ = start
 

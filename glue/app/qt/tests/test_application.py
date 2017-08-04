@@ -362,3 +362,29 @@ def test_logger_close():
     app.app.processEvents()
 
     assert not isinstance(sys.stderr, GlueLogger)
+
+
+def test_reset_session_terminal():
+
+    # Regression test to make sure that the terminal still exists when
+    # resetting a session
+
+    app = GlueApplication()
+    app2 = app._reset_session(warn=False)
+
+    assert app2.has_terminal(create_if_not=False)
+
+
+def test_open_session_terminal(tmpdir):
+
+    # Regression test to make sure that the terminal still exists when
+    # opening a previous session
+
+    session_file = tmpdir.join('test.glu').strpath
+
+    app = GlueApplication()
+    app.save_session(session_file)
+
+    app2 = app.restore_session(session_file)
+
+    assert app2.has_terminal(create_if_not=False)
