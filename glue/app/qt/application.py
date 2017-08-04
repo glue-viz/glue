@@ -73,6 +73,11 @@ def _fix_ipython_pylab():
     except UsageError:
         pass
 
+    # Make sure we disable interactive mode (where figures get redrawn for
+    # every single Matplotlib command)
+    import matplotlib
+    matplotlib.interactive(False)
+
 
 class GlueLogger(QtWidgets.QWidget):
 
