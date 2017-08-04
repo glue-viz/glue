@@ -19,6 +19,7 @@ from glue.icons.qt import get_icon
 from glue.utils.qt import get_qapp
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
+from glue.dialogs.link_editor.qt import LinkEditor
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
 from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
@@ -128,7 +129,7 @@ class GlueLogger(QtWidgets.QWidget):
 
     def _set_console_button(self, attention):
         if attention:
-            self.button_console.setStyleSheet('background: red;')
+            self.button_console.setStyleSheet('color: red; text-decoration: underline;')
         else:
             self.button_console.setStyleSheet(self.button_stylesheet)
 
@@ -241,20 +242,85 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._ui.data_layers.setLayout(self._vb)
         self._layer_widget = lw
 
-        self._ui.layout_top.setSpacing(0)
+        # Data toolbar
 
-        # log window + status light
-        self._log = GlueLogger(button_console=self._ui.button_console)
+        self._data_toolbar = QtWidgets.QToolBar()
+
+        self._data_toolbar.setIconSize(QtCore.QSize(16, 16))
+
+        self._button_open_data = QtWidgets.QToolButton()
+        self._button_open_data.setText("Open Data")
+        self._button_open_data.setIcon(get_icon('glue_open'))
+        self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_open_data.clicked.connect(nonpartial(self._choose_load_data))
+
+        self._data_toolbar.addWidget(self._button_open_data)
+
+        self._button_link_data = QtWidgets.QToolButton()
+        self._button_link_data.setText("Link Data")
+        self._button_link_data.setIcon(get_icon('glue_link'))
+        self._button_link_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_link_data.clicked.connect(self._set_up_links)
+
+        self._data_toolbar.addWidget(self._button_link_data)
+
+        self._button_ipython = QtWidgets.QToolButton()
+        self._button_ipython.setCheckable(True)
+        self._button_ipython.setText("IPython Terminal")
+        self._button_ipython.setIcon(get_icon('IPythonConsole'))
+        self._button_ipython.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_ipython.clicked.connect(self._toggle_terminal)
+
+        self._data_toolbar.addWidget(self._button_ipython)
+
+        spacer = QtWidgets.QWidget()
+        spacer.setMinimumSize(20, 10)
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                             QtWidgets.QSizePolicy.Preferred)
+
+        self._data_toolbar.addWidget(spacer)
+
+        self.addToolBar(self._data_toolbar)
+
+        # Selection mode toolbar
+
+        tbar = EditSubsetModeToolBar()
+        self._mode_toolbar = tbar
+
+        self.addToolBar(self._mode_toolbar)
+
+        # Error console toolbar
+
+        self._console_toolbar = QtWidgets.QToolBar()
+
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                             QtWidgets.QSizePolicy.Preferred)
+
+        self._console_toolbar.addWidget(spacer)
+
+        self._button_console = QtWidgets.QToolButton()
+        self._button_console.setText("View Error Console")
+        self._button_console.setToolButtonStyle(Qt.ToolButtonTextOnly)
+
+        self._console_toolbar.addWidget(self._button_console)
+
+        self.addToolBar(self._console_toolbar)
+
+        self._log = GlueLogger(button_console=self._button_console)
         self._log.window().setWindowTitle("Console Log")
         self._log.resize(550, 550)
         self._log.hide()
+
+    def _set_up_links(self, event):
+        LinkEditor.update_links(self.data_collection)
 
     def _tweak_geometry(self, maximized=True):
         """Maximize window by default."""
         if maximized:
             self.setWindowState(Qt.WindowMaximized)
-        self._ui.main_splitter.setStretchFactor(0, 0)
-        self._ui.main_splitter.setStretchFactor(1, 1)
+        self._ui.main_splitter.setStretchFactor(0, 0.1)
+        self._ui.main_splitter.setStretchFactor(1, 0.9)
         self._ui.data_plot_splitter.setStretchFactor(0, 0.25)
         self._ui.data_plot_splitter.setStretchFactor(1, 0.5)
         self._ui.data_plot_splitter.setStretchFactor(2, 0.25)
@@ -487,24 +553,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.setTitle("Data &Manager")
         menu.addActions(self._layer_widget.actions())
 
-        mbar.addMenu(menu)
-
-        menu = QtWidgets.QMenu(mbar)
-        menu.setTitle("&Toolbars")
-        tbar = EditSubsetModeToolBar()
-        tbar.setStyle(QtWidgets.QStyleFactory.create("windows"));
-        self._mode_toolbar = tbar
-        self._ui.layout_top.insertWidget(0, tbar)
-        a = QtWidgets.QAction("Selection Mode &Toolbar", menu)
-        a.setCheckable(True)
-        a.toggled.connect(tbar.setVisible)
-        try:
-            tbar.visibilityChanged.connect(a.setChecked)
-        except AttributeError:  # Qt < 4.7. QtCore.Signal not supported
-            pass
-
-        menu.addAction(a)
-        menu.addActions(tbar.actions())
         mbar.addMenu(menu)
 
         menu = QtWidgets.QMenu(mbar)
@@ -801,17 +849,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if self._terminal is not None:  # already set up
             return
 
-        if hasattr(self, '_terminal_exception'):  # already failed to set up
-            return
-
-        self._terminal_button = QtWidgets.QToolButton(self._ui)
-        self._terminal_button.setToolTip("Toggle IPython Prompt")
-        i = get_icon('IPythonConsole')
-        self._terminal_button.setIcon(i)
-        self._terminal_button.setIconSize(QtCore.QSize(25, 25))
-
-        self._layer_widget.ui.button_row.addWidget(self._terminal_button)
-
         widget = glue_terminal(data_collection=self._data,
                                dc=self._data,
                                hub=self._hub,
@@ -819,23 +856,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                                application=self,
                                **vars(env))
 
-        self._terminal_button.clicked.connect(self._toggle_terminal)
         self._terminal = self.add_widget(widget)
+        self._terminal.closed.connect(self._on_terminal_close)
         self._hide_terminal()
-
-    def _setup_terminal_error_dialog(self, exception):
-        """ Reassign the terminal toggle button to show dialog on error"""
-        title = "Terminal unavailable"
-        msg = ("Glue encountered an error trying to start the Terminal"
-               "\nReason:\n%s" % exception)
-
-        def show_msg():
-            mb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical,
-                             title, msg)
-            mb.setDetailedText(self._terminal_exception)
-            mb.exec_()
-
-        self._terminal_button.clicked.connect(show_msg)
 
     def _toggle_terminal(self):
         if self._terminal.isVisible():
@@ -848,6 +871,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             if not self._terminal.isVisible():
                 warnings.warn("An unexpected error occurred while "
                               "trying to show the terminal")
+
+    def _on_terminal_close(self):
+        if self._button_ipython.isChecked():
+            self._button_ipython.blockSignals(True)
+            self._button_ipython.setChecked(False)
+            self._button_ipython.blockSignals(False)
 
     def _hide_terminal(self):
         self._terminal.hide()
