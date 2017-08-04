@@ -25,7 +25,7 @@ from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
 
-from ..application import GlueApplication
+from ..application import GlueApplication, GlueLogger
 
 
 os.environ['GLUE_TESTING'] = 'True'
@@ -350,3 +350,15 @@ class TestApplicationSession(object):
 
         sg.style.color = '#112233'
         assert sg.subsets[0].style.color == '#112233'
+
+
+def test_logger_close():
+
+    # Regression test to make sure that when closing an application, sys.stderr
+    # no longer points to GlueLogger.
+
+    app = GlueApplication()
+    app.close()
+    app.app.processEvents()
+
+    assert not isinstance(sys.stderr, GlueLogger)

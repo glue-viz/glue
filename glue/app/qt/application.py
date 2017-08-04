@@ -98,7 +98,13 @@ class GlueLogger(QtWidgets.QWidget):
         report = QtWidgets.QPushButton("Send Bug Report")
         report.clicked.connect(nonpartial(self._send_report))
 
-        self.stderr = sys.stderr
+        if isinstance(sys.stderr, GlueLogger):
+            if isinstance(sys.stderr._stderr_original, GlueLogger):
+                raise Exception('Too many nested GlueLoggers')
+            self._stderr_original = sys.stderr._stderr_original
+        else:
+            self._stderr_original = sys.stderr
+
         sys.stderr = self
 
         l = QtWidgets.QVBoxLayout()
@@ -125,7 +131,7 @@ class GlueLogger(QtWidgets.QWidget):
         """
         Interface for sys.excepthook
         """
-        self.stderr.write(message)
+        self._stderr_original.write(message)
         self._text.moveCursor(QtGui.QTextCursor.End)
         self._text.insertPlainText(message)
         self._set_console_button(attention=True)
@@ -164,6 +170,10 @@ class GlueLogger(QtWidgets.QWidget):
         """
         if event.key() == Qt.Key_Escape:
             self.hide()
+
+    def closeEvent(self, event):
+        if sys.stderr is self:
+            sys.stderr = self._stderr_original
 
 
 class GlueApplication(Application, QtWidgets.QMainWindow):
@@ -723,12 +733,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self.close()
         return ga
 
-    def _reset_session(self, show=True):
+    def _reset_session(self, show=True, warn=True):
         """
         Reset session to clean state.
         """
 
-        if not os.environ.get('GLUE_TESTING'):
+        if not os.environ.get('GLUE_TESTING') and warn:
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
@@ -738,8 +748,15 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             if not dialog == QtWidgets.QMessageBox.Ok:
                 return
 
+        # Make sure the closeEvent gets executed to close the GlueLogger
+        self._log.close()
+        self.app.processEvents()
+
         ga = GlueApplication()
         ga.show()
+
+        # We need to close this after we open the next application otherwise
+        # Qt will quit since there are no actively open windows.
         self.close()
 
         return ga
@@ -907,6 +924,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
+        self._log.close()
         self._hub.broadcast(ApplicationClosedMessage(None))
         event.accept()
 
