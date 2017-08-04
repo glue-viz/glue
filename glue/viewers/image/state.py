@@ -309,7 +309,7 @@ class ImageLayerState(BaseImageLayerState):
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
     stretch = DDCProperty('linear', docstring='The stretch used to render the layer, '
-                                              'whcih should be one of ``linear``, '
+                                              'which should be one of ``linear``, '
                                               '``sqrt``, ``log``, or ``arcsinh``')
     global_sync = DDCProperty(True, docstring='Whether the color and transparency '
                                               'should be synced with the global '
