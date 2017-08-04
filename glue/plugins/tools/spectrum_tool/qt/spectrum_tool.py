@@ -312,7 +312,6 @@ class CollapseContext(SpectrumContext):
 
         self.widget = w
         self._combo = combo
-        self._agg = None
 
         self._collapsed_viewer = None
 
@@ -351,8 +350,19 @@ class CollapseContext(SpectrumContext):
 
         self.viewer_state.slices = tuple(slices)
 
+        # Save a local copy of the collapsed array
+        for layer_state in self.viewer_state.layers:
+            if layer_state.layer is self.viewer_state.reference_data:
+                break
+        else:
+            raise Exception("Couldn't find layer corresponding to reference data")
+
+        self._agg = layer_state.get_sliced_data()
+
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
+
+        self._aggregate()
 
         out, _ = compat.getsavefilename(filters='FITS Files (*.fits)')
         if not out:
