@@ -127,6 +127,10 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self.composite_image.invalidate_cache()
         super(ImageLayerArtist, self).enable()
 
+    def remove(self):
+        super(ImageLayerArtist, self).remove()
+        self.composite.deallocate(self.uuid)
+
     def get_image_shape(self):
 
         if not self._compatible_with_reference_data:

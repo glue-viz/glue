@@ -99,6 +99,7 @@ class MatplotlibDataViewer(DataViewer):
         for layer_artist in self._layer_artist_container:
             if layer_artist.layer not in layer_states:
                 self._layer_artist_container.remove(layer_artist)
+                layer_artist.remove()
 
     @defer_draw
     def update_x_log(self):
@@ -182,13 +183,14 @@ class MatplotlibDataViewer(DataViewer):
 
     @defer_draw
     def remove_data(self, data):
-        for layer_artist in self.state.layers[::-1]:
-            if isinstance(layer_artist.layer, Data):
-                if layer_artist.layer is data:
-                    self.state.layers.remove(layer_artist)
-            else:
-                if layer_artist.layer.data is data:
-                    self.state.layers.remove(layer_artist)
+        with delay_callback(self.state, 'layers'):
+            for layer_state in self.state.layers[::-1]:
+                if isinstance(layer_state.layer, Data):
+                    if layer_state.layer is data:
+                        self.state.layers.remove(layer_state)
+                else:
+                    if layer_state.layer.data is data:
+                        self.state.layers.remove(layer_state)
         self.axes.figure.canvas.draw()
 
     @defer_draw
