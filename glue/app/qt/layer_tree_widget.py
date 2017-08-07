@@ -518,6 +518,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions['facet'] = FacetAction(self)
         self._actions['merge'] = MergeAction(self)
         self._actions['maskify'] = MaskifySubsetAction(self)
+        self._actions['link'] = LinkAction(self)
 
         # new component definer
         separator = QtWidgets.QAction("sep", tree)

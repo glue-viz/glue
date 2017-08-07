@@ -94,11 +94,11 @@ class TestGlueApplication(object):
         self.app._terminal = term
 
         term.isVisible.return_value = False
-        self.app._terminal_button.click()
+        self.app._button_ipython.click()
         assert term.show.call_count == 1
 
         term.isVisible.return_value = True
-        self.app._terminal_button.click()
+        self.app._button_ipython.click()
         assert term.hide.call_count == 1
 
     def test_close_tab(self):
