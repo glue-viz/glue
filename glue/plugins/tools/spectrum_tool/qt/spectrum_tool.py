@@ -321,7 +321,7 @@ class CollapseContext(SpectrumContext):
 
     @property
     def aggregator(self):
-        return self._combo.currentData()
+        return self._combo.itemData(self._combo.currentIndex())
 
     @property
     def aggregator_label(self):
