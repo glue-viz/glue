@@ -47,6 +47,10 @@ class MatplotlibLayerArtist(LayerArtistBase):
                 artist.remove()
             except ValueError:  # already removed
                 pass
+            except TypeError:  # can happen for e.g. errorbars
+                pass
+            except AttributeError:  # can happen for Matplotlib 1.4
+                pass
 
     def get_layer_color(self):
         return self.state.color
