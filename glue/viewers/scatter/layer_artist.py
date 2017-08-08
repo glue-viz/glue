@@ -12,7 +12,7 @@ CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'
 SIZE_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
-                     LINE_PROPERTIES | set(['alpha', 'zorder', 'visible']))
+                     LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
                        'xerr_att', 'yerr_att'])
@@ -64,6 +64,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if self.state.style != 'Line':
             self.line_artist.set_data([], [])
 
+    @defer_draw
     def _update_data(self, changed):
 
         # Layer artist has been cleared already
@@ -239,6 +240,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         self.redraw()
 
+    @defer_draw
     def _update_scatter(self, force=False, **kwargs):
 
         if (self._viewer_state.x_att is None or

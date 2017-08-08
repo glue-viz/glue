@@ -99,8 +99,17 @@ class ScatterViewerState(MatplotlibDataViewerState):
         return components
 
     def _layers_changed(self, *args):
+
+        layers_data = self.layers_data
+        layers_data_cache = getattr(self, '_layers_data_cache', [])
+
+        if layers_data == layers_data_cache:
+            return
+
         self.x_att_helper.set_multiple_data(self.layers_data)
         self.y_att_helper.set_multiple_data(self.layers_data)
+
+        self._layers_data_cache = layers_data
 
 
 def display_func_slow(x):
