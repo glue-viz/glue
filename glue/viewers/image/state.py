@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import defaultdict
+
 from glue.core import Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -91,21 +93,44 @@ class ImageViewerState(MatplotlibDataViewerState):
             self._set_default_slices()
 
     def _layers_changed(self, *args):
+
+        # The layers callback gets executed if anything in the layers changes,
+        # but we only care about whether the actual set of 'layer' attributes
+        # for all layers change.
+
+        layers_data = self.layers_data
+        layers_data_cache = getattr(self, '_layers_data_cache', [])
+
+        if layers_data == layers_data_cache:
+            return
+
         self._update_combo_ref_data()
         self._set_reference_data()
+        self._update_syncing()
 
-    def _update_combo_ref_data(self, *args):
-        datasets = []
-        for layer in self.layers:
-            if isinstance(layer.layer, Data):
-                if layer.layer not in datasets:
-                    datasets.append(layer.layer)
-            else:
-                if layer.layer.data not in datasets:
-                    datasets.append(layer.layer.data)
-        self.ref_data_helper.set_multiple_data(datasets)
+        self._layers_data_cache = layers_data
 
-    def _update_combo_att(self, *args):
+    def _update_syncing(self):
+
+        # If there are multiple layers for a given dataset, we disable the
+        # syncing by default.
+
+        layer_state_by_data = defaultdict(list)
+
+        for layer_state in self.layers:
+            if isinstance(layer_state.layer, Data):
+                layer_state_by_data[layer_state.layer].append(layer_state)
+
+        for data, layer_states in layer_state_by_data.items():
+            if len(layer_states) > 1:
+                for layer_state in layer_states:
+                    if layer_state.global_sync:
+                        layer_state.global_sync = False
+
+    def _update_combo_ref_data(self):
+        self.ref_data_helper.set_multiple_data(self.layers_data)
+
+    def _update_combo_att(self):
         with delay_callback(self, 'x_att_world', 'y_att_world'):
             if self.reference_data is None:
                 self.xw_att_helper.set_multiple_data([])
@@ -165,16 +190,14 @@ class ImageViewerState(MatplotlibDataViewerState):
             else:
                 self.x_att_world = world_ids[-1]
 
-    def _set_reference_data(self, *args):
-        # TODO: make sure this doesn't get called for changes *in* the layers
-        # for list callbacks maybe just have an event for length change in list
+    def _set_reference_data(self):
         if self.reference_data is None:
             for layer in self.layers:
                 if isinstance(layer.layer, Data):
                     self.reference_data = layer.layer
                     return
 
-    def _set_default_slices(self, *args):
+    def _set_default_slices(self):
         # Need to make sure this gets called immediately when reference_data is changed
         if self.reference_data is None:
             self.slices = ()

@@ -122,15 +122,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _layers_changed(self, *args):
-        datasets = []
-        for layer in self.layers:
-            if isinstance(layer.layer, Data):
-                if layer.layer not in datasets:
-                    datasets.append(layer.layer)
-            else:
-                if layer.layer.data not in datasets:
-                    datasets.append(layer.layer.data)
-        self.x_att_helper.set_multiple_data(datasets)
+        self.x_att_helper.set_multiple_data(self.layers_data)
 
 
 class HistogramLayerState(MatplotlibLayerState):
