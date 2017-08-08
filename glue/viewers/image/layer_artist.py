@@ -122,6 +122,12 @@ class ImageLayerArtist(BaseImageLayerArtist):
                            shape=self.get_image_shape)
         self.composite_image = self.axes._composite_image
 
+    def get_layer_color(self):
+        if self._viewer_state.color_mode == 'One color per layer':
+            return self.state.color
+        else:
+            return self.state.cmap
+
     def enable(self):
         if hasattr(self, 'composite_image'):
             self.composite_image.invalidate_cache()

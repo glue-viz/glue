@@ -83,6 +83,12 @@ class LayerArtistBase(PropertySetMixin):
 
         self._disabled_reason = ''  # A string explaining why this layer is disabled.
 
+    def get_layer_color(self):
+        # This method can return either a plain color or a colormap. This is
+        # used by the UI layer to determine a 'representative' color or colormap
+        # for the layer to be used e.g. in icons.
+        return self._layer.style.color
+
     def enable(self):
         if self.enabled:
             return
