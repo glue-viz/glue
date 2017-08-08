@@ -170,7 +170,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         c = self.state.color
                         vmin = vmax = cmap = None
                     else:
-                        c = self.layer[self.state.cmap_att]
+                        c = self.layer[self.state.cmap_att].ravel()
                         vmin = self.state.cmap_vmin
                         vmax = self.state.cmap_vmax
                         cmap = self.state.cmap
@@ -195,7 +195,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         s = self.state.size * self.state.size_scaling
                         s = np.broadcast_to(s, self.scatter_artist.get_sizes().shape)
                     else:
-                        s = self.layer[self.state.size_att]
+                        s = self.layer[self.state.size_att].ravel()
                         s = ((s - self.state.size_vmin) /
                              (self.state.size_vmax - self.state.size_vmin)) * 30
                         s *= self.state.size_scaling

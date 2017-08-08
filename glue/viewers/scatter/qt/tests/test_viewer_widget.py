@@ -9,6 +9,7 @@ import pytest
 
 from numpy.testing import assert_allclose
 
+from glue.config import colormaps
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI
@@ -38,7 +39,8 @@ class TestScatterViewer(object):
 
         self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3],
                          y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
-        self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]])
+        self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]],
+                            x=[[3, 5], [5.4, 1]], y=[[1.2, 4], [7, 8]])
 
         self.session = simple_session()
         self.hub = self.session.hub
@@ -351,3 +353,48 @@ class TestScatterViewer(object):
 
         for subset in client.count:
             assert client.count[subset] == 1
+
+    @pytest.mark.parametrize('ndim', [1, 2])
+    def test_all_options(self, ndim):
+
+        # This test makes sure that all the code for the different scatter modes
+        # gets run, though does not check the result.
+
+        viewer_state = self.viewer.state
+
+        if ndim == 1:
+            data = self.data
+        elif ndim == 2:
+            data = self.data_2d
+
+        self.viewer.add_data(data)
+
+        layer_state = viewer_state.layers[0]
+
+        layer_state.style = 'Scatter'
+
+        layer_state.size_mode = 'Linear'
+        layer_state.size_att = data.id['y']
+        layer_state.size_vmin = 1.2
+        layer_state.size_vmax = 4.
+        layer_state.size_scaling = 2
+
+        layer_state.cmap_mode = 'Linear'
+        layer_state.cmap_att = data.id['x']
+        layer_state.cmap_vmin = -1
+        layer_state.cmap_vmax = 2.
+        layer_state.cmap = colormaps.members[3][1]
+
+        # Check inverting works
+        layer_state.cmap_vmin = 3.
+
+        layer_state.size_mode = 'Fixed'
+
+        layer_state.xerr_visible = True
+        layer_state.xerr_att = data.id['x']
+        layer_state.yerr_visible = True
+        layer_state.yerr_att = data.id['y']
+
+        layer_state.style = 'Line'
+        layer_state.linewidth = 3
+        layer_state.linestyle = 'dashed'
