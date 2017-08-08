@@ -2,8 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import defer_draw
+from matplotlib.colors import Normalize
 
+from glue.utils import defer_draw
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
@@ -16,6 +17,11 @@ VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
                        'xerr_att', 'yerr_att'])
+
+
+class InvertedNormalize(Normalize):
+    def __call__(self, *args, **kwargs):
+        return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
@@ -102,6 +108,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 offsets = np.vstack((x, y)).transpose()
                 self.scatter_artist.set_offsets(offsets)
 
+            try:
+                self.mpl_artists[self.errorbar_index].remove()
+            except TypeError:
+                pass
+            except ValueError:
+                pass
+
             if self.state.xerr_visible or self.state.yerr_visible:
 
                 if self.state.xerr_visible and self.state.xerr_att is not None:
@@ -114,10 +127,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 else:
                     yerr = None
 
-                try:
-                    self.mpl_artists[self.errorbar_index].remove()
-                except TypeError:
-                    pass
                 self.errorbar_artist = self.axes.errorbar(x, y, xerr=xerr, yerr=yerr)
                 self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
@@ -170,12 +179,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         self.scatter_artist.set_facecolors(c)
                     else:
                         self.scatter_artist.set_array(c)
+                        self.scatter_artist.set_cmap(cmap)
                         if vmin > vmax:
-                            self.scatter_artist.set_cmap(cmap.reversed())
                             self.scatter_artist.set_clim(vmax, vmin)
+                            self.scatter_artist.set_norm(InvertedNormalize(vmax, vmin))
                         else:
-                            self.scatter_artist.set_cmap(cmap)
                             self.scatter_artist.set_clim(vmin, vmax)
+                            self.scatter_artist.set_norm(None)
 
                     self.scatter_artist.set_edgecolor('none')
 
