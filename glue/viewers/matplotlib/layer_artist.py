@@ -48,6 +48,9 @@ class MatplotlibLayerArtist(LayerArtistBase):
             except ValueError:  # already removed
                 pass
 
+    def get_layer_color(self):
+        return self.state.color
+
     def redraw(self):
         self.axes.figure.canvas.draw()
 

@@ -20,7 +20,7 @@ import numpy as np
 from glue.external import six
 from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
-
+from glue.core.message import LayerArtistEnabledMessage, LayerArtistDisabledMessage
 
 __all__ = ['LayerArtistBase', 'MatplotlibLayerArtist', 'LayerArtistContainer']
 
@@ -83,12 +83,21 @@ class LayerArtistBase(PropertySetMixin):
 
         self._disabled_reason = ''  # A string explaining why this layer is disabled.
 
+    def get_layer_color(self):
+        # This method can return either a plain color or a colormap. This is
+        # used by the UI layer to determine a 'representative' color or colormap
+        # for the layer to be used e.g. in icons.
+        return self._layer.style.color
+
     def enable(self):
         if self.enabled:
             return
         self._disabled_reason = ''
         self._enabled = True
         self.redraw()
+        if self._layer is not None and self._layer.hub is not None:
+            message = LayerArtistEnabledMessage(self)
+            self._layer.hub.broadcast(message)
 
     def disable(self, reason):
         """
@@ -106,6 +115,9 @@ class LayerArtistBase(PropertySetMixin):
         self._disabled_reason = reason
         self._enabled = False
         self.clear()
+        if self._layer is not None and self._layer.hub is not None:
+            message = LayerArtistDisabledMessage(self)
+            self._layer.hub.broadcast(message)
 
     def disable_invalid_attributes(self, *attributes):
         """

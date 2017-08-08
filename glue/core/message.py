@@ -11,7 +11,8 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'DataCollectionMessage', 'DataCollectionActiveChange',
            'DataCollectionActiveDataChange', 'DataCollectionAddMessage',
            'DataCollectionDeleteMessage', 'ApplicationClosedMessage',
-           'DataRemoveComponentMessage']
+           'DataRemoveComponentMessage', 'LayerArtistEnabledMessage',
+           'LayerArtistDisabledMessage']
 
 
 class Message(object):
@@ -204,3 +205,15 @@ class SettingsChangeMessage(Message):
 class ApplicationClosedMessage(Message):
     """A general message issued when Glue application is closed."""
     pass
+
+
+class LayerArtistEnabledMessage(Message):
+    def __init__(self, sender, tag=None):
+        super(LayerArtistEnabledMessage, self).__init__(sender, tag=tag)
+        self.layer_artist = self.sender
+
+
+class LayerArtistDisabledMessage(Message):
+    def __init__(self, sender, tag=None):
+        super(LayerArtistDisabledMessage, self).__init__(sender, tag=tag)
+        self.layer_artist = self.sender

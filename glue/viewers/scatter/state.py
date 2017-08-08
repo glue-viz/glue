@@ -94,21 +94,8 @@ class ScatterViewerState(MatplotlibDataViewerState):
         return components
 
     def _layers_changed(self, *args):
-
-        layers = []
-
-        for layer_state in self.layers:
-            if isinstance(layer_state.layer, Data):
-                if layer_state.layer not in layers:
-                    layers.append(layer_state.layer)
-
-        for layer_state in self.layers:
-            if isinstance(layer_state.layer, Subset) and layer_state.layer.data not in layers:
-                if layer_state.layer not in layers:
-                    layers.append(layer_state.layer)
-
-        self.x_att_helper.set_multiple_data(layers)
-        self.y_att_helper.set_multiple_data(layers)
+        self.x_att_helper.set_multiple_data(self.layers_data)
+        self.y_att_helper.set_multiple_data(self.layers_data)
 
 
 class ScatterLayerState(MatplotlibLayerState):

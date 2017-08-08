@@ -52,6 +52,10 @@ class MatplotlibDataViewerState(State):
 
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
 
+    @property
+    def layers_data(self):
+        return [layer_state.layer for layer_state in self.layers]
+
 
 class MatplotlibLayerState(State):
     """

@@ -22,7 +22,7 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
-from glue.core.message import Message
+from glue.core.message import Message, LayerArtistEnabledMessage, LayerArtistDisabledMessage
 
 
 class LayerArtistModel(PythonListModel):
@@ -62,10 +62,16 @@ class LayerArtistModel(PythonListModel):
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)
         if index.isValid():
-            result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
-                      Qt.ItemIsUserCheckable)
+            art = self.artists[index.row()]
+            if art.enabled:
+                result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
+                          Qt.ItemIsUserCheckable)
+            else:
+                result = (result & Qt.ItemIsEnabled) ^ result
+                result = (result & Qt.ItemIsSelectable) ^ result
+                result = (result & Qt.ItemIsUserCheckable) ^ result
         else:  # only drop between rows, where index isn't valid
-            result = (result | Qt.ItemIsDropEnabled)
+            result = result | Qt.ItemIsDropEnabled
 
         return result
 
@@ -197,11 +203,29 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # listen to all events since the viewport update is fast.
         self.hub = hub
         self.hub.subscribe(self, Message, self._update_viewport)
+        self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
+        self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)
 
     def _update_viewport(self, *args):
+
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in color/labels/content
         self.viewport().update()
+
+    def _layer_enabled_or_disabled(self, *args):
+
+        # This forces the widget containing the list view to update/redraw,
+        # reflecting any changes in disabled/enabled layers. If a layer is
+        # disabled, it will become unselected.
+        self.viewport().update()
+
+        # If a layer artist becomes unselected as a result of the update above,
+        # a selection change event is not emitted for some reason, so we force
+        # a manual update. If a layer artist was deselected, current_artist()
+        # will be None and the options will be hidden for that layer.
+        parent = self.parent()
+        if parent is not None:
+            parent.on_selection_change(self.current_artist())
 
     def rowsInserted(self, index, start, end):
         super(LayerArtistView, self).rowsInserted(index, start, end)
@@ -216,7 +240,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
 
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
-        self._update_actions()
         parent = self.parent()
         if parent is not None:
             parent.on_selection_change(self.current_artist())
@@ -241,9 +264,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         if len(rows) != 1:
             return
         return rows[0].row()
-
-    def _update_actions(self):
-        pass
 
     def _bottom_left_of_current_index(self):
         idx = self.currentIndex()

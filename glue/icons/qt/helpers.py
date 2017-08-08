@@ -2,8 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
-from glue.utils.qt import mpl_to_qt4_color, tint_pixmap
 
+from matplotlib.colors import Colormap
+
+from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, cmap2pixmap
 from glue.icons import icon_path
 
 __all__ = ['symbol_icon', 'layer_icon', 'layer_artist_icon', 'get_icon', 'POINT_ICONS']
@@ -47,16 +49,19 @@ def layer_artist_icon(artist):
 
     from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 
-    if not artist.enabled:
-        bm = QtGui.QBitmap(icon_path('glue_delete'))
-    elif isinstance(artist, ScatterLayerArtist):
-        bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
-                                                     'glue_circle_point')))
-    else:
-        bm = QtGui.QBitmap(icon_path('glue_box_point'))
-    color = mpl_to_qt4_color(artist.layer.style.color)
+    color = artist.get_layer_color()
 
-    pm = tint_pixmap(bm, color)
+    if isinstance(color, Colormap):
+        pm = cmap2pixmap(color)
+    else:
+        if isinstance(artist, ScatterLayerArtist):
+            bm = QtGui.QBitmap(icon_path(POINT_ICONS.get(artist.layer.style.marker,
+                                                         'glue_circle_point')))
+        else:
+            bm = QtGui.QBitmap(icon_path('glue_box_point'))
+        color = mpl_to_qt4_color(color)
+        pm = tint_pixmap(bm, color)
+
     return QtGui.QIcon(pm)
 
 

@@ -120,7 +120,8 @@ class GlueDataDialog(object):
                 self._curfile = path
                 d = load_data(path, factory=fac.function)
                 if not isinstance(d, list):
-                    d.label = data_label(path)
+                    if not d.label:
+                        d.label = data_label(path)
                     d = [d]
                 result.extend(d)
 
