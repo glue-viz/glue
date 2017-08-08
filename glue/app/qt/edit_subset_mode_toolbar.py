@@ -16,6 +16,14 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
 
     def __init__(self, title="Subset Update Mode", parent=None):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
+
+        spacer = QtWidgets.QWidget()
+        spacer.setMinimumSize(20, 10)
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                             QtWidgets.QSizePolicy.Preferred)
+
+        self.addWidget(spacer)
+
         self.addWidget(QtWidgets.QLabel("Selection Mode:"))
         self.setIconSize(QtCore.QSize(20, 20))
         self._group = QtWidgets.QActionGroup(self)
@@ -23,6 +31,13 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         self._add_actions()
         self._modes[EditSubsetMode().mode].trigger()
         self._backup_mode = None
+
+        spacer = QtWidgets.QWidget()
+        spacer.setMinimumSize(20, 10)
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                             QtWidgets.QSizePolicy.Preferred)
+
+        self.addWidget(spacer)
 
     def _make_mode(self, name, tip, icon, mode):
         a = action(name, self, tip, icon)

@@ -6,9 +6,12 @@ import pytest
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+from matplotlib.artist import Artist
 from numpy.testing import assert_allclose
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from glue.tests.helpers import requires_scipy
+from glue.utils.misc import DeferredMethod
 
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
                           remove_artists, view_cascade, get_extent, color2rgb,
@@ -89,8 +92,40 @@ def test_defer_draw():
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.plot([1, 2, 3], [4, 5, 6])
+        fig.canvas.draw()
+        return 3.5
 
-    draw_figure()
+    result = draw_figure()
+
+    # Make sure that the return value was passed through correctly
+    assert result == 3.5
+
+
+def test_defer_draw_exception():
+
+    # Regression test for a bug that meant that if an exception happened during
+    # drawing, the draw method was not restored correctly
+
+    # Make sure we start off with a clean draw method
+    assert not isinstance(FigureCanvasAgg.draw, DeferredMethod)
+
+    class ProblematicArtist(Artist):
+        def draw(self, *args, **kwargs):
+            raise ValueError('You shall not pass!')
+
+    @defer_draw
+    def draw_figure():
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ax.add_artist(ProblematicArtist())
+        fig.canvas.draw()
+
+    with pytest.raises(ValueError) as exc:
+        result = draw_figure()
+    assert exc.value.args[0] == 'You shall not pass!'
+
+    # Make sure that draw is no longer a deferred method
+    assert not isinstance(FigureCanvasAgg.draw, DeferredMethod)
 
 
 @pytest.mark.parametrize(('color', 'rgb'),

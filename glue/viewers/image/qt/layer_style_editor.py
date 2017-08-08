@@ -47,6 +47,8 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
 
         self._update_color_mode(layer._viewer_state.color_mode)
 
+        self.ui.bool_global_sync.setToolTip('Whether to sync the color and transparency with other viewers')
+
     def _update_color_mode(self, color_mode):
         if color_mode == 'Colormaps':
             self.ui.color_color.hide()

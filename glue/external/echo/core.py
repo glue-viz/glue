@@ -86,13 +86,23 @@ class CallbackProperty(object):
         return self
 
     def _get_full_info(self, instance):
+
         # Some callback subclasses may contain additional info in addition
         # to the main value, and we need to use this full information when
         # comparing old and new 'values', so this method is used in that
         # case. The result should be a tuple where the first item is the
         # actual primary value of the property and the second item is any
         # additional data to use in the comparison.
-        return self.__get__(instance), None
+
+        # Note that we need to make sure we convert any list here to a tuple
+        # to make sure the value is immutable, otherwise comparisons of
+        # old != new will not show any difference (since the list can still)
+        # be modified in-place
+
+        value = self.__get__(instance)
+        if isinstance(value, list):
+            value = tuple(value)
+        return value, None
 
     def notify(self, instance, old, new):
         """

@@ -11,7 +11,15 @@ from glue.utils import defer_draw
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 
-__all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState']
+__all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
+
+
+class AggregateSlice(object):
+
+    def __init__(self, slice=None, center=None, function=None):
+        self.slice = slice
+        self.center = center
+        self.function = function
 
 
 class ImageViewerState(MatplotlibDataViewerState):
@@ -174,7 +182,7 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.slices = (0,) * self.reference_data.ndim
 
     @property
-    def numpy_slice_and_transpose(self):
+    def numpy_slice_aggregation_transpose(self):
         """
         Returns slicing information usable by Numpy.
 
@@ -185,13 +193,19 @@ class ImageViewerState(MatplotlibDataViewerState):
         if self.reference_data is None:
             return None
         slices = []
+        agg_func = []
         for i in range(self.reference_data.ndim):
             if i == self.x_att.axis or i == self.y_att.axis:
                 slices.append(slice(None))
+                agg_func.append(None)
             else:
-                slices.append(self.slices[i])
+                if isinstance(self.slices[i], AggregateSlice):
+                    slices.append(self.slices[i].slice)
+                    agg_func.append(self.slices[i].function)
+                else:
+                    slices.append(self.slices[i])
         transpose = self.y_att.axis > self.x_att.axis
-        return slices, transpose
+        return slices, agg_func, transpose
 
     @property
     def wcsaxes_slice(self):
@@ -210,7 +224,10 @@ class ImageViewerState(MatplotlibDataViewerState):
             elif i == self.y_att.axis:
                 slices.append('y')
             else:
-                slices.append(self.slices[i])
+                if isinstance(self.slices[i], AggregateSlice):
+                    slices.append(self.slices[i].center)
+                else:
+                    slices.append(self.slices[i])
         return slices[::-1]
 
     def flip_x(self):
@@ -226,7 +243,58 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.y_lim_helper.flip_limits()
 
 
-class ImageLayerState(MatplotlibLayerState):
+class BaseImageLayerState(MatplotlibLayerState):
+
+    def get_sliced_data(self, view=None):
+
+        slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
+
+        full_view = slices
+
+        if view is not None and len(view) == 2:
+
+            x_axis = self.viewer_state.x_att.axis
+            y_axis = self.viewer_state.y_att.axis
+
+            full_view[x_axis] = view[1]
+            full_view[y_axis] = view[0]
+
+            view_applied = True
+
+        else:
+
+            view_applied = False
+
+        image = self._get_image(view=full_view)
+
+        # Apply aggregation functions if needed
+
+        if image.ndim != len(agg_func):
+            raise ValueError("Sliced image dimensions ({0}) does not match "
+                             "aggregation function list ({1})"
+                             .format(image.ndim, len(agg_func)))
+
+        for axis in range(image.ndim - 1, -1, -1):
+            func = agg_func[axis]
+            if func is not None:
+                image = func(image, axis=axis)
+
+        if image.ndim != 2:
+            raise ValueError("Image after aggregation should have two dimensions")
+
+        if transpose:
+            image = image.transpose()
+
+        if view_applied or view is None:
+            return image
+        else:
+            return image[view]
+
+    def _get_image(self, view=None):
+        raise NotImplementedError()
+
+
+class ImageLayerState(BaseImageLayerState):
     """
     A state class that includes all the attributes for data layers in an image plot.
     """
@@ -241,15 +309,15 @@ class ImageLayerState(MatplotlibLayerState):
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
     stretch = DDCProperty('linear', docstring='The stretch used to render the layer, '
-                                              'whcih should be one of ``linear``, '
+                                              'which should be one of ``linear``, '
                                               '``sqrt``, ``log``, or ``arcsinh``')
     global_sync = DDCProperty(True, docstring='Whether the color and transparency '
                                               'should be synced with the global '
                                               'color and transparency for the data')
 
-    def __init__(self, layer=None, **kwargs):
+    def __init__(self, layer=None, viewer_state=None, **kwargs):
 
-        super(ImageLayerState, self).__init__(layer=layer)
+        super(ImageLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
 
         self.attribute_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                            percentile='percentile',
@@ -292,6 +360,9 @@ class ImageLayerState(MatplotlibLayerState):
             self._sync_color.disable_syncing()
             self._sync_alpha.disable_syncing()
 
+    def _get_image(self, view=None):
+        return self.layer[self.attribute, view]
+
     def flip_limits(self):
         """
         Flip the image levels.
@@ -304,7 +375,10 @@ class ImageLayerState(MatplotlibLayerState):
             self.bias = 0.5
 
 
-class ImageSubsetLayerState(MatplotlibLayerState):
+class ImageSubsetLayerState(BaseImageLayerState):
     """
     A state class that includes all the attributes for subset layers in an image plot.
     """
+
+    def _get_image(self, view=None):
+        return self.layer.to_mask(view=view)

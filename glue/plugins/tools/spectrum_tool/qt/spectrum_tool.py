@@ -10,7 +10,6 @@ from qtpy import QtCore, QtGui, QtWidgets, compat
 from qtpy.QtCore import Qt
 
 from glue.external.six.moves import range as xrange
-from glue.core.aggregate import Aggregate
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import Subset
 from glue.core.callback_property import add_callback, ignore_callback
@@ -18,7 +17,7 @@ from glue.config import fit_plugin, viewer_tool
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.viewers.common.qt.mouse_mode import RoiMode
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, get_qapp
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
 from glue.app.qt.mdi_area import GlueMdiSubWindow
@@ -28,6 +27,8 @@ from glue.utils.qt import Worker, messagebox_on_error
 from glue.core.subset import RoiSubsetState
 from glue.core.qt import roi as qt_roi
 from .profile_viewer import ProfileViewer
+from glue.viewers.image.state import AggregateSlice
+from glue.core.aggregate import mom1, mom2
 
 
 class Extractor(object):
@@ -88,7 +89,6 @@ class Extractor(object):
         x = Extractor.abcissa(data, zaxis)
 
         return x, spectrum
-
 
     @staticmethod
     def world2pixel(data, axis, value):
@@ -236,8 +236,7 @@ class NavContext(SpectrumContext):
             slc[self.profile_axis] = value
 
             # prevent callback bouncing. Fixes #298
-            with ignore_callback(self.grip, 'value'):
-                self.viewer_state.slices = tuple(slc)
+            self.viewer_state.slices = tuple(slc)
 
         def _set_grip_from_state(slc):
             """Update grip.value given state.slices"""
@@ -246,12 +245,16 @@ class NavContext(SpectrumContext):
 
             # grip.value is stored in world coordinates
             val = slc[self.profile_axis]
+
+            if isinstance(val, AggregateSlice):
+                val = val.center
+
             val = Extractor.pixel2world(self.data, self.profile_axis, val)
 
             # If pix2world not monotonic, this can trigger infinite recursion.
             # Avoid by disabling callback loop
             # XXX better to specifically ignore _set_state_from_grip
-            with ignore_callback(self.viewer_state, 'slices'):
+            with ignore_callback(self.grip, 'value'):
                 self.grip.value = val
 
         self.grip = self.main.profile.new_value_grip()
@@ -288,11 +291,11 @@ class CollapseContext(SpectrumContext):
         w.setLayout(l)
 
         combo = QtWidgets.QComboBox()
-        combo.addItem("Mean", userData=Aggregate.mean)
-        combo.addItem("Median", userData=Aggregate.median)
-        combo.addItem("Max", userData=Aggregate.max)
-        combo.addItem("Centroid", userData=Aggregate.mom1)
-        combo.addItem("Linewidth", userData=Aggregate.mom2)
+        combo.addItem("Mean", userData=np.mean)
+        combo.addItem("Median", userData=np.median)
+        combo.addItem("Max", userData=np.max)
+        combo.addItem("Centroid", userData=mom1)
+        combo.addItem("Linewidth", userData=mom2)
 
         run = QtWidgets.QPushButton("Collapse")
         save = QtWidgets.QPushButton("Save as FITS file")
@@ -309,7 +312,8 @@ class CollapseContext(SpectrumContext):
 
         self.widget = w
         self._combo = combo
-        self._agg = None
+
+        self._collapsed_viewer = None
 
     def _connect(self):
         self._run.clicked.connect(nonpartial(self._aggregate))
@@ -324,27 +328,44 @@ class CollapseContext(SpectrumContext):
         return self._combo.currentText()
 
     def _aggregate(self):
+
         func = self.aggregator
 
         rng = list(self.grip.range)
         rng[1] += 1
+
         rng = Extractor.world2pixel(self.data,
                                     self.profile_axis,
                                     rng)
 
-        agg = Aggregate(self.data, self.viewer_state.layers[0].attribute,
-                        self.main.profile_axis, self.viewer_state.wcsaxes_slice[::-1], rng)
+        slices = list(self.viewer_state.slices)
 
-        im = func(agg)
-        self._agg = im
-        # TODO: reinstate this?
-        # self.client.override_image(im)
+        current_slice = slices[self.profile_axis]
+        if isinstance(current_slice, AggregateSlice):
+            current_slice = current_slice.center
+
+        slices[self.profile_axis] = AggregateSlice(slice(*rng),
+                                                   current_slice,
+                                                   func)
+
+        self.viewer_state.slices = tuple(slices)
+
+        # Save a local copy of the collapsed array
+        for layer_state in self.viewer_state.layers:
+            if layer_state.layer is self.viewer_state.reference_data:
+                break
+        else:
+            raise Exception("Couldn't find layer corresponding to reference data")
+
+        self._agg = layer_state.get_sliced_data()
 
     @messagebox_on_error("Failed to export projection")
     def _choose_save(self):
 
+        self._aggregate()
+
         out, _ = compat.getsavefilename(filters='FITS Files (*.fits)')
-        if out is None:
+        if not out:
             return
 
         self.save_to(out)
@@ -816,7 +837,14 @@ class SpectrumTool(object):
                           FitContext(self),
                           CollapseContext(self)]
 
-        tabs = QtWidgets.QTabWidget()
+        tabs = QtWidgets.QTabWidget(parent=self.widget)
+
+        # The following is needed because of a bug in Qt which means that
+        # tab titles don't get scaled right.
+        app = get_qapp()
+        app_font = app.font()
+        tabs.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+
         tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
         tabs.addTab(self._contexts[2].widget, 'Collapse')

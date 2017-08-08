@@ -31,6 +31,7 @@ class PVSlicerMode(PathMode):
             self.enabled = reference_data.ndim == 3
 
     def _clear_path(self):
+        self.viewer.hide_crosshairs()
         self.clear()
 
     def _extract_callback(self, mode):
@@ -117,7 +118,7 @@ class PVSliceWidget(StandaloneImageViewer):
         self._axes.set_aspect('auto')
         self._axes.set_xlim(-0.5, image.shape[1] - 0.5)
         self._axes.set_ylim(-0.5, image.shape[0] - 0.5)
-        self._slc = self._parent.state.slices
+        self._slc = self._parent.state.wcsaxes_slice[::-1]
         self._x = x
         self._y = y
 
@@ -126,7 +127,7 @@ class PVSliceWidget(StandaloneImageViewer):
         s = list(self._slc)
         # XXX breaks if display_data changes
         _, _, z = self._pos_in_parent(event)
-        s[_slice_index(self._parent.state.reference_data, s)] = z
+        s[_slice_index(self._parent.state.reference_data, s)] = int(z)
         self._parent.state.slices = tuple(s)
 
     @defer_draw

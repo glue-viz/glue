@@ -170,3 +170,20 @@ class ImageViewer(MatplotlibDataViewer):
                                            mew=1, zorder=100)
 
         self.axes.figure.canvas.draw()
+
+    @defer_draw
+    def hide_crosshairs(self):
+        if getattr(self, '_crosshairs', None) is not None:
+            self._crosshairs.remove()
+            self._crosshairs = None
+            self.axes.figure.canvas.draw()
+
+    @defer_draw
+    def update_aspect(self, aspect=None):
+        super(ImageViewer, self).update_aspect(aspect=aspect)
+        if self.state.reference_data is not None and self.state.x_att is not None and self.state.y_att is not None:
+            nx = self.state.reference_data.shape[self.state.x_att.axis]
+            ny = self.state.reference_data.shape[self.state.y_att.axis]
+            self.axes.set_xlim(-0.5, nx - 0.5)
+            self.axes.set_ylim(-0.5, ny - 0.5)
+            self.axes.figure.canvas.draw()

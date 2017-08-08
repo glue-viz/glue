@@ -39,8 +39,12 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
     def clear(self):
         for artist in self.mpl_artists:
+            artist.set_visible(False)
+
+    def remove(self):
+        for artist in self.mpl_artists:
             try:
-                artist.set_visible(False)
+                artist.remove()
             except ValueError:  # already removed
                 pass
 

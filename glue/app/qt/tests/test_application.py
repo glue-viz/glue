@@ -25,7 +25,7 @@ from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
 
-from ..application import GlueApplication
+from ..application import GlueApplication, GlueLogger
 
 
 os.environ['GLUE_TESTING'] = 'True'
@@ -94,11 +94,11 @@ class TestGlueApplication(object):
         self.app._terminal = term
 
         term.isVisible.return_value = False
-        self.app._terminal_button.click()
+        self.app._button_ipython.click()
         assert term.show.call_count == 1
 
         term.isVisible.return_value = True
-        self.app._terminal_button.click()
+        self.app._button_ipython.click()
         assert term.hide.call_count == 1
 
     def test_close_tab(self):
@@ -350,3 +350,41 @@ class TestApplicationSession(object):
 
         sg.style.color = '#112233'
         assert sg.subsets[0].style.color == '#112233'
+
+
+def test_logger_close():
+
+    # Regression test to make sure that when closing an application, sys.stderr
+    # no longer points to GlueLogger.
+
+    app = GlueApplication()
+    app.close()
+    app.app.processEvents()
+
+    assert not isinstance(sys.stderr, GlueLogger)
+
+
+def test_reset_session_terminal():
+
+    # Regression test to make sure that the terminal still exists when
+    # resetting a session
+
+    app = GlueApplication()
+    app2 = app._reset_session(warn=False)
+
+    assert app2.has_terminal(create_if_not=False)
+
+
+def test_open_session_terminal(tmpdir):
+
+    # Regression test to make sure that the terminal still exists when
+    # opening a previous session
+
+    session_file = tmpdir.join('test.glu').strpath
+
+    app = GlueApplication()
+    app.save_session(session_file)
+
+    app2 = app.restore_session(session_file)
+
+    assert app2.has_terminal(create_if_not=False)

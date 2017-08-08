@@ -4,6 +4,9 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Fixed a bug that caused the terminal to not be available after
+  resetting or opening a session. [#1366]
+
 * If a subset's visual properties are changed, change the visual
   properties of the parent SubsetGroup. [#1365]
 

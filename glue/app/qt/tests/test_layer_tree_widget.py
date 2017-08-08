@@ -8,10 +8,12 @@ from qtpy.QtCore import Qt
 from qtpy.QtTest import QTest
 from qtpy import QtWidgets
 from glue import core
+from glue.utils.qt import get_qapp
 from glue.tests import example_data
 from glue.core.edit_subset_mode import EditSubsetMode
 
-from ..layer_tree_widget import (LayerTreeWidget, Clipboard, PlotAction)
+from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
+                                 PlotAction, DeleteAction)
 
 
 class TestLayerTree(object):
@@ -38,7 +40,7 @@ class TestLayerTree(object):
     def remove_layer(self, layer):
         """ Remove a layer via the widget remove button """
         self.select_layers(layer)
-        QTest.mouseClick(self.widget.ui.layerRemoveButton, Qt.LeftButton)
+        self.widget._actions['delete']._do_action()
 
     def add_layer(self, layer=None):
         """ Add a layer through a hub message """
@@ -73,9 +75,8 @@ class TestLayerTree(object):
         layer = self.add_layer()
         grp = self.collect.new_subset_group()
         mock = MagicMock()
-        self.select_layers(grp)
         self.widget.ui.layerTree.selection_changed.connect(mock)
-        QTest.mouseClick(self.widget.ui.layerRemoveButton, Qt.LeftButton)
+        self.remove_layer(grp)
         assert mock.call_count > 0
 
     def test_remove_subset_layer(self):
@@ -90,7 +91,7 @@ class TestLayerTree(object):
         """ Make sure widgets are only removed when selected """
         layer = self.add_layer()
         self.widget.ui.layerTree.clearSelection()
-        QTest.mouseClick(self.widget.ui.layerRemoveButton, Qt.LeftButton)
+        self.widget._actions['delete']._do_action()
         assert self.layer_present(layer)
 
     @patch('glue.app.qt.layer_tree_widget.LinkEditor')

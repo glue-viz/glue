@@ -486,9 +486,6 @@ class ContrastMode(MouseMode):
         self._vmin = None
         self._vmax = None
 
-        if self._move_callback is None:
-            self._move_callback = self.viewer._set_norm
-
     def set_clip_percentile(self, lo, hi):
         """Percentiles at which to clip the data at black/white"""
         if lo == self._percent_lo and hi == self._percent_hi:
@@ -594,16 +591,8 @@ class ContrastMode(MouseMode):
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'log'))
         result.append(a)
 
-        a = QtWidgets.QAction("power", None)
-        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'power'))
-        result.append(a)
-
-        a = QtWidgets.QAction("square root", None)
+        a = QtWidgets.QAction("sqrt", None)
         a.triggered.connect(nonpartial(setattr, self, 'stretch', 'sqrt'))
-        result.append(a)
-
-        a = QtWidgets.QAction("squared", None)
-        a.triggered.connect(nonpartial(setattr, self, 'stretch', 'squared'))
         result.append(a)
 
         a = QtWidgets.QAction("asinh", None)

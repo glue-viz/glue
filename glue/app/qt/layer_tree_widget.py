@@ -433,8 +433,6 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
 
         self.ui = load_ui('layer_tree_widget.ui', None, directory=os.path.dirname(__file__))
         self.setCentralWidget(self.ui)
-        self.ui.layerAddButton.setIcon(get_icon('glue_open'))
-        self.ui.layerRemoveButton.setIcon(get_icon('glue_delete'))
 
         self._signals = LayerCommunicator()
         self._is_checkable = True
@@ -444,10 +442,10 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions = {}
 
         self._create_actions()
-        self._connect()
         self._data_collection = None
         self._hub = None
         self.ui.layerTree.setDragEnabled(True)
+        self.setMinimumSize(300, 0)
 
     @property
     def data_collection(self):
@@ -483,20 +481,6 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
     def actions(self):
         """ Return the list of actions attached to this widget """
         return self.ui.layerTree.actions()
-
-    def _connect(self):
-        """ Connect widget signals to methods """
-        self._actions['link'] = LinkAction(self)
-        self.ui.layerAddButton.clicked.connect(nonpartial(self._load_data))
-        self.ui.layerRemoveButton.clicked.connect(self._actions['delete'].trigger)
-        self.ui.linkButton.set_action(self._actions['link'])
-        self.ui.newSubsetButton.set_action(self._actions['new'], text=False)
-
-        rbut = self.ui.layerRemoveButton
-
-        def update_enabled():
-            return rbut.setEnabled(self._actions['delete'].isEnabled())
-        self.ui.layerTree.selection_changed.connect(update_enabled)
 
     def bind_selection_to_edit_subset(self):
         self.ui.layerTree.selection_changed.connect(
@@ -534,6 +518,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._actions['facet'] = FacetAction(self)
         self._actions['merge'] = MergeAction(self)
         self._actions['maskify'] = MaskifySubsetAction(self)
+        self._actions['link'] = LinkAction(self)
 
         # new component definer
         separator = QtWidgets.QAction("sep", tree)

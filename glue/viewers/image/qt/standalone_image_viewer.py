@@ -1,11 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from qtpy import QtCore, QtWidgets
 
+from glue.config import colormaps
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.qt.widget import MplWidget
-
+from glue.viewers.image.composite_array import CompositeArray
 from glue.external.modest_image import imshow
+from glue.utils import defer_draw
 
 # Import the mouse mode to make sure it gets registered
 from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
@@ -35,6 +39,9 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
         self._setup_axes()
 
+        self._composite = CompositeArray()
+        self._composite.allocate('image')
+
         self._im = None
 
         self.initialize_toolbar()
@@ -47,6 +54,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 
+    @defer_draw
     def set_image(self, image=None, wcs=None, **kwargs):
         """
         Update the image shown in the widget
@@ -68,9 +76,10 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
             self._axes.coords.frame.set_linewidth(linewidth)
             del color, linewidth
 
-        self._im = imshow(self._axes, image, cmap='gray', **kwargs)
+        self._composite.set('image', array=image, color=colormaps.members[0][1])
+        self._im = imshow(self._axes, self._composite, **kwargs)
         self._im_array = image
-        self._wcs = wcs
+        self._set_norm(self._contrast_mode)
 
         if 'extent' in kwargs:
             self.axes.set_xlim(kwargs['extent'][:2])
@@ -79,6 +88,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
             ny, nx = image.shape
             self.axes.set_xlim(-0.5, nx - 0.5)
             self.axes.set_ylim(-0.5, ny - 0.5)
+
         # FIXME: for a reason I don't quite understand, dataLim doesn't
         # get updated immediately here, which means that there are then
         # issues in the first draw of the image (the limits are such that
@@ -104,7 +114,8 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         self.central_widget.canvas.draw()
 
     def set_cmap(self, cmap):
-        self._im.set_cmap(cmap)
+        self._composite.set('image', color=cmap)
+        self._im.invalidate_cache()
         self._redraw()
 
     def mdi_wrap(self):
@@ -118,7 +129,6 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         self.window_closed.connect(sub.close)
         sub.resize(self.size())
         self._mdi_wrapper = sub
-
         return sub
 
     def closeEvent(self, event):
@@ -126,24 +136,26 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         return super(StandaloneImageViewer, self).closeEvent(event)
 
     def _set_norm(self, mode):
-        """ Use the `ContrastMouseMode` to adjust the transfer function """
-        clip_lo, clip_hi = mode.get_clip_percentile()
-        vmin, vmax = mode.get_vmin_vmax()
+        """
+        Use the `ContrastMouseMode` to adjust the transfer function
+        """
+
+        pmin, pmax = mode.get_clip_percentile()
+
+        if pmin is None:
+            clim = mode.get_vmin_vmax()
+        else:
+            clim = (np.nanpercentile(self._im_array, pmin),
+                    np.nanpercentile(self._im_array, pmax))
+
         stretch = mode.stretch
-        self._norm.clip_lo = clip_lo
-        self._norm.clip_hi = clip_hi
-        self._norm.stretch = stretch
-        self._norm.bias = mode.bias
-        self._norm.contrast = mode.contrast
-        self._norm.vmin = vmin
-        self._norm.vmax = vmax
-        self._im.set_norm(self._norm)
+        self._composite.set('image', clim=clim, stretch=stretch,
+                            bias=mode.bias, contrast=mode.contrast)
+
+        self._im.invalidate_cache()
         self._redraw()
 
     def initialize_toolbar(self):
-
-        # TODO: remove once Python 2 is no longer supported - see below for
-        #       simpler code.
 
         from glue.config import viewer_tool
 
@@ -151,7 +163,11 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
 
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]
-            mode = mode_cls(self)
+            if tool_id == 'image:contrast':
+                mode = mode_cls(self, move_callback=self._set_norm)
+                self._contrast_mode = mode
+            else:
+                mode = mode_cls(self)
             self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
