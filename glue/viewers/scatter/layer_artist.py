@@ -114,6 +114,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 pass
             except ValueError:
                 pass
+            except AttributeError:  # Matplotlib < 1.5
+                pass
 
             if self.state.xerr_visible or self.state.yerr_visible:
 
