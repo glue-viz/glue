@@ -5,7 +5,7 @@ from mock import MagicMock
 from qtpy.QtCore import Qt
 from qtpy import PYQT5
 from glue.core import Data, Hub
-from glue.core.layer_artist import MatplotlibLayerArtist as _LayerArtist
+from glue.core.layer_artist import LayerArtistBase as _LayerArtist
 
 from ..layer_artist_model import LayerArtistModel, LayerArtistView
 
@@ -15,10 +15,15 @@ class LayerArtist(_LayerArtist):
     def update(self, view=None):
         pass
 
+    def clear(self):
+        pass
+
+    def redraw(self):
+        pass
+
 
 def setup_model(num):
-    ax = MagicMock()
-    mgrs = [LayerArtist(Data(label=str(i)), ax) for i in range(num)]
+    mgrs = [LayerArtist(Data(label=str(i))) for i in range(num)]
     model = LayerArtistModel(mgrs)
     return model, mgrs
 
@@ -35,16 +40,16 @@ def test_row_label():
 
 
 def test_add_artist_updates_row_count():
-    mgrs = [LayerArtist(Data(label='A'), None)]
+    mgrs = [LayerArtist(Data(label='A'))]
     model = LayerArtistModel(mgrs)
-    model.add_artist(0, LayerArtist(Data(label='B'), None))
+    model.add_artist(0, LayerArtist(Data(label='B')))
     assert model.rowCount() == 2
 
 
 def test_add_artist_updates_artist_list():
-    mgrs = [LayerArtist(Data(label='A'), None)]
+    mgrs = [LayerArtist(Data(label='A'))]
     model = LayerArtistModel(mgrs)
-    model.add_artist(0, LayerArtist(Data(label='B'), None))
+    model.add_artist(0, LayerArtist(Data(label='B')))
     assert len(mgrs) == 2
 
 
@@ -92,7 +97,7 @@ def test_change_label_invalid_row():
 
 
 def test_flags():
-    model, _ = setup_model(1)
+    model, layer_artists = setup_model(1)
 
     expected = (Qt.ItemIsEditable |
                 Qt.ItemIsDragEnabled |
@@ -115,8 +120,7 @@ def test_move_artist_empty():
 
 
 def test_move_artist_single():
-    ax = MagicMock()
-    m0 = LayerArtist(Data(label="test 0"), ax)
+    m0 = LayerArtist(Data(label="test 0"))
     mgrs = [m0]
 
     model = LayerArtistModel(mgrs)
@@ -170,9 +174,9 @@ def test_move_artist_three():
 
 
 def test_move_updates_zorder():
-    m0 = LayerArtist(Data(label='test 0'), MagicMock())
-    m1 = LayerArtist(Data(label='test 1'), MagicMock())
-    m2 = LayerArtist(Data(label='test 2'), MagicMock())
+    m0 = LayerArtist(Data(label='test 0'))
+    m1 = LayerArtist(Data(label='test 1'))
+    m2 = LayerArtist(Data(label='test 2'))
     m0.zorder = 10
     m1.zorder = 20
     m2.zorder = 30
@@ -187,7 +191,7 @@ def test_move_updates_zorder():
 
 
 def test_check_syncs_to_visible():
-    m0 = LayerArtist(Data(label='test 0'), MagicMock())
+    m0 = LayerArtist(Data(label='test 0'))
     m0.artists = [MagicMock()]
     mgrs = [m0]
     model = LayerArtistModel(mgrs)
