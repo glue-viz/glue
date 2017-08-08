@@ -31,7 +31,7 @@ def unique_data_iter(datasets):
                 datasets_new.append(dataset)
         else:
             if dataset.data not in datasets_new:
-                datasets_new.append(dataset)
+                datasets_new.append(dataset.data)
     return datasets_new
 
 
