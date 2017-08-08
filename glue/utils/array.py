@@ -169,4 +169,5 @@ def broadcast_to(array, shape):
     try:
         return np.broadcast_to(array, shape)
     except AttributeError:
+        array = np.asarray(array)
         return np.broadcast_arrays(array, np.ones(shape, array.dtype))[0]
