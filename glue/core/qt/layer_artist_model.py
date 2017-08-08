@@ -62,10 +62,17 @@ class LayerArtistModel(PythonListModel):
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)
         if index.isValid():
-            result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
-                      Qt.ItemIsUserCheckable)
+            art = self.artists[index.row()]
+            print('flags', art.enabled)
+            if art.enabled:
+                result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
+                          Qt.ItemIsUserCheckable)
+            else:
+                result = (result & Qt.ItemIsEnabled) ^ result
+                result = (result & Qt.ItemIsSelectable) ^ result
+                result = (result & Qt.ItemIsUserCheckable) ^ result
         else:  # only drop between rows, where index isn't valid
-            result = (result | Qt.ItemIsDropEnabled)
+            result = result | Qt.ItemIsDropEnabled
 
         return result
 
@@ -216,7 +223,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
 
     def selectionChanged(self, selected, deselected):
         super(LayerArtistView, self).selectionChanged(selected, deselected)
-        self._update_actions()
         parent = self.parent()
         if parent is not None:
             parent.on_selection_change(self.current_artist())
@@ -241,9 +247,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         if len(rows) != 1:
             return
         return rows[0].row()
-
-    def _update_actions(self):
-        pass
 
     def _bottom_left_of_current_index(self):
         idx = self.currentIndex()
