@@ -4,7 +4,7 @@ import numpy as np
 
 from matplotlib.colors import Normalize
 
-from glue.utils import defer_draw
+from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
@@ -195,7 +195,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if self.state.size_mode == 'Fixed':
                         s = self.state.size * self.state.size_scaling
-                        s = np.broadcast_to(s, self.scatter_artist.get_sizes().shape)
+                        s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
                     else:
                         s = self.layer[self.state.size_att].ravel()
                         s = ((s - self.state.size_vmin) /
