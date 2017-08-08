@@ -156,8 +156,12 @@ def defer_draw(func):
             FigureCanvasAgg.draw = DeferredMethod(FigureCanvasAgg.draw)
             result = func(*args, **kwargs)
         finally:
-            FigureCanvasAgg.draw.execute_deferred_calls()
-            FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
+            # We need to use another try...finally block here in case the
+            # executed deferred draw calls fail for any reason
+            try:
+                FigureCanvasAgg.draw.execute_deferred_calls()
+            finally:
+                FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
         return result
 
     wrapper._is_deferred = True
