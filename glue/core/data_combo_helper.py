@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import weakref
 
-from glue.core import Subset
+from glue.core import Data, Subset
 from glue.core.hub import HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                DataCollectionAddMessage,
@@ -17,6 +17,22 @@ from glue.utils import nonpartial
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
+
+
+def unique_data_iter(datasets):
+    """
+    Return a list with only Data objects, with duplicates removed, but
+    preserving the original order.
+    """
+    datasets_new = []
+    for dataset in datasets:
+        if isinstance(dataset, Data):
+            if dataset not in datasets_new:
+                datasets_new.append(dataset)
+        else:
+            if dataset.data not in datasets_new:
+                datasets_new.append(dataset)
+    return datasets_new
 
 
 class ComboHelper(HubListener):
@@ -250,7 +266,7 @@ class ComponentIDComboHelper(ComboHelper):
             self._data.clear()
         except AttributeError:  # PY2
             self._data[:] = []
-        for data in datasets:
+        for data in unique_data_iter(datasets):
             self.append_data(data, refresh=False)
         self.refresh()
 
@@ -423,7 +439,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
             self._datasets.clear()
         except AttributeError:  # PY2
             self._datasets[:] = []
-        for data in datasets:
+        for data in unique_data_iter(datasets):
             self._datasets.append(data)
         self.refresh()
 
