@@ -38,14 +38,17 @@ class MatplotlibLayerArtist(LayerArtistBase):
         self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
     def clear(self):
-        for artist in self.mpl_artists:
-            artist.set_visible(False)
+        pass
 
     def remove(self):
         for artist in self.mpl_artists:
             try:
                 artist.remove()
             except ValueError:  # already removed
+                pass
+            except TypeError:  # can happen for e.g. errorbars
+                pass
+            except AttributeError:  # can happen for Matplotlib 1.4
                 pass
 
     def get_layer_color(self):

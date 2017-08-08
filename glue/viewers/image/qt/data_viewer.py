@@ -10,7 +10,7 @@ from glue.utils import defer_draw
 
 from glue.core import command
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
-from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
+from glue.viewers.scatter.qt.layer_style_editor import GenericLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image.qt.layer_style_editor import ImageLayerStyleEditor
 from glue.viewers.image.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
@@ -41,7 +41,7 @@ class ImageViewer(MatplotlibDataViewer):
     _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
-                               ScatterLayerArtist: ScatterLayerStyleEditor}
+                               ScatterLayerArtist: GenericLayerStyleEditor}
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
 

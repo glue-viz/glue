@@ -38,7 +38,7 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QComboBox" name="combotext_style">
+    <widget class="QComboBox" name="combosel_style">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
