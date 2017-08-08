@@ -4,6 +4,15 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Disabled layer artists can no longer be selected to avoid any confusion. [#1367]
+
+* Layer artist icons can now show colormaps when appropriate. [#1367]
+
+* Fix behavior of data wizard so that it doesn't overwrite labels set by data
+  factories. [#1367]
+
+* Add a status tip for all ROI selection tools. [#1367]
+
 * Fixed a bug that caused the terminal to not be available after
   resetting or opening a session. [#1366]
 
