@@ -38,8 +38,7 @@ class MatplotlibLayerArtist(LayerArtistBase):
         self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
     def clear(self):
-        for artist in self.mpl_artists:
-            artist.set_visible(False)
+        pass
 
     def remove(self):
         for artist in self.mpl_artists:
