@@ -196,6 +196,8 @@ class RoiMode(RoiModeBase):
     mouse release
     """
 
+    status_tip = "CLICK and DRAG to define selection"
+
     def __init__(self, viewer, **kwargs):
 
         super(RoiMode, self).__init__(viewer, **kwargs)
