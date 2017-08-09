@@ -47,7 +47,9 @@ class ImageViewer(MatplotlibDataViewer):
 
     allow_duplicate_data = True
 
-    # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
+    # NOTE: _data_artist_cls and _subset_artist_cls are not defined - instead
+    #       we override get_data_layer_artist and get_subset_layer_artist for
+    #       more advanced logic.
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
@@ -143,17 +145,19 @@ class ImageViewer(MatplotlibDataViewer):
             return None
         return ScatterLayerArtist(axes, state, layer=layer)
 
-    def _data_artist_cls(self, axes, state, layer=None):
+    def get_data_layer_artist(self, layer=None, layer_state=None):
         if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
+            cls = self._scatter_artist
         else:
-            return ImageLayerArtist(axes, state, layer=layer)
+            cls = ImageLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
 
-    def _subset_artist_cls(self, axes, state, layer=None):
+    def get_subset_layer_artist(self, layer=None, layer_state=None):
         if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
+            cls = self._scatter_artist
         else:
-            return ImageSubsetLayerArtist(axes, state, layer=layer)
+            cls = ImageSubsetLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
 
     @staticmethod
     def update_viewer_state(rec, context):
