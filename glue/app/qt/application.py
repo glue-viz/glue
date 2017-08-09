@@ -309,11 +309,21 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._console_toolbar = QtWidgets.QToolBar()
 
+        self._console_toolbar.setIconSize(QtCore.QSize(16, 16))
+
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                              QtWidgets.QSizePolicy.Preferred)
 
         self._console_toolbar.addWidget(spacer)
+
+        self._button_preferences = QtWidgets.QToolButton()
+        self._button_preferences.setText("Preferences")
+        self._button_preferences.setIcon(get_icon('glue_settings'))
+        self._button_preferences.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_preferences.clicked.connect(nonpartial(self._edit_settings))
+
+        self._console_toolbar.addWidget(self._button_preferences)
 
         self._button_console = QtWidgets.QToolButton()
         self._button_console.setText("View Error Console")
