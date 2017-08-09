@@ -6,7 +6,6 @@ from qtpy.QtWidgets import QMessageBox
 
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
-from glue.utils import defer_draw
 
 from glue.core import command
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -47,13 +46,14 @@ class ImageViewer(MatplotlibDataViewer):
 
     allow_duplicate_data = True
 
-    # NOTE: _data_artist_cls and _subset_artist_cls are implemented as methods
+    # NOTE: _data_artist_cls and _subset_artist_cls are not defined - instead
+    #       we override get_data_layer_artist and get_subset_layer_artist for
+    #       more advanced logic.
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
              'select:polygon', 'image:contrast_bias']
 
-    @defer_draw
     def __init__(self, session, parent=None, state=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
@@ -66,7 +66,6 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
-    @defer_draw
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:
@@ -77,7 +76,6 @@ class ImageViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    @defer_draw
     def add_data(self, data):
         result = super(ImageViewer, self).add_data(data)
         # If this is the first layer (or the first after all layers were)
@@ -86,7 +84,6 @@ class ImageViewer(MatplotlibDataViewer):
             self._set_wcs()
         return result
 
-    @defer_draw
     def _set_wcs(self, *args):
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
@@ -143,23 +140,24 @@ class ImageViewer(MatplotlibDataViewer):
             return None
         return ScatterLayerArtist(axes, state, layer=layer)
 
-    def _data_artist_cls(self, axes, state, layer=None):
+    def get_data_layer_artist(self, layer=None, layer_state=None):
         if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
+            cls = self._scatter_artist
         else:
-            return ImageLayerArtist(axes, state, layer=layer)
+            cls = ImageLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
 
-    def _subset_artist_cls(self, axes, state, layer=None):
+    def get_subset_layer_artist(self, layer=None, layer_state=None):
         if layer.ndim == 1:
-            return self._scatter_artist(axes, state, layer=layer)
+            cls = self._scatter_artist
         else:
-            return ImageSubsetLayerArtist(axes, state, layer=layer)
+            cls = ImageSubsetLayerArtist
+        return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
 
     @staticmethod
     def update_viewer_state(rec, context):
         return update_image_viewer_state(rec, context)
 
-    @defer_draw
     def show_crosshairs(self, x, y):
 
         if getattr(self, '_crosshairs', None) is not None:
@@ -171,14 +169,12 @@ class ImageViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    @defer_draw
     def hide_crosshairs(self):
         if getattr(self, '_crosshairs', None) is not None:
             self._crosshairs.remove()
             self._crosshairs = None
             self.axes.figure.canvas.draw()
 
-    @defer_draw
     def update_aspect(self, aspect=None):
         super(ImageViewer, self).update_aspect(aspect=aspect)
         if self.state.reference_data is not None and self.state.x_att is not None and self.state.y_att is not None:

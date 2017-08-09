@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import types
 import logging
 from functools import wraps
 
@@ -14,7 +15,7 @@ from glue.utils.misc import DeferredMethod
 
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
-           'color2rgb', 'point_contour', 'cache_axes']
+           'color2rgb', 'point_contour', 'cache_axes', 'DeferDrawMeta']
 
 
 def renderless_figure():
@@ -166,6 +167,19 @@ def defer_draw(func):
 
     wrapper._is_deferred = True
     return wrapper
+
+
+class DeferDrawMeta(type):
+    """
+    Metaclass that decorates all methods on a class with @defer_draw
+    """
+    def __new__(cls, name, bases, attrs):
+
+        for attr_name, attr_value in attrs.items():
+            if isinstance(attr_value, types.FunctionType):
+                attrs[attr_name] = defer_draw(attr_value)
+
+        return type.__new__(cls, name, bases, attrs)
 
 
 def color2rgb(color):

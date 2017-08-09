@@ -5,7 +5,6 @@ from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
-from glue.utils import defer_draw
 from glue.core import command
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -36,7 +35,6 @@ class HistogramViewer(MatplotlibDataViewer):
         self.state.add_callback('x_log', nonpartial(self._update_axes))
         self.state.add_callback('normalize', nonpartial(self._update_axes))
 
-    @defer_draw
     def _update_axes(self):
 
         if self.state.x_att is not None:
