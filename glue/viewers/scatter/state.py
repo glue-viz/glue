@@ -143,8 +143,8 @@ class ScatterLayerState(MatplotlibLayerState):
     size_vmax = DDCProperty(docstring="The upper level for the size mapping")
     size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
 
-    xerr_visible = DDCProperty(docstring="Whether to show x error bars")
-    yerr_visible = DDCProperty(docstring="Whether to show y error bars")
+    xerr_visible = DDCProperty(False, docstring="Whether to show x error bars")
+    yerr_visible = DDCProperty(False, docstring="Whether to show y error bars")
     xerr_att = DDSCProperty(docstring="The attribute to use for the x error bars")
     yerr_att = DDSCProperty(docstring="The attribute to use for the y error bars")
 
@@ -191,9 +191,6 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.linestyle.set_choices(self, ['solid', 'dashed', 'dotted', 'dashdot'])
         ScatterLayerState.linestyle.set_display_func(self, linestyle_display.get)
 
-        self.add_callback('xerr_visible', self._on_xerr_visible_change)
-        self.add_callback('yerr_visible', self._on_yerr_visible_change)
-
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
@@ -206,18 +203,6 @@ class ScatterLayerState(MatplotlibLayerState):
 
         self.update_from_dict(kwargs)
 
-    def _on_xerr_visible_change(self, visible=None):
-        if self.xerr_visible and self.layer is not None:
-            self.xerr_att_helper.set_multiple_data([self.layer])
-        else:
-            self.xerr_att_helper.set_multiple_data([])
-
-    def _on_yerr_visible_change(self, visible=None):
-        if self.yerr_visible and self.layer is not None:
-            self.yerr_att_helper.set_multiple_data([self.layer])
-        else:
-            self.yerr_att_helper.set_multiple_data([])
-
     def _on_layer_change(self, layer=None):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
@@ -229,9 +214,12 @@ class ScatterLayerState(MatplotlibLayerState):
                 self.cmap_att_helper.set_multiple_data([self.layer])
                 self.size_att_helper.set_multiple_data([self.layer])
 
-            self._on_xerr_visible_change()
-            self._on_yerr_visible_change()
-
+            if self.layer is None:
+                self.xerr_att_helper.set_multiple_data([])
+                self.yerr_att_helper.set_multiple_data([])
+            else:
+                self.xerr_att_helper.set_multiple_data([self.layer])
+                self.yerr_att_helper.set_multiple_data([self.layer])
 
     def flip_cmap(self):
         """
