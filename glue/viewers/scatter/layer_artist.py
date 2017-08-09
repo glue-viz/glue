@@ -16,7 +16,7 @@ VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
-                       'xerr_att', 'yerr_att'])
+                       'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible'])
 
 
 class InvertedNormalize(Normalize):
@@ -108,14 +108,14 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 offsets = np.vstack((x, y)).transpose()
                 self.scatter_artist.set_offsets(offsets)
 
-            try:
-                self.mpl_artists[self.errorbar_index].remove()
-            except TypeError:
-                pass
-            except ValueError:
-                pass
-            except AttributeError:  # Matplotlib < 1.5
-                pass
+            for eartist in list(self.errorbar_artist[2]):
+                if eartist is not None:
+                    try:
+                        eartist.remove()
+                    except ValueError:
+                        pass
+                    except AttributeError:  # Matplotlib < 1.5
+                        pass
 
             if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -129,7 +129,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 else:
                     yerr = None
 
-                self.errorbar_artist = self.axes.errorbar(x, y, xerr=xerr, yerr=yerr)
+                self.errorbar_artist = self.axes.errorbar(x, y, fmt='none',
+                                                          xerr=xerr, yerr=yerr)
                 self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
         elif self.state.style == 'Line':
@@ -210,7 +211,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.xerr_visible or self.state.yerr_visible:
 
-                for eartist in [self.errorbar_artist[0]] + list(self.errorbar_artist[2]):
+                for eartist in list(self.errorbar_artist[2]):
+
+                    if eartist is None:
+                        continue
 
                     if force or 'color' in changed:
                         eartist.set_color(self.state.color)

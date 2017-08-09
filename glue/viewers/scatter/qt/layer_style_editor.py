@@ -26,13 +26,23 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state = layer.state
 
+        self.layer_state.add_callback('xerr_visible', self._update_xerr_att_combo)
+        self.layer_state.add_callback('yerr_visible', self._update_yerr_att_combo)
         self.layer_state.add_callback('size_mode', self._update_size_mode)
         self.layer_state.add_callback('cmap_mode', self._update_cmap_mode)
         self.layer_state.add_callback('layer', self._update_warnings)
 
+        self._update_xerr_att_combo()
+        self._update_yerr_att_combo()
         self._update_size_mode()
         self._update_cmap_mode()
         self._update_warnings()
+
+    def _update_xerr_att_combo(self, *args):
+        self.ui.combosel_xerr_att.setEnabled(self.layer_state.xerr_visible)
+
+    def _update_yerr_att_combo(self, *args):
+        self.ui.combosel_yerr_att.setEnabled(self.layer_state.yerr_visible)
 
     def _update_warnings(self):
 
