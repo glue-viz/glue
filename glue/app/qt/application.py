@@ -273,6 +273,22 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_ipython)
 
+        self._button_open_data = QtWidgets.QToolButton()
+        self._button_open_data.setText("Open Session")
+        self._button_open_data.setIcon(get_icon('glue_open'))
+        self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_open_data.clicked.connect(nonpartial(self._restore_session))
+
+        self._data_toolbar.addWidget(self._button_open_data)
+
+        self._button_open_data = QtWidgets.QToolButton()
+        self._button_open_data.setText("Save Session")
+        self._button_open_data.setIcon(get_icon('glue_filesave'))
+        self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_open_data.clicked.connect(nonpartial(self._choose_save_session))
+
+        self._data_toolbar.addWidget(self._button_open_data)
+
         spacer = QtWidgets.QWidget()
         spacer.setMinimumSize(20, 10)
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
