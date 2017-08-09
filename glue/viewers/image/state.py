@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, view_shape
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 
@@ -267,6 +267,24 @@ class ImageViewerState(MatplotlibDataViewerState):
 
 
 class BaseImageLayerState(MatplotlibLayerState):
+
+    def get_sliced_data_shape(self, view=None):
+
+        if (self.viewer_state.reference_data is None or
+            self.viewer_state.x_att is None or
+                self.viewer_state.y_att is None):
+            return None
+
+        x_axis = self.viewer_state.x_att.axis
+        y_axis = self.viewer_state.y_att.axis
+
+        shape = self.viewer_state.reference_data.shape
+        shape_slice = shape[y_axis], shape[x_axis]
+
+        if view is None:
+            return shape_slice
+        else:
+            return view_shape(shape_slice, view)
 
     def get_sliced_data(self, view=None):
 
