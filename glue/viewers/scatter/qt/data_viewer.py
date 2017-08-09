@@ -5,7 +5,6 @@ from glue.utils import nonpartial
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import update_ticks
-from glue.utils import defer_draw
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import GenericLayerStyleEditor
@@ -38,7 +37,6 @@ class ScatterViewer(MatplotlibDataViewer):
         self.state.add_callback('x_log', nonpartial(self._update_axes))
         self.state.add_callback('y_log', nonpartial(self._update_axes))
 
-    @defer_draw
     def _update_axes(self):
 
         if self.state.x_att is not None:
