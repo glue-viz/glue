@@ -14,4 +14,4 @@ dependencies:
 
 test:
   override:
-    - sudo python3 -c 'import glue; import sys; sys.exit(glue.test(no_optional_skip=True))'
+    - sudo CIRCLECI=true python3 -c 'import glue; import sys; sys.exit(glue.test(no_optional_skip=True))'
