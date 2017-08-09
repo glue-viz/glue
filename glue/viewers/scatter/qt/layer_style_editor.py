@@ -6,7 +6,7 @@ import numpy as np
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, get_qapp
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):
@@ -17,6 +17,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.ui = load_ui('layer_style_editor_scatter.ui', self,
                           directory=os.path.dirname(__file__))
+
+        # The following is needed because of a bug in Qt which means that
+        # tab titles don't get scaled right.
+        app = get_qapp()
+        app_font = app.font()
+        self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
 
         self.layer_state = layer.state
 

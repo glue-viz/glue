@@ -8,7 +8,7 @@ from matplotlib.colors import ColorConverter
 from qtpy import QtWidgets
 from glue.core.message import SettingsChangeMessage
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui, ColorProperty
+from glue.utils.qt import load_ui, ColorProperty, get_qapp
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              ValueProperty, ButtonProperty)
 from glue._settings_helpers import save_settings
@@ -43,6 +43,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.ui.ok.clicked.connect(self.accept)
 
         self.ui.combo_theme.currentIndexChanged.connect(nonpartial(self._update_colors_from_theme))
+
+        # The following is needed because of a bug in Qt which means that
+        # tab titles don't get scaled right.
+        app = get_qapp()
+        app_font = app.font()
+        self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
 
         from glue.config import settings
         self.background = settings.BACKGROUND_COLOR
