@@ -17,13 +17,12 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
         super(MatplotlibLayerArtist, self).__init__(layer)
 
-        self.layer = layer or layer_state.layer
-
         # Keep a reference to the layer (data or subset) and axes
         self.axes = axes
         self._viewer_state = viewer_state
 
         # Set up a state object for the layer artist
+        self.layer = layer or layer_state.layer
         self.state = layer_state or self._layer_state_cls(viewer_state=viewer_state,
                                                           layer=self.layer)
         if self.state not in self._viewer_state.layers:
@@ -39,7 +38,10 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
     def clear(self):
         for artist in self.mpl_artists:
-            artist.set_visible(False)
+            try:
+                artist.set_visible(False)
+            except AttributeError:  # can happen for e.g. errorbars
+                pass
 
     def remove(self):
         for artist in self.mpl_artists:
