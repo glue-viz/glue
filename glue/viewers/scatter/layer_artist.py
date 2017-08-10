@@ -188,7 +188,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                             self.scatter_artist.set_norm(InvertedNormalize(vmax, vmin))
                         else:
                             self.scatter_artist.set_clim(vmin, vmax)
-                            self.scatter_artist.set_norm(None)
+                            self.scatter_artist.set_norm(Normalize(vmin, vmax))
 
                     self.scatter_artist.set_edgecolor('none')
 
