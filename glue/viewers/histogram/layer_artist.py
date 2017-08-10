@@ -29,8 +29,8 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         self.reset_cache()
 
-    def clear(self):
-        super(HistogramLayerArtist, self).clear()
+    def remove(self):
+        super(HistogramLayerArtist, self).remove()
         self.mpl_hist_unscaled = np.array([])
         self.mpl_hist = np.array([])
         self.mpl_bins = np.array([])
@@ -42,14 +42,13 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _calculate_histogram(self):
 
-        self.clear()
+        self.remove()
 
         try:
             x = self.layer[self._viewer_state.x_att]
         except AttributeError:
             return
         except (IncompatibleAttribute, IndexError):
-            # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
