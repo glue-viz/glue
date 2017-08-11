@@ -247,6 +247,10 @@ class TableWidget(DataViewer):
                       handler=nonpartial(self._refresh),
                       filter=dfilter)
 
+        hub.subscribe(self, msg.NumericalDataChangedMessage,
+                      handler=nonpartial(self._refresh),
+                      filter=dfilter)
+
     def unregister(self, hub):
         super(TableWidget, self).unregister(hub)
         hub.unsubscribe_all(self)
