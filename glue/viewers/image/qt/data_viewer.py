@@ -132,13 +132,13 @@ class ImageViewer(MatplotlibDataViewer):
         mode = EditSubsetMode()
         mode.update(self._data, subset_state)
 
-    def _scatter_artist(self, axes, state, layer=None):
+    def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:
             QMessageBox.critical(self, "Error", "Can only add a scatter plot "
                                  "overlay once an image is present",
                                  buttons=QMessageBox.Ok)
             return None
-        return ScatterLayerArtist(axes, state, layer=layer)
+        return ScatterLayerArtist(axes, state, layer=layer, layer_state=None)
 
     def get_data_layer_artist(self, layer=None, layer_state=None):
         if layer.ndim == 1:
