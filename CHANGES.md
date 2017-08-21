@@ -4,6 +4,8 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Fixed loading of plain (non-structured) arrays from Numpy files. [#1314, #1385]
+
 * Disabled layer artists can no longer be selected to avoid any confusion. [#1367]
 
 * Layer artist icons can now show colormaps when appropriate. [#1367]

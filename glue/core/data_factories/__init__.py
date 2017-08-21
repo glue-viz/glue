@@ -7,7 +7,7 @@ from .fits import *  # noqa
 from .hdf5 import *  # noqa
 from .helpers import *  # noqa
 from .image import *  # noqa
-from .npy import *  # noqa
+from .numpy import *  # noqa
 from .pandas import *  # noqa
 from .tables import *  # noqa
 
