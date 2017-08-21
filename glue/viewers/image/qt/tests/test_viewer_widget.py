@@ -25,7 +25,6 @@ from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.core.link_helpers import LinkSame
 from glue.app.qt import GlueApplication
-from glue.core.session import Session
 
 from ..data_viewer import ImageViewer
 
@@ -480,6 +479,10 @@ class TestImageViewer(object):
 
         assert out.strip() == ""
         assert err.strip() == ""
+
+    def test_scatter_overlay(self):
+        self.viewer.add_data(self.image1)
+        self.viewer.add_data(self.catalog)
 
 
 class TestSessions(object):
