@@ -4,6 +4,8 @@ Full changelog
 v0.11.0 (unreleased)
 --------------------
 
+* Fixed bug that caused table viewer to not update when adding components. [#1386]
+
 * Fixed loading of plain (non-structured) arrays from Numpy files. [#1314, #1385]
 
 * Disabled layer artists can no longer be selected to avoid any confusion. [#1367]

@@ -12,7 +12,6 @@ from glue.config import viewer_tool
 from glue.core.layer_artist import LayerArtistBase
 from glue.core import message as msg
 from glue.core import Data
-from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
@@ -42,6 +41,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         top_left = self.index(0, 0)
         bottom_right = self.index(self.columnCount(), self.rowCount())
         self.dataChanged.emit(top_left, bottom_right)
+        self.layoutChanged.emit()
 
     @property
     def columns(self):
@@ -232,30 +232,34 @@ class TableWidget(DataViewer):
             return x.sender.data is self.data
 
         hub.subscribe(self, msg.SubsetCreateMessage,
-                      handler=nonpartial(self._refresh),
+                      handler=self._refresh,
                       filter=dfilter)
 
         hub.subscribe(self, msg.SubsetUpdateMessage,
-                      handler=nonpartial(self._refresh),
+                      handler=self._refresh,
                       filter=dfilter)
 
         hub.subscribe(self, msg.SubsetDeleteMessage,
-                      handler=nonpartial(self._refresh),
+                      handler=self._refresh,
                       filter=dfilter)
 
         hub.subscribe(self, msg.DataUpdateMessage,
-                      handler=nonpartial(self._refresh),
+                      handler=self._refresh,
+                      filter=dfilter)
+
+        hub.subscribe(self, msg.ComponentsChangedMessage,
+                      handler=self._refresh,
                       filter=dfilter)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
-                      handler=nonpartial(self._refresh),
+                      handler=self._refresh,
                       filter=dfilter)
 
     def unregister(self, hub):
         super(TableWidget, self).unregister(hub)
         hub.unsubscribe_all(self)
 
-    def _refresh(self):
+    def _refresh(self, msg=None):
         self._sync_layers()
         self.model.data_changed()
 
