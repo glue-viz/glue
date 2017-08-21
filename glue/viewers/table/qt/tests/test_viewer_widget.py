@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
+from mock import MagicMock
 
 from qtpy import QtCore, QtGui
 from glue.utils.qt import get_qapp
@@ -283,3 +284,46 @@ def test_table_widget_session_no_subset(tmpdir):
 
     gapp2.data_collection[0]
     gapp2.viewers[0][0]
+
+
+def test_change_components():
+
+    # Regression test for a bug that caused table viewers to not update when
+    # adding/removing components.
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=[3.2, 1.2, 4.5, 3.3, 2.2],
+             c=['e', 'b', 'c', 'a', 'f'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableWidget)
+    viewer.add_data(d)
+
+    data_changed = MagicMock()
+    viewer.model.dataChanged.connect(data_changed)
+
+    # layoutChanged needs to be emitted for the new/removed columns to be
+    # registered (dataChanged is not enough)
+    layout_changed = MagicMock()
+    viewer.model.layoutChanged.connect(layout_changed)
+
+    assert data_changed.call_count == 0
+    assert layout_changed.call_count == 0
+    viewer.model.columnCount() == 2
+
+    d.add_component([3, 4, 5, 6, 2], 'z')
+
+    assert data_changed.call_count == 1
+    assert layout_changed.call_count == 1
+    viewer.model.columnCount() == 3
+
+    d.remove_component(d.id['z'])
+
+    assert data_changed.call_count == 2
+    assert layout_changed.call_count == 2
+    viewer.model.columnCount() == 2
