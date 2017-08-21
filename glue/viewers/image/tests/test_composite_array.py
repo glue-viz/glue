@@ -10,7 +10,7 @@ class TestCompositeArray(object):
 
     def setup_method(self, method):
         self.array1 = np.array([[2.0, 1.0], [0.0, 0.0]])
-        self.array2 = np.array([[0.0, 1.0], [0.0, 0.0]])
+        self.array2 = np.array([[np.nan, 1.0], [0.0, 0.0]])
         self.array3 = np.array([[0.0, 0.0], [1.0, 0.0]])
         self.array4 = np.array([[0.0, 0.0], [0.0, 1.0]])
         self.composite = CompositeArray()

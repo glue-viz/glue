@@ -136,6 +136,12 @@ class CompositeArray(object):
                 color = COLOR_CONVERTER.to_rgba_array(layer['color'])[0]
                 color *= layer['alpha']
 
+                # We should treat NaN values as zero (post-stretch), which means
+                # that those pixels don't contribute towards the final image.
+                reset = np.isnan(data)
+                if np.any(reset):
+                    data[reset] = 0.
+
                 plane = data[:, :, np.newaxis] * color
                 plane[:, :, 3] = 1
 
