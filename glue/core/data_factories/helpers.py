@@ -238,7 +238,7 @@ def load_data(path, factory=None, **kwargs):
     d = list(as_data_objects(d, lbl))
     log = LoadLog(path, factory, kwargs)
     for item in d:
-        if item.label is '':
+        if not item.label:
             item.label = lbl
         log.log(item)  # attaches log metadata to item
         for cid in item.primary_components:
