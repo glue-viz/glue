@@ -1,0 +1,176 @@
+:orphan:
+
+.. _whatsnew_011:
+
+What's new in glue v0.11?
+=========================
+
+The v0.11 release of glue includes a number of exciting new features and
+improvements, so let's take a look at what's new!
+
+New Slack community
+-------------------
+
+We have now set up Slack for any glue help/discussions, and we encourage you to
+sign up! You will need to first get an account `here
+<https://glueviz-slack-invite.herokuapp.com>`_ after which you will be able to
+sign in to http://glueviz.slack.com.
+
+Installing/updating
+-------------------
+
+Before we get started, here's a reminder on how to install/update glue. You can
+easily update glue if you are using Anaconda/Miniconda by doing::
+
+    conda install -c glueviz glueviz
+
+If instead you installed glue with pip, you can update with::
+
+    pip install glueviz[all] --upgrade
+
+Improved interface
+------------------
+
+The main interface of the application has been improved, and now features a
+toolbar at the top with quick access to common functionality, as well as a
+clearer link to the error console (which replaces the square in the bottom right
+of the interface).
+
+.. image:: images/v0.11/application_ui.jpg
+   :align: center
+   :width: 900
+
+We've also done a lot of work to improve the layout of many of the option
+widgets, fixing font sizes, and so on. We hope you like the updated interface!
+
+New built-in viewers
+--------------------
+
+The built-in histogram, scatter, and image viewers have now been completely
+re-written and now include new functionality. For example, the scatter viewer
+now includes the ability to color-code or resize points based on another
+attribute (this was previously possible in the 3D scatter viewer only):
+
+.. image:: images/v0.11/scatter_color_size.jpg
+   :align: center
+   :width: 700
+
+The scatter viewer now also includes the ability to show symmetric error bars in
+the x and/or y direction.
+
+.. image:: images/v0.11/scatter_error.jpg
+   :align: center
+   :width: 700
+
+Finally, this viewer also allows you to plot the data using a continuous line
+rather than individual points.
+
+The image viewer has also seen an overhaul - the main change in user experience
+is that multi-color images are now made via layers instead of using a special
+RGB mode, and any number of images can be combined using an arbitrary number of
+colormaps or colors, rather than being restricted to RGB colors:
+
+.. image:: images/v0.11/image_rgb.jpg
+   :align: center
+   :width: 700
+
+Subset mask importers and exporters
+-----------------------------------
+
+While it was already possible to export data subsets as actual subsets of the
+data, it is now possible to import and export the boolean masks for subsets.
+At the moment, there is only built-in support for importing/exporting from
+FITS files, but defining new importers/exporters can easily be done, as
+described in :ref:`custom_subset_mask_importer` and
+:ref:`custom_subset_mask_exporter`. In future, we will add built-in support
+for a wider range of file formats.
+
+Performance improvements
+------------------------
+
+This release includes a number of significant performance improvements. For
+example, there should now no longer be any delays when setting up links, and
+selections should propagate between viewers more efficiently.
+
+Experimental WorldWide Telescope plugin
+---------------------------------------
+
+We have developed a plugin that provides a `WorldWide Telescope (WWT)
+<http://worldwidetelescope.org>`_ viewer inside glue:
+
+.. image:: images/v0.11/plugin_wwt.jpg
+   :align: center
+   :width: 900
+
+To use this viewer, you
+will need to install the `glue-wwt <https://github.com/glue-viz/glue-wwt>`_
+plugin, using::
+
+    conda install -c glueviz glue-wwt
+
+if you use conda, or::
+
+    pip install glue-wwt
+
+otherwise. This viewer is experimental and is still missing a number of
+features. For example, it can only be used to show datasets that have RA/Dec
+columns (not other types of coordinates). Please report any issues or feature
+requests `here <https://github.com/glue-viz/glue-wwt/issues>`__.
+
+Experimental geospatial plugin
+------------------------------
+
+We have developed a plugin that provides a data factory which uses the
+`rasterio <https://github.com/mapbox/rasterio>`_ package to read geospatial
+raster data. This includes reading in the coordinate system and showing
+longitude/latitude lines in image viewers, and also allows longitude/latitude
+scatter data to be overplotted:
+
+.. image:: images/v0.11/plugin_geospatial.jpg
+   :align: center
+   :width: 700
+
+To use this, you will need to install the `glue-geospatial
+<https://github.com/glue-viz/glue-geospatial>`_ plugin, using::
+
+    conda install -c glueviz glue-geospatial
+
+if you use conda, or::
+
+    pip install glue-geospatial
+
+otherwise.
+
+This plugin is experimental, and if you run into any issues or would like to
+see new features, please open an issue `here
+<https://github.com/glue-viz/glue-geospatial>`__.
+
+Non-backward-compatible changes
+-------------------------------
+
+If you programmatically create viewers from Python scripts, if you currently set
+attributes on viewers, you will need to update this code if using the built-in
+histogram, scatter, or image viewers. Attributes are now set using a ``state``
+attribute on the viewers. For example to set the ``x`` attribute on the scatter
+plot viewer, you should set ``viewer.state.x_att`` instead of ``viewer.xatt``.
+See the :ref:`programmatic` section for more details.
+
+New conda glueviz channel
+-------------------------
+
+We now provide our own conda channel called ``glueviz`` (rather than using
+conda-forge), which should help alleviate installation issues some users have
+reported in the past. This channel contains the stable versions of glue and
+various plugin packages.
+
+Note that it is also possible to install the latest developer version from the
+``glueviz/label/dev`` channel, though be aware that while you will get the
+latest cutting-edge features, you may also be more prone to bugs/breakage.
+
+Full list of Changes
+--------------------
+
+In addition to the above features, a number of bugs has been fixed since the
+last release, and a few other small features have been added. A full list of
+changes can be found in the
+`CHANGES.md <https://github.com/glue-viz/glue/blob/master/CHANGES.md>`_ file

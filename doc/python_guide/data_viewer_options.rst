@@ -1,3 +1,5 @@
+.. _programmatic:
+
 ==================================
 Programmatically configuring plots
 ==================================
