@@ -9,7 +9,6 @@ import numpy as np
 from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt
 from glue.core.state import GlueUnSerializer
 from glue.core.component_id import PixelComponentID
-from glue.viewers.table.qt.tests.test_data_viewer import check_values_and_color
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -168,6 +167,8 @@ def test_load_pixel_components_07():
 
 @requires_qt
 def test_table_widget_010():
+
+    from glue.viewers.table.qt.tests.test_data_viewer import check_values_and_color
 
     # This loads a session file made with Glue v0.10 that includes a table
     # viewer. This is to make sure that loading table viewers from old files
