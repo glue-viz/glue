@@ -12,6 +12,7 @@ environment:
                         # to the matrix section.
       CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy"
       PIP_DEPENDENCIES: "plotly"
+      DEBUG: "true"
 
   matrix:
       - PYTHON_VERSION: "2.7"
