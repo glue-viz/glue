@@ -170,7 +170,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
     splash.set_progress(100)
 
     session = glue.core.Session(data_collection=data_collection, hub=hub)
-    ga = GlueApplication(session=session, maximized=maximized)
+    ga = GlueApplication(session=session)
 
     from qtpy.QtCore import QTimer
 
@@ -184,7 +184,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
         datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets)
 
-    return ga.start()
+    return ga.start(maximized=maximized)
 
 
 @die_on_error("Error running script")
