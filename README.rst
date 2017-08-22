@@ -28,9 +28,6 @@ Installation
 For installation documentation, visit
 `glueviz.org <http://glueviz.org>`__
 
-Mac users can also download the latest version of Glue as a `standalone
-program <http://mac.glueviz.org>`__
-
 Support
 -------
 
