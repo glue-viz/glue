@@ -9,6 +9,7 @@ import numpy as np
 from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt
 from glue.core.state import GlueUnSerializer
 from glue.core.component_id import PixelComponentID
+from glue.viewers.table.qt.tests.test_data_viewer import check_values_and_color
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -163,3 +164,27 @@ def test_load_pixel_components_07():
 
     assert isinstance(ga.data_collection[0].pixel_component_ids[0], PixelComponentID)
     assert isinstance(ga.data_collection[0].pixel_component_ids[1], PixelComponentID)
+
+
+@requires_qt
+def test_table_widget_010():
+
+    # This loads a session file made with Glue v0.10 that includes a table
+    # viewer. This is to make sure that loading table viewers from old files
+    # will always be backward-compatible.
+
+    with open(os.path.join(DATA, 'glue_v0.10_table.glu'), 'r') as f:
+        state = GlueUnSerializer.load(f)
+
+    ga = state.object('__main__')
+
+    viewer = ga.viewers[0][0]
+
+    data = {'x': [1, 2, 3],
+            'y': [4, 5, 6]}
+
+    colors = ['#e31a1c', '#6d7326', None]
+
+    check_values_and_color(viewer.model, data, colors)
+
+    ga.close()

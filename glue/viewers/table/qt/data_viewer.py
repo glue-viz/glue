@@ -23,6 +23,8 @@ from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt4_color
 from glue.core.exceptions import IncompatibleAttribute
 
+__all__ = ['TableViewer', 'TableLayerArtist']
+
 COLOR_CONVERTER = ColorConverter()
 
 
