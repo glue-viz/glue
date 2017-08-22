@@ -145,15 +145,34 @@ This plugin is experimental, and if you run into any issues or would like to
 see new features, please open an issue `here
 <https://github.com/glue-viz/glue-geospatial>`__.
 
-Non-backward-compatible changes
--------------------------------
+Backward-incompatible changes
+-----------------------------
 
 If you programmatically create viewers from Python scripts, if you currently set
 attributes on viewers, you will need to update this code if using the built-in
-histogram, scatter, or image viewers. Attributes are now set using a ``state``
-attribute on the viewers. For example to set the ``x`` attribute on the scatter
-plot viewer, you should set ``viewer.state.x_att`` instead of ``viewer.xatt``.
-See the :ref:`programmatic` section for more details.
+histogram, scatter, or image viewers.
+
+The main change is that the viewer classes have been renamed as follows:
+
+* ``ScatterWidget`` is now ``ScatterViewer``
+* ``ImageWidget`` is now ``ImageViewer``
+* ``HistogramWidget`` is now ``HistogramViewer``
+* ``TableWidget`` is now ``TableViewer``
+
+In addition, attributes related to the visualization are no longer set directly
+on the viewer object but instead using a ``state`` attribute on the viewers. For
+example to set the ``x`` attribute on the scatter plot viewer, you should set::
+
+    >>> viewer.state.x_att = ...
+
+instead of::
+
+    >>> viewer.xatt = ...
+
+The motivation for this change is that the ``state`` object is a new object that
+represents the state of the viewer in a GUI-framework-independent way, and is a
+cleaner way to encapsulate all the information needed to control the
+visualization. See the :ref:`programmatic` section for more details.
 
 New conda glueviz channel
 -------------------------
