@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.11.0 (unreleased)
+v0.11.0 (2017-08-22)
 --------------------
 
 * Fixed bug that caused table viewer to not update when adding components. [#1386]
