@@ -174,7 +174,7 @@ class TableViewWithSelectionSignal(QtWidgets.QTableView):
         super(TableViewWithSelectionSignal, self).selectionChanged(*args, **kwargs)
 
 
-class TableWidget(DataViewer):
+class TableViewer(DataViewer):
 
     LABEL = "Table Viewer"
 
@@ -183,9 +183,9 @@ class TableWidget(DataViewer):
 
     def __init__(self, session, parent=None, widget=None):
 
-        super(TableWidget, self).__init__(session, parent)
+        super(TableViewer, self).__init__(session, parent)
 
-        self.ui = load_ui('viewer_widget.ui',
+        self.ui = load_ui('data_viewer.ui',
                           directory=os.path.dirname(__file__))
         self.setCentralWidget(self.ui)
 
@@ -209,7 +209,7 @@ class TableWidget(DataViewer):
         if self.toolbar.active_tool is self.toolbar.tools['table:rowselect']:
             if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
                 self.finalize_selection()
-        super(TableWidget, self).keyPressEvent(event)
+        super(TableViewer, self).keyPressEvent(event)
 
     def finalize_selection(self, clear=True):
         model = self.ui.table.selectionModel()
@@ -226,7 +226,7 @@ class TableWidget(DataViewer):
 
     def register_to_hub(self, hub):
 
-        super(TableWidget, self).register_to_hub(hub)
+        super(TableViewer, self).register_to_hub(hub)
 
         def dfilter(x):
             return x.sender.data is self.data
@@ -256,7 +256,7 @@ class TableWidget(DataViewer):
                       filter=dfilter)
 
     def unregister(self, hub):
-        super(TableWidget, self).unregister(hub)
+        super(TableViewer, self).unregister(hub)
         hub.unsubscribe_all(self)
 
     def _refresh(self, msg=None):
@@ -294,7 +294,7 @@ class TableWidget(DataViewer):
         if the data set is big. To sidestep that,
         we swap out with a tiny data set before closing
         """
-        super(TableWidget, self).closeEvent(event)
+        super(TableViewer, self).closeEvent(event)
         d = Data(x=[0])
         self.ui.table.setModel(DataTableModel(d))
         event.accept()

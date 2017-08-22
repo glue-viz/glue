@@ -11,7 +11,7 @@ from glue.core import Data, DataCollection
 from glue.utils.qt import qt4_to_mpl_color
 from glue.app.qt import GlueApplication
 
-from ..viewer_widget import DataTableModel, TableWidget
+from ..data_viewer import DataTableModel, TableViewer
 
 from glue.core.edit_subset_mode import (EditSubsetMode, AndNotMode, OrMode,
                                         ReplaceMode)
@@ -96,7 +96,7 @@ def test_table_widget(tmpdir):
 
     gapp = GlueApplication(dc)
 
-    widget = gapp.new_data_viewer(TableWidget)
+    widget = gapp.new_data_viewer(TableViewer)
     widget.add_data(d)
 
     subset_mode = EditSubsetMode()
@@ -272,7 +272,7 @@ def test_table_widget_session_no_subset(tmpdir):
 
     gapp = GlueApplication(dc)
 
-    widget = gapp.new_data_viewer(TableWidget)
+    widget = gapp.new_data_viewer(TableViewer)
     widget.add_data(d)
 
     session_file = tmpdir.join('table.glu').strpath
@@ -301,7 +301,7 @@ def test_change_components():
 
     gapp = GlueApplication(dc)
 
-    viewer = gapp.new_data_viewer(TableWidget)
+    viewer = gapp.new_data_viewer(TableViewer)
     viewer.add_data(d)
 
     data_changed = MagicMock()
