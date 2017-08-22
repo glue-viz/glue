@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import platform
 
 import numpy as np
 from matplotlib.colors import ColorConverter
@@ -46,9 +47,10 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         # The following is needed because of a bug in Qt which means that
         # tab titles don't get scaled right.
-        app = get_qapp()
-        app_font = app.font()
-        self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+        if platform.system() == 'Darwin':
+            app = get_qapp()
+            app_font = app.font()
+            self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
 
         from glue.config import settings
         self.background = settings.BACKGROUND_COLOR

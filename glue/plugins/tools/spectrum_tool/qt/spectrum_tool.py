@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import logging
+import platform
 import traceback
 
 import numpy as np
@@ -841,9 +842,10 @@ class SpectrumTool(object):
 
         # The following is needed because of a bug in Qt which means that
         # tab titles don't get scaled right.
-        app = get_qapp()
-        app_font = app.font()
-        tabs.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+        if platform.system() == 'Darwin':
+            app = get_qapp()
+            app_font = app.font()
+            tabs.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
 
         tabs.addTab(self._contexts[0].widget, 'Navigate')
         tabs.addTab(self._contexts[1].widget, 'Fit')
