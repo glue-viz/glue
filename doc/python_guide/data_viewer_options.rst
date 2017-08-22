@@ -55,16 +55,16 @@ Viewer              Viewer state              Data layer state        Subset lay
 |histogram_viewer|  |histogram_viewer_state|  |histogram_layer_state| |histogram_layer_state|
 =================== ========================= ======================= ========================
 
-.. |scatter_viewer| replace:: :class:`~glue.viewers.scatter.qt.data_viewer.ScatterViewer`
+.. |scatter_viewer| replace:: :class:`~glue.viewers.scatter.qt.ScatterViewer`
 .. |scatter_viewer_state| replace:: :class:`~glue.viewers.scatter.state.ScatterViewerState`
 .. |scatter_layer_state| replace:: :class:`~glue.viewers.scatter.state.ScatterLayerState`
 
-.. |image_viewer| replace:: :class:`~glue.viewers.image.qt.data_viewer.ImageViewer`
+.. |image_viewer| replace:: :class:`~glue.viewers.image.qt.ImageViewer`
 .. |image_viewer_state| replace:: :class:`~glue.viewers.image.state.ImageViewerState`
 .. |image_data_state| replace:: :class:`~glue.viewers.image.state.ImageLayerState`
 .. |image_subset_state| replace:: :class:`~glue.viewers.image.state.ImageSubsetLayerState`
 
-.. |histogram_viewer| replace:: :class:`~glue.viewers.histogram.qt.data_viewer.HistogramViewer`
+.. |histogram_viewer| replace:: :class:`~glue.viewers.histogram.qt.HistogramViewer`
 .. |histogram_viewer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramViewerState`
 .. |histogram_layer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramLayerState`
 

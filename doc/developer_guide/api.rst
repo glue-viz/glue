@@ -50,9 +50,6 @@ Core Data
 User Interface
 ==============
 
-Core viewer objects
--------------------
-
 .. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
@@ -84,18 +81,12 @@ Core viewer objects
    :no-inheritance-diagram:
    :inherited-members:
 
-Scatter viewer
---------------
-
 .. automodapi:: glue.viewers.scatter.state
    :no-inheritance-diagram:
    :inherited-members:
 
 .. automodapi:: glue.viewers.scatter.qt
    :no-inheritance-diagram:
-
-Image viewer
-------------
 
 .. automodapi:: glue.viewers.image.state
    :no-inheritance-diagram:
@@ -104,9 +95,6 @@ Image viewer
 .. automodapi:: glue.viewers.image.qt
    :no-inheritance-diagram:
 
-Histogram viewer
-----------------
-
 .. automodapi:: glue.viewers.histogram.state
    :no-inheritance-diagram:
    :inherited-members:
@@ -114,20 +102,11 @@ Histogram viewer
 .. automodapi:: glue.viewers.histogram.qt
    :no-inheritance-diagram:
 
-Table viewer
-------------
-
 .. automodapi:: glue.viewers.table.qt
    :no-inheritance-diagram:
 
-Custom viewer
--------------
-
 .. automodapi:: glue.viewers.custom.qt.custom_viewer
    :no-inheritance-diagram:
-
-Application
------------
 
 .. automodapi:: glue.core.application_base
    :no-inheritance-diagram:
