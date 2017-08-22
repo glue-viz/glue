@@ -39,6 +39,9 @@
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
+         <property name="minimumContentsLength">
+          <number>5</number>
+         </property>
         </widget>
        </item>
        <item>
@@ -77,6 +80,9 @@
          </property>
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+         <property name="minimumContentsLength">
+          <number>5</number>
          </property>
         </widget>
        </item>

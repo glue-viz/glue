@@ -13,6 +13,7 @@ select ``Define new component``:
 
 .. figure:: images/define_component_01.png
     :align: center
+    :width: 400
 
 A new window will appear for defining components. Double-clicking on any
 of the Available Components will add it to the expression line. You can
@@ -24,6 +25,7 @@ define a new component ``__24__-__3.6_`` to be the difference between
 
 .. figure:: images/define_component_02.png
     :align: center
+    :width: 600
 
 Remember to select the data item on the ``Add to`` window (here, ``w5_psc``).
 
@@ -38,6 +40,4 @@ use the ``np.power`` function:
 
 .. figure:: images/define_component_numpy.png
     :align: center
-
-
-
+    :width: 600

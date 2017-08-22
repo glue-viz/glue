@@ -42,7 +42,8 @@ define data links from the GUI.
 
 
 .. image:: images/link_dialog.png
-   :width: 400
+   :align: center
+   :width: 600
 
 The simplest link occurs when two datasets define the same quantity in
 the same units. In this case, Glue can trivially overplot
@@ -53,14 +54,16 @@ coordinates on the sky). To link these quantities, we highlight the
 equivalent quantities, and click "Glue".
 
 .. image:: images/link_dialog_2.png
-   :width: 400
+   :align: center
+   :width: 600
 
 In the more general case, one quantity can be computed from one or more others,
 but is not identical to another quantity. The ``advanced`` tab let's us
 specify how to use a translation function to derive one quantity from others:
 
 .. image:: images/link_dialog_3.png
-   :width: 400
+   :align: center
+   :width: 600
 
 Here, a ``boxes`` dataset reports the linear dimensions of some boxes, and a crates dataset reports the volume of crates. The box volumes can be intercompared with the crate volumes by multiplying the box width, height, and depth.
 To specify this link, we select a translation function (``lengths_to_volume``),
