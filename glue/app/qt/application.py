@@ -34,7 +34,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
-from glue.app.qt.terminal import glue_terminal
+from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
 
 
 __all__ = ['GlueApplication']
@@ -875,16 +875,19 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if self._terminal is not None:  # already set up
             return
 
-        widget = glue_terminal(data_collection=self._data,
-                               dc=self._data,
-                               hub=self._hub,
-                               session=self.session,
-                               application=self,
-                               **vars(env))
-
-        self._terminal = self.add_widget(widget)
-        self._terminal.closed.connect(self._on_terminal_close)
-        self._hide_terminal()
+        try:
+            widget = glue_terminal(data_collection=self._data,
+                                   dc=self._data,
+                                   hub=self._hub,
+                                   session=self.session,
+                                   application=self,
+                                   **vars(env))
+        except IPythonTerminalError:
+            self._button_ipython.setEnabled(False)
+        else:
+            self._terminal = self.add_widget(widget)
+            self._terminal.closed.connect(self._on_terminal_close)
+            self._hide_terminal()
 
     def _toggle_terminal(self):
         if self._terminal.isVisible():
