@@ -83,9 +83,6 @@ v0.11.0 (unreleased)
   since this causes confusion when trying to control-click to paste in the
   IPython terminal. [#1342]
 
-v0.10.5 (unreleased)
---------------------
-
 * Make process_dialog more robust. [#1333]
 
 * Fix example of setting up a custom preferences pane. [#1326]
