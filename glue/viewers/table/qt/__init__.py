@@ -1,1 +1,1 @@
-from .data_viewer import TableViewer  # noqa
+from .data_viewer import TableViewer, TableLayerArtist  # noqa

@@ -64,7 +64,7 @@ def check_values_and_color(model, data, colors):
 
     for i in range(len(colors)):
 
-        for j, colname in enumerate('abc'):
+        for j, colname in enumerate(sorted(data)):
 
             # Get index of cell
             idx = model.index(i, j)
