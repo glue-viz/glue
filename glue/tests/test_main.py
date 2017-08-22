@@ -124,15 +124,14 @@ def test_start(glue, config, data):
         with patch('glue.config.load_configuration') as lc:
             with patch('glue.main.load_data_files') as ldf:
                 with patch('glue.app.qt.GlueApplication') as ga:
-                    with patch('qtpy.QtWidgets') as qt:
 
-                        rs.return_value = ga
-                        ldf.return_value = Data()
+                    rs.return_value = ga
+                    ldf.return_value = Data()
 
-                        start_glue(glue, config, data)
-                        if glue:
-                            rs.assert_called_once_with(glue)
-                        if config:
-                            lc.assert_called_once_with(search_path=[config])
-                        if data:
-                            ldf.assert_called_once_with(data)
+                    start_glue(glue, config, data)
+                    if glue:
+                        rs.assert_called_once_with(glue)
+                    if config:
+                        lc.assert_called_once_with(search_path=[config])
+                    if data:
+                        ldf.assert_called_once_with(data)
