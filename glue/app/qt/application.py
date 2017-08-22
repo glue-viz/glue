@@ -34,7 +34,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
-from glue.app.qt.terminal import glue_terminal
+from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
 
 
 __all__ = ['GlueApplication']
@@ -186,7 +186,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
 
-    def __init__(self, data_collection=None, session=None, maximized=True):
+    def __init__(self, data_collection=None, session=None):
 
         self.app = get_qapp()
 
@@ -221,7 +221,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         lwidget.ui.layerTree.addAction(a)
         lwidget.bind_selection_to_edit_subset()
 
-        self._tweak_geometry(maximized=maximized)
+        self._tweak_geometry()
         self._create_actions()
         self._create_menu()
         self._connect()
@@ -341,10 +341,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
     def _set_up_links(self, event):
         LinkEditor.update_links(self.data_collection)
 
-    def _tweak_geometry(self, maximized=True):
+    def _tweak_geometry(self):
         """Maximize window by default."""
-        if maximized:
-            self.setWindowState(Qt.WindowMaximized)
         self._ui.main_splitter.setStretchFactor(0, 0.1)
         self._ui.main_splitter.setStretchFactor(1, 0.9)
         self._ui.data_plot_splitter.setStretchFactor(0, 0.25)
@@ -875,16 +873,19 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if self._terminal is not None:  # already set up
             return
 
-        widget = glue_terminal(data_collection=self._data,
-                               dc=self._data,
-                               hub=self._hub,
-                               session=self.session,
-                               application=self,
-                               **vars(env))
-
-        self._terminal = self.add_widget(widget)
-        self._terminal.closed.connect(self._on_terminal_close)
-        self._hide_terminal()
+        try:
+            widget = glue_terminal(data_collection=self._data,
+                                   dc=self._data,
+                                   hub=self._hub,
+                                   session=self.session,
+                                   application=self,
+                                   **vars(env))
+        except IPythonTerminalError:
+            self._button_ipython.setEnabled(False)
+        else:
+            self._terminal = self.add_widget(widget)
+            self._terminal.closed.connect(self._on_terminal_close)
+            self._hide_terminal()
 
     def _toggle_terminal(self):
         if self._terminal.isVisible():
@@ -911,7 +912,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._terminal.show()
         self._terminal.widget().show()
 
-    def start(self, size=None, position=None, block=True):
+    def start(self, size=None, position=None, block=True, maximized=True):
         """
         Show the GUI and start the application.
 
@@ -924,7 +925,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             The default position of the application
         """
         self._create_terminal()
-        self.show()
+        if maximized:
+            self.showMaximized()
+        else:
+            self.show()
         if size is not None:
             self.resize(*size)
         if position is not None:

@@ -136,13 +136,22 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
         Maximize screen on startup. Otherwise, use default size.
 
     """
+
     import glue
-    from glue.app.qt import GlueApplication
+
+    from glue.utils.qt import get_qapp
+
+    app = get_qapp()
+
+    splash = get_splash()
+    splash.show()
 
     # Start off by loading plugins. We need to do this before restoring
     # the session or loading the configuration since these may use existing
     # plugins.
-    load_plugins()
+    load_plugins(splash=splash)
+
+    from glue.app.qt import GlueApplication
 
     datafiles = datafiles or []
 
@@ -158,18 +167,24 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
     data_collection = glue.core.DataCollection()
     hub = data_collection.hub
 
+    splash.set_progress(100)
+
     session = glue.core.Session(data_collection=data_collection, hub=hub)
-    ga = GlueApplication(session=session, maximized=maximized)
+    ga = GlueApplication(session=session)
+
+    from qtpy.QtCore import QTimer
+
+    timer = QTimer()
+    timer.setInterval(1000)
+    timer.setSingleShot(True)
+    timer.timeout.connect(splash.close)
+    timer.start()
 
     if datafiles:
         datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets)
 
-    # ga.show()
-    # splash.close()
-    # ga.raise_()
-    # QApplication.instance().processEvents()
-    return ga.start()
+    return ga.start(maximized=maximized)
 
 
 @die_on_error("Error running script")
@@ -186,15 +201,8 @@ def execute_script(script):
 
 def get_splash():
     """Instantiate a splash screen"""
-    from qtpy import QtGui, QtWidgets
-    from qtpy.QtCore import Qt
-    import os
-
-    pth = os.path.join(os.path.dirname(__file__), 'logo.png')
-    pm = QtGui.QPixmap(pth)
-    splash = QtWidgets.QSplashScreen(pm, Qt.WindowStaysOnTopHint)
-    splash.show()
-
+    from glue.app.qt.splash_screen import QtSplashScreen
+    splash = QtSplashScreen()
     return splash
 
 
@@ -236,7 +244,7 @@ _loaded_plugins = set()
 _installed_plugins = set()
 
 
-def load_plugins():
+def load_plugins(splash=None):
 
     # Search for plugins installed via entry_points. Basically, any package can
     # define plugins for glue, and needs to define an entry point using the
@@ -259,7 +267,9 @@ def load_plugins():
     from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
 
-    for item in iter_plugin_entry_points():
+    n_plugins = len(list(iter_plugin_entry_points()))
+
+    for iplugin, item in enumerate(iter_plugin_entry_points()):
 
         if item.module_name not in _installed_plugins:
             _installed_plugins.add(item.name)
@@ -280,6 +290,9 @@ def load_plugins():
         else:
             logger.info("Loading plugin {0} succeeded".format(item.name))
             _loaded_plugins.add(item.module_name)
+
+        if splash is not None:
+            splash.set_progress(100. * iplugin / float(n_plugins))
 
     try:
         config.save()

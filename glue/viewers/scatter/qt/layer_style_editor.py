@@ -1,4 +1,5 @@
 import os
+import platform
 from collections import OrderedDict
 
 import numpy as np
@@ -20,9 +21,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         # The following is needed because of a bug in Qt which means that
         # tab titles don't get scaled right.
-        app = get_qapp()
-        app_font = app.font()
-        self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+        if platform.system() == 'Darwin':
+            app = get_qapp()
+            app_font = app.font()
+            self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
 
         self.layer_state = layer.state
 
