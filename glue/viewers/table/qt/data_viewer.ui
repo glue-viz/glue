@@ -52,7 +52,7 @@
   <customwidget>
    <class>TableViewWithSelectionSignal</class>
    <extends>QTableView</extends>
-   <header>glue.viewers.table.qt.viewer_widget</header>
+   <header>glue.viewers.table.qt.data_viewer</header>
   </customwidget>
  </customwidgets>
  <resources/>

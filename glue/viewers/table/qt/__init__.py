@@ -1,1 +1,1 @@
-from .viewer_widget import TableWidget  # noqa
+from .data_viewer import TableViewer  # noqa

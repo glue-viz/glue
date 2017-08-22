@@ -47,7 +47,7 @@ available in the ``Link Data`` dialog:
 
 .. figure:: images/custom_link.png
    :align: center
-   :width: 200px
+   :width: 400
 
 This would allow you to link between two datasets with different conventions
 for specifying angles.

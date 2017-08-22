@@ -50,9 +50,6 @@ Core Data
 User Interface
 ==============
 
-.. automodapi:: glue.core.application_base
-   :no-inheritance-diagram:
-
 .. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
@@ -62,44 +59,8 @@ User Interface
 .. automodapi:: glue.viewers.matplotlib.qt.data_viewer
    :no-inheritance-diagram:
 
-.. automodapi:: glue.viewers.scatter.state
-   :no-inheritance-diagram:
-   :inherited-members:
-
-.. automodapi:: glue.viewers.scatter.qt.data_viewer
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.viewers.image.state
-   :no-inheritance-diagram:
-   :inherited-members:
-
-.. automodapi:: glue.viewers.image.qt.data_viewer
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.viewers.histogram.state
-   :no-inheritance-diagram:
-   :inherited-members:
-
-.. automodapi:: glue.viewers.histogram.qt.data_viewer
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.app.qt.application
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.qglue
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.viewers.custom.qt.custom_viewer
-   :no-inheritance-diagram:
-
-.. automodapi:: glue
-   :no-inheritance-diagram:
-
 .. automodapi:: glue.core.layer_artist
    :no-inheritance-diagram:
-
-Viewers
-=======
 
 .. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
@@ -119,6 +80,45 @@ Viewers
 .. automodapi:: glue.viewers.matplotlib.qt.toolbar
    :no-inheritance-diagram:
    :inherited-members:
+
+.. automodapi:: glue.viewers.scatter.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.scatter.qt
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.image.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.image.qt
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.histogram.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.histogram.qt
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.table.qt
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.custom.qt.custom_viewer
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.core.application_base
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.app.qt.application
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.qglue
+   :no-inheritance-diagram:
+
+.. automodapi:: glue
+   :no-inheritance-diagram:
 
 Utilities
 =========
