@@ -9,7 +9,8 @@ v0.12.0 (unreleased)
 v0.11.1 (unreleased)
 --------------------
 
-* No changes yet
+* Fixed bug that caused ModestImage references to not be properly deleted, in
+  turn leading to issues/crashes when removing subsets from image viewers.
 
 v0.11.0 (2017-08-22)
 --------------------
