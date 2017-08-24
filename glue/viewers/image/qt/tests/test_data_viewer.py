@@ -608,6 +608,8 @@ class TestSessions(object):
         layer_state = viewer3.state.layers[1]
         assert layer_state.visible
 
+        ga.close()
+
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_cube_back_compat(self, protocol):
 
@@ -633,6 +635,8 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 2']
         assert viewer1.state.y_att_world is dc[0].id['World 1']
         assert viewer1.state.slices == [2, 0, 0, 1]
+
+        ga.close()
 
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_rgb_back_compat(self, protocol):
@@ -671,3 +675,5 @@ class TestSessions(object):
         assert layer_state.visible
         assert layer_state.attribute.label == 'b'
         assert layer_state.color == 'b'
+
+        ga.close()
