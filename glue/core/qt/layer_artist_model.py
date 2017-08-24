@@ -372,14 +372,12 @@ class QtLayerArtistContainer(LayerArtistContainer):
         self._notify()
 
     def remove(self, artist):
-        try:
+        if artist in self.artists:
             index = self.artists.index(artist)
-        except ValueError:
-            return
-        self.model.removeRow(index)
-        assert artist not in self.artists
-        artist.remove()
-        self._notify()
+            self.model.removeRow(index)
+            assert artist not in self.artists
+            artist.remove()
+            self._notify()
 
     def __nonzero__(self):
         return True

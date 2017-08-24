@@ -66,6 +66,10 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
+    def close(self, **kwargs):
+        super(ImageViewer, self).close(**kwargs)
+        self.axes._composite_image.remove()
+
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:

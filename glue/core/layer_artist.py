@@ -335,20 +335,17 @@ class LayerArtistContainer(object):
         :param artist: The artist to remove
         :type artist: :class:`MatplotlibLayerArtist`
         """
-        try:
+        if artist in self.artists:
             self.artists.remove(artist)
             artist.remove()
-        except ValueError:
-            pass
-
-        self._notify()
+            self._notify()
 
     def clear(self):
         """
         Remove all layer artists from this collection
         """
         for artist in self.artists:
-            artist.clear()
+            artist.remove()
         if six.PY2:
             self.artists[:] = []
         else:

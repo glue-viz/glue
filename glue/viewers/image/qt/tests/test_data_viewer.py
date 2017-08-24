@@ -496,6 +496,7 @@ class TestImageViewer(object):
 
         def get_modest_images():
             mi = []
+            gc.collect()
             for obj in gc.get_objects():
                 try:
                     if isinstance(obj, ModestImage):
@@ -504,7 +505,8 @@ class TestImageViewer(object):
                     pass
             return mi
 
-        # The viewer starts off with one ModestImage
+        # The viewer starts off with one ModestImage. This is also a good test
+        # that other ModestImages in other tests have been removed.
         assert len(get_modest_images()) == 1
 
         large_image = Data(x=np.random.random((2048, 2048)))
