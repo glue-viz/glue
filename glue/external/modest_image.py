@@ -247,7 +247,11 @@ def imshow(axes, X, cmap=None, norm=None, aspect=None,
         im.set_extent(extent)
 
     axes.images.append(im)
-    im._remove_method = lambda h: axes.images.remove(h)
+
+    def remove(h):
+        axes.images.remove(h)
+
+    im._remove_method = remove
 
     return im
 

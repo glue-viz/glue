@@ -62,7 +62,6 @@ class DataViewerWithState(DataViewer):
         for layer_artist in self._layer_artist_container:
             if layer_artist.layer not in layer_states:
                 self._layer_artist_container.remove(layer_artist)
-                layer_artist.remove()
 
     def add_data(self, data):
 

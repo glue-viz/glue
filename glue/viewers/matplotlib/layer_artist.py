@@ -53,6 +53,7 @@ class MatplotlibLayerArtist(LayerArtistBase):
                 pass
             except AttributeError:  # can happen for Matplotlib 1.4
                 pass
+        self.mpl_artists[:] = []
 
     def get_layer_color(self):
         return self.state.color

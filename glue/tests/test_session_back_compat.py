@@ -101,6 +101,7 @@ def test_load_link_helpers_04():
     state = GlueUnSerializer.loads(content)
 
     ga = state.object('__main__')
+    ga.close()
 
 
 @requires_qt
@@ -145,6 +146,8 @@ def test_load_viewers_04():
     assert s.state.x_log
     assert not s.state.y_log
 
+    ga.close()
+
 
 @requires_qt
 def test_load_pixel_components_07():
@@ -163,6 +166,8 @@ def test_load_pixel_components_07():
 
     assert isinstance(ga.data_collection[0].pixel_component_ids[0], PixelComponentID)
     assert isinstance(ga.data_collection[0].pixel_component_ids[1], PixelComponentID)
+
+    ga.close()
 
 
 @requires_qt

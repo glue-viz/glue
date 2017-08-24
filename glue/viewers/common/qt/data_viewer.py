@@ -116,7 +116,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def close(self, warn=True):
         self._warn_close = warn
-        super(DataViewer, self).close()
+        QtWidgets.QMainWindow.close(self)
+        ViewerBase.close(self)
         self._warn_close = True
 
     def mdi_wrap(self):

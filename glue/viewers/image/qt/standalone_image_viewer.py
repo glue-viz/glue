@@ -132,6 +132,9 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         return sub
 
     def closeEvent(self, event):
+        if self._im is not None:
+            self._im.remove()
+            self._im = None
         self.window_closed.emit()
         return super(StandaloneImageViewer, self).closeEvent(event)
 
