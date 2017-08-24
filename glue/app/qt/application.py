@@ -973,6 +973,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
+        for tab in self.viewers:
+            for viewer in tab:
+                viewer.close(warn=False)
         self._log.close()
         self._hub.broadcast(ApplicationClosedMessage(None))
         event.accept()

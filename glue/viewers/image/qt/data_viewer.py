@@ -68,7 +68,9 @@ class ImageViewer(MatplotlibDataViewer):
 
     def close(self, **kwargs):
         super(ImageViewer, self).close(**kwargs)
-        self.axes._composite_image.remove()
+        if self.axes._composite_image is not None:
+            self.axes._composite_image.remove()
+            self.axes._composite_image = None
 
     def _update_axes(self, *args):
 
