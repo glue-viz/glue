@@ -49,6 +49,9 @@ class BaseTestSpectrumTool(object):
         self.tool = self.mode._tool
         self.tool.show = lambda *args: None
 
+    def teardown_method(self, method):
+        self.image.close()
+
 
 class TestSpectrumTool(BaseTestSpectrumTool):
 
