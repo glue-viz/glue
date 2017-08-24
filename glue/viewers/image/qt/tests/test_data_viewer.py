@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import gc
 from collections import Counter
 
 import pytest
@@ -12,6 +13,7 @@ from astropy.wcs import WCS
 import numpy as np
 from numpy.testing import assert_allclose
 
+from glue.external.modest_image import ModestImage
 from glue.core.coordinates import Coordinates, WCSCoordinates
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
@@ -37,18 +39,6 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
         return Data(label='d1', x=np.arange(12).reshape((3, 4)), y=np.ones((3, 4)))
 
     viewer_cls = ImageViewer
-
-    def setup_method(self, method):
-        # Some of the tests rely on seeing whether the viewer updates if we
-        # change the color of the data, so we temporarily set it so that
-        # global_sync is True in each layer (otherwise changing the color of)
-        # a dataset has no effect on the image viewer specifically. We change
-        # it back in teardown_method.
-        ImageLayerState.global_sync._default = True
-        return super(TestImageCommon, self).setup_method(method)
-
-    def teardown_method(self, method):
-        ImageLayerState.global_sync._default = False
 
     @pytest.mark.skip()
     def test_double_add_ignored(self):
@@ -484,6 +474,48 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image1)
         self.viewer.add_data(self.catalog)
 
+    def test_removed_subset(self):
+
+        # Regression test for a bug in v0.11.0 that meant that if a subset
+        # was removed, the image viewer would then crash when changing view
+        # (e.g. zooming in). The bug was caused by undeleted references to
+        # ModestImage due to circular references. We therefore check in this
+        # test how many ModestImage objects exist.
+
+        def get_modest_images():
+            mi = []
+            gc.collect()
+            for obj in gc.get_objects():
+                try:
+                    if isinstance(obj, ModestImage):
+                        mi.append(obj)
+                except ReferenceError:
+                    pass
+            return mi
+
+        # The viewer starts off with one ModestImage. This is also a good test
+        # that other ModestImages in other tests have been removed.
+        assert len(get_modest_images()) == 1
+
+        large_image = Data(x=np.random.random((2048, 2048)))
+        self.data_collection.append(large_image)
+
+        # The subset group can be made from any dataset
+        subset_group = self.data_collection.new_subset_group(subset_state=self.image1.id['x'] > 1, label='A')
+
+        self.viewer.add_data(large_image)
+
+        # Since the dataset added has a subset, and each subset has its own
+        # ModestImage, this increases the count.
+        assert len(get_modest_images()) == 2
+
+        assert len(self.viewer.layers) == 2
+
+        self.data_collection.remove_subset_group(subset_group)
+
+        # Removing the subset should bring the count back to 1 again
+        assert len(get_modest_images()) == 1
+
 
 class TestSessions(object):
 
@@ -576,6 +608,8 @@ class TestSessions(object):
         layer_state = viewer3.state.layers[1]
         assert layer_state.visible
 
+        ga.close()
+
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_cube_back_compat(self, protocol):
 
@@ -601,6 +635,8 @@ class TestSessions(object):
         assert viewer1.state.x_att_world is dc[0].id['World 2']
         assert viewer1.state.y_att_world is dc[0].id['World 1']
         assert viewer1.state.slices == [2, 0, 0, 1]
+
+        ga.close()
 
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_rgb_back_compat(self, protocol):
@@ -639,3 +675,5 @@ class TestSessions(object):
         assert layer_state.visible
         assert layer_state.attribute.label == 'b'
         assert layer_state.color == 'b'
+
+        ga.close()

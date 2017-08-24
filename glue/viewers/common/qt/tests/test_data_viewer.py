@@ -55,6 +55,7 @@ class BaseTestDataViewer(object):
             assert len(set(selfs)) == len(selfs)
         finally:
             MplCanvas.draw = draw
+        app.close()
 
     def test_close_on_last_layer_remove(self):
         # regression test for 391
@@ -69,6 +70,7 @@ class BaseTestDataViewer(object):
             dc.remove(d1)
             dc.remove(d2)
         assert close.call_count >= 1
+        app.close()
 
     def test_viewer_size(self, tmpdir):
 

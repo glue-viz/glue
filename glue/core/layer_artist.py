@@ -185,8 +185,18 @@ class LayerArtistBase(PropertySetMixin):
 
     @abstractmethod
     def clear(self):
-        """Clear the visulaization for this layer"""
+        """Clear the visualization for this layer"""
         raise NotImplementedError()
+
+    def remove(self):
+        """
+        Remove the visualization for this layer.
+
+        This is called when the layer artist is removed for good from the
+        viewer. It defaults to calling clear, but can be overriden in cases
+        where clear and remove should be different.
+        """
+        self.clear()
 
     def force_update(self, *args, **kwargs):
         """
@@ -325,20 +335,17 @@ class LayerArtistContainer(object):
         :param artist: The artist to remove
         :type artist: :class:`MatplotlibLayerArtist`
         """
-        try:
+        if artist in self.artists:
             self.artists.remove(artist)
-            artist.clear()
-        except ValueError:
-            pass
-
-        self._notify()
+            artist.remove()
+            self._notify()
 
     def clear(self):
         """
         Remove all layer artists from this collection
         """
         for artist in self.artists:
-            artist.clear()
+            artist.remove()
         if six.PY2:
             self.artists[:] = []
         else:

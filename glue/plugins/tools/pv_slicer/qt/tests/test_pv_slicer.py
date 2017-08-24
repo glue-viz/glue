@@ -62,6 +62,9 @@ class TestStandaloneImageViewer(object):
         im = np.random.random((3, 3))
         self.w = StandaloneImageViewer(im)
 
+    def teardown_method(self, method):
+        self.w.close()
+
     def test_set_cmap(self):
         cm_mode = self.w.toolbar.tools['image:colormap']
         act = cm_mode.menu_actions()[1]
@@ -91,6 +94,9 @@ class TestPVSliceWidget(object):
         self.slc = (0, 'y', 'x')
         self.image = MockImageViewer(self.slc, self.d)
         self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_viewer=self.image)
+
+    def teardown_method(self, method):
+        self.w.close()
 
     def test_basic(self):
         pass

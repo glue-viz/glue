@@ -377,3 +377,5 @@ def test_foreground_background_settings():
         assert_axes_foreground(histogram2.axes, GREEN)
         assert_axes_foreground(dendrogram2.axes, GREEN)
         assert_axes_foreground(custom2.axes, GREEN)
+
+    app.close()

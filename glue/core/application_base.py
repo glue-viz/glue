@@ -341,6 +341,9 @@ class ViewerBase(HubListener, PropertySetMixin):
         self._hub = None
         self._layer_artist_container = self._layer_artist_container_cls()
 
+    def close(self):
+        self._layer_artist_container.clear()
+
     def register_to_hub(self, hub):
         self._hub = hub
 

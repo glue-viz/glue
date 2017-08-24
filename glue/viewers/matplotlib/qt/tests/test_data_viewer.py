@@ -451,6 +451,8 @@ class BaseTestMatplotlibDataViewer(object):
         assert viewer2.layers[0].layer is data2
         assert viewer2.layers[1].layer is data2.subsets[0]
 
+        ga2.close()
+
     def test_apply_roi_undo(self):
 
         self.data_collection.append(self.data)
