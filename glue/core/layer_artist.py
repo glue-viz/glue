@@ -185,8 +185,18 @@ class LayerArtistBase(PropertySetMixin):
 
     @abstractmethod
     def clear(self):
-        """Clear the visulaization for this layer"""
+        """Clear the visualization for this layer"""
         raise NotImplementedError()
+
+    def remove(self):
+        """
+        Remove the visualization for this layer.
+
+        This is called when the layer artist is removed for good from the
+        viewer. It defaults to calling clear, but can be overriden in cases
+        where clear and remove should be different.
+        """
+        self.clear()
 
     def force_update(self, *args, **kwargs):
         """
@@ -327,7 +337,7 @@ class LayerArtistContainer(object):
         """
         try:
             self.artists.remove(artist)
-            artist.clear()
+            artist.remove()
         except ValueError:
             pass
 

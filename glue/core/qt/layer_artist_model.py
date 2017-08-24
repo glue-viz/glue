@@ -378,7 +378,7 @@ class QtLayerArtistContainer(LayerArtistContainer):
             return
         self.model.removeRow(index)
         assert artist not in self.artists
-
+        artist.remove()
         self._notify()
 
     def __nonzero__(self):
