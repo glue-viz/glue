@@ -6,7 +6,7 @@ v0.12.0 (unreleased)
 
 * No changes yet
 
-v0.11.1 (unreleased)
+v0.11.1 (2017-08-25)
 --------------------
 
 * Fixed bug that caused ModestImage references to not be properly deleted, in
