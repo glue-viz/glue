@@ -6,6 +6,11 @@ v0.12.0 (unreleased)
 
 * No changes yet
 
+v0.11.2 (unreleased)
+--------------------
+
+* No changes yet.
+
 v0.11.1 (2017-08-25)
 --------------------
 
