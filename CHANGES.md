@@ -9,7 +9,7 @@ v0.12.0 (unreleased)
 v0.11.2 (unreleased)
 --------------------
 
-* No changes yet.
+* Remove 'sep' from menu on Linux. [#1394]
 
 v0.11.1 (2017-08-25)
 --------------------
