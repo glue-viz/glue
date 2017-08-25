@@ -1,3 +1,5 @@
+.. _help:
+
 Getting Help with Glue
 ======================
 

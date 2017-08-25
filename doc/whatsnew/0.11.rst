@@ -115,16 +115,20 @@ if you use conda, or::
 otherwise. This viewer is experimental and is still missing a number of
 features. For example, it can only be used to show datasets that have RA/Dec
 columns (not other types of coordinates). Please report any issues or feature
-requests `here <https://github.com/glue-viz/glue-wwt/issues>`__.
+requests `here <https://github.com/glue-viz/glue-wwt/issues>`__. If you would be
+interested in contributing to or help maintaining this plugin, we would also
+love to hear from you! (see :ref:`here <help>` for different ways of getting in
+touch).
 
 Experimental geospatial plugin
 ------------------------------
 
-We have developed a plugin that provides a data factory which uses the
-`rasterio <https://github.com/mapbox/rasterio>`_ package to read geospatial
-raster data. This includes reading in the coordinate system and showing
-longitude/latitude lines in image viewers, and also allows longitude/latitude
-scatter data to be overplotted:
+We have started to develop a plugin which aims to collect functionality relevant
+to the analysis of geospatial data. For now, the plugin provides a data factory
+that uses the `rasterio <https://github.com/mapbox/rasterio>`_ package to read
+geospatial raster data. This includes reading in the coordinate system and
+showing longitude/latitude lines in image viewers, and also allows
+longitude/latitude scatter data to be overplotted:
 
 .. image:: images/v0.11/plugin_geospatial.jpg
    :align: center
@@ -141,9 +145,11 @@ if you use conda, or::
 
 otherwise.
 
-This plugin is experimental, and if you run into any issues or would like to
-see new features, please open an issue `here
-<https://github.com/glue-viz/glue-geospatial>`__.
+This plugin is experimental, and if you run into any issues or would like to see
+new features, please open an issue `here
+<https://github.com/glue-viz/glue-geospatial>`__. If you would be interested in
+contributing to or help maintaining this plugin, we would also love to hear from
+you! (see :ref:`here <help>` for different ways of getting in touch).
 
 Backward-incompatible changes
 -----------------------------
