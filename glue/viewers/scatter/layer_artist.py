@@ -5,6 +5,8 @@ import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib.collections import LineCollection
 
+from mpl_scatter_density import ScatterDensityArtist
+
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -63,9 +65,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.line_collection = LineCollection(np.zeros((0, 2, 2)))
         self.axes.add_collection(self.line_collection)
 
+        # Scatter density
+        self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white')
+        self.axes.add_artist(self.density_artist)
+
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
                             self.errorbar_artist, self.vector_artist,
-                            self.line_collection]
+                            self.line_collection, self.density_artist]
         self.errorbar_index = 2
         self.vector_index = 3
 
@@ -139,6 +145,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.line_collection.set_segments(segments)
         else:
             self.line_collection.set_segments(np.zeros((0, 2, 2)))
+
+        # TODO: have a visible property
+        self.density_artist.set_xy(x, y)
 
         for eartist in list(self.errorbar_artist[2]):
             if eartist is not None:
@@ -310,7 +319,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     eartist.set_zorder(self.state.zorder)
 
         for artist in [self.scatter_artist, self.plot_artist,
-                       self.vector_artist, self.line_collection]:
+                       self.vector_artist, self.line_collection,
+                       self.density_artist]:
 
             if artist is None:
                 continue
