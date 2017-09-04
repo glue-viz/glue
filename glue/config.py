@@ -16,7 +16,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
            'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
            'preference_panes', 'PreferencePanesRegistry',
-           'DataExporterRegistry', 'data_exporter', 'layer_action']
+           'DataExporterRegistry', 'data_exporter', 'layer_action',
+           'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
