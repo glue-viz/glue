@@ -531,16 +531,32 @@ class LayerActionRegistry(Registry):
     Stores custom menu actions available when the user select one or more
     datasets, subset group, or subset in the data collection view.
 
-    This members property is a list of (label, tooltip, callback, icon, single,
-    data subset_group subset) tuples. callback is a function that takes a layer
-    or list of layers (data, subset group or subset) and DataCollection as input
+    This members property is a list of named tuples with the following
+    attributes:
+
+    * ``label``: the user-facing name of the action
+    * ``tooltip``: the text that appears when hovering with the mouse over the action
+    * ``callback``: the function to call when the action is triggered
+    * ``icon``: an icon image to use for the layer action
+    * ``single``: whether to show this action only when selecting single layers (default: `False`)
+    * ``data``: if ``single`` is `True` whether to only show the action when selecting a dataset
+    * ``subset_group``: if ``single`` is `True` whether to only show the action when selecting a subset group
+    * ``subset``: if ``single`` is `True` whether to only show the action when selecting a subset
+
+    The callback function is called with two arguments. If ``single`` is
+    `True`, the first argument is the selected layer, otherwise it is the list
+    of selected layers. The second argument is the
+    `~glue.core.data_collection.DataCollection` object.
     """
     item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
 
-    def __call__(self, label, callback, tooltip=None, icon=None, single=False,
+    def __call__(self, label, tooltip=None, icon=None, single=False,
                  data=False, subset_group=False, subset=False):
-        self.add(self.item(label, callback, tooltip, icon, single,
-                           data, subset_group, subset))
+        def adder(func):
+            self.add(self.item(label, tooltip, func, icon, single,
+                     data, subset_group, subset))
+            return func
+        return adder
 
 
 class SingleSubsetLayerActionRegistry(LayerActionRegistry):
@@ -549,8 +565,7 @@ class SingleSubsetLayerActionRegistry(LayerActionRegistry):
     of LayerActionRegistry instead.
     """
     def __call__(self, label, callback, tooltip=None, icon=None):
-        super(LayerActionRegistry, self).add(label, callback, tooltip=tooltip,
-                                             icon=icon, single=True, subset=True)
+        self.add(self.item(label, tooltip, callback, icon, True, False, False, True))
 
 
 class LinkHelperRegistry(Registry):

@@ -393,10 +393,10 @@ class UserAction(LayerAction):
     collection
     """
 
-    def __init__(self, layer_tree_widget, callback=None, name='User Action',
+    def __init__(self, layer_tree_widget, callback=None, label='User Action',
                  tooltip=None, icon=None, single=False, data=False,
                  subset_group=False, subset=False):
-        self._title = name
+        self._title = label
         self._tooltip = tooltip
         self._icon = icon
         self._single = single
@@ -421,7 +421,7 @@ class UserAction(LayerAction):
             else:
                 return False
         else:
-            return len(self.selected_layers) > 0
+            return len(self.selected_layers()) > 0
 
     def _do_action(self):
         if self._single:
@@ -552,7 +552,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         # method, but just has an underscore to prevent conflict with
         # namedtuple attributes.
         for item in layer_action:
-            self._actions[item.name] = UserAction(self, **item._asdict())
+            self._actions[item.label] = UserAction(self, **item._asdict())
 
         # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
