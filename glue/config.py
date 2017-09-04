@@ -4,7 +4,6 @@ import os
 import imp
 import sys
 from collections import namedtuple
-from glue.logger import logger
 
 """
 Objects used to configure Glue at runtime.
@@ -13,11 +12,12 @@ Objects used to configure Glue at runtime.
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
-           'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
-           'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps', 'exporters', 'settings', 'fit_plugin',
-           'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
-           'PreferencePanesRegistry', 'DataExporterRegistry', 'data_exporter']
+           'LayerActionRegistry', 'SingleSubsetLayerActionRegistry',
+           'ProfileFitterRegistry', 'qt_client', 'data_factory',
+           'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
+           'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
+           'preference_panes', 'PreferencePanesRegistry',
+           'DataExporterRegistry', 'data_exporter', 'layer_action']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -526,19 +526,31 @@ class LinkFunctionRegistry(Registry):
         return adder
 
 
-class SingleSubsetLayerActionRegistry(Registry):
-
-    """ Stores custom menu actions available when user selects a single
-        subset in the data collection view
-
-        This members property is a list of (label, tooltip, callback)
-        tuples. callback is a function that takes a Subset and DataCollection
-        as input
+class LayerActionRegistry(Registry):
     """
-    item = namedtuple('SingleSubsetLayerAction', 'label tooltip callback icon')
+    Stores custom menu actions available when the user select one or more
+    datasets, subset group, or subset in the data collection view.
 
+    This members property is a list of (label, tooltip, callback, icon, single,
+    data subset_group subset) tuples. callback is a function that takes a layer
+    or list of layers (data, subset group or subset) and DataCollection as input
+    """
+    item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
+
+    def __call__(self, label, callback, tooltip=None, icon=None, single=False,
+                 data=False, subset_group=False, subset=False):
+        self.add(self.item(label, callback, tooltip, icon, single,
+                           data, subset_group, subset))
+
+
+class SingleSubsetLayerActionRegistry(LayerActionRegistry):
+    """
+    This registry exists for backward-compatibility, but users should make use
+    of LayerActionRegistry instead.
+    """
     def __call__(self, label, callback, tooltip=None, icon=None):
-        self.add(self.item(label, callback, tooltip, icon))
+        super(LayerActionRegistry, self).add(label, callback, tooltip=tooltip,
+                                             icon=icon, single=True, subset=True)
 
 
 class LinkHelperRegistry(Registry):
@@ -608,6 +620,7 @@ importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
+layer_action = LayerActionRegistry()
 single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
