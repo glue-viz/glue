@@ -7,15 +7,23 @@ from matplotlib.collections import LineCollection
 
 from mpl_scatter_density import ScatterDensityArtist
 
+from astropy.visualization import ImageNormalize, LinearStretch, SqrtStretch, AsinhStretch, LogStretch
+
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
+STRETCHES = {'linear': LinearStretch,
+             'sqrt': SqrtStretch,
+             'arcsinh': AsinhStretch,
+             'log': LogStretch}
+
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
-VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES |
+DENSITY_PROPERTIES = set(['dpi', 'stretch'])
+VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
@@ -262,6 +270,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     # Note, we need to square here because for scatter, s is actually
                     # proportional to the marker area, not radius.
                     self.scatter_artist.set_sizes(s ** 2)
+
+            # TODO: use this if dealing with the density map
+
+            if force or 'color' in changed:
+                self.density_artist.set_color(self.state.color)
+
+            if force or 'stretch' in changed:
+                self.density_artist.set_norm(ImageNormalize(stretch=STRETCHES[self.state.stretch]()))
+
+            if force or 'dpi' in changed:
+                self.density_artist.set_dpi(self.state.dpi)
 
         if self.state.line_visible:
 

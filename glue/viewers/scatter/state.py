@@ -178,6 +178,13 @@ class ScatterLayerState(MatplotlibLayerState):
     vector_origin = DDSCProperty(default_index=1, docstring="The attribute to use for the arrow position")
     vector_scaling = DDCProperty(1, docstring="The relative scaling of the arrow length")
 
+    # Density plot layer
+
+    stretch = DDSCProperty(default='log', docstring='The stretch used to render the layer, '
+                                            'which should be one of ``linear``, '
+                                            '``sqrt``, ``log``, or ``arcsinh``')
+    dpi = DDCProperty(72, docstring='The resolution of the density map')
+
     def __init__(self, viewer_state=None, layer=None, **kwargs):
 
         super(ScatterLayerState, self).__init__(viewer_state=viewer_state, layer=layer)
@@ -229,6 +236,14 @@ class ScatterLayerState(MatplotlibLayerState):
 
         ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
         ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
+
+        stretch_display = {'linear': 'Linear',
+                           'sqrt': 'Square Root',
+                           'arcsinh': 'Arcsinh',
+                           'log': 'Logarithmic'}
+
+        ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
+        ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
