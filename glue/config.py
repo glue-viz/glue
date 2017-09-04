@@ -12,8 +12,7 @@ Objects used to configure Glue at runtime.
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
-           'LayerActionRegistry', 'SingleSubsetLayerActionRegistry',
-           'ProfileFitterRegistry', 'qt_client', 'data_factory',
+           'LayerActionRegistry', 'ProfileFitterRegistry', 'qt_client', 'data_factory',
            'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
            'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
            'preference_panes', 'PreferencePanesRegistry',
@@ -550,22 +549,20 @@ class LayerActionRegistry(Registry):
     """
     item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
 
-    def __call__(self, label, tooltip=None, icon=None, single=False,
+    def __call__(self, label, callback=None, tooltip=None, icon=None, single=False,
                  data=False, subset_group=False, subset=False):
+
+        # Backward-compatibility
+        if callback is not None:
+            self.add(self.item(label, tooltip, callback, icon, True,
+                     False, False, True))
+            return True
+
         def adder(func):
             self.add(self.item(label, tooltip, func, icon, single,
                      data, subset_group, subset))
             return func
         return adder
-
-
-class SingleSubsetLayerActionRegistry(LayerActionRegistry):
-    """
-    This registry exists for backward-compatibility, but users should make use
-    of LayerActionRegistry instead.
-    """
-    def __call__(self, label, callback, tooltip=None, icon=None):
-        self.add(self.item(label, tooltip, callback, icon, True, False, False, True))
 
 
 class LinkHelperRegistry(Registry):
@@ -636,7 +633,6 @@ exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
 layer_action = LayerActionRegistry()
-single_subset_action = SingleSubsetLayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
@@ -651,10 +647,13 @@ data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
 
+# Backward-compatibility
+single_subset_action = layer_action
 
 
 def load_configuration(search_path=None):
-    ''' Find and import a config.py file
+    """
+    Find and import a config.py file
 
     Returns:
 
@@ -663,7 +662,7 @@ def load_configuration(search_path=None):
     Raises:
 
        Exception, if no module was found
-    '''
+    """
     search_order = search_path or _default_search_order()
     result = imp.new_module('config')
 

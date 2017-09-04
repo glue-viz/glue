@@ -348,14 +348,16 @@ Registry name                  Registry class
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``data_exporter``            :class:`glue.config.DataExporterRegistry`
+``subset_mask_importer``     :class:`glue.config.SubsetMaskImporterRegistry`
+``subset_mask_exporter``     :class:`glue.config.SubsetMaskExporterRegistry`
 ``link_function``            :class:`glue.config.LinkFunctionRegistry`
 ``link_helper``              :class:`glue.config.LinkHelperRegistry`
 ``colormaps``                :class:`glue.config.ColormapRegistry`
 ``exporters``                :class:`glue.config.ExporterRegistry`
 ``settings``                 :class:`glue.config.SettingRegistry`
-``preference_panes``                 :class:`glue.config.PreferencePanesRegistry`
+``preference_panes``         :class:`glue.config.PreferencePanesRegistry`
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
-``single_subset_action``     :class:`glue.config.SingleSubsetLayerActionRegistry`
+``layer_action``             :class:`glue.config.LayerActionRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:
