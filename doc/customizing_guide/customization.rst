@@ -249,22 +249,42 @@ the following code into ``config.py``::
     from matplotlib.cm import Paired
     colormaps.add('Paired', Paired)
 
-Custom Subset Actions
----------------------
+Custom Actions
+--------------
 
-You can add menu items to run custom functions on subsets. Use the following
-pattern in ``config.py``::
+You can add menu items to run custom functions when selecting datasets, subset
+groups or subsets in the data collection. To do this, you should define a
+function to be called when the menu item is selected, and use the
+``@layer_action`` decorator::
 
-    from glue.config import single_subset_action
+    from glue.config import layer_action
 
-    def callback(subset, data_collection):
-        print("Called with %s, %s" % (subset, data_collection))
+    @layer_action('Do something')
+    def callback(selected_layers, data_collection):
+        print("Called with %s, %s" % (selected_layers, data_collection))
 
-    single_subset_action('Menu title', callback)
+The ``layer_action`` decorator takes an optional ``single`` keyword argument
+that can be set to `True` or `False` to indicate whether the action should only
+appear when a single dataset, subset group, or subset is selected. If ``single``
+is `True`, the following keyword arguments can be used to further control when
+to show the action:
 
-This menu item is available by right clicking on a subset when a single
-subset is selected in the Data Collection window. Note that you must select
-the subset specific to a particular Data set, and not the parent Subset Group.
+* ``data``: only show the action when selecting a dataset
+* ``subset_group``: only show the action when selecting a subset group
+* ``subset``: only show the action when selecting a subset
+
+These default to `False`, so setting e.g.::
+
+    @layer_action('Do something', single=True, data=True, subset=True)
+    ...
+
+means that the action will appear when a single dataset or subset is selected
+but not when a subset group is selected.
+
+The callback function is called with two arguments. If ``single`` is `True`, the
+first argument is the selected layer, otherwise it is the list of selected
+layers. The second argument is the
+:class:`~glue.core.data_collection.DataCollection` object.
 
 Custom Preference Panes
 -----------------------
@@ -328,14 +348,16 @@ Registry name                  Registry class
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``data_exporter``            :class:`glue.config.DataExporterRegistry`
+``subset_mask_importer``     :class:`glue.config.SubsetMaskImporterRegistry`
+``subset_mask_exporter``     :class:`glue.config.SubsetMaskExporterRegistry`
 ``link_function``            :class:`glue.config.LinkFunctionRegistry`
 ``link_helper``              :class:`glue.config.LinkHelperRegistry`
 ``colormaps``                :class:`glue.config.ColormapRegistry`
 ``exporters``                :class:`glue.config.ExporterRegistry`
 ``settings``                 :class:`glue.config.SettingRegistry`
-``preference_panes``                 :class:`glue.config.PreferencePanesRegistry`
+``preference_panes``         :class:`glue.config.PreferencePanesRegistry`
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
-``single_subset_action``     :class:`glue.config.SingleSubsetLayerActionRegistry`
+``layer_action``             :class:`glue.config.LayerActionRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:

@@ -4,7 +4,9 @@ Full changelog
 v0.12.0 (unreleased)
 --------------------
 
-* No changes yet
+* Generalize registry for data/subset actions to replace the former
+  single_subset_action registry (which applied only to single subset selections).
+  Layer actions can now be registered with the ``@layer_action`` decorator. [#1396]
 
 v0.11.2 (unreleased)
 --------------------

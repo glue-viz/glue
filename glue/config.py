@@ -4,7 +4,6 @@ import os
 import imp
 import sys
 from collections import namedtuple
-from glue.logger import logger
 
 """
 Objects used to configure Glue at runtime.
@@ -13,11 +12,12 @@ Objects used to configure Glue at runtime.
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
-           'SingleSubsetLayerActionRegistry', 'ProfileFitterRegistry',
-           'qt_client', 'data_factory', 'link_function', 'link_helper',
-           'colormaps', 'exporters', 'settings', 'fit_plugin',
-           'auto_refresh', 'importer', 'DictRegistry', 'preference_panes',
-           'PreferencePanesRegistry', 'DataExporterRegistry', 'data_exporter']
+           'LayerActionRegistry', 'ProfileFitterRegistry', 'qt_client', 'data_factory',
+           'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
+           'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
+           'preference_panes', 'PreferencePanesRegistry',
+           'DataExporterRegistry', 'data_exporter', 'layer_action',
+           'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -526,19 +526,44 @@ class LinkFunctionRegistry(Registry):
         return adder
 
 
-class SingleSubsetLayerActionRegistry(Registry):
-
-    """ Stores custom menu actions available when user selects a single
-        subset in the data collection view
-
-        This members property is a list of (label, tooltip, callback)
-        tuples. callback is a function that takes a Subset and DataCollection
-        as input
+class LayerActionRegistry(Registry):
     """
-    item = namedtuple('SingleSubsetLayerAction', 'label tooltip callback icon')
+    Stores custom menu actions available when the user select one or more
+    datasets, subset group, or subset in the data collection view.
 
-    def __call__(self, label, callback, tooltip=None, icon=None):
-        self.add(self.item(label, callback, tooltip, icon))
+    This members property is a list of named tuples with the following
+    attributes:
+
+    * ``label``: the user-facing name of the action
+    * ``tooltip``: the text that appears when hovering with the mouse over the action
+    * ``callback``: the function to call when the action is triggered
+    * ``icon``: an icon image to use for the layer action
+    * ``single``: whether to show this action only when selecting single layers (default: `False`)
+    * ``data``: if ``single`` is `True` whether to only show the action when selecting a dataset
+    * ``subset_group``: if ``single`` is `True` whether to only show the action when selecting a subset group
+    * ``subset``: if ``single`` is `True` whether to only show the action when selecting a subset
+
+    The callback function is called with two arguments. If ``single`` is
+    `True`, the first argument is the selected layer, otherwise it is the list
+    of selected layers. The second argument is the
+    `~glue.core.data_collection.DataCollection` object.
+    """
+    item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
+
+    def __call__(self, label, callback=None, tooltip=None, icon=None, single=False,
+                 data=False, subset_group=False, subset=False):
+
+        # Backward-compatibility
+        if callback is not None:
+            self.add(self.item(label, tooltip, callback, icon, True,
+                     False, False, True))
+            return True
+
+        def adder(func):
+            self.add(self.item(label, tooltip, func, icon, single,
+                     data, subset_group, subset))
+            return func
+        return adder
 
 
 class LinkHelperRegistry(Registry):
@@ -608,7 +633,7 @@ importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
-single_subset_action = SingleSubsetLayerActionRegistry()
+layer_action = LayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
@@ -623,10 +648,13 @@ data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
 
+# Backward-compatibility
+single_subset_action = layer_action
 
 
 def load_configuration(search_path=None):
-    ''' Find and import a config.py file
+    """
+    Find and import a config.py file
 
     Returns:
 
@@ -635,7 +663,7 @@ def load_configuration(search_path=None):
     Raises:
 
        Exception, if no module was found
-    '''
+    """
     search_order = search_path or _default_search_order()
     result = imp.new_module('config')
 

@@ -11,7 +11,7 @@ from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode, EditSubsetMode
-from glue.config import single_subset_action
+from glue.config import single_subset_action, layer_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
@@ -384,33 +384,51 @@ class MergeAction(LayerAction):
 
 
 class UserAction(LayerAction):
+    """
+    User-defined callback functions to expose.
 
-    def __init__(self, layer_tree_widget, callback, **kwargs):
-        self._title = kwargs.get('name', 'User Action')
-        self._tooltip = kwargs.get('tooltip', None)
-        self._icon = kwargs.get('icon', None)
+    Users register new actions via the :member:`glue.config.layer_action` member
+
+    Callback functions are passed the layer (or list of layers) and data
+    collection
+    """
+
+    def __init__(self, layer_tree_widget, callback=None, label='User Action',
+                 tooltip=None, icon=None, single=False, data=False,
+                 subset_group=False, subset=False):
+        self._title = label
+        self._tooltip = tooltip
+        self._icon = icon
+        self._single = single
+        self._data = data
+        self._subset_group = subset_group
+        self._subset = subset
         self._callback = callback
         super(UserAction, self).__init__(layer_tree_widget)
 
-
-class SingleSubsetUserAction(UserAction):
-
-    """
-    User-defined callback functions to expose
-    when single subsets are selected.
-
-    Users register new actions via the :member:`glue.config.single_subset_action`
-    member
-
-    Callback functions are passed the subset and data collection
-    """
-
     def _can_trigger(self):
-        return self.single_selection_subset()
+        if self._single:
+            if self.single_selection():
+                layer = self.selected_layers()[0]
+                if isinstance(layer, core.Data) and self._data:
+                    return True
+                elif isinstance(layer, core.SubsetGroup) and self._subset_group:
+                    return True
+                elif isinstance(layer, core.Subset) and self._subset:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return len(self.selected_layers()) > 0
 
     def _do_action(self):
-        subset, = self.selected_layers()
-        return self._callback(subset, self.data_collection)
+        if self._single:
+            subset = self.selected_layers()[0]
+            return self._callback(subset, self.data_collection)
+        else:
+            return self._callback(self.selected_layers(), self.data_collection)
 
 
 class LayerCommunicator(QtCore.QObject):
@@ -530,12 +548,11 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
 
-        # user-defined layer actions
-        for name, callback, tooltip, icon in single_subset_action:
-            self._actions[name] = SingleSubsetUserAction(self, callback,
-                                                         name=name,
-                                                         tooltip=tooltip,
-                                                         icon=icon)
+        # Add user-defined layer actions. Note that _asdict is actually a public
+        # method, but just has an underscore to prevent conflict with
+        # namedtuple attributes.
+        for item in layer_action:
+            self._actions[item.label] = UserAction(self, **item._asdict())
 
         # right click pulls up menu
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
