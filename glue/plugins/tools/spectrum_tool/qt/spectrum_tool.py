@@ -333,11 +333,11 @@ class CollapseContext(SpectrumContext):
         func = self.aggregator
 
         rng = list(self.grip.range)
-        rng[1] += 1
 
         rng = Extractor.world2pixel(self.data,
                                     self.profile_axis,
                                     rng)
+        rng[1] += 1
 
         slices = list(self.viewer_state.slices)
 
