@@ -478,6 +478,18 @@ class QtClientRegistry(Registry):
     """
 
 
+class QtTabRegistry(Registry):
+    """
+    Stores Qt pre-defined tabs (non-MDI)
+
+    New widgets can be registered via::
+
+        @qt_fixed_layout_tab
+        class CustomTab(QWidget):
+            ...
+    """
+
+
 class ViewerToolRegistry(DictRegistry):
 
     def add(self, tool_cls):
@@ -624,7 +636,9 @@ class BooleanSetting(object):
 
         return self.state
 
+
 qt_client = QtClientRegistry()
+qt_fixed_layout_tab = QtTabRegistry()
 viewer_tool = ViewerToolRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()

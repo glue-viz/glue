@@ -333,6 +333,34 @@ This example then looks this the following once glue is loaded:
 .. image:: images/preferences.png
    :align: center
 
+Custom data viewer
+------------------
+
+For information on registering a custom data viewer, see
+:doc:`full_custom_qt_viewer`.
+
+Custom fixed layout tab
+-----------------------
+
+.. note:: this feature is still experimental and may change in future
+
+By default, the main canvas of glue is a free-form canvas where windows can be
+moved around and resized. However, it is also possible to construct fixed
+layouts to create 'dashboards'. To do this, you should import the ``qt_fixed_layout_tab``
+object::
+
+    from glue.config import qt_fixed_layout_tab
+
+then use it to decorate a Qt widget that should be used instead of the free-form
+canvas area, e.g.::
+
+    @qt_fixed_layout_tab
+    def MyCustomLayout(QWidget):
+        pass
+
+The widget can be any valid Qt widget - for instance it could be a widget with
+a grid layout with data viewer widgets in each cell.
+
 Complete list of registries
 ---------------------------
 
@@ -345,6 +373,7 @@ provides more information about what the registry is and how it can be used.
 Registry name                  Registry class
 ========================== =======================================================
 ``qt_client``                :class:`glue.config.QtClientRegistry`
+``qt_fixed_layout_tab``      :class:`glue.config.QtTabRegistry`
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``data_exporter``            :class:`glue.config.DataExporterRegistry`

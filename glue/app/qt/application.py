@@ -35,6 +35,7 @@ from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
 from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
+from glue.config import qt_fixed_layout_tab, qt_client
 
 
 __all__ = ['GlueApplication']
@@ -458,10 +459,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _get_plot_dashboards(self, sub_window):
 
-        if not isinstance(sub_window, GlueMdiSubWindow):
-            return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
-
         widget = sub_window.widget()
+
         if not isinstance(widget, DataViewer):
             return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
 
@@ -568,6 +567,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.setTitle("&Canvas")
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
+        menu.addAction(self._actions['fixed_layout_tab_new'])
         menu.addSeparator()
         menu.addAction(self._actions['gather'])
         menu.addAction(self._actions['tab_rename'])
@@ -627,6 +627,17 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                    shortcut=QtGui.QKeySequence.New)
         a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
+
+        if len(qt_client.members) == 0:
+            a.setEnabled(False)
+
+        a = action("New Fixed Layout Tab", self,
+                   tip="Create a new tab with a fixed layout")
+        a.triggered.connect(nonpartial(self.choose_new_fixed_layout_tab))
+        self._actions['fixed_layout_tab_new'] = a
+
+        if len(qt_fixed_layout_tab.members) == 0:
+            a.setEnabled(False)
 
         a = action('New &Tab', self,
                    shortcut=QtGui.QKeySequence.AddTab,
@@ -733,11 +744,29 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self.plugin_manager))
         self._actions['plugin_manager'] = a
 
+    def choose_new_fixed_layout_tab(self, data=None):
+        """
+        Creates a new tab with a fixed layout
+        """
+
+        tab_cls = pick_class(list(qt_fixed_layout_tab.members), title='Fixed layout tab',
+                             label="Choose a new fixed layout tab",
+                             sort=True)
+
+        tab = tab_cls(session=self.session)
+
+        self._total_tab_count += 1
+
+        name = 'Tab {0}'.format(self._total_tab_count)
+        if hasattr(tab, 'LABEL'):
+            name += ': ' + tab.LABEL
+        self.tab_widget.addTab(tab, name)
+        self.tab_widget.setCurrentWidget(tab)
+        tab.subWindowActivated.connect(self._update_plot_dashboard)
+
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
-
-        from glue.config import qt_client
 
         if data and data.ndim == 1 and ScatterViewer in qt_client.members:
             default = ScatterViewer
