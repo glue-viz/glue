@@ -392,14 +392,14 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         tab.setCurrentWidget(widget)
         widget.subWindowActivated.connect(self._update_plot_dashboard)
 
-    def close_tab(self, index):
+    def close_tab(self, index, warn=True):
         """ Close a tab window and all associated data viewers """
 
         # do not delete the last tab
         if self.tab_widget.count() == 1:
             return
 
-        if not os.environ.get('GLUE_TESTING'):
+        if warn and not os.environ.get('GLUE_TESTING'):
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
@@ -749,7 +749,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self.plugin_manager))
         self._actions['plugin_manager'] = a
 
-    def choose_new_fixed_layout_tab(self, data=None):
+    def choose_new_fixed_layout_tab(self):
         """
         Creates a new tab with a fixed layout
         """
@@ -757,6 +757,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         tab_cls = pick_class(list(qt_fixed_layout_tab.members), title='Fixed layout tab',
                              label="Choose a new fixed layout tab",
                              sort=True)
+
+        return self.add_fixed_layout_tab(tab_cls)
+
+    def add_fixed_layout_tab(self, tab_cls):
 
         tab = tab_cls(session=self.session)
 
@@ -768,6 +772,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.tab_widget.addTab(tab, name)
         self.tab_widget.setCurrentWidget(tab)
         tab.subWindowActivated.connect(self._update_plot_dashboard)
+
+        return tab
 
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
@@ -958,7 +964,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         position : (int, int) Optional
             The default position of the application
         """
-        self._create_terminal()
         if maximized:
             self.showMaximized()
         else:
