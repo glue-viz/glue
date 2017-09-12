@@ -13,6 +13,9 @@ v0.11.2 (unreleased)
 
 * Remove 'sep' from menu on Linux. [#1394]
 
+* Fixed bug in spectrum tool that caused the upper range in aggregations
+  to be incorrectly calculated. [#1402]
+
 v0.11.1 (2017-08-25)
 --------------------
 

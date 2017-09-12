@@ -40,7 +40,7 @@ class LayerAction(QtWidgets.QAction):
 
     def __init__(self, layer_tree_widget):
         self._parent = layer_tree_widget.ui.layerTree
-        super(LayerAction, self).__init__(self._title.capitalize(), self._parent)
+        super(LayerAction, self).__init__(self._title, self._parent)
         self._layer_tree = layer_tree_widget
         if self._icon:
             self.setIcon(get_icon(self._icon))
