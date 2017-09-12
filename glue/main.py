@@ -60,6 +60,8 @@ def parse(argv):
                       help="Increase the vebosity level", default=False)
     parser.add_option('--no-maximized', action='store_true', dest='nomax',
                       help="Do not start Glue maximized", default=False)
+    parser.add_option('--startup', dest='startup', type='string',
+                      help="Startup actions to carry out", default='')
 
     err_msg = verify(parser, argv)
     if err_msg:
@@ -118,7 +120,7 @@ def run_tests():
     test()
 
 
-def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
+def start_glue(gluefile=None, config=None, datafiles=None, maximized=True, startup_actions=None):
     """Run a glue session and exit
 
     Parameters
@@ -184,6 +186,9 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True):
         datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets)
 
+    for name in startup_actions:
+        ga.run_startup_action(name)
+
     return ga.start(maximized=maximized)
 
 
@@ -217,7 +222,8 @@ def main(argv=sys.argv):
 
     # Global keywords for Glue startup.
     kwargs = {'config': opt.config,
-              'maximized': not opt.nomax}
+              'maximized': not opt.nomax,
+              'startup_actions': opt.startup.split(',')}
 
     if opt.test:
         return run_tests()
