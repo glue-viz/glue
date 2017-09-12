@@ -59,7 +59,7 @@ class ImageViewer(MatplotlibDataViewer):
         self.axes.set_adjustable('datalim')
         self.state.add_callback('x_att', self._set_wcs)
         self.state.add_callback('y_att', self._set_wcs)
-        self.state.add_callback('slices', self._set_wcs)
+        self.state.add_callback('slices', self._on_slice_change)
         self.state.add_callback('reference_data', self._set_wcs)
         self.axes._composite = CompositeArray()
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
@@ -90,7 +90,24 @@ class ImageViewer(MatplotlibDataViewer):
             self._set_wcs()
         return result
 
-    def _set_wcs(self, *args):
+    def _on_slice_change(self, event=None):
+        coords = self.state.reference_data.coords
+        ix = self.state.x_att.axis
+        iy = self.state.y_att.axis
+        x_dep = list(coords.dependent_axes(ix))
+        y_dep = list(coords.dependent_axes(iy))
+        if ix in x_dep:
+            x_dep.remove(ix)
+        if iy in x_dep:
+            x_dep.remove(iy)
+        if ix in y_dep:
+            y_dep.remove(ix)
+        if iy in y_dep:
+            y_dep.remove(iy)
+        if x_dep or y_dep:
+            self._set_wcs(event=event, relim=False)
+
+    def _set_wcs(self, event=None, relim=True):
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
@@ -107,14 +124,16 @@ class ImageViewer(MatplotlibDataViewer):
         self._update_appearance_from_settings()
         self._update_axes()
 
-        nx = self.state.reference_data.shape[self.state.x_att.axis]
-        ny = self.state.reference_data.shape[self.state.y_att.axis]
+        if relim:
 
-        with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.state.x_min = -0.5
-            self.state.x_max = nx - 0.5
-            self.state.y_min = -0.5
-            self.state.y_max = ny - 0.5
+            nx = self.state.reference_data.shape[self.state.x_att.axis]
+            ny = self.state.reference_data.shape[self.state.y_att.axis]
+
+            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+                self.state.x_min = -0.5
+                self.state.x_max = nx - 0.5
+                self.state.y_min = -0.5
+                self.state.y_max = ny - 0.5
 
     # TODO: move some of the ROI stuff to state class?
 
