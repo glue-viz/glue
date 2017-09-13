@@ -964,6 +964,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         position : (int, int) Optional
             The default position of the application
         """
+        self._create_terminal()
         if maximized:
             self.showMaximized()
         else:

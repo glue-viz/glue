@@ -361,6 +361,29 @@ canvas area, e.g.::
 The widget can be any valid Qt widget - for instance it could be a widget with
 a grid layout with data viewer widgets in each cell.
 
+Custom startup actions
+----------------------
+
+It is possible to define actions to be carried out in glue once glue is open
+and the data has been loaded. These should be written using the
+``startup_action`` decorator:
+
+    from glue.config import startup_action
+
+    @startup_action("action_name")
+    def my_startup_action(session, data_collection):
+        # do anything here
+        return
+
+The function has access to ``session``, which includes for example
+``session.application``, and thus gives access to the full state of glue.
+
+Startup actions have to then be explicitly specified using:
+
+    glue --startup=action_name
+
+and multiple actions can be given as a comma-separated string.
+
 Complete list of registries
 ---------------------------
 
@@ -387,6 +410,7 @@ Registry name                  Registry class
 ``preference_panes``         :class:`glue.config.PreferencePanesRegistry`
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``layer_action``             :class:`glue.config.LayerActionRegistry`
+``startup_action``           :class:`glue.config.StartupActionRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:

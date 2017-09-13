@@ -91,6 +91,10 @@ class ImageViewer(MatplotlibDataViewer):
         return result
 
     def _on_slice_change(self, event=None):
+
+        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+            return
+
         coords = self.state.reference_data.coords
         ix = self.state.x_att.axis
         iy = self.state.y_att.axis

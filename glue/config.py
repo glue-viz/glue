@@ -18,7 +18,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'preference_panes', 'PreferencePanesRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
-           'StartupActionsRegistry', 'startup_action']
+           'StartupActionRegistry', 'startup_action']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -479,7 +479,7 @@ class QtClientRegistry(Registry):
     """
 
 
-class QtTabRegistry(Registry):
+class QtFixedLayoutTabRegistry(Registry):
     """
     Stores Qt pre-defined tabs (non-MDI)
 
@@ -509,7 +509,7 @@ class ViewerToolRegistry(DictRegistry):
         return tool_cls
 
 
-class StartupActionsRegistry(DictRegistry):
+class StartupActionRegistry(DictRegistry):
 
     def add(self, startup_name, startup_function):
         """
@@ -670,7 +670,7 @@ class BooleanSetting(object):
 
 
 qt_client = QtClientRegistry()
-qt_fixed_layout_tab = QtTabRegistry()
+qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -683,7 +683,7 @@ layer_action = LayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
-startup_action = StartupActionsRegistry()
+startup_action = StartupActionRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
