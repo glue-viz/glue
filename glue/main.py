@@ -186,8 +186,9 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True, start
         datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets)
 
-    for name in startup_actions:
-        ga.run_startup_action(name)
+    if startup_actions is not None:
+        for name in startup_actions:
+            ga.run_startup_action(name)
 
     return ga.start(maximized=maximized)
 
@@ -222,8 +223,10 @@ def main(argv=sys.argv):
 
     # Global keywords for Glue startup.
     kwargs = {'config': opt.config,
-              'maximized': not opt.nomax,
-              'startup_actions': opt.startup.split(',')}
+              'maximized': not opt.nomax}
+
+    if opt.startup:
+        kwargs['startup_actions'] = opt.startup.split(',')
 
     if opt.test:
         return run_tests()
