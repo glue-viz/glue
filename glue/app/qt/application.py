@@ -440,6 +440,20 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                               of new_widget
         :type hold_position: bool
         """
+
+        # Find first tab that supports addSubWindow
+        if tab is None:
+            if hasattr(self.current_tab, 'addSubWindow'):
+                pass
+            else:
+                for tab in range(self.tab_count):
+                    page = self.tab(tab)
+                    if hasattr(page, 'addSubWindow'):
+                        break
+                else:
+                    self.new_tab()
+                    tab = self.tab_count - 1
+
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
@@ -452,6 +466,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         page.setActiveSubWindow(sub)
         if hold_position and pos is not None:
             new_widget.move(pos[0], pos[1])
+
+        self.tab_widget.setCurrentWidget(page)
+
         return sub
 
     def _edit_settings(self):
@@ -928,6 +945,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._hide_terminal()
 
     def _toggle_terminal(self):
+        if self._terminal is None:
+            self._create_terminal()
         if self._terminal.isVisible():
             self._hide_terminal()
             if self._terminal.isVisible():
@@ -964,7 +983,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         position : (int, int) Optional
             The default position of the application
         """
-        self._create_terminal()
         if maximized:
             self.showMaximized()
         else:
