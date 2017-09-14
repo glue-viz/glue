@@ -233,7 +233,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     @classmethod
-    def add_datasets(cls, data_collection, datasets):
+    def add_datasets(cls, data_collection, datasets, auto_merge=False):
         """ Utility method to interactively add datasets to a
         data_collection
 
@@ -269,7 +269,10 @@ class Application(HubListener):
             if not other:
                 continue
 
-            merges, label = cls._choose_merge(data, other)
+            if auto_merge:
+                merges, label = [data] + other, data.label
+            else:
+                merges, label = cls._choose_merge(data, other)
 
             if merges:
                 data_collection.merge(*merges, label=label)

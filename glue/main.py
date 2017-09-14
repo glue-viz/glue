@@ -62,6 +62,8 @@ def parse(argv):
                       help="Do not start Glue maximized", default=False)
     parser.add_option('--startup', dest='startup', type='string',
                       help="Startup actions to carry out", default='')
+    parser.add_option('--auto-merge', dest='auto_merge', action='store_true',
+                      help="Automatically merge any data passed on the command-line", default='')
 
     err_msg = verify(parser, argv)
     if err_msg:
@@ -120,23 +122,22 @@ def run_tests():
     test()
 
 
-def start_glue(gluefile=None, config=None, datafiles=None, maximized=True, startup_actions=None):
+def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
+               startup_actions=None, auto_merge=False):
     """Run a glue session and exit
 
     Parameters
     ----------
     gluefile : str
         An optional ``.glu`` file to restore.
-
     config : str
         An optional configuration file to use.
-
     datafiles : str
         An optional list of data files to load.
-
     maximized : bool
         Maximize screen on startup. Otherwise, use default size.
-
+    auto_merge : bool, optional
+        Whether to automatically merge data passed in `datafiles` (default is `False`)
     """
 
     import glue
@@ -184,7 +185,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True, start
 
     if datafiles:
         datasets = load_data_files(datafiles)
-        ga.add_datasets(data_collection, datasets)
+        ga.add_datasets(data_collection, datasets, auto_merge=auto_merge)
 
     if startup_actions is not None:
         for name in startup_actions:
@@ -223,7 +224,8 @@ def main(argv=sys.argv):
 
     # Global keywords for Glue startup.
     kwargs = {'config': opt.config,
-              'maximized': not opt.nomax}
+              'maximized': not opt.nomax,
+              'auto_merge': opt.auto_merge}
 
     if opt.startup:
         kwargs['startup_actions'] = opt.startup.split(',')
