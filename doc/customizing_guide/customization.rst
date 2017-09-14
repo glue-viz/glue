@@ -366,7 +366,7 @@ Custom startup actions
 
 It is possible to define actions to be carried out in glue once glue is open
 and the data has been loaded. These should be written using the
-``startup_action`` decorator:
+``startup_action`` decorator::
 
     from glue.config import startup_action
 
@@ -378,7 +378,7 @@ and the data has been loaded. These should be written using the
 The function has access to ``session``, which includes for example
 ``session.application``, and thus gives access to the full state of glue.
 
-Startup actions have to then be explicitly specified using:
+Startup actions have to then be explicitly specified using::
 
     glue --startup=action_name
 
@@ -396,7 +396,7 @@ provides more information about what the registry is and how it can be used.
 Registry name                  Registry class
 ========================== =======================================================
 ``qt_client``                :class:`glue.config.QtClientRegistry`
-``qt_fixed_layout_tab``      :class:`glue.config.QtTabRegistry`
+``qt_fixed_layout_tab``      :class:`glue.config.QtFixedLayoutTabRegistry`
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``data_exporter``            :class:`glue.config.DataExporterRegistry`
