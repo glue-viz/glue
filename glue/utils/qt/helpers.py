@@ -75,14 +75,32 @@ class GlueTabBar(QtWidgets.QTabBar):
     def __init__(self, *args, **kwargs):
         super(GlueTabBar, self).__init__(*args, **kwargs)
 
-    def rename_tab(self, index=None):
-        """ Prompt user to rename a tab
-        :param index: integer. Index of tab to edit. Defaults to current index
+    def choose_rename_tab(self, index=None):
+        """ 
+        Prompt user to rename a tab
+
+        Parameters
+        ----------
+        index : int
+            Index of tab to edit. Defaults to current index
         """
         index = index or self.currentIndex()
         label = get_text("New Tab Label")
         if not label:
             return
+        self.rename_tab(self, index, label)
+
+    def rename_tab(self, index, label):
+        """
+        Updates the name used for given tab
+
+        Parameters
+        ----------
+        index : int
+            Index of tab to edit. Defaults to current index
+        label : str
+            New label to use for this tab
+        """
         self.setTabText(index, label)
 
     def mouseDoubleClickEvent(self, event):
@@ -90,7 +108,7 @@ class GlueTabBar(QtWidgets.QTabBar):
             return
         index = self.tabAt(event.pos())
         if index >= 0:
-            self.rename_tab(index)
+            self.choose_rename_tab(index)
 
 
 def load_ui(path, parent=None, directory=None):
