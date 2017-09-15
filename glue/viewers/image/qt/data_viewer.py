@@ -148,6 +148,9 @@ class ImageViewer(MatplotlibDataViewer):
 
     def _apply_roi(self, roi):
 
+        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+            return
+
         # TODO Does subset get applied to all data or just visible data?
 
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
