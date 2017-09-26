@@ -374,6 +374,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
     def current_tab(self):
         return self._ui.tabWidget.currentWidget()
 
+    def get_tab_index(self, widget):
+        for idx in range(self.tab_count):
+            if self.tab(idx) == widget:
+                return idx
+        raise Exception("Tab not found")
+
     def tab(self, index=None):
         if index is None:
             return self.current_tab
@@ -670,7 +676,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a = action('&Rename Tab', self,
                    shortcut="Ctrl+R",
                    tip='Set a new label for the current tab')
-        a.triggered.connect(nonpartial(self.tab_bar.rename_tab))
+        a.triggered.connect(nonpartial(self.tab_bar.choose_rename_tab))
         self._actions['tab_rename'] = a
 
         a = action('&Gather Windows', self,
