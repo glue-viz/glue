@@ -74,6 +74,12 @@ class ModestImage(mi.AxesImage):
     def get_cursor_data(self, event):
         return None
 
+    def contains(self, mouseevent):
+        if self._A is None or self._A.shape is None:
+            return False
+        else:
+            return super(ModestImage, self).contains(mouseevent)
+
     def set_extent(self, extent):
         self._full_extent = extent
         self.invalidate_cache()

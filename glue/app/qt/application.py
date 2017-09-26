@@ -35,7 +35,7 @@ from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
 from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
-
+from glue.config import qt_fixed_layout_tab, qt_client, startup_action
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
@@ -228,6 +228,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.new_tab()
         self._update_plot_dashboard(None)
 
+    def run_startup_action(self, name):
+        if name in startup_action.members:
+            startup_action.members[name](self.session, self.data_collection)
+        else:
+            raise Exception("Unknown startup action: {0}".format(name))
+
     def _setup_ui(self):
         self._ui = load_ui('application.ui', None,
                            directory=os.path.dirname(__file__))
@@ -386,14 +392,14 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         tab.setCurrentWidget(widget)
         widget.subWindowActivated.connect(self._update_plot_dashboard)
 
-    def close_tab(self, index):
+    def close_tab(self, index, warn=True):
         """ Close a tab window and all associated data viewers """
 
         # do not delete the last tab
         if self.tab_widget.count() == 1:
             return
 
-        if not os.environ.get('GLUE_TESTING'):
+        if warn and not os.environ.get('GLUE_TESTING'):
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
@@ -434,6 +440,20 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                               of new_widget
         :type hold_position: bool
         """
+
+        # Find first tab that supports addSubWindow
+        if tab is None:
+            if hasattr(self.current_tab, 'addSubWindow'):
+                pass
+            else:
+                for tab in range(self.tab_count):
+                    page = self.tab(tab)
+                    if hasattr(page, 'addSubWindow'):
+                        break
+                else:
+                    self.new_tab()
+                    tab = self.tab_count - 1
+
         page = self.tab(tab)
         pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
@@ -446,6 +466,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         page.setActiveSubWindow(sub)
         if hold_position and pos is not None:
             new_widget.move(pos[0], pos[1])
+
+        self.tab_widget.setCurrentWidget(page)
+
         return sub
 
     def _edit_settings(self):
@@ -458,10 +481,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _get_plot_dashboards(self, sub_window):
 
-        if not isinstance(sub_window, GlueMdiSubWindow):
-            return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
-
         widget = sub_window.widget()
+
         if not isinstance(widget, DataViewer):
             return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
 
@@ -568,6 +589,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.setTitle("&Canvas")
         menu.addAction(self._actions['tab_new'])
         menu.addAction(self._actions['viewer_new'])
+        menu.addAction(self._actions['fixed_layout_tab_new'])
         menu.addSeparator()
         menu.addAction(self._actions['gather'])
         menu.addAction(self._actions['tab_rename'])
@@ -627,6 +649,17 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                    shortcut=QtGui.QKeySequence.New)
         a.triggered.connect(nonpartial(self.choose_new_data_viewer))
         self._actions['viewer_new'] = a
+
+        if len(qt_client.members) == 0:
+            a.setEnabled(False)
+
+        a = action("New Fixed Layout Tab", self,
+                   tip="Create a new tab with a fixed layout")
+        a.triggered.connect(nonpartial(self.choose_new_fixed_layout_tab))
+        self._actions['fixed_layout_tab_new'] = a
+
+        if len(qt_fixed_layout_tab.members) == 0:
+            a.setEnabled(False)
 
         a = action('New &Tab', self,
                    shortcut=QtGui.QKeySequence.AddTab,
@@ -733,11 +766,35 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self.plugin_manager))
         self._actions['plugin_manager'] = a
 
+    def choose_new_fixed_layout_tab(self):
+        """
+        Creates a new tab with a fixed layout
+        """
+
+        tab_cls = pick_class(list(qt_fixed_layout_tab.members), title='Fixed layout tab',
+                             label="Choose a new fixed layout tab",
+                             sort=True)
+
+        return self.add_fixed_layout_tab(tab_cls)
+
+    def add_fixed_layout_tab(self, tab_cls):
+
+        tab = tab_cls(session=self.session)
+
+        self._total_tab_count += 1
+
+        name = 'Tab {0}'.format(self._total_tab_count)
+        if hasattr(tab, 'LABEL'):
+            name += ': ' + tab.LABEL
+        self.tab_widget.addTab(tab, name)
+        self.tab_widget.setCurrentWidget(tab)
+        tab.subWindowActivated.connect(self._update_plot_dashboard)
+
+        return tab
+
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
-
-        from glue.config import qt_client
 
         if data and data.ndim == 1 and ScatterViewer in qt_client.members:
             default = ScatterViewer
@@ -888,6 +945,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._hide_terminal()
 
     def _toggle_terminal(self):
+        if self._terminal is None:
+            self._create_terminal()
         if self._terminal.isVisible():
             self._hide_terminal()
             if self._terminal.isVisible():
@@ -924,7 +983,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         position : (int, int) Optional
             The default position of the application
         """
-        self._create_terminal()
         if maximized:
             self.showMaximized()
         else:

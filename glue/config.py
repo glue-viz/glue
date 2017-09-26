@@ -17,7 +17,9 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
            'preference_panes', 'PreferencePanesRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
-           'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry']
+           'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
+           'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
+           'qt_fixed_layout_tab']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -478,6 +480,18 @@ class QtClientRegistry(Registry):
     """
 
 
+class QtFixedLayoutTabRegistry(Registry):
+    """
+    Stores Qt pre-defined tabs (non-MDI)
+
+    New widgets can be registered via::
+
+        @qt_fixed_layout_tab
+        class CustomTab(QWidget):
+            ...
+    """
+
+
 class ViewerToolRegistry(DictRegistry):
 
     def add(self, tool_cls):
@@ -494,6 +508,37 @@ class ViewerToolRegistry(DictRegistry):
     def __call__(self, tool_cls):
         self.add(tool_cls)
         return tool_cls
+
+
+class StartupActionRegistry(DictRegistry):
+
+    def add(self, startup_name, startup_function):
+        """
+        Add a startup function to the registry. This is a function that will
+        get called once glue has been started and any data loaded, and can
+        be used to set up specific layouts and create links.
+
+        Startup actions are triggered by either specifying comma-separated names
+        of actions on the command-line::
+
+            glue --startup=mystartupaction
+
+        or by passing an iterable of startup action names to the ``startup``
+        keyword of ``GlueApplication``.
+
+        The startup function will be given the session object and the data
+        collection object.
+        """
+        if startup_name in self.members:
+            raise ValueError("A startup action with the name '{0}' already exists".format(startup_name))
+        else:
+            self.members[startup_name] = startup_function
+
+    def __call__(self, name):
+        def adder(func):
+            self.add(name, func)
+            return func
+        return adder
 
 
 class LinkFunctionRegistry(Registry):
@@ -624,7 +669,9 @@ class BooleanSetting(object):
 
         return self.state
 
+
 qt_client = QtClientRegistry()
+qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -637,6 +684,7 @@ layer_action = LayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
+startup_action = StartupActionRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)

@@ -333,6 +333,57 @@ This example then looks this the following once glue is loaded:
 .. image:: images/preferences.png
    :align: center
 
+Custom data viewer
+------------------
+
+For information on registering a custom data viewer, see
+:doc:`full_custom_qt_viewer`.
+
+Custom fixed layout tab
+-----------------------
+
+.. note:: this feature is still experimental and may change in future
+
+By default, the main canvas of glue is a free-form canvas where windows can be
+moved around and resized. However, it is also possible to construct fixed
+layouts to create 'dashboards'. To do this, you should import the ``qt_fixed_layout_tab``
+object::
+
+    from glue.config import qt_fixed_layout_tab
+
+then use it to decorate a Qt widget that should be used instead of the free-form
+canvas area, e.g.::
+
+    @qt_fixed_layout_tab
+    def MyCustomLayout(QWidget):
+        pass
+
+The widget can be any valid Qt widget - for instance it could be a widget with
+a grid layout with data viewer widgets in each cell.
+
+Custom startup actions
+----------------------
+
+It is possible to define actions to be carried out in glue once glue is open
+and the data has been loaded. These should be written using the
+``startup_action`` decorator::
+
+    from glue.config import startup_action
+
+    @startup_action("action_name")
+    def my_startup_action(session, data_collection):
+        # do anything here
+        return
+
+The function has access to ``session``, which includes for example
+``session.application``, and thus gives access to the full state of glue.
+
+Startup actions have to then be explicitly specified using::
+
+    glue --startup=action_name
+
+and multiple actions can be given as a comma-separated string.
+
 Complete list of registries
 ---------------------------
 
@@ -345,6 +396,7 @@ provides more information about what the registry is and how it can be used.
 Registry name                  Registry class
 ========================== =======================================================
 ``qt_client``                :class:`glue.config.QtClientRegistry`
+``qt_fixed_layout_tab``      :class:`glue.config.QtFixedLayoutTabRegistry`
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
 ``data_factory``             :class:`glue.config.DataFactoryRegistry`
 ``data_exporter``            :class:`glue.config.DataExporterRegistry`
@@ -358,6 +410,7 @@ Registry name                  Registry class
 ``preference_panes``         :class:`glue.config.PreferencePanesRegistry`
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``layer_action``             :class:`glue.config.LayerActionRegistry`
+``startup_action``           :class:`glue.config.StartupActionRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:

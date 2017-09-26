@@ -366,18 +366,18 @@ def test_logger_close():
 
 def test_reset_session_terminal():
 
-    # Regression test to make sure that the terminal still exists when
+    # Regression test to make sure that the terminal still works when
     # resetting a session
 
     app = GlueApplication()
     app2 = app._reset_session(warn=False)
 
-    assert app2.has_terminal(create_if_not=False)
+    assert app2.has_terminal()
 
 
 def test_open_session_terminal(tmpdir):
 
-    # Regression test to make sure that the terminal still exists when
+    # Regression test to make sure that the terminal still works when
     # opening a previous session
 
     session_file = tmpdir.join('test.glu').strpath
@@ -387,4 +387,4 @@ def test_open_session_terminal(tmpdir):
 
     app2 = app.restore_session(session_file)
 
-    assert app2.has_terminal(create_if_not=False)
+    assert app2.has_terminal()
