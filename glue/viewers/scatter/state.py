@@ -146,6 +146,8 @@ class ScatterLayerState(MatplotlibLayerState):
     xerr_att = DDSCProperty(docstring="The attribute to use for the x error bars")
     yerr_att = DDSCProperty(docstring="The attribute to use for the y error bars")
 
+    vx_att = DDSCProperty(docstring="The attribute to use for the x vector arrow")
+    vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
     # Line plot layer
 
     linewidth = DDCProperty(1, docstring="The line width")
@@ -176,6 +178,13 @@ class ScatterLayerState(MatplotlibLayerState):
 
         self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att',
                                                       numeric=True, categorical=False)
+
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att',
+                                                      numeric=True, categorical=False)
+
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
+                                                      numeric=True, categorical=False)
+
 
         ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -218,6 +227,13 @@ class ScatterLayerState(MatplotlibLayerState):
             else:
                 self.xerr_att_helper.set_multiple_data([self.layer])
                 self.yerr_att_helper.set_multiple_data([self.layer])
+
+            if self.layer is None:
+                self.vx_att_helper.set_multiple_data([])
+                self.vy_att_helper.set_multiple_data([])
+            else:
+                self.vx_att_helper.set_multiple_data([self.layer])
+                self.vy_att_helper.set_multiple_data([self.layer])
 
     def flip_cmap(self):
         """

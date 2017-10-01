@@ -12,11 +12,13 @@ from glue.core.exceptions import IncompatibleAttribute
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 SIZE_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
+
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
-                       'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible'])
+                       'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
+                       'vx_att', 'vy_att'])
 
 
 class InvertedNormalize(Normalize):
@@ -46,13 +48,16 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
+        self.vector_artist = self.axes.quiver([], [], [], [], units='xy', scale=1) # x, y, vx, vy
 
         # Line
         self.line_artist = self.axes.plot([], [], '-')[0]
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
-                            self.errorbar_artist, self.line_artist]
+                            self.errorbar_artist, self.line_artist,
+                            self.vector_artist]
         self.errorbar_index = 2
+        self.vector_index = 3
 
         self.reset_cache()
 
@@ -132,6 +137,14 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.errorbar_artist = self.axes.errorbar(x, y, fmt='none',
                                                           xerr=xerr, yerr=yerr)
                 self.mpl_artists[self.errorbar_index] = self.errorbar_artist
+
+            if self.state.vx_att and self.state.vy_att:
+                vx = self.layer[self.state.vx_att].ravel()
+                vy = self.layer[self.state.vy_att].ravel()
+
+                self.vector_artist = self.axes.quiver(x, y, vx, vy, units='xy',
+                                                      scale=1)
+                self.mpl_artists[self.vector_index] = self.vector_artist
 
         elif self.state.style == 'Line':
 
