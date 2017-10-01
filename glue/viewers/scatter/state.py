@@ -148,6 +148,8 @@ class ScatterLayerState(MatplotlibLayerState):
 
     vx_att = DDSCProperty(docstring="The attribute to use for the x vector arrow")
     vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
+    vector_visible = DDCProperty(False, docstring="Whether to show vector plot")
+
     # Line plot layer
 
     linewidth = DDCProperty(1, docstring="The line width")

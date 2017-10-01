@@ -18,7 +18,7 @@ VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
-                       'vx_att', 'vy_att'])
+                       'vector_visible', 'vx_att', 'vy_att'])
 
 
 class InvertedNormalize(Normalize):
@@ -122,6 +122,14 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     except AttributeError:  # Matplotlib < 1.5
                         pass
 
+            if self.vector_artist is not None:
+                try:
+                    self.vector_artist.remove()
+                except ValueError:
+                    pass
+                except AttributeError:   # Matplotlib < 1.5
+                    pass
+
             if self.state.xerr_visible or self.state.yerr_visible:
 
                 if self.state.xerr_visible and self.state.xerr_att is not None:
@@ -138,9 +146,18 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                           xerr=xerr, yerr=yerr)
                 self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
-            if self.state.vx_att and self.state.vy_att:
-                vx = self.layer[self.state.vx_att].ravel()
-                vy = self.layer[self.state.vy_att].ravel()
+            if self.state.vector_visible:
+
+                if self.state.vx_att is not None and self.state.vy_att is not None:
+                    vx = self.layer[self.state.vx_att].ravel()
+                    vy = self.layer[self.state.vy_att].ravel()
+                    print('x', x)
+                    print('y', y)
+                    print('vx', vx)
+                    print('vy', vy)
+                else:
+                    vx = None
+                    vy = None
 
                 self.vector_artist = self.axes.quiver(x, y, vx, vy, units='xy',
                                                       scale=1)
@@ -240,6 +257,20 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if force or 'zorder' in changed:
                         eartist.set_zorder(self.state.zorder)
+
+            if self.state.vector_visible and self.vector_artist is not None:
+
+                if force or 'color' in changed:
+                    self.vector_artist.set_color(self.state.color)
+
+                if force or 'alpha' in changed:
+                    self.vector_artist.set_alpha(self.state.alpha)
+
+                if force or 'visible' in changed:
+                    self.vector_artist.set_visible(self.state.visible)
+
+                if force or 'zorder' in changed:
+                    self.vector_artist.set_zorder(self.state.zorder)
 
         elif self.state.style == 'Line':
 

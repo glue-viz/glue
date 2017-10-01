@@ -30,12 +30,14 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state.add_callback('xerr_visible', self._update_xerr_att_combo)
         self.layer_state.add_callback('yerr_visible', self._update_yerr_att_combo)
+        self.layer_state.add_callback('vector_visible', self._update_vector_att_combo)
         self.layer_state.add_callback('size_mode', self._update_size_mode)
         self.layer_state.add_callback('cmap_mode', self._update_cmap_mode)
         self.layer_state.add_callback('layer', self._update_warnings)
 
         self._update_xerr_att_combo()
         self._update_yerr_att_combo()
+        self._update_vector_att_combo()
         self._update_size_mode()
         self._update_cmap_mode()
         self._update_warnings()
@@ -45,6 +47,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
     def _update_yerr_att_combo(self, *args):
         self.ui.combosel_yerr_att.setEnabled(self.layer_state.yerr_visible)
+
+    def _update_vector_att_combo(self, *args):
+        self.ui.combosel_vx_att.setEnabled(self.layer_state.vector_visible)
+        self.ui.combosel_vy_att.setEnabled(self.layer_state.vector_visible)
 
     def _update_warnings(self):
 
@@ -67,6 +73,11 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.label_warning_errorbar.show()
         else:
             self.ui.label_warning_errorbar.hide()
+
+        if n_points > 10000:
+            self.ui.label_warning_vector.show()
+        else:
+            self.ui.label_warning_vector.hide()
 
     def _update_size_mode(self, size_mode=None):
 

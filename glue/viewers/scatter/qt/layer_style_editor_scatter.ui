@@ -572,18 +572,18 @@
       <widget class="QComboBox" name="combosel_vy_att">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>53</y>
+         <x>120</x>
+         <y>40</y>
          <width>104</width>
          <height>26</height>
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="label_warning_errorbar_2">
+      <widget class="QLabel" name="label_warning_vector">
        <property name="geometry">
         <rect>
          <x>12</x>
-         <y>9</y>
+         <y>0</y>
          <width>328</width>
          <height>16</height>
         </rect>
@@ -601,8 +601,8 @@
       <widget class="QLabel" name="label_7">
        <property name="geometry">
         <rect>
-         <x>102</x>
-         <y>55</y>
+         <x>90</x>
+         <y>37</y>
          <width>31</width>
          <height>20</height>
         </rect>
@@ -620,8 +620,8 @@
       <widget class="QComboBox" name="combosel_vx_att">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>28</y>
+         <x>120</x>
+         <y>15</y>
          <width>104</width>
          <height>26</height>
         </rect>
@@ -630,8 +630,8 @@
       <widget class="QLabel" name="label_8">
        <property name="geometry">
         <rect>
-         <x>102</x>
-         <y>30</y>
+         <x>90</x>
+         <y>17</y>
          <width>31</width>
          <height>20</height>
         </rect>
@@ -644,6 +644,19 @@
        </property>
        <property name="text">
         <string>vx:</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="bool_vector_visible">
+       <property name="geometry">
+        <rect>
+         <x>60</x>
+         <y>27</y>
+         <width>19</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </widget>
