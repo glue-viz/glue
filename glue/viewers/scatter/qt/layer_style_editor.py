@@ -51,6 +51,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
     def _update_vector_att_combo(self, *args):
         self.ui.combosel_vx_att.setEnabled(self.layer_state.vector_visible)
         self.ui.combosel_vy_att.setEnabled(self.layer_state.vector_visible)
+        self.ui.bool_vector_hide_arrow.setEnabled(self.layer_state.vector_visible)
 
     def _update_warnings(self):
 

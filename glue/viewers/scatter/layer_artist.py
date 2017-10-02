@@ -18,7 +18,7 @@ VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
-                       'vector_visible', 'vx_att', 'vy_att'])
+                       'vector_visible', 'vx_att', 'vy_att', 'vector_hide_arrow'])
 
 
 class InvertedNormalize(Normalize):
@@ -159,8 +159,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     vx = None
                     vy = None
 
+                if self.state.vector_hide_arrow:
+                    hw = 0
+                else:
+                    hw = 3 # matplotlib default
+
                 self.vector_artist = self.axes.quiver(x, y, vx, vy, units='xy',
-                                                      scale=1)
+                                                      scale=1, headwidth=hw)
                 self.mpl_artists[self.vector_index] = self.vector_artist
 
         elif self.state.style == 'Line':
