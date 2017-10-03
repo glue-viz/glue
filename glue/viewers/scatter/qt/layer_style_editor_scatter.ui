@@ -588,6 +588,26 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
+       <item row="3" column="3" colspan="3">
+        <widget class="QCheckBox" name="bool_vector_hide_arrow">
+         <property name="text">
+          <string>Hide arrow</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="3">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item row="1" column="1">
         <widget class="QCheckBox" name="bool_vector_visible">
          <property name="text">
@@ -608,10 +628,10 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="4">
+       <item row="1" column="5">
         <widget class="QComboBox" name="combosel_vx_att"/>
        </item>
-       <item row="1" column="5">
+       <item row="1" column="6">
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -624,11 +644,11 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="4">
+       <item row="2" column="5">
         <widget class="QComboBox" name="combosel_vy_att"/>
        </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_6">
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_vector_y">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -640,8 +660,8 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="label_5">
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_vector_x">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -653,7 +673,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="6">
+       <item row="0" column="0" colspan="7">
         <widget class="QLabel" name="label_warning_vector">
          <property name="styleSheet">
           <string notr="true">color: #BB2200</string>
@@ -666,24 +686,30 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="combosel_vector_mode">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="sizeHint" stdset="0">
+         <property name="maximumSize">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>80</width>
+           <height>16777215</height>
           </size>
          </property>
-        </spacer>
-       </item>
-       <item row="3" column="2" colspan="3">
-        <widget class="QCheckBox" name="bool_vector_hide_arrow">
-         <property name="text">
-          <string>Hide arrow</string>
-         </property>
+         <item>
+          <property name="text">
+           <string>vx/vy</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ang/length</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>

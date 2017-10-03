@@ -149,12 +149,15 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             if self.state.vector_visible:
 
                 if self.state.vx_att is not None and self.state.vy_att is not None:
+
                     vx = self.layer[self.state.vx_att].ravel()
                     vy = self.layer[self.state.vy_att].ravel()
-                    print('x', x)
-                    print('y', y)
-                    print('vx', vx)
-                    print('vy', vy)
+                    if self.state.vector_mode == 'ang/length':
+                        ang = vx
+                        length = vy
+                        # assume ang is anti clockwise from the x axis
+                        vx = length * np.cos(np.radians(ang))
+                        vy = length * np.sin(np.radians(ang))
                 else:
                     vx = None
                     vy = None

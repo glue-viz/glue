@@ -150,6 +150,7 @@ class ScatterLayerState(MatplotlibLayerState):
     vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
     vector_visible = DDCProperty(False, docstring="Whether to show vector plot")
     vector_hide_arrow = DDCProperty(False, docstring="Whether to hide vector arrow")
+    vector_mode = DDSCProperty(docstring="Which attribute to use for plotting vectors")
 
     # Line plot layer
 
@@ -192,6 +193,7 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.vector_mode.set_choices(self, ['vx/vy', 'ang/length'])
 
         linestyle_display = {'solid': '–––––––',
                              'dashed': '– – – – –',

@@ -32,6 +32,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state.add_callback('yerr_visible', self._update_yerr_att_combo)
         self.layer_state.add_callback('vector_visible', self._update_vector_att_combo)
         self.layer_state.add_callback('size_mode', self._update_size_mode)
+        self.layer_state.add_callback('vector_mode', self._update_vector_mode)
         self.layer_state.add_callback('cmap_mode', self._update_cmap_mode)
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -39,6 +40,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self._update_yerr_att_combo()
         self._update_vector_att_combo()
         self._update_size_mode()
+        self._update_vector_mode()
         self._update_cmap_mode()
         self._update_warnings()
 
@@ -90,6 +92,15 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.value_size.hide()
             self.ui.combosel_size_att.show()
             self.ui.size_row_2.show()
+
+    def _update_vector_mode(self, vector_mode=None):
+        if self.layer_state.vector_mode == 'vx/vy':
+            self.ui.label_vector_x.setText('vx')
+            self.ui.label_vector_y.setText('vy')
+        elif self.layer_state.vector_mode == 'ang/length':
+            self.ui.label_vector_x.setText('ang')
+            self.ui.label_vector_y.setText('length')
+
 
     def _update_cmap_mode(self, cmap_mode=None):
 
