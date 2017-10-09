@@ -160,6 +160,14 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     hub = None
 
+    from qtpy.QtCore import QTimer
+
+    timer = QTimer()
+    timer.setInterval(1000)
+    timer.setSingleShot(True)
+    timer.timeout.connect(splash.close)
+    timer.start()
+
     if gluefile is not None:
         app = restore_session(gluefile)
         return app.start()
@@ -174,14 +182,6 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     session = glue.core.Session(data_collection=data_collection, hub=hub)
     ga = GlueApplication(session=session)
-
-    from qtpy.QtCore import QTimer
-
-    timer = QTimer()
-    timer.setInterval(1000)
-    timer.setSingleShot(True)
-    timer.timeout.connect(splash.close)
-    timer.start()
 
     if datafiles:
         datasets = load_data_files(datafiles)
