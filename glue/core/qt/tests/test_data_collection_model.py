@@ -35,17 +35,17 @@ class TestDataCollectionModel(object):
 
     def test_row_count_single_subset1(self):
         model = self.make_model(2, 1)
-        assert model.rowCount(model.subsets_index(0)) == 2
+        assert model.rowCount(model.subsets_index(0)) == 0
 
     def test_row_count_single_subset2(self):
         model = self.make_model(2, 1)
         s = model.subsets_index(0)
 
         idx = model.index(0, 0, s)
-        assert model.rowCount(idx) == 0
+        assert model.rowCount(idx) == 2
 
         idx = model.index(1, 0, s)
-        assert model.rowCount(s) == 2
+        assert model.rowCount(s) == 0
 
     def test_invalid_indices(self):
         model = self.make_model(1, 2)
@@ -74,8 +74,6 @@ class TestDataCollectionModel(object):
         assert model.data(model.data_index(0), Qt.DisplayRole) == 'test1'
         assert model.data(model.subsets_index(0), Qt.DisplayRole) == 'subset1'
         assert model.data(model.subsets_index(1), Qt.DisplayRole) == 'subset2'
-        assert model.data(model.index(0, 0, model.subsets_index(0)),
-                          Qt.DisplayRole) == 'subset1 (test1)'
 
     def test_column_count(self):
         model = self.make_model(1, 2)
@@ -101,7 +99,7 @@ class TestDataCollectionModel(object):
     def test_drag_flags(self):
         model = self.make_model(1, 2)
 
-        sg = model.subsets_index(0)
+        sg = model.subsets_index()
         subset = model.index(0, 0, sg)
         assert model.flags(model.data_index(0)) & Qt.ItemIsDragEnabled
         assert model.flags(subset) & Qt.ItemIsDragEnabled
@@ -126,9 +124,8 @@ class TestDataCollectionModel(object):
     def test_layers_mime_type_multiselection(self):
         model = self.make_model(1, 2)
         idxs = [model.data_index(0),
-                model.subsets_index(0),
-                model.index(0, 0, model.subsets_index(0))]
+                model.subsets_index(0)]
 
         dc = model.data_collection
-        expected = [dc[0], dc.subset_groups[0], dc.subset_groups[0].subsets[0]]
+        expected = [dc[0], dc.subset_groups[0]]
         assert model.mimeData(idxs).data(LAYERS_MIME_TYPE) == expected

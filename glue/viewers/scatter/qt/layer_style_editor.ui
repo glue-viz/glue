@@ -22,6 +22,9 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
     </widget>
    </item>
    <item row="0" column="0" colspan="2">

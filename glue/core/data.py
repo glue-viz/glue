@@ -656,6 +656,7 @@ class Data(object):
             Manually-instantiated subsets will **not** be
             represented properly by the UI
         """
+
         if subset in self.subsets:
             return  # prevents infinite recursion
         if isinstance(subset, SubsetState):

@@ -230,9 +230,12 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         else:
             parent_item = self.root
 
-        child_item = parent_item.child(row)
-        if child_item:
-            return self._make_index(row, column, child_item)
+        if parent_item.children_count > 0:
+            child_item = parent_item.child(row)
+            if child_item:
+                return self._make_index(row, column, child_item)
+            else:
+                return QtCore.QModelIndex()
         else:
             return QtCore.QModelIndex()
 
@@ -346,6 +349,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         return self.index(subset_number, 0, base)
 
     def rowCount(self, index=QtCore.QModelIndex()):
+
         item = self._get_item(index)
 
         if item is None:
