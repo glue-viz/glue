@@ -61,21 +61,17 @@ class Subset(object):
         via DataCollection.new_subset_group. Manually-instantiated
         subsets will probably *not* be represented properly by the UI
         """
-        self._broadcasting = False  # must be first def
-        self.data = data
-        self._subset_state = None
-        self._label = None
-        self._style = None
-        self._setup(color, alpha, label)
 
-    @contract(color='color', alpha='float', label='string|None')
-    def _setup(self, color, alpha, label):
-        self.color = color
+        self._broadcasting = False  # must be first def
+
+        self.data = data
         self.label = label  # trigger disambiguation
+
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 1.5
         self.style.color = color
         self.style.alpha = alpha
+
         self.subset_state = SubsetState()  # calls proper setter method
 
     @property
