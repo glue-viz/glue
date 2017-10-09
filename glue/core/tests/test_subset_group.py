@@ -50,46 +50,15 @@ class TestSubsetGroup(object):
             assert sub.subset_state is sg.subset_state
             assert sub.label is sg.label
 
-    @restore_settings
-    def test_set_style_overrides(self):
-
-        # Test to make sure that if the user has selected to allow individual
-        # subset colors, the subset color can become out of sync with the
-        # group color.
-
-        settings.INDIVIDUAL_SUBSET_COLOR = True
-
-        self.sg.register(self.dc)
-        sg = self.sg
-        sg.subsets[0].style.color = 'blue'
-        for sub in sg.subsets[1:]:
-            assert sub.style.color != 'blue'
-
-        assert sg.subsets[0].style.color == 'blue'
-
     def test_new_subset_group_syncs_style(self):
         sg = self.dc.new_subset_group()
         for sub in sg.subsets:
             assert sub.style == sg.style
 
-    @restore_settings
-    def test_set_group_style_clears_override(self):
-        settings.INDIVIDUAL_SUBSET_COLOR = True
-        sg = self.dc.new_subset_group()
-        style = sg.style.copy()
-        style.parent = sg.subsets[0]
-        sg.subsets[0].style = style
-        style.color = 'blue'
-        sg.style.color = 'red'
-        assert sg.subsets[0].style.color == 'red'
-
     def test_changing_subset_style_changes_group(self):
 
         # Test to make sure that if a subset's visual properties are changed,
         # the visual properties of all subsets in the same subset group are changed
-
-        # This is just to make sure the default setting is still False
-        assert not settings.INDIVIDUAL_SUBSET_COLOR
 
         d1 = Data(x=[1, 2, 3], label='d1')
         d2 = Data(y=[2, 3, 4], label='d2')
