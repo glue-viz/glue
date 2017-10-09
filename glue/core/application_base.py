@@ -6,12 +6,12 @@ from functools import wraps
 from glue.core.session import Session
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.hub import HubListener
-from glue.core import Data, Subset
+from glue.core import Data, SubsetGroup
 from glue.core import command
 from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
-from glue.utils import as_list, PropertySetMixin
+from glue.utils import PropertySetMixin
 
 
 __all__ = ['Application', 'ViewerBase']
@@ -362,9 +362,9 @@ class ViewerBase(HubListener, PropertySetMixin):
     def add_layer(self, layer):
         if isinstance(layer, Data):
             self.add_data(layer)
-        elif isinstance(layer, Subset):
-            self.add_subset(layer)
-        # else: SubsetGroup
+        elif isinstance(layer, SubsetGroup):
+            for subset in layer.subsets:
+                self.add_subset(subset)
 
     def add_data(self, data):
         """ Add a data instance to the viewer
