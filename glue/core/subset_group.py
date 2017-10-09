@@ -19,8 +19,7 @@ from warnings import warn
 
 from glue.external import six
 from glue.core.contracts import contract
-from glue.core.message import (SubsetUpdateMessage,
-                               DataCollectionAddMessage,
+from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage)
 from glue.core.visual import VisualAttributes
 from glue.core.hub import HubListener
@@ -47,26 +46,29 @@ class GroupedSubset(Subset):
         :param data: :class:`~glue.core.data.Data` instance to bind to
         :param group: :class:`~glue.core.subset_group.SubsetGroup`
         """
-        self.group = group
-        super(GroupedSubset, self).__init__(data, label=group.label,
-                                            color=group.style.color,
-                                            alpha=group.style.alpha)
 
-    def _setup(self, color, alpha, label):
-        self.color = color
-        self.label = label  # trigger disambiguation
-        self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
-        self.style.color = color
-        self.style.alpha = alpha
-        # skip state setting here
+        # We deliberately don't call Subset.__init__ here because we don't want
+        # to set e.g. the subset state, color, transparency, etc. Instead we
+        # just want to defer to the SubsetGroup for these.
+
+        self._broadcasting = False  # must be first def
+
+        self.group = group
+
+        self.data = data
+        self.label = group.label  # trigger disambiguation
+
+    @property
+    def style(self):
+        return self.group.style
+
+    @property
+    def subset_group(self):
+        return self.group.subset_group
 
     @property
     def verbose_label(self):
         return "%s (%s)" % (self.label, self.data.label)
-
-    def sync_style(self, other):
-        self.style.set(other)
 
     def __eq__(self, other):
         return other is self
@@ -85,7 +87,6 @@ class GroupedSubset(Subset):
         self = cls(None, dummy_grp)
         yield self
         self.group = context.object(rec['group'])
-        self.style = context.object(rec['style'])
 
 
 class SubsetGroup(HubListener):
@@ -98,12 +99,13 @@ class SubsetGroup(HubListener):
         DataCollection.new_subset.
         """
         self.subsets = []
-        if subset_state is None:
-            subset_state = SubsetState()
 
-        self.subset_state = subset_state
+        if subset_state is None:
+            self.subset_state = SubsetState()
+        else:
+            self.subset_state = subset_state
+
         self.label = label
-        self._style = None
 
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
@@ -155,19 +157,6 @@ class SubsetGroup(HubListener):
         hub.subscribe(self, DataCollectionDeleteMessage,
                       lambda x: self._remove_data(x.data))
 
-        def has_subset(msg):
-            return msg.attribute == 'style' and msg.subset in self.subsets
-
-        hub.subscribe(self, SubsetUpdateMessage,
-                      self._sync_style_from_subset,
-                      filter=has_subset)
-
-    def _sync_style_from_subset(self, msg):
-        if settings.INDIVIDUAL_SUBSET_COLOR:
-            return
-        self._style.set(msg.subset.style)
-        self.broadcast('style')
-
     @property
     def style(self):
         return self._style
@@ -175,19 +164,9 @@ class SubsetGroup(HubListener):
     @style.setter
     def style(self, value):
         self._style = value
-        self._sync_style()
-
-    def _sync_style(self):
-        for s in self.subsets:
-            s.sync_style(self.style)
 
     @contract(item='string')
     def broadcast(self, item):
-        # used by __setattr__ and VisualAttributes.__setattr__
-        if item == 'style':
-            self._sync_style()
-            return
-
         for s in self.subsets:
             s.broadcast(item)
 
