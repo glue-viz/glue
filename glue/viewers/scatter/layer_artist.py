@@ -48,7 +48,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
-        self.vector_artist = self.axes.quiver([], [], [], [], units='xy', scale=1) # x, y, vx, vy
+        self.vector_artist = self.axes.quiver([], [], [], [], units='width',
+                                              pivot='mid') # x, y, vx, vy
 
         # Line
         self.line_artist = self.axes.plot([], [], '-')[0]
@@ -167,8 +168,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 else:
                     hw = 3 # matplotlib default
 
-                self.vector_artist = self.axes.quiver(x, y, vx, vy, units='xy',
-                                                      scale=1, headwidth=hw)
+                self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
+                                                      pivot='mid',
+                                                      headwidth=hw)
                 self.mpl_artists[self.vector_index] = self.vector_artist
 
         elif self.state.style == 'Line':
@@ -218,17 +220,25 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if self.state.cmap_mode == 'Fixed':
                         self.scatter_artist.set_facecolors(c)
+                        self.vector_artist.set_facecolors(c)
                     else:
                         self.scatter_artist.set_array(c)
                         self.scatter_artist.set_cmap(cmap)
+                        self.vector_artist.set_array(c)
+                        self.vector_artist.set_cmap(cmap)
                         if vmin > vmax:
                             self.scatter_artist.set_clim(vmax, vmin)
                             self.scatter_artist.set_norm(InvertedNormalize(vmax, vmin))
+                            self.vector_artist.set_clim(vmax, vmin)
+                            self.vector_artist.set_norm(InvertedNormalize(vmax, vmin))
                         else:
                             self.scatter_artist.set_clim(vmin, vmax)
                             self.scatter_artist.set_norm(Normalize(vmin, vmax))
+                            self.vector_artist.set_clim(vmin, vmax)
+                            self.vector_artist.set_norm(Normalize(vmin, vmax))
 
                     self.scatter_artist.set_edgecolor('none')
+                    self.vector_artist.set_edgecolor('none')
 
                 if force or any(prop in changed for prop in SIZE_PROPERTIES):
 

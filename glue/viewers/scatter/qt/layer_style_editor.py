@@ -98,7 +98,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.label_vector_x.setText('vx')
             self.ui.label_vector_y.setText('vy')
         elif self.layer_state.vector_mode == 'ang/length':
-            self.ui.label_vector_x.setText('ang')
+            self.ui.label_vector_x.setText('ang(deg)')
             self.ui.label_vector_y.setText('length')
 
 
