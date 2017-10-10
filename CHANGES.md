@@ -4,6 +4,8 @@ Full changelog
 v0.12.0 (unreleased)
 --------------------
 
+* Don't disable layer completely if it is not enabled, just disable checkbox. [#1451]
+
 * Generalize registry for data/subset actions to replace the former
   single_subset_action registry (which applied only to single subset selections).
   Layer actions can now be registered with the ``@layer_action`` decorator. [#1396]

@@ -50,7 +50,7 @@ class LayerArtistModel(PythonListModel):
             return result
         if role == Qt.CheckStateRole:
             art = self.artists[index.row()]
-            result = Qt.Checked if art.visible else Qt.Unchecked
+            result = Qt.Checked if art.visible and art.enabled else Qt.Unchecked
             return result
         if role == Qt.ToolTipRole:
             art = self.artists[index.row()]
@@ -67,8 +67,6 @@ class LayerArtistModel(PythonListModel):
                 result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
                           Qt.ItemIsUserCheckable)
             else:
-                result = (result & Qt.ItemIsEnabled) ^ result
-                result = (result & Qt.ItemIsSelectable) ^ result
                 result = (result & Qt.ItemIsUserCheckable) ^ result
         else:  # only drop between rows, where index isn't valid
             result = result | Qt.ItemIsDropEnabled
