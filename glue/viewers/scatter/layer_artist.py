@@ -18,7 +18,8 @@ VISUAL_PROPERTIES = (CMAP_PROPERTIES | SIZE_PROPERTIES |
 
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
-                       'vector_visible', 'vx_att', 'vy_att', 'vector_hide_arrow'])
+                       'vector_visible', 'vx_att', 'vy_att', 'vector_show_arrow',
+                       'origin_pos'])
 
 
 class InvertedNormalize(Normalize):
@@ -49,7 +50,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = self.axes.quiver([], [], [], [], units='width',
-                                              pivot='mid') # x, y, vx, vy
+                                              pivot='mid',
+                                              headwidth=1, headlength=0) # x, y, vx, vy
 
         # Line
         self.line_artist = self.axes.plot([], [], '-')[0]
@@ -153,7 +155,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     vx = self.layer[self.state.vx_att].ravel()
                     vy = self.layer[self.state.vy_att].ravel()
-                    if self.state.vector_mode == 'ang/length':
+                    if self.state.vector_mode == 'Polarization':
                         ang = vx
                         length = vy
                         # assume ang is anti clockwise from the x axis
@@ -163,14 +165,15 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     vx = None
                     vy = None
 
-                if self.state.vector_hide_arrow:
-                    hw = 0
+                if self.state.vector_show_arrow:
+                    hw = 3
+                    hl = 5
                 else:
-                    hw = 3 # matplotlib default
-
+                    hw = 1
+                    hl = 0
                 self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
-                                                      pivot='mid',
-                                                      headwidth=hw)
+                                                      pivot=str(self.state.origin_pos),
+                                                      headwidth=hw, headlength=hl)
                 self.mpl_artists[self.vector_index] = self.vector_artist
 
         elif self.state.style == 'Line':

@@ -53,7 +53,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
     def _update_vector_att_combo(self, *args):
         self.ui.combosel_vx_att.setEnabled(self.layer_state.vector_visible)
         self.ui.combosel_vy_att.setEnabled(self.layer_state.vector_visible)
-        self.ui.bool_vector_hide_arrow.setEnabled(self.layer_state.vector_visible)
+        self.ui.bool_vector_show_arrow.setEnabled(self.layer_state.vector_visible)
 
     def _update_warnings(self):
 
@@ -94,10 +94,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.size_row_2.show()
 
     def _update_vector_mode(self, vector_mode=None):
-        if self.layer_state.vector_mode == 'vx/vy':
+        if self.layer_state.vector_mode == 'Cartesian':
             self.ui.label_vector_x.setText('vx')
             self.ui.label_vector_y.setText('vy')
-        elif self.layer_state.vector_mode == 'ang/length':
+        elif self.layer_state.vector_mode == 'Polarization':
             self.ui.label_vector_x.setText('ang(deg)')
             self.ui.label_vector_y.setText('length')
 

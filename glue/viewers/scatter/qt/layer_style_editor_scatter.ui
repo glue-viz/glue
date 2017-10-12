@@ -588,13 +588,6 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
-       <item row="3" column="3" colspan="3">
-        <widget class="QCheckBox" name="bool_vector_hide_arrow">
-         <property name="text">
-          <string>Hide arrow</string>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="3">
         <spacer name="verticalSpacer_3">
          <property name="orientation">
@@ -710,6 +703,53 @@
            <string>ang/length</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QComboBox" name="combosel_origin_pos">
+         <property name="currentText">
+          <string>Mid</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Mid</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tail</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Middle</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tip</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Origin is:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QCheckBox" name="bool_vector_show_arrow">
+         <property name="text">
+          <string>Show arrow</string>
+         </property>
         </widget>
        </item>
       </layout>
