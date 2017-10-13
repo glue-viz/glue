@@ -16,6 +16,9 @@ v0.11.2 (unreleased)
 * Fixed bug in spectrum tool that caused the upper range in aggregations
   to be incorrectly calculated. [#1402]
 
+* Fixed icon for scatter plot layer when a colormap is used, and fix issues with
+  viewer layer icons not updating immediately.
+
 v0.11.1 (2017-08-25)
 --------------------
 

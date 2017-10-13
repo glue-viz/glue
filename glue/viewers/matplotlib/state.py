@@ -4,6 +4,7 @@ from glue.external.echo import (CallbackProperty, ListCallbackProperty,
                                 SelectionCallbackProperty, keep_in_sync)
 
 from glue.core.state_objects import State
+from glue.core.message import LayerArtistUpdatedMessage
 
 from glue.utils import defer_draw
 
@@ -89,3 +90,9 @@ class MatplotlibLayerState(State):
 
         self._sync_color = keep_in_sync(self, 'color', self.layer.style, 'color')
         self._sync_alpha = keep_in_sync(self, 'alpha', self.layer.style, 'alpha')
+
+        self.add_global_callback(self._notify_layer_update)
+
+    def _notify_layer_update(self, **kwargs):
+        message = LayerArtistUpdatedMessage(self)
+        self.layer.hub.broadcast(message)

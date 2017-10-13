@@ -297,6 +297,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if force or len(changed & VISUAL_PROPERTIES) > 0:
             self._update_visual_attributes(changed, force=force)
 
+    def get_layer_color(self):
+        if self.state.style != 'Scatter' or self.state.cmap_mode == 'Fixed':
+            return self.state.color
+        else:
+            return self.state.cmap
+
     @defer_draw
     def update(self):
 

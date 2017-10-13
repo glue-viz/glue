@@ -2,9 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
-
-from glue.core import Data, Subset
+from glue.core import Data
 
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
