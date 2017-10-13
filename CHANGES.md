@@ -25,6 +25,8 @@ v0.11.2 (unreleased)
 
 * Make sure no errors happen if making a selection in an empty viewer.
 
+* Fix creating faceted subsets on Python 3.x when no dataset is selected.
+
 v0.11.1 (2017-08-25)
 --------------------
 
