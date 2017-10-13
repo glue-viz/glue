@@ -112,6 +112,10 @@ class HistogramViewerState(MatplotlibDataViewerState):
         """
         The position of the bins for the histogram based on the current state.
         """
+
+        if self.hist_x_min is None or self.hist_x_max is None or self.hist_n_bin is None:
+            return None
+
         if self.x_log:
             return np.logspace(np.log10(self.hist_x_min),
                                np.log10(self.hist_x_max),

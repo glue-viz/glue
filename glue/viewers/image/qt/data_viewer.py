@@ -142,9 +142,13 @@ class ImageViewer(MatplotlibDataViewer):
     # TODO: move some of the ROI stuff to state class?
 
     def apply_roi(self, roi):
-        cmd = command.ApplyROI(data_collection=self._data,
-                               roi=roi, apply_func=self._apply_roi)
-        self._session.command_stack.do(cmd)
+        if len(self.layers) > 0:
+            cmd = command.ApplyROI(data_collection=self._data,
+                                   roi=roi, apply_func=self._apply_roi)
+            self._session.command_stack.do(cmd)
+        else:
+            # Make sure we force a redraw to get rid of the ROI
+            self.axes.figure.canvas.draw()
 
     def _apply_roi(self, roi):
 

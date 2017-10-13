@@ -188,6 +188,12 @@ class TestScatterViewer(object):
         state = self.data.subsets[0].subset_state
         assert isinstance(state, AndState)
 
+    def test_apply_roi_empty(self):
+        # Make sure that doing an ROI selection on an empty viewer doesn't
+        # produce error messsages
+        roi = XRangeROI(-0.2, 0.1)
+        self.viewer.apply_roi(roi)
+
     def test_axes_labels(self):
 
         viewer_state = self.viewer.state

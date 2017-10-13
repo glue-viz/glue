@@ -293,6 +293,12 @@ class TestHistogramViewer(object):
 
         assert_equal(state.roi.categories, ['a', 'b'])
 
+    def test_apply_roi_empty(self):
+        # Make sure that doing an ROI selection on an empty viewer doesn't
+        # produce error messsages
+        roi = XRangeROI(-0.2, 0.1)
+        self.viewer.apply_roi(roi)
+
     def test_axes_labels(self):
 
         viewer_state = self.viewer.state

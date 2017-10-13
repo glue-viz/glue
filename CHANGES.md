@@ -23,6 +23,8 @@ v0.11.2 (unreleased)
   rather than trying to load it as a dataset). Also now show a warning when
   the application is about to be reset to open a new session.
 
+* Make sure no errors happen if making a selection in an empty viewer.
+
 v0.11.1 (2017-08-25)
 --------------------
 
