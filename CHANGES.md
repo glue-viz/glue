@@ -19,6 +19,10 @@ v0.11.2 (unreleased)
 * Fixed icon for scatter plot layer when a colormap is used, and fix issues with
   viewer layer icons not updating immediately.
 
+* Fixed dragging and dropping session files onto glue (this now loads the session
+  rather than trying to load it as a dataset). Also now show a warning when
+  the application is about to be reset to open a new session.
+
 v0.11.1 (2017-08-25)
 --------------------
 

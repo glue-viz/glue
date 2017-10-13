@@ -868,9 +868,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if not file_name:
             return
 
-        with set_cursor_cm(Qt.WaitCursor):
-            ga = self.restore_session(file_name)
-            self.close()
+        ga = self.restore_session_and_close(file_name)
         return ga
 
     def _reset_session(self, show=True, warn=True):
@@ -1032,8 +1030,30 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 if path.startswith('/') and path[2] == ':':
                     path = path[1:]
 
-            self.load_data(path)
+            if path.endswith('.glu'):
+                self.restore_session_and_close(path)
+            else:
+                self.load_data(path)
+
         event.accept()
+
+    def restore_session_and_close(self, path):
+
+        buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+
+        dialog = QtWidgets.QMessageBox.warning(
+            self, "Confirm Close",
+            "Loading a session file will close the existing session. Are you "
+            "sure you want to continue?",
+            buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
+
+        if not dialog == QtWidgets.QMessageBox.Ok:
+            return
+
+        with set_cursor_cm(Qt.WaitCursor):
+            app = self.restore_session(path)
+            app.setGeometry(self.geometry())
+            self.close()
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
