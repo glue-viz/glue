@@ -138,6 +138,12 @@ class DataViewerWithState(DataViewer):
     def _add_subset(self, message):
         self.add_subset(message.subset)
 
+    def _update_data(self, message):
+        if message.data in self._layer_artist_container:
+            for layer_artist in self._layer_artist_container[message.data]:
+                layer_artist.update()
+            self.redraw()
+
     def _update_subset(self, message):
         if message.subset in self._layer_artist_container:
             for layer_artist in self._layer_artist_container[message.subset]:
@@ -186,9 +192,9 @@ class DataViewerWithState(DataViewer):
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
                       handler=self._remove_data)
 
-        # hub.subscribe(self, msg.ComponentsChangedMessage,
-        #               handler=self._update_data,
-        #               filter=has_data)
+        hub.subscribe(self, msg.ComponentsChangedMessage,
+                      handler=self._update_data,
+                      filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.SettingsChangeMessage,
                       self._update_appearance_from_settings,

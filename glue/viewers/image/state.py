@@ -124,7 +124,9 @@ class ImageViewerState(MatplotlibDataViewerState):
         for data, layer_states in layer_state_by_data.items():
             if len(layer_states) > 1:
                 for layer_state in layer_states:
-                    if layer_state.global_sync:
+                    # Scatter layers don't have global_sync so we need to be
+                    # careful here and make sure we return a default value
+                    if getattr(layer_state, 'global_sync', False):
                         layer_state.global_sync = False
 
     def _update_combo_ref_data(self):

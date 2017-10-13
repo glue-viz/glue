@@ -27,6 +27,8 @@ v0.11.2 (unreleased)
 
 * Fix creating faceted subsets on Python 3.x when no dataset is selected.
 
+* Fix issues with overlaying a scatter layer on an image.
+
 v0.11.1 (2017-08-25)
 --------------------
 
