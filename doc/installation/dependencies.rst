@@ -13,7 +13,7 @@ Glue has the following required dependencies:
 * `setuptools <http://setuptools.readthedocs.io/en/latest/>`_ 1.0 or later
 * Either `PySide <http://pyside.org>`__ or `PyQt
   <https://riverbankcomputing.com/software/pyqt/intro>`__ (both PyQt4 and PyQt5 are supported)
-* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
+* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.2 or higher - this is an
   abstraction layer for the Python Qt packages
 * `IPython <http://ipython.org>`_ 4.0 or higher
 * `ipykernel <https://pypi.python.org/pypi/ipykernel>`_
