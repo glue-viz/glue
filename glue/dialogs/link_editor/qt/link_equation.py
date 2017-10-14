@@ -30,7 +30,7 @@ def function_label(function):
 
     :param function: A member from the glue.config.link_function registry
     """
-    args = getargspec(function.function)[0]
+    args = getfullargspec(function.function)[0]
     args = ', '.join(args)
     output = function.output_labels
     output = ', '.join(output)
