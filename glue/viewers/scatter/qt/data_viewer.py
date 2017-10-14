@@ -36,6 +36,7 @@ class ScatterViewer(MatplotlibDataViewer):
         self.state.add_callback('y_att', nonpartial(self._update_axes))
         self.state.add_callback('x_log', nonpartial(self._update_axes))
         self.state.add_callback('y_log', nonpartial(self._update_axes))
+        self._update_axes()
 
     def _update_axes(self):
 

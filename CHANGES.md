@@ -29,6 +29,10 @@ v0.11.2 (unreleased)
 
 * Fix issues with overlaying a scatter layer on an image.
 
+* Fix issues with labels for categorical axes in the scatter and histogram
+  viewers, in particular when loading viewers with categorical axes from
+  session files.
+
 v0.11.1 (2017-08-25)
 --------------------
 
