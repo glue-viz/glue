@@ -95,4 +95,5 @@ class MatplotlibLayerState(State):
 
     def _notify_layer_update(self, **kwargs):
         message = LayerArtistUpdatedMessage(self)
-        self.layer.hub.broadcast(message)
+        if self.layer is not None and self.layer.hub is not None:
+            self.layer.hub.broadcast(message)
