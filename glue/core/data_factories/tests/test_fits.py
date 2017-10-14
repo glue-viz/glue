@@ -61,26 +61,27 @@ def test_container_fits():
 
     # Check that fits_reader takes HDUList objects
 
-    hdulist = fits.open(os.path.join(DATA, 'generic.fits'))
-    d_set = fits_reader(hdulist)
+    with fits.open(os.path.join(DATA, 'generic.fits')) as hdulist:
 
-    _assert_equal_expected(d_set, expected)
+        d_set = fits_reader(hdulist)
 
-    # Sometimes the primary HDU is empty but with an empty array rather than
-    # None
+        _assert_equal_expected(d_set, expected)
 
-    hdulist[0].data = np.array([])
-    d_set = fits_reader(hdulist)
+        # Sometimes the primary HDU is empty but with an empty array rather than
+        # None
 
-    _assert_equal_expected(d_set, expected)
+        hdulist[0].data = np.array([])
+        d_set = fits_reader(hdulist)
 
-    # Check that exclude_exts works
+        _assert_equal_expected(d_set, expected)
 
-    d_set = fits_reader(hdulist, exclude_exts=['TWOD'])
-    expected_reduced = deepcopy(expected)
-    expected_reduced.pop('generic[TWOD]')
+        # Check that exclude_exts works
 
-    _assert_equal_expected(d_set, expected_reduced)
+        d_set = fits_reader(hdulist, exclude_exts=['TWOD'])
+        expected_reduced = deepcopy(expected)
+        expected_reduced.pop('generic[TWOD]')
+
+        _assert_equal_expected(d_set, expected_reduced)
 
 
 @requires_astropy

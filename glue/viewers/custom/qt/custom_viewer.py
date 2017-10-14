@@ -67,7 +67,13 @@ The end user typically interacts with this code via
 from __future__ import print_function, division
 
 from functools import partial
-from inspect import getmodule, getargspec
+from inspect import getmodule
+
+try:
+    from inspect import getfullargspec
+except ImportError:  # Python 2.7
+    from inspect import getargspec as getfullargspec
+
 from types import FunctionType, MethodType
 from copy import copy
 
@@ -240,7 +246,7 @@ def introspect_and_call(func, settings):
 
     a(settings('x'), settings('y'))
     """
-    a, k, _, _ = getargspec(func)
+    a, k = getfullargspec(func)[:2]
 
     try:
         # get the current values of each input to the UDF

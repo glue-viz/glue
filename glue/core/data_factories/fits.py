@@ -52,11 +52,15 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
     from astropy.table import Table
 
     exclude_exts = exclude_exts or []
-    if not isinstance(source, fits.hdu.hdulist.HDUList):
+
+    if isinstance(source, fits.hdu.hdulist.HDUList):
+        hdulist = source
+        close_hdulist = False
+    else:
         hdulist = fits.open(source, ignore_missing_end=True)
         hdulist.verify('fix')
-    else:
-        hdulist = source
+        close_hdulist = True
+
     groups = OrderedDict()
     extension_by_shape = OrderedDict()
 
@@ -108,10 +112,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
             elif is_table_hdu(hdu):
                 # Loop through columns and make component list
                 table = Table.read(hdu, format='fits')
-                label = '{0}[{1}]'.format(
-                    label_base,
-                    hdu_name
-                )
+                label = '{0}[{1}]'.format(label_base, hdu_name)
                 data = Data(label=label)
                 groups[hdu_name] = data
                 for column_name in table.columns:
@@ -122,6 +123,10 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                     component = Component.autotyped(column, units=column.unit)
                     data.add_component(component=component,
                                        label=column_name)
+
+    if close_hdulist:
+        hdulist.close()
+
     return [groups[idx] for idx in groups]
 
 
