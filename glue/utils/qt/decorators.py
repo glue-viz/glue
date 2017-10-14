@@ -54,7 +54,7 @@ def messagebox_on_error(msg, sep='\n'):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                m = "%s%s%s" % (msg, sep, e.args[0])
+                m = "%s%s%s" % (msg, sep, str(e))
                 detail = str(traceback.format_exc())
                 qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
                 qmb.setDetailedText(detail)
