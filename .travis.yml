@@ -62,13 +62,9 @@ matrix:
                PIP_DEPENDENCIES="pytest-cov coveralls"
                REMOVE_INSTALL_REQUIRES=1
 
-        # We need to keep the following on 2.7 because of linkchecker
         - os: linux
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                DOC_TRIGGER=1
-               APP_TRIGGER=1
-               NUMPY_VERSION=1.11
-               ASTROPY_VERSION=1.3
                PYTEST_ARGS="--cov glue --no-optional-skip"
                NO_CFG_FILES=true
 
@@ -121,9 +117,7 @@ before_install:
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
-  # Note that we need to specify requests 2.9 because of a bug in the version check in linkchecker,
-  # and we can't use conda since requests 2.9 won't exist for e.g. Python 3.6
-  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc linkchecker requests==2.9 "$PIP_DEPENDENCIES; fi
+  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc requests "$PIP_DEPENDENCIES; fi
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
@@ -200,16 +194,15 @@ script:
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
-  - python setup.py test -a "$PYTEST_ARGS";
+  - python setup.py test -a "$PYTEST_ARGS"
 
   # In the following, we use separate if statements for each line, to make
   # sure the exit code from each one is taken into account for the overall
   # exit code.
-  - if [ $DOC_TRIGGER ]; then cd doc; make html 2> warnings.log; cd ..; fi
+  - if [ $DOC_TRIGGER ]; then cd doc; make html linkcheck 2> warnings.log; cd ..; fi
   - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
   # make sure stderr was empty, i.e. no warnings
   - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then linkchecker --ignore-url=".*fontawesome.*" doc/_build/html; fi
 
 after_success:
 
