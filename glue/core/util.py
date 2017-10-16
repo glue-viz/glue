@@ -328,7 +328,6 @@ def tick_linker(all_categories, pos, *args):
     else:
         try:
             pos = np.round(pos)
-            print(all_categories[int(pos)])
             return all_categories[int(pos)]
         except IndexError:
             return ''
