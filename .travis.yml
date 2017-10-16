@@ -67,6 +67,8 @@ matrix:
           env: PYTHON_VERSION=2.7
                DOC_TRIGGER=1
                APP_TRIGGER=1
+               NUMPY_VERSION=1.11
+               ASTROPY_VERSION=1.3
                PYTEST_ARGS="--cov glue --no-optional-skip"
                NO_CFG_FILES=true
 
