@@ -152,8 +152,8 @@ class ComponentLink(object):
         result = np.asarray(result)
         logger.debug("shape of result: %s", result.shape)
         if result.shape != args[0].shape:
-            logger.warn("ComponentLink function %s changed shape. Fixing",
-                        self._using.__name__)
+            logger.debug("ComponentLink function %s changed shape. Fixing",
+                         self._using.__name__)
             result.shape = args[0].shape
         return result
 

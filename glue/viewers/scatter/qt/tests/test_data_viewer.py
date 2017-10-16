@@ -16,11 +16,11 @@ from glue.core.roi import XRangeROI, RectangularROI
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
-from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.app.qt import GlueApplication
 
 from ..data_viewer import ScatterViewer
 
@@ -42,14 +42,15 @@ class TestScatterViewer(object):
         self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]],
                             x=[[3, 5], [5.4, 1]], y=[[1.2, 4], [7, 8]])
 
-        self.session = simple_session()
+        self.app = GlueApplication()
+        self.session = self.app.session
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
         self.data_collection.append(self.data_2d)
 
-        self.viewer = ScatterViewer(self.session)
+        self.viewer = self.app.new_data_viewer(ScatterViewer)
 
         self.data_collection.register_to_hub(self.hub)
         self.viewer.register_to_hub(self.hub)
@@ -187,6 +188,12 @@ class TestScatterViewer(object):
 
         state = self.data.subsets[0].subset_state
         assert isinstance(state, AndState)
+
+    def test_apply_roi_empty(self):
+        # Make sure that doing an ROI selection on an empty viewer doesn't
+        # produce error messsages
+        roi = XRangeROI(-0.2, 0.1)
+        self.viewer.apply_roi(roi)
 
     def test_axes_labels(self):
 
@@ -398,3 +405,39 @@ class TestScatterViewer(object):
         layer_state.style = 'Line'
         layer_state.linewidth = 3
         layer_state.linestyle = 'dashed'
+
+    def test_session_categorical(self, tmpdir):
+
+        def visible_xaxis_labels(ax):
+            # Due to a bug in Matplotlib the labels returned outside the field
+            # of view may be incorrect: https://github.com/matplotlib/matplotlib/issues/9397
+            pos = ax.xaxis.get_ticklocs()
+            labels = [tick.get_text() for tick in ax.xaxis.get_ticklabels()]
+            xmin, xmax = ax.get_xlim()
+            return [labels[i] for i in range(len(pos)) if pos[i] >= xmin and pos[i] <= xmax]
+
+        # Regression test for a bug that caused a restored scatter viewer
+        # with a categorical component to not show the categorical labels
+        # as tick labels.
+
+        filename = tmpdir.join('test_session_categorical.glu').strpath
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.id['z']
+
+        assert visible_xaxis_labels(self.viewer.axes) == ['a', 'b', 'c']
+
+        self.session.application.save_session(filename)
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        viewer = ga.viewers[0][0]
+        assert viewer.state.x_att is dc[0].id['z']
+        assert visible_xaxis_labels(self.viewer.axes) == ['a', 'b', 'c']

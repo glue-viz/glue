@@ -4,7 +4,7 @@ Anaconda Python Distribution (Recommended)
 
 **Platforms:** MacOS X, Linux, and Windows
 
-We recommend using the `Anaconda <http://continuum.io/downloads.html>`__ Python
+We recommend using the `Anaconda <https://www.anaconda.com/download/>`__ Python
 distribution from Continuum Analytics (or the related Miniconda distribution).
 Anaconda includes all of Glue's main dependencies. There are two ways of
 installing Glue with the Anaconda Python Distribution: :ref:`graphically using the

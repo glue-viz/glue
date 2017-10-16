@@ -3,7 +3,7 @@
 3D viewers in Glue
 ==================
 
-A plugin with 3D viewers for glue, powered by `VisPy <http://www.vispy.org>`_,
+A plugin with 3D viewers for glue, powered by `VisPy <http://vispy.org/>`_,
 is available. Provided that you installed glue with ``conda`` or with ``pip``,
 you should already have the 3D viewers available. You can check this by going to
 the **Canvas** menu in glue and selecting **New Data Viewer**, or alternatively
@@ -15,7 +15,7 @@ installed, you should see the 3D viewers in the list:
    :width: 339
 
 If you don't see these in the list, then if you are using
-`Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
+`Anaconda <https://www.anaconda.com/download/>`_ to manage your Python
 distribution, you can install the 3D viewers plugin using::
 
     pip install glue-vispy-viewers
@@ -97,13 +97,13 @@ experimental and currently very slow for displaying isosurfaces. In addition, it
 is only able to show a single isosurface level. We do not recommend using it at
 this time, and have disabled it by default. If you are interested in trying it
 out, see the `README.md
-<https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.md>`_ file in
+<https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.rst>`_ file in
 the glue-vispy-viewers repository.
 
 Reporting issues
 ----------------
 
 Please report any issues with the 3D viewers in the following `issue tracker
-<https://github.com/glue-viz/glue-3d-viewer/issues>`_. Please first check that
+<https://github.com/glue-viz/glue-vispy-viewers/issues>`_. Please first check that
 there is not already a similar issue open -- if there is, please feel free to
 comment on that issue to let us know you ran into that problem too!

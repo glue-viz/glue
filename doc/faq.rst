@@ -78,7 +78,7 @@ Something is broken, or confusing. What should I do?
 ----------------------------------------------------
 
 If you think you've found a bug in Glue, feel free to add an issue to the
-`GitHub issues page <https://github.com/glue-viz/glue/issues?state=open>`_. If
+`GitHub issues page <https://github.com/glue-viz/glue/issues?q=is%3Aopen>`_. If
 you have general questions, feel free to post a message to the `Glue mailing
 list <https://groups.google.com/forum/#!forum/glue-viz>`_, or send us an `email
 <mailto:glue.viz@gmail.com>`_ directly.

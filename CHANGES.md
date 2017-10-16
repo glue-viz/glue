@@ -16,6 +16,29 @@ v0.11.2 (unreleased)
 * Fixed bug in spectrum tool that caused the upper range in aggregations
   to be incorrectly calculated. [#1402]
 
+* Fixed icon for scatter plot layer when a colormap is used, and fix issues with
+  viewer layer icons not updating immediately. [#1425]
+
+* Fixed dragging and dropping session files onto glue (this now loads the session
+  rather than trying to load it as a dataset). Also now show a warning when
+  the application is about to be reset to open a new session. [#1425]
+
+* Make sure no errors happen if making a selection in an empty viewer. [#1425]
+
+* Fix creating faceted subsets on Python 3.x when no dataset is selected. [#1425]
+
+* Fix issues with overlaying a scatter layer on an image. [#1425]
+
+* Fix issues with labels for categorical axes in the scatter and histogram
+  viewers, in particular when loading viewers with categorical axes from
+  session files. [#1425]
+
+* Make sure a GUI error message is shown when adding non-1-dimensional data
+  to a table viewer. [#1425]
+
+* Fix issues when trying to launch glue multiple times from a Jupyter session.
+  [#1425]
+
 v0.11.1 (2017-08-25)
 --------------------
 

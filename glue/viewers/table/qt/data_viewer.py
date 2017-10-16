@@ -20,7 +20,7 @@ from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.state import lookup_class_with_patches
 from glue.utils.colors import alpha_blend_colors
-from glue.utils.qt import mpl_to_qt4_color
+from glue.utils.qt import mpl_to_qt4_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['TableViewer', 'TableLayerArtist']
@@ -278,6 +278,7 @@ class TableViewer(DataViewer):
             if subset not in self._layer_artist_container:
                 self._layer_artist_container.append(TableLayerArtist(subset, self))
 
+    @messagebox_on_error("Failed to add data")
     def add_data(self, data):
         self.data = data
         self.setUpdatesEnabled(False)

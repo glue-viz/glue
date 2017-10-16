@@ -22,7 +22,7 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
-from glue.core.message import Message, LayerArtistEnabledMessage, LayerArtistDisabledMessage
+from glue.core.message import Message, LayerArtistEnabledMessage, LayerArtistUpdatedMessage, LayerArtistDisabledMessage
 
 
 class LayerArtistModel(PythonListModel):
@@ -203,11 +203,11 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # listen to all events since the viewport update is fast.
         self.hub = hub
         self.hub.subscribe(self, Message, self._update_viewport)
+        self.hub.subscribe(self, LayerArtistUpdatedMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)
 
     def _update_viewport(self, *args):
-
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in color/labels/content
         self.viewport().update()

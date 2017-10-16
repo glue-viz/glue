@@ -7,18 +7,18 @@ Glue has the following required dependencies:
 
 * Python 2.7, or 3.3 and higher
 * `Numpy <http://www.numpy.org>`_ 1.9 or later
-* `Matplotlib <http://www.matplotlib.org>`_ 1.4 or later
+* `Matplotlib <http://matplotlib.org/>`_ 1.4 or later
 * `Pandas <http://pandas.pydata.org/>`_ 0.14 or later
 * `Astropy <http://www.astropy.org>`_ 1.0 or higher
 * `setuptools <http://setuptools.readthedocs.io/en/latest/>`_ 1.0 or later
-* Either `PySide <http://pyside.org>`__ or `PyQt
+* Either `PySide <https://wiki.qt.io/PySide>`__ or `PyQt
   <https://riverbankcomputing.com/software/pyqt/intro>`__ (both PyQt4 and PyQt5 are supported)
-* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.1.1 or higher - this is an
+* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.2 or higher - this is an
   abstraction layer for the Python Qt packages
 * `IPython <http://ipython.org>`_ 4.0 or higher
 * `ipykernel <https://pypi.python.org/pypi/ipykernel>`_
 * `qtconsole <http://jupyter.org/qtconsole/>`_
-* `dill <http://pythonhosted.org/dill/>`_ 0.2 or later (which improves session saving)
+* `dill <https://pypi.python.org/pypi/dill>`_ 0.2 or later (which improves session saving)
 * `h5py <http://www.h5py.org>`_ 2.4 or later, for reading HDF5 files
 * `xlrd <https://pypi.python.org/pypi/xlrd>`_ 1.0 or later, for reading Excel files
 * `glue-vispy-viewers <https://pypi.python.org/pypi/glue-vispy-viewers>`_, which provide 3D viewers
@@ -26,7 +26,7 @@ Glue has the following required dependencies:
 The following optional dependencies are also highly recommended and
 domain-independent:
 
-* `SciPy <http://www.scipy.org>`_
+* `SciPy <https://www.scipy.org>`_
 * `scikit-image <http://scikit-image.org>`_
 * `plotly <https://plot.ly>`_ for exporting to plot.ly
 

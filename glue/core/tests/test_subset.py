@@ -321,7 +321,8 @@ class TestSubsetIo(object):
 
         self.subset.write_mask(tmp)
         from astropy.io import fits
-        data = fits.open(tmp)[0].data
+        with fits.open(tmp) as hdulist:
+            data = hdulist[0].data
         expected = np.array([[0, 1, 1, 1],
                              [0, 0, 0, 0],
                              [0, 0, 0, 0],

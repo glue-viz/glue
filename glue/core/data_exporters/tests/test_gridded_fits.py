@@ -16,7 +16,6 @@ def test_fits_writer(tmpdir):
 
     fits_writer(filename, data)
 
-    hdulist = fits.open(filename)
-
-    np.testing.assert_equal(hdulist['x'].data, data['x'])
-    np.testing.assert_equal(hdulist['y'].data, data['y'])
+    with fits.open(filename) as hdulist:
+        np.testing.assert_equal(hdulist['x'].data, data['x'])
+        np.testing.assert_equal(hdulist['y'].data, data['y'])

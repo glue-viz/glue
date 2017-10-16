@@ -320,11 +320,18 @@ def visible_limits(artists, axis):
 
 
 def tick_linker(all_categories, pos, *args):
-    try:
-        pos = np.round(pos)
-        return all_categories[int(pos)]
-    except IndexError:
+
+    # We need to take care to ignore negative indices since these would actually
+    # 'work' 'when accessing all_categories, but we need to avoid that.
+    if pos < 0 or pos >= len(all_categories):
         return ''
+    else:
+        try:
+            pos = np.round(pos)
+            print(all_categories[int(pos)])
+            return all_categories[int(pos)]
+        except IndexError:
+            return ''
 
 
 def update_ticks(axes, coord, components, is_log):

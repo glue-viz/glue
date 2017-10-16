@@ -96,7 +96,7 @@ Experimental WorldWide Telescope plugin
 ---------------------------------------
 
 We have developed a plugin that provides a `WorldWide Telescope (WWT)
-<http://worldwidetelescope.org>`_ viewer inside glue:
+<http://worldwidetelescope.org/webclient/>`_ viewer inside glue:
 
 .. image:: images/v0.11/plugin_wwt.jpg
    :align: center

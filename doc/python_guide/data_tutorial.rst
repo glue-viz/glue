@@ -201,7 +201,7 @@ If you using the Glue application, you can then change the visual properties of 
 
 This method of creating subsets can be a powerful technique. For a demo of
 using sending Scikit-learn-identified clusters back into Glue as subsets, see
-`this notebook <http://nbviewer.ipython.org/github/ChrisBeaumont/crime/blob/master/glue_startup.ipynb>`_.
+`this notebook <http://nbviewer.jupyter.org/github/ChrisBeaumont/crime/blob/master/glue_startup.ipynb>`_.
 
 The following example demonstrates how to access subsets defined graphically in data viewers. Let's say that you have two subsets that you defined in the scatter plot and histogram data viewers:
 

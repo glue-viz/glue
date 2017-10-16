@@ -340,7 +340,8 @@ class Subset(object):
     def read_mask(self, file_name):
         try:
             from astropy.io import fits
-            mask = fits.open(file_name)[0].data
+            with fits.open(file_name) as hdulist:
+                mask = hdulist[0].data
         except IOError:
             raise IOError("Could not read %s (not a fits file?)" % file_name)
         ind = np.where(mask.flat)[0]

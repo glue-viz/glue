@@ -1,7 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from inspect import getargspec
+
+try:
+    from inspect import getfullargspec
+except ImportError:  # Python 2.7
+    from inspect import getargspec as getfullargspec
 
 from qtpy import QtWidgets
 from qtpy import PYSIDE
@@ -26,7 +30,7 @@ def function_label(function):
 
     :param function: A member from the glue.config.link_function registry
     """
-    args = getargspec(function.function)[0]
+    args = getfullargspec(function.function)[0]
     args = ', '.join(args)
     output = function.output_labels
     output = ', '.join(output)
@@ -249,7 +253,7 @@ class LinkEquation(QtWidgets.QWidget):
         assert self.is_function()
         self.set_result_visible(True)
         func = self.function.function
-        args = getargspec(func)[0]
+        args = getfullargspec(func)[0]
         label = function_label(self.function)
         self._ui.info.setText(label)
         self._output_widget.label = self.function.output_labels[0]
