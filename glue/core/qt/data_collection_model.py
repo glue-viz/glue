@@ -155,12 +155,13 @@ class SubsetListItem(Item):
 
 class SubsetGroupItem(Item):
     edit_factory = full_edit_factory
-    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsDragEnabled
 
     def __init__(self, dc, row, parent):
         self.parent = parent
         self.dc = dc
         self.row = row
+        self.children_count = 0
         self.column = 0
 
     @property
@@ -195,48 +196,8 @@ class SubsetGroupItem(Item):
     def style(self):
         return self.subset_group.style
 
-    @property
-    def children_count(self):
-        return len(self.subset_group.subsets)
-
-    @memoize
-    def child(self, row):
-        return SubsetItem(self.dc, self.subset_group, row, self)
-
     def icon(self):
         return layer_icon(self.subset_group)
-
-
-class SubsetItem(Item):
-    edit_factory = restricted_edit_factory
-    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
-
-    def __init__(self, dc, subset_group, subset_idx, parent):
-        self.parent = parent
-        self.subset_group = subset_group
-        self.row = subset_idx
-        self.parent = parent
-        self.children_count = 0
-        self.column = 0
-
-    @property
-    def subset(self):
-        return self.subset_group.subsets[self.row]
-
-    @property
-    def label(self):
-        return self.subset.verbose_label
-
-    def icon(self):
-        return layer_icon(self.subset)
-
-    @property
-    def style(self):
-        return self.subset.style
-
-    @property
-    def glue_data(self):
-        return self.subset
 
 
 class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
@@ -262,16 +223,19 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         if column != 0:
             return QtCore.QModelIndex()
 
-        if not parent.isValid():
-            parent_item = self.root
-        else:
+        if parent.isValid():
             parent_item = self._get_item(parent)
             if parent_item is None:
                 return QtCore.QModelIndex()
+        else:
+            parent_item = self.root
 
-        child_item = parent_item.child(row)
-        if child_item:
-            return self._make_index(row, column, child_item)
+        if parent_item.children_count > 0:
+            child_item = parent_item.child(row)
+            if child_item:
+                return self._make_index(row, column, child_item)
+            else:
+                return QtCore.QModelIndex()
         else:
             return QtCore.QModelIndex()
 
@@ -385,6 +349,7 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         return self.index(subset_number, 0, base)
 
     def rowCount(self, index=QtCore.QModelIndex()):
+
         item = self._get_item(index)
 
         if item is None:
