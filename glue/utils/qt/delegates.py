@@ -13,7 +13,7 @@ class HtmlItemDelegate(QtWidgets.QStyledItemDelegate):
     """
 
     # Implementation adapted based on solutions presented on StackOverflow:
-    # http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
+    # https://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 
     def paint(self, painter, option, index):
 

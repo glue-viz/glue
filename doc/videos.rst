@@ -46,7 +46,7 @@ Glue, FBI Crime Data, and Plotly (5 minutes)
  <iframe src="http://player.vimeo.com/video/97436621" width="500" height="313" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <
  </center>
 
-See also the `IPython notebook <http://nbviewer.ipython.org/github/ChrisBeaumont/crime/blob/master/glue_plotly_fbi.ipynb>`_ that accompanies this video.
+See also the `IPython notebook <http://nbviewer.jupyter.org/github/ChrisBeaumont/crime/blob/master/glue_plotly_fbi.ipynb>`_ that accompanies this video.
 
 Extracting slices from cubes
 ----------------------------

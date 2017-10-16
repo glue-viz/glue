@@ -15,7 +15,7 @@ installed, you should see the 3D viewers in the list:
    :width: 339
 
 If you don't see these in the list, then if you are using
-`Anaconda <https://www.continuum.io/downloads>`_ to manage your Python
+`Anaconda <https://www.anaconda.com/download/>`_ to manage your Python
 distribution, you can install the 3D viewers plugin using::
 
     pip install glue-vispy-viewers
@@ -97,7 +97,7 @@ experimental and currently very slow for displaying isosurfaces. In addition, it
 is only able to show a single isosurface level. We do not recommend using it at
 this time, and have disabled it by default. If you are interested in trying it
 out, see the `README.md
-<https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.md>`_ file in
+<https://github.com/glue-viz/glue-vispy-viewers/blob/master/README.rst>`_ file in
 the glue-vispy-viewers repository.
 
 Reporting issues

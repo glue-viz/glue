@@ -45,7 +45,7 @@ class QVersionsDialog(QtWidgets.QDialog):
 
     def center(self):
         # Adapted from StackOverflow
-        # http://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
+        # https://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
         frameGm = self.frameGeometry()
         screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
         centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()

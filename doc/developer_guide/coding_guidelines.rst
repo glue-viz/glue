@@ -4,7 +4,7 @@ Coding guidelines
 Glue is written entirely in Python, and we abide by the following guidelines:
 
 * All code should be Python 2 and 3-compatible. We do this by using the `six
-  <https://pythonhosted.org/six/>`_ package, which we bundle in
+  <https://pypi.python.org/pypi/six>`_ package, which we bundle in
   ``glue.external.six``.
 
 * We follow many of the same guidelines as the `Astropy <http://www.astropy.org>`_ project, which you can find `here <http://docs.astropy.org/en/stable/development/codeguide.html#coding-style-conventions>`__.

@@ -151,7 +151,7 @@ parameter names. Each value is itself a dictionary with 4 entries:
 Astropy-based models
 ^^^^^^^^^^^^^^^^^^^^
 
-The :class:`~glue.core.fitters.AstropyFitter1D` base class can be subclassed to plug custom `astropy models and fitters <http://astropy.readthedocs.org/en/latest/modeling/>`_ into Glue. This is very easy::
+The :class:`~glue.core.fitters.AstropyFitter1D` base class can be subclassed to plug custom `astropy models and fitters <http://astropy.readthedocs.io/en/stable/modeling/>`_ into Glue. This is very easy::
 
     from astropy.modeling import models, fitting
 

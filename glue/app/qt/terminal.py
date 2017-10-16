@@ -2,11 +2,11 @@
 A GUI Ipython terminal window which can interact
 with Glue. Based on code from
 
-  http://stackoverflow.com/a/9796491/1332492
+  https://stackoverflow.com/a/9796491/1332492
 
 and
 
-  http://stackoverflow.com/a/11525205/1332492
+  https://stackoverflow.com/a/11525205/1332492
 
 Usage:
    new_widget = glue_terminal(**kwargs)

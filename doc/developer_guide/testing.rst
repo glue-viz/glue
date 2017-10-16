@@ -47,12 +47,12 @@ Continuous integration
 
 Every time someone opens a pull request to the Glue repository, and every time
 we merge changes into the code base, all the tests are run on `Travis
-<http://travis-ci.org>`_ and `AppVeyor <http://www.appveyor.com/>`_. This is
+<https://travis-ci.org>`_ and `AppVeyor <http://www.appveyor.com/>`_. This is
 referred to as *Continuous Integration*. One of the nice things about continuous integration is that it allows us to
 automatically run the tests for different operating systems, Python versions,
 versions of Numpy, and Qt frameworks (PyQt4, PyQt5, and PySide).
 
-`Travis <http://travis-ci.org>`_ runs tests on Linux and MacOS X, and `AppVeyor
+`Travis <https://travis-ci.org>`_ runs tests on Linux and MacOS X, and `AppVeyor
 <http://www.appveyor.com/>`_ runs the tests on Windows. When you open a pull
 request, you will be able to check the status of the tests at the bottom, which
 will look something like this:

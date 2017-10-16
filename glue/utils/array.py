@@ -17,7 +17,7 @@ def unbroadcast(array):
     Given an array, return a new array that is the smallest subset of the
     original array that can be re-broadcasted back to the original array.
 
-    See http://stackoverflow.com/questions/40845769/un-broadcasting-numpy-arrays
+    See https://stackoverflow.com/questions/40845769/un-broadcasting-numpy-arrays
     for more details.
     """
 

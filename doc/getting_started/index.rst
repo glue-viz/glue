@@ -40,7 +40,7 @@ There are multiple ways to open data:
   Find and open the file ``w5.fits`` which should be in the ``w5.tgz`` or
   ``w5.zip`` archive you downloaded above. This is a `WISE image
   <http://wise.ssl.berkeley.edu/>`_ of the `W5 Star Forming Region
-  <http://en.wikipedia.org/wiki/Soul_Nebula>`_. While this is an astronomical
+  <https://en.wikipedia.org/wiki/Soul_Nebula>`_. While this is an astronomical
   dataset, glue can be used for data in any discipline, and many of the concepts
   shown below are applicable to many types of dataset.
 
