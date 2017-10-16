@@ -36,6 +36,9 @@ v0.11.2 (unreleased)
 * Make sure a GUI error message is shown when adding non-1-dimensional data
   to a table viewer. [#1425]
 
+* Fix issues when trying to launch glue multiple times from a Jupyter session.
+  [#1425]
+
 v0.11.1 (2017-08-25)
 --------------------
 

@@ -35,7 +35,7 @@ class QVersionsDialog(QtWidgets.QDialog):
     def _update_deps(self):
         status = get_status_as_odict()
         self._text = ""
-        for name, version in [('Glue', __version__)] + list(status.items()):            
+        for name, version in [('Glue', __version__)] + list(status.items()):
             check = QtWidgets.QTreeWidgetItem(self.ui.version_tree.invisibleRootItem(),
                                           [name, version])
             self._text += "{0}: {1}\n".format(name, version)
@@ -53,13 +53,10 @@ class QVersionsDialog(QtWidgets.QDialog):
         self.move(frameGm.topLeft())
 
 
-def show_glue_info():
-    window = QVersionsDialog()
-    window.show()
-    window.exec_()
-
 if __name__ == "__main__":
 
     from glue.utils.qt import get_qapp
     app = get_qapp()
-    show_glue_info()
+    window = QVersionsDialog()
+    window.show()
+    window.exec_()

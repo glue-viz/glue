@@ -21,7 +21,7 @@ from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
-from glue.app.qt.mdi_area import GlueMdiArea, GlueMdiSubWindow
+from glue.app.qt.mdi_area import GlueMdiArea
 from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
 from glue.app.qt.preferences import PreferencesDialog
 from glue.viewers.common.qt.data_viewer import DataViewer
@@ -33,7 +33,7 @@ from glue.utils.qt import (pick_class, GlueTabBar,
 
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
-from glue.app.qt.versions import show_glue_info
+from glue.app.qt.versions import QVersionsDialog
 from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
 from glue.config import qt_fixed_layout_tab, qt_client, startup_action
 
@@ -188,13 +188,22 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def __init__(self, data_collection=None, session=None):
 
+        # At this point we need to check if a Qt application already exists -
+        # this happens for example if using the %gui qt/qt5 mode in Jupyter. We
+        # should keep a reference to the original icon so that we can restore it
+        # later
+        self._original_app = QtWidgets.QApplication.instance()
+        if self._original_app is not None:
+            self._original_icon = self._original_app.windowIcon()
+
+        # Now we can get the application instance, which involves setting it
+        # up if it doesn't already exist.
         self.app = get_qapp()
 
         QtWidgets.QMainWindow.__init__(self)
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
-        self.app.setQuitOnLastWindowClosed(True)
         icon = get_icon('app_icon')
         self.app.setWindowIcon(icon)
 
@@ -478,7 +487,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         return sub
 
     def _edit_settings(self):
-        self._editor = PreferencesDialog(self)
+        self._editor = PreferencesDialog(self, parent=self)
         self._editor.show()
 
     def gather_current_tab(self):
@@ -574,7 +583,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 submenu.addAction(a)
         menu.addSeparator()
         menu.addAction("Edit &Preferences", self._edit_settings)
-        menu.addAction("&Quit", self.app.quit)
+        # Here we use close instead of self.app.quit because if we are launching
+        # glue from an environment with a Qt event loop already existing, we
+        # don't want to quit this. Using close here is safer, though it does
+        # mean that any dialog we launch from glue has to be either modal (to
+        # prevent quitting) or correctly define its parent so that it gets
+        # closed too.
+        menu.addAction("&Quit", self.close)
         mbar.addMenu(menu)
 
         menu = QtWidgets.QMenu(mbar)
@@ -630,7 +645,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.addAction(a)
 
         menu.addSeparator()
-        menu.addAction("Version information", show_glue_info)
+        menu.addAction("Version information", self._show_glue_info)
+
+    def _show_glue_info(self):
+        window = QVersionsDialog(parent=self)
+        window.show()
+        window.exec_()
 
     def _choose_load_data(self, data_importer=None):
         if data_importer is None:
@@ -1063,6 +1083,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.close()
         self._hub.broadcast(ApplicationClosedMessage(None))
         event.accept()
+        if self._original_app is not None:
+            self._original_app.setWindowIcon(self._original_icon)
 
     def report_error(self, message, detail):
         """
