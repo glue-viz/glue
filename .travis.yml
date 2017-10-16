@@ -20,18 +20,16 @@ env:
     - PYTHON_VERSION=3.6
   global:
     # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions.
-    - CONDA_CHANNELS=astropy-ci-extras
-    - MATPLOTLIB_VERSION=1.5
-    - NUMPY_VERSION=1.11
-    - ASTROPY_VERSION=1.3
-    - IPYTHON_VERSION=5
+    - CONDA_CHANNELS="astropy-ci-extras astropy"
     - PYTEST_ARGS="--cov glue -vs"
+    - ASTROPY_VERSION=stable
+    - NUMPY_VERSION=stable
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - SPHINX_VERSION=1.5
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole"
-    - PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro awscli plotly spectral-cube"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov"
+    - PIP_DEPENDENCIES="coveralls pyavm astrodendro awscli plotly"
+    - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
     - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
