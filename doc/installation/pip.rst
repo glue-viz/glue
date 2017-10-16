@@ -3,7 +3,7 @@ Installing with pip
 
 **Platforms:** MacOS X, Linux, and Windows
 
-Installing glue with `pip <https://pip.pypa.io>`__ is possible, although you
+Installing glue with `pip <https://pip.pypa.io/en/stable/>`__ is possible, although you
 will need to first make sure that you install Qt and either `PyQt
 <https://riverbankcomputing.com/software/pyqt/intro>`__ or `PySide
 <https://wiki.qt.io/PySide>`__, since these cannot be automatically installed with the

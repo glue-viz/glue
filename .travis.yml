@@ -204,6 +204,10 @@ script:
   # make sure stderr was empty, i.e. no warnings
   - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings.log; fi
 
+  # Check for any broken links, ignore 'redirected with Found'
+  - if [ $DOC_TRIGGER ]; then grep -v "redirected with Found" doc/_build/linkcheck/output.txt > doc/_build/linkcheck/output_no_found_redirect.txt; fi
+  - if [ $DOC_TRIGGER ]; then test ! -s doc/_build/linkcheck/output_no_found_redirect.txt; fi
+
 after_success:
 
   # Coverage testing
