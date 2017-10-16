@@ -61,22 +61,18 @@ class Subset(object):
         via DataCollection.new_subset_group. Manually-instantiated
         subsets will probably *not* be represented properly by the UI
         """
-        self._broadcasting = False  # must be first def
-        self.data = data
-        self._subset_state = None
-        self._label = None
-        self._style = None
-        self._setup(color, alpha, label)
 
-    @contract(color='color', alpha='float', label='string|None')
-    def _setup(self, color, alpha, label):
-        self.color = color
+        self._broadcasting = False  # must be first def
+
+        self.data = data
         self.label = label  # trigger disambiguation
+
+        self.subset_state = SubsetState()  # calls proper setter method
+
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 1.5
         self.style.color = color
         self.style.alpha = alpha
-        self.subset_state = SubsetState()  # calls proper setter method
 
     @property
     def subset_state(self):
@@ -289,6 +285,7 @@ class Subset(object):
         :type attribute: ``str``
 
         """
+
         if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
             return
 
@@ -403,6 +400,8 @@ class Subset(object):
         if not isinstance(other, Subset):
             return False
         # XXX need to add equality specification for subset states
+        if self is other:
+            return True
         return (self.subset_state == other.subset_state and
                 self.style == other.style)
 

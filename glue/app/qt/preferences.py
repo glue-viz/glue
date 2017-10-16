@@ -28,7 +28,6 @@ class PreferencesDialog(QtWidgets.QDialog):
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
     show_large_data_warning = ButtonProperty('ui.checkbox_show_large_data_warning')
-    individual_subset_color = ButtonProperty('ui.checkbox_individual_subset_color')
     save_to_disk = ButtonProperty('ui.checkbox_save')
 
     def __init__(self, application, parent=None):
@@ -58,7 +57,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
         self.show_large_data_warning = settings.SHOW_LARGE_DATA_WARNING
-        self.individual_subset_color = settings.INDIVIDUAL_SUBSET_COLOR
 
         self._update_theme_from_colors()
 
@@ -104,7 +102,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
         settings.SHOW_LARGE_DATA_WARNING = self.show_large_data_warning
-        settings.INDIVIDUAL_SUBSET_COLOR = self.individual_subset_color
 
         for pane in self.panes:
             pane.finalize()

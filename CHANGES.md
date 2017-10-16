@@ -39,6 +39,10 @@ v0.11.2 (unreleased)
 * Fix issues when trying to launch glue multiple times from a Jupyter session.
   [#1425]
 
+* Remove the ability to define the color of a subset differ from that of a
+  subset group it belongs to - this was virtually never needed but could
+  cause issues. [#1426]
+
 v0.11.1 (2017-08-25)
 --------------------
 
