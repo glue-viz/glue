@@ -21,7 +21,7 @@
     <number>5</number>
    </property>
    <item row="0" column="1" colspan="2">
-    <widget class="QComboBox" name="combodata_attribute">
+    <widget class="QComboBox" name="combosel_attribute">
      <property name="sizeAdjustPolicy">
       <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
@@ -162,7 +162,7 @@
     </layout>
    </item>
    <item row="2" column="1">
-    <widget class="QComboBox" name="combodata_percentile">
+    <widget class="QComboBox" name="combosel_percentile">
      <property name="minimumSize">
       <size>
        <width>50</width>
@@ -175,7 +175,7 @@
     </widget>
    </item>
    <item row="2" column="2">
-    <widget class="QComboBox" name="combodata_stretch">
+    <widget class="QComboBox" name="combosel_stretch">
      <property name="minimumSize">
       <size>
        <width>50</width>

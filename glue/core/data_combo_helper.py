@@ -158,13 +158,13 @@ class ComponentIDComboHelper(ComboHelper):
             self._data = [data]
 
         self._data_collection = data_collection
-        if data_collection is not None:
+        if data_collection is None:
+            self.hub = None
+        else:
             if data_collection.hub is None:
                 raise ValueError("Hub on data collection is not set")
             else:
                 self.hub = data_collection.hub
-        else:
-            self.hub = None
 
         if data is not None:
             self.refresh()

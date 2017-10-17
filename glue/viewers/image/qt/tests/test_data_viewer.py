@@ -162,7 +162,7 @@ class TestImageViewer(object):
         assert self.viewer.state.y_att_world is self.image1.id['World 0']
         # TODO: there should be an easier way to do this
         layer_style_editor = self.viewer._view.layout_style_widgets[self.viewer.layers[0]]
-        assert combo_as_string(layer_style_editor.ui.combodata_attribute) == 'x:y:z'
+        assert combo_as_string(layer_style_editor.ui.combosel_attribute) == 'x:y:z'
 
     def test_apply_roi(self):
 
