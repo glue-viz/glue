@@ -80,6 +80,20 @@ PIP package name:
         return "%20s:\t%s" % (self.package, status)
 
 
+class Python(Dependency):
+
+    def __init__(self):
+        self.package = 'Python'
+
+    @property
+    def installed(self):
+        return True
+
+    @property
+    def version(self):
+        return sys.version.split()[0]
+
+
 class QtDependency(Dependency):
 
     def install(self):
@@ -129,6 +143,11 @@ class PySide(QtDependency):
 
 # Add any dependencies here
 # Make sure to add new categories to the categories tuple
+
+python = (
+    Python(),
+)
+
 gui_framework = (
     PyQt4('PyQt4', ''),
     PyQt5('PyQt5', ''),
@@ -190,7 +209,8 @@ def plugins():
     return dependencies
 
 
-categories = (('gui framework', gui_framework),
+categories = (('python', python),
+              ('gui framework', gui_framework),
               ('required', required),
               ('ipython terminal', ipython),
               ('general', general),
@@ -200,7 +220,7 @@ categories = (('gui framework', gui_framework),
               ('plugins', plugins()))
 
 
-dependencies = dict((d.module, d) for c in categories for d in c[1])
+dependencies = dict((d.package, d) for c in categories for d in c[1])
 
 
 def get_status():
