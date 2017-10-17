@@ -12,6 +12,7 @@ from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
 from glue.utils import as_list, PropertySetMixin
+from glue.core.coordinates import WCSCoordinates
 
 
 __all__ = ['Application', 'ViewerBase']
@@ -272,6 +273,14 @@ class Application(HubListener):
             merges, label = cls._choose_merge(data, other)
 
             if merges:
+                for i, d in enumerate(merges):
+                    if isinstance(d, Data):
+                        if isinstance(d.coords, WCSCoordinates):
+                            if i == 0:
+                                break
+                            else:
+                                merges[0], merges[i] = merges[i], merges[0]
+                                break
                 data_collection.merge(*merges, label=label)
 
             suggested.append(data)
