@@ -35,6 +35,7 @@ from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
 from glue.app.qt.terminal import glue_terminal
+from glue.core.coordinates import WCSCoordinates
 
 
 __all__ = ['GlueApplication']
@@ -1046,6 +1047,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # least one new one, have a common shape.
         others.append(data)
         others.sort(key=lambda x: x.label)
+        for i, d in enumerate(others):
+            if isinstance(d.coords, WCSCoordinates):
+                if i == 0:
+                    break
+                else:
+                    others[0], others[i] = others[i], others[0]
+                    break
 
         label = others[0].label
         w.merged_label.setText(label)
