@@ -31,10 +31,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self._viewer_state.add_global_callback(self._update_image)
         self.state.add_global_callback(self._update_image)
 
-        # TODO: following is temporary
-        self.state.data_collection = self._viewer_state.data_collection
-        self.data_collection = self._viewer_state.data_collection
-
         self.data_collection.hub.subscribe(self, ComponentsChangedMessage,
                                            handler=self._update_compatibility,
                                            filter=self._is_data_object)

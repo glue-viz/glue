@@ -38,10 +38,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_scatter)
         self.state.add_global_callback(self._update_scatter)
 
-        # TODO: following is temporary
-        self.state.data_collection = self._viewer_state.data_collection
-        self.data_collection = self._viewer_state.data_collection
-
         # Scatter
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
