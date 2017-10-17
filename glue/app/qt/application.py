@@ -13,6 +13,7 @@ from qtpy.QtCore import Qt
 from glue.core.application_base import Application
 from glue.core.message import ApplicationClosedMessage
 from glue.core import command, Data
+from glue.core.coordinates import WCSCoordinates
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
@@ -35,7 +36,6 @@ from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import show_glue_info
 from glue.app.qt.terminal import glue_terminal
-from glue.core.coordinates import WCSCoordinates
 
 
 __all__ = ['GlueApplication']
