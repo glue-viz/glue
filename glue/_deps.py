@@ -212,12 +212,12 @@ def plugins():
 categories = (('python', python),
               ('gui framework', gui_framework),
               ('required', required),
+              ('plugins', plugins()))
               ('ipython terminal', ipython),
               ('general', general),
               ('astronomy', astronomy),
               ('testing', testing),
               ('export', export),
-              ('plugins', plugins()))
 
 
 dependencies = dict((d.package, d) for c in categories for d in c[1])
