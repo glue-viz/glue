@@ -8,7 +8,7 @@ from glue import core
 from glue.core.tests.util import simple_session
 from glue.viewers.common.qt.tests.test_data_viewer import BaseTestDataViewer
 
-from ..viewer_widget import DendroWidget
+from ..data_viewer import DendrogramViewer
 
 
 def mock_data():
@@ -17,7 +17,7 @@ def mock_data():
 os.environ['GLUE_TESTING'] = 'True'
 
 
-class TestDendroWidget(object):
+class TestDendrogramViewer(object):
 
     def setup_method(self, method):
         s = simple_session()
@@ -26,7 +26,7 @@ class TestDendroWidget(object):
         self.dc = s.data_collection
         self.dc.append(self.data)
 
-        self.w = DendroWidget(s)
+        self.w = DendrogramViewer(s)
 
     def test_ignore_double_add(self):
         self.w.add_data(self.data)
@@ -45,4 +45,4 @@ class TestDendroWidget(object):
 
 class TestDataViewerDendro(BaseTestDataViewer):
     # A few additional tests common to all data viewers
-    widget_cls = DendroWidget
+    widget_cls = DendrogramViewer

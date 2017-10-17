@@ -34,16 +34,10 @@ def is_dendro(file, **kwargs):
 
         with fits.open(file, ignore_missing_end=True) as hdulist:
 
-            # In recent versions of Astropy, we could do 'DATA' in hdulist etc. but
-            # this doesn't work with Astropy 0.3, so we use the following method
-            # instead:
-            try:
-                hdulist['DATA']
-                hdulist['INDEX_MAP']
-                hdulist['NEWICK']
-            except KeyError:
-                pass  # continue
-            else:
+            # For recent versions of astrodendro the HDUs have a recongnizable
+            # set of names.
+
+            if 'DATA' in hdulist and 'INDEX_MAP' in hdulist and 'NEWICK' in hdulist:
                 return True
 
             # For older versions of astrodendro, the HDUs did not have names
