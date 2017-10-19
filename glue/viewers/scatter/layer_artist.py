@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from matplotlib.colors import Normalize
+from matplotlib.collections import LineCollection
 
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
@@ -24,6 +25,20 @@ DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
 class InvertedNormalize(Normalize):
     def __call__(self, *args, **kwargs):
         return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
+
+
+def set_mpl_artist_cmap(artist, values, state):
+    vmin = state.cmap_vmin
+    vmax = state.cmap_vmax
+    cmap = state.cmap
+    artist.set_array(values)
+    artist.set_cmap(cmap)
+    if vmin > vmax:
+        artist.set_clim(vmax, vmin)
+        artist.set_norm(InvertedNormalize(vmax, vmin))
+    else:
+        artist.set_clim(vmin, vmax)
+        artist.set_norm(Normalize(vmin, vmax))
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
@@ -51,9 +66,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_artist = self.axes.quiver([], [], [], [], units='width',
                                               pivot='mid', scale_units='width',
                                               headwidth=1, headlength=0) # x, y, vx, vy
+        self.line_collection = LineCollection(np.zeros((0, 2, 2)))
+        self.axes.add_collection(self.line_collection)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
-                            self.errorbar_artist, self.vector_artist]
+                            self.errorbar_artist, self.vector_artist,
+                            self.line_collection]
         self.errorbar_index = 2
         self.vector_index = 3
 
@@ -89,9 +107,28 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self._enabled = True
 
         if self.state.markers_visible or self.state.line_visible:
-            self.plot_artist.set_data(x, y)
+            if self.state.cmap_mode == 'Fixed':
+                self.plot_artist.set_data(x, y)
+            else:
+                self.plot_artist.set_data([], [])
         else:
             self.plot_artist.set_data([], [])
+
+        if self.state.line_visible:
+            if self.state.cmap_mode == 'Linear':
+
+                # Add midpoints to make color work
+                xnew = np.zeros(len(x) * 2 - 1, dtype=float)
+                ynew = np.zeros(len(y) * 2 - 1, dtype=float)
+                xnew[::2] = x
+                xnew[1::2] = 0.5 * (x[1:] + x[:-1])
+                ynew[::2] = y
+                ynew[1::2] = 0.5 * (y[1:] + y[:-1])
+                points = np.array([xnew, ynew]).T.reshape(-1, 1, 2)
+                segments = np.concatenate([points[:-1], points[1:]], axis=1)
+                self.line_collection.set_segments(segments)
+            else:
+                self.line_collection.set_segments(np.zeros((0, 2, 2)))
 
         if self.state.markers_visible:
             if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
@@ -216,17 +253,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         self.scatter_artist.set_facecolors(c)
                     else:
                         c = self.layer[self.state.cmap_att].ravel()
-                        vmin = self.state.cmap_vmin
-                        vmax = self.state.cmap_vmax
-                        cmap = self.state.cmap
-                        self.scatter_artist.set_array(c)
-                        self.scatter_artist.set_cmap(cmap)
-                        if vmin > vmax:
-                            self.scatter_artist.set_clim(vmax, vmin)
-                            self.scatter_artist.set_norm(InvertedNormalize(vmax, vmin))
-                        else:
-                            self.scatter_artist.set_clim(vmin, vmax)
-                            self.scatter_artist.set_norm(Normalize(vmin, vmax))
+                        set_mpl_artist_cmap(self.scatter_artist, c, self.state)
 
                     self.scatter_artist.set_edgecolor('none')
 
@@ -250,41 +277,37 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             if force or 'markers_visible' in changed:
                 self.plot_artist.set_marker('')
 
-        if force or 'line_visible' in changed:
-            if self.state.line_visible:
-                self.plot_artist.set_linestyle(self.state.linestyle)
-            else:
-                self.plot_artist.set_linestyle('None')
-
         if self.state.line_visible:
 
+            if self.state.cmap_mode == 'Linear':
+                if force or any(prop in changed for prop in CMAP_PROPERTIES):
+                    c = self.layer[self.state.cmap_att].ravel()
+                    cnew = np.zeros((len(c) - 1) * 2)
+                    cnew[::2] = c[:-1]
+                    cnew[1::2] = c[1:]
+                    set_mpl_artist_cmap(self.line_collection, cnew, self.state)
+
             if force or 'linewidth' in changed:
-                self.plot_artist.set_linewidth(self.state.linewidth)
+                if self.state.cmap_mode == 'Fixed':
+                    self.plot_artist.set_linewidth(self.state.linewidth)
+                else:
+                    self.line_collection.set_linewidth(self.state.linewidth)
 
             if force or 'linestyle' in changed:
-                self.plot_artist.set_linestyle(self.state.linestyle)
+                if self.state.cmap_mode == 'Fixed':
+                    self.plot_artist.set_linestyle(self.state.linestyle)
+                else:
+                    self.line_collection.set_linestyle(self.state.linestyle)
 
         if self.state.vector_visible and self.vector_artist is not None:
 
             if force or any(prop in changed for prop in CMAP_PROPERTIES):
 
                 if self.state.cmap_mode == 'Fixed':
-                    c = self.state.color
-                    vmin = vmax = cmap = None
-                    self.vector_artist.set_facecolors(c)
+                    self.vector_artist.set_facecolors(self.state.color)
                 else:
                     c = self.layer[self.state.cmap_att].ravel()
-                    vmin = self.state.cmap_vmin
-                    vmax = self.state.cmap_vmax
-                    cmap = self.state.cmap
-                    self.vector_artist.set_array(c)
-                    self.vector_artist.set_cmap(cmap)
-                    if vmin > vmax:
-                        self.vector_artist.set_clim(vmax, vmin)
-                        self.vector_artist.set_norm(InvertedNormalize(vmax, vmin))
-                    else:
-                        self.vector_artist.set_clim(vmin, vmax)
-                        self.vector_artist.set_norm(Normalize(vmin, vmax))
+                    set_mpl_artist_cmap(self.vector_artist, c, self.state)
 
                 self.vector_artist.set_edgecolor('none')
 
