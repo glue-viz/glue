@@ -14,6 +14,17 @@ from .dendro_helpers import dendrogram_layout
 __all__ = ['DendrogramViewerState', 'DendrogramLayerState']
 
 
+class Layout(object):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    @property
+    def xy(self):
+        return self.x, self.y
+
+
 class DendrogramViewerState(MatplotlibDataViewerState):
     """
     A state class that includes all the attributes for a dendrogram viewer.
@@ -63,7 +74,7 @@ class DendrogramViewerState(MatplotlibDataViewerState):
             parent = self.reference_data[self.parent_att].astype(int).ravel()
             order = self.reference_data[self.order_att].ravel()
             x, y = dendrogram_layout(parent, height, order)
-            self._layout = x, y
+            self._layout = Layout(x, y)
 
     def _update_priority(self, name):
         if name == 'layers':

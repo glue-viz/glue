@@ -63,7 +63,7 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
             self.disable_invalid_attributes(*exc.args)
             return False
 
-        x, y = self.state.viewer_state._layout
+        x, y = self.state.viewer_state._layout.xy
         blank = np.zeros(ids.size) * np.nan
         x = np.column_stack([x[ids], x[ids + 1],
                              x[ids + 2], blank]).ravel()

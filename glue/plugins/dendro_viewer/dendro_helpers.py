@@ -43,7 +43,10 @@ def _substructures(parent, idx):
     """
     children = _dendro_children(parent)
     result = []
-    todo = [idx]
+    if np.isscalar(idx):
+        todo = [idx]
+    else:
+        todo = idx.tolist()
 
     while todo:
         result.append(todo.pop())

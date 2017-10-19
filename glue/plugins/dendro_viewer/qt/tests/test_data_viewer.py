@@ -3,46 +3,127 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import numpy as np
 
-from glue import core
-from glue.core.tests.util import simple_session
-from glue.viewers.common.qt.tests.test_data_viewer import BaseTestDataViewer
+from numpy.testing import assert_equal
+
+from glue.core import Data
+from glue.core.roi import PointROI
+from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
+from glue.app.qt import GlueApplication
 
 from ..data_viewer import DendrogramViewer
 
-
-def mock_data():
-    return core.Data(label='d1', x=[1, 2, 3], y=[2, 3, 4])
-
-os.environ['GLUE_TESTING'] = 'True'
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
-class TestDendrogramViewer(object):
+class TestDendrogramCommon(BaseTestMatplotlibDataViewer):
+
+    viewer_cls = DendrogramViewer
+
+    def init_data(self):
+        return Data(label='d1', parent=[-1, 0, 1, 1], height=[1.3, 2.2, 3.2, 4.4])
+
+    # TODO: Find a way to simplify having to overload this just because
+    # we need to use a different ROI
+    def test_apply_roi_undo(self):
+        pass
+
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+
+        roi = PointROI(0.2, 2.8)
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+
+        mask1 = self.data.subsets[0].subset_state.to_mask(self.data)
+
+        roi = PointROI(0.7, 2.8)
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+
+        mask2 = self.data.subsets[0].subset_state.to_mask(self.data)
+
+        assert np.any(mask1 != mask2)
+
+        self.application.undo()
+
+        assert len(self.data.subsets) == 1
+
+        mask3 = self.data.subsets[0].subset_state.to_mask(self.data)
+
+        assert np.all(mask3 == mask1)
+
+        self.application.redo()
+
+        assert len(self.data.subsets) == 1
+
+        mask4 = self.data.subsets[0].subset_state.to_mask(self.data)
+
+        assert np.all(mask4 == mask2)
+
+
+class TestDendrogramViewer():
 
     def setup_method(self, method):
-        s = simple_session()
-        self.hub = s.hub
-        self.data = core.Data(label='d1', x=[1, 2, 3])
-        self.dc = s.data_collection
-        self.dc.append(self.data)
 
-        self.w = DendrogramViewer(s)
+        self.data = Data(label='d1', parent=[-1, 0, 1, 1], height=[1.3, 2.2, 3.2, 4.4])
 
-    def test_ignore_double_add(self):
-        self.w.add_data(self.data)
-        assert self.data in self.w.client
-        self.w.add_data(self.data)
+        self.app = GlueApplication()
+        self.session = self.app.session
+        self.hub = self.session.hub
 
-    def test_update_combos_empty_data(self):
-        self.w._update_combos()
+        self.data_collection = self.session.data_collection
+        self.data_collection.append(self.data)
 
-    def test_add_subset(self):
-        s = self.data.new_subset()
-        self.w.add_subset(s)
-        assert self.data in self.w.client
-        assert s in self.w.client
+        self.viewer = self.app.new_data_viewer(DendrogramViewer)
 
+        self.data_collection.register_to_hub(self.hub)
+        self.viewer.register_to_hub(self.hub)
 
-class TestDataViewerDendro(BaseTestDataViewer):
-    # A few additional tests common to all data viewers
-    widget_cls = DendrogramViewer
+    def teardown_method(self, method):
+        self.viewer.close()
+
+    def test_point_select(self):
+
+        self.viewer.add_data(self.data)
+
+        # By default selecting a structure selects all substructures
+        roi = PointROI(0.5, 1.5)
+        self.viewer.apply_roi(roi)
+        assert len(self.data.subsets) == 1
+        mask1 = self.data.subsets[0].subset_state.to_mask(self.data)
+        assert_equal(mask1, [0, 1, 1, 1])
+
+        # But this option can be turned off
+        self.viewer.state.select_substruct = False
+        self.viewer.apply_roi(roi)
+        assert len(self.data.subsets) == 1
+        mask1 = self.data.subsets[0].subset_state.to_mask(self.data)
+        assert_equal(mask1, [0, 1, 0, 0])
+        self.viewer.state.select_substruct = True
+
+        # Try selecting a leaf
+        roi = PointROI(0.2, 2.8)
+        self.viewer.apply_roi(roi)
+        assert len(self.data.subsets) == 1
+        mask1 = self.data.subsets[0].subset_state.to_mask(self.data)
+        assert_equal(mask1, [0, 0, 1, 0])
+
+        # Try selecting another leaf
+        roi = PointROI(0.7, 2.8)
+        self.viewer.apply_roi(roi)
+        assert len(self.data.subsets) == 1
+        mask1 = self.data.subsets[0].subset_state.to_mask(self.data)
+        assert_equal(mask1, [0, 0, 0, 1])
+
+    def test_attribute_change_triggers_relayout(self):
+
+        self.data.add_component([4, 5, 6, 7], 'flux')
+        self.viewer.add_data(self.data)
+
+        l = self.viewer.state._layout
+        self.viewer.state.height_att = self.data.id['flux']
+        assert self.viewer.state._layout is not l

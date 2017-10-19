@@ -5,7 +5,7 @@ import numpy as np
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 # from glue.core.util import update_ticks
-from glue.core.roi import PointROI
+from glue.core.roi import PointROI, XRangeROI
 from glue.core import command
 from glue.core.subset import CategorySubsetState
 
@@ -44,7 +44,7 @@ class DendrogramViewer(MatplotlibDataViewer):
         if self.state._layout is None:
             return
 
-        x, y = self.state._layout
+        x, y = self.state._layout.xy
         x, y = x[::3], y[::3]
         xlim = np.array([x.min(), x.max()])
         xpad = .05 * xlim.ptp()
@@ -90,36 +90,39 @@ class DendrogramViewer(MatplotlibDataViewer):
 
         # TODO Does subset get applied to all data or just visible data?
 
-        if not isinstance(roi, PointROI):
-            raise NotImplementedError("Only PointROI supported")
-
         if self.state._layout is None:
             return
 
         if not roi.defined():
             return
 
-        x, y = roi.x, roi.y
+        if isinstance(roi, PointROI):
 
-        xs, ys = self.state._layout
-        parent_ys = ys[1::3]
-        xs, ys = xs[::3], ys[::3]
+            x, y = roi.x, roi.y
 
-        delt = np.abs(x - xs)
-        delt[y > ys] = np.nan
-        delt[y < parent_ys] = np.nan
+            xs, ys = self.state._layout.xy
+            parent_ys = ys[1::3]
+            xs, ys = xs[::3], ys[::3]
 
-        if np.isfinite(delt).any():
-            select = np.nanargmin(delt)
-            if self.state.select_substruct:
-                parent = self.state.reference_data[self.state.parent_att]
-                select = _substructures(parent, select)
-            select = np.asarray(select, dtype=np.int)
+            delt = np.abs(x - xs)
+            delt[y > ys] = np.nan
+            delt[y < parent_ys] = np.nan
+
+            if np.isfinite(delt).any():
+                select = np.nanargmin(delt)
+                if self.state.select_substruct:
+                    parent = self.state.reference_data[self.state.parent_att]
+                    select = _substructures(parent, select)
+                select = np.asarray(select, dtype=np.int)
+            else:
+                select = np.array([], dtype=np.int)
+
+            subset_state = CategorySubsetState(self.state.reference_data.pixel_component_ids[0],
+                                               select)
+
         else:
-            select = np.array([], dtype=np.int)
 
-        subset_state = CategorySubsetState(self.state.reference_data.pixel_component_ids[0],
-                                           select)
+            raise TypeError("Only PointROI selections are supported")
 
         mode = EditSubsetMode()
         mode.update(self._data, subset_state)
