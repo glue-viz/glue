@@ -49,9 +49,6 @@
      <property name="movable">
       <bool>false</bool>
      </property>
-     <property name="tabBarAutoHide">
-      <bool>false</bool>
-     </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>General</string>

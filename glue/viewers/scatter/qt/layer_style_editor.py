@@ -1,5 +1,4 @@
 import os
-import platform
 
 import numpy as np
 
@@ -7,7 +6,7 @@ from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.utils.qt import load_ui, get_qapp, fix_tab_widget_fontsize
+from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):
