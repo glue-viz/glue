@@ -20,8 +20,3 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
                           directory=os.path.dirname(__file__))
 
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
-
-        self.viewer_state = viewer_state
-
-    def reset_limits(self):
-        self.viewer_state.reset_limits()

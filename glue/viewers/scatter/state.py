@@ -122,12 +122,7 @@ class ScatterLayerState(MatplotlibLayerState):
     A state class that includes all the attributes for layers in a scatter plot.
     """
 
-    # General properties
-
-    style = DDSCProperty(docstring="The layer style")
-    size = DDCProperty(docstring="The size of the markers")
-
-    # Scatter layer
+    # Color
 
     cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
     cmap_att = DDSCProperty(docstring="The attribute to use for the color")
@@ -135,28 +130,38 @@ class ScatterLayerState(MatplotlibLayerState):
     cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
     cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
 
+    # Markers
+
+    markers_visible = DDCProperty(True, docstring="Whether to show markers")
+    size = DDCProperty(docstring="The size of the markers")
     size_mode = DDSCProperty(docstring="Whether to use size to encode an attribute")
     size_att = DDSCProperty(docstring="The attribute to use for the size")
     size_vmin = DDCProperty(docstring="The lower level for the size mapping")
     size_vmax = DDCProperty(docstring="The upper level for the size mapping")
     size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
 
+    # Line
+
+    line_visible = DDCProperty(False, docstring="Whether to show a line connecting all positions")
+    linewidth = DDCProperty(1, docstring="The line width")
+    linestyle = DDSCProperty(docstring="The line style")
+
+    # Errorbars
+
     xerr_visible = DDCProperty(False, docstring="Whether to show x error bars")
     yerr_visible = DDCProperty(False, docstring="Whether to show y error bars")
     xerr_att = DDSCProperty(docstring="The attribute to use for the x error bars")
     yerr_att = DDSCProperty(docstring="The attribute to use for the y error bars")
 
+    # Vectors
+
+    vector_visible = DDCProperty(False, docstring="Whether to show vector plot")
     vx_att = DDSCProperty(docstring="The attribute to use for the x vector arrow")
     vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
-    vector_visible = DDCProperty(False, docstring="Whether to show vector plot")
-    vector_show_arrow = DDCProperty(False, docstring="Whether to show vector arrow")
-    vector_mode = DDSCProperty(docstring="Which attribute to use for plotting vectors")
-    origin_pos = DDSCProperty(docstring="The attribute to use for the arrow position")
-
-    # Line plot layer
-
-    linewidth = DDCProperty(1, docstring="The line width")
-    linestyle = DDSCProperty(docstring="The line style")
+    vector_arrowhead = DDCProperty(False, docstring="Whether to show vector arrow")
+    vector_mode = DDSCProperty(default_index=0, docstring="Which attribute to use for plotting vectors")
+    vector_origin = DDSCProperty(default_index=1, docstring="The attribute to use for the arrow position")
+    vector_scaling = DDCProperty(1, docstring="The relative scaling of the arrow length")
 
     def __init__(self, viewer_state=None, layer=None, **kwargs):
 
@@ -185,17 +190,13 @@ class ScatterLayerState(MatplotlibLayerState):
                                                       numeric=True, categorical=False)
 
         self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att',
-                                                      numeric=True, categorical=False)
+                                                    numeric=True, categorical=False)
 
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
-                                                      numeric=True, categorical=False)
+                                                    numeric=True, categorical=False)
 
-
-        ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
-        ScatterLayerState.vector_mode.set_choices(self, ['Cartesian', 'Polarization'])
-        ScatterLayerState.origin_pos.set_choices(self, ['mid', 'tail', 'middle', 'tip'])
 
         linestyle_display = {'solid': '–––––––',
                              'dashed': '– – – – –',
@@ -204,6 +205,15 @@ class ScatterLayerState(MatplotlibLayerState):
 
         ScatterLayerState.linestyle.set_choices(self, ['solid', 'dashed', 'dotted', 'dashdot'])
         ScatterLayerState.linestyle.set_display_func(self, linestyle_display.get)
+
+        ScatterLayerState.vector_mode.set_choices(self, ['Cartesian', 'Polar'])
+
+        vector_origin_display = {'tail': 'Tail of vector',
+                                 'middle': 'Middle of vector',
+                                 'tip': 'Tip of vector'}
+
+        ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
+        ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
