@@ -377,11 +377,5 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
-
         self._update_scatter(force=True)
-
-        # Reset the axes stack so that pressing the home button doesn't go back
-        # to a previous irrelevant view.
-        self.axes.figure.canvas.toolbar.update()
-
         self.redraw()

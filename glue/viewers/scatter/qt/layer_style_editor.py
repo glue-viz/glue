@@ -7,7 +7,7 @@ from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.utils.qt import load_ui, get_qapp
+from glue.utils.qt import load_ui, get_qapp, fix_tab_widget_fontsize
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):
@@ -24,12 +24,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
                           'vector_scaling': dict(value_range=(0.1, 10), log=True)}
         autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
-        # The following is needed because of a bug in Qt which means that
-        # tab titles don't get scaled right.
-        if platform.system() == 'Darwin':
-            app = get_qapp()
-            app_font = app.font()
-            self.ui.tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+        fix_tab_widget_fontsize(self.ui.tab_widget)
 
         self.layer_state = layer.state
 

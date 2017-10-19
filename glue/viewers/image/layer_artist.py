@@ -372,9 +372,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self):
-
         # TODO: determine why this gets called when changing the transparency slider
-
         self._update_image(force=True)
-
         self.redraw()
