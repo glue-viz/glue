@@ -65,7 +65,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = self.axes.quiver([], [], [], [], units='width',
                                               pivot='mid', scale_units='width',
-                                              headwidth=1, headlength=0) # x, y, vx, vy
+                                              headwidth=1, headlength=0)
         self.line_collection = LineCollection(np.zeros((0, 2, 2)))
         self.axes.add_collection(self.line_collection)
 
@@ -106,42 +106,45 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         else:
             self._enabled = True
 
-        if self.state.markers_visible or self.state.line_visible:
-            if self.state.cmap_mode == 'Fixed':
-                self.plot_artist.set_data(x, y)
-            else:
-                self.plot_artist.set_data([], [])
-        else:
-            self.plot_artist.set_data([], [])
-
-        if self.state.line_visible:
-            if self.state.cmap_mode == 'Linear':
-
-                # Add midpoints to make color work
-                xnew = np.zeros(len(x) * 2 - 1, dtype=float)
-                ynew = np.zeros(len(y) * 2 - 1, dtype=float)
-                xnew[::2] = x
-                xnew[1::2] = 0.5 * (x[1:] + x[:-1])
-                ynew[::2] = y
-                ynew[1::2] = 0.5 * (y[1:] + y[:-1])
-                points = np.array([xnew, ynew]).T.reshape(-1, 1, 2)
-                segments = np.concatenate([points[:-1], points[1:]], axis=1)
-                self.line_collection.set_segments(segments)
-            else:
-                self.line_collection.set_segments(np.zeros((0, 2, 2)))
-
         if self.state.markers_visible:
             if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                 # In this case we use Matplotlib's plot function because it has much
                 # better performance than scatter.
+                self.plot_artist.set_data(x, y)
                 offsets = np.zeros((0, 2))
                 self.scatter_artist.set_offsets(offsets)
             else:
+                self.plot_artist.set_data([], [])
                 offsets = np.vstack((x, y)).transpose()
                 self.scatter_artist.set_offsets(offsets)
         else:
+            self.plot_artist.set_data([], [])
             offsets = np.zeros((0, 2))
             self.scatter_artist.set_offsets(offsets)
+
+        if self.state.line_visible:
+            if self.state.cmap_mode == 'Fixed':
+                points = np.array([x, y]).transpose()
+                self.line_collection.set_segments([points])
+            else:
+                # In the case where we want to color the line, we need to over
+                # sample the line by a factor of two so that we can assign the
+                # correct colors to segments - if we didn't do this, then
+                # segments on one side of a point would be a different color
+                # from the other side. With oversampling, we can have half a
+                # segment on either side of a point be the same color as a
+                # point
+                x_fine = np.zeros(len(x) * 2 - 1, dtype=float)
+                y_fine = np.zeros(len(y) * 2 - 1, dtype=float)
+                x_fine[::2] = x
+                x_fine[1::2] = 0.5 * (x[1:] + x[:-1])
+                y_fine[::2] = y
+                y_fine[1::2] = 0.5 * (y[1:] + y[:-1])
+                points = np.array([x_fine, y_fine]).transpose().reshape(-1, 1, 2)
+                segments = np.concatenate([points[:-1], points[1:]], axis=1)
+                self.line_collection.set_segments(segments)
+        else:
+            self.line_collection.set_segments(np.zeros((0, 2, 2)))
 
         for eartist in list(self.errorbar_artist[2]):
             if eartist is not None:
@@ -215,18 +218,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if not self.enabled:
             return
 
-        if force or 'markers_visible' in changed:
-            if self.state.markers_visible and self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
-                self.plot_artist.set_marker('o')
-            else:
-                self.plot_artist.set_marker('')
-
         if self.state.markers_visible:
 
             if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
-
-                if force or 'markers_visible' in changed:
-                    self.plot_artist.set_marker('o')
 
                 if force or 'color' in changed:
                     self.plot_artist.set_color(self.state.color)
@@ -237,24 +231,18 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             else:
 
-                if force or 'markers_visible' in changed:
-                    self.plot_artist.set_marker('')
-
                 # TEMPORARY: Matplotlib has a bug that causes set_alpha to
                 # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
                 if 'alpha' in changed:
                     force = True
 
-                if force or any(prop in changed for prop in CMAP_PROPERTIES):
-
-                    if self.state.cmap_mode == 'Fixed':
-                        c = self.state.color
-                        vmin = vmax = cmap = None
-                        self.scatter_artist.set_facecolors(c)
-                    else:
-                        c = self.layer[self.state.cmap_att].ravel()
-                        set_mpl_artist_cmap(self.scatter_artist, c, self.state)
-
+                if self.state.cmap_mode == 'Fixed':
+                    if force or 'color' in changed or 'cmap_mode' in changed:
+                        self.scatter_artist.set_facecolors(self.state.color)
+                        self.scatter_artist.set_edgecolor('none')
+                elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                    c = self.layer[self.state.cmap_att].ravel()
+                    set_mpl_artist_cmap(self.scatter_artist, c, self.state)
                     self.scatter_artist.set_edgecolor('none')
 
                 if force or any(prop in changed for prop in MARKER_PROPERTIES):
@@ -272,47 +260,37 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     # proportional to the marker area, not radius.
                     self.scatter_artist.set_sizes(s ** 2)
 
-        else:
-
-            if force or 'markers_visible' in changed:
-                self.plot_artist.set_marker('')
-
         if self.state.line_visible:
 
-            if self.state.cmap_mode == 'Linear':
-                if force or any(prop in changed for prop in CMAP_PROPERTIES):
-                    c = self.layer[self.state.cmap_att].ravel()
-                    cnew = np.zeros((len(c) - 1) * 2)
-                    cnew[::2] = c[:-1]
-                    cnew[1::2] = c[1:]
-                    set_mpl_artist_cmap(self.line_collection, cnew, self.state)
+            if self.state.cmap_mode == 'Fixed':
+                if force or 'color' in changed or 'cmap_mode' in changed:
+                    self.line_collection.set_array(None)
+                    self.line_collection.set_color(self.state.color)
+            elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                # Higher up we oversampled the points in the line so that
+                # half a segment on either side of each point has the right
+                # color, so we need to also oversample the color here.
+                c = self.layer[self.state.cmap_att].ravel()
+                cnew = np.zeros((len(c) - 1) * 2)
+                cnew[::2] = c[:-1]
+                cnew[1::2] = c[1:]
+                set_mpl_artist_cmap(self.line_collection, cnew, self.state)
 
             if force or 'linewidth' in changed:
-                if self.state.cmap_mode == 'Fixed':
-                    self.plot_artist.set_linewidth(self.state.linewidth)
-                else:
-                    self.line_collection.set_linewidth(self.state.linewidth)
+                self.line_collection.set_linewidth(self.state.linewidth)
 
             if force or 'linestyle' in changed:
-                if self.state.cmap_mode == 'Fixed':
-                    self.plot_artist.set_linestyle(self.state.linestyle)
-                else:
-                    self.line_collection.set_linestyle(self.state.linestyle)
+                self.line_collection.set_linestyle(self.state.linestyle)
 
         if self.state.vector_visible and self.vector_artist is not None:
 
-            if force or any(prop in changed for prop in CMAP_PROPERTIES):
-
-                if self.state.cmap_mode == 'Fixed':
-                    self.vector_artist.set_facecolors(self.state.color)
-                else:
-                    c = self.layer[self.state.cmap_att].ravel()
-                    set_mpl_artist_cmap(self.vector_artist, c, self.state)
-
-                self.vector_artist.set_edgecolor('none')
-
-            if force or 'color' in changed:
-                self.vector_artist.set_color(self.state.color)
+            if self.state.cmap_mode == 'Fixed':
+                if force or 'color' in changed or 'cmap_mode' in changed:
+                    self.vector_artist.set_array(None)
+                    self.vector_artist.set_color(self.state.color)
+            elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                c = self.layer[self.state.cmap_att].ravel()
+                set_mpl_artist_cmap(self.vector_artist, c, self.state)
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -321,8 +299,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if eartist is None:
                     continue
 
-                if force or 'color' in changed:
-                    eartist.set_color(self.state.color)
+                if self.state.cmap_mode == 'Fixed':
+                    if force or 'color' in changed or 'cmap_mode' in changed:
+                        eartist.set_color(self.state.color)
+                elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                    c = self.layer[self.state.cmap_att].ravel()
+                    set_mpl_artist_cmap(eartist, c, self.state)
 
                 if force or 'alpha' in changed:
                     eartist.set_alpha(self.state.alpha)
@@ -333,7 +315,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if force or 'zorder' in changed:
                     eartist.set_zorder(self.state.zorder)
 
-        for artist in [self.scatter_artist, self.plot_artist, self.vector_artist]:
+        for artist in [self.scatter_artist, self.plot_artist,
+                       self.vector_artist, self.line_collection]:
 
             if artist is None:
                 continue
