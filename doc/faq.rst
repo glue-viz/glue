@@ -19,7 +19,7 @@ Glue relies on several libraries to parse different file formats:
    formats like ``.jpeg`` and ``.tiff``
  * `h5py <http://www.h5py.org/>`_ to read HDF5 files
 
-If Glue's predefined data loaders don't fit your needs, ou can also :ref:`write
+If Glue's predefined data loaders don't fit your needs, you can also :ref:`write
 your own <custom_data_factory>` loader, and plug it into Glue.
 
 How do I overplot catalogs on images in Glue?
