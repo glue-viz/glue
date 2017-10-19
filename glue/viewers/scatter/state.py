@@ -263,3 +263,16 @@ class ScatterLayerState(MatplotlibLayerState):
         Flip the size_vmin/size_vmax limits.
         """
         self.size_lim_helper.flip_limits()
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        # Patch for glue files produced with glue v0.11
+        if 'style' in rec['values']:
+            style = context.object(rec['values'].pop('style'))
+            if style == 'Scatter':
+                rec['values']['markers_visible'] = True
+                rec['values']['line_visible'] = False
+            elif style == 'Line':
+                rec['values']['markers_visible'] = False
+                rec['values']['line_visible'] = True
+        return super(ScatterLayerState, cls).__setgluestate__(rec, context)
