@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
+    <width>368</width>
     <height>151</height>
    </rect>
   </property>
@@ -20,7 +20,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tab_widget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -497,6 +497,192 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Vector</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>3</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>10</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>5</number>
+       </property>
+       <item row="4" column="3">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="bool_vector_visible">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="5">
+        <widget class="QComboBox" name="combosel_vx_att"/>
+       </item>
+       <item row="1" column="6">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="5">
+        <widget class="QComboBox" name="combosel_vy_att"/>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_vector_y">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>vy:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_vector_x">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>vx:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="7">
+        <widget class="QLabel" name="label_warning_vector">
+         <property name="styleSheet">
+          <string notr="true">color: #BB2200</string>
+         </property>
+         <property name="text">
+          <string>Warning: rendering may be slow if you show vectors</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="combosel_vector_mode">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>vx/vy</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ang/length</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QComboBox" name="combosel_origin_pos">
+         <item>
+          <property name="text">
+           <string>Mid</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tail</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Middle</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tip</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Origin is:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QCheckBox" name="bool_vector_show_arrow">
+         <property name="text">
+          <string>Show arrow</string>
          </property>
         </widget>
        </item>

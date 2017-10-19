@@ -8,6 +8,8 @@ v0.12.0 (unreleased)
   single_subset_action registry (which applied only to single subset selections).
   Layer actions can now be registered with the ``@layer_action`` decorator. [#1396]
 
+* Added support for plotting vectors in the scatter plot viewer. [#1410]
+
 v0.11.2 (unreleased)
 --------------------
 

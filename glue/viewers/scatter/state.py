@@ -146,6 +146,13 @@ class ScatterLayerState(MatplotlibLayerState):
     xerr_att = DDSCProperty(docstring="The attribute to use for the x error bars")
     yerr_att = DDSCProperty(docstring="The attribute to use for the y error bars")
 
+    vx_att = DDSCProperty(docstring="The attribute to use for the x vector arrow")
+    vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
+    vector_visible = DDCProperty(False, docstring="Whether to show vector plot")
+    vector_show_arrow = DDCProperty(False, docstring="Whether to show vector arrow")
+    vector_mode = DDSCProperty(docstring="Which attribute to use for plotting vectors")
+    origin_pos = DDSCProperty(docstring="The attribute to use for the arrow position")
+
     # Line plot layer
 
     linewidth = DDCProperty(1, docstring="The line width")
@@ -177,9 +184,18 @@ class ScatterLayerState(MatplotlibLayerState):
         self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att',
                                                       numeric=True, categorical=False)
 
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att',
+                                                      numeric=True, categorical=False)
+
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
+                                                      numeric=True, categorical=False)
+
+
         ScatterLayerState.style.set_choices(self, ['Scatter', 'Line'])
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.vector_mode.set_choices(self, ['Cartesian', 'Polarization'])
+        ScatterLayerState.origin_pos.set_choices(self, ['mid', 'tail', 'middle', 'tip'])
 
         linestyle_display = {'solid': '–––––––',
                              'dashed': '– – – – –',
@@ -218,6 +234,13 @@ class ScatterLayerState(MatplotlibLayerState):
             else:
                 self.xerr_att_helper.set_multiple_data([self.layer])
                 self.yerr_att_helper.set_multiple_data([self.layer])
+
+            if self.layer is None:
+                self.vx_att_helper.set_multiple_data([])
+                self.vy_att_helper.set_multiple_data([])
+            else:
+                self.vx_att_helper.set_multiple_data([self.layer])
+                self.vy_att_helper.set_multiple_data([self.layer])
 
     def flip_cmap(self):
         """
