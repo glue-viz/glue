@@ -102,9 +102,9 @@ class MatplotlibDataViewerState(State):
                 setattr(self, min_name, min(min_values))
                 setattr(self, max_name, max(max_values))
             else:
-                if getattr(self, max_name) < 0:
+                if getattr(self, max_name) is not None and getattr(self, max_name) < 0:
                     setattr(self, max_name, 10)
-                if getattr(self, min_name) < 0:
+                if getattr(self, min_name) is not None and getattr(self, min_name) < 0:
                     setattr(self, min_name, min(0.1, getattr(self, max_name) / 100))
 
     @property
