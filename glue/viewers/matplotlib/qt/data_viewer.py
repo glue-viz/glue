@@ -41,8 +41,8 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.limits_to_mpl()
 
-        self.state.add_callback('x_log', nonpartial(self.update_x_log))
-        self.state.add_callback('y_log', nonpartial(self.update_y_log))
+        self.state.add_callback('x_log', nonpartial(self.update_x_log), priority=1000)
+        self.state.add_callback('y_log', nonpartial(self.update_y_log), priority=1000)
 
         self.update_x_log()
 

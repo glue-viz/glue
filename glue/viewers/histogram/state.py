@@ -14,6 +14,7 @@ from glue.core.state_objects import (StateAttributeLimitsHelper,
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.utils import defer_draw
+from glue.utils.decorators import avoid_circular
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
 
@@ -56,6 +57,11 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
         self.update_from_dict(kwargs)
 
+        # This should be added after update_from_dict since we don't want to
+        # influence the restoring of sessions.
+        self.add_callback('hist_x_min', self.update_view_to_bins)
+        self.add_callback('hist_x_max', self.update_view_to_bins)
+
     def _update_priority(self, name):
         if name == 'layers':
             return 2
@@ -72,7 +78,8 @@ class HistogramViewerState(MatplotlibDataViewerState):
         """
         self.x_lim_helper.flip_limits()
 
-    def update_bins_to_view(self):
+    @avoid_circular
+    def update_bins_to_view(self, *args):
         """
         Update the bins to match the current view.
         """
@@ -83,6 +90,15 @@ class HistogramViewerState(MatplotlibDataViewerState):
             else:
                 self.hist_x_min = self.x_max
                 self.hist_x_max = self.x_min
+
+    @avoid_circular
+    def update_view_to_bins(self, *args):
+        """
+        Update the view to match the histogram interval
+        """
+        with delay_callback(self, 'x_min', 'x_max'):
+            self.x_min = self.hist_x_min
+            self.x_max = self.hist_x_max
 
     def _get_x_components(self):
 

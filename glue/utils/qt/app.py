@@ -1,7 +1,7 @@
 import platform
 from qtpy import QtCore, QtGui, QtWidgets, PYQT5
 
-__all__ = ['get_qapp']
+__all__ = ['get_qapp', 'fix_tab_widget_fontsize']
 
 qapp = None
 
@@ -40,3 +40,13 @@ def get_qapp(icon_path=None):
         qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
 
     return qapp
+
+
+def fix_tab_widget_fontsize(tab_widget):
+    """
+    Because of a bug in Qt, tab titles on MacOS X don't have the right font size
+    """
+    if platform.system() == 'Darwin':
+        app = get_qapp()
+        app_font = app.font()
+        tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))

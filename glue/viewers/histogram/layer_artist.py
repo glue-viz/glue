@@ -54,7 +54,8 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             self._enabled = True
 
-        x = x[~np.isnan(x) & (x >= self._viewer_state.hist_x_min) & (x <= self._viewer_state.hist_x_max)]
+        x = x[~np.isnan(x) & (x >= self._viewer_state.hist_x_min) &
+                             (x <= self._viewer_state.hist_x_max)]
 
         if len(x) == 0:
             self.redraw()
@@ -138,10 +139,10 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     def _update_histogram(self, force=False, **kwargs):
 
         if (self._viewer_state.hist_x_min is None or
-            self._viewer_state.hist_x_max is None or
-            self._viewer_state.hist_n_bin is None or
-            self._viewer_state.x_att is None or
-            self.state.layer is None):
+                self._viewer_state.hist_x_max is None or
+                self._viewer_state.hist_n_bin is None or
+                self._viewer_state.x_att is None or
+                self.state.layer is None):
             return
 
         # Figure out which attributes are different from before. Ideally we shouldn't
@@ -178,12 +179,5 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
-
-        # Recompute the histogram
         self._update_histogram(force=True)
-
-        # Reset the axes stack so that pressing the home button doesn't go back
-        # to a previous irrelevant view.
-        self.axes.figure.canvas.toolbar.update()
-
         self.redraw()

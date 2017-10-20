@@ -292,6 +292,41 @@ class TestScatterViewer(object):
         assert viewer3.state.layers[1].visible
         assert not viewer3.state.layers[2].visible
 
+
+    def test_session_line_back_compat(self):
+
+        # Backward-compatibility for v0.11 files in which the line and scatter
+        # plots were defined as separate styles.
+
+        filename = os.path.join(DATA, 'scatter_and_line_v1.glu')
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'table'
+
+        viewer1 = ga.viewers[0][0]
+        assert len(viewer1.state.layers) == 1
+        assert viewer1.state.x_att is dc[0].id['a']
+        assert viewer1.state.y_att is dc[0].id['b']
+        assert viewer1.state.layers[0].markers_visible
+        assert not viewer1.state.layers[0].line_visible
+
+        viewer1 = ga.viewers[0][1]
+        assert len(viewer1.state.layers) == 1
+        assert viewer1.state.x_att is dc[0].id['a']
+        assert viewer1.state.y_att is dc[0].id['b']
+        assert not viewer1.state.layers[0].markers_visible
+        assert viewer1.state.layers[0].line_visible
+
     def test_save_svg(self, tmpdir):
         # Regression test for a bug in AxesCache that caused SVG saving to
         # fail (because renderer.buffer_rgba did not exist)
