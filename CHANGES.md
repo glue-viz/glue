@@ -23,7 +23,7 @@ v0.11.2 (unreleased)
 
 * Fixed dragging and dropping session files onto glue (this now loads the session
   rather than trying to load it as a dataset). Also now show a warning when
-  the application is about to be reset to open a new session. [#1425]
+  the application is about to be reset to open a new session. [#1425, #1448]
 
 * Make sure no errors happen if making a selection in an empty viewer. [#1425]
 

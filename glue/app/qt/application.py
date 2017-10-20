@@ -891,12 +891,20 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         ga = self.restore_session_and_close(file_name)
         return ga
 
+    @property
+    def is_empty(self):
+        """
+        Returns `True` if there are no viewers and no data.
+        """
+        return (len([viewer for tab in self.viewers for viewer in tab]) == 0 and
+                len(self.data_collection) == 0)
+
     def _reset_session(self, show=True, warn=True):
         """
         Reset session to clean state.
         """
 
-        if not os.environ.get('GLUE_TESTING') and warn:
+        if not os.environ.get('GLUE_TESTING') and warn and not self.is_empty:
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(
                 self, "Confirm Close",
@@ -1057,18 +1065,17 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         event.accept()
 
-    def restore_session_and_close(self, path):
+    def restore_session_and_close(self, path, warn=True):
 
-        buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
-
-        dialog = QtWidgets.QMessageBox.warning(
-            self, "Confirm Close",
-            "Loading a session file will close the existing session. Are you "
-            "sure you want to continue?",
-            buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
-
-        if not dialog == QtWidgets.QMessageBox.Ok:
-            return
+        if warn and not self.is_empty:
+            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+            dialog = QtWidgets.QMessageBox.warning(
+                self, "Confirm Close",
+                "Loading a session file will close the existing session. Are you "
+                "sure you want to continue?",
+                buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
+            if not dialog == QtWidgets.QMessageBox.Ok:
+                return
 
         with set_cursor_cm(Qt.WaitCursor):
             app = self.restore_session(path)
