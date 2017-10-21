@@ -76,8 +76,6 @@ class MatplotlibDataViewerState(State):
         att = getattr(self, axis + '_att', None)
         min_values, max_values = [], []
 
-        print('_on_log_update', axis, att)
-
         if att is not None:
             for layer in self.layers:
                 if layer.layer is not None:
