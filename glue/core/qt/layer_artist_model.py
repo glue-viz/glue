@@ -11,6 +11,7 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
+import textwrap
 from weakref import WeakKeyDictionary
 
 from qtpy.QtCore import Qt
@@ -50,12 +51,13 @@ class LayerArtistModel(PythonListModel):
             return result
         if role == Qt.CheckStateRole:
             art = self.artists[index.row()]
-            result = Qt.Checked if art.visible else Qt.Unchecked
+            result = Qt.Checked if art.visible and art.enabled else Qt.Unchecked
             return result
         if role == Qt.ToolTipRole:
             art = self.artists[index.row()]
             if not art.enabled:
-                return art.disabled_message
+                wrapped = textwrap.fill(art.disabled_message, break_long_words=False)
+                return wrapped
 
         return super(LayerArtistModel, self).data(index, role)
 
@@ -67,8 +69,6 @@ class LayerArtistModel(PythonListModel):
                 result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
                           Qt.ItemIsUserCheckable)
             else:
-                result = (result & Qt.ItemIsEnabled) ^ result
-                result = (result & Qt.ItemIsSelectable) ^ result
                 result = (result & Qt.ItemIsUserCheckable) ^ result
         else:  # only drop between rows, where index isn't valid
             result = result | Qt.ItemIsDropEnabled
@@ -194,7 +194,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
-        self.setMinimumSize(200, 50)
+        self.setMinimumSize(200, 100)
         self._actions = {}
         self._create_actions()
 
@@ -203,7 +203,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # listen to all events since the viewport update is fast.
         self.hub = hub
         self.hub.subscribe(self, Message, self._update_viewport)
-        self.hub.subscribe(self, LayerArtistUpdatedMessage, self._layer_enabled_or_disabled)
+        self.hub.subscribe(self, LayerArtistUpdatedMessage, self._update_viewport)
         self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)
 
@@ -327,6 +327,17 @@ class LayerArtistWidget(QtWidgets.QWidget):
         self.empty = QtWidgets.QWidget()
         self.layer_options_layout.addWidget(self.empty)
 
+        self.disabled_warning = QtWidgets.QLabel()
+        self.disabled_warning.setWordWrap(True)
+        self.disabled_warning.setAlignment(Qt.AlignJustify)
+        self.padded_warning = QtWidgets.QWidget()
+        warning_layout = QtWidgets.QVBoxLayout()
+        warning_layout.setContentsMargins(20, 20, 20, 20)
+        warning_layout.addWidget(self.disabled_warning)
+        self.padded_warning.setLayout(warning_layout)
+
+        self.layer_options_layout.addWidget(self.padded_warning)
+
     def on_artist_add(self, layer_artists):
 
         if self.layer_style_widget_cls is None:
@@ -348,9 +359,15 @@ class LayerArtistWidget(QtWidgets.QWidget):
     def on_selection_change(self, layer_artist):
 
         if layer_artist in self.layout_style_widgets:
-            self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+            if layer_artist.enabled:
+                self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+                self.disabled_warning.setText('')
+            else:
+                self.disabled_warning.setText(layer_artist.disabled_message)
+                self.layer_options_layout.setCurrentWidget(self.padded_warning)
         else:
             self.layer_options_layout.setCurrentWidget(self.empty)
+            self.disabled_warning.setText('')
 
 
 class QtLayerArtistContainer(LayerArtistContainer):

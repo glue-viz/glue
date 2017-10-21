@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from qtpy.QtCore import Qt
 
 from glue.core import message as msg
-from glue.core import Data
+from glue.core import Data, Subset
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
 from glue.external import six
@@ -140,8 +140,13 @@ class DataViewerWithState(DataViewer):
 
     def _update_data(self, message):
         if message.data in self._layer_artist_container:
-            for layer_artist in self._layer_artist_container[message.data]:
-                layer_artist.update()
+            for layer_artist in self._layer_artist_container:
+                if isinstance(layer_artist.layer, Subset):
+                    if layer_artist.layer.data is message.data:
+                        layer_artist.update()
+                else:
+                    if layer_artist.layer is message.data:
+                        layer_artist.update()
             self.redraw()
 
     def _update_subset(self, message):

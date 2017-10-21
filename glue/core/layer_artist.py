@@ -12,6 +12,7 @@ LayerArtists contain the bulk of the logic for actually rendering things
 
 from __future__ import absolute_import, division, print_function
 
+import os
 from contextlib import contextmanager
 from abc import ABCMeta, abstractmethod
 
@@ -23,6 +24,19 @@ from glue.utils import Pointer, PropertySetMixin
 from glue.core.message import LayerArtistEnabledMessage, LayerArtistDisabledMessage
 
 __all__ = ['LayerArtistBase', 'MatplotlibLayerArtist', 'LayerArtistContainer']
+
+
+DISABLED_LAYER_WARNING = """
+This layer depends on attributes that cannot be derived for the underlying
+dataset. This usually indicates that this dataset has not been linked with other
+datasets being shown. In this case, for this layer to work, it would need to be
+linked with the following datasets: {}
+""".replace(os.linesep, ' ')
+
+DISABLED_MASK_MESSAGE = """
+The subset mask for this layer cannot be computed. This usually indicates that
+the selection was defined using attributes that are not defined in this dataset.
+""".replace(os.linesep, ' ')
 
 
 class ChangedTrigger(object):
@@ -134,12 +148,16 @@ class LayerArtistBase(PropertySetMixin):
             self.disable('')
             return
 
-        msg = ('Layer depends on attributes that '
-               'cannot be derived for %s:\n -%s' %
-               (self._layer.data.label,
-                '\n -'.join(map(str, attributes))))
+        datasets = ', '.join(sorted(set([cid.parent.label for cid in attributes])))
+        self.disable(DISABLED_LAYER_WARNING.format(datasets))
 
-        self.disable(msg)
+    def disable_incompatible_subset(self):
+        """
+        Disable a layer because the subset mask cannot be computed.
+
+        Automatically generates a disabled message.
+        """
+        self.disable(DISABLED_MASK_MESSAGE)
 
     @property
     def disabled_message(self):
@@ -148,7 +166,7 @@ class LayerArtistBase(PropertySetMixin):
         """
         if self.enabled:
             return ''
-        return "Cannot visualize this layer\n%s" % self._disabled_reason
+        return "Cannot visualize this layer: %s" % self._disabled_reason
 
     @property
     def layer(self):

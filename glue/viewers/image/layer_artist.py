@@ -273,7 +273,7 @@ class ImageSubsetArray(object):
         try:
             mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
-            self.layer_artist.disable("Cannot compute mask for this layer")
+            self.layer_artist.disable_incompatible_subset()
             return self.nan_array
         else:
             self.layer_artist.enable()
@@ -372,6 +372,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         # as not being visible when the layer was cleared is made visible
         # again.
         if hasattr(self, 'image_artist'):
+            self.image_artist.invalidate_cache()
             self._update_visual_attributes()
 
     @defer_draw

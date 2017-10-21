@@ -59,9 +59,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
-        self.vector_artist = self.axes.quiver([], [], [], [], units='width',
-                                              pivot='mid', scale_units='width',
-                                              headwidth=1, headlength=0)
+        self.vector_artist = None
         self.line_collection = LineCollection(np.zeros((0, 2, 2)))
         self.axes.add_collection(self.line_collection)
 
@@ -91,7 +89,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
-            self._enabled = True
+            self.enable()
 
         try:
             y = self.layer[self._viewer_state.y_att].ravel()
@@ -100,7 +98,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.disable_invalid_attributes(self._viewer_state.y_att)
             return
         else:
-            self._enabled = True
+            self.enable()
 
         if self.state.markers_visible:
             if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
