@@ -34,12 +34,6 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
 
         self.reset_cache()
 
-    # def remove(self):
-    #     super(DendrogramLayerArtist, self).remove()
-    #     self.mpl_hist_unscaled = np.array([])
-    #     self.mpl_hist = np.array([])
-    #     self.mpl_bins = np.array([])
-
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
@@ -83,6 +77,7 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
             mpl_artist.set_zorder(self.state.zorder)
             mpl_artist.set_color(self.state.color)
             mpl_artist.set_alpha(self.state.alpha)
+            mpl_artist.set_linewidth(self.state.linewidth)
 
         self.redraw()
 
@@ -121,7 +116,7 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
             self._update_dendrogram()
             force = True  # make sure scaling and visual attributes are updated
 
-        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible')):
+        if force or any(prop in changed for prop in ('linewidth', 'alpha', 'color', 'zorder', 'visible')):
             self._update_visual_attributes()
 
     @defer_draw

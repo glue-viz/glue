@@ -1,11 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-# from glue.utils import nonpartial
+
+from qtpy.QtWidgets import QMessageBox
+
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
-# from glue.core.util import update_ticks
-from glue.core.roi import PointROI, XRangeROI
+from glue.core.roi import PointROI
 from glue.core import command
 from glue.core.subset import CategorySubsetState
 
@@ -74,6 +75,15 @@ class DendrogramViewer(MatplotlibDataViewer):
                 self.apply_roi(mode.roi())
 
         self.toolbar.tools['select:pick']._move_callback = on_move
+
+    def add_data(self, data):
+        if data.ndim != 1:
+            QMessageBox.critical(self, "Error", "Only 1-D data can be added to "
+                                 "the dendrogram viewer (tried to add a {}-D "
+                                 "dataset)".format(data.ndim),
+                                 buttons=QMessageBox.Ok)
+            return False
+        return super(DendrogramViewer, self).add_data(data)
 
     # TODO: move some of the ROI stuff to state class?
 

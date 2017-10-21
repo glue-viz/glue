@@ -371,7 +371,6 @@ class GlueSerializer(object):
 
     def dumps(self, indent=None):
         result = self.dumpo()
-        print(result)
         return json.dumps(result, default=self.json_default,
                           indent=indent, sort_keys=True)
 

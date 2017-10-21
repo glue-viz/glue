@@ -108,4 +108,4 @@ class DendrogramLayerState(MatplotlibLayerState):
     """
     A state class that includes all the attributes for layers in a dendrogram plot.
     """
-    pass
+    linewidth = DDCProperty(1, docstring="The line width")
