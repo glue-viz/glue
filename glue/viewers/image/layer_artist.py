@@ -273,7 +273,7 @@ class ImageSubsetArray(object):
         try:
             mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
-            self.layer_artist.disable("Cannot compute mask for this layer")
+            self.layer_artist.disable_incompatible_subset()
             return self.nan_array
         else:
             self.layer_artist.enable()

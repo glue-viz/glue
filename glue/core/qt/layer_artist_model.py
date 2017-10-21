@@ -11,6 +11,7 @@ these layers, and provides GUI access to the model
 
 from __future__ import absolute_import, division, print_function
 
+import textwrap
 from weakref import WeakKeyDictionary
 
 from qtpy.QtCore import Qt
@@ -55,7 +56,8 @@ class LayerArtistModel(PythonListModel):
         if role == Qt.ToolTipRole:
             art = self.artists[index.row()]
             if not art.enabled:
-                return art.disabled_message
+                wrapped = textwrap.fill(art.disabled_message, break_long_words=False)
+                return wrapped
 
         return super(LayerArtistModel, self).data(index, role)
 
@@ -212,8 +214,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
 
     def _layer_enabled_or_disabled(self, *args):
 
-        print('_layer_enabled_or_disabled')
-
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in disabled/enabled layers. If a layer is
         # disabled, it will become unselected.
@@ -224,7 +224,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # a manual update. If a layer artist was deselected, current_artist()
         # will be None and the options will be hidden for that layer.
         parent = self.parent()
-        print('parent', repr(parent))
         if parent is not None:
             parent.on_selection_change(self.current_artist())
 
@@ -329,7 +328,15 @@ class LayerArtistWidget(QtWidgets.QWidget):
         self.layer_options_layout.addWidget(self.empty)
 
         self.disabled_warning = QtWidgets.QLabel()
-        self.layer_options_layout.addWidget(self.disabled_warning)
+        self.disabled_warning.setWordWrap(True)
+        self.disabled_warning.setAlignment(Qt.AlignJustify)
+        self.padded_warning = QtWidgets.QWidget()
+        warning_layout = QtWidgets.QVBoxLayout()
+        warning_layout.setContentsMargins(20, 20, 20, 20)
+        warning_layout.addWidget(self.disabled_warning)
+        self.padded_warning.setLayout(warning_layout)
+
+        self.layer_options_layout.addWidget(self.padded_warning)
 
     def on_artist_add(self, layer_artists):
 
@@ -351,16 +358,16 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
     def on_selection_change(self, layer_artist):
 
-        print('on_selection_change', layer_artist)
-
         if layer_artist in self.layout_style_widgets:
             if layer_artist.enabled:
                 self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+                self.disabled_warning.setText('')
             else:
                 self.disabled_warning.setText(layer_artist.disabled_message)
-                self.layer_options_layout.setCurrentWidget(self.disabled_warning)
+                self.layer_options_layout.setCurrentWidget(self.padded_warning)
         else:
             self.layer_options_layout.setCurrentWidget(self.empty)
+            self.disabled_warning.setText('')
 
 
 class QtLayerArtistContainer(LayerArtistContainer):

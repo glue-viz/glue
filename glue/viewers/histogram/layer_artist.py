@@ -48,7 +48,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
-            self._enabled = True
+            self.enable()
 
         x = x[~np.isnan(x) & (x >= self._viewer_state.hist_x_min) &
                              (x <= self._viewer_state.hist_x_max)]
