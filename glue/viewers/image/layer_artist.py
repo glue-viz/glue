@@ -372,6 +372,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         # as not being visible when the layer was cleared is made visible
         # again.
         if hasattr(self, 'image_artist'):
+            self.image_artist.invalidate_cache()
             self._update_visual_attributes()
 
     @defer_draw
