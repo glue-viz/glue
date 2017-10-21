@@ -342,18 +342,18 @@ class ImageLayerState(BaseImageLayerState):
     A state class that includes all the attributes for data layers in an image plot.
     """
 
-    attribute = DDCProperty(docstring='The attribute shown in the layer')
+    attribute = DDSCProperty(docstring='The attribute shown in the layer')
     v_min = DDCProperty(docstring='The lower level shown')
     v_max = DDCProperty(docstring='The upper leven shown')
-    percentile = DDCProperty(100, docstring='The percentile value used to '
-                                            'automatically calculate levels')
+    percentile = DDSCProperty(docstring='The percentile value used to '
+                                        'automatically calculate levels')
     contrast = DDCProperty(1, docstring='The contrast of the layer')
     bias = DDCProperty(0.5, docstring='A constant value that is added to the '
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
-    stretch = DDCProperty('linear', docstring='The stretch used to render the layer, '
-                                              'which should be one of ``linear``, '
-                                              '``sqrt``, ``log``, or ``arcsinh``')
+    stretch = DDSCProperty(docstring='The stretch used to render the layer, '
+                                     'which should be one of ``linear``, '
+                                     '``sqrt``, ``log``, or ``arcsinh``')
     global_sync = DDCProperty(True, docstring='Whether the color and transparency '
                                               'should be synced with the global '
                                               'color and transparency for the data')
@@ -362,9 +362,30 @@ class ImageLayerState(BaseImageLayerState):
 
         super(ImageLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
 
-        self.attribute_helper = StateAttributeLimitsHelper(self, attribute='attribute',
-                                                           percentile='percentile',
-                                                           lower='v_min', upper='v_max')
+        self.attribute_lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
+                                                               percentile='percentile',
+                                                               lower='v_min', upper='v_max')
+
+        self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
+                                                           numeric=True, categorical=False)
+
+        percentile_display = {100: 'Min/Max',
+                              99.5: '99.5%',
+                              99: '99%',
+                              95: '95%',
+                              90: '90%',
+                              'Custom': 'Custom'}
+
+        ImageLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
+        ImageLayerState.percentile.set_display_func(self, percentile_display.get)
+
+        stretch_display = {'linear': 'Linear',
+                           'sqrt': 'Square Root',
+                           'arcsinh': 'Arcsinh',
+                           'log': 'Logarithmic'}
+
+        ImageLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
+        ImageLayerState.stretch.set_display_func(self, stretch_display.get)
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
@@ -381,6 +402,7 @@ class ImageLayerState(BaseImageLayerState):
 
     def _update_attribute(self, *args):
         if self.layer is not None:
+            self.attribute_att_helper.set_multiple_data([self.layer])
             self.attribute = self.layer.visible_components[0]
 
     def _update_priority(self, name):
@@ -410,7 +432,7 @@ class ImageLayerState(BaseImageLayerState):
         """
         Flip the image levels.
         """
-        self.attribute_helper.flip_limits()
+        self.attribute_lim_helper.flip_limits()
 
     def reset_contrast_bias(self):
         with delay_callback(self, 'contrast', 'bias'):

@@ -23,10 +23,6 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_histogram)
         self.state.add_global_callback(self._update_histogram)
 
-        # TODO: following is temporary
-        self.state.data_collection = self._viewer_state.data_collection
-        self.data_collection = self._viewer_state.data_collection
-
         self.reset_cache()
 
     def remove(self):

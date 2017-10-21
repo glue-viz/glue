@@ -3,8 +3,7 @@ import os
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.utils.qt import load_ui, update_combobox
-from glue.core.qt.data_combo_helper import ComponentIDComboHelper
+from glue.utils.qt import load_ui
 
 
 class ImageLayerStyleEditor(QtWidgets.QWidget):
@@ -19,27 +18,6 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
         connect_kwargs = {'alpha': dict(value_range=(0, 1)),
                           'contrast': dict(value_range=(0.1, 10), log=True),
                           'bias': dict(value_range=(1.5, -0.5))}
-
-        percentiles = [('Min/Max', 100),
-                       ('99.5%', 99.5),
-                       ('99%', 99),
-                       ('95%', 95),
-                       ('90%', 90),
-                       ('Custom', 'Custom')]
-
-        update_combobox(self.ui.combodata_percentile, percentiles)
-
-        stretches = [('Linear', 'linear'),
-                     ('Square Root', 'sqrt'),
-                     ('Arcsinh', 'arcsinh'),
-                     ('Logarithmic', 'log')]
-
-        update_combobox(self.ui.combodata_stretch, stretches)
-
-        self.attribute_helper = ComponentIDComboHelper(self.ui.combodata_attribute,
-                                                       layer.data_collection)
-
-        self.attribute_helper.append_data(layer.layer)
 
         autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
