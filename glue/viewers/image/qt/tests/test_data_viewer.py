@@ -522,6 +522,38 @@ class TestImageViewer(object):
         # Removing the subset should bring the count back to 1 again
         assert len(get_modest_images()) == 1
 
+    def test_select_previously_incompatible_layer(self):
+
+        # Regression test for a bug that caused a selection in a previously disabled
+        # layer to enable the layer without updating the subset view
+
+        self.viewer.add_data(self.image1)
+        self.viewer.add_data(self.catalog)
+        self.catalog.add_component([4, 5, 6], 'e')
+
+        link1 = LinkSame(self.catalog.id['c'], self.image1.world_component_ids[0])
+        link2 = LinkSame(self.catalog.id['d'], self.image1.world_component_ids[1])
+        self.data_collection.add_link(link1)
+        self.data_collection.add_link(link2)
+
+        self.data_collection.new_subset_group(subset_state=self.catalog.id['e'] > 4)
+
+        assert self.viewer.layers[0].enabled  # image
+        assert self.viewer.layers[1].enabled  # scatter
+        assert not self.viewer.layers[2].enabled  # image subset
+        assert self.viewer.layers[3].enabled  # scatter subset
+
+        assert not self.viewer.layers[2].image_artist.get_visible()
+
+        self.data_collection.subset_groups[0].subset_state = self.catalog.id['c'] > -1
+
+        assert self.viewer.layers[0].enabled  # image
+        assert self.viewer.layers[1].enabled  # scatter
+        assert self.viewer.layers[2].enabled  # image subset
+        assert self.viewer.layers[3].enabled  # scatter subset
+
+        assert self.viewer.layers[2].image_artist.get_visible()
+
 
 class TestSessions(object):
 

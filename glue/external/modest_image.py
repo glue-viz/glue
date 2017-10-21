@@ -180,6 +180,10 @@ class ModestImage(mi.AxesImage):
         if self._full_res.shape is None:
             return
         self._scale_to_res()
+        # Due to a bug in Matplotlib, we need to return here if all values
+        # in the array are masked.
+        if hasattr(self._A, 'mask') and np.all(self._A.mask):
+            return
         super(ModestImage, self).draw(renderer, *args, **kwargs)
 
 

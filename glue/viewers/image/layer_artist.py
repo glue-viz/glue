@@ -164,7 +164,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self.disable_invalid_attributes(self.state.attribute)
             return None
         else:
-            self._enabled = True
+            self.enable()
 
         return image
 
@@ -280,7 +280,7 @@ class ImageSubsetArray(object):
             self.layer_artist.disable("Cannot compute mask for this layer")
             return self.nan_array
         else:
-            self.layer_artist._enabled = True
+            self.layer_artist.enable()
 
         r, g, b = color2rgb(self.layer_state.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
@@ -368,6 +368,14 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
             force = True  # make sure scaling and visual attributes are updated
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):
+            self._update_visual_attributes()
+
+    def enable(self):
+        super(ImageSubsetLayerArtist, self).enable()
+        # We need to now ensure that image_artist, which may have been marked
+        # as not being visible when the layer was cleared is made visible
+        # again.
+        if hasattr(self, 'image_artist'):
             self._update_visual_attributes()
 
     @defer_draw
