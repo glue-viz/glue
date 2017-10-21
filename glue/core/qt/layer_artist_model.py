@@ -201,7 +201,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # listen to all events since the viewport update is fast.
         self.hub = hub
         self.hub.subscribe(self, Message, self._update_viewport)
-        self.hub.subscribe(self, LayerArtistUpdatedMessage, self._layer_enabled_or_disabled)
+        self.hub.subscribe(self, LayerArtistUpdatedMessage, self._update_viewport)
         self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)
 
@@ -211,6 +211,8 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.viewport().update()
 
     def _layer_enabled_or_disabled(self, *args):
+
+        print('_layer_enabled_or_disabled')
 
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in disabled/enabled layers. If a layer is
@@ -222,6 +224,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # a manual update. If a layer artist was deselected, current_artist()
         # will be None and the options will be hidden for that layer.
         parent = self.parent()
+        print('parent', repr(parent))
         if parent is not None:
             parent.on_selection_change(self.current_artist())
 
@@ -325,6 +328,9 @@ class LayerArtistWidget(QtWidgets.QWidget):
         self.empty = QtWidgets.QWidget()
         self.layer_options_layout.addWidget(self.empty)
 
+        self.disabled_warning = QtWidgets.QLabel()
+        self.layer_options_layout.addWidget(self.disabled_warning)
+
     def on_artist_add(self, layer_artists):
 
         if self.layer_style_widget_cls is None:
@@ -345,8 +351,14 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
     def on_selection_change(self, layer_artist):
 
+        print('on_selection_change', layer_artist)
+
         if layer_artist in self.layout_style_widgets:
-            self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+            if layer_artist.enabled:
+                self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+            else:
+                self.disabled_warning.setText(layer_artist.disabled_message)
+                self.layer_options_layout.setCurrentWidget(self.disabled_warning)
         else:
             self.layer_options_layout.setCurrentWidget(self.empty)
 
