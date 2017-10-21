@@ -16,6 +16,8 @@ v0.12.0 (unreleased)
 v0.11.2 (unreleased)
 --------------------
 
+* Fix a bug that caused the home/reset limits button to not work correctly. [#1452]
+
 * Fix a bug that caused the wrong layers to be enabled when mixing image and
   scatter layers and setting up links. [#1451]
 

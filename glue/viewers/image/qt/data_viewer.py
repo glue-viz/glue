@@ -129,15 +129,7 @@ class ImageViewer(MatplotlibDataViewer):
         self._update_axes()
 
         if relim:
-
-            nx = self.state.reference_data.shape[self.state.x_att.axis]
-            ny = self.state.reference_data.shape[self.state.y_att.axis]
-
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-                self.state.x_min = -0.5
-                self.state.x_max = nx - 0.5
-                self.state.y_min = -0.5
-                self.state.y_max = ny - 0.5
+            self.state.reset_limits()
 
     # TODO: move some of the ROI stuff to state class?
 
