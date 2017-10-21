@@ -297,9 +297,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 # cache of the limits based on the current attribute
                 self._update_attribute()
 
-    def update_values(self, use_default_modifiers=False, **properties):
+    def update_values(self, force=False, use_default_modifiers=False, **properties):
 
-        if not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
+        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
             self.set(percentile='Custom')
             return
 
@@ -310,7 +310,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             percentile = self.percentile or 100
             log = self.log or False
 
-        if percentile == 'Custom' or not hasattr(self, 'data') or self.data is None:
+        if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
 
             self.set(percentile=percentile, log=log)
 
@@ -412,9 +412,9 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
         else:
             self._common_n_bin = None
 
-    def update_values(self, use_default_modifiers=False, **properties):
+    def update_values(self, force=False, use_default_modifiers=False, **properties):
 
-        if not any(prop in properties for prop in ('attribute', 'n_bin')) or self.data is None:
+        if not force and not any(prop in properties for prop in ('attribute', 'n_bin')) or self.data is None:
             self.set()
             return
 
@@ -426,7 +426,7 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 self._common_n_bin = properties['n_bin']
                 self._apply_common_n_bin()
 
-        if 'attribute' in properties:
+        if 'attribute' in properties or force:
 
             if comp.categorical:
 

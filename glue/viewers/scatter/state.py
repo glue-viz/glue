@@ -50,9 +50,9 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
     def reset_limits(self):
         self.x_lim_helper.percentile = 100
-        self.x_lim_helper.update_values(percentile=100)
+        self.x_lim_helper.update_values(force=True)
         self.y_lim_helper.percentile = 100
-        self.y_lim_helper.update_values(percentile=100)
+        self.y_lim_helper.update_values(force=True)
 
     def _update_priority(self, name):
         if name == 'layers':
