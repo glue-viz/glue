@@ -67,6 +67,10 @@ class TestDendrogramCommon(BaseTestMatplotlibDataViewer):
 
         assert np.all(mask4 == mask2)
 
+    @pytest.mark.skip
+    def test_add_invalid_data():
+        pass
+
 
 class TestDendrogramViewer():
 

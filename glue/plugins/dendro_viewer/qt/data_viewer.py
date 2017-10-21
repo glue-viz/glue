@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from qtpy.QtWidgets import QMessageBox
-
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.roi import PointROI
 from glue.core import command
 from glue.core.subset import CategorySubsetState
+from glue.core.exceptions import IncompatibleDataException
+from glue.utils.qt import messagebox_on_error
 
 from glue.plugins.dendro_viewer.dendro_helpers import _substructures
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -78,13 +78,12 @@ class DendrogramViewer(MatplotlibDataViewer):
 
         self.toolbar.tools['select:pick']._move_callback = on_move
 
+    @messagebox_on_error('Failed to add data')
     def add_data(self, data):
         if data.ndim != 1:
-            QMessageBox.critical(self, "Error", "Only 1-D data can be added to "
-                                 "the dendrogram viewer (tried to add a {}-D "
-                                 "dataset)".format(data.ndim),
-                                 buttons=QMessageBox.Ok)
-            return False
+            raise IncompatibleDataException("Only 1-D data can be added to "
+                                            "the dendrogram viewer (tried to add a {}-D "
+                                            "dataset)".format(data.ndim))
         return super(DendrogramViewer, self).add_data(data)
 
     # TODO: move some of the ROI stuff to state class?
