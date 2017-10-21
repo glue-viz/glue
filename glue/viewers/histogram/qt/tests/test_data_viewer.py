@@ -477,7 +477,7 @@ class TestHistogramViewer(object):
         assert viewer3.state.x_att is dc[0].id['a']
         assert_allclose(viewer3.state.x_min, 0)
         assert_allclose(viewer3.state.x_max, 9)
-        assert_allclose(viewer3.state.y_min, 0.037037037037037035)
+        assert_allclose(viewer3.state.y_min, 0.01111111111111111)
         assert_allclose(viewer3.state.y_max, 0.7407407407407407)
         assert_allclose(viewer3.state.hist_x_min, 0)
         assert_allclose(viewer3.state.hist_x_max, 9)

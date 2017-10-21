@@ -87,6 +87,20 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.update_from_dict(kwargs)
 
+    def reset_limits(self):
+
+        if self.reference_data is None or self.x_att is None or self.y_att is None:
+            return
+
+        nx = self.reference_data.shape[self.x_att.axis]
+        ny = self.reference_data.shape[self.y_att.axis]
+
+        with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.x_min = -0.5
+            self.x_max = nx - 0.5
+            self.y_min = -0.5
+            self.y_max = ny - 0.5
+
     def _reference_data_changed(self, *args):
         with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
             self._update_combo_att()

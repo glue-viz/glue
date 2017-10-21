@@ -100,20 +100,23 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         # because this would never allow y_max to get smaller.
 
         self.state._y_max = self.mpl_hist.max()
-
         if self._viewer_state.y_log:
             self.state._y_max *= 2
         else:
             self.state._y_max *= 1.2
 
+        if self._viewer_state.y_log:
+            self.state._y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
+        else:
+            self.state._y_min = 0
+
         largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
         if largest_y_max != self._viewer_state.y_max:
             self._viewer_state.y_max = largest_y_max
 
-        if self._viewer_state.y_log:
-            self._viewer_state.y_min = self.mpl_hist[self.mpl_hist > 0].min() / 10
-        else:
-            self._viewer_state.y_min = 0
+        smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
+        if smallest_y_min != self._viewer_state.y_min:
+            self._viewer_state.y_min = smallest_y_min
 
         self.redraw()
 
