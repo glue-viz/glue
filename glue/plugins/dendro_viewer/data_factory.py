@@ -11,6 +11,7 @@ from astrodendro import Dendrogram
 
 from glue.core.data_factories.hdf5 import is_hdf5
 from glue.core.data_factories.fits import is_fits
+from glue.core.data_factories.helpers import data_label
 from glue.core.data import Data
 from glue.config import data_factory
 
@@ -34,16 +35,10 @@ def is_dendro(file, **kwargs):
 
         with fits.open(file, ignore_missing_end=True) as hdulist:
 
-            # In recent versions of Astropy, we could do 'DATA' in hdulist etc. but
-            # this doesn't work with Astropy 0.3, so we use the following method
-            # instead:
-            try:
-                hdulist['DATA']
-                hdulist['INDEX_MAP']
-                hdulist['NEWICK']
-            except KeyError:
-                pass  # continue
-            else:
+            # For recent versions of astrodendro the HDUs have a recongnizable
+            # set of names.
+
+            if 'DATA' in hdulist and 'INDEX_MAP' in hdulist and 'NEWICK' in hdulist:
                 return True
 
             # For older versions of astrodendro, the HDUs did not have names
@@ -85,7 +80,7 @@ def is_dendro(file, **kwargs):
 
 
 @data_factory(label='Dendrogram', identifier=is_dendro, priority=1000)
-def load_dendro(file):
+def load_dendro(filename):
     """
     Load a dendrogram saved by the astrodendro package
 
@@ -93,7 +88,9 @@ def load_dendro(file):
     :returns: A list of 2 glue Data objects: the original dataset, and dendrogram.
     """
 
-    dg = Dendrogram.load_from(file)
+    label = data_label(filename)
+
+    dg = Dendrogram.load_from(filename)
     structs = np.arange(len(dg))
     parent = np.array([dg[i].parent.idx
                        if dg[i].parent is not None else -1
@@ -104,8 +101,10 @@ def load_dendro(file):
     dendro = Data(parent=parent,
                   height=height,
                   peak=pk,
-                  label='Dendrogram')
+                  label="{} [dendrogram]".format(label))
 
-    im = Data(intensity=dg.data, structure=dg.index_map)
+    im = Data(intensity=dg.data,
+              structure=dg.index_map,
+              label="{} [data]".format(label))
     im.join_on_key(dendro, 'structure', dendro.pixel_component_ids[0])
     return [dendro, im]

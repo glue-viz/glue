@@ -22,3 +22,5 @@ glue.viewers.scatter.qt.viewer_widget.ScatterWidget -> glue.viewers.scatter.qt.S
 glue.viewers.table.qt.viewer_widget.TableLayerArtist -> glue.viewers.table.qt.TableLayerArtist
 glue.viewers.table.qt.viewer_widget.TableWidget -> glue.viewers.table.qt.TableViewer
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
+glue.plugins.dendro_viewer.qt.viewer_widget.DendroWidget -> glue.plugins.dendro_viewer.qt.DendrogramViewer
+glue.plugins.dendro_viewer.layer_artist.DendroLayerArtist -> glue.plugins.dendro_viewer.layer_artist.DendrogramLayerArtist

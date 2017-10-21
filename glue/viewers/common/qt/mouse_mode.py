@@ -440,9 +440,9 @@ class PickMode(RoiMode):
     Defines single point selections.
     """
 
-    icon = 'glue_yrange_select'
-    tool_id = 'Pick'
-    action_text = 'Pick'
+    icon = 'glue_point'
+    tool_id = 'select:pick'
+    action_text = 'Click on the item to select'
     tool_tip = 'Select a single item'
     shortcut = 'K'
 

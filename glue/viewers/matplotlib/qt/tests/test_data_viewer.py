@@ -351,6 +351,8 @@ class BaseTestMatplotlibDataViewer(object):
         # assert not viewer_state.x_log
         # assert not viewer_state.y_log
 
+    # TODO: the following test should deal gracefully with the fact that
+    # some viewers will want to show a Qt error for IncompatibleDataException
     def test_add_invalid_data(self):
         data2 = Data()
         with pytest.raises(IncompatibleDataException):

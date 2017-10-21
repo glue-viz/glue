@@ -1,0 +1,257 @@
+{
+  "CategorySubsetState": {
+    "_type": "glue.core.subset.CategorySubsetState",
+    "att": "Pixel Axis 0 [x]",
+    "vals": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDEsKSwgfSAgICAgICAgICAgIAoCAAAAAAAAAA=="
+    }
+  },
+  "Component": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGY4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDQsKSwgfSAgICAgICAgICAgIArNzMzMzMz0P5qZmZmZmQFAmpmZmZmZCUCamZmZmZkRQA=="
+    },
+    "units": ""
+  },
+  "Component_0": {
+    "_type": "glue.core.component.Component",
+    "data": {
+      "_type": "numpy.ndarray",
+      "data": "k05VTVBZAQBGAHsnZGVzY3InOiAnPGk4JywgJ2ZvcnRyYW5fb3JkZXInOiBGYWxzZSwgJ3NoYXBlJzogKDQsKSwgfSAgICAgICAgICAgIAr//////////wAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAA=="
+    },
+    "units": ""
+  },
+  "CoordinateComponent": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": false
+  },
+  "CoordinateComponentLink": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "World 0"
+    ],
+    "index": 0,
+    "pix2world": false,
+    "to": [
+      "Pixel Axis 0 [x]"
+    ]
+  },
+  "CoordinateComponentLink_0": {
+    "_type": "glue.core.component_link.CoordinateComponentLink",
+    "coords": "Coordinates",
+    "frm": [
+      "Pixel Axis 0 [x]"
+    ],
+    "index": 0,
+    "pix2world": true,
+    "to": [
+      "World 0"
+    ]
+  },
+  "CoordinateComponent_0": {
+    "_type": "glue.core.component.CoordinateComponent",
+    "axis": 0,
+    "world": true
+  },
+  "Coordinates": {
+    "_type": "glue.core.coordinates.Coordinates"
+  },
+  "DataCollection": {
+    "_protocol": 3,
+    "_type": "glue.core.data_collection.DataCollection",
+    "cids": [
+      "height",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "parent"
+    ],
+    "components": [
+      "Component",
+      "CoordinateComponent",
+      "CoordinateComponent_0",
+      "Component_0"
+    ],
+    "data": [
+      "data"
+    ],
+    "groups": [
+      "Subset 1_0"
+    ],
+    "links": [
+      "CoordinateComponentLink",
+      "CoordinateComponentLink_0"
+    ],
+    "subset_group_count": 1
+  },
+  "DendroWidget": {
+    "_type": "glue.plugins.dendro_viewer.qt.viewer_widget.DendroWidget",
+    "layers": [
+      {
+        "_type": "glue.plugins.dendro_viewer.layer_artist.DendroLayerArtist",
+        "layer": "data",
+        "visible": true,
+        "zorder": 1
+      },
+      {
+        "_type": "glue.plugins.dendro_viewer.layer_artist.DendroLayerArtist",
+        "layer": "Subset 1",
+        "visible": true,
+        "zorder": 2
+      }
+    ],
+    "pos": [
+      0,
+      0
+    ],
+    "properties": {
+      "height": "height",
+      "order": "height",
+      "parent": "parent",
+      "ylog": false
+    },
+    "session": "Session",
+    "size": [
+      640,
+      480
+    ]
+  },
+  "Pixel Axis 0 [x]": {
+    "_type": "glue.core.component_id.PixelComponentID",
+    "axis": 0,
+    "hidden": true,
+    "label": "Pixel Axis 0 [x]"
+  },
+  "Session": {
+    "_type": "glue.core.session.Session"
+  },
+  "Subset 1": {
+    "_type": "glue.core.subset_group.GroupedSubset",
+    "group": "Subset 1_0",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    }
+  },
+  "Subset 1_0": {
+    "_type": "glue.core.subset_group.SubsetGroup",
+    "label": "Subset 1",
+    "state": "CategorySubsetState",
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.5,
+      "color": "#e31a1c",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 7
+    },
+    "subsets": [
+      "Subset 1"
+    ]
+  },
+  "World 0": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": true,
+    "label": "World 0"
+  },
+  "__main__": {
+    "_type": "glue.app.qt.application.GlueApplication",
+    "data": "DataCollection",
+    "plugins": [
+      "glue_exp.tools.floodfill_selection",
+      "glue_vispy_viewers.volume",
+      "glue_exp.tools.contour_selection",
+      "glue.plugins.coordinate_helpers",
+      "glue_samp",
+      "glue.core.data_exporters",
+      "glue.plugins.export_d3po",
+      "glue_vispy_viewers.scatter",
+      "glue_aladin",
+      "glue.viewers.table",
+      "glue_exp.importers.webcam",
+      "glue.plugins.tools.spectrum_tool",
+      "glue.plugins.tools.pv_slicer",
+      "glue.plugins.exporters.plotly",
+      "glue.viewers.image",
+      "glue.io.formats.fits",
+      "glue.viewers.scatter",
+      "glue_exp.tools.zoom_buttons",
+      "glue_exp.importers.vizier",
+      "glue_wwt",
+      "glue.viewers.histogram",
+      "glue.plugins.dendro_viewer"
+    ],
+    "session": "Session",
+    "tab_names": [
+      "Tab 1"
+    ],
+    "viewers": [
+      [
+        "DendroWidget"
+      ]
+    ]
+  },
+  "data": {
+    "_key_joins": [],
+    "_protocol": 5,
+    "_type": "glue.core.data.Data",
+    "components": [
+      [
+        "height",
+        "Component"
+      ],
+      [
+        "Pixel Axis 0 [x]",
+        "CoordinateComponent"
+      ],
+      [
+        "World 0",
+        "CoordinateComponent_0"
+      ],
+      [
+        "parent",
+        "Component_0"
+      ]
+    ],
+    "coords": "Coordinates",
+    "label": "data",
+    "primary_owner": [
+      "height",
+      "Pixel Axis 0 [x]",
+      "World 0",
+      "parent"
+    ],
+    "style": {
+      "_type": "glue.core.visual.VisualAttributes",
+      "alpha": 0.78,
+      "color": "#404040",
+      "linestyle": "solid",
+      "linewidth": 1,
+      "marker": "o",
+      "markersize": 3
+    },
+    "subsets": [
+      "Subset 1"
+    ],
+    "uuid": "50d692d5-e30f-4218-aa60-393ced074298"
+  },
+  "height": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "height"
+  },
+  "parent": {
+    "_type": "glue.core.component_id.ComponentID",
+    "hidden": false,
+    "label": "parent"
+  }
+}

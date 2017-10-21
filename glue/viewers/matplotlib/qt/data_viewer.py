@@ -4,7 +4,7 @@ from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
-from glue.utils import nonpartial
+from glue.utils import nonpartial, defer_draw
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
@@ -57,11 +57,15 @@ class MatplotlibDataViewer(DataViewerWithState):
     def redraw(self):
         self.figure.canvas.draw()
 
+    @defer_draw
     def update_x_log(self):
         self.axes.set_xscale('log' if self.state.x_log else 'linear')
+        self.redraw()
 
+    @defer_draw
     def update_y_log(self):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
+        self.redraw()
 
     def update_aspect(self, aspect=None):
         self.axes.set_aspect(self.state.aspect, adjustable='datalim')

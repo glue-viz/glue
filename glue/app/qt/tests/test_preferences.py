@@ -13,7 +13,7 @@ from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.histogram.qt import HistogramViewer
-from glue.plugins.dendro_viewer.qt.viewer_widget import DendroWidget
+from glue.plugins.dendro_viewer.qt import DendrogramViewer
 
 rgb = ColorConverter().to_rgb
 
@@ -316,7 +316,7 @@ def test_foreground_background_settings():
     histogram1 = app.new_data_viewer(HistogramViewer)
     histogram1.add_data(d_1d)
 
-    dendrogram1 = app.new_data_viewer(DendroWidget)
+    dendrogram1 = app.new_data_viewer(DendrogramViewer)
 
     example_custom = _generate_custom_viewer()
 
@@ -363,7 +363,7 @@ def test_foreground_background_settings():
         histogram2 = app.new_data_viewer(HistogramViewer)
         histogram2.add_data(d_1d)
 
-        dendrogram2 = app.new_data_viewer(DendroWidget)
+        dendrogram2 = app.new_data_viewer(DendrogramViewer)
         custom2 = app.new_data_viewer(example_custom)
 
         assert_axes_background(scatter2.axes, RED)

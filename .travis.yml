@@ -201,7 +201,7 @@ script:
   # exit code.
   - if [ $DOC_TRIGGER ]; then cd doc; make html linkcheck 2> warnings.log; cd ..; fi
   - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then grep -v "numpy.dtype size changed" doc/warnings.log | grep -v "return f(*args, **kwds)" > doc/warnings_filt.log; fi
+  - if [ $DOC_TRIGGER ]; then grep -v "numpy.dtype size changed" doc/warnings.log | grep -v "return f(\*args, \*\*kwds)" > doc/warnings_filt.log; fi
   - if [ $DOC_TRIGGER ]; then cat doc/warnings_filt.log; fi
   # make sure stderr was empty, i.e. no warnings
   - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings_filt.log; fi
