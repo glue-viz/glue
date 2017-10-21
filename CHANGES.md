@@ -45,6 +45,9 @@ v0.11.2 (unreleased)
   subset group it belongs to - this was virtually never needed but could
   cause issues. [#1426]
 
+* Fixed a bug that caused a previously disabled image subset layer to not
+  become visible when shown again. [#1450]
+
 v0.11.1 (2017-08-25)
 --------------------
 
