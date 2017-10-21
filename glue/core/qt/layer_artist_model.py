@@ -194,7 +194,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setEditTriggers(self.NoEditTriggers)
 
-        self.setMinimumSize(200, 50)
+        self.setMinimumSize(200, 100)
         self._actions = {}
         self._create_actions()
 
