@@ -30,7 +30,10 @@ class HomeTool(Tool):
         self.toolbar = toolbar
 
     def activate(self):
-        self.toolbar.home()
+        if hasattr(self.viewer, 'state') and hasattr(self.viewer.state, 'reset_limits'):
+            self.viewer.state.reset_limits()
+        else:
+            self.toolbar.home()
 
 
 class SaveTool(Tool):
