@@ -16,6 +16,7 @@ from glue.plugins.dendro_viewer.layer_artist import DendrogramLayerArtist
 from glue.plugins.dendro_viewer.qt.options_widget import DendrogramOptionsWidget
 from glue.plugins.dendro_viewer.state import DendrogramViewerState
 from glue.plugins.dendro_viewer.qt.layer_style_editor import DendrogramLayerStyleEditor
+from glue.plugins.dendro_viewer.compat import update_dendrogram_viewer_state
 
 __all__ = ['DendrogramViewer']
 
@@ -39,8 +40,9 @@ class DendrogramViewer(MatplotlibDataViewer):
         self.axes.spines['top'].set_visible(False)
         self.axes.spines['bottom'].set_visible(False)
         self.state.add_callback('_layout', self._update_limits)
+        self._update_limits()
 
-    def _update_limits(self, layout):
+    def _update_limits(self, layout=None):
 
         if self.state._layout is None:
             return
@@ -137,6 +139,6 @@ class DendrogramViewer(MatplotlibDataViewer):
         mode = EditSubsetMode()
         mode.update(self._data, subset_state)
 
-    # @staticmethod
-    # def update_viewer_state(rec, context):
-    #     return update_histogram_viewer_state(rec, context)
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_dendrogram_viewer_state(rec, context)

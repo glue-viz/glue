@@ -3,6 +3,8 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+
+import pytest
 import numpy as np
 
 from numpy.testing import assert_equal
@@ -11,6 +13,7 @@ from glue.core import Data
 from glue.core.roi import PointROI
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.app.qt import GlueApplication
+from glue.core.state import GlueUnSerializer
 
 from ..data_viewer import DendrogramViewer
 
@@ -127,3 +130,42 @@ class TestDendrogramViewer():
         l = self.viewer.state._layout
         self.viewer.state.height_att = self.data.id['flux']
         assert self.viewer.state._layout is not l
+
+
+class TestSessions(object):
+
+    @pytest.mark.parametrize('protocol', [0, 1])
+    def test_session_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'dendro_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'data'
+
+        viewer1 = ga.viewers[0][0]
+
+        assert len(viewer1.state.layers) == 2
+
+        assert viewer1.state.parent_att is dc[0].id['parent']
+        assert viewer1.state.height_att is dc[0].id['height']
+        assert viewer1.state.order_att is dc[0].id['height']
+
+        layer_state = viewer1.state.layers[0]
+        assert layer_state.visible
+        assert layer_state.layer is dc[0]
+
+        layer_state = viewer1.state.layers[1]
+        assert layer_state.visible
+        assert layer_state.layer is dc[0].subsets[0]
+
+        ga.close()
