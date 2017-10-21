@@ -62,7 +62,7 @@ def test_optional_dependency_not_imported():
     Ensure that a GlueApplication instance can be created without
     importing any non-required dependency
     """
-    optional_deps = categories[3:]
+    optional_deps = categories[5:]
     deps = [dep.module for cateogry, deps in optional_deps for dep in deps]
 
     code = """

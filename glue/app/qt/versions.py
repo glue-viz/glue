@@ -9,7 +9,7 @@ from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue._deps import get_status_as_odict
 
-__all__ = ['show_glue_info', 'QVersionsDialog']
+__all__ = ['QVersionsDialog']
 
 
 class QVersionsDialog(QtWidgets.QDialog):

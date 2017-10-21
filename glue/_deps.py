@@ -14,6 +14,8 @@ from subprocess import check_call, CalledProcessError
 import sys
 import importlib
 
+from glue._plugin_helpers import iter_plugin_entry_points
+
 
 class Dependency(object):
 
@@ -45,8 +47,6 @@ class Dependency(object):
             except AttributeError:
                 return 'unknown version'
 
-
-
     def install(self):
         if self.installed:
             return
@@ -77,7 +77,21 @@ PIP package name:
             status = 'FAILED (%s)' % self.info
         else:
             status = 'MISSING (%s)' % self.info
-        return "%20s:\t%s" % (self.module, status)
+        return "%20s:\t%s" % (self.package, status)
+
+
+class Python(Dependency):
+
+    def __init__(self):
+        self.package = 'Python'
+
+    @property
+    def installed(self):
+        return True
+
+    @property
+    def version(self):
+        return sys.version.split()[0]
 
 
 class QtDependency(Dependency):
@@ -129,6 +143,11 @@ class PySide(QtDependency):
 
 # Add any dependencies here
 # Make sure to add new categories to the categories tuple
+
+python = (
+    Python(),
+)
+
 gui_framework = (
     PyQt4('PyQt4', ''),
     PyQt5('PyQt5', ''),
@@ -145,7 +164,6 @@ required = (
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
     Dependency('h5py', 'Used to support HDF5 files', min_version='2.4'),
     Dependency('xlrd', 'Used to support Excel files', min_version='1.0'),
-    Dependency('glue_vispy_viewers', '3D viewers for glue', 'glue-vispy-viewers', min_version='0.6')
 )
 
 general = (
@@ -178,15 +196,31 @@ export = (
     Dependency('plotly', 'Used to explort plots to Plot.ly'),
 )
 
-categories = (('gui framework', gui_framework),
+
+def plugins():
+    modules = []
+    dependencies = []
+    for entry_point in iter_plugin_entry_points():
+        module_name = entry_point.module_name.split('.')[0]
+        package = entry_point.dist.project_name
+        modules.append((module_name, package))
+    for module, package in sorted(set(modules)):
+        dependencies.append(Dependency(module, '', package=package))
+    return dependencies
+
+
+categories = (('python', python),
+              ('gui framework', gui_framework),
               ('required', required),
+              ('plugins', plugins()),
               ('ipython terminal', ipython),
               ('general', general),
               ('astronomy', astronomy),
               ('testing', testing),
               ('export', export))
 
-dependencies = dict((d.module, d) for c in categories for d in c[1])
+
+dependencies = dict((d.package, d) for c in categories for d in c[1])
 
 
 def get_status():
@@ -204,9 +238,9 @@ def get_status_as_odict():
     for category, deps in categories:
         for dep in deps:
             if dep.installed:
-                status[dep.module] = dep.version
+                status[dep.package] = dep.version
             else:
-                status[dep.module] = "Not installed"
+                status[dep.package] = "Not installed"
     return status
 
 

@@ -10,6 +10,8 @@ v0.12.0 (unreleased)
 
 * Added support for plotting vectors in the scatter plot viewer. [#1410]
 
+* Added glue plugins to the Version Information dialog. [#1427]
+
 v0.11.2 (unreleased)
 --------------------
 

@@ -21,7 +21,7 @@ def diagnostics():
     """
     versions = ""
     for package, version in get_status_as_odict().items():
-        versions += "{0}: {1}\n".format(package, version)
+        versions += "* {0}: {1}\n".format(package, version)
     return versions.strip()
 
 
