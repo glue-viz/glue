@@ -1065,6 +1065,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         event.accept()
 
+    @messagebox_on_error("Failed to restore session")
     def restore_session_and_close(self, path, warn=True):
 
         if warn and not self.is_empty:
