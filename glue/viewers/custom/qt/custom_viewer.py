@@ -951,6 +951,9 @@ class CustomWidgetBase(DataViewer):
         hub.unsubscribe_all(self)
         self._coordinator.unregister(hub)
 
+    def apply_roi(self, roi):
+        self.client.apply_roi(roi)
+
 
 class FormDescriptor(object):
 

@@ -180,7 +180,7 @@ class TestCustomViewer(object):
     def test_make_selector(self):
         w = self.build()
         roi = MagicMock()
-        w.client.apply_roi(roi)
+        w.apply_roi(roi)
 
         a, k = make_selector.call_args
 
