@@ -249,6 +249,8 @@ the following code into ``config.py``::
     from matplotlib.cm import Paired
     colormaps.add('Paired', Paired)
 
+.. _custom-actions:
+
 Custom Actions
 --------------
 
@@ -339,6 +341,8 @@ Custom data viewer
 For information on registering a custom data viewer, see
 :doc:`full_custom_qt_viewer`.
 
+.. _custom_fixed_layout:
+
 Custom fixed layout tab
 -----------------------
 
@@ -360,6 +364,8 @@ canvas area, e.g.::
 
 The widget can be any valid Qt widget - for instance it could be a widget with
 a grid layout with data viewer widgets in each cell.
+
+.. _custom_startup:
 
 Custom startup actions
 ----------------------

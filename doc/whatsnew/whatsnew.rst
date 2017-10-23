@@ -21,7 +21,105 @@ If instead you installed glue with pip, you can update with::
 
     pip install glueviz[all] --upgrade
 
-.. _whatsnew_011:
+.. _whatsnew_012:
+
+What's new in glue v0.12?
+=========================
+
+Improved 2D scatter viewer
+--------------------------
+
+It is now possible to show arrows/vectors in the **2D Scatter** viewer:
+
+.. image:: images/v0.12/vectors.png
+   :align: center
+   :width: 600
+
+To use this, see the new **Vectors** tab below the layer list when using the 2D
+Scatter viewer. In addition, we have made a number of improvements to the user
+interface of this viewer to make it easier to enable/disable different
+visualizations (markers, lines, errorbars, and vectors).
+
+User interface improvements
+---------------------------
+
+We have made a number of improvements to the user interface and general
+usability. In particular, selecting disabled layers in a viewer will now give a
+clear explanation that the layer is disabled and will give possible causes,
+rather than relying solely on visual cues (such as graying out a layer).
+
+Custom startup actions
+----------------------
+
+It is now possible to define custom startup actions to execute when glue starts
+up by writing simple Python functions in a config.py file or in plugin packages.
+Startup actions are executed once glue is open and any data provided on the
+command-line (if any) has been opened. Find out more about `writing custom
+startup actions <custom_startup>`_.
+
+Custom data/subset actions
+--------------------------
+
+It is now possible to specify custom actions that can be accessed by
+right/control-clicking  on a dataset or subset, using :ref:`the new
+@layer_action <custom-actions>` decorator. The following screenshot shows
+an example of a custom action added by a user to smooth data in a particular
+way:
+
+.. image:: images/v0.12/smooth.png
+   :align: center
+   :width: 400
+
+Experimental SAMP plugin
+------------------------
+
+A number of Astronomy applications including `TOPCAT
+<http://www.star.bris.ac.uk/~mbt/topcat/>`_, `Aladin
+<http://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
+`WorldWideTelescope <http://www.worldwidetelescope.org>`_ and more support a
+message-passing system that allows data and subsets to be exchanged between
+applications. We have now developed a plugin that adds SAMP capabilities to
+glue. To try this out, you will need to install the `glue-samp
+<https://github.com/glue-viz/glue-samp>`_ package, using::
+
+    conda install -c glueviz glue-samp
+
+if you use conda, or::
+
+    pip install glue-samp
+
+otherwise. To use this, once inside glue, go to the **Plugins** menu, then
+select **Open SAMP plugin**. The window that open will provide information on
+using this plugin. Note however that this plugin is experimental and is still
+missing a number of features. In addition, SAMP implementation in other
+applications is sometimes buggy, so you may encounter issues unrelated to glue.
+
+Improved performance in 3D viewers
+----------------------------------
+
+The **3D Volume Rendering** is now signficantly faster for large datasets. In
+particular, the resolution of the rendering is now reduced when rotating or
+zooming, and we have made it so that the viewer is now much more efficient in
+terms of memory.
+
+Experimental fixed layout/dashboards [advanced]
+-----------------------------------------------
+
+By default, glue uses a free-form canvas to contain viewers, which gives you the
+ability to arrange the data viewers in any way you like. However, for certain
+applications, it can be helpful to defined tabs that contain data viewers in a
+predefined layout. `This is now possible <custom_fixed_layout>`_, although note
+that this is still an experimental feature and requires some knowledge of how to
+set up Qt widgets. In future, we will make it possible to define layouts in a
+more intuitive way.
+
+Full list of Changes
+--------------------
+
+In addition to the above features, a number of bugs has been fixed since the
+last release, and a few other small features have been added. A full list of
+changes can be found in the
+`CHANGES.md <https://github.com/glue-viz/glue/blob/master/CHANGES.md>`_ file
 
 What's new in glue v0.11?
 =========================
