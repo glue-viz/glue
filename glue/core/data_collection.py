@@ -258,6 +258,10 @@ class DataCollection(HubListener):
         self.append(master)
 
         master.coords = data[0].coords
+        for i, d in enumerate(data):
+            if isinstance(d.coords, WCSCoordinates):
+                master.coords = d.coords
+                break
 
         for d in data:
 
