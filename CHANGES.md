@@ -17,9 +17,6 @@ v0.12.0 (unreleased)
 
 * Added the ability to create fixed layout tabs. [#1403]
 
-v0.11.2 (unreleased)
---------------------
-
 * Fix selection in custom viewers. [#1453]
 
 * Fix a bug that caused the home/reset limits button to not work correctly. [#1452]
