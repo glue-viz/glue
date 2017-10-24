@@ -22,7 +22,7 @@ STRETCHES = {'linear': LinearStretch,
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
-DENSITY_PROPERTIES = set(['dpi', 'stretch'])
+DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
@@ -35,6 +35,17 @@ DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'den
 class InvertedNormalize(Normalize):
     def __call__(self, *args, **kwargs):
         return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
+
+
+class DensityMapLimits(object):
+
+    contrast = 1
+
+    def min(self, array):
+        return 0
+
+    def max(self, array):
+        return 10. ** (np.log10(np.nanmax(array)) * self.contrast)
 
 
 def set_mpl_artist_cmap(artist, values, state):
@@ -77,7 +88,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.axes.add_collection(self.line_collection)
 
         # Scatter density
-        self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white')
+        self.density_auto_limits = DensityMapLimits()
+        self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white',
+                                                   vmin=self.density_auto_limits.min,
+                                                   vmax=self.density_auto_limits.max)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -252,6 +266,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                 if force or 'dpi' in changed:
                     self.density_artist.set_dpi(self._viewer_state.dpi)
+
+                if force or 'density_contrast' in changed:
+                    self.density_auto_limits.contrast = self.state.density_contrast
+                    self.density_artist.stale = True
 
             else:
 

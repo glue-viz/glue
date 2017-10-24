@@ -20,6 +20,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1)),
                           'size_scaling': dict(value_range=(0.1, 10), log=True),
+                          'density_contrast': dict(value_range=(0, 1)),
                           'vector_scaling': dict(value_range=(0.1, 10), log=True)}
         autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 

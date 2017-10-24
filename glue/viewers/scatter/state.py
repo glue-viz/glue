@@ -166,6 +166,7 @@ class ScatterLayerState(MatplotlibLayerState):
     stretch = DDSCProperty(default='log', docstring='The stretch used to render the layer, '
                                                     'which should be one of ``linear``, '
                                                     '``sqrt``, ``log``, or ``arcsinh``')
+    density_contrast = DDCProperty(1, docstring="The dynamic range of the density map")
 
     # Note that we keep the dpi in the viewer state since we want it to always
     # be in sync between layers.
