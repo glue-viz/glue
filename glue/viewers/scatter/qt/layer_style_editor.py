@@ -42,6 +42,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state.add_callback('vector_mode', self._update_vector_mode)
 
         self.layer_state.add_callback('density_map', self._update_size_mode)
+        self.layer_state.add_callback('density_map', self._update_warnings)
 
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -57,7 +58,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self._update_warnings()
 
-    def _update_warnings(self):
+    def _update_warnings(self, *args):
 
         if self.layer_state.layer is None:
             n_points = 0
@@ -69,7 +70,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         for combo, threshold in [(self.ui.combosel_size_mode, 10000),
                                  (self.ui.combosel_cmap_mode, 50000)]:
 
-            if n_points > threshold:
+            if n_points > threshold and not self.layer_state.density_map:
                 for item in range(combo.count()):
                     text = combo.itemText(item)
                     if text != 'Fixed':
