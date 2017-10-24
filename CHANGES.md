@@ -15,8 +15,7 @@ v0.12.0 (unreleased)
 
 * Added glue plugins to the Version Information dialog. [#1427]
 
-v0.11.2 (unreleased)
---------------------
+* Added the ability to create fixed layout tabs. [#1403]
 
 * Fix selection in custom viewers. [#1453]
 
