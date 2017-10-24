@@ -106,17 +106,17 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         visible = not self.layer_state.density_map and self.layer_state.size_mode == 'Fixed'
         self.ui.value_size.setVisible(visible)
 
-        visible = self.layer_state.density_map
-        self.ui.value_dpi.setVisible(visible)
-        self.ui.label_dpi.setVisible(visible)
-        self.ui.label_stretch.setVisible(visible)
-        self.ui.combosel_stretch.setVisible(visible)
-
-        visible = not self.layer_state.density_map
-        self.ui.combosel_size_mode.setVisible(visible)
-        self.ui.value_size_scaling.setVisible(visible)
-        self.ui.label_size_mode.setVisible(visible)
-        self.ui.label_size_scaling.setVisible(visible)
+        density = self.layer_state.density_map
+        self.ui.value_dpi.setVisible(density)
+        self.ui.label_dpi.setVisible(density)
+        self.ui.label_stretch.setVisible(density)
+        self.ui.combosel_stretch.setVisible(density)
+        self.ui.value_density_contrast.setVisible(density)
+        self.ui.label_contrast.setVisible(density)
+        self.ui.combosel_size_mode.setVisible(not density)
+        self.ui.value_size_scaling.setVisible(not density)
+        self.ui.label_size_mode.setVisible(not density)
+        self.ui.label_size_scaling.setVisible(not density)
 
     def _update_markers_visible(self, *args):
         self.ui.combosel_size_mode.setEnabled(self.layer_state.markers_visible)
@@ -130,6 +130,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.combosel_stretch.setEnabled(self.layer_state.markers_visible)
         self.ui.label_size_scaling.setEnabled(self.layer_state.markers_visible)
         self.ui.combosel_points_mode.setEnabled(self.layer_state.markers_visible)
+        self.ui.value_density_contrast.setEnabled(self.layer_state.markers_visible)
 
     def _update_line_visible(self, *args):
         self.ui.value_linewidth.setEnabled(self.layer_state.line_visible)
