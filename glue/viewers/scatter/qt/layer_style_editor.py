@@ -94,48 +94,28 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
     def _update_size_mode(self, size_mode=None):
 
-        if self.layer_state.density_map:
-            self.ui.label_size_attribute.hide()
-            self.ui.combosel_size_att.hide()
-            self.ui.label_size_limits.hide()
-            self.ui.valuetext_size_vmin.hide()
-            self.ui.valuetext_size_vmax.hide()
-            self.ui.button_flip_size.hide()
-            self.ui.value_size.hide()
-            self.ui.value_dpi.show()
-            self.ui.label_dpi.show()
-            self.ui.combosel_size_mode.hide()
-            self.ui.value_size_scaling.hide()
-            self.ui.label_size_mode.hide()
-            self.ui.label_size_scaling.hide()
-        elif self.layer_state.size_mode == 'Fixed':
-            self.ui.label_size_attribute.hide()
-            self.ui.combosel_size_att.hide()
-            self.ui.label_size_limits.hide()
-            self.ui.valuetext_size_vmin.hide()
-            self.ui.valuetext_size_vmax.hide()
-            self.ui.button_flip_size.hide()
-            self.ui.value_size.show()
-            self.ui.value_dpi.hide()
-            self.ui.label_dpi.hide()
-            self.ui.combosel_size_mode.show()
-            self.ui.value_size_scaling.show()
-            self.ui.label_size_mode.show()
-            self.ui.label_size_scaling.show()
-        else:
-            self.ui.label_size_attribute.show()
-            self.ui.combosel_size_att.show()
-            self.ui.label_size_limits.show()
-            self.ui.valuetext_size_vmin.show()
-            self.ui.valuetext_size_vmax.show()
-            self.ui.button_flip_size.show()
-            self.ui.value_size.hide()
-            self.ui.value_dpi.hide()
-            self.ui.label_dpi.hide()
-            self.ui.combosel_size_mode.show()
-            self.ui.value_size_scaling.show()
-            self.ui.label_size_mode.show()
-            self.ui.label_size_scaling.show()
+        visible = not self.layer_state.density_map and not self.layer_state.size_mode == 'Fixed'
+        self.ui.label_size_attribute.setVisible(visible)
+        self.ui.combosel_size_att.setVisible(visible)
+        self.ui.label_size_limits.setVisible(visible)
+        self.ui.valuetext_size_vmin.setVisible(visible)
+        self.ui.valuetext_size_vmax.setVisible(visible)
+        self.ui.button_flip_size.setVisible(visible)
+
+        visible = not self.layer_state.density_map and self.layer_state.size_mode == 'Fixed'
+        self.ui.value_size.setVisible(visible)
+
+        visible = self.layer_state.density_map
+        self.ui.value_dpi.setVisible(visible)
+        self.ui.label_dpi.setVisible(visible)
+        self.ui.label_stretch.setVisible(visible)
+        self.ui.combosel_stretch.setVisible(visible)
+
+        visible = not self.layer_state.density_map
+        self.ui.combosel_size_mode.setVisible(visible)
+        self.ui.value_size_scaling.setVisible(visible)
+        self.ui.label_size_mode.setVisible(visible)
+        self.ui.label_size_scaling.setVisible(visible)
 
     def _update_markers_visible(self, *args):
         self.ui.combosel_size_mode.setEnabled(self.layer_state.markers_visible)
@@ -145,6 +125,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.valuetext_size_vmax.setEnabled(self.layer_state.markers_visible)
         self.ui.button_flip_size.setEnabled(self.layer_state.markers_visible)
         self.ui.value_size_scaling.setEnabled(self.layer_state.markers_visible)
+        self.ui.value_dpi.setEnabled(self.layer_state.markers_visible)
+        self.ui.combosel_stretch.setEnabled(self.layer_state.markers_visible)
+        self.ui.label_size_scaling.setEnabled(self.layer_state.markers_visible)
+        self.ui.combosel_points_mode.setEnabled(self.layer_state.markers_visible)
 
     def _update_line_visible(self, *args):
         self.ui.value_linewidth.setEnabled(self.layer_state.line_visible)

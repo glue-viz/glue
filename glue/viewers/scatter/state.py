@@ -225,7 +225,7 @@ class ScatterLayerState(MatplotlibLayerState):
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
                                                     numeric=True, categorical=False)
 
-        ScatterLayerState.points_mode.set_choices(self, ['Auto', 'Markers', 'Density map'])
+        ScatterLayerState.points_mode.set_choices(self, ['Density map or markers (auto)', 'Markers', 'Density map'])
         self.add_callback('points_mode', self._upate_density_map_mode)
 
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -296,7 +296,7 @@ class ScatterLayerState(MatplotlibLayerState):
                 self.vy_att_helper.set_multiple_data([self.layer])
 
     def _upate_density_map_mode(self, *args):
-        if self.points_mode == 'Auto':
+        if self.points_mode == 'Density map or markers (auto)':
             if self.layer.size > 100000:
                 self.density_map = True
             else:

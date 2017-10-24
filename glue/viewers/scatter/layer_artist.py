@@ -247,8 +247,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     c = self.layer[self.state.cmap_att].ravel()
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
 
-                # if force or 'stretch' in changed:
-                #     self.density_artist.set_norm(ImageNormalize(stretch=STRETCHES[self.state.stretch]()))
+                if force or 'stretch' in changed:
+                    self.density_artist.set_norm(ImageNormalize(stretch=STRETCHES[self.state.stretch]()))
 
                 if force or 'dpi' in changed:
                     self.density_artist.set_dpi(self._viewer_state.dpi)
