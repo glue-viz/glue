@@ -5,7 +5,7 @@ import numpy as np
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.external.echo.qt import autoconnect_callbacks_to_qt, connect_value
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 
 
@@ -23,6 +23,9 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
                           'vector_scaling': dict(value_range=(0.1, 10), log=True)}
         autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
+        connect_value(layer.state.viewer_state, 'dpi', self.ui.value_dpi,
+                      value_range=(12, 144), log=True)
+
         fix_tab_widget_fontsize(self.ui.tab_widget)
 
         self.layer_state = layer.state
@@ -36,6 +39,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state.add_callback('cmap_mode', self._update_cmap_mode)
         self.layer_state.add_callback('size_mode', self._update_size_mode)
         self.layer_state.add_callback('vector_mode', self._update_vector_mode)
+
+        self.layer_state.add_callback('density_map', self._update_size_mode)
 
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -89,7 +94,21 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
     def _update_size_mode(self, size_mode=None):
 
-        if self.layer_state.size_mode == 'Fixed':
+        if self.layer_state.density_map:
+            self.ui.label_size_attribute.hide()
+            self.ui.combosel_size_att.hide()
+            self.ui.label_size_limits.hide()
+            self.ui.valuetext_size_vmin.hide()
+            self.ui.valuetext_size_vmax.hide()
+            self.ui.button_flip_size.hide()
+            self.ui.value_size.hide()
+            self.ui.value_dpi.show()
+            self.ui.label_dpi.show()
+            self.ui.combosel_size_mode.hide()
+            self.ui.value_size_scaling.hide()
+            self.ui.label_size_mode.hide()
+            self.ui.label_size_scaling.hide()
+        elif self.layer_state.size_mode == 'Fixed':
             self.ui.label_size_attribute.hide()
             self.ui.combosel_size_att.hide()
             self.ui.label_size_limits.hide()
@@ -97,6 +116,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.valuetext_size_vmax.hide()
             self.ui.button_flip_size.hide()
             self.ui.value_size.show()
+            self.ui.value_dpi.hide()
+            self.ui.label_dpi.hide()
+            self.ui.combosel_size_mode.show()
+            self.ui.value_size_scaling.show()
+            self.ui.label_size_mode.show()
+            self.ui.label_size_scaling.show()
         else:
             self.ui.label_size_attribute.show()
             self.ui.combosel_size_att.show()
@@ -105,6 +130,12 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
             self.ui.valuetext_size_vmax.show()
             self.ui.button_flip_size.show()
             self.ui.value_size.hide()
+            self.ui.value_dpi.hide()
+            self.ui.label_dpi.hide()
+            self.ui.combosel_size_mode.show()
+            self.ui.value_size_scaling.show()
+            self.ui.label_size_mode.show()
+            self.ui.label_size_scaling.show()
 
     def _update_markers_visible(self, *args):
         self.ui.combosel_size_mode.setEnabled(self.layer_state.markers_visible)
