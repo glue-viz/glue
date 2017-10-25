@@ -72,39 +72,6 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="combosel_y_att">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="x_lab">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>y axis</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="x_lab">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>x axis</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="1">
         <widget class="QComboBox" name="combosel_x_att">
          <property name="sizeAdjustPolicy">
@@ -125,6 +92,19 @@
          </property>
         </spacer>
        </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="x_lab">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>x axis</string>
+         </property>
+        </widget>
+       </item>
        <item row="3" column="1">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
@@ -137,6 +117,46 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="combosel_y_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="x_lab">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>y axis</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QToolButton" name="bool_x_log_">
+         <property name="text">
+          <string>log</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="bool_y_log_">
+         <property name="text">
+          <string>log</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

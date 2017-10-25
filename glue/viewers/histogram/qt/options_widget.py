@@ -32,5 +32,7 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
         # If at least one of the components is categorical, disable log button
         log_enabled = not any(comp.categorical for comp in self.viewer_state._get_x_components())
         self.ui.bool_x_log.setEnabled(log_enabled)
+        self.ui.bool_x_log_.setEnabled(log_enabled)
         if not log_enabled:
             self.ui.bool_x_log.setChecked(False)
+            self.ui.bool_x_log_.setChecked(False)
