@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.12.0 (unreleased)
+v0.12.0 (2017-10-25)
 --------------------
 
 * Don't disable layer completely if it is not enabled, just disable checkbox.
