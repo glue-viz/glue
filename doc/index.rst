@@ -17,7 +17,8 @@ Glue is a Python library to explore relationships within and among related datas
  <iframe width="640" height="390" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
  </center>
 
-For more demos, check out the :ref:`videos <demo_videos>` page.
+For more demos, check out the :ref:`videos <demo_videos>` page. You can also `follow us on Twitter <https://twitter.com/glueviz>`_ for previews 
+of upcoming functionality!
 
 **The latest version of glue is v0.12** - find out :ref:`what's new in glue! <whatsnew>`
 
@@ -44,7 +45,7 @@ make use of the Glue framework in your own application to provide data linking
 capabilities.
 
 To see how glue compares with other open-source and commercial data visualization
-solutions, you can view  `this comparison table <https://docs.google.com/spreadsheets/d/1NvvS471KSMir26P3ANyQnvn8n-j6IJLdlAAijMA2dD0/edit?usp=sharing>`_.
+solutions, you can view  `this comparison table <https://docs.google.com/spreadsheets/d/1u_sgRUtnqEA067C5ffsMRkUpb0XUAMIoq6QfqivHG78/pubhtml?gid=0&single=true>`_.
 
 In the following sections, we cover the different ways of using Glue from the
 Glue application to the more advanced ways of interacting with Glue from Python.
