@@ -62,9 +62,15 @@ class HistogramViewerState(MatplotlibDataViewerState):
         self.add_callback('hist_x_min', self.update_view_to_bins)
         self.add_callback('hist_x_max', self.update_view_to_bins)
 
-    def reset_limits(self):
+        self.add_callback('x_log', self._reset_x_limits)
+
+    def _reset_x_limits(self, *args):
         self.x_lim_helper.percentile = 100
         self.x_lim_helper.update_values(force=True)
+        self.update_bins_to_view()
+
+    def reset_limits(self):
+        self._reset_x_limits()
         self.y_min = min(getattr(layer, '_y_min', np.inf) for layer in self.layers)
         self.y_max = max(getattr(layer, '_y_max', 0) for layer in self.layers)
 

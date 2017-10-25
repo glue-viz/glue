@@ -48,11 +48,20 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.update_from_dict(kwargs)
 
-    def reset_limits(self):
+        self.add_callback('x_log', self._reset_x_limits)
+        self.add_callback('y_log', self._reset_y_limits)
+
+    def _reset_x_limits(self, *args):
         self.x_lim_helper.percentile = 100
         self.x_lim_helper.update_values(force=True)
+
+    def _reset_y_limits(self, *args):
         self.y_lim_helper.percentile = 100
         self.y_lim_helper.update_values(force=True)
+
+    def reset_limits(self):
+        self._reset_x_limits()
+        self._reset_y_limits()
 
     def _update_priority(self, name):
         if name == 'layers':
