@@ -8,6 +8,7 @@ from glue.core.registry import Registry
 from glue.core.link_manager import LinkManager
 from glue.core.data import Data
 from glue.core.hub import Hub, HubListener
+from glue.core.coordinates import WCSCoordinates
 from glue.config import settings
 from glue.utils import as_list
 
@@ -258,6 +259,10 @@ class DataCollection(HubListener):
         self.append(master)
 
         master.coords = data[0].coords
+        for i, d in enumerate(data):
+            if isinstance(d.coords, WCSCoordinates):
+                master.coords = d.coords
+                break
 
         for d in data:
 

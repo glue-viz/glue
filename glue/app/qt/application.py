@@ -13,6 +13,7 @@ from qtpy.QtCore import Qt
 from glue.core.application_base import Application
 from glue.core.message import ApplicationClosedMessage
 from glue.core import command, Data
+from glue.core.coordinates import WCSCoordinates
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
@@ -1167,6 +1168,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # least one new one, have a common shape.
         others.append(data)
         others.sort(key=lambda x: x.label)
+        for i, d in enumerate(others):
+            if isinstance(d.coords, WCSCoordinates):
+                if i == 0:
+                    break
+                else:
+                    others[0], others[i] = others[i], others[0]
+                    break
 
         label = others[0].label
         w.merged_label.setText(label)
