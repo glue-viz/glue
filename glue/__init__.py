@@ -18,6 +18,8 @@ sys.meta_path.append(MatplotlibBackendSetter())
 
 import logging
 from logging import NullHandler
+from . import keyboard_shortcuts
+
 
 logging.getLogger('glue').addHandler(NullHandler())
 
