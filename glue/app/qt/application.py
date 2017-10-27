@@ -834,6 +834,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                             label="Choose a new data viewer",
                             default=default, sort=True)
 
+        if client is None:
+            return
+
         cmd = command.NewDataViewer(viewer=client, data=data)
         return self.do(cmd)
 
