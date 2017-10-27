@@ -5,7 +5,6 @@ import os
 from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.utils import nonpartial
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 
 __all__ = ['HistogramOptionsWidget']
@@ -26,9 +25,9 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
 
         self.viewer_state = viewer_state
 
-        viewer_state.add_callback('x_att', nonpartial(self._update_attribute))
+        viewer_state.add_callback('x_att', self._update_attribute)
 
-    def _update_attribute(self):
+    def _update_attribute(self, *args):
         # If at least one of the components is categorical, disable log button
         log_enabled = not any(comp.categorical for comp in self.viewer_state._get_x_components())
         self.ui.bool_x_log.setEnabled(log_enabled)
