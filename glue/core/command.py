@@ -219,8 +219,9 @@ class NewDataViewer(Command):
         return v
 
     def undo(self, session):
-        if self.created() is not None:
-            self.created.close(warn=False)
+        created = self.created()
+        if created is not None:
+            created.close(warn=False)
 
 
 class AddLayer(Command):
