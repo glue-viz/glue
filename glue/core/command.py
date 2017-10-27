@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import weakref
 import logging
 from abc import ABCMeta, abstractmethod
 
@@ -214,11 +215,12 @@ class NewDataViewer(Command):
 
     def do(self, session):
         v = session.application.new_data_viewer(self.viewer, self.data)
-        self.created = v
+        self.created = weakref.ref(v)
         return v
 
     def undo(self, session):
-        self.created.close(warn=False)
+        if self.created() is not None:
+            self.created.close(warn=False)
 
 
 class AddLayer(Command):

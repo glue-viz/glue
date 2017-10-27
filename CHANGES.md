@@ -6,6 +6,12 @@ v0.13.0 (unreleased)
 
 * No changes yet
 
+v0.12.1 (unreleased)
+--------------------
+
+* Fix a bug that caused glue to crash when adding components to a dataset
+  after closing a viewer that had that data. [#1460]
+
 v0.12.0 (2017-10-25)
 --------------------
 
