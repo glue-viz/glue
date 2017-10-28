@@ -250,9 +250,21 @@ class ImageLayerArtist(BaseImageLayerArtist):
 class ImageSubsetArray(object):
 
     def __init__(self, viewer_state, layer_artist):
-        self.viewer_state = weakref.proxy(viewer_state)
-        self.layer_artist = weakref.proxy(layer_artist)
-        self.layer_state = weakref.proxy(layer_artist.state)
+        self._viewer_state = weakref.ref(viewer_state)
+        self._layer_artist = weakref.ref(layer_artist)
+        self._layer_state = weakref.ref(layer_artist.state)
+
+    @property
+    def layer_artist(self):
+        return self._layer_artist()
+
+    @property
+    def layer_state(self):
+        return self._layer_state()
+
+    @property
+    def viewer_state(self):
+        return self._viewer_state()
 
     @property
     def shape(self):
@@ -266,6 +278,11 @@ class ImageSubsetArray(object):
         return np.ones(self.shape) * np.nan
 
     def __getitem__(self, view=None):
+
+        if (self.layer_artist is None or
+                self.layer_state is None or
+                self.viewer_state is None):
+            return self.nan_array
 
         if not self.layer_artist._compatible_with_reference_data:
             return self.nan_array
