@@ -8,7 +8,7 @@ from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
 from glue.external import six
 from glue.external.echo import delay_callback
-from glue.utils import nonpartial, DeferDrawMeta, defer_draw
+from glue.utils import DeferDrawMeta, defer_draw
 from glue.utils.noconflict import classmaker
 from glue.viewers.common.qt.data_viewer import DataViewer
 
@@ -38,11 +38,11 @@ class DataViewerWithState(DataViewer):
         # When layer artists are removed from the layer artist container, we need
         # to make sure we remove matching layer states in the viewer state
         # layers attribute.
-        self._layer_artist_container.on_changed(nonpartial(self._sync_state_layers))
+        self._layer_artist_container.on_changed(self._sync_state_layers)
 
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
-        self.state.add_callback('layers', nonpartial(self._sync_layer_artist_container))
+        self.state.add_callback('layers', self._sync_layer_artist_container)
 
         self.statusBar().setSizeGripEnabled(False)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -50,13 +50,13 @@ class DataViewerWithState(DataViewer):
     def redraw(self):
         pass
 
-    def _sync_state_layers(self):
+    def _sync_state_layers(self, *args):
         # Remove layer state objects that no longer have a matching layer
         for layer_state in self.state.layers:
             if layer_state.layer not in self._layer_artist_container:
                 self.state.layers.remove(layer_state)
 
-    def _sync_layer_artist_container(self):
+    def _sync_layer_artist_container(self, *args):
         # Remove layer artists that no longer have a matching layer state
         layer_states = set(layer_state.layer for layer_state in self.state.layers)
         for layer_artist in self._layer_artist_container:

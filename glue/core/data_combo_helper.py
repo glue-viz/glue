@@ -13,7 +13,6 @@ from glue.core.message import (ComponentsChangedMessage,
                                DataUpdateMessage,
                                ComponentReplacedMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
-from glue.utils import nonpartial
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
@@ -365,7 +364,7 @@ class BaseDataComboHelper(ComboHelper):
         else:
             self.hub = None
 
-    def refresh(self):
+    def refresh(self, *args):
         self.choices = [data for data in self._datasets]
         self.refresh_component_ids()
 
@@ -460,7 +459,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
         super(ManualDataComboHelper, self).register_to_hub(hub)
 
         hub.subscribe(self, DataUpdateMessage,
-                      handler=nonpartial(self.refresh),
+                      handler=self.refresh,
                       filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=lambda msg: self.remove_data(msg.data),
@@ -494,11 +493,11 @@ class DataCollectionComboHelper(BaseDataComboHelper):
     def register_to_hub(self, hub):
         super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self, DataUpdateMessage,
-                      handler=nonpartial(self.refresh),
+                      handler=self.refresh,
                       filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionAddMessage,
-                      handler=nonpartial(self.refresh),
+                      handler=self.refresh,
                       filter=lambda msg: msg.sender is self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=nonpartial(self.refresh),
+                      handler=self.refresh,
                       filter=lambda msg: msg.sender is self._datasets)
