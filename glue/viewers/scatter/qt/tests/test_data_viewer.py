@@ -232,6 +232,16 @@ class TestScatterViewer(object):
         assert self.viewer.state.x_att is test
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'test:y:z'
 
+    def test_density_map(self):
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.layers[0].points_mode = 'auto'
+        assert len(self.viewer.layers[0].density_artist._x) == 0
+        self.viewer.state.layers[0].points_mode = 'density'
+        assert len(self.viewer.layers[0].density_artist._x) == 4
+        self.viewer.state.layers[0].points_mode = 'markers'
+        assert len(self.viewer.layers[0].density_artist._x) == 0
+
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 

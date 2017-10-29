@@ -226,8 +226,14 @@ class ScatterLayerState(MatplotlibLayerState):
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
                                                     numeric=True, categorical=False)
 
-        ScatterLayerState.points_mode.set_choices(self, ['Density map or markers (auto)', 'Markers', 'Density map'])
-        self.add_callback('points_mode', self._upate_density_map_mode)
+        points_mode_display = {'auto': 'Density map or markers (auto)',
+                               'markers': 'Markers',
+                               'density': 'Density map'}
+
+        ScatterLayerState.points_mode.set_choices(self, ['auto', 'markers', 'density'])
+        ScatterLayerState.points_mode.set_display_func(self, points_mode_display.get)
+
+        self.add_callback('points_mode', self._update_density_map_mode)
 
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -273,7 +279,7 @@ class ScatterLayerState(MatplotlibLayerState):
 
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax', 'density_map'):
 
-            self._upate_density_map_mode()
+            self._update_density_map_mode()
 
             if self.layer is None:
                 self.cmap_att_helper.set_multiple_data([])
@@ -296,13 +302,13 @@ class ScatterLayerState(MatplotlibLayerState):
                 self.vx_att_helper.set_multiple_data([self.layer])
                 self.vy_att_helper.set_multiple_data([self.layer])
 
-    def _upate_density_map_mode(self, *args):
-        if self.points_mode == 'Density map or markers (auto)':
+    def _update_density_map_mode(self, *args):
+        if self.points_mode == 'auto':
             if self.layer.size > 100000:
                 self.density_map = True
             else:
                 self.density_map = False
-        elif self.points_mode == 'Density map':
+        elif self.points_mode == 'density':
             self.density_map = True
         else:
             self.density_map = False
