@@ -155,7 +155,7 @@ gui_framework = (
 )
 
 required = (
-    Dependency('qtpy', 'Required', min_version='1.1'),
+    Dependency('qtpy', 'Required', min_version='1.2'),
     Dependency('setuptools', 'Required', min_version='1.0'),
     Dependency('numpy', 'Required', min_version='1.9'),
     Dependency('matplotlib', 'Required for plotting', min_version='1.4'),
@@ -164,6 +164,7 @@ required = (
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
     Dependency('h5py', 'Used to support HDF5 files', min_version='2.4'),
     Dependency('xlrd', 'Used to support Excel files', min_version='1.0'),
+    Dependency('mpl-scatter-density', 'Used to make fast scatter density plots', min_version='0.3'),
 )
 
 general = (
