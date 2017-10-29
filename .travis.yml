@@ -20,7 +20,7 @@ env:
     - PYTHON_VERSION=3.6
   global:
     # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions.
-    - CONDA_CHANNELS="astropy-ci-extras astropy"
+    - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
     - PYTEST_ARGS="--cov glue -vs"
     - ASTROPY_VERSION=stable
     - NUMPY_VERSION=stable

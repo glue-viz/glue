@@ -10,6 +10,7 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
+      CONDA_CHANNELS: "glueviz"
       CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy mpl-scatter-density"
       PIP_DEPENDENCIES: "plotly"
       PIP_FALLBACK: "False"
