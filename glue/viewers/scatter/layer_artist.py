@@ -7,7 +7,8 @@ from matplotlib.collections import LineCollection
 
 from mpl_scatter_density import ScatterDensityArtist
 
-from astropy.visualization import ImageNormalize, LinearStretch, SqrtStretch, AsinhStretch, LogStretch
+from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
+                                   AsinhStretch, LogStretch)
 
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
@@ -151,7 +152,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         else:
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))
-            print("SETTING DENSITY ARTIST TO EMPTY")
             self.density_artist.set_xy([], [])
 
         if self.state.line_visible:
