@@ -4,7 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
-* No changes yet
+* Added support for scatter density maps, which is useful when making
+  scatter plots of many points. [#1461]
 
 v0.12.1 (unreleased)
 --------------------
