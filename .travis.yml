@@ -72,17 +72,11 @@ matrix:
 
         - os: linux
           env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=1.4
-               NUMPY_VERSION=1.9
-               IPYTHON_VERSION=4
-               PANDAS_VERSION=0.14
-               SETUPTOOLS=1.0
-               QT_PKG=pyqt
-
-        - os: linux
-          env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=1.5
-               NUMPY_VERSION=1.10
+               NUMPY_VERSION=1.11
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
                QT_PKG=pyqt
 
         # Test with PySide, but due to segmentation faults, mark as an
