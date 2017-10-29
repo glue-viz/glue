@@ -164,7 +164,7 @@ required = (
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
     Dependency('h5py', 'Used to support HDF5 files', min_version='2.4'),
     Dependency('xlrd', 'Used to support Excel files', min_version='1.0'),
-    Dependency('mpl-scatter-density', 'Used to make fast scatter density plots', min_version='0.3'),
+    Dependency('mpl_scatter_density', 'Used to make fast scatter density plots', 'mpl-scatter-density', min_version='0.3'),
 )
 
 general = (
