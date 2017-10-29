@@ -27,7 +27,7 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density"
     - PIP_DEPENDENCIES="coveralls pyavm astrodendro awscli plotly"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
@@ -58,7 +58,7 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole"
+               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density"
                PIP_DEPENDENCIES="pytest-cov coveralls"
                REMOVE_INSTALL_REQUIRES=1
 
