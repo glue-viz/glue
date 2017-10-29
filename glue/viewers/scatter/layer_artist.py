@@ -257,6 +257,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if self.state.cmap_mode == 'Fixed':
                     if force or 'color' in changed or 'cmap_mode' in changed:
                         self.density_artist.set_color(self.state.color)
+                        self.density_artist.set_c(None)
+                        self.density_artist.set_clim(self.density_auto_limits.min,
+                                                     self.density_auto_limits.max)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                     c = self.layer[self.state.cmap_att].ravel()
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
