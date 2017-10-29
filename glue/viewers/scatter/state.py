@@ -24,6 +24,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
     x_att = DDSCProperty(docstring='The attribute to show on the x-axis', default_index=0)
     y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
+    dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
 
     def __init__(self, **kwargs):
 
@@ -145,6 +146,10 @@ class ScatterLayerState(MatplotlibLayerState):
     cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
     cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
 
+    # Points
+
+    points_mode = DDSCProperty(docstring='Whether to use markers or a density map')
+
     # Markers
 
     markers_visible = DDCProperty(True, docstring="Whether to show markers")
@@ -154,6 +159,17 @@ class ScatterLayerState(MatplotlibLayerState):
     size_vmin = DDCProperty(docstring="The lower level for the size mapping")
     size_vmax = DDCProperty(docstring="The upper level for the size mapping")
     size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
+
+    # Density map
+
+    density_map = DDCProperty(False, docstring="Whether to show the points as a density map")
+    stretch = DDSCProperty(default='log', docstring='The stretch used to render the layer, '
+                                                    'which should be one of ``linear``, '
+                                                    '``sqrt``, ``log``, or ``arcsinh``')
+    density_contrast = DDCProperty(1, docstring="The dynamic range of the density map")
+
+    # Note that we keep the dpi in the viewer state since we want it to always
+    # be in sync between layers.
 
     # Line
 
@@ -210,6 +226,15 @@ class ScatterLayerState(MatplotlibLayerState):
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
                                                     numeric=True, categorical=False)
 
+        points_mode_display = {'auto': 'Density map or markers (auto)',
+                               'markers': 'Markers',
+                               'density': 'Density map'}
+
+        ScatterLayerState.points_mode.set_choices(self, ['auto', 'markers', 'density'])
+        ScatterLayerState.points_mode.set_display_func(self, points_mode_display.get)
+
+        self.add_callback('points_mode', self._update_density_map_mode)
+
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
 
@@ -230,6 +255,14 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
         ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
+        stretch_display = {'linear': 'Linear',
+                           'sqrt': 'Square Root',
+                           'arcsinh': 'Arcsinh',
+                           'log': 'Logarithmic'}
+
+        ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
+        ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
+
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
@@ -244,7 +277,9 @@ class ScatterLayerState(MatplotlibLayerState):
 
     def _on_layer_change(self, layer=None):
 
-        with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax'):
+        with delay_callback(self, 'cmap_vmin', 'cmap_vmax', 'size_vmin', 'size_vmax', 'density_map'):
+
+            self._update_density_map_mode()
 
             if self.layer is None:
                 self.cmap_att_helper.set_multiple_data([])
@@ -266,6 +301,17 @@ class ScatterLayerState(MatplotlibLayerState):
             else:
                 self.vx_att_helper.set_multiple_data([self.layer])
                 self.vy_att_helper.set_multiple_data([self.layer])
+
+    def _update_density_map_mode(self, *args):
+        if self.points_mode == 'auto':
+            if self.layer.size > 100000:
+                self.density_map = True
+            else:
+                self.density_map = False
+        elif self.points_mode == 'density':
+            self.density_map = True
+        else:
+            self.density_map = False
 
     def flip_cmap(self):
         """

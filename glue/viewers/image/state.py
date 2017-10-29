@@ -49,6 +49,8 @@ class ImageViewerState(MatplotlibDataViewerState):
                                                     'whether each layer is assigned '
                                                     'a single color (``One color per layer``)')
 
+    dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
+
     def __init__(self, **kwargs):
 
         super(ImageViewerState, self).__init__()

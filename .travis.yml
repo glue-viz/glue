@@ -20,14 +20,14 @@ env:
     - PYTHON_VERSION=3.6
   global:
     # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions.
-    - CONDA_CHANNELS="astropy-ci-extras astropy"
+    - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
     - PYTEST_ARGS="--cov glue -vs"
     - ASTROPY_VERSION=stable
     - NUMPY_VERSION=stable
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density"
     - PIP_DEPENDENCIES="coveralls pyavm astrodendro awscli plotly"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
@@ -58,7 +58,7 @@ matrix:
         - os: linux
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole"
+               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density"
                PIP_DEPENDENCIES="pytest-cov coveralls"
                REMOVE_INSTALL_REQUIRES=1
 
@@ -72,17 +72,11 @@ matrix:
 
         - os: linux
           env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=1.4
-               NUMPY_VERSION=1.9
-               IPYTHON_VERSION=4
-               PANDAS_VERSION=0.14
-               SETUPTOOLS=1.0
-               QT_PKG=pyqt
-
-        - os: linux
-          env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=1.5
-               NUMPY_VERSION=1.10
+               NUMPY_VERSION=1.11
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
                QT_PKG=pyqt
 
         # Test with PySide, but due to segmentation faults, mark as an

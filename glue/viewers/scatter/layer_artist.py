@@ -5,18 +5,29 @@ import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib.collections import LineCollection
 
+from mpl_scatter_density import ScatterDensityArtist
+
+from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
+                                   AsinhStretch, LogStretch)
+
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
+STRETCHES = {'linear': LinearStretch,
+             'sqrt': SqrtStretch,
+             'arcsinh': AsinhStretch,
+             'log': LogStretch}
+
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
-VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES |
+DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
+VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
-DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode',
+DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'density_map',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
                        'vector_visible', 'vx_att', 'vy_att', 'vector_arrowhead', 'vector_mode',
                        'vector_origin', 'line_visible', 'markers_visible', 'vector_scaling'])
@@ -27,11 +38,25 @@ class InvertedNormalize(Normalize):
         return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
 
 
+class DensityMapLimits(object):
+
+    contrast = 1
+
+    def min(self, array):
+        return 0
+
+    def max(self, array):
+        return 10. ** (np.log10(np.nanmax(array)) * self.contrast)
+
+
 def set_mpl_artist_cmap(artist, values, state):
     vmin = state.cmap_vmin
     vmax = state.cmap_vmax
     cmap = state.cmap
-    artist.set_array(values)
+    if isinstance(artist, ScatterDensityArtist):
+        artist.set_c(values)
+    else:
+        artist.set_array(values)
     artist.set_cmap(cmap)
     if vmin > vmax:
         artist.set_clim(vmax, vmin)
@@ -63,9 +88,16 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.line_collection = LineCollection(np.zeros((0, 2, 2)))
         self.axes.add_collection(self.line_collection)
 
+        # Scatter density
+        self.density_auto_limits = DensityMapLimits()
+        self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white',
+                                                   vmin=self.density_auto_limits.min,
+                                                   vmax=self.density_auto_limits.max)
+        self.axes.add_artist(self.density_artist)
+
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
                             self.errorbar_artist, self.vector_artist,
-                            self.line_collection]
+                            self.line_collection, self.density_artist]
         self.errorbar_index = 2
         self.vector_index = 3
 
@@ -101,20 +133,26 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         if self.state.markers_visible:
-            if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
-                # In this case we use Matplotlib's plot function because it has much
-                # better performance than scatter.
-                self.plot_artist.set_data(x, y)
-                offsets = np.zeros((0, 2))
-                self.scatter_artist.set_offsets(offsets)
-            else:
+            if self.state.density_map:
+                self.density_artist.set_xy(x, y)
                 self.plot_artist.set_data([], [])
-                offsets = np.vstack((x, y)).transpose()
-                self.scatter_artist.set_offsets(offsets)
+                self.scatter_artist.set_offsets(np.zeros((0, 2)))
+            else:
+                if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
+                    # In this case we use Matplotlib's plot function because it has much
+                    # better performance than scatter.
+                    self.plot_artist.set_data(x, y)
+                    self.scatter_artist.set_offsets(np.zeros((0, 2)))
+                    self.density_artist.set_xy([], [])
+                else:
+                    self.plot_artist.set_data([], [])
+                    offsets = np.vstack((x, y)).transpose()
+                    self.scatter_artist.set_offsets(offsets)
+                    self.density_artist.set_xy([], [])
         else:
             self.plot_artist.set_data([], [])
-            offsets = np.zeros((0, 2))
-            self.scatter_artist.set_offsets(offsets)
+            self.scatter_artist.set_offsets(np.zeros((0, 2)))
+            self.density_artist.set_xy([], [])
 
         if self.state.line_visible:
             if self.state.cmap_mode == 'Fixed':
@@ -214,45 +252,69 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.markers_visible:
 
-            if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
-
-                if force or 'color' in changed:
-                    self.plot_artist.set_color(self.state.color)
-
-                if force or 'size' in changed or 'size_scaling' in changed:
-                    self.plot_artist.set_markersize(self.state.size *
-                                                    self.state.size_scaling)
-
-            else:
-
-                # TEMPORARY: Matplotlib has a bug that causes set_alpha to
-                # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
-                if 'alpha' in changed:
-                    force = True
+            if self.state.density_map:
 
                 if self.state.cmap_mode == 'Fixed':
                     if force or 'color' in changed or 'cmap_mode' in changed:
-                        self.scatter_artist.set_facecolors(self.state.color)
-                        self.scatter_artist.set_edgecolor('none')
+                        self.density_artist.set_color(self.state.color)
+                        self.density_artist.set_c(None)
+                        self.density_artist.set_clim(self.density_auto_limits.min,
+                                                     self.density_auto_limits.max)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                     c = self.layer[self.state.cmap_att].ravel()
-                    set_mpl_artist_cmap(self.scatter_artist, c, self.state)
-                    self.scatter_artist.set_edgecolor('none')
+                    set_mpl_artist_cmap(self.density_artist, c, self.state)
 
-                if force or any(prop in changed for prop in MARKER_PROPERTIES):
+                if force or 'stretch' in changed:
+                    self.density_artist.set_norm(ImageNormalize(stretch=STRETCHES[self.state.stretch]()))
 
-                    if self.state.size_mode == 'Fixed':
-                        s = self.state.size * self.state.size_scaling
-                        s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
-                    else:
-                        s = self.layer[self.state.size_att].ravel()
-                        s = ((s - self.state.size_vmin) /
-                             (self.state.size_vmax - self.state.size_vmin)) * 30
-                        s *= self.state.size_scaling
+                if force or 'dpi' in changed:
+                    self.density_artist.set_dpi(self._viewer_state.dpi)
 
-                    # Note, we need to square here because for scatter, s is actually
-                    # proportional to the marker area, not radius.
-                    self.scatter_artist.set_sizes(s ** 2)
+                if force or 'density_contrast' in changed:
+                    self.density_auto_limits.contrast = self.state.density_contrast
+                    self.density_artist.stale = True
+
+            else:
+
+                if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
+
+                    if force or 'color' in changed:
+                        self.plot_artist.set_color(self.state.color)
+
+                    if force or 'size' in changed or 'size_scaling' in changed:
+                        self.plot_artist.set_markersize(self.state.size *
+                                                        self.state.size_scaling)
+
+                else:
+
+                    # TEMPORARY: Matplotlib has a bug that causes set_alpha to
+                    # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
+                    if 'alpha' in changed:
+                        force = True
+
+                    if self.state.cmap_mode == 'Fixed':
+                        if force or 'color' in changed or 'cmap_mode' in changed:
+                            self.scatter_artist.set_facecolors(self.state.color)
+                            self.scatter_artist.set_edgecolor('none')
+                    elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                        c = self.layer[self.state.cmap_att].ravel()
+                        set_mpl_artist_cmap(self.scatter_artist, c, self.state)
+                        self.scatter_artist.set_edgecolor('none')
+
+                    if force or any(prop in changed for prop in MARKER_PROPERTIES):
+
+                        if self.state.size_mode == 'Fixed':
+                            s = self.state.size * self.state.size_scaling
+                            s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
+                        else:
+                            s = self.layer[self.state.size_att].ravel()
+                            s = ((s - self.state.size_vmin) /
+                                 (self.state.size_vmax - self.state.size_vmin)) * 30
+                            s *= self.state.size_scaling
+
+                        # Note, we need to square here because for scatter, s is actually
+                        # proportional to the marker area, not radius.
+                        self.scatter_artist.set_sizes(s ** 2)
 
         if self.state.line_visible:
 
@@ -310,7 +372,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     eartist.set_zorder(self.state.zorder)
 
         for artist in [self.scatter_artist, self.plot_artist,
-                       self.vector_artist, self.line_collection]:
+                       self.vector_artist, self.line_collection,
+                       self.density_artist]:
 
             if artist is None:
                 continue

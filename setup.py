@@ -96,13 +96,13 @@ glue = glue.main:main
 # them is installed.
 try:
     import PyQt5  # noqa
-except:
+except ImportError:
     try:
         import PyQt4  # noqa
-    except:
+    except ImportError:
         try:
             import PySide  # noqa
-        except:
+        except ImportError:
             print("Glue requires PyQt4, PyQt5, or PySide to be installed")
             sys.exit(1)
 
@@ -117,7 +117,8 @@ install_requires = ['numpy>=1.9',
                     'qtconsole',
                     'dill>=0.2',
                     'xlrd>=1.0',
-                    'h5py>=2.4']
+                    'h5py>=2.4',
+                    'mpl-scatter-density>=0.3']
 
 extras_require = {
     'recommended': ['scipy',
