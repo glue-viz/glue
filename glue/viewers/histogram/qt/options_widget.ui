@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>446</width>
+    <width>269</width>
     <height>418</height>
    </rect>
   </property>
@@ -57,130 +57,6 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label">
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>bins</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="4">
-        <widget class="QPushButton" name="button_update_bins_to_view">
-         <property name="text">
-          <string>Update bins to view</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="valuetext_hist_x_max"/>
-       </item>
-       <item row="1" column="3">
-        <widget class="QSpinBox" name="value_hist_n_bin">
-         <property name="keyboardTracking">
-          <bool>true</bool>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>y axis</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="valuetext_hist_x_min"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>x axis</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1" colspan="4">
-        <widget class="QCheckBox" name="bool_common_n_bin">
-         <property name="text">
-          <string>Fixed # of numerical bins</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" colspan="4">
-        <widget class="QComboBox" name="combosel_x_att">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QToolButton" name="bool_x_log_">
-         <property name="text">
-          <string>log</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1" colspan="4">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>5</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="4" column="1">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>5</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="5" column="1" colspan="4">
         <widget class="QWidget" name="widget" native="true">
          <property name="sizePolicy">
@@ -242,7 +118,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
+              <width>1</width>
               <height>20</height>
              </size>
             </property>
@@ -250,6 +126,61 @@
           </item>
          </layout>
         </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="valuetext_hist_x_max"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>bins</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="4">
+        <widget class="QPushButton" name="button_update_bins_to_view">
+         <property name="text">
+          <string>Update bins to view</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1" colspan="4">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="1">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item row="8" column="0">
         <spacer name="verticalSpacer_2">
@@ -263,6 +194,75 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="valuetext_hist_x_min"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>y axis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1" colspan="4">
+        <widget class="QCheckBox" name="bool_common_n_bin">
+         <property name="text">
+          <string>Fixed # of numerical bins</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>x axis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QSpinBox" name="value_hist_n_bin">
+         <property name="keyboardTracking">
+          <bool>true</bool>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="QComboBox" name="combosel_x_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QToolButton" name="bool_x_log_">
+         <property name="text">
+          <string>log</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
