@@ -4,6 +4,13 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+try:
+    import objgraph
+except ImportError:
+    OBJGRAPH_INSTALLED = False
+else:
+    OBJGRAPH_INSTALLED = True
+
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
@@ -58,7 +65,8 @@ class BaseTestMatplotlibDataViewer(object):
         self.data_collection.new_subset_group('subset 1', cid > 0)
 
     def teardown_method(self, method):
-        self.viewer.close()
+        if self.viewer is not None:
+            self.viewer.close()
 
     def test_add_data(self):
 
@@ -492,3 +500,16 @@ class BaseTestMatplotlibDataViewer(object):
 
         assert self.data.subsets[0].subset_state.lo == lo2
         assert self.data.subsets[0].subset_state.hi == hi2
+
+    @pytest.mark.skipif('not OBJGRAPH_INSTALLED')
+    def test_no_residual_references(self):
+
+        # Make sure there are no more references due to circular references once
+        # viewer is closed
+
+        self.viewer.add_data(self.data)
+        self.viewer.close()
+        self.viewer = None
+
+        obj = objgraph.by_type(self.viewer_cls.__name__)
+        assert len(obj) == 0
