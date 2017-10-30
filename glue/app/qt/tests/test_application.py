@@ -8,18 +8,12 @@ import sys
 import numpy as np
 from mock import patch, MagicMock
 
-try:
-    from IPython import __version__ as ipy_version
-except:
-    ipy_version = '0.0'
-
 from qtpy import QtCore
 from glue.core.data import Data
 from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
 from glue.tests.helpers import requires_ipython
-from glue.utils.qt import process_dialog
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
@@ -135,34 +129,30 @@ class TestGlueApplication(object):
             assert len(self.app.current_tab.subWindowList()) == ct
 
     def test_new_data_viewer(self):
+
         with patch('glue.app.qt.application.pick_class') as pc:
 
             pc.return_value = ScatterViewer
 
             ct = len(self.app.current_tab.subWindowList())
 
-            result = self.app.choose_new_data_viewer()
+            viewer = self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
-
-        # Not clear why the one in teardown is not good enogh
-        self.app.close()
+            viewer.close()
 
     def test_move(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.move(10, 20)
         assert viewer.position == (10, 20)
-        # Not clear why the one in teardown is not good enogh
-        self.app.close()
+        viewer.close()
 
     def test_resize(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.viewer_size = (100, 200)
         assert viewer.viewer_size == (100, 200)
-        # Not clear why the one in teardown is not good enogh
-        self.app.close()
+        viewer.close()
 
     def test_new_data_defaults(self):
-        from glue.config import qt_client
 
         with patch('glue.app.qt.application.pick_class') as pc:
             pc.return_value = None
