@@ -144,15 +144,22 @@ class TestGlueApplication(object):
             result = self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
 
+        # Not clear why the one in teardown is not good enogh
+        self.app.close()
+
     def test_move(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.move(10, 20)
         assert viewer.position == (10, 20)
+        # Not clear why the one in teardown is not good enogh
+        self.app.close()
 
     def test_resize(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.viewer_size = (100, 200)
         assert viewer.viewer_size == (100, 200)
+        # Not clear why the one in teardown is not good enogh
+        self.app.close()
 
     def test_new_data_defaults(self):
         from glue.config import qt_client
@@ -299,17 +306,21 @@ class TestApplicationSession(object):
         dc = DataCollection([d])
         app = GlueApplication(dc)
         w = app.new_data_viewer(ScatterViewer, data=d)
-        self.check_clone(app)
+        copy1 = self.check_clone(app)
 
-        s1 = dc.new_subset_group()
-        s2 = dc.new_subset_group()
+        dc.new_subset_group()
+        dc.new_subset_group()
         assert len(w.layers) == 3
         l1, l2, l3 = w.layers
         l1.zorder, l2.zorder = l2.zorder, l1.zorder
         l3.visible = False
         assert l3.visible is False
-        copy = self.check_clone(app)
-        assert copy.viewers[0][0].layers[-1].visible is False
+        copy2 = self.check_clone(app)
+        assert copy2.viewers[0][0].layers[-1].visible is False
+
+        app.close()
+        copy1.close()
+        copy2.close()
 
     def test_multi_tab(self):
         d = Data(label='hist', x=[[1, 2], [2, 3]])
@@ -321,7 +332,10 @@ class TestApplicationSession(object):
         w2 = app.new_data_viewer(HistogramViewer, data=d)
         assert app.viewers == ((w1,), (w2,))
 
-        self.check_clone(app)
+        copy = self.check_clone(app)
+
+        app.close()
+        copy.close()
 
     def test_histogram(self):
         d = Data(label='hist', x=[[1, 2], [2, 3]])
@@ -329,14 +343,19 @@ class TestApplicationSession(object):
 
         app = GlueApplication(dc)
         w = app.new_data_viewer(HistogramViewer, data=d)
-        self.check_clone(app)
+        copy1 = self.check_clone(app)
 
         dc.new_subset_group()
         assert len(w.layers) == 2
-        self.check_clone(app)
+        copy2 = self.check_clone(app)
 
         w.nbins = 7
-        self.check_clone(app)
+        copy3 = self.check_clone(app)
+
+        app.close()
+        copy1.close()
+        copy2.close()
+        copy3.close()
 
     def test_subset_groups_remain_synced_after_restore(self):
         # regrssion test for 352
@@ -375,6 +394,9 @@ def test_reset_session_terminal():
 
     assert app2.has_terminal()
 
+    app.close()
+    app2.close()
+
 
 def test_open_session_terminal(tmpdir):
 
@@ -389,3 +411,6 @@ def test_open_session_terminal(tmpdir):
     app2 = app.restore_session(session_file)
 
     assert app2.has_terminal()
+
+    app.close()
+    app2.close()
