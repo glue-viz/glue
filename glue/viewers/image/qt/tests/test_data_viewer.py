@@ -36,7 +36,7 @@ DATA = os.path.join(os.path.dirname(__file__), 'data')
 class TestImageCommon(BaseTestMatplotlibDataViewer):
 
     def init_data(self):
-        return Data(label='d1', x=np.arange(12).reshape((3, 4)), y=np.ones((3, 4)))
+        return Data(label='d1', x=np.arange(24).reshape((2, 3, 4)), y=np.ones((2, 3, 4)))
 
     viewer_cls = ImageViewer
 

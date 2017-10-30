@@ -115,9 +115,16 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     apply_roi = set_cursor(Qt.WaitCursor)(ViewerBase.apply_roi)
 
     def close(self, warn=True):
+
         self._warn_close = warn
-        QtWidgets.QMainWindow.close(self)
-        ViewerBase.close(self)
+
+        if getattr(self, '_mdi_wrapper', None) is not None:
+            self._mdi_wrapper.close()
+            self._mdi_wrapper = None
+        else:
+            QtWidgets.QMainWindow.close(self)
+            ViewerBase.close(self)
+
         self._warn_close = True
 
     def mdi_wrap(self):

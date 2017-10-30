@@ -215,7 +215,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     def do(self, command):
-        self._cmds.do(command)
+        return self._cmds.do(command)
 
     def undo(self):
         try:

@@ -776,6 +776,7 @@ class SpectrumTool(object):
 
         self.image_viewer = image_viewer
         self.viewer_state = self.image_viewer.state
+        self.image_viewer.window_closed.connect(self.close)
 
         self._build_main_widget()
 
@@ -797,6 +798,7 @@ class SpectrumTool(object):
             self._mdi_wrapper.close()
         else:
             self.widget.close()
+        self.image_viewer = None
 
     @property
     def enabled(self):

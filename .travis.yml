@@ -28,7 +28,7 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov"
-    - PIP_DEPENDENCIES="coveralls pyavm astrodendro awscli plotly"
+    - PIP_DEPENDENCIES="coveralls pyavm astrodendro awscli plotly objgraph"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=

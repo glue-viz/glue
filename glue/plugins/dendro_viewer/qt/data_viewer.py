@@ -78,6 +78,10 @@ class DendrogramViewer(MatplotlibDataViewer):
 
         self.toolbar.tools['select:pick']._move_callback = on_move
 
+    def close(self, *args, **kwargs):
+        self.toolbar.tools['select:pick']._move_callback = None
+        super(DendrogramViewer, self).close(*args, **kwargs)
+
     @messagebox_on_error('Failed to add data')
     def add_data(self, data):
         if data.ndim != 1:
@@ -88,16 +92,7 @@ class DendrogramViewer(MatplotlibDataViewer):
 
     # TODO: move some of the ROI stuff to state class?
 
-    def apply_roi(self, roi):
-        if len(self.layers) > 0:
-            cmd = command.ApplyROI(data_collection=self._data,
-                                   roi=roi, apply_func=self._apply_roi)
-            self._session.command_stack.do(cmd)
-        else:
-            # Make sure we force a redraw to get rid of the ROI
-            self.axes.figure.canvas.draw()
-
-    def _apply_roi(self, roi):
+    def _roi_to_subset_state(self, roi):
 
         # TODO Does subset get applied to all data or just visible data?
 
@@ -128,15 +123,11 @@ class DendrogramViewer(MatplotlibDataViewer):
             else:
                 select = np.array([], dtype=np.int)
 
-            subset_state = CategorySubsetState(self.state.reference_data.pixel_component_ids[0],
-                                               select)
+            return CategorySubsetState(self.state.reference_data.pixel_component_ids[0], select)
 
         else:
 
             raise TypeError("Only PointROI selections are supported")
-
-        mode = EditSubsetMode()
-        mode.update(self._data, subset_state)
 
     @staticmethod
     def update_viewer_state(rec, context):

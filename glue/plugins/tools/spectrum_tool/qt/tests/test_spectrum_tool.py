@@ -29,7 +29,7 @@ class MockCoordinates(Coordinates):
         return [a / 2 for a in args]
 
 
-class BaseTestSpectrumTool(object):
+class BaseTestSpectrumTool:
 
     def setup_data(self):
         self.data = Data(x=np.zeros((3, 3, 3)))
@@ -50,7 +50,12 @@ class BaseTestSpectrumTool(object):
         self.tool.show = lambda *args: None
 
     def teardown_method(self, method):
-        self.image.close()
+        if self.image is not None:
+            self.image.close()
+            self.image = None
+        if self.tool is not None:
+            self.tool.close()
+            self.tool = None
 
 
 class TestSpectrumTool(BaseTestSpectrumTool):
@@ -61,12 +66,21 @@ class TestSpectrumTool(BaseTestSpectrumTool):
         self.tool._update_profile()
 
     def test_reset_on_view_change(self):
+
         self.build_spectrum()
         self.tool.widget = MagicMock()
         self.tool.widget.isVisible.return_value = True
         self.tool.hide = MagicMock()
         self.image.state.x_att_world = self.data.world_component_ids[0]
         assert self.tool.hide.call_count > 0
+
+        # For some reason we need to close and dereference the image and tool
+        # here (and not in teardown_method) otherwise we are left with
+        # references to the image viewer.
+        self.image.close()
+        self.image = None
+        self.tool.close()
+        self.tool = None
 
 
 class Test3DExtractor(object):
@@ -226,6 +240,14 @@ class TestCollapseContext(BaseTestSpectrumTool):
         self.tool._update_profile()
 
         self._save(tmpdir)
+
+        # For some reason we need to close and dereference the image and tool
+        # here (and not in teardown_method) otherwise we are left with
+        # references to the image viewer.
+        self.image.close()
+        self.image = None
+        self.tool.close()
+        self.tool = None
 
     def _save(self, tmpdir):
         for context in self.tool._contexts:

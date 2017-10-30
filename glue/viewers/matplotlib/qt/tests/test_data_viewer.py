@@ -4,10 +4,18 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
+try:
+    import objgraph
+except ImportError:
+    OBJGRAPH_INSTALLED = False
+else:
+    OBJGRAPH_INSTALLED = True
+
 from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
+from glue.utils.qt import get_qapp
 
 
 class MatplotlibDrawCounter(object):
@@ -39,6 +47,9 @@ class BaseTestMatplotlibDataViewer(object):
 
     def setup_method(self, method):
 
+        if OBJGRAPH_INSTALLED:
+            self.viewer_count_start = self.viewer_count
+
         self.data = self.init_data()
 
         self.application = GlueApplication()
@@ -57,8 +68,22 @@ class BaseTestMatplotlibDataViewer(object):
         cid = self.data.visible_components[0]
         self.data_collection.new_subset_group('subset 1', cid > 0)
 
+    @property
+    def viewer_count(self):
+        app = get_qapp()
+        app.processEvents()
+        obj = objgraph.by_type(self.viewer_cls.__name__)
+        return len(obj)
+
     def teardown_method(self, method):
-        self.viewer.close()
+        if self.viewer is not None:
+            self.viewer.close()
+        self.application.close()
+        if OBJGRAPH_INSTALLED:
+            self.viewer = None
+            self.application = None
+            if self.viewer_count > self.viewer_count_start:
+                raise ValueError("No net viewers should be created in tests")
 
     def test_add_data(self):
 

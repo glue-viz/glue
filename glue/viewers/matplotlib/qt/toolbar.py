@@ -120,15 +120,21 @@ class MatplotlibViewerToolbar(BasicToolbar):
     pan_begin = QtCore.Signal()
     pan_end = QtCore.Signal()
 
-    def __init__(self, parent):
+    def __init__(self, viewer):
 
-        self.canvas = parent.central_widget.canvas
+        self.canvas = viewer.central_widget.canvas
 
         # Set up virtual Matplotlib navigation toolbar (don't show it)
-        self._mpl_nav = NavigationToolbar2QT(self.canvas, parent)
+        self._mpl_nav = NavigationToolbar2QT(self.canvas, viewer)
         self._mpl_nav.hide()
 
-        BasicToolbar.__init__(self, parent)
+        BasicToolbar.__init__(self, viewer)
+
+        viewer.window_closed.connect(self.close)
+
+    def close(self, *args):
+        self._mpl_nav.setParent(None)
+        self._mpl_nav.parent = None
 
     def setup_default_modes(self):
 
