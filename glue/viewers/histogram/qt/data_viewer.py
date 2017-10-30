@@ -55,16 +55,7 @@ class HistogramViewer(MatplotlibDataViewer):
 
     # TODO: move some of the ROI stuff to state class?
 
-    def apply_roi(self, roi):
-        if len(self.layers) > 0:
-            cmd = command.ApplyROI(data_collection=self._data,
-                                   roi=roi, apply_func=self._apply_roi)
-            self._session.command_stack.do(cmd)
-        else:
-            # Make sure we force a redraw to get rid of the ROI
-            self.axes.figure.canvas.draw()
-
-    def _apply_roi(self, roi):
+    def _roi_to_subset_state(self, roi):
 
         # TODO Does subset get applied to all data or just visible data?
 
@@ -82,11 +73,7 @@ class HistogramViewer(MatplotlibDataViewer):
 
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
 
-        subset_state = x_comp.subset_from_roi(self.state.x_att, roi_new,
-                                              coord='x')
-
-        mode = EditSubsetMode()
-        mode.update(self._data, subset_state)
+        return x_comp.subset_from_roi(self.state.x_att, roi_new, coord='x')
 
     @staticmethod
     def update_viewer_state(rec, context):

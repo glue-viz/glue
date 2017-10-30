@@ -43,6 +43,7 @@ class TestGlueApplication(object):
 
     def teardown_method(self, method):
         self.app.close()
+        self.app = None
 
     def test_new_tabs(self):
         t0 = tab_count(self.app)
@@ -140,7 +141,7 @@ class TestGlueApplication(object):
 
             ct = len(self.app.current_tab.subWindowList())
 
-            self.app.choose_new_data_viewer()
+            result = self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
 
     def test_move(self):

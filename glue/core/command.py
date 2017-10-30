@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from glue.utils import CallbackMixin
 from glue.core.data_factories import load_data
-
+from glue.core.edit_subset_mode import EditSubsetMode
 
 MAX_UNDO = 50
 """
@@ -264,6 +264,40 @@ class ApplyROI(Command):
                 self.old_states[subset] = subset.subset_state
 
         self.apply_func(self.roi)
+
+    def undo(self, session):
+        for data in self.data_collection:
+            for subset in data.subsets:
+                if subset not in self.old_states:
+                    subset.delete()
+
+        for k, v in self.old_states.items():
+            k.subset_state = v
+
+
+class ApplySubsetState(Command):
+    """
+    Apply an ROI to a data collection, updating subset states
+
+    Parameters
+    ----------
+    data_collection: :class:`~glue.core.data_collection.DataCollection`
+        DataCollection to operate on
+    subset_state: :class:`~glue.core.subset_state.SubsetState`
+        Subset state to apply
+    """
+    kwargs = ['data_collection', 'subset_state']
+    label = 'apply subset'
+
+    def do(self, session):
+
+        self.old_states = {}
+        for data in self.data_collection:
+            for subset in data.subsets:
+                self.old_states[subset] = subset.subset_state
+
+        mode = EditSubsetMode()
+        mode.update(self.data_collection, self.subset_state)
 
     def undo(self, session):
         for data in self.data_collection:

@@ -202,7 +202,6 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         # data collection content, colors, labels, etc. It's easier to simply
         # listen to all events since the viewport update is fast.
         self.hub = hub
-        self.hub.subscribe(self, Message, self._update_viewport)
         self.hub.subscribe(self, LayerArtistUpdatedMessage, self._update_viewport)
         self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)

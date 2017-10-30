@@ -162,6 +162,10 @@ class RoiModeBase(MouseMode):
         super(RoiModeBase, self).__init__(viewer, **kwargs)
         self._roi_tool = None
 
+    def close(self, *args):
+        self._roi_callback = None
+        super(RoiModeBase, self).close()
+
     def activate(self):
         self._roi_tool._sync_patch()
 

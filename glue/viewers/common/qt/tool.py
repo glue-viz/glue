@@ -47,6 +47,7 @@ class Tool(object):
         return []
 
     def close(self, *args):
+        self.viewer.window_closed.disconnect(self.close)
         self.viewer = None
 
 
