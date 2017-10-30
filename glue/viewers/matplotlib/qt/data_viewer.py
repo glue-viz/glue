@@ -8,6 +8,7 @@ from glue.utils import defer_draw
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
+from glue.core.command import ApplySubsetState
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -115,3 +116,13 @@ class MatplotlibDataViewer(DataViewerWithState):
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self.axes, self.state, layer=layer, layer_state=layer_state)
+
+    def apply_roi(self, roi):
+        if len(self.layers) > 0:
+            subset_state = self._roi_to_subset_state(roi)
+            cmd = ApplySubsetState(data_collection=self._data,
+                                   subset_state=subset_state)
+            self._session.command_stack.do(cmd)
+        else:
+            # Make sure we force a redraw to get rid of the ROI
+            self.axes.figure.canvas.draw()

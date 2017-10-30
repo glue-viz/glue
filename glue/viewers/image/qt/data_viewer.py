@@ -135,14 +135,15 @@ class ImageViewer(MatplotlibDataViewer):
 
     def apply_roi(self, roi):
         if len(self.layers) > 0:
-            cmd = command.ApplyROI(data_collection=self._data,
-                                   roi=roi, apply_func=self._apply_roi)
+            subset_state = self._roi_to_subset_state(roi)
+            cmd = command.ApplySubsetState(data_collection=self._data,
+                                           subset_state=subset_state)
             self._session.command_stack.do(cmd)
         else:
             # Make sure we force a redraw to get rid of the ROI
             self.axes.figure.canvas.draw()
 
-    def _apply_roi(self, roi):
+    def _roi_to_subset_state(self, roi):
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
@@ -152,13 +153,10 @@ class ImageViewer(MatplotlibDataViewer):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        subset_state = x_comp.subset_from_roi(self.state.x_att, roi,
-                                              other_comp=y_comp,
-                                              other_att=self.state.y_att,
-                                              coord='x')
-
-        mode = EditSubsetMode()
-        mode.update(self._data, subset_state)
+        return x_comp.subset_from_roi(self.state.x_att, roi,
+                                      other_comp=y_comp,
+                                      other_att=self.state.y_att,
+                                      coord='x')
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:

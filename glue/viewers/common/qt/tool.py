@@ -1,7 +1,6 @@
 # The classes in this file define toolbar tools. Mouse modes specifically
 # are defined in mouse_modes.py
 
-from glue.utils import nonpartial
 from glue.core.callback_property import CallbackProperty
 
 __all__ = ['Tool', 'CheckableTool']
@@ -32,7 +31,7 @@ class Tool(object):
 
     def __init__(self, viewer=None):
         self.viewer = viewer
-        self.viewer.window_closed.connect(nonpartial(self.close))
+        self.viewer.window_closed.connect(self.close)
 
     def activate(self):
         """
@@ -47,8 +46,9 @@ class Tool(object):
         """
         return []
 
-    def close(self):
-        pass
+    def close(self, *args):
+        self.viewer.window_closed.disconnect(self.close)
+        self.viewer = None
 
 
 class CheckableTool(Tool):

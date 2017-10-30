@@ -49,18 +49,18 @@ def test_identifier_heuristics(tmpdir):
 
     hdulist.append(fits.ImageHDU())
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert not is_dendro(filename)
 
     hdulist[1].name = 'random'
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert not is_dendro(filename)
 
     hdulist[1].name = ''
     hdulist[0].data = np.array([1, 2, 3])
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert not is_dendro(filename)
 
     hdulist[0].data = None
@@ -68,17 +68,17 @@ def test_identifier_heuristics(tmpdir):
     hdulist[2].data = np.ones((2, 4))
     hdulist[3].data = np.ones((3, 5))
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert not is_dendro(filename)
 
     hdulist[2].data = np.ones((3, 4))
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert not is_dendro(filename)
 
     hdulist[3].data = np.ones(3)
 
-    hdulist.writeto(filename, clobber=True)
+    hdulist.writeto(filename, overwrite=True)
     assert is_dendro(filename)
 
 
