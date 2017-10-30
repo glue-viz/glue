@@ -66,6 +66,7 @@ class TestSpectrumTool(BaseTestSpectrumTool):
         self.tool._update_profile()
 
     def test_reset_on_view_change(self):
+
         self.build_spectrum()
         self.tool.widget = MagicMock()
         self.tool.widget.isVisible.return_value = True
@@ -73,11 +74,13 @@ class TestSpectrumTool(BaseTestSpectrumTool):
         self.image.state.x_att_world = self.data.world_component_ids[0]
         assert self.tool.hide.call_count > 0
 
-        # Not sure why we have to do this here and why doing it in
-        # teardown_method is not enough.
+        # For some reason we need to close and dereference the image and tool
+        # here (and not in teardown_method) otherwise we are left with
+        # references to the image viewer.
         self.image.close()
         self.image = None
         self.tool.close()
+        self.tool = None
 
 
 class Test3DExtractor(object):
@@ -238,11 +241,13 @@ class TestCollapseContext(BaseTestSpectrumTool):
 
         self._save(tmpdir)
 
-        # Not sure why we have to do this here and why doing it in
-        # teardown_method is not enough.
+        # For some reason we need to close and dereference the image and tool
+        # here (and not in teardown_method) otherwise we are left with
+        # references to the image viewer.
         self.image.close()
         self.image = None
         self.tool.close()
+        self.tool = None
 
     def _save(self, tmpdir):
         for context in self.tool._contexts:
