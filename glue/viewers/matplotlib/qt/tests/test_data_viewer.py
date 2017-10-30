@@ -47,7 +47,8 @@ class BaseTestMatplotlibDataViewer(object):
 
     def setup_method(self, method):
 
-        self.viewer_count_start = self.viewer_count
+        if OBJGRAPH_INSTALLED:
+            self.viewer_count_start = self.viewer_count
 
         self.data = self.init_data()
 
