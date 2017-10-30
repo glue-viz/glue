@@ -64,10 +64,6 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
         y = np.column_stack([y[ids], y[ids + 1],
                              y[ids + 2], blank]).ravel()
 
-        # For some very strange reason
-        self.axes.xaxis.callbacks.connect('units', lambda *args: True)
-        self.axes.yaxis.callbacks.connect('units', lambda *args: True)
-
         self.mpl_artists = self.axes.plot(x, y, '-')
 
     @defer_draw
