@@ -76,9 +76,17 @@ class BaseTestMatplotlibDataViewer(object):
         return len(obj)
 
     def teardown_method(self, method):
+
         if self.viewer is not None:
             self.viewer.close()
         self.application.close()
+
+        # The following is a check to make sure that once the viewer and
+        # application have been closed, there are no leftover references to
+        # the data viewer. This was introduced because there were previously
+        # circular references that meant that viewer instances were not
+        # properly garbage collected, which in turn meant they still reacted
+        # in some cases to events.
         if OBJGRAPH_INSTALLED:
             self.viewer = None
             self.application = None
