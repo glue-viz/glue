@@ -10,6 +10,9 @@ v0.13.0 (unreleased)
 v0.12.1 (unreleased)
 --------------------
 
+* Fix a bug that caused the 1D and 2D viewers to not update correctly
+  when the numerical values in data were changed. [#1471]
+
 * Fix a bug that caused glue to crash when adding components to a dataset
   after closing a viewer that had that data. [#1460, #1464]
 
