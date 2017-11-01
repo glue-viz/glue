@@ -37,7 +37,9 @@ def fits_writer(filename, data):
             # TODO: emit warning
             continue
         else:
-            values = comp.data.copy()
+            # We need to cast to float otherwise we can't set the masked
+            # values to NaN.
+            values = comp.data.astype(float, copy=True)
 
         if mask is not None:
             values[~mask] = np.nan
