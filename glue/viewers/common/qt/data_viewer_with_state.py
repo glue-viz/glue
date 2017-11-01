@@ -191,7 +191,7 @@ class DataViewerWithState(DataViewer):
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
-                      handler=self._update_subset,
+                      handler=self._update_data,
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
