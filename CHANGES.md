@@ -7,7 +7,12 @@ v0.13.0 (unreleased)
 * Added support for scatter density maps, which is useful when making
   scatter plots of many points. [#1461]
 
-v0.12.1 (unreleased)
+v0.12.2 (unreleased)
+--------------------
+
+* Fix a bug when renaming tabs through the UI. [#1470]
+
+v0.12.1 (2017-10-30)
 --------------------
 
 * Fix a bug that caused glue to crash when adding components to a dataset

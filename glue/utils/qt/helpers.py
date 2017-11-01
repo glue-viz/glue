@@ -76,7 +76,7 @@ class GlueTabBar(QtWidgets.QTabBar):
         super(GlueTabBar, self).__init__(*args, **kwargs)
 
     def choose_rename_tab(self, index=None):
-        """ 
+        """
         Prompt user to rename a tab
 
         Parameters
@@ -88,7 +88,7 @@ class GlueTabBar(QtWidgets.QTabBar):
         label = get_text("New Tab Label")
         if not label:
             return
-        self.rename_tab(self, index, label)
+        self.rename_tab(index, label)
 
     def rename_tab(self, index, label):
         """
