@@ -525,3 +525,15 @@ class BaseTestMatplotlibDataViewer(object):
 
         assert self.data.subsets[0].subset_state.lo == lo2
         assert self.data.subsets[0].subset_state.hi == hi2
+
+    def test_numerical_data_changed(self):
+        self.init_draw_count()
+        self.init_subset()
+        assert self.draw_count == 0
+        self.viewer.add_data(self.data)
+        assert self.draw_count == 1
+        data = Data()
+        for cid in self.data.visible_components:
+            data.add_component(self.data[cid] * 2, cid.label)
+        self.data.update_values_from_data(data)
+        assert self.draw_count == 2
