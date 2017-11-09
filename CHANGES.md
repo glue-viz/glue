@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.12.2 (unreleased)
+v0.12.2 (2017-11-09)
 --------------------
 
 * Fix a bug when renaming tabs through the UI. [#1470]
