@@ -989,7 +989,10 @@ class SpectrumTool(object):
         self.widget.show()
 
     def hide(self):
-        self.widget.close()
+        if hasattr(self, '_mdi_wrapper'):
+            self._mdi_wrapper.close()
+        else:
+            self.widget.close()
 
     def _get_modes(self, axes):
         return [self.mouse_mode]

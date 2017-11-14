@@ -89,6 +89,8 @@ class PVSliceWidget(StandaloneImageViewer):
         self.axes.format_coord = self._format_coord
         self._x = x
         self._y = y
+        self._parent.state.add_callback('x_att', self.reset)
+        self._parent.state.add_callback('y_att', self.reset)
 
     def _format_coord(self, x, y):
         """
@@ -170,6 +172,9 @@ class PVSliceWidget(StandaloneImageViewer):
             return
         self._sync_slice(event)
         self._draw_crosshairs(event)
+
+    def reset(self, *args):
+        self.close()
 
 
 def _slice_from_path(x, y, data, attribute, slc):
