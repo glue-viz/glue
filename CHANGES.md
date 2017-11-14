@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.12.3 (unreleased)
+v0.12.3 (2017-11-14)
 --------------------
 
 * Fixed issues with PV slicer and spectrum viewer when changing axes
