@@ -75,10 +75,16 @@ these should be shown in the Navigator.
 Troubleshooting
 ---------------
 
-A common source of issues with conda is that there may be conflicts between the
-version of dependencies required by glue and that required by other packages.
-The easiest way to avoid this is to install glue in a separate environment. To
-do this, first create an environment in which you will install glue::
+If you managed to install glue but it does not launch or you have issues with
+viewers not being available or not working correctly, the first thing to try
+is to update all your existing conda packages using::
+
+    conda update -c glueviz --all
+
+In some cases, glue won't even install due to conflicts between the version of
+dependencies required by glue and that required by other packages. The easiest
+way to avoid this is to install glue in a separate environment. To do this,
+first create an environment in which you will install glue::
 
     conda create -n glueviz-env python
 

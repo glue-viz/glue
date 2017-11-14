@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.12.3 (unreleased)
+--------------------
+
+* Fixed issues with PV slicer and spectrum viewer when changing axes
+  in the parent image viewer.
+
 v0.12.2 (2017-11-09)
 --------------------
 
