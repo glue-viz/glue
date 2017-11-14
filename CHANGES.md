@@ -7,13 +7,13 @@ v0.13.0 (unreleased)
 * Added support for scatter density maps, which is useful when making
   scatter plots of many points. [#1461]
 
-v0.12.3 (unreleased)
+v0.12.3 (2017-11-14)
 --------------------
 
 * Fixed issues with PV slicer and spectrum viewer when changing axes
   in the parent image viewer.
 
-v0.12.2 (2017-11-10)
+v0.12.2 (2017-11-09)
 --------------------
 
 * Fix a bug when renaming tabs through the UI. [#1470]
