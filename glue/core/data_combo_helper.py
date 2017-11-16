@@ -84,7 +84,8 @@ class ComboHelper(HubListener):
     def choices(self, choices):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
-            return prop.set_choices(self.state, choices)
+            prop.set_choices(self.state, choices)
+
 
     @property
     def display(self):
@@ -122,8 +123,6 @@ class ComponentIDComboHelper(ComboHelper):
     data : :class:`~glue.core.Data`, optional
         If specified, set up the combo for this dataset only and don't allow
         datasets to be added/removed
-    visible : bool, optional
-        Only show visible components
     numeric : bool, optional
         Show numeric components
     categorical : bool, optional
@@ -132,22 +131,24 @@ class ComponentIDComboHelper(ComboHelper):
         Show pixel coordinate components
     world_coord : bool, optional
         Show world coordinate components
+    derived : bool, optional
+        Show derived components
     """
 
     def __init__(self, state, selection_property,
                  data_collection=None, data=None,
-                 visible=True, numeric=True, categorical=True,
-                 pixel_coord=False, world_coord=False):
+                 numeric=True, categorical=True,
+                 pixel_coord=False, world_coord=False, derived=True):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
 
         self.display = lambda x: x.label
 
-        self._visible = visible
         self._numeric = numeric
         self._categorical = categorical
         self._pixel_coord = pixel_coord
         self._world_coord = world_coord
+        self._derived = derived
 
         if data is None:
             self._manual_data = False
@@ -170,15 +171,6 @@ class ComponentIDComboHelper(ComboHelper):
 
     def clear(self):
         self._data.clear()
-        self.refresh()
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
         self.refresh()
 
     @property
@@ -215,6 +207,15 @@ class ComponentIDComboHelper(ComboHelper):
     @world_coord.setter
     def world_coord(self, value):
         self._world_coord = value
+        self.refresh()
+
+    @property
+    def derived(self):
+        return self._derived
+
+    @derived.setter
+    def derived(self, value):
+        self._derived = value
         self.refresh()
 
     def append_data(self, data, refresh=True):
@@ -285,27 +286,43 @@ class ComponentIDComboHelper(ComboHelper):
 
         for data in self._data:
 
+            derived_components = [cid for cid in data.derived_components if cid.parent is data]
+
             if len(self._data) > 1:
                 if data.label is None or data.label == '':
                     choices.append(ChoiceSeparator('Untitled Data'))
                 else:
                     choices.append(ChoiceSeparator(data.label))
 
-            if self.visible:
-                all_component_ids = data.visible_components
-            else:
-                all_component_ids = data.components
+            cids = [ChoiceSeparator('Main components')]
+            for cid in data.primary_components:
+                if cid not in data.coordinate_components:
+                    comp = data.get_component(cid)
+                    if ((comp.numeric and self.numeric) or
+                            (comp.categorical and self.categorical)):
+                        cids.append(cid)
+            if len(cids) > 1:
+                if self.pixel_coord or self.world_coord or (self.derived and len(derived_components) > 0):
+                    choices += cids
+                else:
+                    choices += cids[1:]
 
-            component_ids = []
-            for cid in all_component_ids:
-                comp = data.get_component(cid)
-                if ((comp.numeric and self.numeric) or
-                        (comp.categorical and self.categorical) or
-                        (cid in data.pixel_component_ids and self.pixel_coord) or
-                        (cid in data.world_component_ids and self.world_coord)):
-                    component_ids.append(cid)
+            if self.numeric and self.derived:
+                cids = [ChoiceSeparator('Derived components')]
+                for cid in derived_components:
+                    if not cid.hidden:
+                        cids.append(cid)
+                if len(cids) > 1:
+                    choices += cids
 
-            choices.extend(component_ids)
+            if self.pixel_coord or self.world_coord:
+                cids = [ChoiceSeparator('Coordinate components')]
+                if self.pixel_coord:
+                    cids += data.pixel_component_ids
+                if self.world_coord:
+                    cids += data.world_component_ids
+                if len(cids) > 1:
+                    choices += cids
 
         self.choices = choices
 

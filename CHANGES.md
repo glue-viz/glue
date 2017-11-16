@@ -7,6 +7,20 @@ v0.13.0 (unreleased)
 * Added support for scatter density maps, which is useful when making
   scatter plots of many points. [#1461]
 
+* Improve how ComponentIDComboHelper deals with non-primary components.
+  The .visible property has been removed, and a new .derived property
+  has been added (to show/hide derived components). Components are now
+  split up into sections in the combo boxes.
+
+v0.12.4 (unreleased)
+--------------------
+
+* Fixed a bug that caused ghost components to be added when creating a
+  derived component with data[...] = ...
+
+* Fixed a bug that caused errors when removing items from a selection
+  property linked to a QComboBox.
+
 v0.12.3 (2017-11-14)
 --------------------
 

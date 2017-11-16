@@ -351,6 +351,26 @@ class TestData(object):
         d.update_components({d.id['x']: [10, 20, 30]})
         np.testing.assert_array_equal(s.to_mask(), [False, False, False])
 
+    def test_add_derived_implicit(self):
+
+        # Regression test for a bug that caused derived components added via
+        # the data[...] = ... syntax to have links that did not include a 'to'
+        # argument, leading the link manager to add a ghost component to the
+        # data.
+
+        from ..data_collection import DataCollection
+
+        dc = DataCollection([])
+
+        data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+        dc.append(data)
+
+        data['z'] = data.id['x'] + 1
+
+        # There should be five components: x, y, z, pixel, and world
+        assert len(data.components) == 5
+
+
 class TestROICreation(object):
 
     def test_range_roi(self):

@@ -97,8 +97,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.image1)
 
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1'
-        assert combo_as_string(self.options_widget.ui.combosel_y_att_world) == 'World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combosel_y_att_world) == 'Coordinate components:World 0:World 1'
 
         assert self.viewer.axes.get_xlabel() == 'World 1'
         assert self.viewer.state.x_att_world is self.image1.id['World 1']
@@ -125,8 +125,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.image2)
 
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Banana:Apple'
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Banana:Apple'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:Banana:Apple'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:Banana:Apple'
 
         assert self.viewer.axes.get_xlabel() == 'Apple'
         assert self.viewer.state.x_att_world is self.image2.id['Apple']
@@ -252,8 +252,8 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.hypercube)
 
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1:World 2:World 3'
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1:World 2:World 3'
 
         assert self.viewer.axes.get_xlabel() == 'World 3'
         assert self.viewer.state.x_att_world is self.hypercube.id['World 3']
