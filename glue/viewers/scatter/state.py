@@ -44,8 +44,8 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
 
-        self.x_att_helper = ComponentIDComboHelper(self, 'x_att')
-        self.y_att_helper = ComponentIDComboHelper(self, 'y_att')
+        self.x_att_helper = ComponentIDComboHelper(self, 'x_att', pixel_coord=True, world_coord=True)
+        self.y_att_helper = ComponentIDComboHelper(self, 'y_att', pixel_coord=True, world_coord=True)
 
         self.update_from_dict(kwargs)
 

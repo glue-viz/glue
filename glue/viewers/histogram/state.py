@@ -53,7 +53,8 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
 
-        self.x_att_helper = ComponentIDComboHelper(self, 'x_att')
+        self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
+                                                   pixel_coord=True, world_coord=True)
 
         self.update_from_dict(kwargs)
 
