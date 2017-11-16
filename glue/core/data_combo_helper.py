@@ -84,7 +84,17 @@ class ComboHelper(HubListener):
     def choices(self, choices):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
-            return prop.set_choices(self.state, choices)
+            prop.set_choices(self.state, choices)
+            selection = self.selection
+            # Note that we can't simply do 'selection in choice' due to the
+            # fact that component IDs override __eq__ which messes with the
+            # ability to do that check.
+            if not any(selection is choice for choice in choices):
+                for choice in choices:
+                    if not isinstance(choice, ChoiceSeparator):
+                        self.selection = choice
+                else:
+                    self.selection = None
 
     @property
     def display(self):

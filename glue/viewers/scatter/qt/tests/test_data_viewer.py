@@ -486,3 +486,18 @@ class TestScatterViewer(object):
         viewer = ga.viewers[0][0]
         assert viewer.state.x_att is dc[0].id['z']
         assert visible_xaxis_labels(self.viewer.axes) == ['a', 'b', 'c']
+
+    def test_enable_disable_components_combo(self):
+
+        # Regression test for a bug that caused an error when turning off pixel
+        # components from combo boxes.
+
+        self.viewer.add_data(self.data)
+
+        self.data['a'] = self.data.id['x'] + 5
+
+        self.viewer.state.x_att_helper.pixel_coord = True
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
+        self.viewer.state.x_att_helper.pixel_coord = False

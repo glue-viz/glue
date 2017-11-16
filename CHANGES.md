@@ -10,8 +10,11 @@ v0.13.0 (unreleased)
 v0.12.4 (unreleased)
 --------------------
 
-* Fix a bug that caused ghost components to be added when creating a
+* Fixed a bug that caused ghost components to be added when creating a
   derived component with data[...] = ...
+
+* Fixed a bug that caused errors when removing items from a selection
+  property linked to a QComboBox.
 
 v0.12.3 (2017-11-14)
 --------------------
