@@ -295,6 +295,8 @@ class ComponentIDComboHelper(ComboHelper):
 
         for data in self._data:
 
+            derived_components = [cid for cid in data.derived_components if cid.parent is data]
+
             if len(self._data) > 1:
                 if data.label is None or data.label == '':
                     choices.append(ChoiceSeparator('Untitled Data'))
@@ -309,14 +311,14 @@ class ComponentIDComboHelper(ComboHelper):
                             (comp.categorical and self.categorical)):
                         cids.append(cid)
             if len(cids) > 1:
-                if self.pixel_coord or self.world_coord or (self.derived and len(data.derived_components) > 0):
+                if self.pixel_coord or self.world_coord or (self.derived and len(derived_components) > 0):
                     choices += cids
                 else:
                     choices += cids[1:]
 
             if self.numeric and self.derived:
                 cids = [ChoiceSeparator('Derived components')]
-                for cid in data.derived_components:
+                for cid in derived_components:
                     if not cid.hidden:
                         cids.append(cid)
                 if len(cids) > 1:
