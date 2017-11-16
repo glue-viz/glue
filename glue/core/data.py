@@ -381,7 +381,7 @@ class Data(object):
         """
 
         if isinstance(component, ComponentLink):
-            return self.add_component_link(component, label=label)
+            return self.add_component_link(component, label=label, hidden=hidden)
 
         if not isinstance(component, Component):
             component = Component.autotyped(component)
@@ -423,7 +423,7 @@ class Data(object):
     @contract(link=ComponentLink,
               label='cid_like|None',
               returns=DerivedComponent)
-    def add_component_link(self, link, label=None):
+    def add_component_link(self, link, label=None, hidden=False):
         """ Shortcut method for generating a new :class:`~glue.core.component.DerivedComponent`
         from a ComponentLink object, and adding it to a data set.
 
@@ -436,7 +436,7 @@ class Data(object):
         """
         if label is not None:
             if not isinstance(label, ComponentID):
-                label = ComponentID(label, parent=self)
+                label = ComponentID(label, parent=self, hidden=hidden)
             link.set_to_id(label)
 
         if link.get_to_id() is None:
@@ -445,7 +445,7 @@ class Data(object):
 
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
-        self.add_component(dc, to_)
+        self.add_component(dc, label=to_, hidden=hidden)
         return dc
 
     def _create_pixel_and_world_components(self):
