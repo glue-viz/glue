@@ -381,7 +381,7 @@ class Data(object):
         """
 
         if isinstance(component, ComponentLink):
-            component = DerivedComponent(self, component)
+            return self.add_component_link(component, label=label)
 
         if not isinstance(component, Component):
             component = Component.autotyped(component)
