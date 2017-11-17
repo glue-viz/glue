@@ -8,7 +8,7 @@ from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
 
 
-TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
+TAG_RE = re.compile('\{\s*(?P<tag>[^\{\}]+)\s*\}')
 
 __all__ = ['ParsedCommand', 'ParsedSubsetState']
 
@@ -207,7 +207,7 @@ class ParsedCommand(object):
             import math
 
         return eval(cmd, global_variables, locals())  # careful!
-        
+
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,
                     references=dict((k, context.id(v))

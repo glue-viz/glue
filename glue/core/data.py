@@ -867,6 +867,22 @@ class Data(object):
         order = [comp.label for comp in self.components]
         return df[order]
 
+    def reorder_components(self, component_ids):
+        """
+        Reorder the components using a list of component IDs. The new set
+        of component IDs has to match the existing set (though order may differ).
+        """
+
+        # We need to be careful because component IDs overload == so we can't
+        # use the normal ways to test whether the component IDs are the same
+        # as self.components - instead we need to explicitly use id
+        if set(id(c) for c in self.components) != set(id(c) for c in component_ids):
+            raise ValueError("specified component_ids should match existing components")
+
+        # PY3: once we drop support for Python 2 we could sort in-place using
+        # the move_to_end method on OrderedDict
+        self._components = OrderedDict((key, self._components[key]) for key in component_ids)
+
     @contract(mapping="dict(inst($Component, $ComponentID):array_like)")
     def update_components(self, mapping):
         """
