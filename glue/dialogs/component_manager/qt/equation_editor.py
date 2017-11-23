@@ -7,7 +7,7 @@ from collections import deque
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
-from glue.core.parse import InvalidTagError, ParsedCommand, ParsedComponentLink
+from glue.core.parse import InvalidTagError, ParsedCommand
 from glue.utils.qt import load_ui, CompletionTextEdit
 
 __all__ = ['EquationEditorDialog']

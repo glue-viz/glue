@@ -2,10 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from qtpy import QtCore, QtGui, QtTest
+from qtpy import QtTest
 from qtpy.QtCore import Qt
 from glue.core import Data
-from glue.utils.qt import get_qapp
 
 from ..equation_editor import EquationEditorDialog
 
