@@ -167,7 +167,9 @@ class ParsedCommand(object):
         return _reference_list(self._cmd, self._references)
 
     def evaluate(self, data, view=None):
+
         from glue import env
+
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
@@ -180,13 +182,18 @@ class ParsedCommand(object):
         # We now import math modules if not already defined in local or
         # global variables
         if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy
+            import numpy  # noqa
         if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np
+            import numpy as np  # noqa
         if 'math' not in global_variables and 'math' not in locals():
-            import math
+            import math  # noqa
 
-        return eval(cmd, global_variables, locals())  # careful!
+        result = eval(cmd, global_variables, locals())  # careful!
+
+        if np.isscalar(result):
+            result = np.ones(data.shape) * result
+
+        return result
 
     def evaluate_test(self, view=None):
         from glue import env

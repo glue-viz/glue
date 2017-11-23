@@ -18,7 +18,8 @@ from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
 from ..component_id import ComponentID
 from ..data import Data
-
+from ..parse import ParsedCommand, ParsedComponentLink
+from ..data_collection import DataCollection
 
 VIEWS = (np.s_[:], np.s_[1], np.s_[::-1], np.s_[0, :])
 
@@ -342,3 +343,14 @@ def test_units():
     comp = Component([1, 2, 3], units=u.m)
     assert comp.units == 'm'
     assert isinstance(comp.units, six.string_types)
+
+
+def test_scalar_derived():
+    # Regression test for a bug that caused expressions without components to fail
+    data = Data(a=[3, 4, 1])
+    dc = DataCollection([data])
+    pc = ParsedCommand('3.5', {})
+    link = ParsedComponentLink(ComponentID('b'), pc)
+    data.add_component_link(link)
+    print(type(data.get_component(data.id['b'])))
+    np.testing.assert_equal(data['b'], [3.5, 3.5, 3.5])
