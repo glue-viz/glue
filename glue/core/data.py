@@ -10,7 +10,7 @@ from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
-                               ComponentReplacedMessage)
+                               ComponentReplacedMessage, DataReorderComponentMessage)
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
@@ -449,18 +449,26 @@ class Data(object):
         return dc
 
     def _create_pixel_and_world_components(self):
+
+        existing_cids = self.components
+
+        new_cids = []
         for i in range(self.ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, self.ndim)
             cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
+            new_cids.append(cid)
             self._pixel_component_ids.append(cid)
         if self.coords:
             for i in range(self.ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
                 cid = self.add_component(comp, label, hidden=True)
+                new_cids.append(cid)
                 self._world_component_ids.append(cid)
+
+        self.reorder_components(new_cids + existing_cids)
 
     @property
     def components(self):
@@ -876,12 +884,29 @@ class Data(object):
         # We need to be careful because component IDs overload == so we can't
         # use the normal ways to test whether the component IDs are the same
         # as self.components - instead we need to explicitly use id
+
+        if len(component_ids) != len(self.components):
+            raise ValueError("Number of component in component_ids does not "
+                             "match existing number of components")
+
         if set(id(c) for c in self.components) != set(id(c) for c in component_ids):
             raise ValueError("specified component_ids should match existing components")
+
+        existing = self.components
+        for idx in range(len(component_ids)):
+            if component_ids[idx] is not existing[idx]:
+                break
+        else:
+            # If we get here then the suggested order is the same as the existing one
+            return
 
         # PY3: once we drop support for Python 2 we could sort in-place using
         # the move_to_end method on OrderedDict
         self._components = OrderedDict((key, self._components[key]) for key in component_ids)
+
+        if self.hub:
+            msg = DataReorderComponentMessage(self, list(self._components))
+            self.hub.broadcast(msg)
 
     @contract(mapping="dict(inst($Component, $ComponentID):array_like)")
     def update_components(self, mapping):

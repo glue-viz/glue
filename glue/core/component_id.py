@@ -6,6 +6,7 @@ import numbers
 from glue.external import six
 from glue.core.component_link import BinaryComponentLink
 from glue.core.subset import InequalitySubsetState
+from glue.core.message import DataRenameComponentMessage
 
 
 __all__ = ['ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDList']
@@ -69,6 +70,10 @@ class ComponentID(object):
             client objects
         """
         self._label = str(value)
+        if self.parent is not None and self.parent.hub:
+            msg = DataRenameComponentMessage(self.parent, self)
+            self.parent.hub.broadcast(msg)
+
 
     @property
     def hidden(self):

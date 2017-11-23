@@ -11,12 +11,12 @@ from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.core.edit_subset_mode import AndMode, OrMode, XorMode, AndNotMode, EditSubsetMode
-from glue.config import single_subset_action, layer_action
+from glue.config import layer_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
 from glue.app.qt.actions import action
-from glue.dialogs.custom_component.qt import CustomComponentWidget
+from glue.dialogs.component_manager.qt import ComponentManagerWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
@@ -510,7 +510,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         mode.edit_subset = [s for s in self.selected_layers() if isinstance(s, core.SubsetGroup)]
 
     def _create_component(self):
-        dialog = CustomComponentWidget(self.data_collection)
+        dialog = ComponentManagerWidget(self.data_collection)
         dialog.exec_()
 
     def _create_actions(self):

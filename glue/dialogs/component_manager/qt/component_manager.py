@@ -9,6 +9,7 @@ from qtpy.QtCore import Qt
 from glue.core import ComponentID
 from glue.core.parse import ParsedComponentLink, ParsedCommand
 from glue.utils.qt import load_ui
+from glue.core.message import NumericalDataChangedMessage
 
 from glue.dialogs.component_manager.qt.equation_editor import EquationEditorDialog
 
@@ -18,6 +19,13 @@ __all__ = ['ComponentManagerWidget']
 class ComponentTreeWidget(QtWidgets.QTreeWidget):
 
     order_changed = QtCore.Signal()
+
+    def select_cid(self, cid):
+        for item in self:
+            if item.data(0, Qt.UserRole) is cid:
+                self.select_item(item)
+                return
+        raise ValueError("Could not find find cid {0} in list".format(cid))
 
     def select_item(self, item):
         self.selection = self.selectionModel()
@@ -45,6 +53,9 @@ class ComponentTreeWidget(QtWidgets.QTreeWidget):
         root = self.invisibleRootItem()
         for idx in range(root.childCount()):
             yield root.child(idx)
+
+    def __len__(self):
+        return self.invisibleRootItem().childCount()
 
     def dropEvent(self, event):
         selected = self.selected_item
@@ -78,11 +89,12 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         for data in data_collection:
 
             for cid in data.primary_components:
-                comp_state = {}
-                comp_state['cid'] = cid
-                comp_state['label'] = cid.label
-                self._state[data][cid] = comp_state
-                self._components[data]['main'].append(cid)
+                if not cid.hidden:
+                    comp_state = {}
+                    comp_state['cid'] = cid
+                    comp_state['label'] = cid.label
+                    self._state[data][cid] = comp_state
+                    self._components[data]['main'].append(cid)
 
             self._components[data]['derived'] = []
 
@@ -201,6 +213,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             self._components[self.data][component_list] = []
             for item in self.list[component_list]:
                 cid = item.data(0, Qt.UserRole)
+                print(item, item.text(0))
                 self._state[self.data][cid]['label'] = item.text(0)
                 self._components[self.data][component_list].append(cid)
 
@@ -232,6 +245,10 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self._update_component_lists()
 
+        self.list['derived'].select_cid(comp_state['cid'])
+
+        self._edit_derived_component()
+
     def _edit_derived_component(self, *args):
 
         cid = self.list['derived'].selected_cid
@@ -249,12 +266,20 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
     def accept(self):
 
+        print("ACCEPT")
+
         for data in self._components:
 
             cids_main = self._components[data]['main']
             cids_derived = self._components[data]['derived']
 
-            cids_all = cids_main + cids_derived
+            # First deal with renaming of components
+            for cid_new in cids_main + cids_derived:
+                label = self._state[data][cid_new]['label']
+                if label != cid_new.label:
+                    cid_new.label = label
+
+            cids_all = data.pixel_component_ids + data.world_component_ids + cids_main + cids_derived
 
             cids_existing = data.components
 
@@ -266,7 +291,14 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             components = dict((cid.label, cid) for cid in data.components)
 
             for cid_new in cids_derived:
-                if not any(cid_new is cid_old for cid_old in cids_existing):
+                if any(cid_new is cid_old for cid_old in cids_existing):
+                    comp = data.get_component(cid_new)
+                    if comp.link._parsed._cmd != self._state[data][cid_new]['equation']:
+                        comp.link._parsed._cmd = self._state[data][cid_new]['equation']
+                        if data.hub:
+                            msg = NumericalDataChangedMessage(data)
+                            data.hub.broadcast(msg)
+                else:
                     pc = ParsedCommand(self._state[data][cid_new]['equation'], components)
                     link = ParsedComponentLink(cid_new, pc)
                     data.add_component_link(link)
@@ -276,7 +308,10 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         super(ComponentManagerWidget, self).accept()
 
 
-def main():
+if __name__ == "__main__":  # pragma: nocover
+
+    from glue.utils.qt import get_qapp
+    app = get_qapp()
 
     import numpy as np
 
@@ -291,13 +326,3 @@ def main():
 
     widget = ComponentManagerWidget(dc)
     widget.exec_()
-
-    for data in dc:
-        print('-' * 72)
-        print(data)
-
-
-if __name__ == "__main__":
-    from glue.utils.qt import get_qapp
-    app = get_qapp()
-    main()
