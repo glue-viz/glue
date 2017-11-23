@@ -213,7 +213,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             self._components[self.data][component_list] = []
             for item in self.list[component_list]:
                 cid = item.data(0, Qt.UserRole)
-                print(item, item.text(0))
                 self._state[self.data][cid]['label'] = item.text(0)
                 self._components[self.data][component_list].append(cid)
 
@@ -265,8 +264,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         self._state[self.data][cid]['equation'] = dialog.final_expression
 
     def accept(self):
-
-        print("ACCEPT")
 
         for data in self._components:
 

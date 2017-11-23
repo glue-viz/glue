@@ -68,9 +68,9 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
-                return "<font color='#0072B2'><b>" + component + "</b></font> "
+                return "<font color='#0072B2'><b>" + component + "</b></font>"
             else:
-                return "<font color='#D55E00'><b>" + component + "</b></font> "
+                return "<font color='#D55E00'><b>" + component + "</b></font>"
 
         html = re.sub(pattern, format_components, text)
 
@@ -103,13 +103,10 @@ class EquationEditorDialog(QtWidgets.QDialog):
         self.data = data
         self.equation = equation
 
-        print(data)
-
         # Populate data combo
         self._labels = {}
         self._components = {}
         for cid in self.data.primary_components:
-            print(cid)
             self.ui.combosel_component.addItem(cid.label, userData=cid)
             self._labels['{' + cid.label + '}'] = cid
             self._components[cid.label] = cid
@@ -133,7 +130,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
     def _update_status(self):
 
         # If the text hasn't changed, no need to check again
-        if self.ui.expression.toPlainText() == getattr(self, '_cache', None):
+        if hasattr(self, '_cache') and self.ui.expression.toPlainText() == self._cache:
             return
 
         if str(self.ui.expression.toPlainText()) == "":
@@ -175,14 +172,13 @@ class EquationEditorDialog(QtWidgets.QDialog):
         super(EquationEditorDialog, self).reject()
 
 
-def main():
+if __name__ == "__main__":  # pragma: nocover
+
+    from glue.utils.qt import get_qapp
+
+    app = get_qapp()
+
     from glue.core.data import Data
     d = Data(label='test1', x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
     widget = EquationEditorDialog(d, '')
     widget.exec_()
-
-
-if __name__ == "__main__":
-    from glue.utils.qt import get_qapp
-    app = get_qapp()
-    main()
