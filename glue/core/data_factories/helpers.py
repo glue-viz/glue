@@ -158,11 +158,9 @@ class LoadLog(object):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        print("AHOY", rec)
         fac = context.object(rec['factory'])
         kwargs = dict(*rec['kwargs'])
         kwargs['coord_first'] = rec.get('_protocol', 1) >= 2
-        print("KWARGS", kwargs)
         d = load_data(rec['path'], factory=fac, **kwargs)
         return as_list(d)[0]._load_log
 

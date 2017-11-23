@@ -226,7 +226,7 @@ class TestScatterViewer(object):
         # was selected
 
         self.viewer.add_data(self.data)
-        self.viewer.state.x_att = self.data.components[0]
+        self.viewer.state.x_att = self.data.id['x']
         test = ComponentID('test')
         self.data.update_id(self.viewer.state.x_att, test)
         assert self.viewer.state.x_att is test
