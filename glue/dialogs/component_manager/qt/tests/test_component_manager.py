@@ -170,15 +170,3 @@ class TestComponentManagerWidget:
         self.listener1.assert_exact_changes()
         self.listener2.assert_exact_changes(numerical=True)
         assert_equal(self.data2['d'], [4.5, 2.0, 4.5])
-
-# Note that an equation without components shouldn't validate
-
-# Things to test:
-
-# Note: could use messages?
-
-# do nothing
-# rename component to something valid
-# rename component to something invalid then change to something valid
-# simulate drag and drop to reorder (not sure how)
-# add derived component (should open expression window)
