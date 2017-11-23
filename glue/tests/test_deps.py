@@ -47,13 +47,13 @@ class TestDependency(object):
         assert str(d) == "                math:\tINSTALLED (unknown version)"
 
     def test_noinstalled_str(self):
-        d = Dependency('asdf', 'info')
-        assert str(d) == "                asdf:\tMISSING (info)"
+        d = Dependency('asdfasdf', 'info')
+        assert str(d) == "            asdfasdf:\tMISSING (info)"
 
     def test_failed_str(self):
-        d = Dependency('asdf', 'info')
+        d = Dependency('asdfasdf', 'info')
         d.failed = True
-        assert str(d) == "                asdf:\tFAILED (info)"
+        assert str(d) == "            asdfasdf:\tFAILED (info)"
 
 
 @requires_qt

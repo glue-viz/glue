@@ -1,13 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-import re
 import os
 from collections import deque
 
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
-from glue.core.parse import InvalidTagError, ParsedCommand
+from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
 from glue.utils.qt import load_ui, CompletionTextEdit
 
 __all__ = ['EquationEditorDialog']
@@ -63,8 +62,6 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         # probably ignore that here)
         text = self.toPlainText()
 
-        pattern = '\{[^\{\}]+\}'
-
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
@@ -72,7 +69,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
             else:
                 return "<font color='#D55E00'><b>" + component + "</b></font>"
 
-        html = re.sub(pattern, format_components, text)
+        html = TAG_RE.sub(format_components, text)
 
         tc = self.textCursor()
         pos = tc.position()

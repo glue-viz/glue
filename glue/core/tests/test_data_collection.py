@@ -180,7 +180,7 @@ class TestDataCollection(object):
     def test_add_links_updates_components(self):
         """setting links attribute automatically adds components to data"""
         d = Data()
-        comp = MagicMock(spec_set=Component)
+        comp = Component(np.array([1, 2, 3]))
         id1 = ComponentID("id1")
         d.add_component(comp, id1)
         id2 = ComponentID("id2")

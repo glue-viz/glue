@@ -17,7 +17,7 @@ class TestParse(object):
         reg = parse.TAG_RE
         valid = ['{a}', '{ a }', '{A}', '{a }', '{ a}',
                  '{a_}', '{abc_1}', '{_abc_1}', '{1}', '{1_}']
-        invalid = ['', '{}', '{a b}']
+        invalid = ['', '{}', '{a ']
         for v in valid:
             assert reg.match(v) is not None
         for i in invalid:

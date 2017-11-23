@@ -48,7 +48,7 @@ def test_component_id_combo_helper():
     helper.numeric = True
 
     helper.visible = False
-    assert combo_as_string(combo) == "data1:x:Pixel Axis 0 [x]:World 0:y:data2:a:Pixel Axis 0 [x]:World 0:b"
+    assert combo_as_string(combo) == "data1:Pixel Axis 0 [x]:World 0:x:y:data2:Pixel Axis 0 [x]:World 0:a:b"
     helper.visible = True
 
     dc.remove(data2)

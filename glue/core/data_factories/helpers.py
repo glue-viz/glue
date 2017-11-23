@@ -120,7 +120,7 @@ class LoadLog(object):
     def id(self, component):
         return self.components.index(component)
 
-    def component(self, index):
+    def component(self, index, legacy=False):
         return self.components[index]
 
     def reload(self):
@@ -150,14 +150,19 @@ class LoadLog(object):
             dold.update_components(mapping)
 
     def __gluestate__(self, context):
+        print([list(self.kwargs.items())])
         return dict(path=self.path,
                     factory=context.do(self.factory),
-                    kwargs=[list(self.kwargs.items())])
+                    kwargs=[list(self.kwargs.items())],
+                    _protocol=2)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
+        print("AHOY", rec)
         fac = context.object(rec['factory'])
         kwargs = dict(*rec['kwargs'])
+        kwargs['coord_first'] = rec.get('_protocol', 1) >= 2
+        print("KWARGS", kwargs)
         d = load_data(rec['path'], factory=fac, **kwargs)
         return as_list(d)[0]._load_log
 
@@ -221,6 +226,8 @@ def load_data(path, factory=None, **kwargs):
     """
     from glue.qglue import parse_data
 
+    coord_first = kwargs.pop('coord_first', True)
+
     def as_data_objects(ds, lbl):
         # pack other container types like astropy tables
         # into glue data objects
@@ -241,8 +248,22 @@ def load_data(path, factory=None, **kwargs):
         if not item.label:
             item.label = lbl
         log.log(item)  # attaches log metadata to item
-        for cid in item.primary_components:
+
+        if coord_first:
+            # We just follow the order in which the components are now loaded,
+            # which is coordinate components first, followed by all other
+            # components
+            for cid in item.primary_components:
+                log.log(item.get_component(cid))
+        else:
+            # In this case the first component was the first one that is not a
+            # coordinate component, followed by the coordinate components,
+            # followed by the remaining components.
+            cid = item.primary_components[item.ndim * 2]
             log.log(item.get_component(cid))
+            for icid, cid in enumerate(item.primary_components):
+                if icid != item.ndim * 2:
+                    log.log(item.get_component(cid))
 
     if len(d) == 1:
         # unpack single-length lists for user convenience

@@ -157,7 +157,11 @@ class Data(object):
         else:
             if len(self._components) == 0:
                 return True
-            return component.shape == self.shape
+            else:
+                if all(comp.shape == () for comp in self._components.values()):
+                    return True
+                else:
+                    return component.shape == self.shape
 
     @contract(cid=ComponentID, returns=np.dtype)
     def dtype(self, cid):
@@ -387,6 +391,8 @@ class Data(object):
             component = Component.autotyped(component)
 
         if isinstance(component, DerivedComponent):
+            if len(self._components) == 0:
+                raise TypeError("Cannot add a derived component as a first component")
             component.set_parent(self)
 
         if not(self._check_can_add(component)):
@@ -401,16 +407,19 @@ class Data(object):
         else:
             component_id = ComponentID(label, hidden=hidden, parent=self)
 
+        if len(self._components) == 0:
+            self._create_pixel_and_world_components(ndim=component.ndim)
+
+        # In some cases, such as when loading a session, we actually disable the
+        # auto-creation of pixel and world coordinates, so the first component
+        # may be a coordinate component with no shape. Therefore we only set the
+        # shape once a component has a valid shape rather than strictly on the
+        # first component.
+        if self._shape == () and component.shape != ():
+            self._shape = component.shape
+
         is_present = component_id in self._components
         self._components[component_id] = component
-
-        first_component = len(self._components) == 1
-        if first_component:
-            if isinstance(component, DerivedComponent):
-                raise TypeError("Cannot add a derived component as "
-                                "first component")
-            self._shape = component.shape
-            self._create_pixel_and_world_components()
 
         if self.hub and not is_present:
             msg = DataAddComponentMessage(self, component_id)
@@ -448,27 +457,20 @@ class Data(object):
         self.add_component(dc, label=to_, hidden=hidden)
         return dc
 
-    def _create_pixel_and_world_components(self):
+    def _create_pixel_and_world_components(self, ndim):
 
-        existing_cids = self.components
-
-        new_cids = []
-        for i in range(self.ndim):
+        for i in range(ndim):
             comp = CoordinateComponent(self, i)
-            label = pixel_label(i, self.ndim)
+            label = pixel_label(i, ndim)
             cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
-            new_cids.append(cid)
             self._pixel_component_ids.append(cid)
         if self.coords:
-            for i in range(self.ndim):
+            for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
                 cid = self.add_component(comp, label, hidden=True)
-                new_cids.append(cid)
                 self._world_component_ids.append(cid)
-
-        self.reorder_components(new_cids + existing_cids)
 
     @property
     def components(self):

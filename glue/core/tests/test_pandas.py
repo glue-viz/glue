@@ -61,9 +61,9 @@ class TestPandasConversion(object):
             world_0_dtype = np.int64
 
         frame = pd.DataFrame()
-        frame['n'] = np.array([4, 5, 6, 7])
         frame['Pixel Axis 0 [x]'] = np.ogrid[0:4]
         frame['World 0'] = np.arange(4).astype(world_0_dtype)
+        frame['n'] = np.array([4, 5, 6, 7])
         frame['c'] = ['a', 'b', 'c', 'd']
         frame['d'] = np.arange(4)
         out_frame = d.to_dataframe()

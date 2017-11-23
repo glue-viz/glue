@@ -8,7 +8,12 @@ from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
 
 
-TAG_RE = re.compile('\{\s*(?P<tag>[^\{\}]+)\s*\}')
+# The following expression matches substrings surrounded by curly brackets
+# with a component name inside. The component name can be composed of any
+# character that is not curly brackets (i.e. [^\{\}]) and has to start and
+# end with a character that is not a curly bracket or a space. The component
+# name can be surrounded by spaces, e.g. '{ a }'
+TAG_RE = re.compile('\{\s*(?P<tag>[^\s\{\}]+([^\{\}]*[^\s\{\}]+)?)\s*\}')
 
 __all__ = ['ParsedCommand', 'ParsedSubsetState']
 
@@ -190,7 +195,7 @@ class ParsedCommand(object):
 
         result = eval(cmd, global_variables, locals())  # careful!
 
-        if np.isscalar(result):
+        if data is not None and np.isscalar(result):
             result = np.ones(data.shape) * result
 
         return result
