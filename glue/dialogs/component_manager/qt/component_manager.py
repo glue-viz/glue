@@ -19,14 +19,37 @@ class ComponentTreeWidget(QtWidgets.QTreeWidget):
 
     order_changed = QtCore.Signal()
 
-    def dropEvent(self, event):
-        items = self.selectedItems()
-        selected = items[0] if len(items) == 1 else None
-        super(ComponentTreeWidget, self).dropEvent(event)
+    def select_item(self, item):
         self.selection = self.selectionModel()
-        self.selection.select(QtCore.QItemSelection(self.indexFromItem(selected, 0),
-                                                    self.indexFromItem(selected, self.columnCount() - 1)),
+        self.selection.select(QtCore.QItemSelection(self.indexFromItem(item, 0),
+                                                    self.indexFromItem(item, self.columnCount() - 1)),
                               QtCore.QItemSelectionModel.ClearAndSelect)
+
+    @property
+    def selected_item(self):
+        items = self.selectedItems()
+        return items[0] if len(items) == 1 else None
+
+    @property
+    def selected_cid(self):
+        selected = self.selected_item
+        return None if selected is None else selected.data(0, Qt.UserRole)
+
+    def add_cid_and_label(self, cid, label):
+        item = QtWidgets.QTreeWidgetItem(self.invisibleRootItem(), [label])
+        item.setData(0, Qt.UserRole, cid)
+        item.setFlags(item.flags() | Qt.ItemIsEditable)
+        item.setFlags(item.flags() ^ Qt.ItemIsDropEnabled)
+
+    def __iter__(self):
+        root = self.invisibleRootItem()
+        for idx in range(root.childCount()):
+            yield root.child(idx)
+
+    def dropEvent(self, event):
+        selected = self.selected_item
+        super(ComponentTreeWidget, self).dropEvent(event)
+        self.select_item(selected)
         self.order_changed.emit()
 
     def mousePressEvent(self, event):
@@ -42,6 +65,10 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self.ui = load_ui('component_manager.ui', self,
                           directory=os.path.dirname(__file__))
+
+        self.list = {}
+        self.list['main'] = self.ui.list_main_components
+        self.list['derived'] = self.ui.list_derived_components
 
         self.data_collection = data_collection
 
@@ -98,11 +125,11 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         self.ui.button_cancel.clicked.connect(self.reject)
 
     def _update_selection_main(self):
-        enabled = self.selected_main_component is not None
+        enabled = self.list['main'].selected_cid is not None
         self.button_remove_main.setEnabled(enabled)
 
     def _update_selection_derived(self):
-        enabled = self.selected_derived_component is not None
+        enabled = self.list['derived'].selected_cid is not None
         self.button_edit_derived.setEnabled(enabled)
         self.button_remove_derived.setEnabled(enabled)
 
@@ -110,126 +137,88 @@ class ComponentManagerWidget(QtWidgets.QDialog):
     def data(self):
         return self.ui.combosel_data.currentData()
 
-    @property
-    def selected_main_component(self):
-        items = self.ui.list_main_components.selectedItems()
-        if len(items) == 1:
-            return items[0].data(0, Qt.UserRole)
-        else:
-            return None
-
-    @property
-    def selected_derived_component(self):
-        items = self.ui.list_derived_components.selectedItems()
-        if len(items) == 1:
-            return items[0].data(0, Qt.UserRole)
-        else:
-            return None
-
     def _update_component_lists(self, *args):
 
         # This gets called when the data is changed and we need to update the
         # components shown in the lists.
 
-        self.ui.list_main_components.blockSignals(True)
+        for component_list in ('main', 'derived'):
 
-        self.ui.list_main_components.clear()
-        self.ui.list_derived_components.clear()
+            self.list[component_list].blockSignals(True)
 
-        root = self.ui.list_main_components.invisibleRootItem()
+            self.list[component_list].clear()
+            for cid in self._components[self.data][component_list]:
+                self.list[component_list].add_cid_and_label(cid, self._state[self.data][cid]['label'])
 
-        for cid in self._components[self.data]['main']:
-            item = QtWidgets.QTreeWidgetItem(root, [self._state[self.data][cid]['label']])
-            item.setData(0, Qt.UserRole, cid)
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
-            item.setFlags(item.flags() ^ Qt.ItemIsDropEnabled)
-
-        self.ui.list_main_components.blockSignals(False)
-
-        self.ui.list_derived_components.blockSignals(True)
-
-        root = self.ui.list_derived_components.invisibleRootItem()
-
-        for cid in self._components[self.data]['derived']:
-            item = QtWidgets.QTreeWidgetItem(root, [self._state[self.data][cid]['label']])
-            item.setData(0, Qt.UserRole, cid)
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
-            item.setFlags(item.flags() ^ Qt.ItemIsDropEnabled)
-
-        self.ui.list_derived_components.blockSignals(False)
+            self.list[component_list].blockSignals(False)
 
         self._validate()
 
     def _validate(self):
 
-        # Figure out a list of all the labels so that we can check which ones
-        # are duplicates.
-        print(list(self._state[self.data].values()))
+        # Construct a list of all labels for the current dataset so that
+        # we can check which ones are duplicates
         labels = [c['label'] for c in self._state[self.data].values()]
         label_count = Counter(labels)
 
-        brush_red = QtGui.QBrush(Qt.red)
-        brush_black = QtGui.QBrush(Qt.black)
-
         if label_count.most_common(1)[0][1] > 1:
-            for component_list in (self.ui.list_main_components,
-                                   self.ui.list_derived_components):
-                component_list.blockSignals(True)
-                root = component_list.invisibleRootItem()
-                for idx in range(root.childCount()):
-                    item = root.child(idx)
-                    if label_count[item.text(0)] > 1:
+
+            # If we are here, there are duplicates somewhere in the list
+            # of components.
+
+            brush_red = QtGui.QBrush(Qt.red)
+            brush_black = QtGui.QBrush(Qt.black)
+
+            for component_list in ('main', 'derived'):
+
+                self.list[component_list].blockSignals(True)
+
+                for item in self.list[component_list]:
+                    label = item.text(0)
+                    if label_count[label] > 1:
                         item.setForeground(0, brush_red)
                     else:
                         item.setForeground(0, brush_black)
-                component_list.blockSignals(False)
+
+                self.list[component_list].blockSignals(False)
 
             self.ui.label_status.setStyleSheet('color: red')
             self.ui.label_status.setText('Error: some components have duplicate names')
             self.ui.button_ok.setEnabled(False)
             self.ui.combosel_data.setEnabled(False)
-            return
 
-        self.ui.label_status.setStyleSheet('')
-        self.ui.label_status.setText('')
-        self.ui.button_ok.setEnabled(True)
-        self.ui.combosel_data.setEnabled(True)
+        else:
+
+            self.ui.label_status.setStyleSheet('')
+            self.ui.label_status.setText('')
+            self.ui.button_ok.setEnabled(True)
+            self.ui.combosel_data.setEnabled(True)
 
     def _update_state(self, *args):
 
-        self._components[self.data]['main'] = []
-        root = self.ui.list_main_components.invisibleRootItem()
-        for idx in range(root.childCount()):
-            item = root.child(idx)
-            cid = item.data(0, Qt.UserRole)
-            self._state[self.data][cid]['label'] = item.text(0)
-            self._components[self.data]['main'].append(cid)
+        for component_list in ('main', 'derived'):
 
-        self._components[self.data]['derived'] = []
-        root = self.ui.list_derived_components.invisibleRootItem()
-        for idx in range(root.childCount()):
-            item = root.child(idx)
-            cid = item.data(0, Qt.UserRole)
-            self._state[self.data][cid]['label'] = item.text(0)
-            self._components[self.data]['derived'].append(cid)
+            self._components[self.data][component_list] = []
+            for item in self.list[component_list]:
+                cid = item.data(0, Qt.UserRole)
+                self._state[self.data][cid]['label'] = item.text(0)
+                self._components[self.data][component_list].append(cid)
 
         self._update_component_lists()
 
     def _remove_main_component(self, *args):
-        cid = self.selected_main_component
-        if cid is None:
-            return
-        self._components[self.data]['main'].remove(cid)
-        self._state[self.data].pop(cid)
-        self._update_component_lists()
+        cid = self.list['main'].selected_cid
+        if cid is not None:
+            self._components[self.data]['main'].remove(cid)
+            self._state[self.data].pop(cid)
+            self._update_component_lists()
 
     def _remove_derived_component(self, *args):
-        cid = self.selected_derived_component
-        if cid is None:
-            return
-        self._components[self.data]['derived'].remove(cid)
-        self._state[self.data].pop(cid)
-        self._update_component_lists()
+        cid = self.list['derived'].selected_cid
+        if cid is not None:
+            self._components[self.data]['derived'].remove(cid)
+            self._state[self.data].pop(cid)
+            self._update_component_lists()
 
     def _add_derived_component(self, *args):
 
@@ -245,7 +234,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
     def _edit_derived_component(self, *args):
 
-        cid = self.selected_derived_component
+        cid = self.list['derived'].selected_cid
 
         dialog = EquationEditorDialog(self.data, self._state[self.data][cid]['equation'], parent=self)
         dialog.setWindowFlags(self.windowFlags() | Qt.Window)
