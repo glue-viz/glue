@@ -305,13 +305,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_save_session)
 
-        self._button_save_session = QtWidgets.QToolButton()
-        self._button_save_session.setText("Add/edit data components")
-        self._button_save_session.setIcon(get_icon('pencil'))
-        self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_save_session.clicked.connect(nonpartial(self._layer_widget._create_component))
+        self._button_edit_components = QtWidgets.QToolButton()
+        self._button_edit_components.setText("Add/edit data components")
+        self._button_edit_components.setIcon(get_icon('pencil'))
+        self._button_edit_components.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_edit_components.clicked.connect(nonpartial(self._layer_widget._create_component))
 
-        self._data_toolbar.addWidget(self._button_save_session)
+        self._data_toolbar.addWidget(self._button_edit_components)
 
         spacer = QtWidgets.QWidget()
         spacer.setMinimumSize(20, 10)
