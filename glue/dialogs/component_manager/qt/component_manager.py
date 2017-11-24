@@ -301,7 +301,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                 if not any(cid_old is cid_new for cid_new in cids_all):
                     data.remove_component(cid_old)
 
-            # TODO: make it so labels in expression take into account renaming
             components = dict((cid.uuid, cid) for cid in data.components)
 
             for cid_new in cids_derived:
