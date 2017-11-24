@@ -6,7 +6,7 @@ v0.13.0 (unreleased)
 
 * Added a new component manager that makes it possible to rename,
   reorder, and remove components, as well as better manage derived
-  components, including editing previous equations.
+  components, including editing previous equations. [#1479]
 
 * Added support for scatter density maps, which is useful when making
   scatter plots of many points. [#1461]
