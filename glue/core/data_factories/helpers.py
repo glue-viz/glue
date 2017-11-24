@@ -150,7 +150,6 @@ class LoadLog(object):
             dold.update_components(mapping)
 
     def __gluestate__(self, context):
-        print([list(self.kwargs.items())])
         return dict(path=self.path,
                     factory=context.do(self.factory),
                     kwargs=[list(self.kwargs.items())],
