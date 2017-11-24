@@ -112,11 +112,8 @@ class EquationEditorDialog(QtWidgets.QDialog):
             self.ui.combosel_component.addItem(label, userData=cid)
 
         # Set up labels for auto-completion
-        labels = {}
-        for label, cid in self.references.items():
-            labels['{' + cid.label + '}'] = cid
-
-        self.ui.expression.set_word_list(list(labels.keys()))
+        labels = ['{' + label + '}' for label in self.references]
+        self.ui.expression.set_word_list(labels)
 
         self.ui.expression.insertPlainText(equation)
 
