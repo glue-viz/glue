@@ -257,8 +257,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             mapping[cid] = label
             references[label] = cid
 
-        print(references, mapping)
-
         cid = self.list['derived'].selected_cid
 
         if self._state[self.data][cid]['equation'] is None:
