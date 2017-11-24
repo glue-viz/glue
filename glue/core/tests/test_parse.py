@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-from mock import MagicMock, PropertyMock
+from mock import MagicMock
 
 from .. import parse
 from ..data import ComponentID, Component, Data
