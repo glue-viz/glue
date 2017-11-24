@@ -104,7 +104,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     comp_state = {}
                     comp_state['cid'] = cid
                     comp_state['label'] = cid.label
-                    comp_state['equation'] = comp.link._parsed._cmd
+                    comp_state['equation'] = comp.link._parsed
                     self._state[data][cid] = comp_state
                     self._components[data]['derived'].append(cid)
 
@@ -237,7 +237,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         comp_state = {}
         comp_state['cid'] = ComponentID('')
         comp_state['label'] = 'New component'
-        comp_state['equation'] = ''
+        comp_state['equation'] = None
 
         self._components[self.data]['derived'].append(comp_state['cid'])
         self._state[self.data][comp_state['cid']] = comp_state
@@ -248,11 +248,25 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self._edit_derived_component()
 
-    def _edit_derived_component(self, *args):
+    def _edit_derived_component(self, event=None):
+
+        mapping = {}
+        references = {}
+        for cid in self._components[self.data]['main']:
+            label = self._state[self.data][cid]['label']
+            mapping[cid] = label
+            references[label] = cid
+
+        print(references, mapping)
 
         cid = self.list['derived'].selected_cid
 
-        dialog = EquationEditorDialog(self.data, self._state[self.data][cid]['equation'], parent=self)
+        if self._state[self.data][cid]['equation'] is None:
+            equation = None
+        else:
+            equation = self._state[self.data][cid]['equation'].render(mapping)
+
+        dialog = EquationEditorDialog(equation=equation, references=references, parent=self)
         dialog.setWindowFlags(self.windowFlags() | Qt.Window)
         dialog.setFocus()
         dialog.raise_()
@@ -261,7 +275,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         if dialog.final_expression is None:
             return
 
-        self._state[self.data][cid]['equation'] = dialog.final_expression
+        self._state[self.data][cid]['equation'] = dialog._get_parsed_command()
 
     def accept(self):
 
@@ -285,18 +299,19 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     data.remove_component(cid_old)
 
             # TODO: make it so labels in expression take into account renaming
-            components = dict((cid.label, cid) for cid in data.components)
+            components = dict((cid.uuid, cid) for cid in data.components)
 
             for cid_new in cids_derived:
                 if any(cid_new is cid_old for cid_old in cids_existing):
                     comp = data.get_component(cid_new)
-                    if comp.link._parsed._cmd != self._state[data][cid_new]['equation']:
-                        comp.link._parsed._cmd = self._state[data][cid_new]['equation']
+                    if comp.link._parsed._cmd != self._state[data][cid_new]['equation']._cmd:
+                        comp.link._parsed._cmd = self._state[data][cid_new]['equation']._cmd
+                        comp.link._parsed._references = components
                         if data.hub:
                             msg = NumericalDataChangedMessage(data)
                             data.hub.broadcast(msg)
                 else:
-                    pc = ParsedCommand(self._state[data][cid_new]['equation'], components)
+                    pc = ParsedCommand(self._state[data][cid_new]['equation']._cmd, components)
                     link = ParsedComponentLink(cid_new, pc)
                     data.add_component_link(link)
 

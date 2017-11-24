@@ -25,7 +25,7 @@ class TestEquationEditor:
         assert self.dialog.ui.button_ok.isEnabled()
         assert self.dialog.ui.label_status.text() == 'Valid expression'
         self.dialog.ui.button_ok.click()
-        assert self.dialog.final_expression == expression
+        assert self.dialog._get_raw_command() == expression
 
     def test_invalid_syntax(self):
         self.dialog.expression.insertPlainText('1 + {x')
@@ -47,7 +47,7 @@ class TestEquationEditor:
         self.dialog.button_insert.click()
         assert self.dialog.ui.label_status.text() == 'Valid expression'
         self.dialog.ui.button_ok.click()
-        assert self.dialog.final_expression == '1 + {Pixel Axis 0 [x]}'
+        assert self.dialog._get_raw_command() == '1 + {Pixel Axis 0 [x]}'
 
     def test_typing(self):
 

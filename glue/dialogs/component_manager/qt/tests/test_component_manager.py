@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from mock import patch, PropertyMock
+from mock import patch
 
 from numpy.testing import assert_equal
 
@@ -9,7 +9,15 @@ from glue.core import message as msg
 from glue.utils.qt import get_qapp
 from glue.core.parse import ParsedCommand, ParsedComponentLink
 
-from ..component_manager import ComponentManagerWidget
+from ..component_manager import ComponentManagerWidget, EquationEditorDialog
+
+
+def auto_accept(equation):
+    def exec_replacement(self):
+        self.ui.expression.clear()
+        self.ui.expression.insertPlainText(equation)
+        self.accept()
+    return exec_replacement
 
 
 class ChangeListener(HubListener):
@@ -144,8 +152,7 @@ class TestComponentManagerWidget:
     def test_add_derived_and_rename(self):
         self.manager = ComponentManagerWidget(self.data_collection)
         self.manager.show()
-        with patch('glue.dialogs.component_manager.qt.component_manager.EquationEditorDialog') as p:
-            type(p.return_value).final_expression = PropertyMock(return_value='{x} + {y}')
+        with patch.object(EquationEditorDialog, 'exec_', auto_accept('{x} + {y}')):
             self.manager.button_add_derived.click()
         item = list(self.manager.list['derived'])[0]
         item.setText(0, 'new')
@@ -162,11 +169,23 @@ class TestComponentManagerWidget:
         self.manager.combosel_data.setCurrentIndex(1)
         assert len(self.manager.list['derived']) == 1
         self.manager.list['derived'].select_cid(self.data2.id['d'])
-        with patch('glue.dialogs.component_manager.qt.component_manager.EquationEditorDialog') as p:
-            type(p.return_value).final_expression = PropertyMock(return_value='{a} + {b}')
+        with patch.object(EquationEditorDialog, 'exec_', auto_accept('{a} + {b}')):
             self.manager.button_edit_derived.click()
-            assert p.call_args[0][1] == '{a}'
         self.manager.button_ok.click()
         self.listener1.assert_exact_changes()
         self.listener2.assert_exact_changes(numerical=True)
         assert_equal(self.data2['d'], [4.5, 2.0, 4.5])
+
+    def test_edit_equation_after_rename(self):
+        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager.show()
+        self.manager.combosel_data.setCurrentIndex(1)
+        self.manager.list['main'].select_cid(self.data2.id['a'])
+        self.manager.list['main'].selected_item.setText(0, 'renamed')
+        self.manager.list['derived'].select_cid(self.data2.id['d'])
+        with patch.object(EquationEditorDialog, 'exec_', auto_accept('{renamed} + 1')):
+            self.manager.button_edit_derived.click()
+        self.manager.button_ok.click()
+        self.listener1.assert_exact_changes()
+        self.listener2.assert_exact_changes(renamed=[self.data2.id['renamed']], numerical=True)
+        assert_equal(self.data2['d'], [4, 5, 2])

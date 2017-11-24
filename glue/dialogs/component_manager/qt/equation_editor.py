@@ -90,25 +90,33 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
 class EquationEditorDialog(QtWidgets.QDialog):
 
-    def __init__(self, data=None, equation=None, parent=None):
+    def __init__(self, data=None, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.data = data
         self.equation = equation
 
-        # Populate data combo
-        self._labels = {}
-        self._components = {}
-        for cid in self.data.primary_components:
-            self.ui.combosel_component.addItem(cid.label, userData=cid)
-            self._labels['{' + cid.label + '}'] = cid
-            self._components[cid.label] = cid
+        # Get mapping from label to component ID
+        if references is not None:
+            self.references = references
+        elif data is not None:
+            self.references = {}
+            for cid in data.primary_components:
+                self.references[cid.label] = cid
 
-        self.ui.expression.set_word_list(list(self._labels.keys()))
+        # Populate component combo
+        for label, cid in self.references.items():
+            self.ui.combosel_component.addItem(label, userData=cid)
+
+        # Set up labels for auto-completion
+        labels = {}
+        for label, cid in self.references.items():
+            labels['{' + cid.label + '}'] = cid
+
+        self.ui.expression.set_word_list(list(labels.keys()))
 
         self.ui.expression.insertPlainText(equation)
 
@@ -127,10 +135,10 @@ class EquationEditorDialog(QtWidgets.QDialog):
     def _update_status(self):
 
         # If the text hasn't changed, no need to check again
-        if hasattr(self, '_cache') and self.ui.expression.toPlainText() == self._cache:
+        if hasattr(self, '_cache') and self._get_raw_command() == self._cache:
             return
 
-        if str(self.ui.expression.toPlainText()) == "":
+        if self._get_raw_command() == "":
             self.ui.label_status.setText("")
             self.ui.button_ok.setEnabled(False)
         else:
@@ -154,14 +162,17 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 self.ui.label_status.setText("Valid expression")
                 self.ui.button_ok.setEnabled(True)
 
-        self._cache = self.ui.expression.toPlainText()
+        self._cache = self._get_raw_command()
+
+    def _get_raw_command(self):
+        return str(self.ui.expression.toPlainText())
 
     def _get_parsed_command(self):
-        expression = str(self.ui.expression.toPlainText())
-        return ParsedCommand(expression, self._components)
+        expression = self._get_raw_command()
+        return ParsedCommand(expression, self.references)
 
     def accept(self):
-        self.final_expression = str(self.ui.expression.toPlainText())
+        self.final_expression = self._get_parsed_command()._cmd
         super(EquationEditorDialog, self).accept()
 
     def reject(self):

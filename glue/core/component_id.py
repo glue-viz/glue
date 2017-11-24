@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import uuid
 import operator
 import numbers
 
@@ -55,6 +56,15 @@ class ComponentID(object):
         self._label = str(label)
         self._hidden = hidden
         self.parent = parent
+        # We assign a UUID which can then be used for example in equations
+        # for derived components - the idea is that this doesn't change over
+        # the life cycle of glue, so it is a more reliable way to refer to
+        # components in strings than using labels
+        self._uuid = str(uuid.uuid4())
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def label(self):
@@ -73,7 +83,6 @@ class ComponentID(object):
         if self.parent is not None and self.parent.hub:
             msg = DataRenameComponentMessage(self.parent, self)
             self.parent.hub.broadcast(msg)
-
 
     @property
     def hidden(self):

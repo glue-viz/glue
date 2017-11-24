@@ -142,10 +142,22 @@ def _validate(cmd, references):
     ------
     TypeError, if a tag is missing from references
     """
+
+    replacements = {}
+    references_new = {}
     for match in TAG_RE.finditer(cmd):
         tag = match.group('tag')
         if tag not in references:
             raise InvalidTagError(tag, references)
+        full_tag = match.string[slice(*match.span())]
+        replacements[full_tag] = '{' + references[tag].uuid + '}'
+        references_new[references[tag].uuid] = references[tag]
+
+    cmd_new = cmd
+    for before, after in replacements.items():
+        cmd_new = cmd_new.replace(before, after)
+
+    return cmd_new, references_new
 
 
 class ParsedCommand(object):
@@ -160,9 +172,17 @@ class ParsedCommand(object):
         cmd : str. A template command. Can only reference ComponentID objects
         references : mapping from command templates to substitution objects
         """
-        _validate(cmd, references)
-        self._cmd = cmd
-        self._references = references
+        self._cmd, self._references = _validate(cmd, references)
+
+    def render(self, mapping=None):
+        def sub_func(match):
+            tag = match.group('tag')
+            if mapping is None:
+                label = self._references[tag].label
+            else:
+                label = mapping[self._references[tag]]
+            return '{' + label + '}'
+        return TAG_RE.sub(sub_func, self._cmd)
 
     def ensure_only_component_references(self):
         _ensure_only_component_references(self._cmd, self._references)
