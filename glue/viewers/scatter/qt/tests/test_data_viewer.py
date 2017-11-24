@@ -505,6 +505,5 @@ class TestScatterViewer(object):
     def test_component_renamed(self):
         # If a component ID is renamed, this needs to be reflected in the combo
         self.viewer.add_data(self.data)
-        print("CHANGE")
         self.data.id['x'].label = 'test'
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:test:y:z:Coordinate components:Pixel Axis 0 [x]:World 0'
