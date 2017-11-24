@@ -7,11 +7,13 @@ import weakref
 
 from glue.core import Data, Subset
 from glue.core.hub import HubListener
-from glue.core.message import (ComponentsChangedMessage,
+from glue.core.message import (DataRemoveComponentMessage,
+                               DataAddComponentMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
-                               ComponentReplacedMessage)
+                               ComponentReplacedMessage,
+                               DataRenameComponentMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
@@ -85,7 +87,6 @@ class ComboHelper(HubListener):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
             prop.set_choices(self.state, choices)
-
 
     @property
     def display(self):
@@ -330,9 +331,13 @@ class ComponentIDComboHelper(ComboHelper):
         return msg.data in self._data or msg.sender in self._data_collection
 
     def register_to_hub(self, hub):
+        hub.subscribe(self, DataRenameComponentMessage,
+                      handler=self.refresh)
         hub.subscribe(self, ComponentReplacedMessage,
                       handler=self.refresh)
-        hub.subscribe(self, ComponentsChangedMessage,
+        hub.subscribe(self, DataAddComponentMessage,
+                      handler=self.refresh)
+        hub.subscribe(self, DataRemoveComponentMessage,
                       handler=self.refresh)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,
