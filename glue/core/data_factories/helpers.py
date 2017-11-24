@@ -120,7 +120,7 @@ class LoadLog(object):
     def id(self, component):
         return self.components.index(component)
 
-    def component(self, index, legacy=False):
+    def component(self, index):
         return self.components[index]
 
     def reload(self):
