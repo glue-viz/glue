@@ -171,6 +171,8 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         # Construct a list of all labels for the current dataset so that
         # we can check which ones are duplicates
         labels = [c['label'] for c in self._state[self.data].values()]
+        if len(labels) == 0:
+            return
         label_count = Counter(labels)
 
         if label_count.most_common(1)[0][1] > 1:

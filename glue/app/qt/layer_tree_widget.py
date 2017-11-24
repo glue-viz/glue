@@ -542,8 +542,9 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         sep.setSeparator(True)
         tree.addAction(sep)
 
-        a = action("Component manager", self,
-                   tip="Change existing components and add new components derived from existing ones")
+        a = action("Add/edit data components", self,
+                   tip="Change existing data components and add new "
+                       "components derived from existing ones")
         tree.addAction(a)
         a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
