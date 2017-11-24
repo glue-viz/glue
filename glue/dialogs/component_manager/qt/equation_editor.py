@@ -3,11 +3,17 @@ from __future__ import absolute_import, division, print_function
 import os
 from collections import deque, OrderedDict
 
+try:
+    from inspect import getfullargspec
+except ImportError:  # Python 2.7
+    from inspect import getargspec as getfullargspec
+
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
+from glue.config import link_function, link_helper
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
-from glue.utils.qt import load_ui, CompletionTextEdit
+from glue.utils.qt import load_ui, CompletionTextEdit, update_combobox, fix_tab_widget_fontsize
 
 __all__ = ['EquationEditorDialog']
 
@@ -88,6 +94,34 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         self._cache = self.toPlainText()
 
 
+def get_function_name(item):
+    if hasattr(item, 'display') and item.display is not None:
+        return item.display
+    else:
+        return item.__name__
+
+
+def function_label(function):
+    """ Provide a label for a function
+
+    :param function: A member from the glue.config.link_function registry
+    """
+    args = getfullargspec(function.function)[0]
+    args = ', '.join(args)
+    output = function.output_labels
+    output = ', '.join(output)
+    label = "Link from %s to %s" % (args, output)
+    return label
+
+
+def helper_label(helper):
+    """ Provide a label for a link helper
+
+    :param helper: A member from the glue.config.link_helper registry
+    """
+    return helper.info
+
+
 class EquationEditorDialog(QtWidgets.QDialog):
 
     def __init__(self, data=None, equation=None, references=None, parent=None):
@@ -96,6 +130,103 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
+
+        fix_tab_widget_fontsize(self.ui.tab)
+
+        self._setup_freeform_tab(data=data, equation=equation, references=references)
+        self._setup_predefined_tab(data=data)
+
+    def _setup_predefined_tab(self, data=None):
+
+        # Populate category combo
+        f = [f for f in link_function.members if len(f.output_labels) == 1]
+        categories = sorted(set(l.category for l in f + link_helper.members))
+        for category in categories:
+            self.ui.combosel_category.addItem(category)
+        self.ui.combosel_category.setCurrentIndex(0)
+        self.ui.combosel_category.currentIndexChanged.connect(self._populate_function_combo)
+        self._populate_function_combo()
+
+        self.ui.combosel_function.setCurrentIndex(0)
+        self.ui.combosel_function.currentIndexChanged.connect(self._setup_inputs)
+        self._setup_inputs()
+
+    @property
+    def category(self):
+        return self.ui.combosel_category.currentText()
+
+    @property
+    def function(self):
+        return self.ui.combosel_function.currentData()
+
+    @property
+    def is_helper(self):
+        return self.function is not None and type(self.function).__name__ == 'LinkHelper'
+
+    @property
+    def is_function(self):
+        return self.function is not None and type(self.function).__name__ == 'LinkFunction'
+
+    def _setup_inputs(self, event=None):
+        if self.is_function:
+            self._setup_inputs_function()
+        else:
+            self._setup_inputs_helper()
+
+    def _clear_inputs_layout(self):
+        while self.ui.layout_inputs.count() > 0:
+            item = self.ui.layout_inputs.itemAt(0)
+            self.ui.layout_inputs.removeItem(item)
+            item.widget().setParent(None)
+
+    def _add_input_widget(self, name):
+        widget = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout()
+        label = QtWidgets.QLabel(name)
+        combo = QtWidgets.QComboBox()
+        update_combobox(combo, list(self.references.items()))
+        layout.addWidget(label)
+        layout.addWidget(combo)
+        widget.setLayout(layout)
+        layout.setContentsMargins(1, 0, 1, 1)
+        self.ui.layout_inputs.addWidget(widget)
+
+    def _setup_inputs_function(self):
+
+        func = self.function.function
+        args = getfullargspec(func)[0]
+        label = function_label(self.function)
+        self.ui.label_info.setText(label)
+
+        self._clear_inputs_layout()
+
+        for a in args:
+            self._add_input_widget(a)
+
+    def _setup_inputs_helper(self):
+
+        # Here it looks like helpers need to be clearer which are the inputs from
+        # one side and the other side (input/output)
+
+        label = helper_label(self.function)
+        args = self.function.input_labels
+        self.ui.label_info.setText(label)
+
+        self._clear_inputs_layout()
+
+        for a in args:
+            self._add_input_widget(a)
+
+    def _populate_function_combo(self, event=None):
+        """
+        Add name of functions to function combo box
+        """
+        f = [f for f in link_function.members if len(f.output_labels) == 1]
+        functions = ((get_function_name(l[0]), l) for l in f + link_helper.members if l.category == self.category)
+        update_combobox(self.ui.combosel_function, functions)
+        self._setup_inputs()
+
+    def _setup_freeform_tab(self, data=None, equation=None, references=None):
 
         self.equation = equation
 
@@ -141,7 +272,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
         else:
             try:
                 pc = self._get_parsed_command()
-                pc.evaluate_test()
+                result = pc.evaluate_test()
             except SyntaxError:
                 self.ui.label_status.setStyleSheet('color: red')
                 self.ui.label_status.setText("Incomplete or invalid syntax")
@@ -155,9 +286,14 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 self.ui.label_status.setText(str(exc))
                 self.ui.button_ok.setEnabled(False)
             else:
-                self.ui.label_status.setStyleSheet('color: green')
-                self.ui.label_status.setText("Valid expression")
-                self.ui.button_ok.setEnabled(True)
+                if result is None:
+                    self.ui.label_status.setStyleSheet('color: red')
+                    self.ui.label_status.setText("Expression should not return None")
+                    self.ui.button_ok.setEnabled(False)
+                else:
+                    self.ui.label_status.setStyleSheet('color: green')
+                    self.ui.label_status.setText("Valid expression")
+                    self.ui.button_ok.setEnabled(True)
 
         self._cache = self._get_raw_command()
 
@@ -179,9 +315,11 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
 if __name__ == "__main__":  # pragma: nocover
 
+    from glue.main import load_plugins
     from glue.utils.qt import get_qapp
 
     app = get_qapp()
+    load_plugins()
 
     from glue.core.data import Data
     d = Data(label='test1', x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
