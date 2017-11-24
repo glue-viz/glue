@@ -86,6 +86,7 @@ class ComboHelper(HubListener):
     def choices(self, choices):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
+            prop.force_next_sync(self.state)
             prop.set_choices(self.state, choices)
 
     @property
