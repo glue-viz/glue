@@ -8,6 +8,7 @@ import weakref
 from glue.core import Data, Subset
 from glue.core.hub import HubListener
 from glue.core.message import (DataRemoveComponentMessage,
+                               DataReorderComponentMessage,
                                DataAddComponentMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
@@ -349,6 +350,8 @@ class ComponentIDComboHelper(ComboHelper):
     def register_to_hub(self, hub):
         hub.subscribe(self, DataRenameComponentMessage,
                       handler=self._on_rename)
+        hub.subscribe(self, DataReorderComponentMessage,
+                      handler=self.refresh)
         hub.subscribe(self, ComponentReplacedMessage,
                       handler=self.refresh)
         hub.subscribe(self, DataAddComponentMessage,

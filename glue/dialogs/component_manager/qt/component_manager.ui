@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
-    <height>500</height>
+    <width>532</width>
+    <height>639</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,19 @@
    </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
      <item>
       <widget class="QLabel" name="label_3">
        <property name="font">
@@ -83,6 +96,35 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>These are the components from the data that were loaded from a data file or were passed in to glue manually. These components have well-defined numerical or string values. Below you can re-order these components by dragging and dropping them, or rename them by double clicking on them</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>10</width>
+       <height>5</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="ComponentTreeWidget" name="list_main_components">
      <property name="dragDropMode">
       <enum>QAbstractItemView::InternalMove</enum>
@@ -132,6 +174,35 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>These are components that are defined mathematically based on other components. Their values are then evaluated on-the-fly when making visualizations. As for the main components, you can rename and reorder these, but you can also edit the definition by selecting a component and clicking on 'Edit defintion', or add a new one by clicking on 'New derived component'</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>10</width>
+       <height>5</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="ComponentTreeWidget" name="list_derived_components">
      <property name="dragDropMode">
       <enum>QAbstractItemView::InternalMove</enum>
@@ -168,7 +239,7 @@
      <item>
       <widget class="QToolButton" name="button_edit_derived">
        <property name="text">
-        <string>Edit selected</string>
+        <string>Edit definition</string>
        </property>
       </widget>
      </item>

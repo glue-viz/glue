@@ -305,3 +305,22 @@ def test_component_id_combo_helper_rename():
     data.id['x'].label = 'renamed'
 
     assert selection_choices(state, 'combo') == "renamed:y"
+
+
+def test_component_id_combo_helper_reorder():
+
+    # Make sure that renaming component IDs now propagates to the combo options
+
+    state = ExampleState()
+
+    data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+    dc = DataCollection([data])
+
+    helper = ComponentIDComboHelper(state, 'combo', dc)  # noqa
+    helper.append_data(data)
+
+    assert selection_choices(state, 'combo') == "x:y"
+
+    data.reorder_components(data.components[::-1])
+
+    assert selection_choices(state, 'combo') == "y:x"
