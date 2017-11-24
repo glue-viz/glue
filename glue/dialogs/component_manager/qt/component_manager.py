@@ -147,7 +147,10 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
     @property
     def data(self):
-        return self.ui.combosel_data.currentData()
+        try:
+            return self.ui.combosel_data.currentData()
+        except AttributeError:  # PyQt4
+            return self.ui.combosel_data.itemData(self.ui.combosel_data.currentIndex())
 
     def _update_component_lists(self, *args):
 

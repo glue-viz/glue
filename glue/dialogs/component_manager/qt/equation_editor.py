@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from collections import deque
+from collections import deque, OrderedDict
 
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
@@ -103,7 +103,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
         if references is not None:
             self.references = references
         elif data is not None:
-            self.references = {}
+            self.references = OrderedDict()
             for cid in data.primary_components:
                 self.references[cid.label] = cid
 
