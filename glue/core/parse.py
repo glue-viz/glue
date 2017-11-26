@@ -8,7 +8,12 @@ from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
 
 
-TAG_RE = re.compile('\{\s*(?P<tag>\S+)\s*\}')
+# The following expression matches substrings surrounded by curly brackets
+# with a component name inside. The component name can be composed of any
+# character that is not curly brackets (i.e. [^\{\}]) and has to start and
+# end with a character that is not a curly bracket or a space. The component
+# name can be surrounded by spaces, e.g. '{ a }'
+TAG_RE = re.compile('\{\s*(?P<tag>[^\s\{\}]+([^\{\}]*[^\s\{\}]+)?)\s*\}')
 
 __all__ = ['ParsedCommand', 'ParsedSubsetState']
 
@@ -137,10 +142,22 @@ def _validate(cmd, references):
     ------
     TypeError, if a tag is missing from references
     """
+
+    replacements = {}
+    references_new = {}
     for match in TAG_RE.finditer(cmd):
         tag = match.group('tag')
         if tag not in references:
             raise InvalidTagError(tag, references)
+        full_tag = match.string[slice(*match.span())]
+        replacements[full_tag] = '{' + references[tag].uuid + '}'
+        references_new[references[tag].uuid] = references[tag]
+
+    cmd_new = cmd
+    for before, after in replacements.items():
+        cmd_new = cmd_new.replace(before, after)
+
+    return cmd_new, references_new
 
 
 class ParsedCommand(object):
@@ -155,9 +172,17 @@ class ParsedCommand(object):
         cmd : str. A template command. Can only reference ComponentID objects
         references : mapping from command templates to substitution objects
         """
-        _validate(cmd, references)
-        self._cmd = cmd
-        self._references = references
+        self._cmd, self._references = _validate(cmd, references)
+
+    def render(self, mapping=None):
+        def sub_func(match):
+            tag = match.group('tag')
+            if mapping is None:
+                label = self._references[tag].label
+            else:
+                label = mapping[self._references[tag]]
+            return '{' + label + '}'
+        return TAG_RE.sub(sub_func, self._cmd)
 
     def ensure_only_component_references(self):
         _ensure_only_component_references(self._cmd, self._references)
@@ -167,7 +192,9 @@ class ParsedCommand(object):
         return _reference_list(self._cmd, self._references)
 
     def evaluate(self, data, view=None):
+
         from glue import env
+
         # pylint: disable=W0613, W0612
         references = self._references
         cmd = _dereference(self._cmd, self._references)
@@ -180,13 +207,18 @@ class ParsedCommand(object):
         # We now import math modules if not already defined in local or
         # global variables
         if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy
+            import numpy  # noqa
         if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np
+            import numpy as np  # noqa
         if 'math' not in global_variables and 'math' not in locals():
-            import math
+            import math  # noqa
 
-        return eval(cmd, global_variables, locals())  # careful!
+        result = eval(cmd, global_variables, locals())  # careful!
+
+        if data is not None and np.isscalar(result):
+            result = np.ones(data.shape) * result
+
+        return result
 
     def evaluate_test(self, view=None):
         from glue import env
@@ -207,7 +239,7 @@ class ParsedCommand(object):
             import math
 
         return eval(cmd, global_variables, locals())  # careful!
-        
+
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,
                     references=dict((k, context.id(v))

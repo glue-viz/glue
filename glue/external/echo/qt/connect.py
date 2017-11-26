@@ -307,11 +307,12 @@ def connect_combo_selection(instance, prop, widget, display=str):
         # Update choices in the combo box
 
         combo_data = [widget.itemData(idx) for idx in range(widget.count())]
+        combo_text = [widget.itemText(idx) for idx in range(widget.count())]
 
         choices = getattr(type(instance), prop).get_choices(instance)
         choice_labels = getattr(type(instance), prop).get_choice_labels(instance)
 
-        if combo_data == choices:
+        if combo_data == choices and combo_text == choice_labels:
             choices_updated = False
         else:
 

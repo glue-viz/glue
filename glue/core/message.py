@@ -12,7 +12,8 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'DataCollectionActiveDataChange', 'DataCollectionAddMessage',
            'DataCollectionDeleteMessage', 'ApplicationClosedMessage',
            'DataRemoveComponentMessage', 'LayerArtistEnabledMessage',
-           'LayerArtistDisabledMessage']
+           'LayerArtistDisabledMessage', 'DataRenameComponentMessage',
+           'DataReorderComponentMessage']
 
 
 class Message(object):
@@ -118,6 +119,13 @@ class DataMessage(Message):
         self.data = self.sender
 
 
+class DataRenameComponentMessage(DataMessage):
+
+    def __init__(self, sender, component_id, tag=None):
+        super(DataRenameComponentMessage, self).__init__(sender, tag=tag)
+        self.component_id = component_id
+
+
 class DataAddComponentMessage(DataMessage):
 
     def __init__(self, sender, component_id, tag=None):
@@ -130,6 +138,13 @@ class DataRemoveComponentMessage(DataMessage):
     def __init__(self, sender, component_id, tag=None):
         super(DataRemoveComponentMessage, self).__init__(sender, tag=tag)
         self.component_id = component_id
+
+
+class DataReorderComponentMessage(DataMessage):
+
+    def __init__(self, sender, component_ids, tag=None):
+        super(DataReorderComponentMessage, self).__init__(sender, tag=tag)
+        self.component_ids = component_ids
 
 
 class ComponentsChangedMessage(DataMessage):

@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import uuid
 import numbers
 import operator
 
@@ -73,6 +74,16 @@ class Subset(object):
         self.style.markersize *= 1.5
         self.style.color = color
         self.style.alpha = alpha
+
+        # We assign a UUID which can then be used for example in equations
+        # for derived components - the idea is that this doesn't change over
+        # the life cycle of glue, so it is a more reliable way to refer to
+        # components in strings than using labels
+        self._uuid = str(uuid.uuid4())
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def subset_state(self):

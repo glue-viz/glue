@@ -18,7 +18,8 @@ from ..component import (Component, DerivedComponent, CoordinateComponent,
                          CategoricalComponent)
 from ..component_id import ComponentID
 from ..data import Data
-
+from ..parse import ParsedCommand, ParsedComponentLink
+from ..data_collection import DataCollection
 
 VIEWS = (np.s_[:], np.s_[1], np.s_[::-1], np.s_[0, :])
 
@@ -342,3 +343,41 @@ def test_units():
     comp = Component([1, 2, 3], units=u.m)
     assert comp.units == 'm'
     assert isinstance(comp.units, six.string_types)
+
+
+def test_scalar_derived():
+    # Regression test for a bug that caused expressions without components to
+    # fail. Note that the data collection is needed here as the bug occurs in
+    # the link manager set up by the data collection.
+    data = Data(a=[3, 4, 1])
+    dc = DataCollection([data])  # noqa
+    pc = ParsedCommand('3.5', {})
+    link = ParsedComponentLink(ComponentID('b'), pc)
+    data.add_component_link(link)
+    np.testing.assert_equal(data['b'], [3.5, 3.5, 3.5])
+
+
+def test_rename_cid_used_in_derived():
+    # Unit test to make sure expressions still work when renaming components
+    data = Data(a=[3, 4, 1])
+    dc = DataCollection([data])  # noqa
+    pc = ParsedCommand('1 + {a}', {'a': data.id['a']})
+    link = ParsedComponentLink(ComponentID('b'), pc)
+    data.add_component_link(link)
+    np.testing.assert_equal(data['b'], [4, 5, 2])
+    data.id['a'].label = 'x'
+    np.testing.assert_equal(data['b'], [4, 5, 2])
+
+
+@pytest.mark.xfail
+def test_update_cid_used_in_derived():
+    # Unit test to make sure expressions still work when updating the component
+    # id for components
+    data = Data(a=[3, 4, 1])
+    dc = DataCollection([data])  # noqa
+    pc = ParsedCommand('1 + {a}', {'a': data.id['a']})
+    link = ParsedComponentLink(ComponentID('b'), pc)
+    data.add_component_link(link)
+    np.testing.assert_equal(data['b'], [4, 5, 2])
+    data.update_id(data.id['a'], ComponentID('x'))
+    np.testing.assert_equal(data['b'], [4, 5, 2])

@@ -7,11 +7,14 @@ import weakref
 
 from glue.core import Data, Subset
 from glue.core.hub import HubListener
-from glue.core.message import (ComponentsChangedMessage,
+from glue.core.message import (DataRemoveComponentMessage,
+                               DataReorderComponentMessage,
+                               DataAddComponentMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
-                               ComponentReplacedMessage)
+                               ComponentReplacedMessage,
+                               DataRenameComponentMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
@@ -85,7 +88,6 @@ class ComboHelper(HubListener):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
             prop.set_choices(self.state, choices)
-
 
     @property
     def display(self):
@@ -326,13 +328,34 @@ class ComponentIDComboHelper(ComboHelper):
 
         self.choices = choices
 
+    def _on_rename(self, msg):
+        # If a component ID is renamed, we don't need to refresh because the
+        # list of actual component IDs is the same as before. However, we do
+        # need to trigger a refresh of any GUI combos that use this, so we
+        # make the property notify a change. However, if we are inside a
+        # delay_callback block, the property will not be enabled, and notify()
+        # won't have any effect, in which case we set the 'force_next_sync'
+        # option which means that when exiting from the delay_callback block,
+        # this property will show up as having changed
+        prop = getattr(type(self.state), self.selection_property)
+        if prop.enabled(self.state):
+            prop.notify(self.state, self.selection, self.selection)
+        else:
+            prop.force_next_sync(self.state)
+
     def _filter_msg(self, msg):
         return msg.data in self._data or msg.sender in self._data_collection
 
     def register_to_hub(self, hub):
+        hub.subscribe(self, DataRenameComponentMessage,
+                      handler=self._on_rename)
+        hub.subscribe(self, DataReorderComponentMessage,
+                      handler=self.refresh)
         hub.subscribe(self, ComponentReplacedMessage,
                       handler=self.refresh)
-        hub.subscribe(self, ComponentsChangedMessage,
+        hub.subscribe(self, DataAddComponentMessage,
+                      handler=self.refresh)
+        hub.subscribe(self, DataRemoveComponentMessage,
                       handler=self.refresh)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,

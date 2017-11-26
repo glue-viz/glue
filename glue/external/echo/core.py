@@ -122,7 +122,7 @@ class CallbackProperty(object):
         new
             The new value of the property
         """
-        if self._disabled.get(instance, False):
+        if not self.enabled(instance):
             return
         for cback in self._callbacks.get(instance, []):
             cback(new)
@@ -140,6 +140,9 @@ class CallbackProperty(object):
         Enable previously-disabled callbacks for a specific instance
         """
         self._disabled[instance] = False
+
+    def enabled(self, instance):
+        return not self._disabled.get(instance, False)
 
     def add_callback(self, instance, func, echo_old=False, priority=0):
         """

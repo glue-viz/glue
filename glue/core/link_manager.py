@@ -76,7 +76,10 @@ def discover_links(data, links):
         for link in accessible_links(cids, links):
             from_ = set(link.get_from_ids())
             to_ = link.get_to_id()
-            cost = max([depth[f] for f in from_]) + 1
+            if len(from_) > 0:
+                cost = max([depth[f] for f in from_]) + 1
+            else:
+                cost = 1
             if to_ in cids and cost >= depth[to_]:
                 continue
             depth[to_] = cost

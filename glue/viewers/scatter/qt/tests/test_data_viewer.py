@@ -226,7 +226,7 @@ class TestScatterViewer(object):
         # was selected
 
         self.viewer.add_data(self.data)
-        self.viewer.state.x_att = self.data.components[0]
+        self.viewer.state.x_att = self.data.id['x']
         test = ComponentID('test')
         self.data.update_id(self.viewer.state.x_att, test)
         assert self.viewer.state.x_att is test
@@ -501,3 +501,9 @@ class TestScatterViewer(object):
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
 
         self.viewer.state.x_att_helper.pixel_coord = False
+
+    def test_component_renamed(self):
+        # If a component ID is renamed, this needs to be reflected in the combo
+        self.viewer.add_data(self.data)
+        self.data.id['x'].label = 'test'
+        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:test:y:z:Coordinate components:Pixel Axis 0 [x]:World 0'

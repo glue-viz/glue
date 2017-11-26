@@ -48,19 +48,30 @@ class CompletionTextEdit(QtWidgets.QTextEdit):
     def insert_completion(self, completion):
 
         tc = self.textCursor()
-        tc.select(QtGui.QTextCursor.WordUnderCursor)
-        tc.deleteChar()
 
-        completion = completion + " "
+        existing = self.text_under_cursor()
+
+        completion = completion[len(existing):] + " "
 
         self.setTextCursor(tc)
 
         self.insertPlainText(completion)
 
+        self.completer.setCompletionPrefix('')
+
     def text_under_cursor(self):
         tc = self.textCursor()
-        tc.select(QtGui.QTextCursor.WordUnderCursor)
-        return tc.selectedText()
+        text = self.toPlainText()
+        pos1 = tc.position()
+        if pos1 == 0 or text[pos1 - 1] == ' ':
+            return ''
+        else:
+            sub = text[:pos1]
+            if ' ' in sub:
+                pos2 = sub.rindex(' ')
+                return sub[pos2 + 1:]
+            else:
+                return sub
 
     # The following methods override methods in QTextEdit and should not be
     # renamed.
@@ -97,10 +108,9 @@ class CompletionTextEdit(QtWidgets.QTextEdit):
             self.completer.popup().hide()
             return
 
-        if (completion_prefix != self.completer.completionPrefix()):
-            self.completer.setCompletionPrefix(completion_prefix)
-            popup = self.completer.popup()
-            popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
+        self.completer.setCompletionPrefix(completion_prefix)
+        popup = self.completer.popup()
+        popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
 
         cr = self.cursorRect()
         cr.setWidth(self.completer.popup().sizeHintForColumn(0) +

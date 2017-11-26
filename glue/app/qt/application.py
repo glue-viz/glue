@@ -289,21 +289,29 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_ipython)
 
-        self._button_open_data = QtWidgets.QToolButton()
-        self._button_open_data.setText("Open Session")
-        self._button_open_data.setIcon(get_icon('glue_open'))
-        self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_data.clicked.connect(nonpartial(self._restore_session))
+        self._button_open_session = QtWidgets.QToolButton()
+        self._button_open_session.setText("Open Session")
+        self._button_open_session.setIcon(get_icon('glue_open'))
+        self._button_open_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_open_session.clicked.connect(nonpartial(self._restore_session))
 
-        self._data_toolbar.addWidget(self._button_open_data)
+        self._data_toolbar.addWidget(self._button_open_session)
 
-        self._button_open_data = QtWidgets.QToolButton()
-        self._button_open_data.setText("Save Session")
-        self._button_open_data.setIcon(get_icon('glue_filesave'))
-        self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_data.clicked.connect(nonpartial(self._choose_save_session))
+        self._button_save_session = QtWidgets.QToolButton()
+        self._button_save_session.setText("Save Session")
+        self._button_save_session.setIcon(get_icon('glue_filesave'))
+        self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_save_session.clicked.connect(nonpartial(self._choose_save_session))
 
-        self._data_toolbar.addWidget(self._button_open_data)
+        self._data_toolbar.addWidget(self._button_save_session)
+
+        self._button_edit_components = QtWidgets.QToolButton()
+        self._button_edit_components.setText("Add/edit data components")
+        self._button_edit_components.setIcon(get_icon('pencil'))
+        self._button_edit_components.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_edit_components.clicked.connect(nonpartial(self._layer_widget._create_component))
+
+        self._data_toolbar.addWidget(self._button_edit_components)
 
         spacer = QtWidgets.QWidget()
         spacer.setMinimumSize(20, 10)

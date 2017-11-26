@@ -17,7 +17,7 @@ class TestParse(object):
         reg = parse.TAG_RE
         valid = ['{a}', '{ a }', '{A}', '{a }', '{ a}',
                  '{a_}', '{abc_1}', '{_abc_1}', '{1}', '{1_}']
-        invalid = ['', '{}', '{a b}']
+        invalid = ['', '{}', '{a ']
         for v in valid:
             assert reg.match(v) is not None
         for i in invalid:
@@ -56,7 +56,7 @@ class TestParse(object):
         assert expected == result
 
     def test_validate(self):
-        ref = {'a': 1, 'b': 2}
+        ref = {'a': ComponentID('ca'), 'b': ComponentID('cb')}
         parse._validate('{a} + {b}', ref)
         parse._validate('{a}', ref)
         parse._validate('3 + 4', ref)
@@ -92,14 +92,13 @@ class TestParsedCommand(object):
         data.__getitem__.assert_called_once_with((c1, None))
 
     def test_evaluate_subset(self):
-        sub = MagicMock(spec_set=Subset)
-        sub2 = MagicMock(spec_set=Subset)
-        sub.to_mask.return_value = 3
-        sub2.to_mask.return_value = 4
-        cmd = '{s1} and {s2}'
-        refs = {'s1': sub, 's2': sub2}
+        data = Data(x=[1, 2, 3])
+        sub1 = data.new_subset(data.id['x'] > 1)
+        sub2 = data.new_subset(data.id['x'] < 3)
+        cmd = '{s1} & {s2}'
+        refs = {'s1': sub1, 's2': sub2}
         pc = parse.ParsedCommand(cmd, refs)
-        assert pc.evaluate(None) == (3 and 4)
+        np.testing.assert_equal(pc.evaluate(data), [0, 1, 0])
 
     def test_evaluate_function(self):
         data = MagicMock()

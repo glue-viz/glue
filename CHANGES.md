@@ -4,6 +4,19 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Added a new component manager that makes it possible to rename,
+  reorder, and remove components, as well as better manage derived
+  components, including editing previous equations. [#1479]
+
+* Added new messages ``DataReorderComponentMessage`` and
+  ``DataRenameComponentMessage`` which can be subscribed to. [#1479]
+  
+* Make it possible to reorder components in ``Data`` using the new
+  ``Data.reorder_components`` method. [#1479]
+  
+* The default order of components has changed - coordinate components
+  will now always come first (rather than second). [#1479]
+
 * Added support for scatter density maps, which is useful when making
   scatter plots of many points. [#1461]
 

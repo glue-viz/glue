@@ -3,10 +3,11 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-
+import pytest
 import numpy as np
 
 from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt
+from glue.core.component import CoordinateComponent, Component
 from glue.core.state import GlueUnSerializer
 from glue.core.component_id import PixelComponentID
 
@@ -192,5 +193,53 @@ def test_table_widget_010():
     colors = ['#e31a1c', '#6d7326', None]
 
     check_values_and_color(viewer.model, data, colors)
+
+    ga.close()
+
+
+@requires_qt
+@pytest.mark.parametrize('protocol', (0, 1))
+def test_load_log(protocol):
+
+    # Prior to Glue v0.13, components were added to the data as: first
+    # non-coordinate component, then coordinate components, then remaining non-
+    # coordinate components. In Glue v0.13, this changed to be coordinate
+    # components then non-coordinate components. The LoadLog functionality
+    # relies on an absolute component index, so we need to be careful - if the
+    # session file was created prior to Glue v0.13, we need to load the
+    # components in the log using the old order. The load_log_1.glu file was
+    # made with Glue v0.12.2, while the load_log_2.glu file was made with
+    # Glue v0.13.
+
+    with open(os.path.join(DATA, 'load_log_{0}.glu'.format(protocol)), 'r') as f:
+        template = f.read()
+
+    content = template.replace('{DATA_PATH}', (DATA + os.sep).replace('\\', '\\\\'))
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    dc = ga.session.data_collection
+
+    assert len(dc) == 1
+
+    data = dc[0]
+
+    assert data.label == 'simple'
+
+    np.testing.assert_equal(data['Pixel Axis 0 [x]'], [0, 1, 2])
+    np.testing.assert_equal(data['World 0'], [0, 1, 2])
+    np.testing.assert_equal(data['a'], [1, 3, 5])
+    np.testing.assert_equal(data['b'], [2, 2, 3])
+
+    if protocol == 0:
+        assert data.components == [data.id['a'], data.id['Pixel Axis 0 [x]'], data.id['World 0'], data.id['b']]
+    else:
+        assert data.components == [data.id['Pixel Axis 0 [x]'], data.id['World 0'], data.id['a'], data.id['b']]
+
+    assert type(data.get_component('Pixel Axis 0 [x]')) == CoordinateComponent
+    assert type(data.get_component('World 0')) == CoordinateComponent
+    assert type(data.get_component('a')) == Component
+    assert type(data.get_component('b')) == Component
 
     ga.close()

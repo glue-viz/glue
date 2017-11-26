@@ -10,7 +10,7 @@ from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
-                               ComponentReplacedMessage)
+                               ComponentReplacedMessage, DataReorderComponentMessage)
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
@@ -157,7 +157,11 @@ class Data(object):
         else:
             if len(self._components) == 0:
                 return True
-            return component.shape == self.shape
+            else:
+                if all(comp.shape == () for comp in self._components.values()):
+                    return True
+                else:
+                    return component.shape == self.shape
 
     @contract(cid=ComponentID, returns=np.dtype)
     def dtype(self, cid):
@@ -387,6 +391,8 @@ class Data(object):
             component = Component.autotyped(component)
 
         if isinstance(component, DerivedComponent):
+            if len(self._components) == 0:
+                raise TypeError("Cannot add a derived component as a first component")
             component.set_parent(self)
 
         if not(self._check_can_add(component)):
@@ -401,16 +407,19 @@ class Data(object):
         else:
             component_id = ComponentID(label, hidden=hidden, parent=self)
 
+        if len(self._components) == 0:
+            self._create_pixel_and_world_components(ndim=component.ndim)
+
+        # In some cases, such as when loading a session, we actually disable the
+        # auto-creation of pixel and world coordinates, so the first component
+        # may be a coordinate component with no shape. Therefore we only set the
+        # shape once a component has a valid shape rather than strictly on the
+        # first component.
+        if self._shape == () and component.shape != ():
+            self._shape = component.shape
+
         is_present = component_id in self._components
         self._components[component_id] = component
-
-        first_component = len(self._components) == 1
-        if first_component:
-            if isinstance(component, DerivedComponent):
-                raise TypeError("Cannot add a derived component as "
-                                "first component")
-            self._shape = component.shape
-            self._create_pixel_and_world_components()
 
         if self.hub and not is_present:
             msg = DataAddComponentMessage(self, component_id)
@@ -448,15 +457,16 @@ class Data(object):
         self.add_component(dc, label=to_, hidden=hidden)
         return dc
 
-    def _create_pixel_and_world_components(self):
-        for i in range(self.ndim):
+    def _create_pixel_and_world_components(self, ndim):
+
+        for i in range(ndim):
             comp = CoordinateComponent(self, i)
-            label = pixel_label(i, self.ndim)
+            label = pixel_label(i, ndim)
             cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
         if self.coords:
-            for i in range(self.ndim):
+            for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
                 cid = self.add_component(comp, label, hidden=True)
@@ -866,6 +876,39 @@ class Data(object):
         df = pd.DataFrame(dict((comp.label, h(comp)) for comp in self.components))
         order = [comp.label for comp in self.components]
         return df[order]
+
+    def reorder_components(self, component_ids):
+        """
+        Reorder the components using a list of component IDs. The new set
+        of component IDs has to match the existing set (though order may differ).
+        """
+
+        # We need to be careful because component IDs overload == so we can't
+        # use the normal ways to test whether the component IDs are the same
+        # as self.components - instead we need to explicitly use id
+
+        if len(component_ids) != len(self.components):
+            raise ValueError("Number of component in component_ids does not "
+                             "match existing number of components")
+
+        if set(id(c) for c in self.components) != set(id(c) for c in component_ids):
+            raise ValueError("specified component_ids should match existing components")
+
+        existing = self.components
+        for idx in range(len(component_ids)):
+            if component_ids[idx] is not existing[idx]:
+                break
+        else:
+            # If we get here then the suggested order is the same as the existing one
+            return
+
+        # PY3: once we drop support for Python 2 we could sort in-place using
+        # the move_to_end method on OrderedDict
+        self._components = OrderedDict((key, self._components[key]) for key in component_ids)
+
+        if self.hub:
+            msg = DataReorderComponentMessage(self, list(self._components))
+            self.hub.broadcast(msg)
 
     @contract(mapping="dict(inst($Component, $ComponentID):array_like)")
     def update_components(self, mapping):

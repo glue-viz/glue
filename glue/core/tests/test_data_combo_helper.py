@@ -240,7 +240,6 @@ def test_component_id_combo_helper_add():
     assert selection_choices(state, 'combo') == "x:y:z"
 
 
-
 def test_manual_data_combo_helper():
 
     state = ExampleState()
@@ -273,7 +272,7 @@ def test_data_collection_combo_helper():
 
     dc = DataCollection([])
 
-    helper = DataCollectionComboHelper(state, 'combo', dc)
+    helper = DataCollectionComboHelper(state, 'combo', dc)  # noqa
 
     data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
@@ -287,3 +286,41 @@ def test_data_collection_combo_helper():
     dc.remove(data1)
 
     assert selection_choices(state, 'combo') == ""
+
+
+def test_component_id_combo_helper_rename():
+
+    # Make sure that renaming component IDs now propagates to the combo options
+
+    state = ExampleState()
+
+    data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+    dc = DataCollection([data])
+
+    helper = ComponentIDComboHelper(state, 'combo', dc)  # noqa
+    helper.append_data(data)
+
+    assert selection_choices(state, 'combo') == "x:y"
+
+    data.id['x'].label = 'renamed'
+
+    assert selection_choices(state, 'combo') == "renamed:y"
+
+
+def test_component_id_combo_helper_reorder():
+
+    # Make sure that renaming component IDs now propagates to the combo options
+
+    state = ExampleState()
+
+    data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+    dc = DataCollection([data])
+
+    helper = ComponentIDComboHelper(state, 'combo', dc)  # noqa
+    helper.append_data(data)
+
+    assert selection_choices(state, 'combo') == "x:y"
+
+    data.reorder_components(data.components[::-1])
+
+    assert selection_choices(state, 'combo') == "y:x"

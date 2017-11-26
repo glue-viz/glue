@@ -666,7 +666,7 @@ def _load_data(rec, context):
 
     # we manually rebuild pixel/world components, so
     # we override this function. This is pretty ugly
-    result._create_pixel_and_world_components = lambda: None
+    result._create_pixel_and_world_components = lambda ndim: None
 
     comps = [list(map(context.object, [cid, comp]))
              for cid, comp in rec['components']]
@@ -814,11 +814,13 @@ def _save_component(component, context):
 
 @loader(Component)
 def _load_component(rec, context):
+
     if 'log' in rec:
         return context.object(rec['log']).component(rec['log_item'])
 
     return Component(data=context.object(rec['data']),
                      units=rec['units'])
+
 
 @saver(CategoricalComponent)
 def _save_categorical_component(component, context):
