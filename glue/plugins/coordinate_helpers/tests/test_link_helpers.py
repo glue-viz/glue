@@ -32,7 +32,7 @@ lon1, lat1, lon2, lat2 = (ComponentID('lon_in'), ComponentID('lat_in'),
 @pytest.mark.parametrize(('conv_class', 'expected'), list(EXPECTED.items()))
 def test_conversion(conv_class, expected):
 
-    result = conv_class(lon1, lat1, lon2, lat2)
+    result = conv_class([lon1, lat1], [lon2, lat2])
 
     assert len(result) == 4
 

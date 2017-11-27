@@ -112,12 +112,13 @@ class MultiLink(LinkCollection):
 
     cids = None
 
-    def __init__(self, *args):
-        self.cids = args
+    def __init__(self, cids_left, cids_right):
+        self.cids_left = cids_left
+        self.cids_right = cids_right
 
     def create_links(self, cids_left, cids_right, forwards=None, backwards=None):
 
-        if self.cids is None:
+        if self.cids_left is None or self.cids_right is None:
             raise Exception("MultiLink.__init__ was not called before creating links")
 
         if forwards is None and backwards is None:
@@ -134,15 +135,17 @@ class MultiLink(LinkCollection):
                 self.append(ComponentLink(cids_right, l, func))
 
     def __gluestate__(self, context):
-        return {'cids': [context.id(cid) for cid in self.cids]}
+        return {'cids_left': [context.id(cid) for cid in self.cids_left],
+                'cids_right': [context.id(cid) for cid in self.cids_right]}
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(*[context.object(cid) for cid in rec['cids']])
+        return cls([context.object(cid) for cid in rec['cids_left']],
+                   [context.object(cid) for cid in rec['cids_right']])
 
 
 def multi_link(cids_left, cids_right, forwards=None, backwards=None):
-    ml = MultiLink(cids_left + cids_right)
+    ml = MultiLink(cids_left, cids_right)
     ml.create_links(cids_left, cids_right, forwards=forwards, backwards=backwards)
     return ml
 
