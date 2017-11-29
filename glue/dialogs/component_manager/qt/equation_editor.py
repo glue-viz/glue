@@ -136,6 +136,8 @@ class EquationEditorDialog(QtWidgets.QDialog):
         self._setup_freeform_tab(data=data, equation=equation, references=references)
         self._setup_predefined_tab(data=data)
 
+        self.ui.tab.currentChanged.connect(self._update_status)
+
     def _setup_predefined_tab(self, data=None):
 
         # Populate category combo
@@ -168,54 +170,78 @@ class EquationEditorDialog(QtWidgets.QDialog):
         return self.function is not None and type(self.function).__name__ == 'LinkFunction'
 
     def _setup_inputs(self, event=None):
+
         if self.is_function:
-            self._setup_inputs_function()
+            label = function_label(self.function)
+            input_labels = getfullargspec(self.function.function)[0]
+
         else:
-            self._setup_inputs_helper()
+            label = helper_label(self.function)
+            input_labels = self.function.input_labels
 
-    def _clear_inputs_layout(self):
-        while self.ui.layout_inputs.count() > 0:
-            item = self.ui.layout_inputs.itemAt(0)
-            self.ui.layout_inputs.removeItem(item)
-            item.widget().setParent(None)
+        self.ui.label_info.setText(label)
 
-    def _add_input_widget(self, name):
-        widget = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout()
+        self._clear_input_output_layouts()
+
+        input_message = "The function above takes the following input(s):"
+
+        if len(input_labels) > 1:
+            input_message = input_message.replace('(s)', 's')
+        else:
+            input_message = input_message.replace('(s)', '')
+
+        self.ui.layout_inout.addWidget(QtWidgets.QLabel(input_message), 0, 1, 1, 3)
+
+        spacer1 = QtWidgets.QSpacerItem(10, 5,
+                                        QtWidgets.QSizePolicy.Expanding,
+                                        QtWidgets.QSizePolicy.Fixed)
+        spacer2 = QtWidgets.QSpacerItem(10, 5,
+                                        QtWidgets.QSizePolicy.Expanding,
+                                        QtWidgets.QSizePolicy.Fixed)
+        self.ui.layout_inout.addItem(spacer1, 0, 0)
+        self.ui.layout_inout.addItem(spacer2, 0, 4)
+
+        row = 0
+        for a in input_labels:
+            row += 1
+            self._add_input_widget(a, row)
+
+        output_message = "This function produces the following output(s) - you can set the label(s) here:"
+
+        if len(self.function.output_labels) > 1:
+            output_message = output_message.replace('(s)', 's')
+        else:
+            output_message = output_message.replace('(s)', '')
+
+        row += 1
+        self.ui.layout_inout.addWidget(QtWidgets.QLabel(output_message), row, 1, 1, 3)
+
+        for a in self.function.output_labels:
+            row += 1
+            self._add_output_widget(a, row)
+
+    def _clear_input_output_layouts(self):
+
+        for row in range(self.ui.layout_inout.rowCount()):
+            for col in range(self.ui.layout_inout.columnCount()):
+                item = self.ui.layout_inout.itemAtPosition(row, col)
+                if item is not None:
+                    self.ui.layout_inout.removeItem(item)
+                    if item.widget() is not None:
+                        item.widget().setParent(None)
+
+    def _add_input_widget(self, name, row):
         label = QtWidgets.QLabel(name)
         combo = QtWidgets.QComboBox()
         update_combobox(combo, list(self.references.items()))
-        layout.addWidget(label)
-        layout.addWidget(combo)
-        widget.setLayout(layout)
-        layout.setContentsMargins(1, 0, 1, 1)
-        self.ui.layout_inputs.addWidget(widget)
+        self.ui.layout_inout.addWidget(label, row, 1)
+        self.ui.layout_inout.addWidget(combo, row, 2)
 
-    def _setup_inputs_function(self):
-
-        func = self.function.function
-        args = getfullargspec(func)[0]
-        label = function_label(self.function)
-        self.ui.label_info.setText(label)
-
-        self._clear_inputs_layout()
-
-        for a in args:
-            self._add_input_widget(a)
-
-    def _setup_inputs_helper(self):
-
-        # Here it looks like helpers need to be clearer which are the inputs from
-        # one side and the other side (input/output)
-
-        label = helper_label(self.function)
-        args = self.function.input_labels
-        self.ui.label_info.setText(label)
-
-        self._clear_inputs_layout()
-
-        for a in args:
-            self._add_input_widget(a)
+    def _add_output_widget(self, name, row):
+        label = QtWidgets.QLabel(name)
+        edit = QtWidgets.QLineEdit()
+        self.ui.layout_inout.addWidget(label, row, 1)
+        self.ui.layout_inout.addWidget(edit, row, 2)
 
     def _populate_function_combo(self, event=None):
         """
@@ -260,42 +286,50 @@ class EquationEditorDialog(QtWidgets.QDialog):
         label = self.ui.combosel_component.currentText()
         self.expression.insertPlainText('{' + label + '}')
 
-    def _update_status(self):
+    def _update_status(self, event=None):
 
-        # If the text hasn't changed, no need to check again
-        if hasattr(self, '_cache') and self._get_raw_command() == self._cache:
-            return
+        if self.ui.tab.currentIndex() == 0:
 
-        if self._get_raw_command() == "":
-            self.ui.label_status.setText("")
-            self.ui.button_ok.setEnabled(False)
+            self.ui.label_status.setStyleSheet('color: green')
+            self.ui.label_status.setText('')
+            self.ui.button_ok.setEnabled(True)
+
         else:
-            try:
-                pc = self._get_parsed_command()
-                result = pc.evaluate_test()
-            except SyntaxError:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText("Incomplete or invalid syntax")
-                self.ui.button_ok.setEnabled(False)
-            except InvalidTagError as exc:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText("Invalid component: {0}".format(exc.tag))
-                self.ui.button_ok.setEnabled(False)
-            except Exception as exc:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText(str(exc))
+
+            # If the text hasn't changed, no need to check again
+            if hasattr(self, '_cache') and self._get_raw_command() == self._cache and event is None:
+                return
+
+            if self._get_raw_command() == "":
+                self.ui.label_status.setText("")
                 self.ui.button_ok.setEnabled(False)
             else:
-                if result is None:
+                try:
+                    pc = self._get_parsed_command()
+                    result = pc.evaluate_test()
+                except SyntaxError:
                     self.ui.label_status.setStyleSheet('color: red')
-                    self.ui.label_status.setText("Expression should not return None")
+                    self.ui.label_status.setText("Incomplete or invalid syntax")
+                    self.ui.button_ok.setEnabled(False)
+                except InvalidTagError as exc:
+                    self.ui.label_status.setStyleSheet('color: red')
+                    self.ui.label_status.setText("Invalid component: {0}".format(exc.tag))
+                    self.ui.button_ok.setEnabled(False)
+                except Exception as exc:
+                    self.ui.label_status.setStyleSheet('color: red')
+                    self.ui.label_status.setText(str(exc))
                     self.ui.button_ok.setEnabled(False)
                 else:
-                    self.ui.label_status.setStyleSheet('color: green')
-                    self.ui.label_status.setText("Valid expression")
-                    self.ui.button_ok.setEnabled(True)
+                    if result is None:
+                        self.ui.label_status.setStyleSheet('color: red')
+                        self.ui.label_status.setText("Expression should not return None")
+                        self.ui.button_ok.setEnabled(False)
+                    else:
+                        self.ui.label_status.setStyleSheet('color: green')
+                        self.ui.label_status.setText("Valid expression")
+                        self.ui.button_ok.setEnabled(True)
 
-        self._cache = self._get_raw_command()
+            self._cache = self._get_raw_command()
 
     def _get_raw_command(self):
         return str(self.ui.expression.toPlainText())
