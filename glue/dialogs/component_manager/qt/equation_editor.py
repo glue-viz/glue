@@ -89,7 +89,7 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         self._cache = self.toPlainText()
 
 
-class EquationEditorDialog(QtWidgets.QDialog):
+class EquationEditorDialog(QtWidgets.QWidget):
 
     valid = CallbackProperty('')
     message = CallbackProperty('')
