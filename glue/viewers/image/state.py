@@ -370,7 +370,7 @@ class BaseImageLayerState(MatplotlibLayerState):
             return image[view]
 
     def _get_reprojected_image(self, view=None):
-        if self.layer is self.viewer_state.reference_data:
+        if self.layer.data is self.viewer_state.reference_data:
             # Also if pixel coordinates are the same
             return self._get_image(view=view)
         else:
