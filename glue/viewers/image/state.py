@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from collections import defaultdict
 
 import numpy as np
+from scipy.ndimage import map_coordinates
 
 from glue.core import Data
 from glue.config import colormaps
@@ -465,12 +466,13 @@ class ImageLayerState(BaseImageLayerState):
             # Also if pixel coordinates are the same
             return self.layer[self.attribute, view]
         else:
-            # REPROJECT! All right, let's do this. For now let's just assume 2D.
-            py = self.viewer_state.reference_data[self.layer.pixel_component_ids[0], view]
-            px = self.viewer_state.reference_data[self.layer.pixel_component_ids[1], view]
-            coords = np.array([py.ravel(), px.ravel()])
-            from scipy.ndimage import map_coordinates
-            return map_coordinates(self.layer[self.attribute], coords, cval=np.nan).reshape(px.shape)
+            print(view)
+            pixel_coords = [self.viewer_state.reference_data[pix, view]
+                            for pix in self.layer.pixel_component_ids]
+            coords = np.array([p.ravel() for p in pixel_coords])
+            # order=3 (default) doesn't work if there are NaN values
+            result = map_coordinates(self.layer[self.attribute].astype(float), coords, cval=np.nan, order=1)
+            return result.reshape(pixel_coords[0].shape)
 
     def flip_limits(self):
         """
@@ -489,17 +491,16 @@ class ImageSubsetLayerState(BaseImageLayerState):
     A state class that includes all the attributes for subset layers in an image plot.
     """
 
+    # TODO: we can save memory by not showing subset multiple times for
+    # different image datasets since the footprint should be the same.
+
     def _get_image(self, view=None):
         if self.layer.data is self.viewer_state.reference_data:
             # Also if pixel coordinates are the same
             return self.layer.to_mask(view=view)
         else:
-            # REPROJECT! All right, let's do this. For now let's just assume 2D.
-            print(view)
-            py = self.viewer_state.reference_data[self.layer.pixel_component_ids[0], view]
-            px = self.viewer_state.reference_data[self.layer.pixel_component_ids[1], view]
-            coords = np.array([py.ravel(), px.ravel()])
-            from scipy.ndimage import map_coordinates
-            result = map_coordinates(self.layer.to_mask().astype(float), coords, cval=0, order=0).reshape(px.shape)
-            print(result.shape, view)
-            return result
+            pixel_coords = [self.viewer_state.reference_data[pix, view]
+                            for pix in self.layer.pixel_component_ids]
+            coords = np.array([p.ravel() for p in pixel_coords])
+            result = map_coordinates(self.layer.to_mask().astype(float), coords, cval=0., order=0)
+            return result.reshape(pixel_coords[0].shape)
