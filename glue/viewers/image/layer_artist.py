@@ -270,6 +270,9 @@ class ImageSubsetArray(object):
                 self.viewer_state is None):
             return None
 
+        if not self.layer_artist.visible:
+            return self.nan_array
+
         if not self.layer_artist._compatible_with_reference_data:
             return None
 
