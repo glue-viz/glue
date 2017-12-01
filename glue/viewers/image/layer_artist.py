@@ -73,32 +73,9 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
             self.enable()
             return
 
-        # Check whether the pixel component IDs of the dataset are equivalent
-        # to that of the reference dataset. In future this is where we could
-        # allow for these to be different and implement reprojection.
-        if self.layer.ndim != self._viewer_state.reference_data.ndim:
-            self._compatible_with_reference_data = False
-            self.disable('Data dimensions do not match reference data')
-            return
-
-        # Determine whether pixel component IDs are equivalent
-
-        pids = self.layer.pixel_component_ids
-        pids_ref = self._viewer_state.reference_data.pixel_component_ids
-
-        if isinstance(self.layer, Data):
-            data = self.layer
-        else:
-            data = self.layer.data
-
-        for i in range(data.ndim):
-            if not is_equivalent_cid(data, pids[i], pids_ref[i]):
-                self._compatible_with_reference_data = False
-                self.disable('Pixel component IDs do not match. You can try '
-                             'fixing this by linking the pixel component IDs '
-                             'of this dataset with those of the reference '
-                             'dataset.')
-                return
+        # TEMP: for now just assume we are compatible, then need to reimplement
+        # this check based on any coordinate links, not necessarily exact
+        # equivalence of pixel coordinates.
 
         self._compatible_with_reference_data = True
         self.enable()
@@ -282,7 +259,7 @@ class ImageSubsetArray(object):
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
 
-        full_shape = self.layer_state.layer.shape
+        full_shape = self.viewer_state.reference_data.shape
 
         return full_shape[y_axis], full_shape[x_axis]
 
