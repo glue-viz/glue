@@ -344,7 +344,7 @@ class BaseImageLayerState(MatplotlibLayerState):
 
             view_applied = False
 
-        image = self._get_image(view=full_view)
+        image = self._get_reprojected_image(view=full_view)
 
         # Apply aggregation functions if needed
 
@@ -368,6 +368,32 @@ class BaseImageLayerState(MatplotlibLayerState):
             return image
         else:
             return image[view]
+
+    def _get_reprojected_image(self, view=None):
+        if self.layer is self.viewer_state.reference_data:
+            # Also if pixel coordinates are the same
+            return self._get_image(view=view)
+        else:
+            pixel_coords = [self.viewer_state.reference_data[pix, view]
+                            for pix in self.layer.pixel_component_ids]
+            coords = np.array([p.ravel() for p in pixel_coords])
+            # Now prepare a view that we can use to get the value to interpolate
+            # since we want to avoid having to access the full array of values
+            interp_view = []
+            for icoord, coord in enumerate(coords):
+                cmin, cmax = coord.min(), coord.max()
+                nmax = self.layer.shape[icoord]
+                # TODO: figure out exact thresholds to use here
+                if cmin > nmax or cmax < 0:
+                    return np.ones(pixel_coords[0].shape) * np.nan
+                cmin = max(0, cmin)
+                cmax = min(nmax, cmax)
+                interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
+                coord -= cmin
+            original = self._get_image(view=interp_view).astype(float)
+            # order=3 (default) doesn't work if there are NaN values
+            result = map_coordinates(original, coords, cval=np.nan, order=0)
+            return result.reshape(pixel_coords[0].shape)
 
     def _get_image(self, view=None):
         raise NotImplementedError()
@@ -462,30 +488,7 @@ class ImageLayerState(BaseImageLayerState):
             self._sync_alpha.disable_syncing()
 
     def _get_image(self, view=None):
-        if self.layer is self.viewer_state.reference_data:
-            # Also if pixel coordinates are the same
-            return self.layer[self.attribute, view]
-        else:
-            pixel_coords = [self.viewer_state.reference_data[pix, view]
-                            for pix in self.layer.pixel_component_ids]
-            coords = np.array([p.ravel() for p in pixel_coords])
-            # Now prepare a view that we can use to get the value to interpolate
-            # since we want to avoid having to access the full array of values
-            interp_view = []
-            for icoord, coord in enumerate(coords):
-                cmin, cmax = coord.min(), coord.max()
-                nmax = self.layer.shape[icoord]
-                # TODO: figure out exact thresholds to use here
-                if cmin > nmax or cmax < 0:
-                    return np.ones(pixel_coords[0].shape) * np.nan
-                cmin = max(0, cmin)
-                cmax = min(nmax, cmax)
-                interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
-                coord -= cmin
-            original = self.layer[self.attribute, interp_view].astype(float)
-            # order=3 (default) doesn't work if there are NaN values
-            result = map_coordinates(original, coords, cval=np.nan, order=1)
-            return result.reshape(pixel_coords[0].shape)
+        return self.layer[self.attribute, view]
 
     def flip_limits(self):
         """
@@ -508,12 +511,4 @@ class ImageSubsetLayerState(BaseImageLayerState):
     # different image datasets since the footprint should be the same.
 
     def _get_image(self, view=None):
-        if self.layer.data is self.viewer_state.reference_data:
-            # Also if pixel coordinates are the same
-            return self.layer.to_mask(view=view)
-        else:
-            pixel_coords = [self.viewer_state.reference_data[pix, view]
-                            for pix in self.layer.pixel_component_ids]
-            coords = np.array([p.ravel() for p in pixel_coords])
-            result = map_coordinates(self.layer.to_mask().astype(float), coords, cval=0., order=0)
-            return result.reshape(pixel_coords[0].shape)
+        return self.layer.to_mask(view=view)
