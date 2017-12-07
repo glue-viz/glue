@@ -42,19 +42,19 @@ matrix:
 
         - os: linux
           stage: Initial
-          PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=2.7
 
         - os: linux
           stage: Initial
-          PYTHON_VERSION=3.6
+          env: PYTHON_VERSION=3.6
 
         - os: osx
           stage: Full
-          PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=2.7
 
         - os: osx
           stage: Full
-          PYTHON_VERSION=3.6
+          env: PYTHON_VERSION=3.6
 
         # Astropy dev
         - os: linux
