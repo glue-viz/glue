@@ -34,6 +34,9 @@ v0.12.4 (unreleased)
 * Fixed a bug that caused errors when removing items from a selection
   property linked to a QComboBox.
 
+* Improve plugin loading to be less sensitive to exact versions of
+  installed dependencies for plugins.
+
 v0.12.3 (2017-11-14)
 --------------------
 
