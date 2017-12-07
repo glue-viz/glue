@@ -1,9 +1,5 @@
 language: c
 
-os:
-    - linux
-    - osx
-
 sudo: false
 
 addons:
@@ -15,9 +11,6 @@ notifications:
   email: false
 
 env:
-  matrix:
-    - PYTHON_VERSION=2.7
-    - PYTHON_VERSION=3.6
   global:
     # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions.
     - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
@@ -36,6 +29,10 @@ env:
     - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
     - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
+stages:
+    - name: Initial
+    - name: Full
+
 matrix:
 
     # Don't wait for allowed failures
@@ -43,19 +40,38 @@ matrix:
 
     include:
 
+        - os: linux
+          stage: Initial
+          PYTHON_VERSION=2.7
+
+        - os: linux
+          stage: Initial
+          PYTHON_VERSION=3.6
+
+        - os: osx
+          stage: Full
+          PYTHON_VERSION=2.7
+
+        - os: osx
+          stage: Full
+          PYTHON_VERSION=3.6
+
         # Astropy dev
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=3.6
                ASTROPY_VERSION=dev
 
         # Numpy dev
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=3.6
                NUMPY_VERSION=dev
 
         # The following configuration tests that glue functions with minimal
         # dependencies.
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=3.6
                PYTEST_ARGS="--cov glue"
                CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density"
@@ -63,6 +79,7 @@ matrix:
                REMOVE_INSTALL_REQUIRES=1
 
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=3.6
                DOC_TRIGGER=1
                PYTEST_ARGS="--cov glue --no-optional-skip"
@@ -71,6 +88,7 @@ matrix:
         # Test with older package versions:
 
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=1.5
                NUMPY_VERSION=1.11
@@ -82,6 +100,7 @@ matrix:
         # Test with PySide, but due to segmentation faults, mark as an
         # allowed failure.
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=2.7
                QT_PKG=pyside
 
@@ -89,6 +108,7 @@ matrix:
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
         - os: linux
+          stage: Full
           env: PYTHON_VERSION=3.6
                QT_PKG=False
 
