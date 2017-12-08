@@ -165,6 +165,7 @@ install:
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
+      sed -i.bak 's/in REQUIRED_PLUGINS/in REQUIRED_PLUGINS and False/' glue/main.py || true;
     fi
 
   # Set MPLBACKEND to Agg by default - this will get overriden if Qt is present,
