@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import optparse
+from importlib import import_module
 
 from glue import __version__
 from glue.logger import logger
@@ -254,6 +255,16 @@ def main(argv=sys.argv):
 _loaded_plugins = set()
 _installed_plugins = set()
 
+REQUIRED_PLUGINS = ['glue.plugins.tools.pv_slicer',
+                    'glue.plugins.tools.spectrum_tool',
+                    'glue.plugins.coordinate_helpers',
+                    'glue.viewers.image',
+                    'glue.viewers.scatter',
+                    'glue.viewers.histogram',
+                    'glue.viewers.table',
+                    'glue.core.data_exporters',
+                    'glue.io.formats.fits']
+
 
 def load_plugins(splash=None):
 
@@ -292,12 +303,33 @@ def load_plugins(splash=None):
         if not config.plugins[item.name]:
             continue
 
+        # We don't use item.load() because that then checks requirements of all
+        # the imported packages, which can lead to errors like this one that
+        # don't really matter:
+        #
+        # Exception: (pytest 2.6.0 (/Users/tom/miniconda3/envs/py27/lib/python2.7/site-packages),
+        #             Requirement.parse('pytest>=2.8'), set(['astropy']))
+        #
+        # Just to be clear, this kind of error does indicate that there is an
+        # old version of a package in the environment, but this can confuse
+        # users as importing astropy directly would work (as setuptools then
+        # doesn't do a stringent test of dependency versions). Often this kind
+        # of error can occur if there is a conda version of a package and and
+        # older pip version.
+
+        module = import_module(item.module_name)
+        function = getattr(module, item.attrs[0])
+
         try:
-            function = item.load()
             function()
         except Exception as exc:
-            logger.info("Loading plugin {0} failed "
-                        "(Exception: {1})".format(item.name, exc))
+            # Here we check that some of the 'core' plugins load well and
+            # raise an actual exception if not.
+            if item.module_name in REQUIRED_PLUGINS:
+                raise
+            else:
+                logger.info("Loading plugin {0} failed "
+                            "(Exception: {1})".format(item.name, exc))
         else:
             logger.info("Loading plugin {0} succeeded".format(item.name))
             _loaded_plugins.add(item.module_name)
