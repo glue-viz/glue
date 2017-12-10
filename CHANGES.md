@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.12.4 (unreleased)
+--------------------
+
+* Improve plugin loading to be less sensitive to exact versions of
+  installed dependencies for plugins.
+
 v0.12.3 (2017-11-14)
 --------------------
 

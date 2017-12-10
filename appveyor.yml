@@ -19,6 +19,9 @@ environment:
       - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.6"
 
+matrix:
+    fast_finish: true
+
 platform:
     -x64
 
