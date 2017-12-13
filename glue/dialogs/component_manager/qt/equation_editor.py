@@ -1,11 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from collections import deque, OrderedDict
+from collections import deque
 
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
+from glue.external.echo import CallbackProperty
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
 from glue.utils.qt import load_ui, CompletionTextEdit
 
@@ -88,24 +89,17 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         self._cache = self.toPlainText()
 
 
-class EquationEditorDialog(QtWidgets.QDialog):
+class EquationEditorDialog(QtWidgets.QWidget):
 
-    def __init__(self, data=None, equation=None, references=None, parent=None):
+    valid = CallbackProperty('')
+    message = CallbackProperty('')
+
+    def __init__(self, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
-
-        self.equation = equation
-
-        # Get mapping from label to component ID
-        if references is not None:
-            self.references = references
-        elif data is not None:
-            self.references = OrderedDict()
-            for cid in data.primary_components:
-                self.references[cid.label] = cid
 
         # Populate component combo
         for label, cid in self.references.items():
@@ -115,10 +109,8 @@ class EquationEditorDialog(QtWidgets.QDialog):
         labels = ['{' + label + '}' for label in self.references]
         self.ui.expression.set_word_list(labels)
 
+        # Set initial equation
         self.ui.expression.insertPlainText(equation)
-
-        self.ui.button_ok.clicked.connect(self.accept)
-        self.ui.button_cancel.clicked.connect(self.reject)
 
         self.ui.button_insert.clicked.connect(self._insert_component)
 
@@ -129,35 +121,35 @@ class EquationEditorDialog(QtWidgets.QDialog):
         label = self.ui.combosel_component.currentText()
         self.expression.insertPlainText('{' + label + '}')
 
-    def _update_status(self):
+    def _update_status(self, event=None):
 
         # If the text hasn't changed, no need to check again
-        if hasattr(self, '_cache') and self._get_raw_command() == self._cache:
+        if hasattr(self, '_cache') and self._get_raw_command() == self._cache and event is None:
             return
 
         if self._get_raw_command() == "":
-            self.ui.label_status.setText("")
-            self.ui.button_ok.setEnabled(False)
+            self.message = ""
+            self.valid = True
         else:
             try:
                 pc = self._get_parsed_command()
-                pc.evaluate_test()
+                result = pc.evaluate_test()
             except SyntaxError:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText("Incomplete or invalid syntax")
-                self.ui.button_ok.setEnabled(False)
+                self.valid = False
+                self.message = "Incomplete or invalid syntax"
             except InvalidTagError as exc:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText("Invalid component: {0}".format(exc.tag))
-                self.ui.button_ok.setEnabled(False)
+                self.valid = False
+                self.message = "Invalid component: {0}".format(exc.tag)
             except Exception as exc:
-                self.ui.label_status.setStyleSheet('color: red')
-                self.ui.label_status.setText(str(exc))
-                self.ui.button_ok.setEnabled(False)
+                self.valid = False
+                self.message = str(exc)
             else:
-                self.ui.label_status.setStyleSheet('color: green')
-                self.ui.label_status.setText("Valid expression")
-                self.ui.button_ok.setEnabled(True)
+                if result is None:
+                    self.valid = False
+                    self.message = "Expression should not return None"
+                else:
+                    self.valid = True
+                    self.message = "Valid expression"
 
         self._cache = self._get_raw_command()
 
@@ -167,23 +159,3 @@ class EquationEditorDialog(QtWidgets.QDialog):
     def _get_parsed_command(self):
         expression = self._get_raw_command()
         return ParsedCommand(expression, self.references)
-
-    def accept(self):
-        self.final_expression = self._get_parsed_command()._cmd
-        super(EquationEditorDialog, self).accept()
-
-    def reject(self):
-        self.final_expression = None
-        super(EquationEditorDialog, self).reject()
-
-
-if __name__ == "__main__":  # pragma: nocover
-
-    from glue.utils.qt import get_qapp
-
-    app = get_qapp()
-
-    from glue.core.data import Data
-    d = Data(label='test1', x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
-    widget = EquationEditorDialog(d, '')
-    widget.exec_()

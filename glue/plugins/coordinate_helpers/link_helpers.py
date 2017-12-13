@@ -23,9 +23,9 @@ class BaseCelestialMultiLink(MultiLink):
     frame_in = None
     frame_out = None
 
-    def __init__(self, in_lon, in_lat, out_lon, out_lat):
-        super(BaseCelestialMultiLink, self).__init__(in_lon, in_lat, out_lon, out_lat)
-        self.create_links([in_lon, in_lat], [out_lon, out_lat],
+    def __init__(self, cids_left, cids_right):
+        super(BaseCelestialMultiLink, self).__init__(cids_left, cids_right)
+        self.create_links(cids_left, cids_right,
                           forwards=self.forward, backwards=self.backward)
 
     def forward(self, in_lon, in_lat):
@@ -40,7 +40,8 @@ class BaseCelestialMultiLink(MultiLink):
 
 
 @link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'],
+             input_labels=['l', 'b'],
+             output_labels=['ra (fk5)', 'dec (fk5)'],
              category='Astronomy')
 class Galactic_to_FK5(BaseCelestialMultiLink):
     display = "Galactic <-> FK5 (J2000)"
@@ -49,7 +50,8 @@ class Galactic_to_FK5(BaseCelestialMultiLink):
 
 
 @link_helper('Link FK4 (B1950) and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (fk4)', 'dec (fk4)', 'ra (fk5)', 'dec (fk5)'],
+             input_labels=['ra (fk4)', 'dec (fk4)'],
+             output_labels=['ra (fk5)', 'dec (fk5)'],
              category='Astronomy')
 class FK4_to_FK5(BaseCelestialMultiLink):
     display = "FK4 (B1950) <-> FK5 (J2000)"
@@ -58,7 +60,8 @@ class FK4_to_FK5(BaseCelestialMultiLink):
 
 
 @link_helper('Link ICRS and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk5)', 'dec (fk5)'],
+             input_labels=['ra (icrs)', 'dec (icrs)'],
+             output_labels=['ra (fk5)', 'dec (fk5)'],
              category='Astronomy')
 class ICRS_to_FK5(BaseCelestialMultiLink):
     display = "ICRS <-> FK5 (J2000)"
@@ -67,7 +70,8 @@ class ICRS_to_FK5(BaseCelestialMultiLink):
 
 
 @link_helper('Link Galactic and FK4 (B1950) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'],
+             input_labels=['l', 'b'],
+             output_labels=['ra (fk4)', 'dec (fk4)'],
              category='Astronomy')
 class Galactic_to_FK4(BaseCelestialMultiLink):
     display = "Galactic <-> FK4 (B1950)"
@@ -76,7 +80,8 @@ class Galactic_to_FK4(BaseCelestialMultiLink):
 
 
 @link_helper('Link ICRS and FK4 (B1950) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk4)', 'dec (fk4)'],
+             input_labels=['ra (icrs)', 'dec (icrs)'],
+             output_labels=['ra (fk4)', 'dec (fk4)'],
              category='Astronomy')
 class ICRS_to_FK4(BaseCelestialMultiLink):
     display = "ICRS <-> FK4 (B1950)"
@@ -85,7 +90,8 @@ class ICRS_to_FK4(BaseCelestialMultiLink):
 
 
 @link_helper('Link ICRS and Galactic coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'l', 'b'],
+             input_labels=['ra (icrs)', 'dec (icrs)'],
+             output_labels=['l', 'b'],
              category='Astronomy')
 class ICRS_to_Galactic(BaseCelestialMultiLink):
     display = "ICRS <-> Galactic"
@@ -94,15 +100,16 @@ class ICRS_to_Galactic(BaseCelestialMultiLink):
 
 
 @link_helper('Link 3D Galactocentric and Galactic coordinates',
-             input_labels=['x (kpc)', 'y (kpc)', 'z (kpc)', 'l (deg)', 'b (deg)', 'distance (kpc)'],
+             input_labels=['x (kpc)', 'y (kpc)', 'z (kpc)'],
+             output_labels=['l (deg)', 'b (deg)', 'distance (kpc)'],
              category='Astronomy')
 class GalactocentricToGalactic(MultiLink):
 
     display = "3D Galactocentric <-> Galactic"
 
-    def __init__(self, x_id, y_id, z_id, l_id, b_id, d_id):
-        super(GalactocentricToGalactic, self).__init__(x_id, y_id, z_id, l_id, b_id, d_id)
-        self.create_links([x_id, y_id, z_id], [l_id, b_id, d_id],
+    def __init__(self, cids_left, cids_right):
+        super(GalactocentricToGalactic, self).__init__(cids_left, cids_right)
+        self.create_links(cids_left, cids_right,
                           self.forward, self.backward)
 
     def forward(self, x_kpc, y_kpc, z_kpc):

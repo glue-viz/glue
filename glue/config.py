@@ -615,11 +615,11 @@ class LinkHelperRegistry(Registry):
 
     """Stores helper objects that compute many ComponentLinks at once
 
-    The members property is a list of (object, info_string,
-    input_labels) tuples. `Object` is the link helper. `info_string`
-    describes what `object` does. `input_labels` is a list labeling
-    the inputs. ``category`` is a category in which the link funtion will appear
-    (defaults to 'General').
+    The members property is a list of (object, info_string, input_labels,
+    output_labels) tuples. `Object` is the link helper. `info_string` describes
+    what `object` does. `input_labels` is a list labeling the inputs, and
+    `output_labels` is a list labeling the outputs. ``category`` is a category
+    in which the link funtion will appear (defaults to 'General').
 
     Each link helper takes a list of ComponentIDs as inputs, and
     returns an iterable object (e.g. list) of ComponentLinks.
@@ -627,16 +627,16 @@ class LinkHelperRegistry(Registry):
     New helpers can be registered via
 
         @link_helper('Links degrees and arcseconds in both directions',
-                     ['degree', 'arcsecond'])
+                     input_labels=['degree'], output_labels=['arcsecond'])
         def new_helper(degree, arcsecond):
             return [ComponentLink([degree], arcsecond, using=lambda d: d*3600),
                     ComponentLink([arcsecond], degree, using=lambda a: a/3600)]
     """
-    item = namedtuple('LinkHelper', 'helper info input_labels category')
+    item = namedtuple('LinkHelper', 'helper info input_labels output_labels category')
 
-    def __call__(self, info, input_labels, category='General'):
+    def __call__(self, info, input_labels, output_labels, category='General'):
         def adder(func):
-            self.add(self.item(func, info, input_labels, category))
+            self.add(self.item(func, info, input_labels, output_labels, category))
             return func
         return adder
 
