@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
-    <height>639</height>
+    <width>517</width>
+    <height>553</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,19 +96,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>These are the components from the data that were loaded from a data file or were passed in to glue manually. These components have well-defined numerical or string values. Below you can re-order these components by dragging and dropping them, or rename them by double clicking on them</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -138,6 +125,16 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Tip: Drag and drop to re-order, and double-click to rename</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer_5">
        <property name="orientation">
@@ -169,20 +166,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Derived components</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>These are components that are defined mathematically based on other components. Their values are then evaluated on-the-fly when making visualizations. As for the main components, you can rename and reorder these, but you can also edit the definition by selecting a component and clicking on 'Edit defintion', or add a new one by clicking on 'New derived component'</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
+      <string>Derived components (defined mathematically based on other components)</string>
      </property>
     </widget>
    </item>
@@ -268,7 +252,7 @@
    <item>
     <widget class="QLabel" name="label_status">
      <property name="text">
-      <string> </string>
+      <string/>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
