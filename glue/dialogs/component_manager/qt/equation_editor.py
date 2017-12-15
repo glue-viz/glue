@@ -90,14 +90,17 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
 class EquationEditorDialog(QtWidgets.QDialog):
 
-    def __init__(self, data=None, equation=None, references=None, parent=None):
+    def __init__(self, label=None, data=None, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.equation = equation
+        if label is not None:
+            self.ui.text_label.setText(label)
+
+        self.ui.text_label.textChanged.connect(self._update_status)
 
         # Get mapping from label to component ID
         if references is not None:
@@ -115,7 +118,8 @@ class EquationEditorDialog(QtWidgets.QDialog):
         labels = ['{' + label + '}' for label in self.references]
         self.ui.expression.set_word_list(labels)
 
-        self.ui.expression.insertPlainText(equation)
+        if equation is not None:
+            self.ui.expression.insertPlainText(equation)
 
         self.ui.button_ok.clicked.connect(self.accept)
         self.ui.button_cancel.clicked.connect(self.reject)
@@ -132,10 +136,14 @@ class EquationEditorDialog(QtWidgets.QDialog):
     def _update_status(self):
 
         # If the text hasn't changed, no need to check again
-        if hasattr(self, '_cache') and self._get_raw_command() == self._cache:
+        if hasattr(self, '_cache') and self._cache == (self.ui.text_label.text(), self._get_raw_command()):
             return
 
-        if self._get_raw_command() == "":
+        if self.ui.text_label.text() == "":
+            self.ui.label_status.setStyleSheet('color: red')
+            self.ui.label_status.setText("Component name not set")
+            self.ui.button_ok.setEnabled(False)
+        elif self._get_raw_command() == "":
             self.ui.label_status.setText("")
             self.ui.button_ok.setEnabled(False)
         else:
@@ -159,7 +167,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 self.ui.label_status.setText("Valid expression")
                 self.ui.button_ok.setEnabled(True)
 
-        self._cache = self._get_raw_command()
+        self._cache = self.ui.text_label.text(), self._get_raw_command()
 
     def _get_raw_command(self):
         return str(self.ui.expression.toPlainText())
@@ -167,6 +175,9 @@ class EquationEditorDialog(QtWidgets.QDialog):
     def _get_parsed_command(self):
         expression = self._get_raw_command()
         return ParsedCommand(expression, self.references)
+
+    def get_final_label_and_parsed_command(self):
+        return self.ui.text_label.text(), self._get_parsed_command()
 
     def accept(self):
         self.final_expression = self._get_parsed_command()._cmd
@@ -185,5 +196,5 @@ if __name__ == "__main__":  # pragma: nocover
 
     from glue.core.data import Data
     d = Data(label='test1', x=[1, 2, 3], y=[2, 3, 4], z=[3, 4, 5])
-    widget = EquationEditorDialog(d, '')
+    widget = EquationEditorDialog(data=d, equation='')
     widget.exec_()

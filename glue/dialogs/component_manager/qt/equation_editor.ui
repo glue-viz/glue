@@ -35,7 +35,7 @@
       <number>5</number>
      </property>
      <item>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="text_label">
        <property name="placeholderText">
         <string>New component name</string>
        </property>
