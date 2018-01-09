@@ -13,7 +13,7 @@ class TestEquationEditor:
 
     def setup_method(self, method):
         self.data = Data(x=[1, 2, 3], y=[3, 4, 5])
-        self.dialog = EquationEditorDialog(data=self.data, equation='')
+        self.dialog = EquationEditorDialog(label='z', data=self.data, equation='')
 
     def test_empty(self):
         assert not self.dialog.ui.button_ok.isEnabled()
@@ -48,6 +48,12 @@ class TestEquationEditor:
         assert self.dialog.ui.label_status.text() == 'Valid expression'
         self.dialog.ui.button_ok.click()
         assert self.dialog._get_raw_command() == '1 + {Pixel Axis 0 [x]}'
+
+    def test_nolabel(self):
+        self.dialog.ui.text_label.setText('')
+        self.dialog.expression.insertPlainText('1 + {x}')
+        assert not self.dialog.ui.button_ok.isEnabled()
+        assert self.dialog.ui.label_status.text() == 'Component name not set'
 
     def test_typing(self):
 

@@ -241,7 +241,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         comp_state = {}
         comp_state['cid'] = ComponentID('')
-        comp_state['label'] = 'New component'
+        comp_state['label'] = ''
         comp_state['equation'] = None
 
         self._components[self.data]['derived'].append(comp_state['cid'])
@@ -251,7 +251,12 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self.list['derived'].select_cid(comp_state['cid'])
 
-        self._edit_derived_component()
+        result = self._edit_derived_component()
+
+        if not result:  # user cancelled
+            self._components[self.data]['derived'].remove(comp_state['cid'])
+            self._state[self.data].pop(comp_state['cid'])
+            self._update_component_lists()
 
     def _edit_derived_component(self, event=None):
 
@@ -263,22 +268,33 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             references[label] = cid
 
         cid = self.list['derived'].selected_cid
+        item = self.list['derived'].selected_item
+
+        if item is None:
+            return False
+
+        label = self._state[self.data][cid]['label']
 
         if self._state[self.data][cid]['equation'] is None:
             equation = None
         else:
             equation = self._state[self.data][cid]['equation'].render(mapping)
 
-        dialog = EquationEditorDialog(equation=equation, references=references, parent=self)
+        dialog = EquationEditorDialog(label=label, equation=equation, references=references, parent=self)
         dialog.setWindowFlags(self.windowFlags() | Qt.Window)
         dialog.setFocus()
         dialog.raise_()
         dialog.exec_()
 
         if dialog.final_expression is None:
-            return
+            return False
 
-        self._state[self.data][cid]['equation'] = dialog._get_parsed_command()
+        name, equation = dialog.get_final_label_and_parsed_command()
+        self._state[self.data][cid]['label'] = name
+        self._state[self.data][cid]['equation'] = equation
+        item.setText(0, name)
+
+        return True
 
     def accept(self):
 
