@@ -23,19 +23,19 @@ v0.13.0 (unreleased)
 * Improve how ComponentIDComboHelper deals with non-primary components.
   The .visible property has been removed, and a new .derived property
   has been added (to show/hide derived components). Components are now
-  split up into sections in the combo boxes.
+  split up into sections in the combo boxes. [#1476]
+
+* Fixed a bug that caused ghost components to be added when creating a
+  derived component with data[...] = ... [#1476]
+
+* Fixed a bug that caused errors when removing items from a selection
+  property linked to a QComboBox. [#1476]
 
 v0.12.4 (unreleased)
 --------------------
 
-* Fixed a bug that caused ghost components to be added when creating a
-  derived component with data[...] = ...
-
-* Fixed a bug that caused errors when removing items from a selection
-  property linked to a QComboBox.
-
 * Improve plugin loading to be less sensitive to exact versions of
-  installed dependencies for plugins.
+  installed dependencies for plugins. [#1487]
 
 v0.12.3 (2017-11-14)
 --------------------
