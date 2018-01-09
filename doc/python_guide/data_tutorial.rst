@@ -193,7 +193,7 @@ You can define new subsets from Python. An example might look like::
 
 If you using the Glue application, you can then change the visual properties of this subset using::
 
-    >>> sg.style.color = '#00ff00'
+    >>> subset_group.style.color = '#00ff00'
 
 ..note:: ``subset_group`` is not technically a subset, but a group of subsets.
          This is beyond the scope of this tutorial, and explained in more
