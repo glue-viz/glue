@@ -251,7 +251,12 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self.list['derived'].select_cid(comp_state['cid'])
 
-        self._edit_derived_component()
+        result = self._edit_derived_component()
+
+        if not result:  # user cancelled
+            self._components[self.data]['derived'].remove(comp_state['cid'])
+            self._state[self.data].pop(comp_state['cid'])
+            self._update_component_lists()
 
     def _edit_derived_component(self, event=None):
 
@@ -266,7 +271,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         item = self.list['derived'].selected_item
 
         if item is None:
-            return
+            return False
 
         label = self._state[self.data][cid]['label']
 
@@ -282,12 +287,14 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         dialog.exec_()
 
         if dialog.final_expression is None:
-            return
+            return False
 
         name, equation = dialog.get_final_label_and_parsed_command()
         self._state[self.data][cid]['label'] = name
         self._state[self.data][cid]['equation'] = equation
         item.setText(0, name)
+
+        return True
 
     def accept(self):
 

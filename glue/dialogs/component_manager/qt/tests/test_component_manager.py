@@ -20,6 +20,13 @@ def auto_accept(equation):
     return exec_replacement
 
 
+def auto_reject():
+    def exec_replacement(self):
+        self.ui.expression.clear()
+        self.reject()
+    return exec_replacement
+
+
 class ChangeListener(HubListener):
 
     def __init__(self, data, *args, **kwargs):
@@ -160,6 +167,13 @@ class TestComponentManagerWidget:
         self.listener1.assert_exact_changes(added=[self.data1.id['new']])
         self.listener2.assert_exact_changes()
         assert_equal(self.data1['new'], [4.5, 6.5, 2.0])
+
+    def test_add_derived_and_cancel(self):
+        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager.show()
+        with patch.object(EquationEditorDialog, 'exec_', auto_reject()):
+            self.manager.button_add_derived.click()
+        assert len(self.manager.list['derived']) == 0
 
     def test_edit_existing_equation(self):
         assert_equal(self.data2['d'], [3, 4, 1])
