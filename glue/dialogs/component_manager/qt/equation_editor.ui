@@ -36,9 +36,6 @@
      </property>
      <item>
       <widget class="QLineEdit" name="text_label">
-       <property name="placeholderText">
-        <string>New component name</string>
-       </property>
       </widget>
      </item>
      <item>
@@ -76,9 +73,6 @@
        <width>16777215</width>
        <height>16777215</height>
       </size>
-     </property>
-     <property name="placeholderText">
-      <string>Type any mathematical expression here - you can include component names from the drop-down below by selecting them and clicking 'Insert'</string>
      </property>
     </widget>
    </item>

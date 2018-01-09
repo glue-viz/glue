@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 from collections import deque, OrderedDict
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, PYQT5
 from qtpy.QtCore import Qt
 
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
@@ -96,6 +96,13 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
+
+        if PYQT5:
+            self.ui.text_label.setPlaceholderText("New component name")
+            self.ui.expression.setPlaceholderText("Type any mathematical expression here - "
+                                                  "you can include component names from the "
+                                                  "drop-down below by selecting them and "
+                                                  "clicking 'Insert'")
 
         if label is not None:
             self.ui.text_label.setText(label)
