@@ -69,7 +69,7 @@ def test_optional_dependency_not_imported():
 class ImportDenier(object):
     __forbidden = set(%s)
 
-    def find_module(self, mod_name, pth):
+    def find_module(self, mod_name, pth=None):
         if pth:
             return
         if mod_name in self.__forbidden:
