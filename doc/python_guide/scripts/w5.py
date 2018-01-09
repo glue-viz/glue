@@ -9,8 +9,8 @@ catalog = load_data('w5_psc.vot')
 dc = DataCollection([image, catalog])
 
 # link positional information
-dc.add_link(LinkSame(image.id['World x: RA---TAN'], catalog.id['RAJ2000']))
-dc.add_link(LinkSame(image.id['World y: DEC--TAN'], catalog.id['DEJ2000']))
+dc.add_link(LinkSame(image.id['Right Ascension'], catalog.id['RAJ2000']))
+dc.add_link(LinkSame(image.id['Declination'], catalog.id['DEJ2000']))
 
 #start Glue
 app = GlueApplication(dc)
