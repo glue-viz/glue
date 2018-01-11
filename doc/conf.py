@@ -355,3 +355,5 @@ from glue.utils.qt.widget_properties import WidgetProperty
 WidgetProperty.__get__ = lambda self, *args, **kwargs: self
 
 viewcode_import = False
+
+linkcheck_ignore = [r'http://www.glueviz.org.s3']
