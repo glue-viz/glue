@@ -70,13 +70,16 @@ class SliceWidget(QtWidgets.QWidget):
         # Figure out the optimal format to use to show the world values. We do
         # this by figuring out the precision needed so that when converted to
         # a string, every string value is different.
-        if np.max(np.abs(world)) > 1e5 or np.max(np.abs(world)) < 1e-5:
-            fmt_type = 'e'
+        if world is not None:
+            if np.max(np.abs(world)) > 1e5 or np.max(np.abs(world)) < 1e-5:
+                fmt_type = 'e'
+            else:
+                fmt_type = 'f'
+            relative = np.abs(np.diff(world) / world[:-1])
+            ndec = max(2, min(int(np.ceil(-np.log10(np.min(relative)))) + 1, 15))
+            self.label_fmt = "{:." + str(ndec) + fmt_type + "}"
         else:
-            fmt_type = 'f'
-        relative = np.abs(np.diff(world) / world[:-1])
-        ndec = max(2, min(int(np.ceil(-np.log10(np.min(relative)))) + 1, 15))
-        self.label_fmt = "{:." + str(ndec) + fmt_type + "}"
+            self.label_fmt = "{:g}"
 
         self.text_slider_label.setMinimumWidth(80)
         self.state.slider_label = self.label_fmt.format(self.value_slice_center.value())
@@ -120,10 +123,11 @@ class SliceWidget(QtWidgets.QWidget):
             else:
                 self.text_warning.hide()
             self.state.slider_unit = self._world_unit
+            self.state.slider_label = self.label_fmt.format(value)
         else:
             self.text_warning.hide()
             self.state.slider_unit = ''
-        self.state.slider_label = self.label_fmt.format(value)
+            self.state.slider_label = str(value)
 
     def set_slider_from_label(self):
 
