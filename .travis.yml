@@ -16,7 +16,7 @@ env:
     - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
     - PYTEST_ARGS="--cov glue -vs"
     - ASTROPY_VERSION=stable
-    - NUMPY_VERSION=stable
+    - NUMPY_VERSION=1.13
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
