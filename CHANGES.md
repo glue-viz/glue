@@ -4,6 +4,10 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Improve the display of data cube slice labels to include only the
+  precision required given the separation of world coordinate values.
+  [#1500]
+
 * Added a new component manager that makes it possible to rename,
   reorder, and remove components, as well as better manage derived
   components, including editing previous equations. [#1479]

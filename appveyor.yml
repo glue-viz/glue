@@ -14,6 +14,7 @@ environment:
       CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy mpl-scatter-density"
       PIP_DEPENDENCIES: "plotly objgraph"
       PIP_FALLBACK: "False"
+      NUMPY_VERSION: "1.13"
 
   matrix:
       - PYTHON_VERSION: "2.7"

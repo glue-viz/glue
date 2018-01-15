@@ -38,26 +38,26 @@ class TestSliceWidget(object):
 
         # Check switching between world and pixel coordinates
         s.state.slice_center = 0
-        assert s.state.slider_label == '1.0'
+        assert s.state.slider_label == '1.00'
         s.state.use_world = False
         assert s.state.slider_label == '0'
         s.state.slice_center = 3
         assert s.state.slider_label == '3'
         s.state.use_world = True
-        assert s.state.slider_label == '5.5'
+        assert s.state.slider_label == '5.50'
 
         # Round to nearest
         s.state.slider_label = '11'
         assert s.state.slice_center == 5
-        assert s.state.slider_label == '12.0'
+        assert s.state.slider_label == '12.00'
 
         # Make sure out of bound values work
         s.state.slider_label = '20'
         assert s.state.slice_center == 5
-        assert s.state.slider_label == '12.0'
+        assert s.state.slider_label == '12.00'
         s.state.slider_label = '-10'
         assert s.state.slice_center == 0
-        assert s.state.slider_label == '1.0'
+        assert s.state.slider_label == '1.00'
 
         # And disable world and try and set by pixel
         s.state.use_world = False

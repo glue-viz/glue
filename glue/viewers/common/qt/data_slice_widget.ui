@@ -247,8 +247,8 @@
          <height>16777215</height>
         </size>
        </property>
-       <property name="maxLength">
-        <number>20</number>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
