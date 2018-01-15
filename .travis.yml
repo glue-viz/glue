@@ -185,7 +185,7 @@ install:
   # because install_requires will not be empty for users, but it ensures
   # that if we change some of the dependencies from required to optional
   # in future (apart from a core few), things will still work.
-  - if [ $REMOVE_INSTALL_REQUIRES ]; then sed -i.bak s/install_requires=install_requires/install_requires={}/g setup.py; fi
+  - if [[ $REMOVE_INSTALL_REQUIRES == 1 ]]; then sed -i.bak s/install_requires=install_requires/install_requires=[]/g setup.py; fi
 
   # We need to install glue in order to make sure that the entry points are
   # installed.
