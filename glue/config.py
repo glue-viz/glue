@@ -19,7 +19,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
-           'qt_fixed_layout_tab','KeyboardShortcut']
+           'qt_fixed_layout_tab', 'KeyboardShortcut']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -681,6 +681,7 @@ class KeyboardShortcut(DictRegistry):
     def add(self, valid_viewers, keybind, function):
         """
         Add a new keyboard shortcut
+
         Parameters
         ----------
         arg1: list
