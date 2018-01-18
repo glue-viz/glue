@@ -131,7 +131,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     def remove(self):
         super(ImageLayerArtist, self).remove()
-        self.composite.deallocate(self.uuid)
+        if self.uuid in self.composite:
+            self.composite.deallocate(self.uuid)
 
     def get_image_shape(self):
 
