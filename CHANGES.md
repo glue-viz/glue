@@ -41,6 +41,9 @@ v0.12.4 (unreleased)
 * Improve plugin loading to be less sensitive to exact versions of
   installed dependencies for plugins. [#1487]
 
+* Fixed a bug that caused layers to not always be properly removed
+  when deleting a row from the layer list.
+
 v0.12.3 (2017-11-14)
 --------------------
 
