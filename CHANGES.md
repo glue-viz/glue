@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Give instructions for how to move selections in status tip. [#1504]
+
 * Improve the display of data cube slice labels to include only the
   precision required given the separation of world coordinate values.
   [#1500]

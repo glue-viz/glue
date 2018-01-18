@@ -200,7 +200,7 @@ class RoiMode(RoiModeBase):
     mouse release
     """
 
-    status_tip = "CLICK and DRAG to define selection"
+    status_tip = "CLICK and DRAG to define selection, CTRL-CLICK and DRAG to move selection"
 
     def __init__(self, viewer, **kwargs):
 
@@ -366,8 +366,8 @@ class PolyMode(ClickRoiMode):
     tool_tip = ('Lasso a region of interest\n'
                 '  ENTER accepts the path\n'
                 '  ESCAPE clears the path')
-    status_tip = ('CLICK and DRAG to define lasso, CLICK multiple times to '
-                  'define polygon, ENTER to finalize, ESCAPE to cancel')
+    status_tip = ('CLICK and DRAG (or CLICK multiple times) to define selection,'
+                  ' ENTER to finalize, ESC to cancel, CTRL-CLICK and DRAG to move selection')
     shortcut = 'G'
 
     def __init__(self, viewer, **kwargs):
@@ -389,8 +389,8 @@ class LassoMode(RoiMode):
     tool_tip = ('Lasso a region of interest\n'
                 '  ENTER accepts the path\n'
                 '  ESCAPE clears the path')
-    status_tip = ('CLICK and DRAG to define lasso, CLICK multiple times to '
-                  'define polygon, ENTER to finalize, ESCAPE to cancel')
+    status_tip = ('CLICK and DRAG (or CLICK multiple times) to define selection,'
+                  ' ENTER to finalize, ESC to cancel, CTRL-CLICK and DRAG to move selection')
     shortcut = 'L'
 
     def __init__(self, viewer, **kwargs):
