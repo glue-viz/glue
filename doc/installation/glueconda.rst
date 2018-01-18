@@ -64,8 +64,7 @@ installer.
 Uninstalling
 ------------
 
-To uninstall, remove the ``glueconda`` directory, and remove ``glueconda/bin``
-from your ``PATH``.
+To uninstall, remove the ``glueconda`` folder from your home directory.
 
 Updating packages
 -----------------
