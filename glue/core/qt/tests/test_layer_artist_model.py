@@ -12,14 +12,18 @@ from ..layer_artist_model import LayerArtistModel, LayerArtistView
 
 class LayerArtist(_LayerArtist):
 
+    update_count = 0
+    clear_count = 0
+    redraw_count = 0
+
     def update(self, view=None):
-        pass
+        self.update_count += 1
 
     def clear(self):
-        pass
+        self.clear_count += 1
 
     def redraw(self):
-        pass
+        self.redraw_count += 1
 
 
 def setup_model(num):
@@ -72,17 +76,15 @@ def test_invalid_remove():
 
 
 def test_artist_cleared_on_remove():
-    mgr = MagicMock(spec_set=LayerArtist)
+    mgr = LayerArtist(None)
     mgrs = [mgr]
     model = LayerArtistModel(mgrs)
-
     model.removeRow(0)
-    mgr.clear.assert_called_once_with()
+    assert mgr.clear_count == 1
 
 
 def test_change_label():
     model, (mgr,) = setup_model(1)
-
     lbl = mgr.layer.label
     model.change_label(0, 'new label')
     assert mgr.layer.label != lbl
@@ -90,7 +92,6 @@ def test_change_label():
 
 def test_change_label_invalid_row():
     model, (mgr,) = setup_model(1)
-
     lbl = mgr.layer.label
     model.change_label(1, 'new label')
     assert mgr.layer.label == lbl

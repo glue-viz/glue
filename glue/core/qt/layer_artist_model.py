@@ -90,7 +90,7 @@ class LayerArtistModel(PythonListModel):
 
     def _remove_row(self, row):
         art = self.artists.pop(row)
-        art.clear()
+        art.remove()
         art.redraw()
 
     def mimeTypes(self):

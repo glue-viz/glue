@@ -173,3 +173,6 @@ class CompositeArray(object):
     @property
     def size(self):
         return np.product(self.shape)
+
+    def __contains__(self, item):
+        return item in self.layers
