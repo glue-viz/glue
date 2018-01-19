@@ -214,9 +214,10 @@ class NewDataViewer(Command):
     label = 'new data viewer'
 
     def do(self, session):
-        v = session.application.new_data_viewer(self.viewer, self.data)
-        self.created = weakref.ref(v)
-        return v
+        viewer = session.application.new_data_viewer(self.viewer, self.data)
+        if viewer is not None:
+            self.created = weakref.ref(viewer)
+        return viewer
 
     def undo(self, session):
         created = self.created()

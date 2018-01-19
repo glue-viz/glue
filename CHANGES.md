@@ -40,6 +40,9 @@ v0.13.0 (unreleased)
 v0.12.4 (unreleased)
 --------------------
 
+* Fixed a bug that caused an error in the terminal if creating a data
+  viewer failed properly (with a GUI error message).
+
 * Improve plugin loading to be less sensitive to exact versions of
   installed dependencies for plugins. [#1487]
 
