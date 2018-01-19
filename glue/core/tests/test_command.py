@@ -113,8 +113,7 @@ class TestCommandStack(object):
         cmd = c.NewDataViewer(viewer=None, data=None)
         v = self.stack.do(cmd)
 
-        self.session.application.new_data_viewer.assert_called_once_with(
-            None, None)
+        self.session.application.new_data_viewer.assert_called_once_with(None, None)
 
         self.stack.undo()
         v.close.assert_called_once_with(warn=False)
