@@ -89,10 +89,6 @@ class TestToolbar(object):
         assert self.viewer.toolbar.active_tool.tool_id == 'mpl:zoom'
         assert self.viewer.toolbar._mpl_nav.mode == 'zoom rect'
 
-        self.viewer.toolbar.actions['mpl:back'].trigger()
-        assert self.viewer.toolbar.active_tool is None
-        assert self.viewer.toolbar._mpl_nav.mode == ''
-
         self.viewer.toolbar.actions['test'].trigger()
         assert self.viewer.toolbar.active_tool.tool_id == 'test'
         assert self.viewer.toolbar._mpl_nav.mode == ''
