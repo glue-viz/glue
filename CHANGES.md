@@ -42,7 +42,7 @@ v0.12.4 (unreleased)
   installed dependencies for plugins. [#1487]
 
 * Fixed a bug that caused layers to not always be properly removed
-  when deleting a row from the layer list.
+  when deleting a row from the layer list. [#1502]
 
 v0.12.3 (2017-11-14)
 --------------------
