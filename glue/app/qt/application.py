@@ -372,7 +372,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """
         Mainly for handing Keyboard Shortcuts
         """
-
         if type(event) == QtGui.QKeyEvent and obj is self:
             if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
                 active_window = self.current_tab.activeSubWindow().widget()
