@@ -207,8 +207,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
-        # Create eventFilter and pull in any keybindings from an external file
-        self.app.installEventFilter(self)
+        # Pull in any keybindings from an external file
         self.keybindings = keyboard_shortcut
 
         icon = get_icon('app_icon')
@@ -243,6 +242,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._connect()
         self.new_tab()
         self._update_plot_dashboard(None)
+
+    def start_event_filter(self):
+        self.app.installEventFilter(self)
 
     def run_startup_action(self, name):
         if name in startup_action.members:
