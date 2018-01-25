@@ -49,4 +49,3 @@ def delete_current_window(session):
         return
 
     return session.application.current_tab.activeSubWindow().widget().close(warn=True)
-
