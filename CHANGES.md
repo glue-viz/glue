@@ -37,6 +37,8 @@ v0.13.0 (unreleased)
 * Fixed a bug that caused errors when removing items from a selection
   property linked to a QComboBox. [#1476]
 
+* Added initial support for customizing keyboard shortcuts. [#1475]
+
 v0.12.4 (unreleased)
 --------------------
 
