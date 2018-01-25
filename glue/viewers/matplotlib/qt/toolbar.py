@@ -13,8 +13,7 @@ if PYQT5:
 else:
     from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
 
-__all__ = ['HomeTool', 'SaveTool', 'BackTool', 'ForwardTool', 'PanTool',
-           'ZoomTool', 'MatplotlibViewerToolbar']
+__all__ = ['HomeTool', 'SaveTool', 'PanTool', 'ZoomTool', 'MatplotlibViewerToolbar']
 
 
 class HomeTool(Tool):
@@ -49,34 +48,6 @@ class SaveTool(Tool):
 
     def activate(self):
         self.toolbar.save_figure()
-
-
-class BackTool(Tool):
-
-    def __init__(self, viewer, toolbar=None):
-        super(BackTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:back'
-        self.icon = get_icon('glue_back')
-        self.action_text = 'Back'
-        self.tool_tip = 'Back to previous view'
-        self.toolbar = toolbar
-
-    def activate(self):
-        self.toolbar.back()
-
-
-class ForwardTool(Tool):
-
-    def __init__(self, viewer, toolbar=None):
-        super(ForwardTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:forward'
-        self.icon = get_icon('glue_forward')
-        self.action_text = 'Forward'
-        self.tool_tip = 'Forward to next view'
-        self.toolbar = toolbar
-
-    def activate(self):
-        self.toolbar.forward()
 
 
 class PanTool(CheckableTool):
@@ -146,12 +117,6 @@ class MatplotlibViewerToolbar(BasicToolbar):
 
         save_mode = SaveTool(self.parent(), toolbar=self._mpl_nav)
         self.add_tool(save_mode)
-
-        back_mode = BackTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(back_mode)
-
-        forward_mode = ForwardTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(forward_mode)
 
         pan_mode = PanTool(self.parent(), toolbar=self._mpl_nav)
         self.add_tool(pan_mode)

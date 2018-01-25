@@ -10,6 +10,9 @@ v0.13.0 (unreleased)
   precision required given the separation of world coordinate values.
   [#1500]
 
+* Remove back/forward tools in Matplotlib viewer toolbars to
+  declutter. [#1505]
+
 * Added a new component manager that makes it possible to rename,
   reorder, and remove components, as well as better manage derived
   components, including editing previous equations. [#1479]
