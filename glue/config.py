@@ -19,7 +19,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
-           'qt_fixed_layout_tab']
+           'qt_fixed_layout_tab', 'KeyboardShortcut']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -670,6 +670,42 @@ class BooleanSetting(object):
         return self.state
 
 
+class KeyboardShortcut(DictRegistry):
+    """
+    Stores keyboard shortcuts.
+    The members property is a dictionary within a dictionary of keyboard
+    shortcuts, which is represented as (viewer,(keybind,function)). The
+    ``function`` should take one item, which is a reference to the session.
+    """
+
+    def add(self, valid_viewers, keybind, function):
+        """
+        Add a new keyboard shortcut
+
+        Parameters
+        ----------
+        arg1: list
+            list of viewers where event can be fired
+        arg2: Qt.Key
+            type of key event
+        arg3: function()
+            function to be run that corresponds with key
+        """
+        for viewer in valid_viewers:
+            if viewer in self.members:
+                if keybind in self.members[viewer]:
+                    raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, viewer))
+                else:
+                    self.members[viewer][keybind] = function
+            else:
+                self.members[viewer] = {keybind: function}
+
+    def __call__(self, keybind, valid_viewers):
+        def adder(func):
+            self.add(valid_viewers, keybind, func)
+            return func
+        return adder
+
 qt_client = QtClientRegistry()
 qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
@@ -685,6 +721,7 @@ menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
 startup_action = StartupActionRegistry()
+keyboard_shortcut = KeyboardShortcut()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)

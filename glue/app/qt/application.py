@@ -36,7 +36,9 @@ from glue.app.qt.feedback import submit_bug_report, submit_feedback
 from glue.app.qt.plugin_manager import QtPluginManager
 from glue.app.qt.versions import QVersionsDialog
 from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
-from glue.config import qt_fixed_layout_tab, qt_client, startup_action
+
+from glue.config import qt_fixed_layout_tab, qt_client, startup_action, keyboard_shortcut
+
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
@@ -205,6 +207,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         Application.__init__(self, data_collection=data_collection,
                              session=session)
 
+        # Pull in any keybindings from an external file
+        self.keybindings = keyboard_shortcut
+
         icon = get_icon('app_icon')
         self.app.setWindowIcon(icon)
 
@@ -237,6 +242,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._connect()
         self.new_tab()
         self._update_plot_dashboard(None)
+
+    def start_event_filter(self):
+        self.app.installEventFilter(self)
 
     def run_startup_action(self, name):
         if name in startup_action.members:
@@ -361,6 +369,36 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.window().setWindowTitle("Console Log")
         self._log.resize(550, 550)
         self._log.hide()
+
+    def eventFilter(self, obj, event):
+        """
+        Mainly for handing Keyboard Shortcuts
+        """
+        if type(event) == QtGui.QKeyEvent and obj is self:
+            if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
+                active_window = self.current_tab.activeSubWindow().widget()
+            else:
+                active_window = None
+
+            # keybindings is a data structure in the form of dict(dict)
+            # which uses the DataViewer as the first key, the key pressed
+            # as the second key, and the function associated with those two
+            # as the value.
+            if type(active_window) in self.keybindings:
+                for k, func in self.keybindings.members[type(active_window)].items():
+                    if event.key() == k:
+                        func(self.session)
+                        return True
+
+            # If key does not correspond with viewers, it might correspond
+            # with the global application, thus, None
+            if None in self.keybindings:
+                for k, func in self.keybindings.members[None].items():
+                    if event.key() == k:
+                        func(self.session)
+                        return True
+
+        return super(GlueApplication, self).eventFilter(obj, event)
 
     def _set_up_links(self, event):
         LinkEditor.update_links(self.data_collection)
@@ -488,6 +526,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             sub.setWindowTitle(label)
         page.addSubWindow(sub)
         page.setActiveSubWindow(sub)
+
         if hold_position and pos is not None:
             new_widget.move(pos[0], pos[1])
 

@@ -19,6 +19,7 @@ sys.meta_path.append(MatplotlibBackendSetter())
 import logging
 from logging import NullHandler
 
+
 logging.getLogger('glue').addHandler(NullHandler())
 
 
