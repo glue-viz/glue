@@ -91,7 +91,7 @@ class MatplotlibDataViewer(DataViewerWithState):
 
     @defer_draw
     def update_y_ticklabel(self, *event):
-        self.axes.tick_params(axis='y', labelsize=self.state.x_ticklabel_size)
+        self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
         self.redraw()
 
     def redraw(self):

@@ -396,11 +396,40 @@
       <zorder>verticalSpacer</zorder>
       <zorder>horizontalSpacer_2</zorder>
      </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Axes</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="AxesEditorWidget" name="axes_editor"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>AxesEditorWidget</class>
+   <extends>QWidget</extends>
+   <header>glue.viewers.matplotlib.qt.axes_editor</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -73,6 +73,14 @@ class MatplotlibDataViewerState(State):
         MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
         super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
 
+    def update_axes_settings_from(self, state):
+        self.x_axislabel_size = state.x_axislabel_size
+        self.y_axislabel_size = state.y_axislabel_size
+        self.x_axislabel_weight = state.x_axislabel_weight
+        self.y_axislabel_weight = state.y_axislabel_weight
+        self.x_ticklabel_size = state.x_ticklabel_size
+        self.y_ticklabel_size = state.y_ticklabel_size
+
     @property
     def layers_data(self):
         return [layer_state.layer for layer_state in self.layers]

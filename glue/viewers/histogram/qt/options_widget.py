@@ -6,6 +6,7 @@ from qtpy import QtWidgets
 
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 
 __all__ = ['HistogramOptionsWidget']
 
@@ -26,6 +27,15 @@ class HistogramOptionsWidget(QtWidgets.QWidget):
         self.viewer_state = viewer_state
 
         viewer_state.add_callback('x_att', self._update_attribute)
+
+        self.session = session
+        self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
+
+    def _apply_all_viewers(self):
+        for tab in self.session.application.viewers:
+            for viewer in tab:
+                if isinstance(viewer.state, MatplotlibDataViewerState):
+                    viewer.state.update_axes_settings_from(self.viewer_state)
 
     def _update_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button

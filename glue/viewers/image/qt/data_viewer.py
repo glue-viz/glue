@@ -76,7 +76,7 @@ class ImageViewer(MatplotlibDataViewer):
     @defer_draw
     def update_y_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
-        self.axes.coords[1].set_ticklabel(size=self.state.x_ticklabel_size)
+        self.axes.coords[1].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
     def close(self, **kwargs):
