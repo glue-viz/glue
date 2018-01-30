@@ -56,8 +56,43 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.axes.set_autoscale_on(False)
 
+        self.state.add_callback('x_axislabel', self.update_x_axislabel)
+        self.state.add_callback('x_axislabel_weight', self.update_x_axislabel)
+        self.state.add_callback('x_axislabel_size', self.update_x_axislabel)
+
+        self.state.add_callback('y_axislabel', self.update_y_axislabel)
+        self.state.add_callback('y_axislabel_weight', self.update_y_axislabel)
+        self.state.add_callback('y_axislabel_size', self.update_y_axislabel)
+
+        self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
+        self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
+
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
+
+    @defer_draw
+    def update_x_axislabel(self, *event):
+        self.axes.set_xlabel(self.state.x_axislabel,
+                             weight=self.state.x_axislabel_weight,
+                             size=self.state.x_axislabel_size)
+        self.redraw()
+
+    @defer_draw
+    def update_y_axislabel(self, *event):
+        self.axes.set_ylabel(self.state.y_axislabel,
+                             weight=self.state.y_axislabel_weight,
+                             size=self.state.y_axislabel_size)
+        self.redraw()
+
+    @defer_draw
+    def update_x_ticklabel(self, *event):
+        self.axes.tick_params(axis='x', labelsize=self.state.x_ticklabel_size)
+        self.redraw()
+
+    @defer_draw
+    def update_y_ticklabel(self, *event):
+        self.axes.tick_params(axis='y', labelsize=self.state.x_ticklabel_size)
+        self.redraw()
 
     def redraw(self):
         self.figure.canvas.draw()

@@ -1,14 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
-
 from glue.external.echo import (CallbackProperty, ListCallbackProperty,
-                                SelectionCallbackProperty, keep_in_sync,
-                                delay_callback)
+                                SelectionCallbackProperty, keep_in_sync)
 
 from glue.core.state_objects import State
 from glue.core.message import LayerArtistUpdatedMessage
-from glue.core.exceptions import IncompatibleAttribute
 
 from glue.utils import defer_draw
 
@@ -38,6 +34,9 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
         super(DeferredDrawSelectionCallbackProperty, self).notify(*args, **kwargs)
 
 
+VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']
+
+
 class MatplotlibDataViewerState(State):
     """
     A base class that includes common attributes for viewers based on
@@ -55,7 +54,24 @@ class MatplotlibDataViewerState(State):
 
     aspect = DeferredDrawCallbackProperty('auto', docstring='Aspect ratio for the axes')
 
+    x_axislabel = DeferredDrawCallbackProperty('', docstring='Label for the x-axis')
+    y_axislabel = DeferredDrawCallbackProperty('', docstring='Label for the y-axis')
+
+    x_axislabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the x-axis label')
+    y_axislabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the y-axis label')
+
+    x_axislabel_weight = DeferredDrawSelectionCallbackProperty(1, docstring='Weight of the x-axis label')
+    y_axislabel_weight = DeferredDrawSelectionCallbackProperty(1, docstring='Weight of the y-axis label')
+
+    x_ticklabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the x-axis tick labels')
+    y_ticklabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the y-axis tick labels')
+
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
+
+    def __init__(self, *args, **kwargs):
+        MatplotlibDataViewerState.x_axislabel_weight.set_choices(self, VALID_WEIGHTS)
+        MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
+        super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
 
     @property
     def layers_data(self):

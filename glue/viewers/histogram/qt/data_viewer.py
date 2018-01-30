@@ -41,14 +41,14 @@ class HistogramViewer(MatplotlibDataViewer):
             update_ticks(self.axes, 'x', self.state._get_x_components(), False)
 
             if self.state.x_log:
-                self.axes.set_xlabel('Log ' + self.state.x_att.label)
+                self.state.x_axislabel = 'Log ' + self.state.x_att.label
             else:
-                self.axes.set_xlabel(self.state.x_att.label)
+                self.state.x_axislabel = self.state.x_att.label
 
         if self.state.normalize:
-            self.axes.set_ylabel('Normalized number')
+            self.state.y_axislabel = 'Normalized number'
         else:
-            self.axes.set_ylabel('Number')
+            self.state.y_axislabel = 'Number'
 
         self.axes.figure.canvas.draw()
 

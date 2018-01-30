@@ -44,9 +44,9 @@ class ScatterViewer(MatplotlibDataViewer):
             update_ticks(self.axes, 'x', self.state._get_x_components(), self.state.x_log)
 
             if self.state.x_log:
-                self.axes.set_xlabel('Log ' + self.state.x_att.label)
+                self.state.x_axislabel = 'Log ' + self.state.x_att.label
             else:
-                self.axes.set_xlabel(self.state.x_att.label)
+                self.state.x_axislabel = self.state.x_att.label
 
         if self.state.y_att is not None:
 
@@ -54,9 +54,9 @@ class ScatterViewer(MatplotlibDataViewer):
             update_ticks(self.axes, 'y', self.state._get_y_components(), self.state.y_log)
 
             if self.state.y_log:
-                self.axes.set_ylabel('Log ' + self.state.y_att.label)
+                self.state.y_axislabel = 'Log ' + self.state.y_att.label
             else:
-                self.axes.set_ylabel(self.state.y_att.label)
+                self.state.y_axislabel = self.state.y_att.label
 
         self.axes.figure.canvas.draw()
 
