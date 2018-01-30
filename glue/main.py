@@ -317,10 +317,9 @@ def load_plugins(splash=None):
         # of error can occur if there is a conda version of a package and and
         # older pip version.
 
-        module = import_module(item.module_name)
-        function = getattr(module, item.attrs[0])
-
         try:
+            module = import_module(item.module_name)
+            function = getattr(module, item.attrs[0])
             function()
         except Exception as exc:
             # Here we check that some of the 'core' plugins load well and
