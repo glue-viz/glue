@@ -510,6 +510,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
                         script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin)\n"
                         script += "sizes *= {0}\n".format(self.state.size_scaling)
+                        script += "sizes[np.isnan(sizes)] = 0\n"
                         options['s'] = code('sizes ** 2')
 
                     if self.state.cmap_mode == 'Linear':
