@@ -59,6 +59,13 @@ class TestExportPython:
         self.scatter.state.layers[0].markersize = 100
         self.assert_same(tmpdir, tol=2)
 
+    def test_line_cmap(self, tmpdir):
+        self.scatter.state.layers[0].cmap_mode = 'Linear'
+        self.scatter.state.layers[0].cmap_vmin = 0.2
+        self.scatter.state.layers[0].cmap_vmax = 0.7
+        self.scatter.state.layers[0].cmap = plt.cm.BuGn
+        self.test_line(tmpdir)
+
     def test_errorbarx(self, tmpdir):
         self.scatter.state.layers[0].xerr_visible = True
         self.scatter.state.layers[0].xerr_att = self.data.id['e']
@@ -82,6 +89,13 @@ class TestExportPython:
         self.scatter.state.layers[0].alpha = 0.5
         self.assert_same(tmpdir)
 
+    def test_errorbarxy_cmap(self, tmpdir):
+        self.scatter.state.layers[0].cmap_mode = 'Linear'
+        self.scatter.state.layers[0].cmap_vmin = 0.2
+        self.scatter.state.layers[0].cmap_vmax = 0.7
+        self.scatter.state.layers[0].cmap = plt.cm.BuGn
+        self.test_errorbarxy(tmpdir)
+
     def _vector_common(self, tmpdir):
         self.scatter.state.layers[0].vector_visible = True
         self.scatter.state.layers[0].vy_att = self.data.id['g']
@@ -102,7 +116,16 @@ class TestExportPython:
         self.scatter.state.layers[0].vx_att = self.data.id['angle']
         self._vector_common(tmpdir)
 
+    def test_vector_cartesian_cmap(self, tmpdir):
+        self.scatter.state.layers[0].cmap_mode = 'Linear'
+        self.scatter.state.layers[0].cmap_vmin = 0.2
+        self.scatter.state.layers[0].cmap_vmax = 0.7
+        self.scatter.state.layers[0].cmap = plt.cm.BuGn
+        self.test_vector_cartesian(tmpdir)
+
     def assert_same(self, tmpdir, tol=0):
+
+        self.scatter.axes.figure.savefig('check.png')
 
         os.chdir(tmpdir.strpath)
 

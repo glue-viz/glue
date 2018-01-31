@@ -68,6 +68,45 @@ def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=N
         artist.set_norm(Normalize(vmin, vmax))
 
 
+class ColoredLineCollection(LineCollection):
+
+    def __init__(self, x, y, **kwargs):
+        segments = np.zeros((0, 2, 2))
+        super(ColoredLineCollection, self).__init__(segments, **kwargs)
+        self.set_points(x, y)
+
+    def set_points(self, x, y, oversample=True):
+
+        if len(x) == 0:
+            self.set_segments(np.zeros((0, 2, 2)))
+            return
+
+        if oversample:
+            x_fine = np.zeros(len(x) * 2 - 1, dtype=float)
+            y_fine = np.zeros(len(y) * 2 - 1, dtype=float)
+            x_fine[::2] = x
+            x_fine[1::2] = 0.5 * (x[1:] + x[:-1])
+            y_fine[::2] = y
+            y_fine[1::2] = 0.5 * (y[1:] + y[:-1])
+            points = np.array([x_fine, y_fine]).transpose().reshape(-1, 1, 2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            self.set_segments(segments)
+        else:
+            points = np.array([x, y]).transpose()
+            self.set_segments([points])
+
+    def set_linearcolor(self, color=None, data=None, **kwargs):
+
+        if color is None:
+            data_new = np.zeros((len(data) - 1) * 2)
+            data_new[::2] = data[:-1]
+            data_new[1::2] = data[1:]
+            set_mpl_artist_cmap(self, data_new, **kwargs)
+        else:
+            self.set_array(None)
+            self.set_color(color)
+
+
 class ScatterLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = ScatterLayerState
@@ -87,7 +126,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = None
-        self.line_collection = LineCollection(np.zeros((0, 2, 2)))
+        self.line_collection = ColoredLineCollection([], [])
         self.axes.add_collection(self.line_collection)
 
         # Scatter density
@@ -158,8 +197,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.line_visible:
             if self.state.cmap_mode == 'Fixed':
-                points = np.array([x, y]).transpose()
-                self.line_collection.set_segments([points])
+                self.line_collection.set_points(x, y, oversample=False)
             else:
                 # In the case where we want to color the line, we need to over
                 # sample the line by a factor of two so that we can assign the
@@ -168,17 +206,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 # from the other side. With oversampling, we can have half a
                 # segment on either side of a point be the same color as a
                 # point
-                x_fine = np.zeros(len(x) * 2 - 1, dtype=float)
-                y_fine = np.zeros(len(y) * 2 - 1, dtype=float)
-                x_fine[::2] = x
-                x_fine[1::2] = 0.5 * (x[1:] + x[:-1])
-                y_fine[::2] = y
-                y_fine[1::2] = 0.5 * (y[1:] + y[:-1])
-                points = np.array([x_fine, y_fine]).transpose().reshape(-1, 1, 2)
-                segments = np.concatenate([points[:-1], points[1:]], axis=1)
-                self.line_collection.set_segments(segments)
+                self.line_collection.set_points(x, y)
         else:
-            self.line_collection.set_segments(np.zeros((0, 2, 2)))
+            self.line_collection.set_points([], [])
 
         for eartist in list(self.errorbar_artist[2]):
             if eartist is not None:
@@ -322,17 +352,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.cmap_mode == 'Fixed':
                 if force or 'color' in changed or 'cmap_mode' in changed:
-                    self.line_collection.set_array(None)
-                    self.line_collection.set_color(self.state.color)
+                    self.line_collection.set_linearcolor(color=self.state.color)
             elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                 # Higher up we oversampled the points in the line so that
                 # half a segment on either side of each point has the right
                 # color, so we need to also oversample the color here.
                 c = self.layer[self.state.cmap_att].ravel()
-                cnew = np.zeros((len(c) - 1) * 2)
-                cnew[::2] = c[:-1]
-                cnew[1::2] = c[1:]
-                set_mpl_artist_cmap(self.line_collection, cnew, self.state)
+                self.line_collection.set_linearcolor(data=c, state=self.state)
 
             if force or 'linewidth' in changed:
                 self.line_collection.set_linewidth(self.state.linewidth)
@@ -500,19 +526,23 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                        vmax=self.state.cmap_vmax)
                         script += "set_mpl_artist_cmap(s, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
 
-
         if self.state.line_visible:
-            # TEMP - ideally we should use the version with linecollection
-            # used above - but first we should probably refactor these into
-            # a single matplotlib function that sets up the linecollection
             options = dict(color=self.state.color,
                            linewidth=self.state.linewidth,
                            linestyle=self.state.linestyle,
-                           solid_capstyle='butt',
                            alpha=self.state.alpha,
                            zorder=self.state.zorder)
-            script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
-
+            if self.state.cmap_mode == 'Fixed':
+                script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
+            else:
+                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+                script += "from glue.viewers.scatter.layer_artist import ColoredLineCollection\n"
+                script += "lc = ColoredLineCollection(x, y, {0})\n".format(serialize_options(options))
+                options = dict(cmap=self.state.cmap_name,
+                               vmin=self.state.cmap_vmin,
+                               vmax=self.state.cmap_vmax)
+                script += "lc.set_linearcolor(data=c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+                script += "ax.add_collection(lc)\n"
         if self.state.vector_visible:
 
             if self.state.vx_att is not None and self.state.vy_att is not None:
@@ -556,8 +586,19 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                            color=self.state.color,
                            alpha=self.state.alpha,
                            zorder=self.state.zorder)
+            if self.state.cmap_mode == 'Linear':
+                script += "q = "
 
-            script += "ax.quiver(x, y, vx, vy, {0})".format(serialize_options(options))
+            script += "ax.quiver(x, y, vx, vy, {0})\n".format(serialize_options(options))
+
+            if self.state.cmap_mode == 'Linear':
+                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+                script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
+                script += "from glue.config import colormaps\n"
+                options = dict(cmap=self.state.cmap_name,
+                               vmin=self.state.cmap_vmin,
+                               vmax=self.state.cmap_vmax)
+                script += "set_mpl_artist_cmap(q, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -575,6 +616,20 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             options = dict(fmt='none', xerr=xerr, yerr=yerr, color=self.state.color,
                            alpha=self.state.alpha, zorder=self.state.zorder)
+
+            if self.state.cmap_mode == 'Linear':
+                script += "err ="
+
             script += "ax.errorbar(x, y, {0})\n".format(serialize_options(options))
+
+            if self.state.cmap_mode == 'Linear':
+                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+                script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
+                script += "from glue.config import colormaps\n"
+                options = dict(cmap=self.state.cmap_name,
+                               vmin=self.state.cmap_vmin,
+                               vmax=self.state.cmap_vmax)
+                script += "for e in err[2]:\n    if e is None:\n        continue\n"
+                script += "    set_mpl_artist_cmap(e, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
 
         return script
