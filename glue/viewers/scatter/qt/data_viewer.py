@@ -26,7 +26,7 @@ class ScatterViewer(MatplotlibDataViewer):
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon']
+             'select:polygon', 'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(ScatterViewer, self).__init__(session, parent, state=state)

@@ -25,7 +25,7 @@ class HistogramViewer(MatplotlibDataViewer):
     _data_artist_cls = HistogramLayerArtist
     _subset_artist_cls = HistogramLayerArtist
 
-    tools = ['select:xrange']
+    tools = ['select:xrange', 'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(HistogramViewer, self).__init__(session, parent, state=state)

@@ -446,7 +446,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         def serialize_options(options):
             return ', '.join(key + '=' + repr(value) for key, value in options.items())
 
-        script = "import numpy as np\n\n"
+        script = ""
         script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
         script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
 
@@ -458,10 +458,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     options = dict(color=self.state.color,
                                    markersize=self.state.size * self.state.size_scaling,
-                                   mec='none')
+                                   mec='none', alpha=self.state.alpha, zorder=self.state.zorder)
                     script += "ax.plot(x, y, 'o', {0})\n".format(serialize_options(options))
                 else:
-                    options = dict(edgecolor='none')
+                    options = dict(edgecolor='none', alpha=self.state.alpha, zorder=self.state.zorder)
 
                     if self.state.cmap_mode == 'Fixed':
                         options['facecolor'] = self.state.color

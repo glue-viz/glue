@@ -17,6 +17,7 @@ from glue.core.command import ApplySubsetState
 __all__ = ['MatplotlibDataViewer']
 
 SCRIPT_HEADER = """
+import numpy as np
 import matplotlib.pyplot as plt
 
 fig = plt.figure()

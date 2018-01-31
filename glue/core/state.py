@@ -111,6 +111,18 @@ for line in open(PATCH_FILE):
     PATH_PATCHES[before.strip()] = after.strip()
 
 
+def save(filename, obj):
+    s = GlueSerializer(obj)
+    with open(filename, 'w') as f:
+        s.dump(f)
+
+
+def load(filename):
+    with open(filename, 'rb') as f:
+        s = GlueUnSerializer.load(f)
+    return s.object('__main__')
+
+
 def lookup_class_with_patches(name):
     """
     A wrapper to lookup_class that also patches paths to ensure

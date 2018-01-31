@@ -13,7 +13,7 @@ from glue.utils.qt import set_cursor
 from glue.config import settings
 from glue.external import six
 from glue.utils.noconflict import classmaker
-from glue.core.state import GlueSerializer
+from glue.core.state import save
 
 __all__ = ['DataViewer']
 
@@ -39,9 +39,8 @@ TEMPLATE_SCRIPT = """
 
 ### Set up data
 
-from glue.core.state import GlueUnSerializer
-s = GlueUnSerializer.load(open('{data}', 'rb'))
-data_collection = s.object('__main__')
+from glue.core.state import load
+data_collection = load('{data}')
 
 ### Set up viewer
 
@@ -350,13 +349,11 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         sb = self.statusBar()
         sb.showMessage(message)
 
-    def as_script(self):
+    def export_as_script(self, filename):
 
-        data_filename = 'mydata.glu'
+        data_filename = os.path.relpath(filename) + '.data'
 
-        s = GlueSerializer(self.session.data_collection)
-        with open(data_filename, 'w') as f:
-            s.dump(f)
+        save(data_filename, self.session.data_collection)
 
         header = self._script_header().strip()
 
@@ -373,8 +370,12 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             layers += layer._script_layer().strip() + "\n"
 
         footer = self._script_footer().strip()
-        script = TEMPLATE_SCRIPT.format(data=data_filename, header=header, layers=layers, footer=footer)
-        return script
+
+        script = TEMPLATE_SCRIPT.format(data=data_filename, header=header,
+                                        layers=layers, footer=footer)
+
+        with open(filename, 'w') as f:
+            f.write(script)
 
     def _script_header(self):
         raise NotImplementedError()

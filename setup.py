@@ -82,6 +82,7 @@ histogram_viewer = glue.viewers.histogram:setup
 table_viewer = glue.viewers.table:setup
 data_exporters = glue.core.data_exporters:setup
 fits_format = glue.io.formats.fits:setup
+export_python = glue.plugins.tools:setup
 
 [console_scripts]
 glue-config = glue.config_gen:main
