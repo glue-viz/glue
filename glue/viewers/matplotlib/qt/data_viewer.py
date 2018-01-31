@@ -16,6 +16,34 @@ from glue.core.command import ApplySubsetState
 
 __all__ = ['MatplotlibDataViewer']
 
+SCRIPT_HEADER = """
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
+""".strip()
+
+SCRIPT_FOOTER = """
+# Set limits
+ax.set_xlim({x_min}, {x_max})
+ax.set_ylim({y_min}, {y_max})
+
+# Set scale (log or linear)
+ax.set_xscale('{x_log_str}')
+ax.set_yscale('{y_log_str}')
+
+# Set axis label properties
+ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
+ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size})
+
+# Set tick label properties
+ax.tick_params('x', labelsize={x_ticklabel_size})
+ax.tick_params('y', labelsize={x_ticklabel_size})
+
+# Save figure
+fig.savefig('myplot.png')
+""".strip()
+
 
 class MatplotlibDataViewer(DataViewerWithState):
 
@@ -188,3 +216,13 @@ class MatplotlibDataViewer(DataViewerWithState):
         else:
             # Make sure we force a redraw to get rid of the ROI
             self.axes.figure.canvas.draw()
+
+    def _script_header(self):
+        state_dict = self.state.as_dict()
+        return SCRIPT_HEADER.format(**state_dict)
+
+    def _script_footer(self):
+        state_dict = self.state.as_dict()
+        state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
+        state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
+        return SCRIPT_FOOTER.format(**state_dict)

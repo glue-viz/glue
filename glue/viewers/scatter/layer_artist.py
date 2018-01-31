@@ -10,6 +10,7 @@ from mpl_scatter_density import ScatterDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
+from glue.core import Data
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -436,3 +437,121 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     def update(self):
         self._update_scatter(force=True)
         self.redraw()
+
+    def _script_layer(self):
+
+        if len(self.mpl_artists) == 0 or not self.enabled or not self.visible:
+            return
+
+        def serialize_options(options):
+            return ', '.join(key + '=' + repr(value) for key, value in options.items())
+
+        script = "import numpy as np\n\n"
+        script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
+        script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
+
+        if self.state.markers_visible:
+            if self.state.density_map:
+                # TODO
+                pass
+            else:
+                if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
+                    options = dict(color=self.state.color,
+                                   markersize=self.state.size * self.state.size_scaling,
+                                   mec='none')
+                    script += "ax.plot(x, y, 'o', {0})\n".format(serialize_options(options))
+                else:
+                    options = dict(edgecolor='none')
+
+                    if self.state.cmap_mode == 'Fixed':
+                        options['facecolor'] = self.state.color
+                    else:
+                        script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+                        # TODO: apply colormap here, generalize set_mpl_artist_cmap
+
+                    if self.state.size_mode == 'Fixed':
+                        options['s'] = '{0} ** 2'.format(self.state.size * self.state.size_scaling)
+                    else:
+                        script += "size_vmin = {0}\n".format(self.state.size_vmin)
+                        script += "size_vmax = {0}\n".format(self.state.size_vmin)
+                        script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
+                        script += "sizes = (s - size_vmin) / (size_vmax - size_vmin)\n"
+                        script += "sizes *= self.state.size_scaling\n"
+                        options['s'] = 'sizes ** 2'
+
+                    script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
+
+        if self.state.line_visible:
+            # TEMP - ideally we should use the version with linecollection
+            # used above - but first we should probably refactor these into
+            # a single matplotlib function that sets up the linecollection
+            options = dict(marker='-', color=self.state.color,
+                           linewidth=self.state.linewidth,
+                           linestyle=self.state.linestyle)
+            script += "ax.plot(x, y, {0})\n".format(serialize_options(options))
+
+        if self.state.vector_visible:
+
+            if self.state.vx_att is not None and self.state.vy_att is not None:
+
+                vx = self.layer[self.state.vx_att].ravel()
+                vy = self.layer[self.state.vy_att].ravel()
+
+                if self.state.vector_mode == 'Polar':
+                    script += "angle = layer_data['{0}']".format(self._viewer_state.vx_att.label)
+                    script += "length = layer_data['{0}']".format(self._viewer_state.vy_att.label)
+                    script += "vx = length * np.cos(np.radians(ang))"
+                    script += "vy = length * np.sin(np.radians(ang))"
+                else:
+                    script += "vx = layer_data['{0}']".format(self._viewer_state.vx_att.label)
+                    script += "vy = layer_data['{0}']".format(self._viewer_state.vy_att.label)
+
+            if self.state.vector_arrowhead:
+                hw = 3
+                hl = 5
+            else:
+                hw = 1
+                hl = 0
+
+            v = np.hypot(vx, vy)
+            vmax = np.nanmax(v)
+            vx = vx / vmax
+            vy = vy / vmax
+
+            script = "v = np.hypot(vx, vy)"
+            script = "vmax = np.nanmax(v)"
+            script = "vx = vx / vmax"
+            script = "vy = vy / vmax"
+
+            # TEMP: fix color for cases where color depends on attribute
+
+            options = dict(units='width',
+                           pivot=self.state.vector_origin,
+                           headwidth=hw, headlength=hl,
+                           scale_units='width',
+                           scale=10 / self.state.vector_scaling,
+                           color=self.state.color,
+                           alpha=self.state.alpha,
+                           zorder=self.state.zorder)
+
+            script += "ax.quiver(x, y, vx, vy, {0})".format(serialize_options(options))
+
+        if self.state.xerr_visible or self.state.yerr_visible:
+
+            if self.state.xerr_visible and self.state.xerr_att is not None:
+                xerr = "layer_data['{0}']".format(self._viewer_state.xerr_att.label)
+            else:
+                xerr = "None"
+
+            if self.state.yerr_visible and self.state.yerr_att is not None:
+                yerr = "layer_data['{0}']".format(self._viewer_state.yerr_att.label)
+            else:
+                yerr = "None"
+
+            # TEMP: fix color for cases where color depends on attribute
+
+            options = dict(fmt='none', xerr=xerr, yerr=yerr, color=self.state.color,
+                           alpha=self.state.alpha, zorder=self.state.zorder)
+            script += "ax.errorbar(x, y, {0})\n".format(serialize_options(options))
+
+        return script

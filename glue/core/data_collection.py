@@ -315,6 +315,9 @@ class DataCollection(HubListener):
     def __len__(self):
         return len(self._data)
 
+    def index(self, item):
+        return self._data.index(item)
+
     def __str__(self):
         if len(self) == 1:
             result = "DataCollection (1 data set)\n\t"
