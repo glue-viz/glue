@@ -379,6 +379,18 @@ class ColormapRegistry(Registry):
         """
         self.members.append([label, cmap])
 
+    def __getitem__(self, cmap_name):
+        for name, cmap in self.members:
+            if name == cmap_name:
+                return cmap
+        raise KeyError(cmap_name)
+
+    def name_from_cmap(self, cmap_desired):
+        for name, cmap in self.members:
+            if cmap is cmap_desired:
+                return name
+        raise ValueError("Could not find name for colormap")
+
 
 class DataFactoryRegistry(Registry):
 

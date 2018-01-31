@@ -190,8 +190,8 @@ class ScatterLayerState(MatplotlibLayerState):
     vx_att = DDSCProperty(docstring="The attribute to use for the x vector arrow")
     vy_att = DDSCProperty(docstring="The attribute to use for the y vector arrow")
     vector_arrowhead = DDCProperty(False, docstring="Whether to show vector arrow")
-    vector_mode = DDSCProperty(default_index=0, docstring="Which attribute to use for plotting vectors")
-    vector_origin = DDSCProperty(default_index=1, docstring="The attribute to use for the arrow position")
+    vector_mode = DDSCProperty(default_index=0, docstring="Whether to plot the vectors in cartesian or polar mode")
+    vector_origin = DDSCProperty(default_index=1, docstring="Whether to place the vector so that the origin is at the tail, middle, or tip")
     vector_scaling = DDCProperty(1, docstring="The relative scaling of the arrow length")
 
     def __init__(self, viewer_state=None, layer=None, **kwargs):
@@ -324,6 +324,10 @@ class ScatterLayerState(MatplotlibLayerState):
         Flip the size_vmin/size_vmax limits.
         """
         self.size_lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)
 
     @classmethod
     def __setgluestate__(cls, rec, context):

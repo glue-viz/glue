@@ -50,10 +50,11 @@ class DensityMapLimits(object):
         return 10. ** (np.log10(np.nanmax(array)) * self.contrast)
 
 
-def set_mpl_artist_cmap(artist, values, state):
-    vmin = state.cmap_vmin
-    vmax = state.cmap_vmax
-    cmap = state.cmap
+def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):
+    if state is not None:
+        vmin = state.cmap_vmin
+        vmax = state.cmap_vmax
+        cmap = state.cmap
     if isinstance(artist, ScatterDensityArtist):
         artist.set_c(values)
     else:
@@ -443,8 +444,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if len(self.mpl_artists) == 0 or not self.enabled or not self.visible:
             return
 
+        class code(str):
+            pass
+
         def serialize_options(options):
-            return ', '.join(key + '=' + repr(value) for key, value in options.items())
+            result = []
+            for key, value in options.items():
+                if isinstance(value, code):
+                    result.append(key + '=' + value)
+                else:
+                    result.append(key + '=' + repr(value))
+            return ', '.join(result)
 
         script = ""
         script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
@@ -465,30 +475,43 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if self.state.cmap_mode == 'Fixed':
                         options['facecolor'] = self.state.color
-                    else:
-                        script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
-                        # TODO: apply colormap here, generalize set_mpl_artist_cmap
 
                     if self.state.size_mode == 'Fixed':
-                        options['s'] = '{0} ** 2'.format(self.state.size * self.state.size_scaling)
+                        options['s'] = code('{0} ** 2'.format(self.state.size * self.state.size_scaling))
                     else:
                         script += "size_vmin = {0}\n".format(self.state.size_vmin)
-                        script += "size_vmax = {0}\n".format(self.state.size_vmin)
+                        script += "size_vmax = {0}\n".format(self.state.size_vmax)
                         script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
-                        script += "sizes = (s - size_vmin) / (size_vmax - size_vmin)\n"
-                        script += "sizes *= self.state.size_scaling\n"
-                        options['s'] = 'sizes ** 2'
+                        script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin)\n"
+                        script += "sizes *= {0}\n".format(self.state.size_scaling)
+                        options['s'] = code('sizes ** 2')
+
+                    if self.state.cmap_mode == 'Linear':
+                        script += "s = "
 
                     script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
+
+                    if self.state.cmap_mode == 'Linear':
+                        script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+                        script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
+                        script += "from glue.config import colormaps\n"
+                        options = dict(cmap=self.state.cmap_name,
+                                       vmin=self.state.cmap_vmin,
+                                       vmax=self.state.cmap_vmax)
+                        script += "set_mpl_artist_cmap(s, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+
 
         if self.state.line_visible:
             # TEMP - ideally we should use the version with linecollection
             # used above - but first we should probably refactor these into
             # a single matplotlib function that sets up the linecollection
-            options = dict(marker='-', color=self.state.color,
+            options = dict(color=self.state.color,
                            linewidth=self.state.linewidth,
-                           linestyle=self.state.linestyle)
-            script += "ax.plot(x, y, {0})\n".format(serialize_options(options))
+                           linestyle=self.state.linestyle,
+                           solid_capstyle='butt',
+                           alpha=self.state.alpha,
+                           zorder=self.state.zorder)
+            script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
 
         if self.state.vector_visible:
 
@@ -498,13 +521,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 vy = self.layer[self.state.vy_att].ravel()
 
                 if self.state.vector_mode == 'Polar':
-                    script += "angle = layer_data['{0}']".format(self._viewer_state.vx_att.label)
-                    script += "length = layer_data['{0}']".format(self._viewer_state.vy_att.label)
-                    script += "vx = length * np.cos(np.radians(ang))"
-                    script += "vy = length * np.sin(np.radians(ang))"
+                    script += "angle = layer_data['{0}']\n".format(self.state.vx_att.label)
+                    script += "length = layer_data['{0}']\n".format(self.state.vy_att.label)
+                    script += "vx = length * np.cos(np.radians(angle))\n"
+                    script += "vy = length * np.sin(np.radians(angle))\n"
                 else:
-                    script += "vx = layer_data['{0}']".format(self._viewer_state.vx_att.label)
-                    script += "vy = layer_data['{0}']".format(self._viewer_state.vy_att.label)
+                    script += "vx = layer_data['{0}']\n".format(self.state.vx_att.label)
+                    script += "vy = layer_data['{0}']\n".format(self.state.vy_att.label)
 
             if self.state.vector_arrowhead:
                 hw = 3
@@ -518,10 +541,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             vx = vx / vmax
             vy = vy / vmax
 
-            script = "v = np.hypot(vx, vy)"
-            script = "vmax = np.nanmax(v)"
-            script = "vx = vx / vmax"
-            script = "vy = vy / vmax"
+            script += "v = np.hypot(vx, vy)\n"
+            script += "vmax = np.nanmax(v)\n"
+            script += "vx = vx / vmax\n"
+            script += "vy = vy / vmax\n"
 
             # TEMP: fix color for cases where color depends on attribute
 
@@ -539,14 +562,14 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if self.state.xerr_visible or self.state.yerr_visible:
 
             if self.state.xerr_visible and self.state.xerr_att is not None:
-                xerr = "layer_data['{0}']".format(self._viewer_state.xerr_att.label)
+                xerr = code("layer_data['{0}']".format(self.state.xerr_att.label))
             else:
-                xerr = "None"
+                xerr = code("None")
 
             if self.state.yerr_visible and self.state.yerr_att is not None:
-                yerr = "layer_data['{0}']".format(self._viewer_state.yerr_att.label)
+                yerr = code("layer_data['{0}']".format(self.state.yerr_att.label))
             else:
-                yerr = "None"
+                yerr = code("None")
 
             # TEMP: fix color for cases where color depends on attribute
 
