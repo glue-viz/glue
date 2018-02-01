@@ -728,3 +728,10 @@ def test_parent_preserved_session():
 
     assert dc2[1].id['w'].parent.label == 'test2'
     assert dc2[1].id['v'].parent.label == 'test2'
+
+
+def test_preserve_datetime():
+    # Make sure that we recognize and preserve the Numpy datetime64 format
+    dates = np.array([1, 2, 3], dtype='M8[D]')
+    data = Data(dates=dates)
+    assert data['dates'].dtype.name == 'datetime64[D]'

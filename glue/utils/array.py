@@ -107,10 +107,16 @@ def coerce_numeric(arr):
     arr : `numpy.ndarray`
         The array to coerce
     """
-    # already numeric type
+
+    # Already numeric type
     if np.issubdtype(arr.dtype, np.number):
         return arr
 
+    # Numpy datetime64 format
+    if np.issubdtype(arr.dtype, np.datetime64):
+        return arr
+
+    # Convert booleans to integers
     if np.issubdtype(arr.dtype, np.bool_):
         return arr.astype(np.int)
 
