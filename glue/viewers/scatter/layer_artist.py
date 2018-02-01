@@ -483,8 +483,20 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return ', '.join(result)
 
         script = ""
+        imports = ""
+
         script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
-        script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
+        script += "y = layer_data['{0}']\n".format(self._viewer_state.y_att.label)
+
+        if self.state.cmap_mode == 'Linear':
+
+            imports += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
+
+            script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+
+            cmap_options = dict(cmap=code('plt.cm.' + self.state.cmap.name),
+                                vmin=self.state.cmap_vmin,
+                                vmax=self.state.cmap_vmax)
 
         if self.state.markers_visible:
             if self.state.density_map:
@@ -519,13 +531,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
 
                     if self.state.cmap_mode == 'Linear':
-                        script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
-                        script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
-                        script += "from glue.config import colormaps\n"
-                        options = dict(cmap=self.state.cmap_name,
-                                       vmin=self.state.cmap_vmin,
-                                       vmax=self.state.cmap_vmax)
-                        script += "set_mpl_artist_cmap(s, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+                        script += "set_mpl_artist_cmap(s, c, {0})\n".format(serialize_options(cmap_options))
 
         if self.state.line_visible:
             options = dict(color=self.state.color,
@@ -536,14 +542,11 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             if self.state.cmap_mode == 'Fixed':
                 script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
             else:
-                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
                 script += "from glue.viewers.scatter.layer_artist import ColoredLineCollection\n"
                 script += "lc = ColoredLineCollection(x, y, {0})\n".format(serialize_options(options))
-                options = dict(cmap=self.state.cmap_name,
-                               vmin=self.state.cmap_vmin,
-                               vmax=self.state.cmap_vmax)
-                script += "lc.set_linearcolor(data=c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+                script += "lc.set_linearcolor(data=c, {0})\n".format(serialize_options(cmap_options))
                 script += "ax.add_collection(lc)\n"
+
         if self.state.vector_visible:
 
             if self.state.vx_att is not None and self.state.vy_att is not None:
@@ -593,13 +596,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             script += "ax.quiver(x, y, vx, vy, {0})\n".format(serialize_options(options))
 
             if self.state.cmap_mode == 'Linear':
-                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
-                script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
-                script += "from glue.config import colormaps\n"
-                options = dict(cmap=self.state.cmap_name,
-                               vmin=self.state.cmap_vmin,
-                               vmax=self.state.cmap_vmax)
-                script += "set_mpl_artist_cmap(q, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+                script += "set_mpl_artist_cmap(q, c, {0})\n".format(serialize_options(cmap_options))
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -624,13 +621,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             script += "ax.errorbar(x, y, {0})\n".format(serialize_options(options))
 
             if self.state.cmap_mode == 'Linear':
-                script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
-                script += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
-                script += "from glue.config import colormaps\n"
-                options = dict(cmap=self.state.cmap_name,
-                               vmin=self.state.cmap_vmin,
-                               vmax=self.state.cmap_vmax)
                 script += "for e in err[2]:\n    if e is None:\n        continue\n"
-                script += "    set_mpl_artist_cmap(e, c, cmap=colormaps['{cmap}'], vmin={vmin}, vmax={vmax})\n".format(**options)
+                script += "    set_mpl_artist_cmap(e, c, {0})\n".format(serialize_options(cmap_options))
 
-        return script
+        return imports + '\n' + script

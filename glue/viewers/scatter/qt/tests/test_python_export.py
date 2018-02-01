@@ -57,7 +57,7 @@ class TestExportPython:
         self.scatter.state.layers[0].color = 'orange'
         self.scatter.state.layers[0].alpha = 0.7
         self.scatter.state.layers[0].markersize = 100
-        self.assert_same(tmpdir, tol=2)
+        self.assert_same(tmpdir, tol=5)
 
     def test_line_cmap(self, tmpdir):
         self.scatter.state.layers[0].cmap_mode = 'Linear'
