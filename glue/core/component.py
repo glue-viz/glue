@@ -711,6 +711,8 @@ class DateTimeComponent(Component):
         :type units: str
         """
 
+        self.units = units
+
         if not isinstance(data, np.ndarray) or data.dtype.kind != 'M':
             raise TypeError("DateTimeComponent should be initialized with a datetim64 Numpy array")
 
