@@ -354,11 +354,11 @@ def update_ticks(axes, coord, components, is_log):
     else:
         raise TypeError("coord must be one of x,y")
 
-    is_cat = all(comp.categorical for comp in components)
-    is_date = all(comp.date for comp in components)
+    is_cat = any(comp.categorical for comp in components)
+    is_date = any(comp.date for comp in components)
 
     if is_date:
-        loc = AutoDateLocator(maxticks=5)
+        loc = AutoDateLocator()
         fmt = AutoDateFormatter(loc)
         axis.set_major_locator(loc)
         axis.set_major_formatter(fmt)
