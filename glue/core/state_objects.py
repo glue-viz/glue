@@ -323,6 +323,12 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if data_values.size > self.percentile_subset:
                 data_values = np.random.choice(data_values.ravel(), self.percentile_subset)
 
+            if log:
+                data_values = data_values[data_values > 0]
+                if len(data_values) == 0:
+                    self.set(lower=0.1, upper=1, percentile=percentile, log=log)
+                    return
+
             if percentile == 100:
 
                 if data_values.dtype.kind == 'M':
@@ -333,12 +339,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     upper = np.nanmax(data_values)
 
             else:
-
-                if log:
-                    data_values = data_values[data_values > 0]
-                    if len(data_values) == 0:
-                        self.set(lower=0.1, upper=1, percentile=percentile, log=log)
-                        return
 
                 try:
                     lower = np.nanpercentile(data_values, exclude)
