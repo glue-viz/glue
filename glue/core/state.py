@@ -91,7 +91,7 @@ if six.PY2:
     literals += (long,)
 
 
-literals += np.ScalarType
+literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
 
 
 
@@ -818,8 +818,10 @@ def _load_component(rec, context):
     if 'log' in rec:
         return context.object(rec['log']).component(rec['log_item'])
 
-    return Component(data=context.object(rec['data']),
-                     units=rec['units'])
+    cls = lookup_class_with_patches(rec['_type'])
+
+    return cls(data=context.object(rec['data']),
+               units=rec['units'])
 
 
 @saver(CategoricalComponent)
@@ -945,10 +947,22 @@ def _save_numpy(obj, context):
     data = b64encode(f.getvalue()).decode('ascii')
     return dict(data=data)
 
+
 @saver(Colormap)
 def _save_cmap(cmap, context):
-    return {'cmap':cmap.name}
+    return {'cmap': cmap.name}
+
 
 @loader(Colormap)
 def _load_cmap(rec, context):
     return cm.get_cmap(rec['cmap'])
+
+
+@saver(np.datetime64)
+def _save_datetime64(dt, context):
+    return {'datetime64': str(dt)}
+
+
+@loader(np.datetime64)
+def _load_datetime64(rec, context):
+    return np.datetime64(rec['datetime64'])
