@@ -5,6 +5,8 @@ import logging
 from functools import wraps
 
 import numpy as np
+import matplotlib.units as units
+import matplotlib.dates as dates
 
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
@@ -300,6 +302,35 @@ def cache_axes(axes, toolbar):
     toolbar.pan_begin.connect(cache.enable)
     toolbar.pan_end.connect(cache.disable)
     return cache
+
+
+# In Matplotlib < 2.2, there is no datetime64 support, so we register a converter
+# here to deal with it with older versions.
+
+
+class Datetime64Converter(units.ConversionInterface):
+
+    @staticmethod
+    def convert(value, unit, axis):
+        value = np.asarray(value)
+        if value.dtype.kind == 'M':
+            return datetime64_to_mpl(value)
+        else:
+            return value
+
+    @staticmethod
+    def axisinfo(unit, axis):
+        majloc = dates.AutoDateLocator()
+        majfmt = dates.AutoDateFormatter(majloc)
+        return units.AxisInfo(majloc=majloc,
+                              majfmt=majfmt)
+
+    @staticmethod
+    def default_units(x, axis):
+        return None
+
+
+units.registry[np.datetime64] = Datetime64Converter()
 
 
 # The following code is copied from the developer version of Matplotlib

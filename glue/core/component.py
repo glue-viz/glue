@@ -714,7 +714,11 @@ class DateTimeComponent(Component):
         if not isinstance(data, np.ndarray) or data.dtype.kind != 'M':
             raise TypeError("DateTimeComponent should be initialized with a datetim64 Numpy array")
 
-        self._data = datetime64_to_mpl(data)
+        self._data = data
+
+    @property
+    def numeric(self):
+        return True
 
     @property
     def date(self):
