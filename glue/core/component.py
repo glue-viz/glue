@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
-import operator
 import warnings
 
 import numpy as np
@@ -15,7 +14,7 @@ from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
-                        polygon_line_intersections, broadcast_to)
+                        polygon_line_intersections, broadcast_to, datetime64_to_mpl)
 
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
@@ -108,6 +107,10 @@ class Component(object):
         """
         Whether or not the datatype is categorical
         """
+        return False
+
+    @property
+    def date(self):
         return False
 
     def __str__(self):
@@ -204,6 +207,9 @@ class Component(object):
 
         if np.issubdtype(data.dtype, np.object_):
             return CategoricalComponent(data, units=units)
+
+        if data.dtype.kind == 'M':
+            return DateTimeComponent(data)
 
         n = coerce_numeric(data)
 
@@ -681,7 +687,6 @@ class CategoricalComponent(Component):
 
                 return CategoricalMultiRangeSubsetState(selection, att, other_att)
 
-
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.
 
@@ -693,3 +698,24 @@ class CategoricalComponent(Component):
 
         return pd.Series(self._categorical_data.ravel(),
                          dtype=np.object, **kwargs)
+
+
+class DateTimeComponent(Component):
+
+    def __init__(self, data, units=None):
+        """
+        :param data: The data to store
+        :type data: :class:`numpy.ndarray`
+
+        :param units: Optional unit label
+        :type units: str
+        """
+
+        if not isinstance(data, np.ndarray) or data.dtype.kind != 'M':
+            raise TypeError("DateTimeComponent should be initialized with a datetim64 Numpy array")
+
+        self._data = datetime64_to_mpl(data)
+
+    @property
+    def date(self):
+        return True

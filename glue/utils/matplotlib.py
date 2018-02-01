@@ -15,7 +15,8 @@ from glue.utils.misc import DeferredMethod
 
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
-           'color2rgb', 'point_contour', 'cache_axes', 'DeferDrawMeta']
+           'color2rgb', 'point_contour', 'cache_axes', 'DeferDrawMeta',
+           'datetime64_to_mpl']
 
 
 def renderless_figure():
@@ -299,3 +300,82 @@ def cache_axes(axes, toolbar):
     toolbar.pan_begin.connect(cache.enable)
     toolbar.pan_end.connect(cache.disable)
     return cache
+
+
+# The following code is copied from the developer version of Matplotlib
+# for compatibility with older versions. The following is the license
+# agreement for Matplotlib:
+#
+# 1. This LICENSE AGREEMENT is between the Matplotlib Development Team
+# ("MDT"), and the Individual or Organization ("Licensee") accessing and
+# otherwise using matplotlib software in source or binary form and its
+# associated documentation.
+#
+# 2. Subject to the terms and conditions of this License Agreement, MDT
+# hereby grants Licensee a nonexclusive, royalty-free, world-wide license
+# to reproduce, analyze, test, perform and/or display publicly, prepare
+# derivative works, distribute, and otherwise use matplotlib
+# alone or in any derivative version, provided, however, that MDT's
+# License Agreement and MDT's notice of copyright, i.e., "Copyright (c)
+# 2012- Matplotlib Development Team; All Rights Reserved" are retained in
+# matplotlib  alone or in any derivative version prepared by
+# Licensee.
+#
+# 3. In the event Licensee prepares a derivative work that is based on or
+# incorporates matplotlib or any part thereof, and wants to
+# make the derivative work available to others as provided herein, then
+# Licensee hereby agrees to include in any such work a brief summary of
+# the changes made to matplotlib .
+#
+# 4. MDT is making matplotlib available to Licensee on an "AS
+# IS" basis.  MDT MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+# IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, MDT MAKES NO AND
+# DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+# FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF MATPLOTLIB
+# WILL NOT INFRINGE ANY THIRD PARTY RIGHTS.
+#
+# 5. MDT SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF MATPLOTLIB
+#  FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR
+# LOSS AS A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING
+# MATPLOTLIB , OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF
+# THE POSSIBILITY THEREOF.
+#
+# 6. This License Agreement will automatically terminate upon a material
+# breach of its terms and conditions.
+#
+# 7. Nothing in this License Agreement shall be deemed to create any
+# relationship of agency, partnership, or joint venture between MDT and
+# Licensee.  This License Agreement does not grant permission to use MDT
+# trademarks or trade name in a trademark sense to endorse or promote
+# products or services of Licensee, or any third party.
+#
+# 8. By copying, installing or otherwise using matplotlib ,
+# Licensee agrees to be bound by the terms and conditions of this License
+# Agreement.
+
+HOURS_PER_DAY = 24.
+MIN_PER_HOUR = 60.
+SEC_PER_MIN = 60.
+SEC_PER_HOUR = SEC_PER_MIN * MIN_PER_HOUR
+SEC_PER_DAY = SEC_PER_HOUR * HOURS_PER_DAY
+
+
+def datetime64_to_mpl(d):
+    """
+    Convert `numpy.datetime64` or an ndarray of those types to Gregorian
+    date as UTC float.  Roundoff is via float64 precision.  Practically:
+    microseconds for dates between 290301 BC, 294241 AD, milliseconds for
+    larger dates (see `numpy.datetime64`).  Nanoseconds aren't possible
+    because we do times compared to ``0001-01-01T00:00:00`` (plus one day).
+    """
+
+    # the "extra" ensures that we at least allow the dynamic range out to
+    # seconds.  That should get out to +/-2e11 years.
+    extra = d - d.astype('datetime64[s]')
+    extra = extra.astype('timedelta64[ns]')
+    t0 = np.datetime64('0001-01-01T00:00:00').astype('datetime64[s]')
+    dt = (d.astype('datetime64[s]') - t0).astype(np.float64)
+    dt += extra.astype(np.float64) / 1.0e9
+    dt = dt / SEC_PER_DAY + 1.0
+
+    return dt

@@ -9,7 +9,7 @@ from mock import MagicMock
 from glue.external import six
 from glue import core
 
-from ..component import Component, DerivedComponent, CategoricalComponent
+from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
 from ..component_link import ComponentLink
 from ..coordinates import Coordinates
@@ -734,4 +734,4 @@ def test_preserve_datetime():
     # Make sure that we recognize and preserve the Numpy datetime64 format
     dates = np.array([1, 2, 3], dtype='M8[D]')
     data = Data(dates=dates)
-    assert data['dates'].dtype.name == 'datetime64[D]'
+    assert isinstance(data.get_component('dates'), DateTimeComponent)
