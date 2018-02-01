@@ -18,7 +18,7 @@ from glue.utils.misc import DeferredMethod
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
            'color2rgb', 'point_contour', 'cache_axes', 'DeferDrawMeta',
-           'datetime64_to_mpl']
+           'datetime64_to_mpl', 'mpl_to_datetime64']
 
 
 def renderless_figure():
@@ -390,6 +390,8 @@ SEC_PER_MIN = 60.
 SEC_PER_HOUR = SEC_PER_MIN * MIN_PER_HOUR
 SEC_PER_DAY = SEC_PER_HOUR * HOURS_PER_DAY
 
+T0 = np.datetime64('0001-01-01T00:00:00').astype('datetime64[s]')
+
 
 def datetime64_to_mpl(d):
     """
@@ -404,9 +406,20 @@ def datetime64_to_mpl(d):
     # seconds.  That should get out to +/-2e11 years.
     extra = d - d.astype('datetime64[s]')
     extra = extra.astype('timedelta64[ns]')
-    t0 = np.datetime64('0001-01-01T00:00:00').astype('datetime64[s]')
-    dt = (d.astype('datetime64[s]') - t0).astype(np.float64)
+    dt = (d.astype('datetime64[s]') - T0).astype(np.float64)
     dt += extra.astype(np.float64) / 1.0e9
     dt = dt / SEC_PER_DAY + 1.0
 
     return dt
+
+
+def mpl_to_datetime64(dt):
+
+    dt = (dt - 1.0) * SEC_PER_DAY
+    dt_s = dt.astype(int) + T0.astype(int)
+    dt_ns = ((dt % 1) * 1e9).astype(int)
+
+    dt_s = np.array(dt_s, dtype='datetime64[s]')
+    dt_ns = np.array(dt_ns, dtype='timedelta64[ns]')
+
+    return dt_s + dt_ns

@@ -9,6 +9,14 @@ __all__ = ['points_inside_poly', 'polygon_line_intersections']
 
 def points_inside_poly(x, y, vx, vy):
 
+    if x.dtype.kind == 'M' and vx.dtype.kind == 'M':
+        vx = vx.astype(x.dtype).astype(float)
+        x = x.astype(float)
+
+    if y.dtype.kind == 'M' and vy.dtype.kind == 'M':
+        vy = vy.astype(y.dtype).astype(float)
+        y = y.astype(float)
+
     original_shape = x.shape
 
     x = unbroadcast(x)
