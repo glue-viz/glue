@@ -64,8 +64,8 @@ class ScatterViewer(MatplotlibDataViewer):
 
     def _roi_to_subset_state(self, roi):
 
-        x_date = any(comp.date for comp in self.state._get_x_components())
-        y_date = any(comp.date for comp in self.state._get_y_components())
+        x_date = any(comp.datetime for comp in self.state._get_x_components())
+        y_date = any(comp.datetime for comp in self.state._get_y_components())
 
         if x_date or y_date:
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,

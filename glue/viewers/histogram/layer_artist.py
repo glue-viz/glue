@@ -50,8 +50,12 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
-        x = x[~np.isnan(x) & (x >= self._viewer_state.hist_x_min) &
-                             (x <= self._viewer_state.hist_x_max)]
+        keep = (x >= self._viewer_state.hist_x_min) & (x <= self._viewer_state.hist_x_max)
+
+        if x.dtype.kind != 'M':
+            keep &= ~np.isnan(x)
+
+        x = x[keep]
 
         if len(x) == 0:
             self.redraw()

@@ -110,7 +110,10 @@ class Component(object):
         return False
 
     @property
-    def date(self):
+    def datetime(self):
+        """
+        Whether or not or not the datatype is a date/time
+        """
         return False
 
     def __str__(self):
@@ -723,5 +726,5 @@ class DateTimeComponent(Component):
         return True
 
     @property
-    def date(self):
+    def datetime(self):
         return True

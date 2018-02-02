@@ -30,7 +30,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_x_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = not any(comp.categorical or comp.date for comp in self.viewer_state._get_x_components())
+        log_enabled = not any(comp.categorical or comp.datetime for comp in self.viewer_state._get_x_components())
         self.ui.bool_x_log.setEnabled(log_enabled)
         self.ui.bool_x_log_.setEnabled(log_enabled)
         if not log_enabled:
@@ -39,7 +39,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_y_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = not any(comp.categorical or comp.date for comp in self.viewer_state._get_y_components())
+        log_enabled = not any(comp.categorical or comp.datetime for comp in self.viewer_state._get_y_components())
         self.ui.bool_y_log.setEnabled(log_enabled)
         self.ui.bool_y_log_.setEnabled(log_enabled)
         if not log_enabled:

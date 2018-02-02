@@ -453,8 +453,13 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                     n_bin = self._common_n_bin
 
                 values = self.data_values
-                lower = np.nanmin(values)
-                upper = np.nanmax(values)
+
+                if comp.datetime:
+                    lower = values.min()
+                    upper = values.max()
+                else:
+                    lower = np.nanmin(values)
+                    upper = np.nanmax(values)
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)
 

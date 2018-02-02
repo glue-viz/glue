@@ -355,7 +355,7 @@ def update_ticks(axes, coord, components, is_log):
         raise TypeError("coord must be one of x,y")
 
     is_cat = any(comp.categorical for comp in components)
-    is_date = any(comp.date for comp in components)
+    is_date = any(comp.datetime for comp in components)
 
     if is_date:
         loc = AutoDateLocator()

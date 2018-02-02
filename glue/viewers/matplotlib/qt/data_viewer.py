@@ -1,10 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
-from glue.utils import defer_draw
+from glue.utils import defer_draw, mpl_to_datetime64
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
@@ -73,9 +75,22 @@ class MatplotlibDataViewer(DataViewerWithState):
 
     @avoid_circular
     def limits_from_mpl(self, *args):
+
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.state.x_min, self.state.x_max = self.axes.get_xlim()
-            self.state.y_min, self.state.y_max = self.axes.get_ylim()
+
+            if isinstance(self.state.x_min, np.datetime64):
+                x_min, x_max = [mpl_to_datetime64(x) for x in self.axes.get_xlim()]
+            else:
+                x_min, x_max = self.axes.get_xlim()
+
+            self.state.x_min, self.state.x_max = x_min, x_max
+
+            if isinstance(self.state.y_min, np.datetime64):
+                y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
+            else:
+                y_min, y_max = self.axes.get_ylim()
+
+            self.state.y_min, self.state.y_max = y_min, y_max
 
     @avoid_circular
     def limits_to_mpl(self, *args):
