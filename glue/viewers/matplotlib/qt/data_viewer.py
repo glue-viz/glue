@@ -115,6 +115,7 @@ class MatplotlibDataViewer(DataViewerWithState):
             # And propagate any changes back to the state since we have the
             # @avoid_circular decorator
             with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+                # TODO: fix case with datetime64 here
                 self.state.x_min, self.state.x_max = self.axes.get_xlim()
                 self.state.y_min, self.state.y_max = self.axes.get_ylim()
 

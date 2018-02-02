@@ -6,6 +6,7 @@ import os
 from collections import Counter
 
 import pytest
+import numpy as np
 
 from numpy.testing import assert_equal, assert_allclose
 
@@ -550,3 +551,21 @@ class TestHistogramViewer(object):
 
         for subset in client.count:
             assert client.count[subset] == 1
+
+    def test_datetime64_support(self):
+
+        self.data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.id['t1']
+
+        # Matplotlib deals with dates by converting them to the number of days
+        # since 01-01-0001, so we can check that the limits are correctly
+        # converted (and not 100 to 400)
+        assert self.viewer.axes.get_xlim() == (719263.0, 719563.0)
+
+        # Apply an ROI selection in plotting coordinates
+        roi = XRangeROI(719313, 719513)
+        self.viewer.apply_roi(roi)
+
+        # Check that the two middle elements are selected
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])

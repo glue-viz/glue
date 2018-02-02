@@ -6,13 +6,14 @@ import os
 from collections import Counter
 
 import pytest
+import numpy as np
 
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 from glue.config import colormaps
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
-from glue.core.roi import XRangeROI, RectangularROI
+from glue.core.roi import XRangeROI, RectangularROI, CircularROI
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
@@ -502,8 +503,34 @@ class TestScatterViewer(object):
 
         self.viewer.state.x_att_helper.pixel_coord = False
 
-    def test_component_renamed(self):
-        # If a component ID is renamed, this needs to be reflected in the combo
+    def test_datetime64_support(self):
+
+        self.data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')
+        self.data.add_component(np.array([200, 300, 400, 500], dtype='M8[D]'), 't2')
         self.viewer.add_data(self.data)
-        self.data.id['x'].label = 'test'
-        assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:test:y:z:Coordinate components:Pixel Axis 0 [x]:World 0'
+        self.viewer.state.x_att = self.data.id['t1']
+        self.viewer.state.y_att = self.data.id['y']
+
+        # Matplotlib deals with dates by converting them to the number of days
+        # since 01-01-0001, so we can check that the limits are correctly
+        # converted (and not 100 to 400)
+        assert self.viewer.axes.get_xlim() == (719263.0, 719563.0)
+        assert self.viewer.axes.get_ylim() == (3.2, 3.5)
+
+        # Apply an ROI selection in plotting coordinates
+        roi = RectangularROI(xmin=719313, xmax=719513, ymin=3, ymax=4)
+        self.viewer.apply_roi(roi)
+
+        # Check that the two middle elements are selected
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
+
+        # Now do the same with the y axis
+        self.viewer.state.y_att = self.data.id['t2']
+
+        assert self.viewer.axes.get_xlim() == (719263.0, 719563.0)
+        assert self.viewer.axes.get_ylim() == (719363.0, 719663.0)
+
+        # Apply an ROI selection in plotting coordinates
+        roi = CircularROI(xc=719463, yc=719563, radius=200)
+        self.viewer.apply_roi(roi)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 1])

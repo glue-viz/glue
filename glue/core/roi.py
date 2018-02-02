@@ -417,6 +417,9 @@ class CircularROI(Roi):
         y = self.yc + self.radius * np.sin(theta)
         return x, y
 
+    def transformed(self, xfunc=None, yfunc=None):
+        return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
+
     def __gluestate__(self, context):
         return dict(xc=self.xc, yc=self.yc, radius=self.radius)
 
