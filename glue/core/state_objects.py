@@ -348,9 +348,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     lower = np.percentile(data_values, exclude)
                     upper = np.percentile(data_values, 100 - exclude)
 
-                if self.data_component.categorical:
-                    lower = np.floor(lower - 0.5) + 0.5
-                    upper = np.ceil(upper + 0.5) - 0.5
+            if self.data_component.categorical:
+                lower = np.floor(lower - 0.5) + 0.5
+                upper = np.ceil(upper + 0.5) - 0.5
 
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
