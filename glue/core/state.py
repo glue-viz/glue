@@ -516,12 +516,16 @@ def _load_subset_state(rec, context):
 
 @saver(RangeSubsetState)
 def _save_range_subset_state(state, context):
-    return dict(lo=state.lo, hi=state.hi, att=context.id(state.att))
+    return dict(lo=context.id(state.lo),
+                hi=context.id(state.hi),
+                att=context.id(state.att))
 
 
 @loader(RangeSubsetState)
 def _load_range_subset_state(rec, context):
-    return RangeSubsetState(rec['lo'], rec['hi'], context.object(rec['att']))
+    return RangeSubsetState(context.object(rec['lo']),
+                            context.object(rec['hi']),
+                            context.object(rec['att']))
 
 
 @saver(RoiSubsetState)

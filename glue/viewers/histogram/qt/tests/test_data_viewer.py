@@ -15,8 +15,8 @@ from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI
 from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
+from glue.app.qt import GlueApplication
 from glue.core.component_id import ComponentID
-from glue.core.tests.util import simple_session
 from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
@@ -39,16 +39,14 @@ class TestHistogramViewer(object):
 
         self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
 
-        self.session = simple_session()
+        self.app = GlueApplication()
+        self.session = self.app.session
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
 
-        self.viewer = HistogramViewer(self.session)
-
-        self.data_collection.register_to_hub(self.hub)
-        self.viewer.register_to_hub(self.hub)
+        self.viewer = self.app.new_data_viewer(HistogramViewer)
 
     def teardown_method(self, method):
         self.viewer.close()
@@ -552,7 +550,7 @@ class TestHistogramViewer(object):
         for subset in client.count:
             assert client.count[subset] == 1
 
-    def test_datetime64_support(self):
+    def test_datetime64_support(self, tmpdir):
 
         self.data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')
         self.viewer.add_data(self.data)
@@ -569,3 +567,30 @@ class TestHistogramViewer(object):
 
         # Check that the two middle elements are selected
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
+
+        # Make sure that the Qt labels look ok
+        options = self.viewer.options_widget().ui
+        assert options.valuetext_x_min.text() == '1970-04-11'
+        assert options.valuetext_x_max.text() == '1971-02-05'
+
+        # Make sure that we can set the xmin/xmax to a string date
+        assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-11', 'D'))
+        options.valuetext_x_min.setText('1970-04-14')
+        options.valuetext_x_min.editingFinished.emit()
+        assert self.viewer.axes.get_xlim() == (719266.0, 719563.0)
+        assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
+
+        # Make sure that everything works fine after saving/reloading
+        filename = tmpdir.join('test_datetime64.glu').strpath
+        self.session.application.save_session(filename)
+        with open(filename, 'r') as f:
+            session = f.read()
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
+        viewer = ga.viewers[0][0]
+        options = viewer.options_widget().ui
+
+        assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
+
+        assert options.valuetext_x_min.text() == '1970-04-14'
+        assert options.valuetext_x_max.text() == '1971-02-05'
