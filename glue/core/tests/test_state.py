@@ -5,6 +5,7 @@ from io import BytesIO
 
 import pytest
 import numpy as np
+from numpy.testing import assert_equal
 
 from glue.external import six
 from glue import core
@@ -225,8 +226,8 @@ def test_polygonal_roi():
     roi.add_point(0, 1)
     roi.add_point(1, 0)
     r2 = clone(roi)
-    assert r2.vx == [0, 0, 1]
-    assert r2.vy == [0, 1, 0]
+    assert_equal(r2.vx, [0, 0, 1])
+    assert_equal(r2.vy, [0, 1, 0])
 
 
 def test_matplotlib_cmap():

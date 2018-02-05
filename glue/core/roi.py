@@ -239,10 +239,10 @@ class RectangularROI(Roi):
         return RectangularROI(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
 
     def __gluestate__(self, context):
-        return dict(xmin=context.id(self.xmin),
-                    xmax=context.id(self.xmax),
-                    ymin=context.id(self.ymin),
-                    ymax=context.id(self.ymax))
+        return dict(xmin=context.do(self.xmin),
+                    xmax=context.do(self.xmax),
+                    ymin=context.do(self.ymin),
+                    ymax=context.do(self.ymax))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -325,7 +325,7 @@ class RangeROI(Roi):
             return [], []
 
     def __gluestate__(self, context):
-        return dict(ori=self.ori, min=context.id(self.min), max=context.id(self.max))
+        return dict(ori=self.ori, min=context.do(self.min), max=context.do(self.max))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -424,9 +424,9 @@ class CircularROI(Roi):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
     def __gluestate__(self, context):
-        return dict(xc=context.id(self.xc),
-                    yc=context.id(self.yc),
-                    radius=context.id(self.radius))
+        return dict(xc=context.do(self.xc),
+                    yc=context.do(self.yc),
+                    radius=context.do(self.radius))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -510,8 +510,8 @@ class VertexROIBase(Roi):
         return self.vx, self.vy
 
     def __gluestate__(self, context):
-        return dict(vx=context.id(np.asarray(self.vx)),
-                    vy=context.id(np.asarray(self.vy)))
+        return dict(vx=context.do(np.asarray(self.vx)),
+                    vy=context.do(np.asarray(self.vy)))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
