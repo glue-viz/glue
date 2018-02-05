@@ -408,5 +408,4 @@ def test_state_serialization_datetime64():
 
     state2 = clone(state1)
 
-    print(state2.a)
     assert state2.a == np.datetime64(100, 'D')

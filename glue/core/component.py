@@ -704,15 +704,16 @@ class CategoricalComponent(Component):
 
 
 class DateTimeComponent(Component):
+    """
+    A component representing a date/time.
+
+    Parameters
+    ----------
+    data : `~numpy.ndarray`
+        The data to store, with `~numpy.datetime64` dtype
+    """
 
     def __init__(self, data, units=None):
-        """
-        :param data: The data to store
-        :type data: :class:`numpy.ndarray`
-
-        :param units: Optional unit label
-        :type units: str
-        """
 
         self.units = units
 
