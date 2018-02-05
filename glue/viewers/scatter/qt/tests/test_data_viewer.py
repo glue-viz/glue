@@ -534,3 +534,16 @@ class TestScatterViewer(object):
         roi = CircularROI(xc=719463, yc=719563, radius=200)
         self.viewer.apply_roi(roi)
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 1])
+
+        # Make sure that the Qt labels look ok
+        self.viewer.state.y_att = self.data.id['y']
+        options = self.viewer.options_widget().ui
+        assert options.valuetext_x_min.text() == '1970-04-11'
+        assert options.valuetext_x_max.text() == '1971-02-05'
+        assert options.valuetext_y_min.text() == '3.2'
+        assert options.valuetext_y_max.text() == '3.5'
+
+        # Make sure that we can set the xmin/xmax to a string date
+        options.valuetext_x_min.setText('1970-04-14')
+        options.valuetext_x_min.editingFinished.emit()
+        assert self.viewer.axes.get_xlim() == (719266.0, 719563.0)
