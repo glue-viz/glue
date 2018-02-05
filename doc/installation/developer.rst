@@ -24,12 +24,12 @@ Then switch to the ``glueviz-dev`` environment::
 
 and install the latest nightly builds of the glue packages with::
 
-    conda install -c glueviz/label/dev glueviz
+    conda install -c glueviz -c glueviz/label/dev glueviz
 
 You should normally see long version numbers for the glue-* packages that get
 installed::
 
-    $ conda install -c glueviz/label/dev glueviz
+    $ conda install -c glueviz -c glueviz/label/dev glueviz
     Fetching package metadata .............
     Solving package specifications: .
 
