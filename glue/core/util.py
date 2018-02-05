@@ -11,6 +11,7 @@ import pandas as pd
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
+from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
@@ -353,8 +354,15 @@ def update_ticks(axes, coord, components, is_log):
     else:
         raise TypeError("coord must be one of x,y")
 
-    is_cat = all(comp.categorical for comp in components)
-    if is_log:
+    is_cat = any(comp.categorical for comp in components)
+    is_date = any(comp.datetime for comp in components)
+
+    if is_date:
+        loc = AutoDateLocator()
+        fmt = AutoDateFormatter(loc)
+        axis.set_major_locator(loc)
+        axis.set_major_formatter(fmt)
+    elif is_log:
         axis.set_major_locator(LogLocator())
         axis.set_major_formatter(LogFormatterMathtext())
     elif is_cat:

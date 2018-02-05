@@ -9,6 +9,8 @@ from functools import partial
 from qtpy import QtGui
 from qtpy.QtCore import Qt
 
+import numpy as np
+
 from ..core import add_callback
 from ..selection import SelectionCallbackProperty, ChoiceSeparator
 
@@ -176,14 +178,21 @@ def connect_float_text(instance, prop, widget, fmt="{:g}"):
         format_func = fmt
     else:
         def format_func(x):
-            return fmt.format(x)
+            try:
+                return fmt.format(x)
+            except ValueError:
+                return str(x)
 
     def update_prop():
         val = widget.text()
         try:
-            setattr(instance, prop, float(val))
+            val = float(val)
         except ValueError:
-            setattr(instance, prop, 0)
+            try:
+                val = np.datetime64(val)
+            except Exception:
+                val = 0
+        setattr(instance, prop, val)
 
     def update_widget(val):
         if val is None:

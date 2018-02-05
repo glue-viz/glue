@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
-from glue.core import command
+from glue.utils import mpl_to_datetime64
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -58,6 +57,11 @@ class HistogramViewer(MatplotlibDataViewer):
     def _roi_to_subset_state(self, roi):
 
         # TODO Does subset get applied to all data or just visible data?
+
+        x_date = any(comp.datetime for comp in self.state._get_x_components())
+
+        if x_date:
+            roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None)
 
         bins = self.state.bins
 

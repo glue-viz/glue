@@ -369,7 +369,6 @@ def test_histogram_helper_common_n_bin_active():
     assert state.n_bin == 11
 
 
-
 def test_limits_helper_initial_values():
 
     # Regression test for a bug that occurred if the limits cache was empty
@@ -396,3 +395,17 @@ def test_limits_helper_initial_values():
 
     assert helper.lower == 1
     assert helper.upper == 2
+
+
+class DatetimeState(State):
+    a = CallbackProperty()
+
+
+def test_state_serialization_datetime64():
+
+    state1 = DatetimeState()
+    state1.a = np.datetime64(100, 'D')
+
+    state2 = clone(state1)
+
+    assert state2.a == np.datetime64(100, 'D')

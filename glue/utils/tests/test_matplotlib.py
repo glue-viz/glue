@@ -15,7 +15,8 @@ from glue.utils.misc import DeferredMethod
 
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
                           remove_artists, view_cascade, get_extent, color2rgb,
-                          defer_draw, freeze_margins)
+                          defer_draw, freeze_margins, datetime64_to_mpl,
+                          mpl_to_datetime64)
 
 
 @requires_scipy
@@ -175,3 +176,10 @@ def test_freeze_margins():
     np.testing.assert_allclose(bbox.y0, 0.25)
     np.testing.assert_allclose(bbox.x1, 0.875)
     np.testing.assert_allclose(bbox.y1, 0.5)
+
+
+def test_mpl_datetime64():
+    # Make sure the mpl <-> datetime64 conversion round-trips
+    mpl1 = 719313
+    mpl2 = datetime64_to_mpl(mpl_to_datetime64(mpl1))
+    assert mpl1 == mpl2

@@ -329,13 +329,24 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     self.set(lower=0.1, upper=1, percentile=percentile, log=log)
                     return
 
-            try:
-                lower = np.nanpercentile(data_values, exclude)
-                upper = np.nanpercentile(data_values, 100 - exclude)
-            except AttributeError:  # Numpy < 1.9
-                data_values = data_values[~np.isnan(data_values)]
-                lower = np.percentile(data_values, exclude)
-                upper = np.percentile(data_values, 100 - exclude)
+            if percentile == 100:
+
+                if data_values.dtype.kind == 'M':
+                    lower = data_values.min()
+                    upper = data_values.max()
+                else:
+                    lower = np.nanmin(data_values)
+                    upper = np.nanmax(data_values)
+
+            else:
+
+                try:
+                    lower = np.nanpercentile(data_values, exclude)
+                    upper = np.nanpercentile(data_values, 100 - exclude)
+                except AttributeError:  # Numpy < 1.9
+                    data_values = data_values[~np.isnan(data_values)]
+                    lower = np.percentile(data_values, exclude)
+                    upper = np.percentile(data_values, 100 - exclude)
 
             if self.data_component.categorical:
                 lower = np.floor(lower - 0.5) + 0.5
@@ -442,8 +453,13 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                     n_bin = self._common_n_bin
 
                 values = self.data_values
-                lower = np.nanmin(values)
-                upper = np.nanmax(values)
+
+                if comp.datetime:
+                    lower = values.min()
+                    upper = values.max()
+                else:
+                    lower = np.nanmin(values)
+                    upper = np.nanmax(values)
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)
 

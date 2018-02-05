@@ -150,6 +150,10 @@ class HistogramViewerState(MatplotlibDataViewerState):
             return np.logspace(np.log10(self.hist_x_min),
                                np.log10(self.hist_x_max),
                                self.hist_n_bin + 1)
+        elif isinstance(self.hist_x_min, np.datetime64):
+            x_min = self.hist_x_min.astype(int)
+            x_max = self.hist_x_max.astype(self.hist_x_min.dtype).astype(int)
+            return np.linspace(x_min, x_max, self.hist_n_bin + 1).astype(self.hist_x_min.dtype)
         else:
             return np.linspace(self.hist_x_min, self.hist_x_max,
                                self.hist_n_bin + 1)

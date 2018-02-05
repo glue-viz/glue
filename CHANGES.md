@@ -19,6 +19,9 @@ v0.13.0 (unreleased)
 
 * Added new messages ``DataReorderComponentMessage`` and
   ``DataRenameComponentMessage`` which can be subscribed to. [#1479]
+
+* Add support for the datetime64 dtype in Data objects, and adjust
+  Matplotlib viewers to correctly show this data. [#1510]
   
 * Make it possible to reorder components in ``Data`` using the new
   ``Data.reorder_components`` method. [#1479]
