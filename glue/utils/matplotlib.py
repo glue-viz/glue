@@ -415,11 +415,11 @@ def datetime64_to_mpl(d):
 
 def mpl_to_datetime64(dt):
 
-    dt = np.asarray(dt, float)
+    dt = np.asarray(dt, np.float64)
 
     dt = (dt - 1.0) * SEC_PER_DAY
-    dt_s = dt.astype(int) + T0.astype(int)
-    dt_ns = ((dt % 1) * 1e9).astype(int)
+    dt_s = dt.astype(np.int64) + T0.astype(np.int64)
+    dt_ns = ((dt % 1) * 1e9).astype(np.int64)
 
     dt_s = np.array(dt_s, dtype='datetime64[s]')
     dt_ns = np.array(dt_ns, dtype='timedelta64[ns]')
