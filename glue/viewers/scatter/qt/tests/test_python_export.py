@@ -129,6 +129,10 @@ class TestExportPython:
         self.scatter.state.layers[0].cmap = plt.cm.BuGn
         self.test_vector_cartesian(tmpdir)
 
+    def test_subset(self, tmpdir):
+        self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
+        self.assert_same(tmpdir)
+
     def assert_same(self, tmpdir, tol=0.1):
 
         os.chdir(tmpdir.strpath)
