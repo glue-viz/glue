@@ -10,12 +10,46 @@ from glue.utils import defer_draw, mpl_to_datetime64
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
+from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
 from glue.core.command import ApplySubsetState
 
 __all__ = ['MatplotlibDataViewer']
 
 
-class MatplotlibDataViewer(DataViewerWithState):
+_MPL_LEFT_CLICK = 1
+_MPL_RIGHT_CLICK = 3
+
+
+# Eventually this should be defined elsewhere
+class RoiSelectionMixin:
+
+    def __init__(self):
+        self._canvas = None
+
+    def connect_mpl_events(self):
+        self._canvas = self.figure.canvas
+        self._canvas.mpl_connect('button_press_event', self._button_press)
+        self._canvas.mpl_connect('button_release_event', self._button_release)
+
+    def _button_press(self, event):
+        # Ignore button presses outside the data viewer canvas
+        if event.xdata is None or event.ydata is None:
+            return
+
+        x, y = (int(event.xdata + 0.5), int(event.ydata + 0.5))
+        for layer in self.layers:
+            if not isinstance(layer, ImageSubsetLayerArtist):
+                continue
+            roi = layer.state.layer.subset_state.roi
+            if roi.contains(x, y):
+                if event.button == _MPL_LEFT_CLICK:
+                    print("HEY THERE", type(roi), hex(id(roi)))
+
+    def _button_release(self, event):
+        pass
+
+
+class MatplotlibDataViewer(DataViewerWithState, RoiSelectionMixin):
 
     _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
@@ -56,6 +90,8 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
+
+        self.connect_mpl_events()
 
     def redraw(self):
         self.figure.canvas.draw()
