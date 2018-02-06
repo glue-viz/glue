@@ -188,7 +188,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     def _script_layer(self):
 
         if len(self.mpl_artists) == 0 or not self.enabled or not self.visible:
-            return
+            return [], None
 
         class code(str):
             pass

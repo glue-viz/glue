@@ -46,6 +46,13 @@ class TestExportPython:
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)
 
+    def test_empty(self, tmpdir):
+        self.scatter.state.x_min = 10
+        self.scatter.state.x_max = 11
+        self.scatter.state.hist_x_min = 10
+        self.scatter.state.hist_x_max = 11
+        self.assert_same(tmpdir)
+
     def assert_same(self, tmpdir, tol=0.1):
 
         os.chdir(tmpdir.strpath)

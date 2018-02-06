@@ -378,6 +378,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                     sindex = layer.layer.data.subsets.index(layer.layer)
                     layers += "layer_data = data_collection[{0}].subsets[{1}]\n\n".format(dindex, sindex)
             imports_layer, layer_script = layer._script_layer()
+            if layer_script is None:
+                continue
             imports.extend(imports_layer)
             layers += layer_script.strip() + "\n"
 
