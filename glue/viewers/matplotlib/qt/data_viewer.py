@@ -11,6 +11,7 @@ from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
+from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.command import ApplySubsetState
 
 __all__ = ['MatplotlibDataViewer']
@@ -24,10 +25,14 @@ _MPL_RIGHT_CLICK = 3
 class RoiSelectionMixin:
 
     def __init__(self):
+        self._dc = None
         self._canvas = None
+        self._edit_subset_mode = EditSubsetMode()
 
     def connect_mpl_events(self):
         self._canvas = self.figure.canvas
+        self._dc = self.state.data_collection
+
         self._canvas.mpl_connect('button_press_event', self._button_press)
         self._canvas.mpl_connect('button_release_event', self._button_release)
 
@@ -37,6 +42,8 @@ class RoiSelectionMixin:
             return
 
         x, y = (int(event.xdata + 0.5), int(event.ydata + 0.5))
+
+        roi_index = 0
         for layer in self.layers:
             if not isinstance(layer, ImageSubsetLayerArtist):
                 continue
@@ -44,9 +51,14 @@ class RoiSelectionMixin:
             if roi.contains(x, y):
                 if event.button == _MPL_LEFT_CLICK:
                     print("HEY THERE", type(roi), hex(id(roi)))
+                    self._select_roi(roi_index)
+            roi_index += 1
 
     def _button_release(self, event):
         pass
+
+    def _select_roi(self, index):
+        self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 
 
 class MatplotlibDataViewer(DataViewerWithState, RoiSelectionMixin):
