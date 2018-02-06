@@ -219,3 +219,33 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.set_xlim(-0.5, nx - 0.5)
             self.axes.set_ylim(-0.5, ny - 0.5)
             self.axes.figure.canvas.draw()
+
+    def _script_header(self):
+
+        imports = []
+        imports.append('import matplotlib.pyplot as plt')
+        imports.append('from glue.viewers.common.viz_client import init_mpl')
+        imports.append('from glue.viewers.image.composite_array import CompositeArray')
+        imports.append('from glue.external.modest_image import imshow')
+
+        script = ""
+        script += "fig, ax = init_mpl(wcs=True)\n"
+        script += "ax.set_aspect('{0}')\n".format(self.state.aspect)
+
+        script += '\ncomposite = CompositeArray()\n'
+        script += "image = imshow(ax, composite, origin='lower', interpolation='nearest', aspect='{0}')\n\n".format(self.state.aspect)
+
+        dindex = self.session.data_collection.index(self.state.reference_data)
+
+        script += "ref_data = data_collection[{0}]\n".format(dindex)
+
+        ref_coords = self.state.reference_data.coords
+
+        if hasattr(ref_coords, 'wcs'):
+            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords.wcs)\n".format(self.state.wcsaxes_slice)
+        elif hasattr(ref_coords, 'wcsaxes_dict'):
+            raise NotImplementedError()
+        else:
+            pass
+
+        return imports, script
