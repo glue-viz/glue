@@ -377,7 +377,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                     dindex = self.session.data_collection.index(layer.layer.data)
                     sindex = layer.layer.data.subsets.index(layer.layer)
                     layers += "layer_data = data_collection[{0}].subsets[{1}]\n\n".format(dindex, sindex)
-            imports_layer, layer_script = layer._script_layer()
+            imports_layer, layer_script = layer._python_exporter(layer)
             if layer_script is None:
                 continue
             imports.extend(imports_layer)

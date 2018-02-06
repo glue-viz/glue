@@ -8,6 +8,7 @@ import numpy as np
 from glue.utils import defer_draw
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
@@ -102,6 +103,7 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 class ImageLayerArtist(BaseImageLayerArtist):
 
     _layer_state_cls = ImageLayerState
+    _python_exporter = python_export_image_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -247,59 +249,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         self.redraw()
 
-    def _script_layer(self):
-
-        if not self.enabled or not self.visible or not self._compatible_with_reference_data:
-            return [], None
-
-        class code(str):
-            pass
-
-        def serialize_options(options):
-            result = []
-            for key, value in options.items():
-                if isinstance(value, code):
-                    result.append(key + '=' + value)
-                else:
-                    result.append(key + '=' + repr(value))
-            return ', '.join(result)
-
-        script = ""
-        imports = []
-
-        slices, agg_func, transpose = self._viewer_state.numpy_slice_aggregation_transpose
-
-        # TODO: implement aggregation, ignore for now
-
-        script += "# Get main data values\n"
-        script += "image = layer_data['{0}', {1}]".format(self.state.attribute, slices)
-
-        if transpose:
-            script += ".transpose()"
-
-        script += "\n\n"
-
-        script += "composite.allocate('{0}')\n".format(self.uuid)
-
-        if self._viewer_state.color_mode == 'Colormaps':
-            color = code('plt.cm.' + self.state.cmap.name)
-        else:
-            color = self.state.color
-
-        options = dict(array=code('image'),
-                       clim=(self.state.v_min, self.state.v_max),
-                       visible=self.state.visible,
-                       zorder=self.state.zorder,
-                       color=color,
-                       contrast=self.state.contrast,
-                       bias=self.state.bias,
-                       alpha=self.state.alpha,
-                       stretch=self.state.stretch)
-
-        script += "composite.set('{0}', {1})\n\n".format(self.uuid, serialize_options(options))
-
-        return imports, script.strip()
-
 
 class ImageSubsetArray(object):
 
@@ -371,6 +320,7 @@ class ImageSubsetArray(object):
 class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     _layer_state_cls = ImageSubsetLayerState
+    _python_exporter = python_export_image_subset_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -451,50 +401,3 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         # TODO: determine why this gets called when changing the transparency slider
         self._update_image(force=True)
         self.redraw()
-
-    def _script_layer(self):
-
-        if not self.enabled or not self.visible or not self._compatible_with_reference_data:
-            return [], None
-
-        class code(str):
-            pass
-
-        def serialize_options(options):
-            result = []
-            for key, value in options.items():
-                if isinstance(value, code):
-                    result.append(key + '=' + value)
-                else:
-                    result.append(key + '=' + repr(value))
-            return ', '.join(result)
-
-        script = ""
-        imports = []
-
-        slices, agg_func, transpose = self._viewer_state.numpy_slice_aggregation_transpose
-
-        # TODO: implement aggregation, ignore for now
-
-        script += "# Get main subset values\n"
-        script += "mask = layer_data.to_mask(view={0})\n\n".format(slices)
-
-        imports.append('from glue.utils import color2rgb')
-        imports.append('import numpy as np')
-        script += "# Convert to RGBA array\n"
-        script += "r, g, b = color2rgb('{0}')\n".format(self.state.color)
-        script += "mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))\n"
-        script += "mask = (255 * mask).astype(np.uint8)\n"
-
-        if transpose:
-            script += ".transpose()"
-
-        script += "\n\n"
-
-        options = dict(origin='lower', interpolation='nearest',
-                       vmin=0, vmax=1, aspect=self._viewer_state.aspect,
-                       zorder=self.state.zorder, alpha=self.state.alpha)
-
-        script += "imshow(ax, mask, {0})\n".format(serialize_options(options))
-
-        return imports, script.strip()

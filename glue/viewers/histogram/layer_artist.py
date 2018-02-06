@@ -5,6 +5,7 @@ import numpy as np
 from glue.utils import defer_draw
 
 from glue.viewers.histogram.state import HistogramLayerState
+from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -12,6 +13,7 @@ from glue.core.exceptions import IncompatibleAttribute
 class HistogramLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = HistogramLayerState
+    _python_exporter = python_export_histogram_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -184,53 +186,3 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     def update(self):
         self._update_histogram(force=True)
         self.redraw()
-
-    def _script_layer(self):
-
-        if len(self.mpl_artists) == 0 or not self.enabled or not self.visible:
-            return [], None
-
-        class code(str):
-            pass
-
-        def serialize_options(options):
-            result = []
-            for key, value in options.items():
-                if isinstance(value, code):
-                    result.append(key + '=' + value)
-                else:
-                    result.append(key + '=' + repr(value))
-            return ', '.join(result)
-
-        script = ""
-        imports = []
-
-        script += "# Get main data values\n"
-        script += "x = layer_data['{0}']\n\n".format(self._viewer_state.x_att.label)
-
-        script += "# Set up histogram bins\n"
-        script += "hist_n_bin = {0}\n".format(self._viewer_state.hist_n_bin)
-        script += "hist_x_min = {0}\n".format(self._viewer_state.hist_x_min)
-        script += "hist_x_max = {0}\n".format(self._viewer_state.hist_x_max)
-        options = dict(alpha=self.state.alpha,
-                       color=self.state.color,
-                       zorder=self.state.zorder)
-        if self._viewer_state.x_log:
-            imports += 'import numpy as np'
-            script += "bins = np.logspace(np.log10(hist_x_min), np.log10(hist_x_max), hist_n_bin)\n"
-            options['bins'] = code('bins')
-        else:
-            options['range'] = code('[hist_x_min, hist_x_max]')
-            options['bins'] = code('hist_n_bin')
-
-        if self._viewer_state.normalize:
-            options['normed'] = True
-
-        if self._viewer_state.cumulative:
-            options['cumulative'] = True
-
-        script += "\nx = x[(x >= hist_x_min) & (x <= hist_x_max)]\n"
-
-        script += "\nax.hist(x, {0})".format(serialize_options(options))
-
-        return imports, script.strip()

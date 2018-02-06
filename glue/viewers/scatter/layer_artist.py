@@ -12,6 +12,7 @@ from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
 
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -120,6 +121,7 @@ def plot_colored_line(ax, x, y, c=None, cmap=None, vmin=None, vmax=None, **kwarg
 class ScatterLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = ScatterLayerState
+    _python_exporter = python_export_scatter_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -471,149 +473,3 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     def update(self):
         self._update_scatter(force=True)
         self.redraw()
-
-    def _script_layer(self):
-
-        if len(self.mpl_artists) == 0 or not self.enabled or not self.visible:
-            return [], None
-
-        class code(str):
-            pass
-
-        def serialize_options(options):
-            result = []
-            for key, value in options.items():
-                if isinstance(value, code):
-                    result.append(key + '=' + value)
-                else:
-                    result.append(key + '=' + repr(value))
-            return ', '.join(result)
-
-        script = ""
-        imports = []
-
-        script += "# Get main data values\n"
-        script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
-        script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
-
-        if self.state.cmap_mode == 'Linear':
-
-            script += "# Set up colors\n"
-            script += "colors = layer_data['{0}']\n".format(self.state.cmap_att.label)
-            script += "cmap_vmin = {0}\n".format(self.state.cmap_vmin)
-            script += "cmap_vmax = {0}\n".format(self.state.cmap_vmax)
-            script += "colors = plt.cm.{0}((colors - cmap_vmin) / (cmap_vmax - cmap_vmin))\n\n".format(self.state.cmap.name)
-
-        if self.state.size_mode == 'Linear':
-
-            script += "# Set up size values\n"
-            script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
-            script += "size_vmin = {0}\n".format(self.state.size_vmin)
-            script += "size_vmax = {0}\n".format(self.state.size_vmax)
-            script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n\n".format(self.state.size_scaling)
-
-        if self.state.markers_visible:
-            if self.state.density_map:
-                # TODO
-                pass
-            else:
-                if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
-                    options = dict(color=self.state.color,
-                                   markersize=self.state.size * self.state.size_scaling,
-                                   mec='none',
-                                   alpha=self.state.alpha,
-                                   zorder=self.state.zorder)
-                    script += "ax.plot(x, y, 'o', {0})\n\n".format(serialize_options(options))
-                else:
-                    options = dict(edgecolor='none',
-                                   alpha=self.state.alpha,
-                                   zorder=self.state.zorder)
-
-                    if self.state.cmap_mode == 'Fixed':
-                        options['facecolor'] = self.state.color
-                    else:
-                        options['c'] = code('colors')
-
-                    if self.state.size_mode == 'Fixed':
-                        options['s'] = code('{0} ** 2'.format(self.state.size * self.state.size_scaling))
-                    else:
-                        options['s'] = code('sizes ** 2')
-
-                    script += "ax.scatter(x, y, {0})\n\n".format(serialize_options(options))
-
-        if self.state.line_visible:
-            options = dict(color=self.state.color,
-                           linewidth=self.state.linewidth,
-                           linestyle=self.state.linestyle,
-                           alpha=self.state.alpha,
-                           zorder=self.state.zorder)
-            if self.state.cmap_mode == 'Fixed':
-                script += "ax.plot(x, y, '-', {0})\n\n".format(serialize_options(options))
-            else:
-                options['c'] = code('colors')
-                imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
-                script += "plot_colored_line(ax, x, y, {0})\n\n".format(serialize_options(options))
-
-        if self.state.vector_visible:
-
-            if self.state.vx_att is not None and self.state.vy_att is not None:
-
-                script += "# Get vector data\n"
-                if self.state.vector_mode == 'Polar':
-                    script += "angle = layer_data['{0}']\n".format(self.state.vx_att.label)
-                    script += "length = layer_data['{0}']\n".format(self.state.vy_att.label)
-                    script += "vx = length * np.cos(np.radians(angle))\n"
-                    script += "vy = length * np.sin(np.radians(angle))\n"
-                else:
-                    script += "vx = layer_data['{0}']\n".format(self.state.vx_att.label)
-                    script += "vy = layer_data['{0}']\n".format(self.state.vy_att.label)
-
-            if self.state.vector_arrowhead:
-                hw = 3
-                hl = 5
-            else:
-                hw = 1
-                hl = 0
-
-            script += 'vmax = np.nanmax(np.hypot(vx, vy))\n\n'
-
-            scale = code('{0} * vmax'.format(10 / self.state.vector_scaling))
-
-            options = dict(units='width',
-                           pivot=self.state.vector_origin,
-                           headwidth=hw, headlength=hl,
-                           scale_units='width',
-                           scale=scale,
-                           alpha=self.state.alpha,
-                           zorder=self.state.zorder)
-
-            if self.state.cmap_mode == 'Fixed':
-                options['color'] = self.state.color
-            else:
-                options['color'] = code('colors')
-
-            script += "ax.quiver(x, y, vx, vy, {0})\n\n".format(serialize_options(options))
-
-        if self.state.xerr_visible or self.state.yerr_visible:
-
-            if self.state.xerr_visible and self.state.xerr_att is not None:
-                xerr = code("layer_data['{0}']".format(self.state.xerr_att.label))
-            else:
-                xerr = code("None")
-
-            if self.state.yerr_visible and self.state.yerr_att is not None:
-                yerr = code("layer_data['{0}']".format(self.state.yerr_att.label))
-            else:
-                yerr = code("None")
-
-            options = dict(fmt='none', xerr=xerr, yerr=yerr,
-                           alpha=self.state.alpha, zorder=self.state.zorder)
-
-            if self.state.cmap_mode == 'Fixed':
-                options['ecolor'] = self.state.color
-            else:
-                options['ecolor'] = code('colors')
-
-            script += "ax.errorbar(x, y, {0})\n\n".format(serialize_options(options))
-
-        return imports, script.strip()
