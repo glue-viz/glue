@@ -131,8 +131,6 @@ class TestExportPython:
 
     def assert_same(self, tmpdir, tol=0.1):
 
-        self.scatter.axes.figure.savefig('check.png')
-
         os.chdir(tmpdir.strpath)
 
         expected = tmpdir.join('expected.png').strpath
