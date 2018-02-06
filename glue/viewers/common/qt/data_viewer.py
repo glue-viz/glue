@@ -37,9 +37,12 @@ TEMPLATE_SCRIPT = """
 # This script was produced by glue and can be used to further customize a
 # particular plot.
 
+### Package imports
+
+{imports}
+
 ### Set up data
 
-from glue.core.state import load
 data_collection = load('{data}')
 
 ### Set up viewer
@@ -355,10 +358,17 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         save(data_filename, self.session.data_collection)
 
-        header = self._script_header().strip()
+        imports = ['from glue.core.state import load']
+
+        imports_header, header = self._script_header()
+        imports.extend(imports_header)
 
         layers = ""
-        for layer in self.layers:
+        for ilayer, layer in enumerate(self.layers):
+            if layer.layer.label:
+                layers += '## Layer {0}: {1}\n\n'.format(ilayer + 1, layer.layer.label)
+            else:
+                layers += '## Layer {0}\n\n'.format(ilayer + 1)
             if layer.visible and layer.enabled:
                 if isinstance(layer.layer, Data):
                     index = self.session.data_collection.index(layer.layer)
@@ -367,12 +377,20 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                     dindex = self.session.data_collection.index(layer.layer.data)
                     sindex = layer.layer.data.subsets.index(layer.layer)
                     layers += "layer_data = data_collection[{0}].subsets[{1}]\n\n".format(dindex, sindex)
-            layers += layer._script_layer().strip() + "\n"
+            imports_layer, layer_script = layer._script_layer()
+            imports.extend(imports_layer)
+            layers += layer_script.strip() + "\n"
 
-        footer = self._script_footer().strip()
+        imports_footer, footer = self._script_footer()
+        imports.extend(imports_footer)
 
-        script = TEMPLATE_SCRIPT.format(data=data_filename, header=header,
-                                        layers=layers, footer=footer)
+        imports = os.linesep.join(sorted(set(imports)))
+
+        script = TEMPLATE_SCRIPT.format(data=data_filename,
+                                        imports=imports.strip(),
+                                        header=header.strip(),
+                                        layers=layers.strip(),
+                                        footer=footer.strip())
 
         with open(filename, 'w') as f:
             f.write(script)

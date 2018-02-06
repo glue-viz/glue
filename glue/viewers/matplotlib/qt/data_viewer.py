@@ -17,9 +17,6 @@ from glue.core.command import ApplySubsetState
 __all__ = ['MatplotlibDataViewer']
 
 SCRIPT_HEADER = """
-import numpy as np
-import matplotlib.pyplot as plt
-
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
 """.strip()
@@ -220,10 +217,10 @@ class MatplotlibDataViewer(DataViewerWithState):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
-        return SCRIPT_HEADER.format(**state_dict)
+        return ['import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         state_dict = self.state.as_dict()
         state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
         state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
-        return SCRIPT_FOOTER.format(**state_dict)
+        return [], SCRIPT_FOOTER.format(**state_dict)

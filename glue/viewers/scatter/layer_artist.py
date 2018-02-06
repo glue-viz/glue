@@ -490,15 +490,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return ', '.join(result)
 
         script = ""
-        imports = ""
+        imports = []
 
         script += "# Get main data values\n"
         script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
         script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
 
         if self.state.cmap_mode == 'Linear':
-
-            imports += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
 
             script += "# Set up colors\n"
             script += "colors = layer_data['{0}']\n".format(self.state.cmap_att.label)
@@ -512,7 +510,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
             script += "size_vmin = {0}\n".format(self.state.size_vmin)
             script += "size_vmax = {0}\n".format(self.state.size_vmax)
-            script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n".format(self.state.size_scaling)
+            script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n\n".format(self.state.size_scaling)
 
         if self.state.markers_visible:
             if self.state.density_map:
@@ -525,7 +523,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                    mec='none',
                                    alpha=self.state.alpha,
                                    zorder=self.state.zorder)
-                    script += "ax.plot(x, y, 'o', {0})\n".format(serialize_options(options))
+                    script += "ax.plot(x, y, 'o', {0})\n\n".format(serialize_options(options))
                 else:
                     options = dict(edgecolor='none',
                                    alpha=self.state.alpha,
@@ -550,16 +548,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                            alpha=self.state.alpha,
                            zorder=self.state.zorder)
             if self.state.cmap_mode == 'Fixed':
-                script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
+                script += "ax.plot(x, y, '-', {0})\n\n".format(serialize_options(options))
             else:
                 options['c'] = code('colors')
-                imports += "from glue.viewers.scatter.layer_artist import plot_colored_line\n"
-                script += "plot_colored_line(ax, x, y, {0})\n".format(serialize_options(options))
+                imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
+                script += "plot_colored_line(ax, x, y, {0})\n\n".format(serialize_options(options))
 
         if self.state.vector_visible:
 
             if self.state.vx_att is not None and self.state.vy_att is not None:
 
+                script += "# Get vector data\n"
                 if self.state.vector_mode == 'Polar':
                     script += "angle = layer_data['{0}']\n".format(self.state.vx_att.label)
                     script += "length = layer_data['{0}']\n".format(self.state.vy_att.label)
@@ -576,7 +575,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            script += 'vmax = np.nanmax(np.hypot(vx, vy))\n'
+            script += 'vmax = np.nanmax(np.hypot(vx, vy))\n\n'
 
             scale = code('{0} * vmax'.format(10 / self.state.vector_scaling))
 
@@ -593,7 +592,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             else:
                 options['color'] = code('colors')
 
-            script += "ax.quiver(x, y, vx, vy, {0})\n".format(serialize_options(options))
+            script += "ax.quiver(x, y, vx, vy, {0})\n\n".format(serialize_options(options))
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -615,6 +614,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             else:
                 options['ecolor'] = code('colors')
 
-            script += "ax.errorbar(x, y, {0})\n".format(serialize_options(options))
+            script += "ax.errorbar(x, y, {0})\n\n".format(serialize_options(options))
 
-        return imports + '\n' + script.strip()
+        return imports, script.strip()
