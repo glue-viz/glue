@@ -10,7 +10,6 @@ from mpl_scatter_density import ScatterDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.core import Data
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -103,8 +102,19 @@ class ColoredLineCollection(LineCollection):
             data_new[1::2] = data[1:]
             set_mpl_artist_cmap(self, data_new, **kwargs)
         else:
+            if isinstance(color, np.ndarray):
+                color_new = np.zeros(((color.shape[0] - 1) * 2,) + color.shape[1:])
+                color_new[::2] = color[:-1]
+                color_new[1::2] = color[1:]
+                color = color_new
             self.set_array(None)
             self.set_color(color)
+
+
+def plot_colored_line(ax, x, y, c=None, cmap=None, vmin=None, vmax=None, **kwargs):
+    lc = ColoredLineCollection(x, y, **kwargs)
+    lc.set_linearcolor(color=c, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.add_collection(lc)
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
@@ -248,16 +258,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            v = np.hypot(vx, vy)
-            vmax = np.nanmax(v)
-            vx = vx / vmax
-            vy = vy / vmax
+            vmax = np.nanmax(np.hypot(vx, vy))
 
             self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
                                                   pivot=self.state.vector_origin,
                                                   headwidth=hw, headlength=hl,
                                                   scale_units='width',
-                                                  scale=10 / self.state.vector_scaling)
+                                                  scale=10 / self.state.vector_scaling * vmax)
             self.mpl_artists[self.vector_index] = self.vector_artist
 
         if self.state.xerr_visible or self.state.yerr_visible:
@@ -485,18 +492,27 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         script = ""
         imports = ""
 
+        script += "# Get main data values\n"
         script += "x = layer_data['{0}']\n".format(self._viewer_state.x_att.label)
-        script += "y = layer_data['{0}']\n".format(self._viewer_state.y_att.label)
+        script += "y = layer_data['{0}']\n\n".format(self._viewer_state.y_att.label)
 
         if self.state.cmap_mode == 'Linear':
 
             imports += "from glue.viewers.scatter.layer_artist import set_mpl_artist_cmap\n"
 
-            script += "c = layer_data['{0}']\n".format(self.state.cmap_att.label)
+            script += "# Set up colors\n"
+            script += "colors = layer_data['{0}']\n".format(self.state.cmap_att.label)
+            script += "cmap_vmin = {0}\n".format(self.state.cmap_vmin)
+            script += "cmap_vmax = {0}\n".format(self.state.cmap_vmax)
+            script += "colors = plt.cm.{0}((colors - cmap_vmin) / (cmap_vmax - cmap_vmin))\n\n".format(self.state.cmap.name)
 
-            cmap_options = dict(cmap=code('plt.cm.' + self.state.cmap.name),
-                                vmin=self.state.cmap_vmin,
-                                vmax=self.state.cmap_vmax)
+        if self.state.size_mode == 'Linear':
+
+            script += "# Set up size values\n"
+            script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
+            script += "size_vmin = {0}\n".format(self.state.size_vmin)
+            script += "size_vmax = {0}\n".format(self.state.size_vmax)
+            script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n".format(self.state.size_scaling)
 
         if self.state.markers_visible:
             if self.state.density_map:
@@ -506,32 +522,26 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     options = dict(color=self.state.color,
                                    markersize=self.state.size * self.state.size_scaling,
-                                   mec='none', alpha=self.state.alpha, zorder=self.state.zorder)
+                                   mec='none',
+                                   alpha=self.state.alpha,
+                                   zorder=self.state.zorder)
                     script += "ax.plot(x, y, 'o', {0})\n".format(serialize_options(options))
                 else:
-                    options = dict(edgecolor='none', alpha=self.state.alpha, zorder=self.state.zorder)
+                    options = dict(edgecolor='none',
+                                   alpha=self.state.alpha,
+                                   zorder=self.state.zorder)
 
                     if self.state.cmap_mode == 'Fixed':
                         options['facecolor'] = self.state.color
+                    else:
+                        options['c'] = code('colors')
 
                     if self.state.size_mode == 'Fixed':
                         options['s'] = code('{0} ** 2'.format(self.state.size * self.state.size_scaling))
                     else:
-                        script += "size_vmin = {0}\n".format(self.state.size_vmin)
-                        script += "size_vmax = {0}\n".format(self.state.size_vmax)
-                        script += "sizes = layer_data['{0}']\n".format(self.state.size_att.label)
-                        script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin)\n"
-                        script += "sizes *= {0}\n".format(self.state.size_scaling)
-                        script += "sizes[np.isnan(sizes)] = 0\n"
                         options['s'] = code('sizes ** 2')
 
-                    if self.state.cmap_mode == 'Linear':
-                        script += "s = "
-
-                    script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
-
-                    if self.state.cmap_mode == 'Linear':
-                        script += "set_mpl_artist_cmap(s, c, {0})\n".format(serialize_options(cmap_options))
+                    script += "ax.scatter(x, y, {0})\n\n".format(serialize_options(options))
 
         if self.state.line_visible:
             options = dict(color=self.state.color,
@@ -542,17 +552,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             if self.state.cmap_mode == 'Fixed':
                 script += "ax.plot(x, y, '-', {0})\n".format(serialize_options(options))
             else:
-                script += "from glue.viewers.scatter.layer_artist import ColoredLineCollection\n"
-                script += "lc = ColoredLineCollection(x, y, {0})\n".format(serialize_options(options))
-                script += "lc.set_linearcolor(data=c, {0})\n".format(serialize_options(cmap_options))
-                script += "ax.add_collection(lc)\n"
+                options['c'] = code('colors')
+                imports += "from glue.viewers.scatter.layer_artist import plot_colored_line\n"
+                script += "plot_colored_line(ax, x, y, {0})\n".format(serialize_options(options))
 
         if self.state.vector_visible:
 
             if self.state.vx_att is not None and self.state.vy_att is not None:
-
-                vx = self.layer[self.state.vx_att].ravel()
-                vy = self.layer[self.state.vy_att].ravel()
 
                 if self.state.vector_mode == 'Polar':
                     script += "angle = layer_data['{0}']\n".format(self.state.vx_att.label)
@@ -570,33 +576,24 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            v = np.hypot(vx, vy)
-            vmax = np.nanmax(v)
-            vx = vx / vmax
-            vy = vy / vmax
+            script += 'vmax = np.nanmax(np.hypot(vx, vy))\n'
 
-            script += "v = np.hypot(vx, vy)\n"
-            script += "vmax = np.nanmax(v)\n"
-            script += "vx = vx / vmax\n"
-            script += "vy = vy / vmax\n"
-
-            # TEMP: fix color for cases where color depends on attribute
+            scale = code('{0} * vmax'.format(10 / self.state.vector_scaling))
 
             options = dict(units='width',
                            pivot=self.state.vector_origin,
                            headwidth=hw, headlength=hl,
                            scale_units='width',
-                           scale=10 / self.state.vector_scaling,
-                           color=self.state.color,
+                           scale=scale,
                            alpha=self.state.alpha,
                            zorder=self.state.zorder)
-            if self.state.cmap_mode == 'Linear':
-                script += "q = "
+
+            if self.state.cmap_mode == 'Fixed':
+                options['color'] = self.state.color
+            else:
+                options['color'] = code('colors')
 
             script += "ax.quiver(x, y, vx, vy, {0})\n".format(serialize_options(options))
-
-            if self.state.cmap_mode == 'Linear':
-                script += "set_mpl_artist_cmap(q, c, {0})\n".format(serialize_options(cmap_options))
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
@@ -610,18 +607,14 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             else:
                 yerr = code("None")
 
-            # TEMP: fix color for cases where color depends on attribute
-
-            options = dict(fmt='none', xerr=xerr, yerr=yerr, color=self.state.color,
+            options = dict(fmt='none', xerr=xerr, yerr=yerr,
                            alpha=self.state.alpha, zorder=self.state.zorder)
 
-            if self.state.cmap_mode == 'Linear':
-                script += "err ="
+            if self.state.cmap_mode == 'Fixed':
+                options['ecolor'] = self.state.color
+            else:
+                options['ecolor'] = code('colors')
 
             script += "ax.errorbar(x, y, {0})\n".format(serialize_options(options))
 
-            if self.state.cmap_mode == 'Linear':
-                script += "for e in err[2]:\n    if e is None:\n        continue\n"
-                script += "    set_mpl_artist_cmap(e, c, {0})\n".format(serialize_options(cmap_options))
-
-        return imports + '\n' + script
+        return imports + '\n' + script.strip()

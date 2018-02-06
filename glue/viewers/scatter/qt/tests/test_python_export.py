@@ -10,11 +10,17 @@ from glue.viewers.scatter.qt import ScatterViewer
 from matplotlib.testing.compare import compare_images
 
 
+def random_with_nan(nsamples, nan_index):
+    x = np.random.random(nsamples)
+    x[nan_index] = np.nan
+    return x
+
+
 class TestExportPython:
 
     def setup_method(self, method):
 
-        self.data = Data(**dict((name, np.random.random(100)) for name in 'abcdefgh'))
+        self.data = Data(**dict((name, random_with_nan(100, nan_index=idx + 1)) for idx, name in enumerate('abcdefgh')))
         self.data['angle'] = np.random.uniform(0, 360, 100)
         self.data_collection = DataCollection([self.data])
         ga = GlueApplication(self.data_collection)
@@ -123,7 +129,7 @@ class TestExportPython:
         self.scatter.state.layers[0].cmap = plt.cm.BuGn
         self.test_vector_cartesian(tmpdir)
 
-    def assert_same(self, tmpdir, tol=0):
+    def assert_same(self, tmpdir, tol=0.1):
 
         self.scatter.axes.figure.savefig('check.png')
 
