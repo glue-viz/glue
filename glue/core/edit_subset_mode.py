@@ -12,6 +12,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 
 from glue.core.contracts import contract
+from glue.core.message import EditSubsetMessage
 from glue.core.data_collection import DataCollection
 from glue.core.data import Data
 from glue.core.decorators import singleton
@@ -26,7 +27,18 @@ class EditSubsetMode(object):
     def __init__(self):
         self.mode = ReplaceMode
         self.data_collection = None
-        self.edit_subset = []
+        self._edit_subset = []
+
+    @property
+    def edit_subset(self):
+        return self._edit_subset
+
+    @edit_subset.setter
+    def edit_subset(self, value):
+        self._edit_subset = value
+        # Alert any listeners to the change in the active subset
+        if self.data_collection is not None:
+            self.data_collection.hub.broadcast(EditSubsetMessage(self, None))
 
     def _combine_data(self, new_state):
         """ Dispatches to the combine method of mode attribute.
@@ -38,12 +50,12 @@ class EditSubsetMode(object):
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
         """
-        if not self.edit_subset:
+        if not self._edit_subset:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
-            self.edit_subset = self.data_collection.new_subset_group()
-        subs = self.edit_subset
+            self._edit_subset = self.data_collection.new_subset_group()
+        subs = self._edit_subset
         for s in as_list(subs):
             self.mode(s, new_state)
 

@@ -53,6 +53,12 @@ class ErrorMessage(Message):
     pass
 
 
+class EditSubsetMessage(Message):
+
+    """ Indicates that the subset currently being edited has changed """
+    pass
+
+
 class SubsetMessage(Message):
 
     """
