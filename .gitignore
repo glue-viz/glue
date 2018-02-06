@@ -8,8 +8,7 @@ glue/tests/htmlcov
 
 # Packages/installer info
 doc/.eggs
-Glue.egg-info
-glueviz.egg-info
+*.egg-info
 dist
 
 # Compiled files
