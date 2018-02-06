@@ -40,6 +40,7 @@ ax.tick_params('y', labelsize={x_ticklabel_size})
 
 # Save figure
 fig.savefig('myplot.png')
+plt.close(fig)
 """.strip()
 
 
