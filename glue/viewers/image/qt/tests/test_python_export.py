@@ -47,9 +47,11 @@ class TestExportPython:
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
 
-    def assert_same(self, tmpdir, tol=0.1):
+    def test_subset_slice(self, tmpdir):
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.test_slice(tmpdir)
 
-        self.image.axes.figure.savefig('image.png')
+    def assert_same(self, tmpdir, tol=0.1):
 
         os.chdir(tmpdir.strpath)
 
