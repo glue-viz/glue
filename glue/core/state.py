@@ -118,7 +118,7 @@ def save(filename, obj):
 
 
 def load(filename):
-    with open(filename, 'rb') as f:
+    with open(filename, 'r') as f:
         s = GlueUnSerializer.load(f)
     return s.object('__main__')
 
