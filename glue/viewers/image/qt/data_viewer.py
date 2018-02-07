@@ -8,6 +8,7 @@ from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 
 from glue.core import command
+from glue.core.subset import RoiSubsetState
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -63,10 +64,12 @@ class RoiSelectionMixin:
         for layer in self.layers:
             if not isinstance(layer, ImageSubsetLayerArtist):
                 continue
-            roi = layer.state.layer.subset_state.roi
-            if roi.contains(x, y):
-                if event.button == _MPL_LEFT_CLICK:
-                    self._select_roi(roi_index)
+
+            subset_state = layer.state.layer.subset_state
+            if isinstance(subset_state, RoiSubsetState):
+                if subset_state.roi.contains(x, y):
+                    if event.button == _MPL_LEFT_CLICK:
+                        self._select_roi(roi_index)
             roi_index += 1
 
     def _button_release(self, event):
