@@ -691,14 +691,23 @@ class KeyboardShortcut(DictRegistry):
         arg3: function()
             function to be run that corresponds with key
         """
-        for viewer in valid_viewers:
-            if viewer in self.members:
-                if keybind in self.members[viewer]:
-                    raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, viewer))
+        if valid_viewers:
+            for viewer in valid_viewers:
+                if viewer in self.members:
+                    if keybind in self.members[viewer]:
+                        raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, viewer))
+                    else:
+                        self.members[viewer][keybind] = function
                 else:
-                    self.members[viewer][keybind] = function
+                    self.members[viewer] = {keybind: function}
+        else:
+            if None in self.members:
+                if keybind in self.members[None]:
+                    raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, None))
+                else:
+                    self.members[None][keybind] = function
             else:
-                self.members[viewer] = {keybind: function}
+                self.members[None] = {keybind: function}
 
     def __call__(self, keybind, valid_viewers):
         def adder(func):
