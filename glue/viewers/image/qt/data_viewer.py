@@ -131,19 +131,10 @@ class ImageViewer(MatplotlibDataViewer):
         if relim:
             self.state.reset_limits()
 
-    # TODO: move some of the ROI stuff to state class?
-
-    def apply_roi(self, roi):
-        if len(self.layers) > 0:
-            subset_state = self._roi_to_subset_state(roi)
-            cmd = command.ApplySubsetState(data_collection=self._data,
-                                           subset_state=subset_state)
-            self._session.command_stack.do(cmd)
-        else:
-            # Make sure we force a redraw to get rid of the ROI
-            self.axes.figure.canvas.draw()
-
     def _roi_to_subset_state(self, roi):
+        """ This method must be implemented in order for apply_roi from the
+        parent class to work.
+        """
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
