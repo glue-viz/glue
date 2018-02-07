@@ -38,7 +38,7 @@ class EditSubsetMode(object):
         self._edit_subset = value
         # Alert any listeners to the change in the active subset
         if self.data_collection is not None:
-            self.data_collection.hub.broadcast(EditSubsetMessage(self, None))
+            self.data_collection.hub.broadcast(EditSubsetMessage(self, value))
 
     def _combine_data(self, new_state):
         """ Dispatches to the combine method of mode attribute.

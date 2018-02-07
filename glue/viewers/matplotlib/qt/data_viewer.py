@@ -50,7 +50,6 @@ class RoiSelectionMixin:
             roi = layer.state.layer.subset_state.roi
             if roi.contains(x, y):
                 if event.button == _MPL_LEFT_CLICK:
-                    print("HEY THERE", type(roi), hex(id(roi)))
                     self._select_roi(roi_index)
             roi_index += 1
 

@@ -13,7 +13,7 @@ from glue.icons.qt import layer_icon
 
 from glue.core.qt.style_dialog import StyleDialog
 from glue.utils.qt import PyMimeData
-from glue.core.message import Message
+from glue.core.message import Message, EditSubsetMessage
 
 DATA_IDX = 0
 SUBSET_IDX = 1
@@ -461,15 +461,18 @@ class DataCollectionView(QtWidgets.QTreeView, HubListener):
         self.setEditTriggers(self.NoEditTriggers)
 
         self.setIconSize(QtCore.QSize(16, 16))
+        self._listen_for_edit_subset = True
 
     def selected_layers(self):
         idxs = self.selectedIndexes()
         return self._model.glue_data(idxs)
 
     def set_selected_layers(self, layers):
+        self._listen_for_edit_subset = False
         sm = self.selectionModel()
         idxs = self._model.to_indices(layers)
         self.select_indices(*idxs)
+        self._listen_for_edit_subset = True
 
     def select_indices(self, *indices):
         sm = self.selectionModel()
@@ -503,6 +506,14 @@ class DataCollectionView(QtWidgets.QTreeView, HubListener):
         # data collection content, colors, labels, etc. It's easier to simply
         # listen to all events since the viewport update is fast.
         data_collection.hub.subscribe(self, Message, handler=self._update_viewport)
+        data_collection.hub.subscribe(
+            self, EditSubsetMessage, handler=self._update_subset_selection)
+
+    def _update_subset_selection(self, message):
+        # This is necessary to prevent infinite regress when changing the
+        # selection programmatically.
+        if self._listen_for_edit_subset == True:
+            self.set_selected_layers(message.subset)
 
     def _update_viewport(self, *args, **kwargs):
         # This forces the widget containing the list view to update/redraw,
