@@ -110,7 +110,7 @@ except ImportError:
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=1.3',
-                    'matplotlib>=1.4',
+                    'matplotlib>=2.0',
                     'qtpy>=1.2',
                     'setuptools>=1.0',
                     'ipython>=4.0',
