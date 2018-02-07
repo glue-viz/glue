@@ -33,8 +33,50 @@ IDENTITY_WCS.wcs.crval = [0., 0.]
 IDENTITY_WCS.wcs.crpix = [1., 1.]
 IDENTITY_WCS.wcs.cdelt = [1., 1.]
 
+_MPL_LEFT_CLICK = 1
+_MPL_RIGHT_CLICK = 3
 
-class ImageViewer(MatplotlibDataViewer):
+
+# Eventually this should be defined elsewhere, probably as a mouse mode
+class RoiSelectionMixin:
+
+    def __init__(self):
+        self._dc = None
+        self._canvas = None
+        self._edit_subset_mode = EditSubsetMode()
+
+    def connect_mpl_events(self):
+        self._canvas = self.figure.canvas
+        self._dc = self.state.data_collection
+
+        self._canvas.mpl_connect('button_press_event', self._button_press)
+        self._canvas.mpl_connect('button_release_event', self._button_release)
+
+    def _button_press(self, event):
+        # Ignore button presses outside the data viewer canvas
+        if event.xdata is None or event.ydata is None:
+            return
+
+        x, y = (int(event.xdata + 0.5), int(event.ydata + 0.5))
+
+        roi_index = 0
+        for layer in self.layers:
+            if not isinstance(layer, ImageSubsetLayerArtist):
+                continue
+            roi = layer.state.layer.subset_state.roi
+            if roi.contains(x, y):
+                if event.button == _MPL_LEFT_CLICK:
+                    self._select_roi(roi_index)
+            roi_index += 1
+
+    def _button_release(self, event):
+        pass
+
+    def _select_roi(self, index):
+        self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
+
+
+class ImageViewer(MatplotlibDataViewer, RoiSelectionMixin):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
@@ -65,6 +107,8 @@ class ImageViewer(MatplotlibDataViewer):
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
+
+        self.connect_mpl_events()
 
     def close(self, **kwargs):
         super(ImageViewer, self).close(**kwargs)

@@ -17,50 +17,7 @@ from glue.core.command import ApplySubsetState
 __all__ = ['MatplotlibDataViewer']
 
 
-_MPL_LEFT_CLICK = 1
-_MPL_RIGHT_CLICK = 3
-
-
-# Eventually this should be defined elsewhere
-class RoiSelectionMixin:
-
-    def __init__(self):
-        self._dc = None
-        self._canvas = None
-        self._edit_subset_mode = EditSubsetMode()
-
-    def connect_mpl_events(self):
-        self._canvas = self.figure.canvas
-        self._dc = self.state.data_collection
-
-        self._canvas.mpl_connect('button_press_event', self._button_press)
-        self._canvas.mpl_connect('button_release_event', self._button_release)
-
-    def _button_press(self, event):
-        # Ignore button presses outside the data viewer canvas
-        if event.xdata is None or event.ydata is None:
-            return
-
-        x, y = (int(event.xdata + 0.5), int(event.ydata + 0.5))
-
-        roi_index = 0
-        for layer in self.layers:
-            if not isinstance(layer, ImageSubsetLayerArtist):
-                continue
-            roi = layer.state.layer.subset_state.roi
-            if roi.contains(x, y):
-                if event.button == _MPL_LEFT_CLICK:
-                    self._select_roi(roi_index)
-            roi_index += 1
-
-    def _button_release(self, event):
-        pass
-
-    def _select_roi(self, index):
-        self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
-
-
-class MatplotlibDataViewer(DataViewerWithState, RoiSelectionMixin):
+class MatplotlibDataViewer(DataViewerWithState):
 
     _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
@@ -101,8 +58,6 @@ class MatplotlibDataViewer(DataViewerWithState, RoiSelectionMixin):
 
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
-
-        self.connect_mpl_events()
 
     def redraw(self):
         self.figure.canvas.draw()
