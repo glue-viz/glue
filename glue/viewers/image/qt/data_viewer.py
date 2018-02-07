@@ -9,6 +9,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 
 from glue.core import command
 from glue.core.subset import RoiSubsetState
+from glue.core.message import SubsetUpdateMessage
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -45,6 +46,9 @@ class RoiSelectionMixin:
         self._dc = None
         self._canvas = None
         self._edit_subset_mode = EditSubsetMode()
+        self._roi = None
+        self._connection = None
+        self._subset = None
 
     def connect_mpl_events(self):
         self._canvas = self.figure.canvas
@@ -69,13 +73,35 @@ class RoiSelectionMixin:
             if isinstance(subset_state, RoiSubsetState):
                 if subset_state.roi.contains(x, y):
                     if event.button == _MPL_LEFT_CLICK:
-                        self._select_roi(roi_index)
+                        self._select_roi(subset_state.roi, roi_index)
+                        self._subset = layer.state.layer
             roi_index += 1
 
     def _button_release(self, event):
-        pass
+        if self._connection:
+            self._canvas.mpl_disconnect(self._connection)
+            self._roi = None
+            self._subset = None
 
-    def _select_roi(self, index):
+    def _mouse_drag(self, event):
+        if event.xdata is None or event.ydata is None:
+            return
+
+        x_new, y_new = (int(event.xdata + 0.5), int(event.ydata + 0.5))
+
+        self._roi = self._roi.transformed(
+            xfunc=lambda x: x + 1, yfunc=lambda y: y - 1)
+
+        # Override original ROI
+        self._subset.subset_state.roi = self._roi
+
+        # We need to tell glue to recompute the subset
+        msg = SubsetUpdateMessage(self._subset)
+        self._dc.hub.broadcast(msg)
+
+    def _select_roi(self, roi, index):
+        self._roi = roi
+        self._connection = self._canvas.mpl_connect('motion_notify_event', self._mouse_drag)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 
 
