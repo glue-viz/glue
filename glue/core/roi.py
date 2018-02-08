@@ -577,13 +577,13 @@ class AbstractMplRoi(object):  # pragma: no cover
     Matplotlib user events to edit/display ROIs
     """
 
-    def __init__(self, axes):
+    def __init__(self, axes, roi=None):
         """
         :param axes: The Matplotlib Axes object to draw to
         """
 
         self._axes = axes
-        self._roi = self._roi_factory()
+        self._roi = roi or self._roi_factory()
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
@@ -1083,11 +1083,11 @@ class MplPolygonalROI(AbstractMplRoi):
                    the visual properties of the ROI
     """
 
-    def __init__(self, axes):
+    def __init__(self, axes, roi=None):
         """
         :param axes: A matplotlib Axes object to attach the graphical ROI to
         """
-        AbstractMplRoi.__init__(self, axes)
+        AbstractMplRoi.__init__(self, axes, roi=roi)
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 

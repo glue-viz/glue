@@ -10,6 +10,7 @@ from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core import command
 from glue.core.subset import RoiSubsetState
 from glue.core.message import SubsetUpdateMessage
+from glue.core.qt.roi import QtPolygonalROI
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -20,8 +21,6 @@ from glue.viewers.image.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
 from glue.external.echo import delay_callback
-
-from glue.core.qt.roi import QtPolygonalROI
 
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
@@ -101,8 +100,7 @@ class RoiSelectionMixin:
         self._roi.update_selection(event)
 
     def _select_roi(self, roi, index, event):
-        self._roi = QtPolygonalROI(self._axes)
-        self._roi._roi = roi
+        self._roi = QtPolygonalROI(self._axes, _roi=roi)
         self._roi.start_selection(event, scrubbing=True)
 
         self._connection = self._canvas.mpl_connect('motion_notify_event', self._mouse_drag)

@@ -123,8 +123,8 @@ class QtRectangularROI(QtROI, roi.MplRectangularROI):
 
 class QtPolygonalROI(QtROI, roi.MplPolygonalROI):
 
-    def __init__(self, axes):
-        roi.MplPolygonalROI.__init__(self, axes)
+    def __init__(self, axes, _roi=None):
+        roi.MplPolygonalROI.__init__(self, axes, roi=_roi)
 
 
 class QtXRangeROI(QtROI, roi.MplXRangeROI):
