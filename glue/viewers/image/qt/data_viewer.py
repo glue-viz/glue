@@ -21,6 +21,8 @@ from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
 from glue.external.echo import delay_callback
 
+from glue.core.qt.roi import QtPolygonalROI
+
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
 
@@ -73,13 +75,22 @@ class RoiSelectionMixin:
             if isinstance(subset_state, RoiSubsetState):
                 if subset_state.roi.contains(x, y):
                     if event.button == _MPL_LEFT_CLICK:
-                        self._select_roi(subset_state.roi, roi_index)
+                        self._select_roi(subset_state.roi, roi_index, event)
                         self._subset = layer.state.layer
             roi_index += 1
 
     def _button_release(self, event):
         if self._connection:
             self._canvas.mpl_disconnect(self._connection)
+
+            self._roi.finalize_selection(event)
+            # Override original ROI
+            self._subset.subset_state.roi = self._roi._roi
+
+            # We need to tell glue to recompute the subset
+            msg = SubsetUpdateMessage(self._subset)
+            self._dc.hub.broadcast(msg)
+
             self._roi = None
             self._subset = None
 
@@ -87,20 +98,13 @@ class RoiSelectionMixin:
         if event.xdata is None or event.ydata is None:
             return
 
-        x_new, y_new = (int(event.xdata + 0.5), int(event.ydata + 0.5))
+        self._roi.update_selection(event)
 
-        self._roi = self._roi.transformed(
-            xfunc=lambda x: x + 1, yfunc=lambda y: y - 1)
+    def _select_roi(self, roi, index, event):
+        self._roi = QtPolygonalROI(self._axes)
+        self._roi._roi = roi
+        self._roi.start_selection(event, scrubbing=True)
 
-        # Override original ROI
-        self._subset.subset_state.roi = self._roi
-
-        # We need to tell glue to recompute the subset
-        msg = SubsetUpdateMessage(self._subset)
-        self._dc.hub.broadcast(msg)
-
-    def _select_roi(self, roi, index):
-        self._roi = roi
         self._connection = self._canvas.mpl_connect('motion_notify_event', self._mouse_drag)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 

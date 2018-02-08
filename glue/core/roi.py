@@ -1120,12 +1120,12 @@ class MplPolygonalROI(AbstractMplRoi):
         # Refresh
         self._axes.figure.canvas.draw()
 
-    def start_selection(self, event):
+    def start_selection(self, event, scrubbing=False):
 
         if event.inaxes != self._axes:
             return False
 
-        if event.key == SCRUBBING_KEY:
+        if scrubbing or event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
             elif not self._roi.contains(event.xdata, event.ydata):
@@ -1133,7 +1133,7 @@ class MplPolygonalROI(AbstractMplRoi):
 
         self._roi_store()
 
-        if event.key == SCRUBBING_KEY:
+        if scrubbing or event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._cx = event.xdata
             self._cy = event.ydata
