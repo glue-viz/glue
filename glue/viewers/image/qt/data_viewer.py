@@ -83,15 +83,11 @@ class RoiSelectionMixin:
             self._canvas.mpl_disconnect(self._connection)
 
             self._roi.finalize_selection(event)
-            # Override original ROI
-            self._subset.subset_state.roi = self._roi._roi
-
-            # We need to tell glue to recompute the subset
-            msg = SubsetUpdateMessage(self._subset)
-            self._dc.hub.broadcast(msg)
+            self.apply_roi(self._roi.roi())
 
             self._roi = None
             self._subset = None
+            self._connection = None
 
     def _mouse_drag(self, event):
         if event.xdata is None or event.ydata is None:
