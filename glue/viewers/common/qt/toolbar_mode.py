@@ -56,6 +56,7 @@ class RoiModeBase(ToolbarModeBase):
     ``apply_roi`` method on the data viewer.
     """
     persistent = False  # clear the shape when drawing completes?
+    trigger_on_finalize = True
 
     def __init__(self, viewer, **kwargs):
         """
@@ -97,6 +98,9 @@ class RoiModeBase(ToolbarModeBase):
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
             self._roi_callback(self)
+        if self.trigger_on_finalize:
+            # TODO: there is perhaps a more elegant way to handle this
+            self.viewer.toolbar.actions[self.tool_id].trigger()
 
     def clear(self):
         self._roi_tool.reset()
