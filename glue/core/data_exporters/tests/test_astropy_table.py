@@ -16,9 +16,17 @@ EXPORTERS['fits'] = fits_exporter
 
 @pytest.mark.parametrize('fmt', EXPORTERS)
 def test_astropy_table(tmpdir, fmt):
-    filename = tmpdir.join('test').strpath
+
+    filename = tmpdir.join('test1').strpath
     data = Data(x=[1, 2, 3], y=[b'a', b'b', b'c'])
     EXPORTERS[fmt](filename, data)
     t = Table.read(filename, format=fmt)
+    assert t.colnames == ['x', 'y']
     np.testing.assert_equal(t['x'], [1, 2, 3])
     np.testing.assert_equal(t['y'].astype(bytes), [b'a', b'b', b'c'])
+
+    filename = tmpdir.join('test2').strpath
+    EXPORTERS[fmt](filename, data, components=[data.id['x']])
+    t = Table.read(filename, format=fmt)
+    assert t.colnames == ['x']
+    np.testing.assert_equal(t['x'], [1, 2, 3])
