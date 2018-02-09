@@ -11,6 +11,7 @@ from glue.core import command
 from glue.core.subset import RoiSubsetState
 from glue.core.message import SubsetUpdateMessage
 from glue.core.qt.roi import QtPolygonalROI
+from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -40,25 +41,24 @@ _MPL_LEFT_CLICK = 1
 _MPL_RIGHT_CLICK = 3
 
 
-# Eventually this should be defined elsewhere, probably as a mouse mode
-class RoiSelectionMixin:
+class RoiClickAndDragMode(MouseMode):
 
-    def __init__(self):
-        self._dc = None
-        self._canvas = None
+    def __init__(self, viewer, **kwargs):
+        super(RoiClickAndDragMode, self).__init__(viewer, **kwargs)
+
+        self._viewer = viewer
+        self._dc = self._viewer.state.data_collection
         self._edit_subset_mode = EditSubsetMode()
+
         self._roi = None
-        self._connection = None
         self._subset = None
 
-    def connect_mpl_events(self):
-        self._canvas = self.figure.canvas
-        self._dc = self.state.data_collection
+    def _select_roi(self, roi, index, event):
+        self._roi = QtPolygonalROI(self._axes, _roi=roi)
+        self._roi.start_selection(event, scrubbing=True)
+        self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 
-        self._canvas.mpl_connect('button_press_event', self._button_press)
-        self._canvas.mpl_connect('button_release_event', self._button_release)
-
-    def _button_press(self, event):
+    def press(self, event):
         # Ignore button presses outside the data viewer canvas
         if event.xdata is None or event.ydata is None:
             return
@@ -66,7 +66,7 @@ class RoiSelectionMixin:
         x, y = (int(event.xdata + 0.5), int(event.ydata + 0.5))
 
         roi_index = 0
-        for layer in self.layers:
+        for layer in self._viewer.layers:
             if not isinstance(layer, ImageSubsetLayerArtist):
                 continue
 
@@ -78,36 +78,25 @@ class RoiSelectionMixin:
                         self._subset = layer.state.layer
             roi_index += 1
 
-    def _button_release(self, event):
-        if self._connection:
-            self._canvas.mpl_disconnect(self._connection)
-
-            self._roi.finalize_selection(event)
-            self.apply_roi(self._roi.roi())
-
-            self._roi = None
-            self._subset = None
-            self._connection = None
-
-    def _mouse_drag(self, event):
-        if event.xdata is None or event.ydata is None:
+    def move(self, event):
+        if self._roi is None:
             return
 
         self._roi.update_selection(event)
 
-    def _select_roi(self, roi, index, event):
-        self._roi = QtPolygonalROI(self._axes, _roi=roi)
-        self._roi.start_selection(event, scrubbing=True)
+    def release(self, event):
+        if self._roi:
+            self._roi.finalize_selection(event)
+            self._viewer.apply_roi(self._roi.roi())
 
-        self._connection = self._canvas.mpl_connect('motion_notify_event', self._mouse_drag)
-        self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
+            self._roi = None
+            self._subset = None
 
-
-class ImageViewer(MatplotlibDataViewer, RoiSelectionMixin):
+class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
-    _default_mouse_mode = None
+    _default_mouse_mode = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
                                ScatterLayerArtist: ScatterLayerStyleEditor}
@@ -135,8 +124,6 @@ class ImageViewer(MatplotlibDataViewer, RoiSelectionMixin):
         self.axes._composite_image = imshow(self.axes, self.axes._composite,
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
-
-        self.connect_mpl_events()
 
     def close(self, **kwargs):
         super(ImageViewer, self).close(**kwargs)
