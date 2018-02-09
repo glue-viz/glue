@@ -1,8 +1,10 @@
 """
 MouseModes define various mouse gestures.
 
-The toolbar maintains a list of MouseModes from the visualization it is
-assigned to, and sees to it that only one MouseMode is active at a time.
+MouseModes are generally activated and deactivated by toolbar buttons, although
+not necessarily so. The toolbar maintains a list of MouseModes from the
+visualization it is assigned to, and sees to it that only one MouseMode is
+active at a time.
 
 Each MouseMode appears as an Icon in the toolbar. Classes can assign methods to
 the press_callback, move_callback, and release_callback methods of each Mouse

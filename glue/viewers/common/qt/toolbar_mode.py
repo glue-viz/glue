@@ -1,3 +1,20 @@
+"""
+ToolbarModes are CheckableTools that enable various MouseModes.
+
+The toolbar maintains a list of MouseModes from the visualization it is
+assigned to, and sees to it that only one MouseMode is active at a time.
+
+Each ToolbarMode appears as an Icon in the toolbar. Classes can assign methods
+to the press_callback, move_callback, and release_callback methods of each
+Mouse Mode, to implement custom functionality
+
+The basic usage pattern is thus:
+ * visualization object instantiates the MouseModes it wants
+ * each of these is passed to the add_tool method of the toolbar
+ * visualization object optionally attaches methods to the 3 _callback
+   methods in a MouseMode, for additional behavior
+"""
+
 import os
 
 from qtpy import QtGui, QtWidgets
@@ -18,7 +35,9 @@ __all__ = [ 'ToolbarModeBase', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
 
 
 class ToolbarModeBase(MouseMode, CheckableTool):
-
+    """
+    All ToolbarModes are both MouseModes and CheckableTools
+    """
     def __init__(self, viewer, **kwargs):
         MouseMode.__init__(self, viewer, **kwargs)
         CheckableTool.__init__(self, viewer=viewer)

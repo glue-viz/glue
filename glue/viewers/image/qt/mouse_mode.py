@@ -16,7 +16,7 @@ _MPL_RIGHT_CLICK = 3
 
 class RoiClickAndDragMode(MouseMode):
     """
-
+    A MouseMode that enables clicking and dragging of existing ROIs.
     """
 
     def __init__(self, viewer, **kwargs):
