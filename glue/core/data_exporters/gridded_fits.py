@@ -10,14 +10,16 @@ __all__ = []
 
 
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
-def fits_writer(filename, data):
+def fits_writer(filename, data, components=None):
     """
     Write a dataset or a subset to a FITS file.
 
     Parameters
     ----------
-    data: `~glue.core.data.Data` or `~glue.core.subset.Subset`
+    data : `~glue.core.data.Data` or `~glue.core.subset.Subset`
         The data or subset to export
+    components : `list` or `None`
+        The components to export. Set this to `None` to export all components.
     """
 
     if isinstance(data, Subset):
@@ -31,6 +33,9 @@ def fits_writer(filename, data):
     hdus = fits.HDUList()
 
     for cid in data.visible_components:
+
+        if components is not None and cid not in components:
+            continue
 
         comp = data.get_component(cid)
         if comp.categorical:

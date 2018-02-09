@@ -4,7 +4,7 @@ from qtpy import compat
 from glue import config
 
 
-def export_data(data):
+def export_data(data, components=None):
 
     exporters = {}
     for e in config.data_exporter:
@@ -23,4 +23,4 @@ def export_data(data):
     if not filename:
         return
 
-    exporters[fltr](filename, data)
+    exporters[fltr](filename, data, components=components)

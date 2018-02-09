@@ -38,7 +38,7 @@ from glue.app.qt.versions import QVersionsDialog
 from glue.app.qt.terminal import glue_terminal, IPythonTerminalError
 
 from glue.config import qt_fixed_layout_tab, qt_client, startup_action, keyboard_shortcut
-
+from glue.app.qt.save_data import SaveDataDialog
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
@@ -279,6 +279,14 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_open_data.clicked.connect(nonpartial(self._choose_load_data))
 
         self._data_toolbar.addWidget(self._button_open_data)
+
+        self._button_save_data = QtWidgets.QToolButton()
+        self._button_save_data.setText("Save Data")
+        self._button_save_data.setIcon(get_icon('glue_filesave'))
+        self._button_save_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_save_data.clicked.connect(nonpartial(self._choose_save_data))
+
+        self._data_toolbar.addWidget(self._button_save_data)
 
         self._button_link_data = QtWidgets.QToolButton()
         self._button_link_data.setText("Link Data")
@@ -713,6 +721,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                     raise TypeError("Data loader should return list of "
                                     "Data objects")
             self.add_datasets(self.data_collection, data)
+
+    def _choose_save_data(self):
+        dialog = SaveDataDialog(data_collection=self.data_collection, parent=self)
+        dialog.exec_()
 
     def _create_actions(self):
         """ Create and connect actions, store in _actions dict """
