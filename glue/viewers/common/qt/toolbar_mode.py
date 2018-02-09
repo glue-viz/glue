@@ -58,6 +58,7 @@ class RoiModeBase(ToolbarModeBase):
 
     def activate(self):
         self._roi_tool._sync_patch()
+        super(RoiModeBase, self).activate()
 
     def roi(self):
         """

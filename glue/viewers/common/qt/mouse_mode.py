@@ -44,6 +44,7 @@ class MouseMode(object):
                  key_callback=None):
 
         self._axes = viewer.axes
+        self._canvas = viewer.central_widget.canvas
         self._press_callback = press_callback
         self._move_callback = move_callback
         self._release_callback = release_callback
@@ -52,6 +53,7 @@ class MouseMode(object):
         self._event_y = None
         self._event_xdata = None
         self._event_ydata = None
+        self._connections = []
 
     def _log_position(self, event):
         if event is None:
@@ -117,3 +119,20 @@ class MouseMode(object):
         """
         if self._key_callback is not None:
             self._key_callback(self)
+
+    def activate(self):
+        """
+        Activates all MPL event handlers associated with this mouse mode.
+        """
+        self._connections.append(self._canvas.mpl_connect('button_press_event', self.press))
+        self._connections.append(self._canvas.mpl_connect('motion_notify_event', self.move))
+        self._connections.append(self._canvas.mpl_connect('button_release_event', self.release))
+        self._connections.append(self._canvas.mpl_connect('key_press_event', self.key))
+
+    def deactivate(self):
+        """
+        Deactivates all MPL event handlers associated with this mouse mode.
+        """
+        for connection in self._connections:
+            self._canvas.mpl_disconnect(connection)
+        self._connections = []

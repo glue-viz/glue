@@ -123,19 +123,3 @@ class MatplotlibViewerToolbar(BasicToolbar):
 
         zoom_mode = ZoomTool(self.parent(), toolbar=self._mpl_nav)
         self.add_tool(zoom_mode)
-
-        self._connections = []
-
-    def activate_tool(self, mode):
-        if isinstance(mode, MouseMode):
-            self._connections.append(self.canvas.mpl_connect('button_press_event', mode.press))
-            self._connections.append(self.canvas.mpl_connect('motion_notify_event', mode.move))
-            self._connections.append(self.canvas.mpl_connect('button_release_event', mode.release))
-            self._connections.append(self.canvas.mpl_connect('key_press_event', mode.key))
-        super(MatplotlibViewerToolbar, self).activate_tool(mode)
-
-    def deactivate_tool(self, mode):
-        for connection in self._connections:
-            self.canvas.mpl_disconnect(connection)
-        self._connections = []
-        super(MatplotlibViewerToolbar, self).deactivate_tool(mode)
