@@ -107,6 +107,7 @@ class ImageViewer(MatplotlibDataViewer, RoiSelectionMixin):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
+    _default_mouse_mode = None
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
                                ScatterLayerArtist: ScatterLayerStyleEditor}

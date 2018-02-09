@@ -91,7 +91,7 @@ class MatplotlibViewerToolbar(BasicToolbar):
     pan_begin = QtCore.Signal()
     pan_end = QtCore.Signal()
 
-    def __init__(self, viewer):
+    def __init__(self, viewer, default_mouse_mode=None):
 
         self.canvas = viewer.central_widget.canvas
 
@@ -99,7 +99,7 @@ class MatplotlibViewerToolbar(BasicToolbar):
         self._mpl_nav = NavigationToolbar2QT(self.canvas, viewer)
         self._mpl_nav.hide()
 
-        BasicToolbar.__init__(self, viewer)
+        BasicToolbar.__init__(self, viewer, default_mouse_mode=default_mouse_mode)
 
         viewer.window_closed.connect(self.close)
 
@@ -108,6 +108,8 @@ class MatplotlibViewerToolbar(BasicToolbar):
         self._mpl_nav.parent = None
 
     def setup_default_modes(self):
+
+        super(MatplotlibViewerToolbar, self).setup_default_modes()
 
         # Set up default Matplotlib Tools - this gets called by the __init__
         # call to the parent class above.
