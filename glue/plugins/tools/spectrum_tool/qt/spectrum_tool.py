@@ -17,7 +17,7 @@ from glue.core.callback_property import add_callback, ignore_callback
 from glue.config import fit_plugin, viewer_tool
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.qt.mime import LAYERS_MIME_TYPE
-from glue.viewers.common.qt.mouse_mode import RoiMode
+from glue.viewers.common.qt.toolbar_mode import RoiMode
 from glue.utils.qt import load_ui, get_qapp
 from glue.core.qt.simpleforms import build_form_item
 from glue.utils.qt.widget_properties import CurrentComboProperty
