@@ -25,12 +25,11 @@ def test_fits_writer_data(tmpdir):
 
     filename = tmpdir.join('test2.fits').strpath
 
-    fits_writer(filename, data, components=[data.id['x'], data.id['z']])
+    fits_writer(filename, data, components=[data.id['x']])
 
     with fits.open(filename) as hdulist:
-        assert len(hdulist) == 2
+        assert len(hdulist) == 1
         np.testing.assert_equal(hdulist['x'].data, data['x'])
-        np.testing.assert_equal(hdulist['z'].data, data['z'])
 
 
 def test_fits_writer_subset(tmpdir):
