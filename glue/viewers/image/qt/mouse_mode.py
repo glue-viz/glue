@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy.QtGui import QCursor
+from qtpy.QtWidgets import QMenu, QAction
+
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import RoiSubsetState
 from glue.core.qt.roi import QtPolygonalROI
@@ -34,6 +37,18 @@ class RoiClickAndDragMode(MouseMode):
         self._roi.start_selection(event, scrubbing=True)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 
+    def _display_roi_context_menu(self, roi_index):
+
+        def delete_roi(event):
+            self._dc.remove_subset_group(self._dc.subset_groups[roi_index])
+
+        context_menu = QMenu()
+        action = QAction("Delete ROI", context_menu)
+        action.triggered.connect(delete_roi)
+        context_menu.addAction(action)
+        pos = self._viewer.mapToParent(QCursor().pos())
+        context_menu.exec_(pos)
+
     def press(self, event):
         # Ignore button presses outside the data viewer canvas
         if event.xdata is None or event.ydata is None:
@@ -52,6 +67,9 @@ class RoiClickAndDragMode(MouseMode):
                     if event.button == _MPL_LEFT_CLICK:
                         self._select_roi(subset_state.roi, roi_index, event)
                         self._subset = layer.state.layer
+                    elif event.button == _MPL_RIGHT_CLICK:
+                        self._display_roi_context_menu(roi_index)
+                    break
             roi_index += 1
 
     def move(self, event):
