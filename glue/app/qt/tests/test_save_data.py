@@ -91,6 +91,7 @@ class TestSaveDataDialog:
                 def test_iter(x):
                     yield test_exporter
                 data_exporter.__iter__ = test_iter
-                dialog.return_value = 'test_file.fits', 'Test (*)'
+                dialog.return_value = 'test_file.fits', None
+                self.dialog.state._sync_data_exporters()
                 self.dialog.accept()
         return test_exporter.function

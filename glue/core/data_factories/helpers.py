@@ -235,7 +235,11 @@ def load_data(path, factory=None, **kwargs):
             for item in parse_data(d, lbl):
                 yield item
 
-    factory = factory or auto_data
+    if factory is None:
+        factory = find_factory(path, **kwargs)
+        if factory is None:
+            raise KeyError("Don't know how to open file: %s" % path)
+
     lbl = data_label(path)
 
     d = as_list(factory(path, **kwargs))
