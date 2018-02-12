@@ -3,6 +3,8 @@ import os
 from qtpy.QtWidgets import QDialog, QListWidgetItem
 from qtpy.QtCore import Qt
 
+from glue import config
+
 from glue.external.echo import SelectionCallbackProperty
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
@@ -18,6 +20,7 @@ class SaveDataState(State):
 
     data = SelectionCallbackProperty()
     component = SelectionCallbackProperty()
+    exporter = SelectionCallbackProperty()
 
     def __init__(self, data_collection=None):
 
@@ -29,6 +32,21 @@ class SaveDataState(State):
 
         self.add_callback('data', self._on_data_change)
         self._on_data_change()
+
+        self._sync_data_exporters()
+
+    def _sync_data_exporters(self):
+
+        exporters = list(config.data_exporter)
+
+        def display_func(exporter):
+            if exporter.extension == '':
+                return "{0} (*)".format(exporter.label)
+            else:
+                return "{0} ({1})".format(exporter.label, ' '.join('*.' + ext for ext in exporter.extension))
+
+        SaveDataState.exporter.set_choices(self, exporters)
+        SaveDataState.exporter.set_display_func(self, display_func)
 
     def _on_data_change(self, event=None):
         self.component_helper.set_multiple_data([self.data])
@@ -98,7 +116,7 @@ class SaveDataDialog(QDialog):
             item = self.ui.list_component.item(idx)
             if item.checkState() == Qt.Checked:
                 components.append(self.state.data.id[item.text()])
-        export_data(self.state.data, components=components)
+        export_data(self.state.data, components=components, exporter=self.state.exporter.function)
         super(SaveDataDialog, self).accept()
 
 

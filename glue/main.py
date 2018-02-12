@@ -110,11 +110,11 @@ def restore_session(gluefile):
 @die_on_error("Error reading data file")
 def load_data_files(datafiles):
     """Load data files and return a list of datasets"""
-    from glue.core.data_factories import auto_data, load_data
+    from glue.core.data_factories import load_data
 
     datasets = []
     for df in datafiles:
-        datasets.append(load_data(df, auto_data))
+        datasets.append(load_data(df))
     return datasets
 
 

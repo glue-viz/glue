@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Add a toolbar item to save data. [#1516]
+
 * Give instructions for how to move selections in status tip. [#1504]
 
 * Improve the display of data cube slice labels to include only the
