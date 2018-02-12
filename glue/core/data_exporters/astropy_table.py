@@ -8,7 +8,7 @@ from glue.config import data_exporter
 __all__ = []
 
 
-def data_to_astropy_table(data):
+def data_to_astropy_table(data, components=None):
 
     if isinstance(data, Subset):
         mask = data.to_mask()
@@ -20,6 +20,9 @@ def data_to_astropy_table(data):
 
     table = Table()
     for cid in data.visible_components:
+
+        if components is not None and cid not in components:
+            continue
 
         comp = data.get_component(cid)
         if comp.categorical:
@@ -38,10 +41,10 @@ def data_to_astropy_table(data):
 def table_exporter(fmt, label, extension):
 
     @data_exporter(label=label, extension=extension)
-    def factory(filename, data):
+    def factory(filename, data, components=None):
         if os.path.exists(filename):
             os.remove(filename)
-        return data_to_astropy_table(data).write(filename, format=fmt)
+        return data_to_astropy_table(data, components=components).write(filename, format=fmt)
 
     # rename function to its variable reference below
     # allows pickling to work

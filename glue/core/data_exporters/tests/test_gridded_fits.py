@@ -9,7 +9,7 @@ from ..gridded_fits import fits_writer
 
 def test_fits_writer_data(tmpdir):
 
-    filename = tmpdir.join('test').strpath
+    filename = tmpdir.join('test1.fits').strpath
 
     data = Data(x=np.arange(6).reshape(2, 3),
                 y=(np.arange(6) * 2).reshape(2, 3))
@@ -17,8 +17,19 @@ def test_fits_writer_data(tmpdir):
     fits_writer(filename, data)
 
     with fits.open(filename) as hdulist:
+        assert len(hdulist) == 2
         np.testing.assert_equal(hdulist['x'].data, data['x'])
         np.testing.assert_equal(hdulist['y'].data, data['y'])
+
+    # Only write out some components
+
+    filename = tmpdir.join('test2.fits').strpath
+
+    fits_writer(filename, data, components=[data.id['x']])
+
+    with fits.open(filename) as hdulist:
+        assert len(hdulist) == 1
+        np.testing.assert_equal(hdulist['x'].data, data['x'])
 
 
 def test_fits_writer_subset(tmpdir):
