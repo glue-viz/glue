@@ -4,20 +4,20 @@ from __future__ import absolute_import, division, print_function
 
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.mouse_mode import MouseMode
+from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.tests.util import simple_session
 
 from ..toolbar import MatplotlibViewerToolbar
 
 
-class MouseModeTest(MouseMode):
+class ToolbarModeTest(ToolbarModeBase):
 
     tool_id = 'test'
     tool_tip = 'just testing'
     icon = 'glue_square'
 
     def __init__(self, axes, release_callback=None):
-        super(MouseModeTest, self).__init__(axes, release_callback=release_callback)
+        super(ToolbarModeTest, self).__init__(axes, release_callback=release_callback)
         self.action_text = 'test text'
         self.last_mode = None
 
@@ -41,7 +41,7 @@ class ExampleViewer(DataViewer):
 
     def initialize_toolbar(self):
         super(ExampleViewer, self).initialize_toolbar()
-        self.tool = MouseModeTest(self, release_callback=self.callback)
+        self.tool = ToolbarModeTest(self, release_callback=self.callback)
         self.toolbar.add_tool(self.tool)
 
     def callback(self, mode):
