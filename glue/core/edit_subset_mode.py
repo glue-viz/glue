@@ -35,6 +35,8 @@ class EditSubsetMode(object):
 
     @edit_subset.setter
     def edit_subset(self, value):
+        if value is None:
+            value = []
         self._edit_subset = value
         # Alert any listeners to the change in the active subset
         if self.data_collection is not None:
