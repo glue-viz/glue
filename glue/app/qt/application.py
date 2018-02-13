@@ -243,9 +243,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.new_tab()
         self._update_plot_dashboard(None)
 
-    def start_event_filter(self):
-        self.app.installEventFilter(self)
-
     def run_startup_action(self, name):
         if name in startup_action.members:
             startup_action.members[name](self.session, self.data_collection)
@@ -378,35 +375,31 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.resize(550, 550)
         self._log.hide()
 
-    def eventFilter(self, obj, event):
-        """
-        Mainly for handing Keyboard Shortcuts
-        """
-        if type(event) == QtGui.QKeyEvent and obj is self:
-            if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
-                active_window = self.current_tab.activeSubWindow().widget()
-            else:
-                active_window = None
+    def keyPressEvent(self, event):
+        if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
+            active_window = self.current_tab.activeSubWindow().widget()
+        else:
+            active_window = None
 
-            # keybindings is a data structure in the form of dict(dict)
-            # which uses the DataViewer as the first key, the key pressed
-            # as the second key, and the function associated with those two
-            # as the value.
-            if type(active_window) in self.keybindings:
-                for k, func in self.keybindings.members[type(active_window)].items():
-                    if event.key() == k:
-                        func(self.session)
-                        return True
+        # keybindings is a data structure in the form of dict(dict)
+        # which uses the DataViewer as the first key, the key pressed
+        # as the second key, and the function associated with those two
+        # as the value.
+        if type(active_window) in self.keybindings:
+            for k, func in self.keybindings.members[type(active_window)].items():
+                if event.key() == k:
+                    func(self.session)
+                    return
 
-            # If key does not correspond with viewers, it might correspond
-            # with the global application, thus, None
-            if None in self.keybindings:
-                for k, func in self.keybindings.members[None].items():
-                    if event.key() == k:
-                        func(self.session)
-                        return True
+        # If key does not correspond with viewers, it might correspond
+        # with the global application, thus, None
+        if None in self.keybindings:
+            for k, func in self.keybindings.members[None].items():
+                if event.key() == k:
+                    func(self.session)
+                    return
 
-        return super(GlueApplication, self).eventFilter(obj, event)
+        return super(GlueApplication, self).keyPressEvent(event)
 
     def _set_up_links(self, event):
         LinkEditor.update_links(self.data_collection)
