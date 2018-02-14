@@ -19,7 +19,7 @@ class BasicToolbar(QtWidgets.QToolBar):
     tool_activated = QtCore.Signal()
     tool_deactivated = QtCore.Signal()
 
-    def __init__(self, parent, default_mouse_mode=None):
+    def __init__(self, parent, default_mouse_mode_cls=None):
         """
         Create a new toolbar object
         """
@@ -32,12 +32,13 @@ class BasicToolbar(QtWidgets.QToolBar):
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
         self._active_tool = None
-        self._default_mouse_mode = default_mouse_mode
+        self._default_mouse_mode_cls = default_mouse_mode_cls
+        self._default_mouse_mode = None
         self.setup_default_modes()
 
     def setup_default_modes(self):
-        if self._default_mouse_mode is not None:
-            self._default_mouse_mode = self._default_mouse_mode(self.parent())
+        if self._default_mouse_mode_cls is not None:
+            self._default_mouse_mode = self._default_mouse_mode_cls(self.parent())
             self._default_mouse_mode.activate()
 
     @property

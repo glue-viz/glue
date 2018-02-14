@@ -54,7 +54,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     _toolbar_cls = None
     # This defines the mouse mode to be used when no toolbar modes are active
-    _default_mouse_mode = None
+    _default_mouse_mode_cls = None
     tools = []
 
     def __init__(self, session, parent=None):
@@ -256,7 +256,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         from glue.config import viewer_tool
 
-        self.toolbar = self._toolbar_cls(self, default_mouse_mode=self._default_mouse_mode)
+        self.toolbar = self._toolbar_cls(self, default_mouse_mode_cls=self._default_mouse_mode_cls)
 
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]

@@ -38,7 +38,7 @@ class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
-    _default_mouse_mode = RoiClickAndDragMode
+    _default_mouse_mode_cls = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
                                ScatterLayerArtist: ScatterLayerStyleEditor}

@@ -33,7 +33,7 @@ class RoiClickAndDragMode(MouseMode):
         self._subset = None
 
     def _select_roi(self, roi, index, event):
-        self._roi = QtPolygonalROI(self._axes, _roi=roi)
+        self._roi = QtPolygonalROI(self._axes, roi=roi)
         self._roi.start_selection(event, scrubbing=True)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 

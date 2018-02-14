@@ -5,7 +5,7 @@ import numpy as np
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, PYQT5
 
-from glue.core import roi
+from glue.core import roi as _roi
 from glue.utils.qt import mpl_to_qt4_color
 
 
@@ -95,7 +95,7 @@ class QtROI(object):
         return p
 
 
-class QtPathROI(QtROI, roi.MplPathROI):
+class QtPathROI(QtROI, _roi.MplPathROI):
 
     def get_painter(self, canvas):
         p = super(QtPathROI, self).get_painter(canvas)
@@ -115,22 +115,22 @@ class QtPathROI(QtROI, roi.MplPathROI):
         p.end()
 
 
-class QtRectangularROI(QtROI, roi.MplRectangularROI):
+class QtRectangularROI(QtROI, _roi.MplRectangularROI):
 
     def __init__(self, axes):
-        roi.MplRectangularROI.__init__(self, axes)
+        _roi.MplRectangularROI.__init__(self, axes)
 
 
-class QtPolygonalROI(QtROI, roi.MplPolygonalROI):
+class QtPolygonalROI(QtROI, _roi.MplPolygonalROI):
 
-    def __init__(self, axes, _roi=None):
-        roi.MplPolygonalROI.__init__(self, axes, roi=_roi)
+    def __init__(self, axes, roi=None):
+        _roi.MplPolygonalROI.__init__(self, axes, roi=roi)
 
 
-class QtXRangeROI(QtROI, roi.MplXRangeROI):
+class QtXRangeROI(QtROI, _roi.MplXRangeROI):
 
     def __init__(self, axes):
-        roi.MplXRangeROI.__init__(self, axes)
+        _roi.MplXRangeROI.__init__(self, axes)
 
     def paint(self, canvas):
         x = self._roi.range()
@@ -141,10 +141,10 @@ class QtXRangeROI(QtROI, roi.MplXRangeROI):
                           [y[0], y[0], y[1], y[1]])
 
 
-class QtYRangeROI(QtROI, roi.MplYRangeROI):
+class QtYRangeROI(QtROI, _roi.MplYRangeROI):
 
     def __init__(self, axes):
-        roi.MplYRangeROI.__init__(self, axes)
+        _roi.MplYRangeROI.__init__(self, axes)
 
     def paint(self, canvas):
         y = self._roi.range()
@@ -155,10 +155,10 @@ class QtYRangeROI(QtROI, roi.MplYRangeROI):
                           [y[0], y[0], y[1], y[1]])
 
 
-class QtCircularROI(QtROI, roi.MplCircularROI):
+class QtCircularROI(QtROI, _roi.MplCircularROI):
 
     def __init__(self, axes):
-        roi.MplCircularROI.__init__(self, axes)
+        _roi.MplCircularROI.__init__(self, axes)
 
     def paint(self, canvas):
 
