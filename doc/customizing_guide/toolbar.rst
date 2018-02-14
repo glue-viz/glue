@@ -221,13 +221,13 @@ used in all viewers, click on each tool class name to find out more):
 ======================  ========================================================
 Tool ID                 Class
 ======================  ========================================================
-``'select:circle'``     :class:`~glue.viewers.common.qt.mouse_mode.CircleMode`
-``'select:lasso'``      :class:`~glue.viewers.common.qt.mouse_mode.LassoMode`
-``'select:pick'``       :class:`~glue.viewers.common.qt.mouse_mode.PickMode`
-``'select:polygon'``    :class:`~glue.viewers.common.qt.mouse_mode.PolyMode`
-``'select:rectangle'``  :class:`~glue.viewers.common.qt.mouse_mode.RectangleMode`
-``'select:xrange'``     :class:`~glue.viewers.common.qt.mouse_mode.HRangeMode`
-``'select:yange'``      :class:`~glue.viewers.common.qt.mouse_mode.VRangeMode`
-``'image:colormap'``    :class:`~glue.viewers.common.qt.mouse_mode.ColormapMode`
-``'image:contrast'``    :class:`~glue.viewers.common.qt.mouse_mode.ContrastMode`
+``'select:circle'``     :class:`~glue.viewers.common.qt.toolbar_mode.CircleMode`
+``'select:lasso'``      :class:`~glue.viewers.common.qt.toolbar_mode.LassoMode`
+``'select:pick'``       :class:`~glue.viewers.common.qt.toolbar_mode.PickMode`
+``'select:polygon'``    :class:`~glue.viewers.common.qt.toolbar_mode.PolyMode`
+``'select:rectangle'``  :class:`~glue.viewers.common.qt.toolbar_mode.RectangleMode`
+``'select:xrange'``     :class:`~glue.viewers.common.qt.toolbar_mode.HRangeMode`
+``'select:yange'``      :class:`~glue.viewers.common.qt.toolbar_mode.VRangeMode`
+``'image:colormap'``    :class:`~glue.viewers.common.qt.toolbar_mode.ColormapMode`
+``'image:contrast'``    :class:`~glue.viewers.common.qt.toolbar_mode.ContrastMode`
 ======================  ========================================================

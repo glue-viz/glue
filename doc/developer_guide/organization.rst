@@ -55,8 +55,10 @@ give glue-like functionality to other existing applications.
 This sub-package contains the code for all the built-in viewers in glue, such
 as the scatter plot and image viewers. Each viewer is contained in a
 sub-package of :mod:`glue.viewers`, such as :mod:`glue.viewers.scatter`. A
-:mod:`glue.viewers.common` sub-package is also provided, with utilities and base
-classes that might be useful for various viewers. For instance, the :mod:`glue.viewers.common.qt.mouse_mode` sub-module contains code related to defining mouse 'modes' for selection.
+:mod:`glue.viewers.common` sub-package is also provided, with utilities and
+base classes that might be useful for various viewers. For instance, the
+:mod:`glue.viewers.common.qt.toolbar_mode` sub-module contains code related to
+defining toolbar mouse 'modes' for selection.
 
 ``glue.dialogs``
 ^^^^^^^^^^^^^^^^
