@@ -91,6 +91,7 @@ class BaseTestMatplotlibDataViewer(object):
             self.viewer = None
             self.application = None
             if self.viewer_count > self.viewer_count_start:
+                objgraph.show_backrefs(objgraph.by_type(self.viewer_cls.__name__))
                 raise ValueError("No net viewers should be created in tests")
 
     def test_add_data(self):
