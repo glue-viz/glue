@@ -74,6 +74,20 @@ class Roi(object):  # pragma: no cover
         """
         raise NotImplementedError()
 
+    def contains3d(self, x, y, z):
+        """Return true/false for each x/y/z pair.
+
+        :param x: Array of X locations
+        :param y: Array of Y locations
+        :param y: Array of Z locations
+
+        :returns: A Boolean array, where each element is True
+                  if the corresponding (x,y,z) tuple is inside the Roi.
+
+        :raises: UndefinedROI exception if not defined
+        """
+        raise NotImplementedError()
+
     def center(self):
         """Return the (x,y) coordinates of the ROI center"""
         raise NotImplementedError()
@@ -560,6 +574,44 @@ class PolygonalROI(VertexROIBase):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
+
+class PolygonalProjected3dROI(PolygonalROI):
+
+    """"
+    A region of interest defined by a 2d polygon in screen coordinates, as
+    defined by the projection matrix. The projection matrix should convert
+    homogeneous coordinates (x, y, z, w), where w is implicitly 1, to
+    homogeneous screen coordinates (usually the product of the world and
+    projection matrix).
+    """
+    def __init__(self, vx=None, vy=None, projection_matrix=None):
+        super(PolygonalProjected3dROI, self).__init__(vx, vy)
+        self.projection_matrix = np.asarray(projection_matrix)
+
+    def contains3d(self, x, y, z):
+        if not self.defined():
+            raise UndefinedROI
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
+        # work in homogeneous coordinates so we can support perspective
+        # projections as well
+        vertices = np.array([x, y, z, np.ones(len(x))])
+        # homogeneous screen coordinates
+        screen_h = np.array(np.dot(self.projection_matrix, vertices))
+        # convert to screen coordinates, and we don't care about z
+        x, y = screen_h[:2] / screen_h[3]
+        return self.contains(x, y)
+
+    def __gluestate__(self, context):
+        return dict(vx=np.asarray(self.vx).tolist(),
+                    vy=np.asarray(self.vy).tolist(),
+                    projection_matrix=self.projection_matrix.tolist())
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(vx=rec['vx'], vy=rec['vy'], projection_matrix=np.asarray(rec['projection_matrix']))
 
 class Path(VertexROIBase):
 

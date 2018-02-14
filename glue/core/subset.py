@@ -1091,6 +1091,81 @@ class InequalitySubsetState(SubsetState):
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
+class RoiSubsetState3d(SubsetState):
+    """Subset state for a roi that implements .contains3d
+    """
+
+    @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')
+    def __init__(self, xatt=None, yatt=None, zatt=None, roi=None):
+        super(RoiSubsetState3d, self).__init__()
+        self.xatt = xatt
+        self.yatt = yatt
+        self.zatt = zatt
+        self.roi = roi
+
+    @property
+    def attributes(self):
+        return (self.xatt, self.yatt, self.zatt)
+
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # TODO: make sure that pixel components don't actually take up much
+        #       memory and are just views
+        x = data[self.xatt, view]
+        y = data[self.yatt, view]
+        z = data[self.zatt, view]
+
+        # if (x.ndim == data.ndim and
+        #     self.xatt in data.pixel_component_ids and
+        #     self.yatt in data.pixel_component_ids):
+
+        #     # This is a special case - the ROI is defined in pixel space, so we
+        #     # can apply it to a single slice and then broadcast it to all other
+        #     # dimensions. We start off by extracting a slice which takes only
+        #     # the first elements of all dimensions except the attributes in
+        #     # question, for which we take all the elements. We need to preserve
+        #     # the dimensionality of the array, hence the use of slice(0, 1).
+        #     # Note that we can only do this if the view (if present) preserved
+        #     # the dimensionality, which is why we checked that x.ndim == data.ndim
+
+        #     subset = []
+        #     for i in range(data.ndim):
+        #         if i == self.xatt.axis or i == self.yatt.axis:
+        #             subset.append(slice(None))
+        #         else:
+        #             subset.append(slice(0, 1))
+
+        #     x_slice = x[subset]
+        #     y_slice = y[subset]
+
+        #     if self.roi.defined():
+        #         result = self.roi.contains(x_slice, y_slice)
+        #     else:
+        #         result = np.zeros(x_slice.shape, dtype=bool)
+
+        #     result = broadcast_to(result, x.shape)
+
+        # else:
+        if 1:
+            if self.roi.defined():
+                result = self.roi.contains3d(x, y, z)
+            else:
+                result = np.zeros(x.shape, dtype=bool)
+
+        if result.shape != x.shape:
+            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
+
+        return result
+
+    def copy(self):
+        result = RoiSubsetState3d()
+        result.xatt = self.xatt
+        result.yatt = self.yatt
+        result.zatt = self.zatt
+        result.roi = self.roi
+        return result
+
 
 @contract(subsets='list(isinstance(Subset))', returns=Subset)
 def _combine(subsets, operator):
