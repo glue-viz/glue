@@ -4,6 +4,10 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Improve mouse interaction with ROIs in image viewers, including
+  click-and-drag relocation. Allow for more customization of mouse/toolbar
+  modes. [#1515]
+
 * Add a toolbar item to save data. [#1516]
 
 * Give instructions for how to move selections in status tip. [#1504]
@@ -24,10 +28,10 @@ v0.13.0 (unreleased)
 
 * Add support for the datetime64 dtype in Data objects, and adjust
   Matplotlib viewers to correctly show this data. [#1510]
-  
+
 * Make it possible to reorder components in ``Data`` using the new
   ``Data.reorder_components`` method. [#1479]
-  
+
 * The default order of components has changed - coordinate components
   will now always come first (rather than second). [#1479]
 
