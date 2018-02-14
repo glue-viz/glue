@@ -127,6 +127,10 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             QtWidgets.QMainWindow.close(self)
             ViewerBase.close(self)
 
+        # We tell the toolbar to do cleanup to make sure we get rid of any
+        # circular references
+        self.toolbar.cleanup()
+
         self._warn_close = True
 
     def mdi_wrap(self):

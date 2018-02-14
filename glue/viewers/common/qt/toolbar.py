@@ -168,3 +168,10 @@ class BasicToolbar(QtWidgets.QToolBar):
         self.tools[tool.tool_id] = tool
 
         return action
+
+    def cleanup(self):
+        # We need to make sure we set _default_mouse_mode to None otherwise
+        # we keep a reference to the viewer (parent) inside the mouse mode,
+        # creating a circular reference.
+        self._default_mouse_mode = None
+        self.active_tool = None
