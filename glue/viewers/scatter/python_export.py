@@ -120,12 +120,12 @@ def python_export_scatter_layer(layer, *args):
     if layer.state.xerr_visible or layer.state.yerr_visible:
 
         if layer.state.xerr_visible and layer.state.xerr_att is not None:
-            xerr = code("layer_data['{0}']\n".format(layer.state.xerr_att.label))
+            xerr = code("layer_data['{0}']".format(layer.state.xerr_att.label))
         else:
             xerr = code("None")
 
         if layer.state.yerr_visible and layer.state.yerr_att is not None:
-            yerr = code("layer_data['{0}']\n".format(layer.state.yerr_att.label))
+            yerr = code("layer_data['{0}']".format(layer.state.yerr_att.label))
         else:
             yerr = code("None")
 
