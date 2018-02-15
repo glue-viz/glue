@@ -10,6 +10,8 @@ from glue.utils import defer_draw, mpl_to_datetime64
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
+from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
+from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.command import ApplySubsetState
 
 __all__ = ['MatplotlibDataViewer']
@@ -133,7 +135,16 @@ class MatplotlibDataViewer(DataViewerWithState):
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self.axes, self.state, layer=layer, layer_state=layer_state)
 
+    def _roi_to_subset_state(self, roi):
+        """ This method must be implemented by subclasses """
+        raise NotImplementedError
+
+    # TODO: move some of the ROI stuff to state class?
+
     def apply_roi(self, roi):
+        """ This method relies on _roi_to_subset_state to be implemented by
+        subclasses.
+        """
         if len(self.layers) > 0:
             subset_state = self._roi_to_subset_state(roi)
             cmd = ApplySubsetState(data_collection=self._data,

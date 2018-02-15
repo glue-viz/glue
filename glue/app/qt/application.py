@@ -234,7 +234,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         lwidget = self._layer_widget
         a = PlotAction(lwidget, self)
         lwidget.ui.layerTree.addAction(a)
-        lwidget.bind_selection_to_edit_subset()
 
         self._tweak_geometry()
         self._create_actions()

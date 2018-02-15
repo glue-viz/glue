@@ -4,11 +4,11 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import delay_callback
 from glue.config import viewer_tool
-from glue.viewers.common.qt.mouse_mode import MouseMode
+from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 
 
 @viewer_tool
-class ContrastBiasMode(MouseMode):
+class ContrastBiasMode(ToolbarModeBase):
     """
     Uses right mouse button drags to set bias and contrast, DS9-style.    The
     horizontal position of the mouse sets the bias, the vertical position sets

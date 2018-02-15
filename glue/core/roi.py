@@ -577,13 +577,13 @@ class AbstractMplRoi(object):  # pragma: no cover
     Matplotlib user events to edit/display ROIs
     """
 
-    def __init__(self, axes):
+    def __init__(self, axes, roi=None):
         """
         :param axes: The Matplotlib Axes object to draw to
         """
 
         self._axes = axes
-        self._roi = self._roi_factory()
+        self._roi = roi or self._roi_factory()
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
@@ -1083,11 +1083,11 @@ class MplPolygonalROI(AbstractMplRoi):
                    the visual properties of the ROI
     """
 
-    def __init__(self, axes):
+    def __init__(self, axes, roi=None):
         """
         :param axes: A matplotlib Axes object to attach the graphical ROI to
         """
-        AbstractMplRoi.__init__(self, axes)
+        AbstractMplRoi.__init__(self, axes, roi=roi)
         self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
@@ -1120,12 +1120,12 @@ class MplPolygonalROI(AbstractMplRoi):
         # Refresh
         self._axes.figure.canvas.draw()
 
-    def start_selection(self, event):
+    def start_selection(self, event, scrubbing=False):
 
         if event.inaxes != self._axes:
             return False
 
-        if event.key == SCRUBBING_KEY:
+        if scrubbing or event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
             elif not self._roi.contains(event.xdata, event.ydata):
@@ -1133,7 +1133,7 @@ class MplPolygonalROI(AbstractMplRoi):
 
         self._roi_store()
 
-        if event.key == SCRUBBING_KEY:
+        if scrubbing or event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._cx = event.xdata
             self._cy = event.ydata

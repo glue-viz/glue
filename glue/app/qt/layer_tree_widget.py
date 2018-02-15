@@ -20,7 +20,10 @@ from glue.dialogs.component_manager.qt import ComponentManagerWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
+from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
+from glue.core.message import EditSubsetMessage
+from glue.core.hub import HubListener
 
 
 @core.decorators.singleton
@@ -435,7 +438,7 @@ class LayerCommunicator(QtCore.QObject):
     layer_check_changed = QtCore.Signal(object, bool)
 
 
-class LayerTreeWidget(QtWidgets.QMainWindow):
+class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
 
     """The layertree widget provides a way to visualize the various
     data and subset layers in a Glue session.
@@ -473,6 +476,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         self._data_collection = collection
         self._hub = collection.hub
         self.ui.layerTree.set_data_collection(collection)
+        self.bind_selection_to_edit_subset()
 
     def unregister(self, hub):
         """Unsubscribe from hub"""
@@ -501,11 +505,22 @@ class LayerTreeWidget(QtWidgets.QMainWindow):
         return self.ui.layerTree.actions()
 
     def bind_selection_to_edit_subset(self):
-        self.ui.layerTree.selection_changed.connect(
-            self._update_editable_subset)
+        self.ui.layerTree.selection_changed.connect(self._update_edit_subset)
+        self._data_collection.hub.subscribe(self, EditSubsetMessage,
+                                            handler=self._update_subset_selection)
 
-    def _update_editable_subset(self):
-        """Update edit subsets to match current selection"""
+    @avoid_circular
+    def _update_subset_selection(self, message):
+        """
+        Update current selection to match edit subsets
+        """
+        self.ui.layerTree.set_selected_layers(message.subset)
+
+    @avoid_circular
+    def _update_edit_subset(self):
+        """
+        Update edit subsets to match current selection
+        """
         mode = EditSubsetMode()
         mode.edit_subset = [s for s in self.selected_layers() if isinstance(s, core.SubsetGroup)]
 

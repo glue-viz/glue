@@ -21,6 +21,21 @@ If instead you installed glue with pip, you can update with::
 
     pip install glueviz[all] --upgrade
 
+.. _whatsnew_013:
+
+What's new in glue v0.13?
+=========================
+
+ROI Mouse Interaction
+---------------------
+
+It is now possible to select and manipulate regions of interest (ROIs) using
+the mouse. Previously, only newly created ROIs could be resized and relocated.
+Now it is possible to relocate any ROI simply by left-clicking on it and
+dragging it to a new location. Right-clicking on an existing ROI opens a
+context menu with an option for deleting that ROI. This makes user interaction
+with ROIs much more intuitive.
+
 .. _whatsnew_012:
 
 What's new in glue v0.12?

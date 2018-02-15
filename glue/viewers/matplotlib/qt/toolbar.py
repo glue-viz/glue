@@ -91,7 +91,7 @@ class MatplotlibViewerToolbar(BasicToolbar):
     pan_begin = QtCore.Signal()
     pan_end = QtCore.Signal()
 
-    def __init__(self, viewer):
+    def __init__(self, viewer, default_mouse_mode_cls=None):
 
         self.canvas = viewer.central_widget.canvas
 
@@ -99,7 +99,7 @@ class MatplotlibViewerToolbar(BasicToolbar):
         self._mpl_nav = NavigationToolbar2QT(self.canvas, viewer)
         self._mpl_nav.hide()
 
-        BasicToolbar.__init__(self, viewer)
+        BasicToolbar.__init__(self, viewer, default_mouse_mode_cls=default_mouse_mode_cls)
 
         viewer.window_closed.connect(self.close)
 
@@ -108,6 +108,8 @@ class MatplotlibViewerToolbar(BasicToolbar):
         self._mpl_nav.parent = None
 
     def setup_default_modes(self):
+
+        super(MatplotlibViewerToolbar, self).setup_default_modes()
 
         # Set up default Matplotlib Tools - this gets called by the __init__
         # call to the parent class above.
@@ -123,19 +125,3 @@ class MatplotlibViewerToolbar(BasicToolbar):
 
         zoom_mode = ZoomTool(self.parent(), toolbar=self._mpl_nav)
         self.add_tool(zoom_mode)
-
-        self._connections = []
-
-    def activate_tool(self, mode):
-        if isinstance(mode, MouseMode):
-            self._connections.append(self.canvas.mpl_connect('button_press_event', mode.press))
-            self._connections.append(self.canvas.mpl_connect('motion_notify_event', mode.move))
-            self._connections.append(self.canvas.mpl_connect('button_release_event', mode.release))
-            self._connections.append(self.canvas.mpl_connect('key_press_event', mode.key))
-        super(MatplotlibViewerToolbar, self).activate_tool(mode)
-
-    def deactivate_tool(self, mode):
-        for connection in self._connections:
-            self.canvas.mpl_disconnect(connection)
-        self._connections = []
-        super(MatplotlibViewerToolbar, self).deactivate_tool(mode)

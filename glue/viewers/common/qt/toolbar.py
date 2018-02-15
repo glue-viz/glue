@@ -19,7 +19,7 @@ class BasicToolbar(QtWidgets.QToolBar):
     tool_activated = QtCore.Signal()
     tool_deactivated = QtCore.Signal()
 
-    def __init__(self, parent):
+    def __init__(self, parent, default_mouse_mode_cls=None):
         """
         Create a new toolbar object
         """
@@ -32,10 +32,14 @@ class BasicToolbar(QtWidgets.QToolBar):
         self.layout().setSpacing(1)
         self.setFocusPolicy(Qt.StrongFocus)
         self._active_tool = None
+        self._default_mouse_mode_cls = default_mouse_mode_cls
+        self._default_mouse_mode = None
         self.setup_default_modes()
 
     def setup_default_modes(self):
-        pass
+        if self._default_mouse_mode_cls is not None:
+            self._default_mouse_mode = self._default_mouse_mode_cls(self.parent())
+            self._default_mouse_mode.activate()
 
     @property
     def active_tool(self):
@@ -81,11 +85,15 @@ class BasicToolbar(QtWidgets.QToolBar):
             self.tool_deactivated.emit()
 
     def activate_tool(self, tool):
+        if self._default_mouse_mode is not None:
+            self._default_mouse_mode.deactivate()
         tool.activate()
 
     def deactivate_tool(self, tool):
         if isinstance(tool, CheckableTool):
             tool.deactivate()
+        if self._default_mouse_mode is not None:
+            self._default_mouse_mode.activate()
 
     def add_tool(self, tool):
 
@@ -161,3 +169,10 @@ class BasicToolbar(QtWidgets.QToolBar):
         self.tools[tool.tool_id] = tool
 
         return action
+
+    def cleanup(self):
+        # We need to make sure we set _default_mouse_mode to None otherwise
+        # we keep a reference to the viewer (parent) inside the mouse mode,
+        # creating a circular reference.
+        self._default_mouse_mode = None
+        self.active_tool = None

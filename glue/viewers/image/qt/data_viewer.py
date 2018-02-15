@@ -5,7 +5,6 @@ from astropy.wcs import WCS
 from qtpy.QtWidgets import QMessageBox
 
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
-from glue.core.edit_subset_mode import EditSubsetMode
 
 from glue.core import command
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -15,6 +14,7 @@ from glue.viewers.image.qt.layer_style_editor import ImageLayerStyleEditor
 from glue.viewers.image.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image.qt.options_widget import ImageOptionsWidget
+from glue.viewers.image.qt.mouse_mode import RoiClickAndDragMode
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
 from glue.external.echo import delay_callback
@@ -38,6 +38,7 @@ class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
     _toolbar_cls = MatplotlibViewerToolbar
+    _default_mouse_mode_cls = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
                                ScatterLayerArtist: ScatterLayerStyleEditor}
@@ -131,19 +132,10 @@ class ImageViewer(MatplotlibDataViewer):
         if relim:
             self.state.reset_limits()
 
-    # TODO: move some of the ROI stuff to state class?
-
-    def apply_roi(self, roi):
-        if len(self.layers) > 0:
-            subset_state = self._roi_to_subset_state(roi)
-            cmd = command.ApplySubsetState(data_collection=self._data,
-                                           subset_state=subset_state)
-            self._session.command_stack.do(cmd)
-        else:
-            # Make sure we force a redraw to get rid of the ROI
-            self.axes.figure.canvas.draw()
-
     def _roi_to_subset_state(self, roi):
+        """ This method must be implemented in order for apply_roi from the
+        parent class to work.
+        """
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return

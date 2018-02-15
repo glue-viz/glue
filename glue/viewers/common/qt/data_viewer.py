@@ -53,6 +53,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     LABEL = 'Override this'
 
     _toolbar_cls = None
+    # This defines the mouse mode to be used when no toolbar modes are active
+    _default_mouse_mode_cls = None
     tools = []
 
     def __init__(self, session, parent=None):
@@ -124,6 +126,10 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         else:
             QtWidgets.QMainWindow.close(self)
             ViewerBase.close(self)
+
+        # We tell the toolbar to do cleanup to make sure we get rid of any
+        # circular references
+        self.toolbar.cleanup()
 
         self._warn_close = True
 
@@ -250,7 +256,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         from glue.config import viewer_tool
 
-        self.toolbar = self._toolbar_cls(self)
+        self.toolbar = self._toolbar_cls(self, default_mouse_mode_cls=self._default_mouse_mode_cls)
 
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]
