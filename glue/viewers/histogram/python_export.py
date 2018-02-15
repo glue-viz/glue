@@ -8,7 +8,7 @@ def python_export_histogram_layer(layer, *args):
         return [], None
 
     script = ""
-    imports = []
+    imports = ["import numpy as np"]
 
     x = layer.layer[layer._viewer_state.x_att]
     x_min = np.nanmin(x)
@@ -35,9 +35,10 @@ def python_export_histogram_layer(layer, *args):
 
     options = dict(alpha=layer.state.alpha,
                    color=layer.state.color,
-                   zorder=layer.state.zorder)
+                   zorder=layer.state.zorder,
+                   edgecolor='none')
+
     if layer._viewer_state.x_log:
-        imports += 'import numpy as np'
         script += "bins = np.logspace(np.log10(hist_x_min), np.log10(hist_x_max), hist_n_bin)\n"
         options['bins'] = code('bins')
     else:

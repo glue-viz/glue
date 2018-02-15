@@ -34,6 +34,14 @@ DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'den
                        'vector_origin', 'line_visible', 'markers_visible', 'vector_scaling'])
 
 
+def ravel_artists(errorbar_artist):
+    for artist_container in errorbar_artist:
+        if artist_container is not None:
+            for artist in artist_container:
+                if artist is not None:
+                    yield artist
+
+
 class InvertedNormalize(Normalize):
     def __call__(self, *args, **kwargs):
         return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
@@ -222,14 +230,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         else:
             self.line_collection.set_points([], [])
 
-        for eartist in list(self.errorbar_artist[2]):
-            if eartist is not None:
-                try:
-                    eartist.remove()
-                except ValueError:
-                    pass
-                except AttributeError:  # Matplotlib < 1.5
-                    pass
+        for eartist in ravel_artists(self.errorbar_artist):
+            try:
+                eartist.remove()
+            except ValueError:
+                pass
+            except AttributeError:  # Matplotlib < 1.5
+                pass
 
         if self.vector_artist is not None:
             self.vector_artist.remove()
@@ -387,10 +394,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
-            for eartist in list(self.errorbar_artist[2]):
-
-                if eartist is None:
-                    continue
+            for eartist in ravel_artists(self.errorbar_artist):
 
                 if self.state.cmap_mode == 'Fixed':
                     if force or 'color' in changed or 'cmap_mode' in changed:

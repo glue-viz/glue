@@ -94,6 +94,11 @@ class MatplotlibDataViewer(DataViewerWithState):
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
+        self.update_x_axislabel()
+        self.update_y_axislabel()
+        self.update_x_ticklabel()
+        self.update_y_ticklabel()
+
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
 

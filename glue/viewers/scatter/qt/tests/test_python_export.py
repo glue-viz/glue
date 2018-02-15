@@ -1,13 +1,9 @@
-import os
-import pytest
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
 from glue.viewers.scatter.qt import ScatterViewer
-from matplotlib.testing.compare import compare_images
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython, random_with_nan
 
 
@@ -127,21 +123,3 @@ class TestExportPython(BaseTestExportPython):
     def test_subset(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)
-
-    def assert_same(self, tmpdir, tol=0.1):
-
-        os.chdir(tmpdir.strpath)
-
-        expected = tmpdir.join('expected.png').strpath
-        script = tmpdir.join('actual.py').strpath
-        actual = tmpdir.join('myplot.png').strpath
-
-        self.viewer.axes.figure.savefig(expected)
-
-        self.viewer.export_as_script(script)
-        with open(script) as f:
-            exec(f.read())
-
-        msg = compare_images(expected, actual, tol=tol)
-        if msg:
-            pytest.fail(msg, pytrace=False)

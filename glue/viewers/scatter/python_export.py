@@ -1,4 +1,9 @@
+from distutils.version import LooseVersion
+from matplotlib import __version__
+
 from glue.viewers.common.python_export import code, serialize_options
+
+MATPLOTLIB_LT_20 = LooseVersion(__version__) < LooseVersion('2.0')
 
 
 def python_export_scatter_layer(layer, *args):
@@ -29,6 +34,11 @@ def python_export_scatter_layer(layer, *args):
         script += "size_vmax = {0}\n".format(layer.state.size_vmax)
         script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n\n".format(layer.state.size_scaling)
 
+    if MATPLOTLIB_LT_20:
+        imports = ['import numpy as np']
+        script += "# Due to a bug in Matplotlib 1.5 we need to filter out NaN values\n"
+        script += "keep = ~np.isnan(x) & ~np.isnan(y)\n"
+
     if layer.state.markers_visible:
         if layer.state.density_map:
             # TODO
@@ -49,27 +59,23 @@ def python_export_scatter_layer(layer, *args):
                 if layer.state.cmap_mode == 'Fixed':
                     options['facecolor'] = layer.state.color
                 else:
-                    options['c'] = code('colors')
+                    if MATPLOTLIB_LT_20:
+                        options['c'] = code('colors[keep]')
+                    else:
+                        options['c'] = code('colors')
 
                 if layer.state.size_mode == 'Fixed':
                     options['s'] = code('{0} ** 2'.format(layer.state.size * layer.state.size_scaling))
                 else:
-                    options['s'] = code('sizes ** 2')
+                    if MATPLOTLIB_LT_20:
+                        options['s'] = code('sizes[keep] ** 2')
+                    else:
+                        options['s'] = code('sizes ** 2')
 
-                script += "ax.scatter(x, y, {0})\n\n".format(serialize_options(options))
-
-    if layer.state.line_visible:
-        options = dict(color=layer.state.color,
-                       linewidth=layer.state.linewidth,
-                       linestyle=layer.state.linestyle,
-                       alpha=layer.state.alpha,
-                       zorder=layer.state.zorder)
-        if layer.state.cmap_mode == 'Fixed':
-            script += "ax.plot(x, y, '-', {0})\n\n".format(serialize_options(options))
-        else:
-            options['c'] = code('colors')
-            imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
-            script += "plot_colored_line(ax, x, y, {0})\n\n".format(serialize_options(options))
+                if MATPLOTLIB_LT_20:
+                    script += "ax.scatter(x[keep], y[keep], {0})\n\n".format(serialize_options(options))
+                else:
+                    script += "ax.scatter(x, y, {0})\n\n".format(serialize_options(options))
 
     if layer.state.vector_visible:
 
@@ -114,12 +120,12 @@ def python_export_scatter_layer(layer, *args):
     if layer.state.xerr_visible or layer.state.yerr_visible:
 
         if layer.state.xerr_visible and layer.state.xerr_att is not None:
-            xerr = code("layer_data['{0}']".format(layer.state.xerr_att.label))
+            xerr = code("layer_data['{0}']\n".format(layer.state.xerr_att.label))
         else:
             xerr = code("None")
 
         if layer.state.yerr_visible and layer.state.yerr_att is not None:
-            yerr = code("layer_data['{0}']".format(layer.state.yerr_att.label))
+            yerr = code("layer_data['{0}']\n".format(layer.state.yerr_att.label))
         else:
             yerr = code("None")
 
@@ -132,5 +138,19 @@ def python_export_scatter_layer(layer, *args):
             options['ecolor'] = code('colors')
 
         script += "ax.errorbar(x, y, {0})\n\n".format(serialize_options(options))
+
+    if layer.state.line_visible:
+
+        options = dict(color=layer.state.color,
+                       linewidth=layer.state.linewidth,
+                       linestyle=layer.state.linestyle,
+                       alpha=layer.state.alpha,
+                       zorder=layer.state.zorder)
+        if layer.state.cmap_mode == 'Fixed':
+            script += "ax.plot(x, y, '-', {0})\n\n".format(serialize_options(options))
+        else:
+            options['c'] = code('colors')
+            imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
+            script += "plot_colored_line(ax, x, y, {0})\n\n".format(serialize_options(options))
 
     return imports, script.strip()
