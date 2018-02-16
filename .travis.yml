@@ -90,7 +90,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=2.0
+               MATPLOTLIB_VERSION=1.5
                NUMPY_VERSION=1.11
                PANDAS_VERSION=0.18
                SETUPTOOLS=1.0
