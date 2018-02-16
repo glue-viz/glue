@@ -41,8 +41,32 @@ def python_export_scatter_layer(layer, *args):
 
     if layer.state.markers_visible:
         if layer.state.density_map:
-            # TODO
-            pass
+
+            imports += ["from mpl_scatter_density import ScatterDensityArtist"]
+            imports += ["from glue.viewers.scatter.layer_artist import DensityMapLimits, STRETCHES"]
+            imports += ["from astropy.visualization import ImageNormalize"]
+
+            script += "density_limits = DensityMapLimits()\n"
+            script += "density_limits.contrast = {0}\n\n".format(layer.state.density_contrast)
+
+            options = dict(alpha=layer.state.alpha,
+                           zorder=layer.state.zorder,
+                           dpi=layer._viewer_state.dpi)
+
+            if layer.state.cmap_mode == 'Fixed':
+                options['color'] = layer.state.color
+                options['vmin'] = code('density_limits.min')
+                options['vmax'] = code('density_limits.max')
+                options['norm'] = code("ImageNormalize(stretch=STRETCHES['{0}']())".format(layer.state.stretch))
+            else:
+                options['c'] = code("layer_data['{0}']".format(layer.state.cmap_att.label))
+                options['cmap'] = code("plt.cm.{0}".format(layer.state.cmap.name))
+                options['vmin'] = layer.state.cmap_vmin
+                options['vmax'] = layer.state.cmap_vmax
+
+            script += "density = ScatterDensityArtist(ax, x, y, {0})\n".format(serialize_options(options))
+            script += "ax.add_artist(density)\n\n"
+
         else:
             if layer.state.cmap_mode == 'Fixed' and layer.state.size_mode == 'Fixed':
                 options = dict(color=layer.state.color,

@@ -131,3 +131,19 @@ class TestExportPython(BaseTestExportPython):
     def test_subset(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)
+
+    def test_density_map_with_subset(self, tmpdir):
+        self.viewer.state.dpi = 2
+        self.viewer.state.layers[0].density_map = True
+        self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
+        self.assert_same(tmpdir)
+
+    def test_density_map_cmap_with_subset(self, tmpdir):
+        self.viewer.state.dpi = 2
+        self.viewer.state.layers[0].density_map = True
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_vmin = 0.2
+        self.viewer.state.layers[0].cmap_vmax = 0.7
+        self.viewer.state.layers[0].cmap = plt.cm.BuGn
+        self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
+        self.assert_same(tmpdir)
