@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 from qtpy import QtCore, QtWidgets
-from glue.core.edit_subset_mode import (EditSubsetMode, OrMode, AndNotMode,
-                                        AndMode, XorMode, ReplaceMode)
+from glue.core.edit_subset_mode import (EditSubsetMode, NewMode, OrMode,
+                                        AndNotMode, AndMode, XorMode,
+                                        ReplaceMode)
 from glue.app.qt.actions import action
 from glue.utils import nonpartial
 
@@ -50,6 +51,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         self._modes[label] = mode
 
     def _add_actions(self):
+        self._make_mode("&New Mode", "Create new selection",
+                        'glue_spawn', NewMode)
         self._make_mode("&Replace Mode", "Replace selection",
                         'glue_replace', ReplaceMode)
         self._make_mode("&Or Mode", "Add to selection",

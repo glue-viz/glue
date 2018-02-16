@@ -21,8 +21,9 @@ from glue.utils import as_list
 
 @singleton
 class EditSubsetMode(object):
-
-    """ Implements how new SubsetStates modify the edit_subset state """
+    """
+    Implements how new SubsetStates modify the edit_subset state
+    """
 
     def __init__(self):
         self.mode = ReplaceMode
@@ -52,7 +53,7 @@ class EditSubsetMode(object):
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
         """
-        if not self._edit_subset:
+        if not self._edit_subset or self.mode is NewMode:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
@@ -86,6 +87,12 @@ class EditSubsetMode(object):
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))
+
+
+def NewMode(edit_subset, new_state):
+    """ Replaces edit_subset.subset_state with new_state """
+    logging.getLogger(__name__).debug("New %s", edit_subset)
+    edit_subset.subset_state = new_state.copy()
 
 
 def ReplaceMode(edit_subset, new_state):

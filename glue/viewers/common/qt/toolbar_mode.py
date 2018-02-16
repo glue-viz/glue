@@ -57,8 +57,6 @@ class RoiModeBase(ToolbarModeBase):
     """
     persistent = False  # clear the shape when drawing completes?
     trigger_on_finalize = True
-    # Give subclasses the option to create a new subclass for every ROI update
-    create_new_subset = False
 
     def __init__(self, viewer, **kwargs):
         """
@@ -96,8 +94,6 @@ class RoiModeBase(ToolbarModeBase):
         """
         Called by subclasses when ROI is fully defined
         """
-        if self.create_new_subset:
-            self.viewer._data.new_subset_group()
         if not self.persistent:
             self._roi_tool.finalize_selection(event)
         if self._roi_callback is not None:
