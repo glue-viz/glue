@@ -104,6 +104,10 @@ class MplCanvas(FigureCanvas):
         self._draw_count += 1
         return super(MplCanvas, self).draw(*args, **kwargs)
 
+    def keyPressEvent(self, event):
+        event.setAccepted(False)
+        super(MplCanvas, self).keyPressEvent(event)
+
 
 class MplWidget(QtWidgets.QWidget):
 
