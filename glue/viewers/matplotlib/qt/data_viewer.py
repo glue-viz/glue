@@ -39,7 +39,7 @@ ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={x_ticklabel_size})
 
 # Save figure
-fig.savefig('myplot.png')
+fig.savefig('glue_plot.png')
 plt.close(fig)
 """.strip()
 

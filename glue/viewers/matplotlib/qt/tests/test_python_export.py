@@ -22,7 +22,7 @@ class BaseTestExportPython:
 
         expected = tmpdir.join('expected.png').strpath
         script = tmpdir.join('actual.py').strpath
-        actual = tmpdir.join('myplot.png').strpath
+        actual = tmpdir.join('glue_plot.png').strpath
 
         self.viewer.axes.figure.savefig(expected)
 
