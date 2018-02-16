@@ -34,12 +34,12 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
-                                                       log='x_log',
+                                                       log='x_log', margin=0.05,
                                                        limits_cache=self.limits_cache)
 
         self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
                                                        lower='y_min', upper='y_max',
-                                                       log='y_log',
+                                                       log='y_log', margin=0.05,
                                                        limits_cache=self.limits_cache)
 
         self.add_callback('layers', self._layers_changed)

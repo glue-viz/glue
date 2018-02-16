@@ -254,6 +254,10 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     percentile_subset : int
         How many points to use at most for the percentile calculation (using all
         values is highly inefficient and not needed)
+    margin : float
+        Whether to add a margin to the range of values determined. This should be
+        given as a floating point value that will be multiplied by the range of
+        values to give the margin to add to the limits.
     lower, upper : str
         The fields for the lower/upper levels
     percentile : ``QComboBox`` instance, optional
@@ -279,10 +283,11 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper')
     modifiers_names = ('log', 'percentile')
 
-    def __init__(self, state, attribute, percentile_subset=10000, cache=None, **kwargs):
+    def __init__(self, state, attribute, percentile_subset=10000, margin=0, cache=None, **kwargs):
 
         super(StateAttributeLimitsHelper, self).__init__(state, attribute, cache=cache, **kwargs)
 
+        self.margin = margin
         self.percentile_subset = percentile_subset
 
         if self.attribute is not None:
@@ -351,6 +356,15 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if self.data_component.categorical:
                 lower = np.floor(lower - 0.5) + 0.5
                 upper = np.ceil(upper + 0.5) - 0.5
+
+            if log:
+                value_range = np.log10(upper / lower)
+                lower /= 10.**(value_range * self.margin)
+                upper *= 10.**(value_range * self.margin)
+            else:
+                value_range = upper - lower
+                lower -= value_range * self.margin
+                upper += value_range * self.margin
 
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
