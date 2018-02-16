@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import __version__
+from astropy.utils import NumpyRNGContext
 
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
@@ -17,7 +18,8 @@ class TestExportPython(BaseTestExportPython):
 
     def setup_method(self, method):
 
-        self.data = Data(**dict((name, random_with_nan(100, nan_index=idx + 1)) for idx, name in enumerate('abcdefgh')))
+        with NumpyRNGContext(12345):
+            self.data = Data(**dict((name, random_with_nan(100, nan_index=idx + 1)) for idx, name in enumerate('abcdefgh')))
         self.data['angle'] = np.random.uniform(0, 360, 100)
         self.data_collection = DataCollection([self.data])
         ga = GlueApplication(self.data_collection)

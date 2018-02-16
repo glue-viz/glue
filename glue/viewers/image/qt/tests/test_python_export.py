@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from astropy.utils import NumpyRNGContext
 
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
@@ -11,7 +12,8 @@ class TestExportPython(BaseTestExportPython):
 
     def setup_method(self, method):
 
-        self.data = Data(cube=np.random.random((30, 50, 20)))
+        with NumpyRNGContext(12345):
+            self.data = Data(cube=np.random.random((30, 50, 20)))
         self.data_collection = DataCollection([self.data])
         ga = GlueApplication(self.data_collection)
         self.viewer = ga.new_data_viewer(ImageViewer)
