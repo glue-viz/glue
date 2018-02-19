@@ -17,7 +17,7 @@ from glue.viewers.image.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image.qt.mouse_mode import RoiClickAndDragMode
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
-from glue.external.echo import delay_callback
+from glue.utils import defer_draw
 
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
@@ -53,7 +53,8 @@ class ImageViewer(MatplotlibDataViewer):
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon', 'image:contrast_bias']
+             'select:polygon', 'image:contrast_bias',
+             'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
@@ -67,19 +68,32 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
+    @defer_draw
+    def update_x_ticklabel(self, *event):
+        # We need to overload this here for WCSAxes
+        self.axes.coords[0].set_ticklabel(size=self.state.x_ticklabel_size)
+        self.redraw()
+
+    @defer_draw
+    def update_y_ticklabel(self, *event):
+        # We need to overload this here for WCSAxes
+        self.axes.coords[1].set_ticklabel(size=self.state.y_ticklabel_size)
+        self.redraw()
+
     def close(self, **kwargs):
         super(ImageViewer, self).close(**kwargs)
         if self.axes._composite_image is not None:
             self.axes._composite_image.remove()
             self.axes._composite_image = None
 
+    @defer_draw
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:
-            self.axes.set_xlabel(self.state.x_att_world.label)
+            self.state.x_axislabel = self.state.x_att_world.label
 
         if self.state.y_att_world is not None:
-            self.axes.set_ylabel(self.state.y_att_world.label)
+            self.state.y_axislabel = self.state.y_att_world.label
 
         self.axes.figure.canvas.draw()
 
@@ -125,6 +139,10 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice, **ref_coords.wcsaxes_dict)
         else:
             self.axes.reset_wcs(IDENTITY_WCS)
+
+        # Reset the axis labels to match the fact that the new axes have no labels
+        self.state.x_axislabel = ''
+        self.state.y_axislabel = ''
 
         self._update_appearance_from_settings()
         self._update_axes()
@@ -201,3 +219,33 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes.set_xlim(-0.5, nx - 0.5)
             self.axes.set_ylim(-0.5, ny - 0.5)
             self.axes.figure.canvas.draw()
+
+    def _script_header(self):
+
+        imports = []
+        imports.append('import matplotlib.pyplot as plt')
+        imports.append('from glue.viewers.common.viz_client import init_mpl')
+        imports.append('from glue.viewers.image.composite_array import CompositeArray')
+        imports.append('from glue.external.modest_image import imshow')
+
+        script = ""
+        script += "fig, ax = init_mpl(wcs=True)\n"
+        script += "ax.set_aspect('{0}')\n".format(self.state.aspect)
+
+        script += '\ncomposite = CompositeArray()\n'
+        script += "image = imshow(ax, composite, origin='lower', interpolation='nearest', aspect='{0}')\n\n".format(self.state.aspect)
+
+        dindex = self.session.data_collection.index(self.state.reference_data)
+
+        script += "ref_data = data_collection[{0}]\n".format(dindex)
+
+        ref_coords = self.state.reference_data.coords
+
+        if hasattr(ref_coords, 'wcs'):
+            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords.wcs)\n".format(self.state.wcsaxes_slice)
+        elif hasattr(ref_coords, 'wcsaxes_dict'):
+            raise NotImplementedError()
+        else:
+            pass
+
+        return imports, script

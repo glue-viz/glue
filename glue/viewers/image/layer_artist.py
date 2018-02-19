@@ -8,6 +8,7 @@ import numpy as np
 from glue.utils import defer_draw
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
@@ -102,6 +103,7 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 class ImageLayerArtist(BaseImageLayerArtist):
 
     _layer_state_cls = ImageLayerState
+    _python_exporter = python_export_image_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -318,6 +320,7 @@ class ImageSubsetArray(object):
 class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     _layer_state_cls = ImageSubsetLayerState
+    _python_exporter = python_export_image_subset_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 

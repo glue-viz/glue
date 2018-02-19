@@ -68,12 +68,12 @@ class TestScatterViewer(object):
         assert combo_as_string(self.viewer.options_widget().ui.combosel_y_att) == 'Main components:x:y:z:Coordinate components:Pixel Axis 0 [x]:World 0'
 
         assert viewer_state.x_att is self.data.id['x']
-        assert viewer_state.x_min == -1.1
-        assert viewer_state.x_max == 3.4
+        assert_allclose(viewer_state.x_min, -1.1 - 0.225)
+        assert_allclose(viewer_state.x_max, 3.4 + 0.225)
 
         assert viewer_state.y_att is self.data.id['y']
-        assert viewer_state.y_min == 3.2
-        assert viewer_state.y_max == 3.5
+        assert_allclose(viewer_state.y_min, 3.2 - 0.015)
+        assert_allclose(viewer_state.y_max, 3.5 + 0.015)
 
         assert not viewer_state.x_log
         assert not viewer_state.y_log
@@ -85,12 +85,12 @@ class TestScatterViewer(object):
         viewer_state.y_att = self.data.id['z']
 
         assert viewer_state.x_att is self.data.id['x']
-        assert viewer_state.x_min == -1.1
-        assert viewer_state.x_max == 3.4
+        assert_allclose(viewer_state.x_min, -1.1 - 0.225)
+        assert_allclose(viewer_state.x_max, 3.4 + 0.225)
 
         assert viewer_state.y_att is self.data.id['z']
-        assert viewer_state.y_min == -0.5
-        assert viewer_state.y_max == 2.5
+        assert_allclose(viewer_state.y_min, -0.5 - 0.15)
+        assert_allclose(viewer_state.y_max, 2.5 + 0.15)
 
         assert not viewer_state.x_log
         assert not viewer_state.y_log
@@ -101,21 +101,21 @@ class TestScatterViewer(object):
 
         self.viewer.add_data(self.data)
 
-        assert viewer_state.x_min == -1.1
-        assert viewer_state.x_max == 3.4
+        assert_allclose(viewer_state.x_min, -1.1 - 0.225)
+        assert_allclose(viewer_state.x_max, 3.4 + 0.225)
 
         self.viewer.options_widget().button_flip_x.click()
 
-        assert viewer_state.x_min == 3.4
-        assert viewer_state.x_max == -1.1
+        assert_allclose(viewer_state.x_max, -1.1 - 0.225)
+        assert_allclose(viewer_state.x_min, 3.4 + 0.225)
 
-        assert viewer_state.y_min == 3.2
-        assert viewer_state.y_max == 3.5
+        assert_allclose(viewer_state.y_min, 3.2 - 0.015)
+        assert_allclose(viewer_state.y_max, 3.5 + 0.015)
 
         self.viewer.options_widget().button_flip_y.click()
 
-        assert viewer_state.y_min == 3.5
-        assert viewer_state.y_max == 3.2
+        assert_allclose(viewer_state.y_max, 3.2 - 0.015)
+        assert_allclose(viewer_state.y_min, 3.5 + 0.015)
 
     def test_remove_data(self):
         self.viewer.add_data(self.data)
@@ -350,12 +350,12 @@ class TestScatterViewer(object):
         self.viewer.add_data(self.data_2d)
 
         assert viewer_state.x_att is self.data_2d.id['a']
-        assert viewer_state.x_min == 1
-        assert viewer_state.x_max == 4
+        assert_allclose(viewer_state.x_min, 1 - 0.15)
+        assert_allclose(viewer_state.x_max, 4 + 0.15)
 
         assert viewer_state.y_att is self.data_2d.id['b']
-        assert viewer_state.y_min == 5
-        assert viewer_state.y_max == 8
+        assert_allclose(viewer_state.y_min, 5 - 0.15)
+        assert_allclose(viewer_state.y_max, 8 + 0.15)
 
         assert self.viewer.layers[0].plot_artist.get_xdata().shape == (4,)
 
@@ -512,8 +512,8 @@ class TestScatterViewer(object):
         # Matplotlib deals with dates by converting them to the number of days
         # since 01-01-0001, so we can check that the limits are correctly
         # converted (and not 100 to 400)
-        assert self.viewer.axes.get_xlim() == (719263.0, 719563.0)
-        assert self.viewer.axes.get_ylim() == (3.2, 3.5)
+        assert self.viewer.axes.get_xlim() == (719248.0, 719578.0)
+        assert self.viewer.axes.get_ylim() == (3.2 - 0.015, 3.5 + 0.015)
 
         # Apply an ROI selection in plotting coordinates
         roi = RectangularROI(xmin=719313, xmax=719513, ymin=3, ymax=4)
@@ -525,8 +525,8 @@ class TestScatterViewer(object):
         # Now do the same with the y axis
         self.viewer.state.y_att = self.data.id['t2']
 
-        assert self.viewer.axes.get_xlim() == (719263.0, 719563.0)
-        assert self.viewer.axes.get_ylim() == (719363.0, 719663.0)
+        assert self.viewer.axes.get_xlim() == (719248.0, 719578.0)
+        assert self.viewer.axes.get_ylim() == (719348.0, 719678.0)
 
         # Apply an ROI selection in plotting coordinates
         edit = EditSubsetMode()
@@ -538,16 +538,16 @@ class TestScatterViewer(object):
         # Make sure that the Qt labels look ok
         self.viewer.state.y_att = self.data.id['y']
         options = self.viewer.options_widget().ui
-        assert options.valuetext_x_min.text() == '1970-04-11'
-        assert options.valuetext_x_max.text() == '1971-02-05'
-        assert options.valuetext_y_min.text() == '3.2'
-        assert options.valuetext_y_max.text() == '3.5'
+        assert options.valuetext_x_min.text() == '1970-03-27'
+        assert options.valuetext_x_max.text() == '1971-02-20'
+        assert options.valuetext_y_min.text() == '3.185'
+        assert options.valuetext_y_max.text() == '3.515'
 
         # Make sure that we can set the xmin/xmax to a string date
-        assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-11', 'D'))
+        assert_equal(self.viewer.state.x_min, np.datetime64('1970-03-27', 'D'))
         options.valuetext_x_min.setText('1970-04-14')
         options.valuetext_x_min.editingFinished.emit()
-        assert self.viewer.axes.get_xlim() == (719266.0, 719563.0)
+        assert self.viewer.axes.get_xlim() == (719266.0, 719578.0)
         assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
 
         # Make sure that everything works fine after saving/reloading
@@ -563,6 +563,6 @@ class TestScatterViewer(object):
         assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
 
         assert options.valuetext_x_min.text() == '1970-04-14'
-        assert options.valuetext_x_max.text() == '1971-02-05'
-        assert options.valuetext_y_min.text() == '3.2'
-        assert options.valuetext_y_max.text() == '3.5'
+        assert options.valuetext_x_max.text() == '1971-02-20'
+        assert options.valuetext_y_min.text() == '3.185'
+        assert options.valuetext_y_max.text() == '3.515'

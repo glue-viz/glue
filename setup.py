@@ -82,6 +82,7 @@ histogram_viewer = glue.viewers.histogram:setup
 table_viewer = glue.viewers.table:setup
 data_exporters = glue.core.data_exporters:setup
 fits_format = glue.io.formats.fits:setup
+export_python = glue.plugins.tools:setup
 
 [console_scripts]
 glue-config = glue.config_gen:main
@@ -109,7 +110,7 @@ except ImportError:
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=1.3',
-                    'matplotlib>=1.4',
+                    'matplotlib>=1.5',
                     'qtpy>=1.2',
                     'setuptools>=1.0',
                     'ipython>=4.0',

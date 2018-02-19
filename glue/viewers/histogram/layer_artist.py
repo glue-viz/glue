@@ -5,6 +5,7 @@ import numpy as np
 from glue.utils import defer_draw
 
 from glue.viewers.histogram.state import HistogramLayerState
+from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -12,6 +13,7 @@ from glue.core.exceptions import IncompatibleAttribute
 class HistogramLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = HistogramLayerState
+    _python_exporter = python_export_histogram_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 

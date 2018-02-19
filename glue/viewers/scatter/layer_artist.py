@@ -12,6 +12,7 @@ from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
 
 from glue.utils import defer_draw, broadcast_to
 from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
@@ -33,6 +34,14 @@ DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'den
                        'vector_origin', 'line_visible', 'markers_visible', 'vector_scaling'])
 
 
+def ravel_artists(errorbar_artist):
+    for artist_container in errorbar_artist:
+        if artist_container is not None:
+            for artist in artist_container:
+                if artist is not None:
+                    yield artist
+
+
 class InvertedNormalize(Normalize):
     def __call__(self, *args, **kwargs):
         return 1 - super(InvertedNormalize, self).__call__(*args, **kwargs)
@@ -49,10 +58,11 @@ class DensityMapLimits(object):
         return 10. ** (np.log10(np.nanmax(array)) * self.contrast)
 
 
-def set_mpl_artist_cmap(artist, values, state):
-    vmin = state.cmap_vmin
-    vmax = state.cmap_vmax
-    cmap = state.cmap
+def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):
+    if state is not None:
+        vmin = state.cmap_vmin
+        vmax = state.cmap_vmax
+        cmap = state.cmap
     if isinstance(artist, ScatterDensityArtist):
         artist.set_c(values)
     else:
@@ -66,9 +76,60 @@ def set_mpl_artist_cmap(artist, values, state):
         artist.set_norm(Normalize(vmin, vmax))
 
 
+class ColoredLineCollection(LineCollection):
+
+    def __init__(self, x, y, **kwargs):
+        segments = np.zeros((0, 2, 2))
+        super(ColoredLineCollection, self).__init__(segments, **kwargs)
+        self.set_points(x, y)
+
+    def set_points(self, x, y, oversample=True):
+
+        if len(x) == 0:
+            self.set_segments(np.zeros((0, 2, 2)))
+            return
+
+        if oversample:
+            x_fine = np.zeros(len(x) * 2 - 1, dtype=float)
+            y_fine = np.zeros(len(y) * 2 - 1, dtype=float)
+            x_fine[::2] = x
+            x_fine[1::2] = 0.5 * (x[1:] + x[:-1])
+            y_fine[::2] = y
+            y_fine[1::2] = 0.5 * (y[1:] + y[:-1])
+            points = np.array([x_fine, y_fine]).transpose().reshape(-1, 1, 2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            self.set_segments(segments)
+        else:
+            points = np.array([x, y]).transpose()
+            self.set_segments([points])
+
+    def set_linearcolor(self, color=None, data=None, **kwargs):
+
+        if color is None:
+            data_new = np.zeros((len(data) - 1) * 2)
+            data_new[::2] = data[:-1]
+            data_new[1::2] = data[1:]
+            set_mpl_artist_cmap(self, data_new, **kwargs)
+        else:
+            if isinstance(color, np.ndarray):
+                color_new = np.zeros(((color.shape[0] - 1) * 2,) + color.shape[1:])
+                color_new[::2] = color[:-1]
+                color_new[1::2] = color[1:]
+                color = color_new
+            self.set_array(None)
+            self.set_color(color)
+
+
+def plot_colored_line(ax, x, y, c=None, cmap=None, vmin=None, vmax=None, **kwargs):
+    lc = ColoredLineCollection(x, y, **kwargs)
+    lc.set_linearcolor(color=c, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.add_collection(lc)
+
+
 class ScatterLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = ScatterLayerState
+    _python_exporter = python_export_scatter_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
@@ -85,7 +146,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = None
-        self.line_collection = LineCollection(np.zeros((0, 2, 2)))
+        self.line_collection = ColoredLineCollection([], [])
         self.axes.add_collection(self.line_collection)
 
         # Scatter density
@@ -156,8 +217,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.line_visible:
             if self.state.cmap_mode == 'Fixed':
-                points = np.array([x, y]).transpose()
-                self.line_collection.set_segments([points])
+                self.line_collection.set_points(x, y, oversample=False)
             else:
                 # In the case where we want to color the line, we need to over
                 # sample the line by a factor of two so that we can assign the
@@ -166,26 +226,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 # from the other side. With oversampling, we can have half a
                 # segment on either side of a point be the same color as a
                 # point
-                x_fine = np.zeros(len(x) * 2 - 1, dtype=float)
-                y_fine = np.zeros(len(y) * 2 - 1, dtype=float)
-                x_fine[::2] = x
-                x_fine[1::2] = 0.5 * (x[1:] + x[:-1])
-                y_fine[::2] = y
-                y_fine[1::2] = 0.5 * (y[1:] + y[:-1])
-                points = np.array([x_fine, y_fine]).transpose().reshape(-1, 1, 2)
-                segments = np.concatenate([points[:-1], points[1:]], axis=1)
-                self.line_collection.set_segments(segments)
+                self.line_collection.set_points(x, y)
         else:
-            self.line_collection.set_segments(np.zeros((0, 2, 2)))
+            self.line_collection.set_points([], [])
 
-        for eartist in list(self.errorbar_artist[2]):
-            if eartist is not None:
-                try:
-                    eartist.remove()
-                except ValueError:
-                    pass
-                except AttributeError:  # Matplotlib < 1.5
-                    pass
+        for eartist in ravel_artists(self.errorbar_artist):
+            try:
+                eartist.remove()
+            except ValueError:
+                pass
+            except AttributeError:  # Matplotlib < 1.5
+                pass
 
         if self.vector_artist is not None:
             self.vector_artist.remove()
@@ -216,16 +267,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            v = np.hypot(vx, vy)
-            vmax = np.nanmax(v)
-            vx = vx / vmax
-            vy = vy / vmax
+            vmax = np.nanmax(np.hypot(vx, vy))
 
             self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
                                                   pivot=self.state.vector_origin,
                                                   headwidth=hw, headlength=hl,
                                                   scale_units='width',
-                                                  scale=10 / self.state.vector_scaling)
+                                                  scale=10 / self.state.vector_scaling * vmax)
             self.mpl_artists[self.vector_index] = self.vector_artist
 
         if self.state.xerr_visible or self.state.yerr_visible:
@@ -320,17 +368,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.cmap_mode == 'Fixed':
                 if force or 'color' in changed or 'cmap_mode' in changed:
-                    self.line_collection.set_array(None)
-                    self.line_collection.set_color(self.state.color)
+                    self.line_collection.set_linearcolor(color=self.state.color)
             elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                 # Higher up we oversampled the points in the line so that
                 # half a segment on either side of each point has the right
                 # color, so we need to also oversample the color here.
                 c = self.layer[self.state.cmap_att].ravel()
-                cnew = np.zeros((len(c) - 1) * 2)
-                cnew[::2] = c[:-1]
-                cnew[1::2] = c[1:]
-                set_mpl_artist_cmap(self.line_collection, cnew, self.state)
+                self.line_collection.set_linearcolor(data=c, state=self.state)
 
             if force or 'linewidth' in changed:
                 self.line_collection.set_linewidth(self.state.linewidth)
@@ -350,10 +394,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
-            for eartist in list(self.errorbar_artist[2]):
-
-                if eartist is None:
-                    continue
+            for eartist in ravel_artists(self.errorbar_artist):
 
                 if self.state.cmap_mode == 'Fixed':
                     if force or 'color' in changed or 'cmap_mode' in changed:

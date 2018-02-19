@@ -25,7 +25,7 @@ class HistogramViewer(MatplotlibDataViewer):
     _data_artist_cls = HistogramLayerArtist
     _subset_artist_cls = HistogramLayerArtist
 
-    tools = ['select:xrange']
+    tools = ['select:xrange', 'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(HistogramViewer, self).__init__(session, parent, state=state)
@@ -41,14 +41,14 @@ class HistogramViewer(MatplotlibDataViewer):
             update_ticks(self.axes, 'x', self.state._get_x_components(), False)
 
             if self.state.x_log:
-                self.axes.set_xlabel('Log ' + self.state.x_att.label)
+                self.state.x_axislabel = 'Log ' + self.state.x_att.label
             else:
-                self.axes.set_xlabel(self.state.x_att.label)
+                self.state.x_axislabel = self.state.x_att.label
 
         if self.state.normalize:
-            self.axes.set_ylabel('Normalized number')
+            self.state.y_axislabel = 'Normalized number'
         else:
-            self.axes.set_ylabel('Number')
+            self.state.y_axislabel = 'Number'
 
         self.axes.figure.canvas.draw()
 

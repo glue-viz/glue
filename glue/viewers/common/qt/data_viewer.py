@@ -4,6 +4,7 @@ import os
 
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets
+from glue.core import Data
 from glue.core.application_base import ViewerBase
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import get_qapp
@@ -12,6 +13,7 @@ from glue.utils.qt import set_cursor
 from glue.config import settings
 from glue.external import six
 from glue.utils.noconflict import classmaker
+from glue.core.state import save
 
 __all__ = ['DataViewer']
 
@@ -30,9 +32,35 @@ class ToolbarInitializer(object):
         obj.initialize_toolbar()
         return obj
 
+
+TEMPLATE_SCRIPT = """
+# This script was produced by glue and can be used to further customize a
+# particular plot.
+
+### Package imports
+
+{imports}
+
+### Set up data
+
+data_collection = load('{data}')
+
+### Set up viewer
+
+{header}
+
+### Set up layers
+
+{layers}
+
+### Finalize viewer
+
+{footer}
+""".strip()
+
+
 # Note: we need to use classmaker here because otherwise we run into issues when
 # trying to use the meta-class with the Qt class.
-
 
 @six.add_metaclass(classmaker(left_metas=(ToolbarInitializer,)))
 class DataViewer(ViewerBase, QtWidgets.QMainWindow):
@@ -323,3 +351,54 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     def set_status(self, message):
         sb = self.statusBar()
         sb.showMessage(message)
+
+    def export_as_script(self, filename):
+
+        data_filename = os.path.relpath(filename) + '.data'
+
+        save(data_filename, self.session.data_collection)
+
+        imports = ['from glue.core.state import load']
+
+        imports_header, header = self._script_header()
+        imports.extend(imports_header)
+
+        layers = ""
+        for ilayer, layer in enumerate(self.layers):
+            if layer.layer.label:
+                layers += '## Layer {0}: {1}\n\n'.format(ilayer + 1, layer.layer.label)
+            else:
+                layers += '## Layer {0}\n\n'.format(ilayer + 1)
+            if layer.visible and layer.enabled:
+                if isinstance(layer.layer, Data):
+                    index = self.session.data_collection.index(layer.layer)
+                    layers += "layer_data = data_collection[{0}]\n\n".format(index)
+                else:
+                    dindex = self.session.data_collection.index(layer.layer.data)
+                    sindex = layer.layer.data.subsets.index(layer.layer)
+                    layers += "layer_data = data_collection[{0}].subsets[{1}]\n\n".format(dindex, sindex)
+            imports_layer, layer_script = layer._python_exporter(layer)
+            if layer_script is None:
+                continue
+            imports.extend(imports_layer)
+            layers += layer_script.strip() + "\n"
+
+        imports_footer, footer = self._script_footer()
+        imports.extend(imports_footer)
+
+        imports = os.linesep.join(sorted(set(imports)))
+
+        script = TEMPLATE_SCRIPT.format(data=data_filename,
+                                        imports=imports.strip(),
+                                        header=header.strip(),
+                                        layers=layers.strip(),
+                                        footer=footer.strip())
+
+        with open(filename, 'w') as f:
+            f.write(script)
+
+    def _script_header(self):
+        raise NotImplementedError()
+
+    def _script_footer(self):
+        raise NotImplementedError()
