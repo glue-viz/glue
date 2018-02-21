@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from glue.core.util import disambiguate
 from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
-                               DataAddComponentMessage)
+                               ComponentsChangedMessage)
 from glue.core.registry import Registry
 from glue.core.link_manager import LinkManager
 from glue.core.data import Data
@@ -225,7 +225,7 @@ class DataCollection(HubListener):
             for s in d.subsets:
                 s.register()
 
-        hub.subscribe(self, DataAddComponentMessage,
+        hub.subscribe(self, ComponentsChangedMessage,
                       lambda msg: self._sync_link_manager(),
                       filter=lambda x: x.sender in self._data)
 

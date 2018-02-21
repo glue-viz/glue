@@ -21,7 +21,7 @@ import logging
 
 from glue.external import six
 from glue.core.hub import HubListener
-from glue.core.message import DataCollectionDeleteMessage
+from glue.core.message import DataCollectionDeleteMessage, ComponentsChangedMessage, DataAddComponentMessage, DataRemoveComponentMessage
 from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
@@ -195,8 +195,17 @@ class LinkManager(HubListener):
         DerivedComponents will be replaced / added into
         the data object
         """
-        self._remove_underiveable_components(data)
-        self._add_deriveable_components(data)
+        if self.hub is None:
+            self._remove_underiveable_components(data)
+            self._add_deriveable_components(data)
+        else:
+            with self.hub.ignore_callbacks(DataRemoveComponentMessage):
+                with self.hub.ignore_callbacks(DataAddComponentMessage):
+                    with self.hub.ignore_callbacks(ComponentsChangedMessage):
+                        self._remove_underiveable_components(data)
+                        self._add_deriveable_components(data)
+            msg = ComponentsChangedMessage(data)
+            self.hub.broadcast(msg)
 
     @property
     def _inverse_links(self):
