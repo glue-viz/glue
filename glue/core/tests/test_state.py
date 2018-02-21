@@ -234,6 +234,31 @@ def test_matplotlib_cmap():
     assert clone(cm.gist_heat) is cm.gist_heat
 
 
+class Spam(object):
+    pass
+
+
+@saver(Spam)
+def _save_spam(spam, context):
+    return {'spam': spam}
+
+
+@loader(Spam)
+def _load_spam(rec, context):
+    pass
+
+
+def test_no_circular():
+
+    # If a saver/loader is implemented incorrectly, this used to lead to
+    # non-informative circular references, so we check that the error message
+    # is more useful now
+
+    with pytest.raises(TypeError) as exc:
+        clone(Spam())
+    assert "is not JSON serializable" in exc.value.args[0]
+
+
 def test_categorical_component():
     c = CategoricalComponent(['a','b','c','a','b'], categories=['a','b','c'])
     c2 = clone(c)

@@ -93,7 +93,7 @@ if six.PY2:
 
 literals += np.ScalarType
 
-
+JSON_ENCODER = json.JSONEncoder()
 
 # We need to make sure that we don't break backward-compatibility when we move
 # classes/functions around in Glue, so we have a file that maps the old paths to
@@ -365,9 +365,12 @@ class GlueSerializer(object):
         """
         if np.isscalar(o) and isinstance(o, np.generic):
             return np.asscalar(o)  # coerce numpy number to pure-python type
-        if isinstance(o, (tuple, set)):
+        elif isinstance(o, (tuple, set)):
             return list(o)
-        return o
+        else:
+            # Dispatch to JSONEncoder so that we see errors straight away
+            # if an object can't be serialized.
+            return JSON_ENCODER.default(o)
 
     def dumps(self, indent=None):
         result = self.dumpo()
