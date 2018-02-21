@@ -122,7 +122,13 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             self._mdi_wrapper.close()
             self._mdi_wrapper = None
         else:
-            QtWidgets.QMainWindow.close(self)
+            try:
+                QtWidgets.QMainWindow.close(self)
+            except RuntimeError:
+                # In some cases the above can raise a "wrapped C/C++ object of
+                # type ... has been deleted" error, in which case we can just
+                # ignore and carry on.
+                pass
             ViewerBase.close(self)
 
         self._warn_close = True

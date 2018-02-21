@@ -28,7 +28,13 @@ class QtROI(object):
 
     def _sync_patch(self):
         self.canvas.roi_callback = self._paint_check
-        self.canvas.update()  # QT repaint without MPL redraw
+        try:
+            self.canvas.update()  # QT repaint without MPL redraw
+        except RuntimeError:
+            # In some cases the above can raise a "wrapped C/C++ object of
+            # type ... has been deleted" error, in which case we can just
+            # ignore and carry on.
+            pass
 
     @property
     def canvas(self):
