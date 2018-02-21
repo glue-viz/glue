@@ -347,13 +347,14 @@ class ComponentIDComboHelper(ComboHelper):
 
     def register_to_hub(self, hub):
         hub.subscribe(self, DataRenameComponentMessage,
-                      handler=self._on_rename)
+                      handler=self._on_rename,
+                      filter=lambda msg: msg.sender in self._data)
         hub.subscribe(self, DataReorderComponentMessage,
-                      handler=self.refresh)
-        hub.subscribe(self, ComponentReplacedMessage,
-                      handler=self.refresh)
+                      handler=self.refresh,
+                      filter=lambda msg: msg.sender in self._data)
         hub.subscribe(self, ComponentsChangedMessage,
-                      handler=self.refresh)
+                      handler=self.refresh,
+                      filter=lambda msg: msg.sender in self._data)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,
                           handler=self._remove_data)

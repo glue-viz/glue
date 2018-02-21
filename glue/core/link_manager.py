@@ -199,13 +199,16 @@ class LinkManager(HubListener):
             self._remove_underiveable_components(data)
             self._add_deriveable_components(data)
         else:
+            before = data.components[:]
             with self.hub.ignore_callbacks(DataRemoveComponentMessage):
                 with self.hub.ignore_callbacks(DataAddComponentMessage):
                     with self.hub.ignore_callbacks(ComponentsChangedMessage):
                         self._remove_underiveable_components(data)
                         self._add_deriveable_components(data)
-            msg = ComponentsChangedMessage(data)
-            self.hub.broadcast(msg)
+            after = data.components[:]
+            if len(before) != len(after) or any(before[i] is not after[i] for i in range(len(before))):
+                msg = ComponentsChangedMessage(data)
+                self.hub.broadcast(msg)
 
     @property
     def _inverse_links(self):

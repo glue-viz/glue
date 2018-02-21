@@ -7,7 +7,7 @@ from inspect import getmro
 from collections import Counter
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
-from glue.core.message import Message
+from glue.core.message import Message, ComponentsChangedMessage
 from glue.core.hub_callback_container import HubCallbackContainer
 
 __all__ = ['Hub', 'HubListener']
