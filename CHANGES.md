@@ -65,6 +65,9 @@ v0.12.4 (unreleased)
 
 * Make JSON circular reference errors more explicit. [#1529]
 
+* Fix performance issue when adding/removing links or loading data
+  collections with many links. [#1531]
+
 v0.12.3 (2017-11-14)
 --------------------
 

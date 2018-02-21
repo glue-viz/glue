@@ -4,10 +4,10 @@ import logging
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from inspect import getmro
-from collections import defaultdict
+from collections import Counter
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
-from glue.core.message import Message
+from glue.core.message import Message, ComponentsChangedMessage
 from glue.core.hub_callback_container import HubCallbackContainer
 
 __all__ = ['Hub', 'HubListener']
@@ -43,6 +43,8 @@ class Hub(object):
 
         self._paused = False
         self._queue = []
+
+        self._ignore = Counter()
 
         from glue.core.data import Data
         from glue.core.subset import Subset
@@ -182,6 +184,14 @@ class Hub(object):
                 yield subscriber, handler
 
     @contextmanager
+    def ignore_callbacks(self, ignore_type):
+        self._ignore[ignore_type] += 1
+        try:
+            yield
+        finally:
+            self._ignore[ignore_type] -= 1
+
+    @contextmanager
     def delay_callbacks(self):
         self._paused = True
         try:
@@ -199,7 +209,9 @@ class Hub(object):
         :param message: The message to broadcast
         :type message: :class:`~glue.core.message.Message`
         """
-        if self._paused:
+        if self._ignore.get(type(message), 0) > 0:
+            return
+        elif self._paused:
             self._queue.append(message)
         else:
             logging.getLogger(__name__).info("Broadcasting %s", message)
