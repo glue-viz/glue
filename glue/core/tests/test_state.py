@@ -257,7 +257,7 @@ def test_no_circular():
 
     with pytest.raises(TypeError) as exc:
         clone(Spam())
-    assert exc.value.args[0] == "Object of type 'Spam' is not JSON serializable"
+    assert "is not JSON serializable" in exc.value.args[0]
 
 
 def test_categorical_component():
