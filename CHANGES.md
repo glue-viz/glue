@@ -63,7 +63,8 @@ v0.12.4 (unreleased)
 * Fixed a bug that caused layers to not always be properly removed
   when deleting a row from the layer list. [#1502]
 
-* Make JSON circular reference errors more explicit. [#1529]
+* Fix performance issue when adding/removing links or loading data
+  collections with many links.
 
 v0.12.3 (2017-11-14)
 --------------------

@@ -638,8 +638,8 @@ def _save_data_collection_3(dc, context):
 @loader(DataCollection)
 def _load_data_collection(rec, context):
     dc = DataCollection(list(map(context.object, rec['data'])))
-    for link in rec['links']:
-        dc.add_link(context.object(link))
+    links = [context.object(link) for link in rec['links']]
+    dc.set_links(links)
     coerce_subset_groups(dc)
     return dc
 
