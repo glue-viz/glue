@@ -258,3 +258,34 @@ class TestLinkManager(object):
         # Removing dataset should remove related links
         dc.remove(d1)
         assert len(dc.links) == 2
+
+    def test_remove_component_removes_links(self):
+
+        d1 = Data(x=[[1, 2], [3, 4]], label='image')
+        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog')
+
+        dc = DataCollection([d1, d2])
+
+        assert len(dc.links) == 6
+
+        dc.add_link(LinkSame(d1.id['x'], d2.id['a']))
+
+        assert len(dc.links) == 7
+
+        assert len(d1.components) == 6
+        assert len(d2.components) == 5
+
+        assert d1.id['x'] in d2.components
+        assert d2.id['a'] in d1.components
+
+        # Removing component x from d1 should remove related links and
+        # derived components.
+        d1.remove_component(d2.id['a'])
+
+        assert len(dc.links) == 6
+
+        assert len(d1.components) == 5
+        assert len(d2.components) == 4
+
+        assert not any(cid.label == 'a' for cid in d1.components)
+        assert not any(cid.label == 'x' for cid in d2.components)
