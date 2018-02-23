@@ -17,6 +17,7 @@ from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMes
                        ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage)
 from ..exceptions import IncompatibleAttribute
 
+from .test_state import clone
 
 class HubLog(HubListener):
 
@@ -404,3 +405,26 @@ class TestDataCollection(object):
 
         msg = self.log.messages[-1]
         assert isinstance(msg, ComponentsChangedMessage)
+
+    def test_links_preserved_session(self):
+
+        # This tests that the separation of internal vs external links is
+        # preserved in session files.
+
+        d1 = Data(a=[1, 2, 3])
+        d2 = Data(b=[2, 3, 4])
+
+        dc = DataCollection([d1, d2])
+        dc.add_link(ComponentLink([d2.id['b']], d1.id['a']))
+
+        d1['x'] = d1.id['a'] + 1
+
+        assert len(d1.coordinate_links) == 2
+        assert len(d1.derived_links) == 1
+        assert len(dc._link_manager._external_links) == 1
+
+        dc2 = clone(dc)
+
+        assert len(dc2[0].coordinate_links) == 2
+        assert len(dc2[0].derived_links) == 1
+        assert len(dc2._link_manager._external_links) == 1

@@ -637,9 +637,50 @@ def _save_data_collection_3(dc, context):
 
 @loader(DataCollection)
 def _load_data_collection(rec, context):
-    dc = DataCollection(list(map(context.object, rec['data'])))
+
+    datasets = list(map(context.object, rec['data']))
+
     links = [context.object(link) for link in rec['links']]
-    dc.set_links(links)
+
+    # Filter out CoordinateComponentLinks that may have been saved in the past
+    # as these are now re-generated on-the-fly.
+    links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
+
+    # Go through and split links into links internal to datasets and ones
+    # between datasets as this dictates whether they should be set on the
+    # data collection or on the data objects.
+    external, internal = [], []
+    for link in links:
+        parent_to = link.get_to_id().parent
+        for cid in link.get_from_ids():
+            if cid.parent is not parent_to:
+                external.append(link)
+                break
+        else:
+            internal.append(link)
+
+    # Remove components in datasets that have external links
+    for data in datasets:
+        remove = []
+        for cid in data.derived_components:
+            comp = data.get_component(cid)
+
+            # Neihter in external nor in links overall
+            if comp.link not in internal:
+                remove.append(cid)
+
+            if isinstance(comp.link, CoordinateComponentLink):
+                remove.append(cid)
+
+            if len(comp.link.get_from_ids()) == 1 and comp.link.get_from_ids()[0].parent is comp.link.get_to_id().parent and comp.link.get_from_ids()[0].label == comp.link.get_to_id().label:
+                remove.append(cid)
+
+        for cid in remove:
+            data.remove_component(cid)
+
+    dc = DataCollection(datasets)
+
+    dc.set_links(external)
     coerce_subset_groups(dc)
     return dc
 
@@ -714,6 +755,9 @@ def _load_data(rec, context):
 
     result._world_component_ids = coord[:len(coord) // 2]
     result._pixel_component_ids = coord[len(coord) // 2:]
+
+    # We can now re-generate the coordinate links
+    result._set_up_coordinate_component_links(result.ndim)
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))

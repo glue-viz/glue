@@ -106,7 +106,7 @@ class LinkEditor(QtWidgets.QDialog):
 
     def links(self):
         current = self._ui.current_links
-        return current.data.values()
+        return list(current.data.values())
 
     def _remove_link(self):
         current = self._ui.current_links
