@@ -481,6 +481,10 @@ class Data(object):
             raise TypeError("Cannot add component_link: "
                             "has no 'to' ComponentID")
 
+        for cid in link.get_from_ids():
+            if cid not in self.components:
+                raise ValueError("Can only add internal links with add_component_link - use DataCollection.add_link to add inter-data links")
+
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
         self.add_component(dc, label=to_, hidden=hidden)
@@ -536,6 +540,10 @@ class Data(object):
         :rtype: list
         """
         return list(self._components.keys())
+
+    @property
+    def externally_derivable_components(self):
+        return list(self._externally_derivable_components.keys())
 
     @property
     def visible_components(self):

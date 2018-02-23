@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 from mock import MagicMock
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_equal
 
 from ..coordinates import Coordinates
 from ..component_link import ComponentLink
@@ -15,6 +15,7 @@ from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
                        DataCollectionDeleteMessage,
                        ComponentsChangedMessage)
+from ..exceptions import IncompatibleAttribute
 
 
 class HubLog(HubListener):
@@ -126,8 +127,10 @@ class TestDataCollection(object):
         assert len(self.dc) == 0
 
     def test_derived_links_autoadd(self):
-        """When appending a data set, its DerivedComponents
-        should be ingested into the LinkManager"""
+        """
+        When appending a data set, its DerivedComponents should be ingested into
+        the LinkManager
+        """
         d = Data()
         id1 = ComponentID("id1")
         id2 = ComponentID("id2")
@@ -154,18 +157,18 @@ class TestDataCollection(object):
 
         self.dc.append(d)
         d.add_component(Component(np.array([1, 2, 3])), id1)
-        assert not link in self.dc._link_manager
+        assert link not in self.dc._link_manager
         d.add_component(dc, id2)
 
         msg = self.log.messages[-1]
         assert isinstance(msg, ComponentsChangedMessage)
         assert link in self.dc._link_manager
 
-    def test_coordinate_links_auto_added(self):
+    def test_links_auto_added(self):
         id1 = ComponentID("id1")
         id2 = ComponentID("id2")
         link = ComponentLink([id1], id2)
-        self.data.coordinate_links = [link]
+        self.data.links = [link]
         self.dc.append(self.data)
         assert link in self.dc.links
 
@@ -178,17 +181,18 @@ class TestDataCollection(object):
         assert link in self.dc.links
 
     def test_add_links_updates_components(self):
-        """setting links attribute automatically adds components to data"""
+        """
+        Setting links attribute automatically adds components to data
+        """
         d = Data()
         comp = Component(np.array([1, 2, 3]))
         id1 = ComponentID("id1")
         d.add_component(comp, id1)
         id2 = ComponentID("id2")
         self.dc.append(d)
-        link = ComponentLink([id1], id2, using=lambda x: None)
-
+        link = ComponentLink([id1], id2)
         self.dc.set_links([link])
-        assert id2 in d.components
+        assert_equal(d[id2], d[id1])
 
     def test_links_propagated(self):
         """Web of links is grown and applied to data automatically"""
@@ -200,19 +204,23 @@ class TestDataCollection(object):
         cid2 = ComponentID('b')
         cid3 = ComponentID('c')
 
-        links1 = ComponentLink([cid1], cid2, lambda x: None)
+        links1 = ComponentLink([cid1], cid2)
         dc.add_link(links1)
-        assert cid2 in d.components
 
-        links2 = ComponentLink([cid2], cid3, lambda x: None)
+        assert_equal(d[cid2], d[cid1])
+
+        links2 = ComponentLink([cid2], cid3)
         dc.add_link(links2)
-        assert cid3 in d.components
+        assert_equal(d[cid3], d[cid2])
 
         dc.remove_link(links2)
-        assert cid3 not in d.components
+        with pytest.raises(IncompatibleAttribute):
+            d[cid3]
+        assert_equal(d[cid2], d[cid1])
 
         dc.remove_link(links1)
-        assert cid2 not in d.components
+        with pytest.raises(IncompatibleAttribute):
+            d[cid2]
 
     def test_merge_links(self):
         """Trivial links should be merged, discarding the duplicate ID"""

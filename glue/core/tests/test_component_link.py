@@ -293,30 +293,3 @@ def test_link_str():
     assert str(x + x + y) == ('((x + x) + y)')
 
     assert repr(x + y) == '<BinaryComponentLink: (x + y)>'
-
-
-def test_duplicated_links_remove_first_input():
-    """
-    # test changes introduced for #508
-    """
-
-    d1 = Data(x=[1, 2, 3])
-    d2 = Data(y=[2, 4, 6])
-
-    x = d1.id['x']
-    y = d2.id['y']
-
-    dc = DataCollection([d1, d2])
-
-    dc.add_link(LinkSame(x, y))
-    assert x in d2.components
-    assert x in d2.components
-
-    # NOTE: the behavior tested here is not desirable anymore, so the relevant
-    #       parts that are no longer true have been commented out and replaced
-    #       by the new behavior.
-
-    # assert y not in d2.components
-    # assert y not in d1.components
-    assert y in d2.components
-    assert y in d1.components
