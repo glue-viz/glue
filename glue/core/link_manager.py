@@ -256,6 +256,10 @@ class LinkManager(HubListener):
     def links(self):
         return list(self._links)
 
+    @property
+    def external_links(self):
+        return list(self._external_links)
+
     def clear(self):
         self._external_links.clear()
 

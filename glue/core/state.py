@@ -635,6 +635,19 @@ def _save_data_collection_3(dc, context):
     return result
 
 
+@saver(DataCollection, version=4)
+def _save_data_collection_4(dc, context):
+    cids = [c for data in dc for c in data.component_ids()]
+    components = [data.get_component(c)
+                  for data in dc for c in data.component_ids()]
+    return dict(data=list(map(context.id, dc)),
+                links=list(map(context.id, dc.external_links)),
+                cids=list(map(context.id, cids)),
+                components=list(map(context.id, components)),
+                groups=list(map(context.id, dc.subset_groups)),
+                subset_group_count=dc._sg_count)
+
+
 @loader(DataCollection)
 def _load_data_collection(rec, context):
 
@@ -642,22 +655,25 @@ def _load_data_collection(rec, context):
 
     links = [context.object(link) for link in rec['links']]
 
-    # Filter out CoordinateComponentLinks that may have been saved in the past
-    # as these are now re-generated on-the-fly.
-    links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
+    if rec.get('_protocol', 0) > 3:
+        external = links
+    else:
+        # Filter out CoordinateComponentLinks that may have been saved in the past
+        # as these are now re-generated on-the-fly.
+        links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
 
-    # Go through and split links into links internal to datasets and ones
-    # between datasets as this dictates whether they should be set on the
-    # data collection or on the data objects.
-    external, internal = [], []
-    for link in links:
-        parent_to = link.get_to_id().parent
-        for cid in link.get_from_ids():
-            if cid.parent is not parent_to:
-                external.append(link)
-                break
-        else:
-            internal.append(link)
+        # Go through and split links into links internal to datasets and ones
+        # between datasets as this dictates whether they should be set on the
+        # data collection or on the data objects.
+        external, internal = [], []
+        for link in links:
+            parent_to = link.get_to_id().parent
+            for cid in link.get_from_ids():
+                if cid.parent is not parent_to:
+                    external.append(link)
+                    break
+            else:
+                internal.append(link)
 
     # Remove components in datasets that have external links
     for data in datasets:
@@ -666,8 +682,9 @@ def _load_data_collection(rec, context):
             comp = data.get_component(cid)
 
             # Neihter in external nor in links overall
-            if comp.link not in internal:
-                remove.append(cid)
+            if rec.get('_protocol', 0) <= 3:
+                if comp.link not in internal:
+                    remove.append(cid)
 
             if isinstance(comp.link, CoordinateComponentLink):
                 remove.append(cid)
@@ -693,11 +710,17 @@ def _load_data_collection_2(rec, context):
         grp.register_to_hub(result.hub)
     return result
 
+
 @loader(DataCollection, version=3)
 def _load_data_collection_3(rec, context):
     result = _load_data_collection_2(rec, context)
     result._sg_count = rec['subset_group_count']
     return result
+
+
+@loader(DataCollection, version=4)
+def _load_data_collection_4(rec, context):
+    return _load_data_collection_3(rec, context)
 
 
 @saver(Data)

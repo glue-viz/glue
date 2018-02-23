@@ -134,6 +134,13 @@ class DataCollection(HubListener):
         """
         return tuple(self._link_manager.links)
 
+    @property
+    def external_links(self):
+        """
+        Tuple of :class:`~glue.core.component_link.ComponentLink` objects.
+        """
+        return tuple(self._link_manager.external_links)
+
     def add_link(self, links):
         """Add one or more links to the data collection.
 
