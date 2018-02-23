@@ -370,6 +370,31 @@ class TestData(object):
         # There should be five components: x, y, z, pixel, and world
         assert len(data.components) == 5
 
+    def test_remove_derived_dependency(self):
+
+        # Regression test for a bug that occurred when removing a component
+        # used in a derived component, which should also remove the derived
+        # component itself.
+
+        data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+
+        data['z'] = data.id['x'] + 1
+
+        x_id = data.id['x']
+        z_id = data.id['z']
+
+        # There should be five components: x, y, z, pixel, and world
+        assert len(data.components) == 5
+
+        data.remove_component(data.id['x'])
+
+        # This should also remove z since it depends on x
+
+        assert len(data.components) == 3
+
+        assert x_id not in data.components
+        assert z_id not in data.components
+
 
 class TestROICreation(object):
 
@@ -377,7 +402,7 @@ class TestROICreation(object):
 
         d = Data(xdata=[1, 2, 3], ydata=[1, 2, 3])
         comp = d.get_component(d.id['xdata'])
-        roi = RangeROI('x', min=2,max=3)
+        roi = RangeROI('x', min=2, max=3)
         s = comp.subset_from_roi('xdata', roi)
         assert isinstance(s, RangeSubsetState)
         np.testing.assert_array_equal((s.lo, s.hi),
