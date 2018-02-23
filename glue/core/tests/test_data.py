@@ -374,26 +374,38 @@ class TestData(object):
 
         # Regression test for a bug that occurred when removing a component
         # used in a derived component, which should also remove the derived
-        # component itself.
+        # component itself. To make things more fun, we set up a chain of
+        # derived components to make sure they are all removed.
 
-        data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
+        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1')
 
-        data['z'] = data.id['x'] + 1
+        data['c'] = data.id['a'] + 1
+        data['d'] = data.id['c'] + 1
+        data['e'] = data.id['d'] + 1
+        data['f'] = data.id['e'] + 1
 
-        x_id = data.id['x']
-        z_id = data.id['z']
+        a_id = data.id['a']
+        b_id = data.id['b']
+        c_id = data.id['c']
+        d_id = data.id['d']
+        e_id = data.id['e']
+        f_id = data.id['f']
 
-        # There should be five components: x, y, z, pixel, and world
+        # There should be five components: pixel, world, a, b, c, d, e, f
+        assert len(data.components) == 8
+
+        data.remove_component(data.id['d'])
+
+        # This should also remove e and f since they depend on d
+
         assert len(data.components) == 5
 
-        data.remove_component(data.id['x'])
-
-        # This should also remove z since it depends on x
-
-        assert len(data.components) == 3
-
-        assert x_id not in data.components
-        assert z_id not in data.components
+        assert a_id in data.components
+        assert b_id in data.components
+        assert c_id in data.components
+        assert d_id not in data.components
+        assert e_id not in data.components
+        assert f_id not in data.components
 
 
 class TestROICreation(object):

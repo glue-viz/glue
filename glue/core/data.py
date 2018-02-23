@@ -77,6 +77,7 @@ class Data(object):
 
         # Components
         self._components = OrderedDict()
+        self._externally_derivable_components = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
 
@@ -93,7 +94,7 @@ class Data(object):
 
         self.style = VisualAttributes(parent=self)
 
-        self._coordinate_links = None
+        self._coordinate_links = []
 
         self.data = self
         self.label = label
@@ -179,13 +180,28 @@ class Data(object):
         :param component_id: the component to remove
         :type component_id: :class:`~glue.core.component_id.ComponentID`
         """
+        # TODO: avoid too many messages when removing a component triggers
+        # the removal of derived components.
         if component_id in self._components:
             self._components.pop(component_id)
+            self._removed_derived_that_depend_on(component_id)
             if self.hub:
                 msg = DataRemoveComponentMessage(self, component_id)
                 self.hub.broadcast(msg)
                 msg = ComponentsChangedMessage(self)
                 self.hub.broadcast(msg)
+
+    def _removed_derived_that_depend_on(self, component_id):
+        """
+        Remove internal derived components that can no longer be derived.
+        """
+        remove = []
+        for cid in self.derived_components:
+            comp = self.get_component(cid)
+            if component_id in comp.link.get_from_ids():
+                remove.append(cid)
+        for cid in remove:
+            self.remove_component(cid)
 
     @contract(other='isinstance(Data)',
               cid='cid_like',
@@ -429,6 +445,19 @@ class Data(object):
 
         return component_id
 
+    def _set_externally_derivable_components(self, derivable_components):
+        """
+        Externally deriable components are components identified by component
+        IDs from other datasets.
+
+        This method is meant for internal use only and is called by the link
+        manager. The ``derivable_components`` argument should be set to a
+        dictionary where the keys are the derivable component IDs, and the
+        values are DerivedComponent instances which can be used to get the
+        data.
+        """
+        self._externally_derivable_components = derivable_components
+
     @contract(link=ComponentLink,
               label='cid_like|None',
               returns=DerivedComponent)
@@ -465,12 +494,40 @@ class Data(object):
             cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
+
         if self.coords:
             for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
                 cid = self.add_component(comp, label, hidden=True)
                 self._world_component_ids.append(cid)
+            self._set_up_coordinate_component_links(ndim)
+
+    def _set_up_coordinate_component_links(self, ndim):
+
+        def make_toworld_func(i):
+            def pix2world(*args):
+                return self.coords.pixel2world_single_axis(*args[::-1], axis=ndim - 1 - i)
+            return pix2world
+
+        def make_topixel_func(i):
+            def world2pix(*args):
+                return self.coords.world2pixel_single_axis(*args[::-1], axis=ndim - 1 - i)
+            return world2pix
+
+        result = []
+        for i in range(ndim):
+            link = CoordinateComponentLink(self._pixel_component_ids,
+                                           self._world_component_ids[i],
+                                           self.coords, i)
+            result.append(link)
+            link = CoordinateComponentLink(self._world_component_ids,
+                                           self._pixel_component_ids[i],
+                                           self.coords, i, pixel2world=False)
+            result.append(link)
+
+        self._coordinate_links = result
+        return result
 
     @property
     def components(self):
@@ -545,7 +602,7 @@ class Data(object):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components):
+        for cid_set in (self.primary_components, self.derived_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
@@ -568,40 +625,7 @@ class Data(object):
         world. If no coordinate transformation object is present,
         return an empty list.
         """
-        if self._coordinate_links:
-            return self._coordinate_links
-
-        if not self.coords:
-            return []
-
-        if self.ndim != len(self._pixel_component_ids) or \
-                self.ndim != len(self._world_component_ids):
-                # haven't populated pixel, world coordinates yet
-            return []
-
-        def make_toworld_func(i):
-            def pix2world(*args):
-                return self.coords.pixel2world_single_axis(*args[::-1], axis=self.ndim - 1 - i)
-            return pix2world
-
-        def make_topixel_func(i):
-            def world2pix(*args):
-                return self.coords.world2pixel_single_axis(*args[::-1], axis=self.ndim - 1 - i)
-            return world2pix
-
-        result = []
-        for i in range(self.ndim):
-            link = CoordinateComponentLink(self._pixel_component_ids,
-                                           self._world_component_ids[i],
-                                           self.coords, i)
-            result.append(link)
-            link = CoordinateComponentLink(self._world_component_ids,
-                                           self._pixel_component_ids[i],
-                                           self.coords, i, pixel2world=False)
-            result.append(link)
-
-        self._coordinate_links = result
-        return result
+        return self._coordinate_links
 
     @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
@@ -822,9 +846,11 @@ class Data(object):
         if isinstance(key, ComponentLink):
             return key.compute(self, view)
 
-        try:
+        if key in self._components:
             comp = self._components[key]
-        except KeyError:
+        elif key in self._externally_derivable_components:
+            comp = self._externally_derivable_components[key]
+        else:
             raise IncompatibleAttribute(key)
 
         shp = view_shape(self.shape, view)
