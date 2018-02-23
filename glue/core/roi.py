@@ -77,14 +77,27 @@ class Roi(object):  # pragma: no cover
     def contains3d(self, x, y, z):
         """Return true/false for each x/y/z pair.
 
-        :param x: Array of X locations
-        :param y: Array of Y locations
-        :param y: Array of Z locations
+        Parameters
+        ----------
 
-        :returns: A Boolean array, where each element is True
-                  if the corresponding (x,y,z) tuple is inside the Roi.
 
-        :raises: UndefinedROI exception if not defined
+        x : ndarray
+            Array of x locations
+        y : ndarray
+            Array of y locations
+        z : ndarray
+            Array of z locations
+
+        Returns
+        -------
+        ndarray
+            A Boolean array, where each element is True if the corresponding
+            (x,y,z) tuple is inside the Roi.
+
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         raise NotImplementedError()
 
