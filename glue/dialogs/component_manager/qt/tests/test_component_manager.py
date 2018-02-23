@@ -7,6 +7,7 @@ from numpy.testing import assert_equal
 from glue.core import Data, DataCollection, HubListener, ComponentID
 from glue.core import message as msg
 from glue.utils.qt import get_qapp
+from glue.core.component_link import ComponentLink
 from glue.core.parse import ParsedCommand, ParsedComponentLink
 
 from ..component_manager import ComponentManagerWidget, EquationEditorDialog
@@ -86,14 +87,16 @@ class ChangeListener(HubListener):
         assert set(added) == set(self.added)
         assert set(removed) == set(self.removed)
         assert set(renamed) == set(self.renamed)
-        assert set(reordered) == set(self.reordered)
+        assert reordered == self.reordered
         assert numerical is self.numerical
 
 
 class TestComponentManagerWidget:
 
     def setup_method(self):
+
         self.app = get_qapp()
+
         self.data1 = Data(x=[1, 2, 3], y=[3.5, 4.5, -1.0], z=['a', 'r', 'w'])
         self.data2 = Data(a=[3, 4, 1], b=[1.5, -2.0, 3.5], c=['y', 'e', 'r'])
 
@@ -104,6 +107,10 @@ class TestComponentManagerWidget:
         self.data2.add_component_link(link)
 
         self.data_collection = DataCollection([self.data1, self.data2])
+
+        link = ComponentLink([self.data1.id['x']], self.data2.id['a'])
+        self.data_collection.add_link(link)
+
         self.listener1 = ChangeListener(self.data1)
         self.listener2 = ChangeListener(self.data2)
 
