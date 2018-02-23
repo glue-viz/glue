@@ -620,12 +620,27 @@ class Data(object):
         return None
 
     @property
+    def links(self):
+        """
+        A list of all the links internal to the dataset.
+        """
+        return self.coordinate_links + self.derived_links
+
+    @property
     def coordinate_links(self):
-        """A list of the ComponentLinks that connect pixel and
-        world. If no coordinate transformation object is present,
-        return an empty list.
+        """
+        A list of the ComponentLinks that connect pixel and world. If no
+        coordinate transformation object is present, return an empty list.
         """
         return self._coordinate_links
+
+    @property
+    def derived_links(self):
+        """
+        A list of the links present inside all of the DerivedComponent objects
+        in this dataset.
+        """
+        return [self.get_component(cid).link for cid in self.derived_components]
 
     @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):

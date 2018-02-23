@@ -11,7 +11,7 @@ from glue import core
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
-from ..component_link import ComponentLink
+from ..component_link import ComponentLink, CoordinateComponentLink, BinaryComponentLink
 from ..coordinates import Coordinates
 from ..data import Data, pixel_label
 from ..exceptions import IncompatibleAttribute
@@ -24,6 +24,7 @@ from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
 from .test_state import clone
+
 
 class _TestCoordinates(Coordinates):
 
@@ -407,6 +408,20 @@ class TestData(object):
         assert e_id not in data.components
         assert f_id not in data.components
 
+    def test_links_property(self):
+
+        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1')
+
+        assert len(data.links) == 2
+        assert isinstance(data.links[0], CoordinateComponentLink)
+        assert isinstance(data.links[1], CoordinateComponentLink)
+
+        data['c'] = data.id['a'] + 1
+
+        assert len(data.links) == 3
+
+        assert isinstance(data.links[2], BinaryComponentLink)
+
 
 class TestROICreation(object):
 
@@ -420,7 +435,7 @@ class TestROICreation(object):
         np.testing.assert_array_equal((s.lo, s.hi),
                                       [2, 3])
 
-        roi = RangeROI('y', min=2,max=3)
+        roi = RangeROI('y', min=2, max=3)
         s = comp.subset_from_roi('xdata', roi, other_att='ydata',
                                  other_comp=d.get_component(d.id['ydata']))
         assert isinstance(s, RangeSubsetState)
