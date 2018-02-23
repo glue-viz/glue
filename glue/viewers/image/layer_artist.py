@@ -14,7 +14,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
 from glue.core.link_manager import is_equivalent_cid
 from glue.core import Data, HubListener
-from glue.core.message import ComponentsChangedMessage
+from glue.core.message import ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage
 from glue.external.modest_image import imshow
 
 
@@ -33,6 +33,10 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self.state.add_global_callback(self._update_image)
 
         self.layer.hub.subscribe(self, ComponentsChangedMessage,
+                                 handler=self._update_compatibility,
+                                 filter=self._is_data_object)
+
+        self.layer.hub.subscribe(self, ExternallyDerivableComponentsChangedMessage,
                                  handler=self._update_compatibility,
                                  filter=self._is_data_object)
 

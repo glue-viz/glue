@@ -14,7 +14,7 @@ from ..data_collection import DataCollection
 from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
                        DataCollectionDeleteMessage,
-                       ComponentsChangedMessage)
+                       ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage)
 from ..exceptions import IncompatibleAttribute
 
 
@@ -393,9 +393,14 @@ class TestDataCollection(object):
 
         data.remove_component(remove_id)
 
-        msg = self.log.messages[-2]
+        print(self.log.messages)
+
+        msg = self.log.messages[-3]
         assert isinstance(msg, DataRemoveComponentMessage)
         assert msg.component_id is remove_id
+
+        msg = self.log.messages[-2]
+        assert isinstance(msg, ExternallyDerivableComponentsChangedMessage)
 
         msg = self.log.messages[-1]
         assert isinstance(msg, ComponentsChangedMessage)

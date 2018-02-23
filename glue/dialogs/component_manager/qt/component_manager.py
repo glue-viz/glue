@@ -108,6 +108,17 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     self._state[data][cid] = comp_state
                     self._components[data]['derived'].append(cid)
 
+            self._components[data]['other'] = []
+
+            handled_components = (data.pixel_component_ids +
+                                  data.world_component_ids +
+                                  self._components[data]['main'] +
+                                  self._components[data]['derived'])
+
+            for cid in data.components:
+                if cid not in handled_components:
+                    self._components[data]['other'].append(cid)
+
         # Populate data combo
         for data in self.data_collection:
             self.ui.combosel_data.addItem(data.label, userData=data)
@@ -302,6 +313,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
             cids_main = self._components[data]['main']
             cids_derived = self._components[data]['derived']
+            cids_other = self._components[data]['other']
 
             # First deal with renaming of components
             for cid_new in cids_main + cids_derived:
@@ -309,7 +321,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                 if label != cid_new.label:
                     cid_new.label = label
 
-            cids_all = data.pixel_component_ids + data.world_component_ids + cids_main + cids_derived
+            cids_all = data.pixel_component_ids + data.world_component_ids + cids_main + cids_derived + cids_other
 
             cids_existing = data.components
 

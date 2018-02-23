@@ -194,7 +194,7 @@ class LinkManager(HubListener):
     def remove_link(self, link, update_external=True):
         if isinstance(link, (LinkCollection, list)):
             for l in link:
-                self.remove_link(l, update_exernal=False)
+                self.remove_link(l, update_external=False)
             if update_external:
                 self.update_externally_derivable_components()
         else:

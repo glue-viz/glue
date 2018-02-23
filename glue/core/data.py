@@ -10,7 +10,8 @@ from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
-                               ComponentReplacedMessage, DataReorderComponentMessage)
+                               ComponentReplacedMessage, DataReorderComponentMessage,
+                               ExternallyDerivableComponentsChangedMessage)
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
@@ -457,6 +458,9 @@ class Data(object):
         data.
         """
         self._externally_derivable_components = derivable_components
+        if self.hub:
+            msg = ExternallyDerivableComponentsChangedMessage(self)
+            self.hub.broadcast(msg)
 
     @contract(link=ComponentLink,
               label='cid_like|None',
@@ -908,9 +912,11 @@ class Data(object):
         if isinstance(component_id, six.string_types):
             component_id = self.id[component_id]
 
-        try:
+        if component_id in self._components:
             return self._components[component_id]
-        except KeyError:
+        elif component_id in self._externally_derivable_components:
+            return self._externally_derivable_components[component_id]
+        else:
             raise IncompatibleAttribute(component_id)
 
     def to_dataframe(self, index=None):
