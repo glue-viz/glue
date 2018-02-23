@@ -655,25 +655,22 @@ def _load_data_collection(rec, context):
 
     links = [context.object(link) for link in rec['links']]
 
-    if rec.get('_protocol', 0) > 3:
-        external = links
-    else:
-        # Filter out CoordinateComponentLinks that may have been saved in the past
-        # as these are now re-generated on-the-fly.
-        links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
+    # Filter out CoordinateComponentLinks that may have been saved in the past
+    # as these are now re-generated on-the-fly.
+    links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
 
-        # Go through and split links into links internal to datasets and ones
-        # between datasets as this dictates whether they should be set on the
-        # data collection or on the data objects.
-        external, internal = [], []
-        for link in links:
-            parent_to = link.get_to_id().parent
-            for cid in link.get_from_ids():
-                if cid.parent is not parent_to:
-                    external.append(link)
-                    break
-            else:
-                internal.append(link)
+    # Go through and split links into links internal to datasets and ones
+    # between datasets as this dictates whether they should be set on the
+    # data collection or on the data objects.
+    external, internal = [], []
+    for link in links:
+        parent_to = link.get_to_id().parent
+        for cid in link.get_from_ids():
+            if cid.parent is not parent_to:
+                external.append(link)
+                break
+        else:
+            internal.append(link)
 
     # Remove components in datasets that have external links
     for data in datasets:
@@ -720,7 +717,19 @@ def _load_data_collection_3(rec, context):
 
 @loader(DataCollection, version=4)
 def _load_data_collection_4(rec, context):
-    return _load_data_collection_3(rec, context)
+
+    dc = DataCollection(list(map(context.object, rec['data'])))
+    links = [context.object(link) for link in rec['links']]
+    dc.set_links(links)
+    coerce_subset_groups(dc)
+
+    dc._subset_groups = list(map(context.object, rec['groups']))
+    for grp in dc.subset_groups:
+        grp.register_to_hub(dc.hub)
+
+    dc._sg_count = rec['subset_group_count']
+
+    return dc
 
 
 @saver(Data)
