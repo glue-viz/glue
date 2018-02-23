@@ -401,13 +401,26 @@ class BinaryComponentLink(ComponentLink):
             self._right.replace_ids(old, new)
 
     def compute(self, data, view=None):
-        l = self._left
-        r = self._right
+        left = self._left
+        right = self._right
         if not isinstance(self._left, numbers.Number):
-            l = data[self._left, view]
+            left = data[self._left, view]
         if not isinstance(self._right, numbers.Number):
-            r = data[self._right, view]
-        return self._op(l, r)
+            right = data[self._right, view]
+        return self._op(left, right)
+
+    def __gluestate__(self, context):
+        left = context.id(self._left)
+        right = context.id(self._right)
+        operator = context.do(self._op)
+        return dict(left=left, right=right, operator=operator)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        left = context.object(rec['left'])
+        right = context.object(rec['right'])
+        operator = context.object(rec['operator'])
+        return cls(left, right, operator)
 
     def __str__(self):
         sym = OPSYM.get(self._op, self._op.__name__)

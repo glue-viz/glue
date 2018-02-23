@@ -238,8 +238,8 @@ def test_matplotlib_cmap():
 def test_binary_component_link():
     d1 = core.Data(x=[1, 2, 3])
     d1['y'] = d1.id['x'] + 1
+    assert_equal(d1['y'], [2, 3, 4])
     d2 = clone(d1)
-    assert_equal(d1['x'], [1, 2, 3])
     assert_equal(d2['y'], [2, 3, 4])
 
 

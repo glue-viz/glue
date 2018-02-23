@@ -995,6 +995,17 @@ def _load_coordinate_component_link(rec, context):
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
 
 
+@saver(types.BuiltinFunctionType)
+def _save_builtin_function(function, context):
+    ref = "%s.%s" % (function.__module__, function.__name__)
+    return {'function': ref}
+
+
+@loader(types.BuiltinFunctionType)
+def _load_builtin_function(rec, context):
+    return lookup_class_with_patches(rec['function'])
+
+
 @saver(types.FunctionType)
 def _save_function(function, context):
     ref = "%s.%s" % (function.__module__, function.__name__)
