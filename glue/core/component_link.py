@@ -18,6 +18,11 @@ __all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
 def identity(x):
     return x
 
+
+def null(*args):
+    return None
+
+
 OPSYM = {operator.add: '+', operator.sub: '-',
          operator.truediv: '/', operator.mul: '*',
          operator.pow: '**'}
@@ -382,7 +387,6 @@ class BinaryComponentLink(ComponentLink):
                             right)
 
         to = ComponentID("")
-        null = lambda *args: None
         super(BinaryComponentLink, self).__init__(from_, to, null)
 
     def replace_ids(self, old, new):
