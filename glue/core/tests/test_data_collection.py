@@ -13,11 +13,12 @@ from ..data import Data, Component, ComponentID, DerivedComponent
 from ..data_collection import DataCollection
 from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
-                       DataCollectionDeleteMessage,
+                       DataCollectionDeleteMessage, DataAddComponentMessage,
                        ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage)
 from ..exceptions import IncompatibleAttribute
 
 from .test_state import clone
+
 
 class HubLog(HubListener):
 
@@ -29,6 +30,9 @@ class HubLog(HubListener):
 
     def notify(self, message):
         self.messages.append(message)
+
+    def clear(self):
+        self.messages[:] = []
 
 
 class TestDataCollection(object):
@@ -159,10 +163,15 @@ class TestDataCollection(object):
         self.dc.append(d)
         d.add_component(Component(np.array([1, 2, 3])), id1)
         assert link not in self.dc._link_manager
+        self.log.clear()
         d.add_component(dc, id2)
 
-        msg = self.log.messages[-1]
-        assert isinstance(msg, ComponentsChangedMessage)
+        msgs = sorted(self.log.messages, key=lambda x: str(type(x)))
+
+        assert isinstance(msgs[0], ComponentsChangedMessage)
+        assert isinstance(msgs[1], DataAddComponentMessage)
+        assert isinstance(msgs[2], ExternallyDerivableComponentsChangedMessage)
+
         assert link in self.dc._link_manager
 
     def test_links_auto_added(self):
