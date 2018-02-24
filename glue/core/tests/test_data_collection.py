@@ -401,19 +401,18 @@ class TestDataCollection(object):
 
         remove_id = data.id['y']
 
+        self.log.clear()
+
         data.remove_component(remove_id)
 
-        print(self.log.messages)
+        msgs = sorted(self.log.messages, key=lambda x: str(type(x)))
 
-        msg = self.log.messages[-3]
-        assert isinstance(msg, DataRemoveComponentMessage)
-        assert msg.component_id is remove_id
+        print([type(msg) for msg in msgs])
 
-        msg = self.log.messages[-2]
-        assert isinstance(msg, ExternallyDerivableComponentsChangedMessage)
+        assert isinstance(msgs[0], ComponentsChangedMessage)
 
-        msg = self.log.messages[-1]
-        assert isinstance(msg, ComponentsChangedMessage)
+        assert isinstance(msgs[1], DataRemoveComponentMessage)
+        assert msgs[1].component_id is remove_id
 
     def test_links_preserved_session(self):
 
