@@ -425,6 +425,7 @@ class Data(object):
             component_id = ComponentID(label, hidden=hidden, parent=self)
 
         if len(self._components) == 0:
+            # TODO: make sure the following doesn't raise a componentsraised message
             self._create_pixel_and_world_components(ndim=component.ndim)
 
         # In some cases, such as when loading a session, we actually disable the
@@ -457,6 +458,8 @@ class Data(object):
         values are DerivedComponent instances which can be used to get the
         data.
         """
+        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
+            return
         self._externally_derivable_components = derivable_components
         if self.hub:
             msg = ExternallyDerivableComponentsChangedMessage(self)
