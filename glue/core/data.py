@@ -458,10 +458,8 @@ class Data(object):
         values are DerivedComponent instances which can be used to get the
         data.
         """
-        print("_set_externally_derivable_components", len(derivable_components))
         if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
             return
-        print("HERE", self.hub)
         self._externally_derivable_components = derivable_components
         if self.hub:
             msg = ExternallyDerivableComponentsChangedMessage(self)
