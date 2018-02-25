@@ -88,13 +88,12 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         for data in data_collection:
 
-            for cid in data.primary_components:
-                if not cid.hidden:
-                    comp_state = {}
-                    comp_state['cid'] = cid
-                    comp_state['label'] = cid.label
-                    self._state[data][cid] = comp_state
-                    self._components[data]['main'].append(cid)
+            for cid in data.main_components:
+                comp_state = {}
+                comp_state['cid'] = cid
+                comp_state['label'] = cid.label
+                self._state[data][cid] = comp_state
+                self._components[data]['main'].append(cid)
 
             self._components[data]['derived'] = []
 

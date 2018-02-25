@@ -311,8 +311,7 @@ class ComponentIDComboHelper(ComboHelper):
             if self.numeric and self.derived:
                 cids = [ChoiceSeparator('Derived components')]
                 for cid in derived_components:
-                    if not cid.hidden:
-                        cids.append(cid)
+                    cids.append(cid)
                 if len(cids) > 1:
                     choices += cids
 

@@ -51,7 +51,8 @@ def accessible_links(cids, links):
 
 
 def discover_links(data, links):
-    """ Discover all links to components that can be derived
+    """
+    Discover all links to components that can be derived
     based on the current components known to a dataset, and a set
     of ComponentLinks.
 

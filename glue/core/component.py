@@ -68,11 +68,6 @@ class Component(object):
             self._units = str(value)
 
     @property
-    def hidden(self):
-        """Whether the Component is hidden by default"""
-        return False
-
-    @property
     def data(self):
         """ The underlying :class:`numpy.ndarray` """
         return self._data
@@ -249,10 +244,6 @@ class DerivedComponent(Component):
     def set_parent(self, data):
         """ Reassign the Data object that this DerivedComponent operates on """
         self._data = data
-
-    @property
-    def hidden(self):
-        return self._link.hidden
 
     @property
     def data(self):

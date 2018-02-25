@@ -48,13 +48,15 @@ class ComponentID(object):
 
        component_id = data.id[name]
        data[component_id] -> numpy array
+
+    Parameters
+    ----------
+    label : str
+        Name for the component ID
     """
 
-    def __init__(self, label, hidden=False, parent=None):
-        """:param label: Name for the ID
-           :type label: str"""
+    def __init__(self, label, parent=None):
         self._label = str(label)
-        self._hidden = hidden
         self.parent = parent
         # We assign a UUID which can then be used for example in equations
         # for derived components - the idea is that this doesn't change over
@@ -83,15 +85,6 @@ class ComponentID(object):
         if self.parent is not None and self.parent.hub:
             msg = DataRenameComponentMessage(self.parent, self)
             self.parent.hub.broadcast(msg)
-
-    @property
-    def hidden(self):
-        """Whether to hide the component by default"""
-        return self._hidden
-
-    @hidden.setter
-    def hidden(self, value):
-        self._hidden = value
 
     def __str__(self):
         return str(self._label)
@@ -176,6 +169,6 @@ class PixelComponentID(ComponentID):
     dimensions.
     """
 
-    def __init__(self, axis, label, hidden=False, parent=None):
+    def __init__(self, axis, label, parent=None):
         self.axis = axis
-        super(PixelComponentID, self).__init__(label, hidden=hidden, parent=parent)
+        super(PixelComponentID, self).__init__(label, parent=parent)

@@ -772,8 +772,7 @@ def _load_data(rec, context):
             # and upgrade it to one. This can be removed once we no longer
             # support pre-v0.8 session files.
             if not comp.world and not isinstance(cid, PixelComponentID):
-                cid = PixelComponentID(comp.axis, cid.label,
-                                       hidden=cid.hidden, parent=cid.parent)
+                cid = PixelComponentID(comp.axis, cid.label, parent=cid.parent)
                 comps[icomp] = (cid, comp)
 
         result.add_component(comp, cid)
@@ -873,17 +872,17 @@ def _load_data_5(rec, context):
 
 @saver(ComponentID)
 def _save_component_id(cid, context):
-    return dict(label=cid.label, hidden=cid.hidden)
+    return dict(label=cid.label)
 
 
 @loader(ComponentID)
 def _load_component_id(rec, context):
-    return ComponentID(rec['label'], rec['hidden'])
+    return ComponentID(rec['label'])
 
 
 @saver(PixelComponentID)
 def _save_pixel_component_id(cid, context):
-    return dict(axis=cid.axis, label=cid.label, hidden=cid.hidden)
+    return dict(axis=cid.axis, label=cid.label)
 
 
 @loader(PixelComponentID)
@@ -892,7 +891,7 @@ def _load_pixel_component_id(rec, context):
         axis = rec['axis']
     else:  # backward-compatibility
         axis = int(rec['label'].split()[2])
-    return PixelComponentID(axis, rec['label'], rec['hidden'])
+    return PixelComponentID(axis, rec['label'])
 
 
 @saver(Component)
@@ -959,8 +958,7 @@ def _save_component_link(link, context):
     to = list(map(context.id, [link.get_to_id()]))
     using = context.do(link.get_using())
     inverse = context.do(link.get_inverse())
-    hidden = link.hidden
-    return dict(frm=frm, to=to, using=using, inverse=inverse, hidden=hidden)
+    return dict(frm=frm, to=to, using=using, inverse=inverse)
 
 
 @loader(ComponentLink)
@@ -970,7 +968,6 @@ def _load_component_link(rec, context):
     using = context.object(rec['using'])
     inverse = context.object(rec['inverse'])
     result = ComponentLink(frm, to, using, inverse)
-    result.hidden = rec['hidden']
     return result
 
 

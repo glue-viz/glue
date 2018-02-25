@@ -376,7 +376,7 @@ class Data(object):
         other._key_joins[self] = (cid_other, cid)
 
     @contract(component='component_like', label='cid_like')
-    def add_component(self, component, label, hidden=False):
+    def add_component(self, component, label):
         """ Add a new component to this data set.
 
         :param component: object to add. Can be a Component,
@@ -402,7 +402,7 @@ class Data(object):
         """
 
         if isinstance(component, ComponentLink):
-            return self.add_component_link(component, label=label, hidden=hidden)
+            return self.add_component_link(component, label=label)
 
         if not isinstance(component, Component):
             component = Component.autotyped(component)
@@ -422,7 +422,7 @@ class Data(object):
             if component_id.parent is None:
                 component_id.parent = self
         else:
-            component_id = ComponentID(label, hidden=hidden, parent=self)
+            component_id = ComponentID(label, parent=self)
 
         if len(self._components) == 0:
             # TODO: make sure the following doesn't raise a componentsraised message
@@ -458,8 +458,10 @@ class Data(object):
         values are DerivedComponent instances which can be used to get the
         data.
         """
+        print("_set_externally_derivable_components", len(derivable_components))
         if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
             return
+        print("HERE", self.hub)
         self._externally_derivable_components = derivable_components
         if self.hub:
             msg = ExternallyDerivableComponentsChangedMessage(self)
@@ -488,7 +490,7 @@ class Data(object):
         """
         if label is not None:
             if not isinstance(label, ComponentID):
-                label = ComponentID(label, parent=self, hidden=hidden)
+                label = ComponentID(label, parent=self)
             link.set_to_id(label)
 
         if link.get_to_id() is None:
@@ -497,11 +499,12 @@ class Data(object):
 
         for cid in link.get_from_ids():
             if cid not in self.components:
-                raise ValueError("Can only add internal links with add_component_link - use DataCollection.add_link to add inter-data links")
+                raise ValueError("Can only add internal links with add_component_link "
+                                 "- use DataCollection.add_link to add inter-data links")
 
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
-        self.add_component(dc, label=to_, hidden=hidden)
+        self.add_component(dc, label=to_)
         return dc
 
     def _create_pixel_and_world_components(self, ndim):
@@ -509,7 +512,7 @@ class Data(object):
         for i in range(ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, ndim)
-            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
+            cid = PixelComponentID(i, "Pixel Axis %s" % label, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
 
@@ -517,7 +520,7 @@ class Data(object):
             for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
-                cid = self.add_component(comp, label, hidden=True)
+                cid = self.add_component(comp, label)
                 self._world_component_ids.append(cid)
             self._set_up_coordinate_component_links(ndim)
 
@@ -566,7 +569,7 @@ class Data(object):
         :rtype: list
         """
         return [cid for cid, comp in self._components.items()
-                if not cid.hidden and not comp.hidden and cid.parent is self]
+                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
 
     @property
     def coordinate_components(self):
@@ -576,6 +579,11 @@ class Data(object):
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], CoordinateComponent)]
+
+    @property
+    def main_components(self):
+        return [c for c in self.component_ids() if
+                not isinstance(self._components[c], (DerivedComponent, CoordinateComponent))]
 
     @property
     def primary_components(self):
@@ -624,7 +632,7 @@ class Data(object):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components, list(self._externally_derivable_components)):
+        for cid_set in (self.primary_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
@@ -766,7 +774,7 @@ class Data(object):
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
         :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: string
+        :type attribute: str
         """
         if not self.hub:
             return
@@ -817,8 +825,6 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
-            # promote hidden status
-            new._hidden = new.hidden and old.hidden
 
             # remove old component and broadcast the change
             # see #508 for discussion of this
@@ -829,24 +835,18 @@ class Data(object):
         s = "Data Set: %s\n" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
-        for hidden in [False, True]:
-            if hidden:
-                s += "Hidden "
-            else:
-                s += "Main "
-            s += "components:\n"
-            if hidden:
-                components = [c for c in self.components if c not in self.visible_components]
-            else:
-                components = [c for c in self.visible_components]
-            for i, cid in enumerate(components):
-                if cid.hidden != hidden:
-                    continue
-                comp = self.get_component(cid)
-                if comp.units is None or comp.units == '':
-                    s += " %i) %s\n" % (i, cid)
-                else:
-                    s += " %i) %s [%s]\n" % (i, cid, comp.units)
+        categories = [('Main', self.main_components),
+                      ('Derived', self.derived_components),
+                      ('Coordinate', self.coordinate_components)]
+        for category, components in categories:
+            if len(components) > 0:
+                s += category + " components:\n"
+                for cid in components:
+                    comp = self.get_component(cid)
+                    if comp.units is None or comp.units == '':
+                        s += " - {0}\n".format(cid)
+                    else:
+                        s += " - {0} [{1}]\n".format(cid, comp.units)
         return s[:-1]
 
     def __repr__(self):

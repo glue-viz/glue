@@ -98,7 +98,6 @@ class ComponentLink(object):
         self._using = using
         self._inverse = inverse
 
-        self.hidden = False  # show in widgets?
         self.identity = self._using is identity
 
         if not isinstance(comp_from, list):
@@ -322,7 +321,6 @@ class CoordinateComponentLink(ComponentLink):
         comp_from = [comp_from[i] for i in self.from_needed]
         super(CoordinateComponentLink, self).__init__(
             comp_from, comp_to, self.using)
-        self.hidden = True
 
     def using(self, *args):
 

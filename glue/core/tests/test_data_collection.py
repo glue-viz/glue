@@ -166,13 +166,12 @@ class TestDataCollection(object):
         self.log.clear()
         d.add_component(dc, id2)
 
+        assert link in self.dc._link_manager
+
         msgs = sorted(self.log.messages, key=lambda x: str(type(x)))
 
         assert isinstance(msgs[0], ComponentsChangedMessage)
         assert isinstance(msgs[1], DataAddComponentMessage)
-        assert isinstance(msgs[2], ExternallyDerivableComponentsChangedMessage)
-
-        assert link in self.dc._link_manager
 
     def test_links_auto_added(self):
         id1 = ComponentID("id1")

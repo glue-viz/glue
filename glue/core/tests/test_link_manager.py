@@ -86,7 +86,7 @@ class TestDiscoverLinks(object):
         links = discover_links(self.data, self.links)
 
         for i in self.inaccessible:
-            assert not i in links
+            assert i not in links
 
         for d in self.direct:
             assert d in links
@@ -95,7 +95,7 @@ class TestDiscoverLinks(object):
             assert d in links
 
         for p in self.primary:
-            assert not p in links
+            assert p not in links
 
     def test_links_point_to_proper_ids(self):
         """ Dictionary values are ComponentLinks which
