@@ -468,16 +468,23 @@ class Data(object):
     @contract(link=ComponentLink,
               label='cid_like|None',
               returns=DerivedComponent)
-    def add_component_link(self, link, label=None, hidden=False):
-        """ Shortcut method for generating a new :class:`~glue.core.component.DerivedComponent`
-        from a ComponentLink object, and adding it to a data set.
+    def add_component_link(self, link, label=None):
+        """
+        Shortcut method for generating a new
+        :class:`~glue.core.component.DerivedComponent` from a ComponentLink
+        object, and adding it to a data set.
 
-        :param link: :class:`~glue.core.component_link.ComponentLink`
-        :param label: The ComponentID or label to attach to.
-        :type label: :class:`~glue.core.component_id.ComponentID` or str
+        Parameters
+        ----------
+        link : :class:`~glue.core.component_link.ComponentLink`
+            The link to use to generate a new component
+        label : :class:`~glue.core.component_id.ComponentID` or str
+            The ComponentID or label to attach to.
 
-        :returns:
-            The :class:`~glue.core.component.DerivedComponent` that was added
+        Returns
+        -------
+        component : :class:`~glue.core.component.DerivedComponent`
+            The component that was added
         """
         if label is not None:
             if not isinstance(label, ComponentID):
@@ -554,7 +561,7 @@ class Data(object):
 
     @property
     def visible_components(self):
-        """ :class:`ComponentIDs <glue.core.component_id.ComponentID>` for all non-hidden components.
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinate.
 
         :rtype: list
         """

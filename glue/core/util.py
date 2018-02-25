@@ -33,18 +33,21 @@ def relim(lo, hi, log=False):
 
 
 def split_component_view(arg):
-    """Split the input to data or subset.__getitem__ into its pieces.
+    """
+    Split the input to data or subset.__getitem__ into its pieces.
 
-    :param arg: The input passed to data or subset.__getitem__.
-                Assumed to be either a scalar or tuple
+    Parameters
+    ----------
+    arg
+        The input passed to ``data`` or ``subset.__getitem__``. Assumed to be
+        either a scalar or tuple
 
-    :rtype: tuple
-
-    The first item is the Component selection (a ComponentID or
-    string)
-
-    The second item is a view (tuple of slices, slice scalar, or view
-    object)
+    Returns
+    -------
+    selection
+        The Component selection (a ComponentID or string)
+    view
+        Tuple of slices, slice scalar, or view
     """
     if isinstance(arg, tuple):
         if len(arg) == 1:
@@ -58,14 +61,18 @@ def split_component_view(arg):
 
 
 def join_component_view(component, view):
-    """Pack a componentID and optional view into single tuple
+    """
+    Pack a ComponentID and optional view into single tuple.
 
-    Returns an object compatible with data.__getitem__ and related
-    methods.  Handles edge cases of when view is None, a scalar, a
-    tuple, etc.
+    Returns an object compatible with ``data.__getitem__`` and related methods.
+    Handles edge cases of when view is None, a scalar, a tuple, etc.
 
-    :param component: ComponentID
-    :param view: view into data, or None
+    Parameters
+    ----------
+    component : `~glue.core.component_id.ComponentID`
+        The ComponentID to pack
+    view
+        The view into the data, or `None`
 
     """
     if view is None:
@@ -81,39 +88,40 @@ def join_component_view(component, view):
 
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
                   prefix='', log=False):
-    """Create a series of subsets that partition the values of
-    a particular attribute into several bins
+    """
+    Create a series of subsets that partition the values of a particular
+    attribute into several bins
 
-    This creates `steps` new subet groups, adds them to the data collection,
-    and returns the list of newly created subset groups.
+    This creates `steps` new subet groups, adds them to the data collection, and
+    returns the list of newly created subset groups.
 
-    :param data: DataCollection object to use
-    :type data: :class:`~glue.core.data_collection.DataCollection`
+    Parameters
+    ----------
+    data : :class:`~glue.core.data_collection.DataCollection`
+        The DataCollection object to use
+    cid : :class:`~glue.core.component_id.ComponentID`
+         The ComponentID to facet on
+    lo : float, optional
+        The lower bound for the faceting. Defaults to minimum value in data
+    hi : float, optional
+        The upper bound for the faceting. Defaults to maximum value in data
+    steps : int, optional
+        The number of subsets to create. Defaults to 5
+    prefix : str, optional
+        If present, the new subset labels will begin with `prefix`
+    log : bool, optional
+        If `True`, space divisions logarithmically. Default is `False`
 
-    :param cid: ComponentID to facet on
-    :type data: :class:`~glue.core.component_id.ComponentID`
+    Returns
+    -------
+    subset_groups : iterable
+        List of :class:`~glue.core.subset_group.SubsetGroup` instances added to
+        `data`
 
-    :param lo: The lower bound for the faceting. Defaults to minimum value
-               in data
-    :type lo: float
+    Examples
+    --------
 
-    :param hi: The upper bound for the faceting. Defaults to maximum
-               value in data
-    :type hi: float
-
-    :param steps: The number of subsets to create. Defaults to 5
-    :type steps: int
-
-    :param prefix: If present, the new subset labels will begin with `prefix`
-    :type prefix: str
-
-    :param log: If True, space divisions logarithmically. Default=False
-    :type log: bool
-
-    :returns: List of :class:`~glue.core.subset_group.SubsetGroup` instances
-              added to `data`
-
-    Example::
+    ::
 
         facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2)
 
@@ -132,7 +140,6 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     Note that the last range is inclusive on both sides. For example, if ``lo``
     is 0 and ``hi`` is 5, and ``steps`` is 5, then the intervals for the subsets
     are [0,1), [1,2), [2,3), [3,4), and [4,5].
-
     """
     from glue.core.exceptions import IncompatibleAttribute
     if lo is None or hi is None:
@@ -188,16 +195,23 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
 
 
 def colorize_subsets(subsets, cmap, lo=0, hi=1):
-    """Re-color a list of subsets according to a colormap
-
-    :param subsets: List of subsets
-    :param cmap: Matplotlib colormap instance
-    :param lo: Start location in colormap. 0-1. Defaults to 0
-    :param hi: End location in colormap. 0-1. Defaults to 1
+    """
+    Re-color a list of subsets according to a colormap.
 
     The colormap will be sampled at `len(subsets)` even intervals
     between `lo` and `hi`. The color at the `ith` interval will be
     applied to `subsets[i]`
+
+    Parameters
+    ----------
+    subsets : list
+        List of subsets
+    cmap : `~matplotlib.colors.Colormap`
+        Matplotlib colormap instance
+    lo : float, optional
+        Start location in colormap. 0-1. Defaults to 0
+    hi : float, optional
+        End location in colormap. 0-1. Defaults to 1
     """
 
     from matplotlib import cm
@@ -217,13 +231,18 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
 
 
 def disambiguate(label, taken):
-    """If necessary, add a suffix to label to avoid name conflicts
+    """
+    If necessary, add a suffix to label to avoid name conflicts
 
-    :param label: desired label
-    :param taken: set of taken names
+    Returns label if it is not in the taken set. Otherwise, returns label_NN
+    where NN is the lowest integer such that label_NN not in taken.
 
-    Returns label if it is not in the taken set. Otherwise, returns
-    label_NN where NN is the lowest integer such that label_NN not in taken.
+    Parameters
+    ----------
+    label : str
+        Desired label
+    taken : iterable
+        The set of already taken names
     """
     if label not in taken:
         return label
@@ -239,12 +258,18 @@ def row_lookup(data, categories):
     """
     Lookup which row in categories each data item is equal to
 
-    :param data: array-like
-    :param categories: array-like of unique values
+    Parameters
+    ----------
+    data
+        An array-like object
+    categories
+        Array-like of unique values
 
-    :returns: Float array.
-              If result[i] is finite, then data[i] = categoreis[result[i]]
-              Otherwise, data[i] is not in the categories list
+    Returns
+    -------
+    array
+      If result[i] is finite, then data[i] = categoreis[result[i]]
+      Otherwise, data[i] is not in the categories list
     """
 
     # np.searchsorted doesn't work on mixed types in Python3
@@ -262,8 +287,7 @@ def row_lookup(data, categories):
 
 def small_view(data, attribute):
     """
-    Extract a downsampled view from a dataset, for quick
-    statistical summaries
+    Extract a downsampled view from a dataset, for quick statistical summaries
     """
     shp = data.shape
     view = tuple([slice(None, None, np.intp(max(s / 50, 1))) for s in shp])
@@ -290,8 +314,12 @@ def visible_limits(artists, axis):
     Returns a tuple of min, max for the requested axis, or None if no data
     present
 
-    :param artists: An iterable collection of artists
-    :param axis: Which axis to compute. 0=xaxis, 1=yaxis
+    Parameters
+    ----------
+    artists : iterable
+        An iterable collection of artists
+    axis : int
+        Which axis to compute. 0=xaxis, 1=yaxis
     """
     data = []
     for art in artists:
@@ -339,12 +367,18 @@ def update_ticks(axes, coord, components, is_log):
     Changes the axes to have the proper tick formatting based on the type of
     component.
 
-    :param axes: A matplotlib axis object to alter
-    :param coord: 'x' or 'y'
-    :param components: A list() of components that are plotted along this axis
-    :param is_log: Boolean for log-scale.
-    :kwarg max_categories: The maximum number of categories to display.
-    :return: None or #categories if components is Categorical
+    Returns `None` or the number of categories if components is Categorical.
+
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        A matplotlib axis object to alter
+    coord : { 'x' | 'y' }
+        The coordinate axis on which to update the ticks
+    components : iterable
+        A list of components that are plotted along this axis
+    if_log : boolean
+        Whether the axis has a log-scale
     """
 
     if coord == 'x':

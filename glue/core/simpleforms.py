@@ -11,20 +11,20 @@ See :ref:`fit_plugins` for example usage.
 
 
 class Option(object):
-
     """
     Base class for other options.
 
     This shouldn't be used directly
+
+    Parameters
+    ----------
+    default : object
+        The default value for this option.
+    label : str
+        A short label for this option, to use in the GUI
     """
 
     def __init__(self, default, label):
-        """
-        :param default: The default value for this option.
-        :type default: object
-        :param label: A short label for this option, to use in the GUI
-        :type label: str
-        """
         self.label = label
         """A UI label for the setting"""
         self.default = default
@@ -46,22 +46,23 @@ class Option(object):
 
 
 class IntOption(Option):
+    """
+    An integer-valued option.
+
+    Parameters
+    ----------
+    min : int, optional
+        The minimum valid value
+    max : int, optional
+        The maximum valid value
+    default : int, optional
+        The default value
+    label : str, optional
+        A short label for this option
+    """
 
     def __init__(self, min=0, max=10, default=1, label="Integer"):
-        """
-        An integer-valued option
-
-        :param min: The minimum valid value
-        :type min: integer
-        :param max: The maximum valid value
-        :type max: integer
-        :param default: The default value
-        :type default: integer
-        :param label: A short label for this option
-        :type label: str
-        """
         super(IntOption, self).__init__(default, label)
-
         self.min = min
         self.max = max
 
@@ -84,20 +85,22 @@ class IntOption(Option):
 
 
 class FloatOption(Option):
+    """
+    A floating-point option.
+
+    Parameters
+    ----------
+    min : float, optional
+        The minimum valid value
+    max : float, optional
+        The maximum valid value
+    default : float, optional
+        The default value
+    label : str, optional
+        A short label for this option
+    """
 
     def __init__(self, min=0, max=10, default=1, label="Float"):
-        """
-        An floating-point option
-
-        :param min: The minimum valid value
-        :type min: float
-        :param max: The maximum valid value
-        :type max: float
-        :param default: The default value
-        :type default: float
-        :param label: A short label for this option
-        :type label: str
-        """
         super(FloatOption, self).__init__(default, label)
         self.min = min
         self.max = max
@@ -112,17 +115,18 @@ class FloatOption(Option):
 
 
 class BoolOption(Option):
+    """
+    A boolean-valued option.
+
+    Parameters
+    ----------
+    label : str, optional
+        A short label for this option
+    default : bool, optional
+        The default `True`/`False` value
+    """
 
     def __init__(self, label="Bool", default=False):
-        """
-        A boolean-valued option
-
-        :param default: The default True/False value
-        :type default: bool
-
-        :param label: A short label for this option
-        :type label: str
-        """
         super(BoolOption, self).__init__(default, label)
 
     def _validate(self, value):
