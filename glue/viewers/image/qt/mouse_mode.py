@@ -50,6 +50,7 @@ class RoiClickAndDragMode(MouseMode):
 
         def delete_roi(event):
             self._dc.remove_subset_group(self._dc.subset_groups[roi_index])
+            self._deselect_roi(event)
 
         context_menu = QMenu()
         action = QAction("Delete ROI", context_menu)
@@ -76,9 +77,10 @@ class RoiClickAndDragMode(MouseMode):
                     if event.button == _MPL_LEFT_CLICK:
                         self._select_roi(subset_state.roi, roi_index, event)
                         self._subset = layer.state.layer
+                        self._selected = True
                     elif event.button == _MPL_RIGHT_CLICK:
+                        self._select_roi(subset_state.roi, roi_index, event)
                         self._display_roi_context_menu(roi_index)
-                    self._selected = True
                     break
             roi_index += 1
         else:
