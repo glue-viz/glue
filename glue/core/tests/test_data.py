@@ -11,7 +11,7 @@ from glue import core
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
-from ..component_link import ComponentLink
+from ..component_link import ComponentLink, CoordinateComponentLink, BinaryComponentLink
 from ..coordinates import Coordinates
 from ..data import Data, pixel_label
 from ..exceptions import IncompatibleAttribute
@@ -24,6 +24,7 @@ from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
 from .test_state import clone
+
 
 class _TestCoordinates(Coordinates):
 
@@ -94,7 +95,7 @@ class TestData(object):
             assert exc.value.args[0] == ("add_component() missing 1 required "
                                          "positional argument: 'label'")
         else:
-            assert exc.value.args[0] == ("add_component() takes at least 3 "
+            assert exc.value.args[0] == ("add_component() takes exactly 3 "
                                          "arguments (2 given)")
 
     def test_get_getitem_incompatible_attribute(self):
@@ -370,6 +371,57 @@ class TestData(object):
         # There should be five components: x, y, z, pixel, and world
         assert len(data.components) == 5
 
+    def test_remove_derived_dependency(self):
+
+        # Regression test for a bug that occurred when removing a component
+        # used in a derived component, which should also remove the derived
+        # component itself. To make things more fun, we set up a chain of
+        # derived components to make sure they are all removed.
+
+        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1')
+
+        data['c'] = data.id['a'] + 1
+        data['d'] = data.id['c'] + 1
+        data['e'] = data.id['d'] + 1
+        data['f'] = data.id['e'] + 1
+
+        a_id = data.id['a']
+        b_id = data.id['b']
+        c_id = data.id['c']
+        d_id = data.id['d']
+        e_id = data.id['e']
+        f_id = data.id['f']
+
+        # There should be five components: pixel, world, a, b, c, d, e, f
+        assert len(data.components) == 8
+
+        data.remove_component(data.id['d'])
+
+        # This should also remove e and f since they depend on d
+
+        assert len(data.components) == 5
+
+        assert a_id in data.components
+        assert b_id in data.components
+        assert c_id in data.components
+        assert d_id not in data.components
+        assert e_id not in data.components
+        assert f_id not in data.components
+
+    def test_links_property(self):
+
+        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1')
+
+        assert len(data.links) == 2
+        assert isinstance(data.links[0], CoordinateComponentLink)
+        assert isinstance(data.links[1], CoordinateComponentLink)
+
+        data['c'] = data.id['a'] + 1
+
+        assert len(data.links) == 3
+
+        assert isinstance(data.links[2], BinaryComponentLink)
+
 
 class TestROICreation(object):
 
@@ -377,13 +429,13 @@ class TestROICreation(object):
 
         d = Data(xdata=[1, 2, 3], ydata=[1, 2, 3])
         comp = d.get_component(d.id['xdata'])
-        roi = RangeROI('x', min=2,max=3)
+        roi = RangeROI('x', min=2, max=3)
         s = comp.subset_from_roi('xdata', roi)
         assert isinstance(s, RangeSubsetState)
         np.testing.assert_array_equal((s.lo, s.hi),
                                       [2, 3])
 
-        roi = RangeROI('y', min=2,max=3)
+        roi = RangeROI('y', min=2, max=3)
         s = comp.subset_from_roi('xdata', roi, other_att='ydata',
                                  other_comp=d.get_component(d.id['ydata']))
         assert isinstance(s, RangeSubsetState)
@@ -582,11 +634,11 @@ Data Set: mydata
 Number of dimensions: 1
 Shape: 3
 Main components:
- 0) x
- 1) y
-Hidden components:
- 0) Pixel Axis 0 [x]
- 1) World 0
+ - x
+ - y
+Coordinate components:
+ - Pixel Axis 0 [x]
+ - World 0
 """.strip()
 
 
@@ -594,6 +646,27 @@ def test_data_str():
     # Regression test for Data.__str__
     d = Data(x=[1, 2, 3], y=[2, 3, 4], label='mydata')
     assert str(d) == EXPECTED_STR
+
+
+EXPECTED_STR_WITH_DERIVED = """
+Data Set: mydata
+Number of dimensions: 1
+Shape: 3
+Main components:
+ - x
+ - y
+Derived components:
+ - z
+Coordinate components:
+ - Pixel Axis 0 [x]
+ - World 0
+""".strip()
+
+
+def test_data_str_with_derived():
+    d = Data(x=[1, 2, 3], y=[2, 3, 4], label='mydata')
+    d['z'] = d.id['x'] + 1
+    assert str(d) == EXPECTED_STR_WITH_DERIVED
 
 
 def test_update_values_from_data():
@@ -663,42 +736,6 @@ def test_find_component_id_with_cid():
 
     assert d1.find_component_id(d1.id['a']) is d1.id['a']
     assert d1.find_component_id(d1.id['b']) is d1.id['b']
-
-
-def test_linked_component_visible():
-
-    # Regression test for a bug that caused components to become hidden once
-    # they were linked with another component.
-
-    from ..link_helpers import LinkSame
-    from ..data_collection import DataCollection
-
-    d1 = Data(x=[1], y=[2])
-    d2 = Data(w=[3], v=[4])
-
-    assert not d1.id['x'].hidden
-    assert not d2.id['w'].hidden
-
-    dc = DataCollection([d1, d2])
-    dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
-
-    assert d1.id['x'] is d2.id['x']
-    assert d1.id['w'] is d2.id['w']
-
-    assert not d1.id['x'].hidden
-    assert not d2.id['w'].hidden
-
-    assert not d1.id['w'].hidden
-    assert not d2.id['x'].hidden
-
-    assert d1.id['x'].parent is d1
-    assert d1.id['y'].parent is d1
-
-    assert d2.id['w'].parent is d2
-    assert d2.id['v'].parent is d2
-
-    assert d1.visible_components == [d1.id['x'], d1.id['y']]
-    assert d2.visible_components == [d2.id['v'], d2.id['w']]
 
 
 def test_parent_preserved_session():

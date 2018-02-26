@@ -37,7 +37,8 @@ class DataCollection(HubListener):
         :param data: :class:`~glue.core.data.Data` object, or list of such objects
         """
         super(DataCollection, self).__init__()
-        self._link_manager = LinkManager()
+
+        self._link_manager = LinkManager(self)
         self._data = []
 
         self.hub = None
@@ -76,6 +77,7 @@ class DataCollection(HubListener):
                 s.register()
             msg = DataCollectionAddMessage(self, data)
             self.hub.broadcast(msg)
+
         self._sync_link_manager()
 
     def extend(self, data):
@@ -117,16 +119,7 @@ class DataCollection(HubListener):
 
         # Avoid circular calls
         with self._no_sync_link_manager():
-
-            # add any links in the data
-            for d in self._data:
-                for derived in d.derived_components:
-                    self._link_manager.add_link(d.get_component(derived).link)
-                for link in d.coordinate_links:
-                    self._link_manager.add_link(link)
-
-            for d in self._data:
-                self._link_manager.update_data_components(d)
+            self._link_manager.update_externally_derivable_components()
 
     @contextmanager
     def _no_sync_link_manager(self):
@@ -141,6 +134,13 @@ class DataCollection(HubListener):
         """
         return tuple(self._link_manager.links)
 
+    @property
+    def external_links(self):
+        """
+        Tuple of :class:`~glue.core.component_link.ComponentLink` objects.
+        """
+        return tuple(self._link_manager.external_links)
+
     def add_link(self, links):
         """Add one or more links to the data collection.
 
@@ -151,13 +151,7 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        # Adding derived comments can trigger _sync_link_manager but we
-        # don't need to do this since we are explicitly calling
-        # update_data_components here.
-        with self._no_sync_link_manager():
-            self._link_manager.add_link(links)
-            for d in self._data:
-                self._link_manager.update_data_components(d)
+        self._link_manager.add_link(links)
 
     def remove_link(self, links):
         """
@@ -170,38 +164,22 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        # Removing derived comments can trigger _sync_link_manager but we
-        # don't need to do this since we are explicitly calling
-        # update_data_components here.
-        with self._no_sync_link_manager():
-            self._link_manager.remove_link(links)
-            for d in self._data:
-                self._link_manager.update_data_components(d)
+        self._link_manager.remove_link(links)
 
     def _merge_link(self, link):
         pass
 
     def set_links(self, links):
-        """Override the links in the collection, and update data
-        objects as necessary.
+        """
+        Override the links in the collection, and update data objects as
+        necessary.
 
         :param links: The new links. An iterable of
             :class:`~glue.core.component_link.ComponentLink` instances
         """
+        self._link_manager.clear_links()
+        self._link_manager.add_link(links)
 
-        # Adding derived comments can trigger _sync_link_manager but we
-        # don't need to do this since we are explicitly calling
-        # update_data_components here.
-
-        with self._no_sync_link_manager():
-
-            self._link_manager.clear()
-
-            for link in links:
-                self._link_manager.add_link(link)
-
-            for d in self._data:
-                self._link_manager.update_data_components(d)
 
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub.

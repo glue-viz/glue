@@ -156,6 +156,10 @@ class DataReorderComponentMessage(DataMessage):
         self.component_ids = component_ids
 
 
+class ExternallyDerivableComponentsChangedMessage(DataMessage):
+    pass
+
+
 class ComponentsChangedMessage(DataMessage):
     pass
 

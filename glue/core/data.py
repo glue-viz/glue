@@ -10,7 +10,8 @@ from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
-                               ComponentReplacedMessage, DataReorderComponentMessage)
+                               ComponentReplacedMessage, DataReorderComponentMessage,
+                               ExternallyDerivableComponentsChangedMessage)
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
@@ -77,6 +78,7 @@ class Data(object):
 
         # Components
         self._components = OrderedDict()
+        self._externally_derivable_components = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
 
@@ -93,7 +95,7 @@ class Data(object):
 
         self.style = VisualAttributes(parent=self)
 
-        self._coordinate_links = None
+        self._coordinate_links = []
 
         self.data = self
         self.label = label
@@ -179,13 +181,28 @@ class Data(object):
         :param component_id: the component to remove
         :type component_id: :class:`~glue.core.component_id.ComponentID`
         """
+        # TODO: avoid too many messages when removing a component triggers
+        # the removal of derived components.
         if component_id in self._components:
             self._components.pop(component_id)
+            self._removed_derived_that_depend_on(component_id)
             if self.hub:
                 msg = DataRemoveComponentMessage(self, component_id)
                 self.hub.broadcast(msg)
                 msg = ComponentsChangedMessage(self)
                 self.hub.broadcast(msg)
+
+    def _removed_derived_that_depend_on(self, component_id):
+        """
+        Remove internal derived components that can no longer be derived.
+        """
+        remove = []
+        for cid in self.derived_components:
+            comp = self.get_component(cid)
+            if component_id in comp.link.get_from_ids():
+                remove.append(cid)
+        for cid in remove:
+            self.remove_component(cid)
 
     @contract(other='isinstance(Data)',
               cid='cid_like',
@@ -359,7 +376,7 @@ class Data(object):
         other._key_joins[self] = (cid_other, cid)
 
     @contract(component='component_like', label='cid_like')
-    def add_component(self, component, label, hidden=False):
+    def add_component(self, component, label):
         """ Add a new component to this data set.
 
         :param component: object to add. Can be a Component,
@@ -385,7 +402,7 @@ class Data(object):
         """
 
         if isinstance(component, ComponentLink):
-            return self.add_component_link(component, label=label, hidden=hidden)
+            return self.add_component_link(component, label=label)
 
         if not isinstance(component, Component):
             component = Component.autotyped(component)
@@ -405,9 +422,10 @@ class Data(object):
             if component_id.parent is None:
                 component_id.parent = self
         else:
-            component_id = ComponentID(label, hidden=hidden, parent=self)
+            component_id = ComponentID(label, parent=self)
 
         if len(self._components) == 0:
+            # TODO: make sure the following doesn't raise a componentsraised message
             self._create_pixel_and_world_components(ndim=component.ndim)
 
         # In some cases, such as when loading a session, we actually disable the
@@ -429,32 +447,62 @@ class Data(object):
 
         return component_id
 
+    def _set_externally_derivable_components(self, derivable_components):
+        """
+        Externally deriable components are components identified by component
+        IDs from other datasets.
+
+        This method is meant for internal use only and is called by the link
+        manager. The ``derivable_components`` argument should be set to a
+        dictionary where the keys are the derivable component IDs, and the
+        values are DerivedComponent instances which can be used to get the
+        data.
+        """
+        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
+            return
+        self._externally_derivable_components = derivable_components
+        if self.hub:
+            msg = ExternallyDerivableComponentsChangedMessage(self)
+            self.hub.broadcast(msg)
+
     @contract(link=ComponentLink,
               label='cid_like|None',
               returns=DerivedComponent)
-    def add_component_link(self, link, label=None, hidden=False):
-        """ Shortcut method for generating a new :class:`~glue.core.component.DerivedComponent`
-        from a ComponentLink object, and adding it to a data set.
+    def add_component_link(self, link, label=None):
+        """
+        Shortcut method for generating a new
+        :class:`~glue.core.component.DerivedComponent` from a ComponentLink
+        object, and adding it to a data set.
 
-        :param link: :class:`~glue.core.component_link.ComponentLink`
-        :param label: The ComponentID or label to attach to.
-        :type label: :class:`~glue.core.component_id.ComponentID` or str
+        Parameters
+        ----------
+        link : :class:`~glue.core.component_link.ComponentLink`
+            The link to use to generate a new component
+        label : :class:`~glue.core.component_id.ComponentID` or str
+            The ComponentID or label to attach to.
 
-        :returns:
-            The :class:`~glue.core.component.DerivedComponent` that was added
+        Returns
+        -------
+        component : :class:`~glue.core.component.DerivedComponent`
+            The component that was added
         """
         if label is not None:
             if not isinstance(label, ComponentID):
-                label = ComponentID(label, parent=self, hidden=hidden)
+                label = ComponentID(label, parent=self)
             link.set_to_id(label)
 
         if link.get_to_id() is None:
             raise TypeError("Cannot add component_link: "
                             "has no 'to' ComponentID")
 
+        for cid in link.get_from_ids():
+            if cid not in self.components:
+                raise ValueError("Can only add internal links with add_component_link "
+                                 "- use DataCollection.add_link to add inter-data links")
+
         dc = DerivedComponent(self, link)
         to_ = link.get_to_id()
-        self.add_component(dc, label=to_, hidden=hidden)
+        self.add_component(dc, label=to_)
         return dc
 
     def _create_pixel_and_world_components(self, ndim):
@@ -462,15 +510,43 @@ class Data(object):
         for i in range(ndim):
             comp = CoordinateComponent(self, i)
             label = pixel_label(i, ndim)
-            cid = PixelComponentID(i, "Pixel Axis %s" % label, hidden=True, parent=self)
+            cid = PixelComponentID(i, "Pixel Axis %s" % label, parent=self)
             self.add_component(comp, cid)
             self._pixel_component_ids.append(cid)
+
         if self.coords:
             for i in range(ndim):
                 comp = CoordinateComponent(self, i, world=True)
                 label = self.coords.axis_label(i)
-                cid = self.add_component(comp, label, hidden=True)
+                cid = self.add_component(comp, label)
                 self._world_component_ids.append(cid)
+            self._set_up_coordinate_component_links(ndim)
+
+    def _set_up_coordinate_component_links(self, ndim):
+
+        def make_toworld_func(i):
+            def pix2world(*args):
+                return self.coords.pixel2world_single_axis(*args[::-1], axis=ndim - 1 - i)
+            return pix2world
+
+        def make_topixel_func(i):
+            def world2pix(*args):
+                return self.coords.world2pixel_single_axis(*args[::-1], axis=ndim - 1 - i)
+            return world2pix
+
+        result = []
+        for i in range(ndim):
+            link = CoordinateComponentLink(self._pixel_component_ids,
+                                           self._world_component_ids[i],
+                                           self.coords, i)
+            result.append(link)
+            link = CoordinateComponentLink(self._world_component_ids,
+                                           self._pixel_component_ids[i],
+                                           self.coords, i, pixel2world=False)
+            result.append(link)
+
+        self._coordinate_links = result
+        return result
 
     @property
     def components(self):
@@ -481,13 +557,17 @@ class Data(object):
         return list(self._components.keys())
 
     @property
+    def externally_derivable_components(self):
+        return list(self._externally_derivable_components.keys())
+
+    @property
     def visible_components(self):
-        """ :class:`ComponentIDs <glue.core.component_id.ComponentID>` for all non-hidden components.
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinate.
 
         :rtype: list
         """
         return [cid for cid, comp in self._components.items()
-                if not cid.hidden and not comp.hidden and cid.parent is self]
+                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
 
     @property
     def coordinate_components(self):
@@ -497,6 +577,11 @@ class Data(object):
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], CoordinateComponent)]
+
+    @property
+    def main_components(self):
+        return [c for c in self.component_ids() if
+                not isinstance(self._components[c], (DerivedComponent, CoordinateComponent))]
 
     @property
     def primary_components(self):
@@ -545,7 +630,7 @@ class Data(object):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components):
+        for cid_set in (self.primary_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
@@ -563,45 +648,27 @@ class Data(object):
         return None
 
     @property
-    def coordinate_links(self):
-        """A list of the ComponentLinks that connect pixel and
-        world. If no coordinate transformation object is present,
-        return an empty list.
+    def links(self):
         """
-        if self._coordinate_links:
-            return self._coordinate_links
+        A list of all the links internal to the dataset.
+        """
+        return self.coordinate_links + self.derived_links
 
-        if not self.coords:
-            return []
+    @property
+    def coordinate_links(self):
+        """
+        A list of the ComponentLinks that connect pixel and world. If no
+        coordinate transformation object is present, return an empty list.
+        """
+        return self._coordinate_links
 
-        if self.ndim != len(self._pixel_component_ids) or \
-                self.ndim != len(self._world_component_ids):
-                # haven't populated pixel, world coordinates yet
-            return []
-
-        def make_toworld_func(i):
-            def pix2world(*args):
-                return self.coords.pixel2world_single_axis(*args[::-1], axis=self.ndim - 1 - i)
-            return pix2world
-
-        def make_topixel_func(i):
-            def world2pix(*args):
-                return self.coords.world2pixel_single_axis(*args[::-1], axis=self.ndim - 1 - i)
-            return world2pix
-
-        result = []
-        for i in range(self.ndim):
-            link = CoordinateComponentLink(self._pixel_component_ids,
-                                           self._world_component_ids[i],
-                                           self.coords, i)
-            result.append(link)
-            link = CoordinateComponentLink(self._world_component_ids,
-                                           self._pixel_component_ids[i],
-                                           self.coords, i, pixel2world=False)
-            result.append(link)
-
-        self._coordinate_links = result
-        return result
+    @property
+    def derived_links(self):
+        """
+        A list of the links present inside all of the DerivedComponent objects
+        in this dataset.
+        """
+        return [self.get_component(cid).link for cid in self.derived_components]
 
     @contract(axis=int, returns=ComponentID)
     def get_pixel_component_id(self, axis):
@@ -705,7 +772,7 @@ class Data(object):
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
         :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: string
+        :type attribute: str
         """
         if not self.hub:
             return
@@ -756,8 +823,6 @@ class Data(object):
             pass
 
         if changed and self.hub is not None:
-            # promote hidden status
-            new._hidden = new.hidden and old.hidden
 
             # remove old component and broadcast the change
             # see #508 for discussion of this
@@ -768,24 +833,18 @@ class Data(object):
         s = "Data Set: %s\n" % self.label
         s += "Number of dimensions: %i\n" % self.ndim
         s += "Shape: %s\n" % ' x '.join([str(x) for x in self.shape])
-        for hidden in [False, True]:
-            if hidden:
-                s += "Hidden "
-            else:
-                s += "Main "
-            s += "components:\n"
-            if hidden:
-                components = [c for c in self.components if c not in self.visible_components]
-            else:
-                components = [c for c in self.visible_components]
-            for i, cid in enumerate(components):
-                if cid.hidden != hidden:
-                    continue
-                comp = self.get_component(cid)
-                if comp.units is None or comp.units == '':
-                    s += " %i) %s\n" % (i, cid)
-                else:
-                    s += " %i) %s [%s]\n" % (i, cid, comp.units)
+        categories = [('Main', self.main_components),
+                      ('Derived', self.derived_components),
+                      ('Coordinate', self.coordinate_components)]
+        for category, components in categories:
+            if len(components) > 0:
+                s += category + " components:\n"
+                for cid in components:
+                    comp = self.get_component(cid)
+                    if comp.units is None or comp.units == '':
+                        s += " - {0}\n".format(cid)
+                    else:
+                        s += " - {0} [{1}]\n".format(cid, comp.units)
         return s[:-1]
 
     def __repr__(self):
@@ -822,9 +881,11 @@ class Data(object):
         if isinstance(key, ComponentLink):
             return key.compute(self, view)
 
-        try:
+        if key in self._components:
             comp = self._components[key]
-        except KeyError:
+        elif key in self._externally_derivable_components:
+            comp = self._externally_derivable_components[key]
+        else:
             raise IncompatibleAttribute(key)
 
         shp = view_shape(self.shape, view)
@@ -859,9 +920,11 @@ class Data(object):
         if isinstance(component_id, six.string_types):
             component_id = self.id[component_id]
 
-        try:
+        if component_id in self._components:
             return self._components[component_id]
-        except KeyError:
+        elif component_id in self._externally_derivable_components:
+            return self._externally_derivable_components[component_id]
+        else:
             raise IncompatibleAttribute(component_id)
 
     def to_dataframe(self, index=None):

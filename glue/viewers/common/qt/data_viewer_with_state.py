@@ -201,6 +201,10 @@ class DataViewerWithState(DataViewer):
                       handler=self._update_data,
                       filter=self._has_data_or_subset)
 
+        hub.subscribe(self, msg.ExternallyDerivableComponentsChangedMessage,
+                      handler=self._update_data,
+                      filter=self._has_data_or_subset)
+
         hub.subscribe(self, msg.SettingsChangeMessage,
                       self._update_appearance_from_settings,
                       filter=self._is_appearance_settings)

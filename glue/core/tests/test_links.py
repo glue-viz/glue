@@ -18,7 +18,7 @@ def test_1d_world_link():
 
     dc.add_link(LinkSame(d2.get_world_component_id(0), d1.id['x']))
 
-    assert d2.get_world_component_id(0) in d1.components
+    assert d2.get_world_component_id(0) in d1.externally_derivable_components
     np.testing.assert_array_equal(d1[d2.get_world_component_id(0)], x)
     np.testing.assert_array_equal(d1[d2.get_pixel_component_id(0)], x)
 

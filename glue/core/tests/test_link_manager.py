@@ -50,7 +50,8 @@ def example_components(self, add_derived=True):
 
     self.primary = [c1, c2]
     self.direct = [c3, c4]
-    self.derived = [c5, c6]
+    self.derived = []
+    self.externally_derived = [c5, c6]
     self.inaccessible = [c7, c8]
 
 
@@ -85,7 +86,7 @@ class TestDiscoverLinks(object):
         links = discover_links(self.data, self.links)
 
         for i in self.inaccessible:
-            assert not i in links
+            assert i not in links
 
         for d in self.direct:
             assert d in links
@@ -94,7 +95,7 @@ class TestDiscoverLinks(object):
             assert d in links
 
         for p in self.primary:
-            assert not p in links
+            assert p not in links
 
     def test_links_point_to_proper_ids(self):
         """ Dictionary values are ComponentLinks which
@@ -160,32 +161,33 @@ class TestLinkManager(object):
         expected = set()
         assert set(self.data.derived_components) == expected
 
-    def test_update_data_components_adds_correctly(self):
+    def test_update_externally_derivable_components_adds_correctly(self):
         example_components(self, add_derived=False)
         lm = LinkManager()
         list(map(lm.add_link, self.links))
 
-        lm.update_data_components(self.data)
-        derived = set(self.data.derived_components)
-        expected = set(self.derived + self.direct)
+        lm.update_externally_derivable_components(self.data)
+        derived = set(self.data.externally_derivable_components)
+        expected = set(self.externally_derived + self.direct)
         assert derived == expected
 
-    def test_update_data_components_removes_correctly(self):
+    def test_update_externally_derivable_components_removes_correctly(self):
         # add all but last link to manager
         example_components(self, add_derived=False)
         lm = LinkManager()
         list(map(lm.add_link, self.links[:-1]))
+        lm.update_externally_derivable_components(self.data)
 
         # manually add last link as derived component
         dc = DerivedComponent(self.data, self.links[-1])
-        self.data.add_component(dc, dc.link.get_to_id())
+        self.data._externally_derivable_components.update({dc.link.get_to_id(): dc})
         removed = set([dc.link.get_to_id()])
-        assert dc.link.get_to_id() in self.data.derived_components
+        assert dc.link.get_to_id() in self.data.externally_derivable_components
 
         # this link should be removed upon update_components
-        lm.update_data_components(self.data)
-        derived = set(self.data.derived_components)
-        expected = set(self.direct + self.derived) - removed
+        lm.update_externally_derivable_components(self.data)
+        derived = set(self.data.externally_derivable_components)
+        expected = set(self.direct + self.externally_derived) - removed
         assert derived == expected
 
     def test_derived_links_correctwith_mergers(self):
@@ -258,3 +260,43 @@ class TestLinkManager(object):
         # Removing dataset should remove related links
         dc.remove(d1)
         assert len(dc.links) == 2
+
+    def test_remove_component_removes_links(self):
+
+        d1 = Data(x=[[1, 2], [3, 4]], label='image')
+        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog')
+
+        dc = DataCollection([d1, d2])
+
+        assert len(dc.links) == 6
+
+        assert len(d1.components) == 5
+        assert len(d2.components) == 4
+
+        assert len(d1.externally_derivable_components) == 0
+        assert len(d2.externally_derivable_components) == 0
+
+        dc.add_link(LinkSame(d1.id['x'], d2.id['a']))
+
+        assert len(dc.links) == 7
+
+        assert len(d1.components) == 5
+        assert len(d2.components) == 4
+
+        assert len(d1.externally_derivable_components) == 1
+        assert len(d2.externally_derivable_components) == 1
+
+        assert d1.id['x'] in d2.externally_derivable_components
+        assert d2.id['a'] in d1.externally_derivable_components
+
+        # Removing component a from d2 should remove related links and
+        # derived components.
+        d2.remove_component(d2.id['a'])
+
+        assert len(dc.links) == 6
+
+        assert len(d1.components) == 5
+        assert len(d2.components) == 3
+
+        assert len(d1.externally_derivable_components) == 0
+        assert len(d2.externally_derivable_components) == 0

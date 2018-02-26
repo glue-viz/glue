@@ -21,7 +21,7 @@ import logging
 
 from glue.external import six
 from glue.core.hub import HubListener
-from glue.core.message import DataCollectionDeleteMessage, ComponentsChangedMessage, DataAddComponentMessage, DataRemoveComponentMessage
+from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMessage
 from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
@@ -51,7 +51,8 @@ def accessible_links(cids, links):
 
 
 def discover_links(data, links):
-    """ Discover all links to components that can be derived
+    """
+    Discover all links to components that can be derived
     based on the current components known to a dataset, and a set
     of ComponentLinks.
 
@@ -131,18 +132,34 @@ class LinkManager(HubListener):
     and compute which components are accesible from which data sets
     """
 
-    def __init__(self):
-        self._links = set()
+    def __init__(self, data_collection=None):
+        self._external_links = set()
         self.hub = None
+        self.trigger = False
+        self.data_collection = data_collection
 
     def register_to_hub(self, hub):
         self.hub = hub
+        self.hub.subscribe(self, DataRemoveComponentMessage,
+                           handler=self._component_removed)
         self.hub.subscribe(self, DataCollectionDeleteMessage,
                            handler=self._data_removed)
 
+    def _component_removed(self, msg):
+        remove = []
+        remove_cid = msg.component_id
+        for link in self._external_links:
+            ids = set(link.get_from_ids()) | set([link.get_to_id()])
+            for cid in ids:
+                if cid is remove_cid:
+                    remove.append(link)
+                    break
+        for link in remove:
+            self.remove_link(link)
+
     def _data_removed(self, msg):
         remove = []
-        for link in self._links:
+        for link in self._external_links:
             ids = set(link.get_from_ids()) | set([link.get_to_id()])
             for cid in ids:
                 if cid.parent is msg.data:
@@ -151,7 +168,10 @@ class LinkManager(HubListener):
         for link in remove:
             self.remove_link(link)
 
-    def add_link(self, link):
+    def clear_links(self):
+        self._external_links.clear()
+
+    def add_link(self, link, update_external=True):
         """
         Ingest one or more ComponentLinks to the manager
 
@@ -162,24 +182,33 @@ class LinkManager(HubListener):
         """
         if isinstance(link, (LinkCollection, list)):
             for l in link:
-                self.add_link(l)
+                self.add_link(l, update_external=False)
+            if update_external:
+                self.update_externally_derivable_components()
         else:
-            if link.inverse not in self._links:
-                self._links.add(link)
+            if link.inverse not in self._external_links:
+                self._external_links.add(link)
+                if update_external:
+                    self.update_externally_derivable_components()
 
     @contract(link=ComponentLink)
-    def remove_link(self, link):
+    def remove_link(self, link, update_external=True):
         if isinstance(link, (LinkCollection, list)):
             for l in link:
-                self.remove_link(l)
+                self.remove_link(l, update_external=False)
+            if update_external:
+                self.update_externally_derivable_components()
         else:
             logging.getLogger(__name__).debug('removing link %s', link)
-            self._links.remove(link)
+            self._external_links.remove(link)
+            if update_external:
+                self.update_externally_derivable_components()
 
     @contract(data=Data)
-    def update_data_components(self, data):
-        """Update all the DerivedComponents in a data object, based on
-        all the Components deriveable based on the links in self.
+    def update_externally_derivable_components(self, data=None):
+        """
+        Update all the externally derived components in all data objects, based
+        on all the Components deriveable based on the links in self.
 
         This overrides any ComponentLinks stored in the
         DerivedComponents of the data itself -- any components which
@@ -195,62 +224,45 @@ class LinkManager(HubListener):
         DerivedComponents will be replaced / added into
         the data object
         """
-        if self.hub is None:
-            self._remove_underiveable_components(data)
-            self._add_deriveable_components(data)
+
+        if self.data_collection is None:
+            if data is None:
+                return
+            else:
+                data_collection = [data]
         else:
-            before = data.components[:]
-            with self.hub.ignore_callbacks(DataRemoveComponentMessage):
-                with self.hub.ignore_callbacks(DataAddComponentMessage):
-                    with self.hub.ignore_callbacks(ComponentsChangedMessage):
-                        self._remove_underiveable_components(data)
-                        self._add_deriveable_components(data)
-            after = data.components[:]
-            if len(before) != len(after) or any(before[i] is not after[i] for i in range(len(before))):
-                msg = ComponentsChangedMessage(data)
-                self.hub.broadcast(msg)
+            data_collection = self.data_collection
+
+        for data in data_collection:
+            links = discover_links(data, self._links | self._inverse_links)
+            comps = {}
+            for cid, link in six.iteritems(links):
+                d = DerivedComponent(data, link)
+                comps[cid] = d
+            data._set_externally_derivable_components(comps)
+
+    @property
+    def _links(self):
+        if self.data_collection is None:
+            data_links = set()
+        else:
+            data_links = set(link for data in self.data_collection for link in data.links)
+        return data_links | self._external_links
 
     @property
     def _inverse_links(self):
         return set(link.inverse for link in self._links if link.inverse is not None)
 
-    def _remove_underiveable_components(self, data):
-        """ Find and remove any DerivedComponent in the data
-        which requires a ComponentLink not tracked by this LinkManager
-        """
-        data_links = set(data.get_component(dc).link
-                         for dc in data.derived_components)
-        missing_links = data_links - self._links - self._inverse_links
-        to_remove = []
-        for m in missing_links:
-            to_remove.extend(find_dependents(data, m))
-
-        if getattr(data, 'hub', None) is None:
-            for r in to_remove:
-                data.remove_component(r)
-        else:
-            with data.hub.delay_callbacks():
-                for r in to_remove:
-                    data.remove_component(r)
-
-    def _add_deriveable_components(self, data):
-        """Find and add any DerivedComponents that a data object can
-        calculate given the ComponentLinks tracked by this
-        LinkManager
-
-        """
-        links = discover_links(data, self._links | self._inverse_links)
-        for cid, link in six.iteritems(links):
-            d = DerivedComponent(data, link)
-            if cid not in data.components:
-                data.add_component(d, cid)
-
     @property
     def links(self):
         return list(self._links)
 
+    @property
+    def external_links(self):
+        return list(self._external_links)
+
     def clear(self):
-        self._links.clear()
+        self._external_links.clear()
 
     def __contains__(self, item):
         return item in self._links

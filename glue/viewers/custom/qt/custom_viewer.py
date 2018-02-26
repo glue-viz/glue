@@ -1377,13 +1377,12 @@ class ComponenentElement(FormElement, core.hub.HubListener):
         """
         Determine which components to list.
 
-
         This can be overridden by subclassing to limit which components are
         visible to the user.
 
         """
         comps = list(set([c for l in self.container.layers
-                          for c in l.data.components if not c._hidden]))
+                          for c in (l.data.main_components + l.data.derived_components)]))
         comps = sorted(comps, key=lambda x: x.label)
         return comps
 

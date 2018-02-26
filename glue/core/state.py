@@ -635,11 +635,66 @@ def _save_data_collection_3(dc, context):
     return result
 
 
+@saver(DataCollection, version=4)
+def _save_data_collection_4(dc, context):
+    cids = [c for data in dc for c in data.component_ids()]
+    components = [data.get_component(c)
+                  for data in dc for c in data.component_ids()]
+    return dict(data=list(map(context.id, dc)),
+                links=list(map(context.id, dc.external_links)),
+                cids=list(map(context.id, cids)),
+                components=list(map(context.id, components)),
+                groups=list(map(context.id, dc.subset_groups)),
+                subset_group_count=dc._sg_count)
+
+
 @loader(DataCollection)
 def _load_data_collection(rec, context):
-    dc = DataCollection(list(map(context.object, rec['data'])))
+
+    datasets = list(map(context.object, rec['data']))
+
     links = [context.object(link) for link in rec['links']]
-    dc.set_links(links)
+
+    # Filter out CoordinateComponentLinks that may have been saved in the past
+    # as these are now re-generated on-the-fly.
+    links = [link for link in links if not isinstance(link, CoordinateComponentLink)]
+
+    # Go through and split links into links internal to datasets and ones
+    # between datasets as this dictates whether they should be set on the
+    # data collection or on the data objects.
+    external, internal = [], []
+    for link in links:
+        parent_to = link.get_to_id().parent
+        for cid in link.get_from_ids():
+            if cid.parent is not parent_to:
+                external.append(link)
+                break
+        else:
+            internal.append(link)
+
+    # Remove components in datasets that have external links
+    for data in datasets:
+        remove = []
+        for cid in data.derived_components:
+            comp = data.get_component(cid)
+
+            # Neihter in external nor in links overall
+            if rec.get('_protocol', 0) <= 3:
+                if comp.link not in internal:
+                    remove.append(cid)
+
+            if isinstance(comp.link, CoordinateComponentLink):
+                remove.append(cid)
+
+            if len(comp.link.get_from_ids()) == 1 and comp.link.get_from_ids()[0].parent is comp.link.get_to_id().parent and comp.link.get_from_ids()[0].label == comp.link.get_to_id().label:
+                remove.append(cid)
+
+        for cid in remove:
+            data.remove_component(cid)
+
+    dc = DataCollection(datasets)
+
+    dc.set_links(external)
     coerce_subset_groups(dc)
     return dc
 
@@ -652,11 +707,29 @@ def _load_data_collection_2(rec, context):
         grp.register_to_hub(result.hub)
     return result
 
+
 @loader(DataCollection, version=3)
 def _load_data_collection_3(rec, context):
     result = _load_data_collection_2(rec, context)
     result._sg_count = rec['subset_group_count']
     return result
+
+
+@loader(DataCollection, version=4)
+def _load_data_collection_4(rec, context):
+
+    dc = DataCollection(list(map(context.object, rec['data'])))
+    links = [context.object(link) for link in rec['links']]
+    dc.set_links(links)
+    coerce_subset_groups(dc)
+
+    dc._subset_groups = list(map(context.object, rec['groups']))
+    for grp in dc.subset_groups:
+        grp.register_to_hub(dc.hub)
+
+    dc._sg_count = rec['subset_group_count']
+
+    return dc
 
 
 @saver(Data)
@@ -699,8 +772,7 @@ def _load_data(rec, context):
             # and upgrade it to one. This can be removed once we no longer
             # support pre-v0.8 session files.
             if not comp.world and not isinstance(cid, PixelComponentID):
-                cid = PixelComponentID(comp.axis, cid.label,
-                                       hidden=cid.hidden, parent=cid.parent)
+                cid = PixelComponentID(comp.axis, cid.label, parent=cid.parent)
                 comps[icomp] = (cid, comp)
 
         result.add_component(comp, cid)
@@ -714,6 +786,9 @@ def _load_data(rec, context):
 
     result._world_component_ids = coord[:len(coord) // 2]
     result._pixel_component_ids = coord[len(coord) // 2:]
+
+    # We can now re-generate the coordinate links
+    result._set_up_coordinate_component_links(result.ndim)
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
@@ -797,17 +872,17 @@ def _load_data_5(rec, context):
 
 @saver(ComponentID)
 def _save_component_id(cid, context):
-    return dict(label=cid.label, hidden=cid.hidden)
+    return dict(label=cid.label)
 
 
 @loader(ComponentID)
 def _load_component_id(rec, context):
-    return ComponentID(rec['label'], rec['hidden'])
+    return ComponentID(rec['label'])
 
 
 @saver(PixelComponentID)
 def _save_pixel_component_id(cid, context):
-    return dict(axis=cid.axis, label=cid.label, hidden=cid.hidden)
+    return dict(axis=cid.axis, label=cid.label)
 
 
 @loader(PixelComponentID)
@@ -816,7 +891,7 @@ def _load_pixel_component_id(rec, context):
         axis = rec['axis']
     else:  # backward-compatibility
         axis = int(rec['label'].split()[2])
-    return PixelComponentID(axis, rec['label'], rec['hidden'])
+    return PixelComponentID(axis, rec['label'])
 
 
 @saver(Component)
@@ -883,8 +958,7 @@ def _save_component_link(link, context):
     to = list(map(context.id, [link.get_to_id()]))
     using = context.do(link.get_using())
     inverse = context.do(link.get_inverse())
-    hidden = link.hidden
-    return dict(frm=frm, to=to, using=using, inverse=inverse, hidden=hidden)
+    return dict(frm=frm, to=to, using=using, inverse=inverse)
 
 
 @loader(ComponentLink)
@@ -894,7 +968,6 @@ def _load_component_link(rec, context):
     using = context.object(rec['using'])
     inverse = context.object(rec['inverse'])
     result = ComponentLink(frm, to, using, inverse)
-    result.hidden = rec['hidden']
     return result
 
 
@@ -917,6 +990,17 @@ def _load_coordinate_component_link(rec, context):
     pix2world = rec['pix2world']
     frm = list(map(context.object, rec['frm']))
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
+
+
+@saver(types.BuiltinFunctionType)
+def _save_builtin_function(function, context):
+    ref = "%s.%s" % (function.__module__, function.__name__)
+    return {'function': ref}
+
+
+@loader(types.BuiltinFunctionType)
+def _load_builtin_function(rec, context):
+    return lookup_class_with_patches(rec['function'])
 
 
 @saver(types.FunctionType)

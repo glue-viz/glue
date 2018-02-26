@@ -18,6 +18,11 @@ __all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
 def identity(x):
     return x
 
+
+def null(*args):
+    return None
+
+
 OPSYM = {operator.add: '+', operator.sub: '-',
          operator.truediv: '/', operator.mul: '*',
          operator.pow: '**'}
@@ -93,7 +98,6 @@ class ComponentLink(object):
         self._using = using
         self._inverse = inverse
 
-        self.hidden = False  # show in widgets?
         self.identity = self._using is identity
 
         if not isinstance(comp_from, list):
@@ -317,7 +321,6 @@ class CoordinateComponentLink(ComponentLink):
         comp_from = [comp_from[i] for i in self.from_needed]
         super(CoordinateComponentLink, self).__init__(
             comp_from, comp_to, self.using)
-        self.hidden = True
 
     def using(self, *args):
 
@@ -382,7 +385,6 @@ class BinaryComponentLink(ComponentLink):
                             right)
 
         to = ComponentID("")
-        null = lambda *args: None
         super(BinaryComponentLink, self).__init__(from_, to, null)
 
     def replace_ids(self, old, new):
@@ -397,13 +399,26 @@ class BinaryComponentLink(ComponentLink):
             self._right.replace_ids(old, new)
 
     def compute(self, data, view=None):
-        l = self._left
-        r = self._right
+        left = self._left
+        right = self._right
         if not isinstance(self._left, numbers.Number):
-            l = data[self._left, view]
+            left = data[self._left, view]
         if not isinstance(self._right, numbers.Number):
-            r = data[self._right, view]
-        return self._op(l, r)
+            right = data[self._right, view]
+        return self._op(left, right)
+
+    def __gluestate__(self, context):
+        left = context.id(self._left)
+        right = context.id(self._right)
+        operator = context.do(self._op)
+        return dict(left=left, right=right, operator=operator)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        left = context.object(rec['left'])
+        right = context.object(rec['right'])
+        operator = context.object(rec['operator'])
+        return cls(left, right, operator)
 
     def __str__(self):
         sym = OPSYM.get(self._op, self._op.__name__)

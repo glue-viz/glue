@@ -149,7 +149,7 @@ class BaseFitter1D(object):
         :type y:  :class:`numpy.ndarray`
         :param dy: 1 sigma uncertainties on each datum (optional)
         :type dy: :class:`numpy.ndarray`
-        :param constraints: The current value of :attr:`constraints`
+        :param constraints: The current value of the ``constraints`` property
         :param options: kwargs for model hyperparameters.
 
         :returns: An object representing the fit result.

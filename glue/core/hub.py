@@ -83,14 +83,12 @@ class Hub(object):
            An optional function of the form handler(message) that will
            receive the message on behalf of the subscriber. If not provided,
            this defaults to the HubListener's notify method
-        :type handler: Callable
 
 
         :param filter:
            An optional function of the form filter(message). Messages
            are only passed to the subscriber if filter(message) == True.
            The default is to always pass messages.
-        :type filter: Callable
 
 
         Raises:
