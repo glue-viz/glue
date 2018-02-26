@@ -41,6 +41,7 @@ class RoiClickAndDragMode(MouseMode):
     def _deselect_roi(self, event):
         if self._roi:
             self._roi.finalize_selection(event)
+            self._edit_subset_mode.edit_subset = []
 
             self._roi = None
             self._subset = None
