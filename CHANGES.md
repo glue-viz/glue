@@ -56,6 +56,8 @@ v0.13.0 (unreleased)
 v0.12.4 (unreleased)
 --------------------
 
+* Improve error message in PV slicer when _slice_index fails. [#1536]
+
 * Fixed a bug that caused an error in the terminal if creating a data
   viewer failed properly (with a GUI error message).
 
