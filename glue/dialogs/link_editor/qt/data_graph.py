@@ -184,7 +184,7 @@ def layout_simple_circle(nodes, edges, center=None, radius=None, reorder=True):
     # Place nodes around a circle
 
     if reorder:
-        nodes = order_nodes_by_connections(nodes, edges)
+        nodes[:] = order_nodes_by_connections(nodes, edges)
 
     for i, node in enumerate(nodes):
         angle = 2 * np.pi * i / len(nodes)
@@ -252,10 +252,10 @@ class DataGraphWidget(QGraphicsView):
     def relayout(self, reorder=True):
 
         # Update radius
-        for node in self.nodes.values():
+        for node in self.nodes:
             node.radius = self.height() / 30.
 
-        layout_simple_circle(self.nodes.values(), self.edges,
+        layout_simple_circle(self.nodes, self.edges,
                              center=(self.width() / 2, self.height() / 2),
                              radius=self.height() / 3, reorder=reorder)
 
@@ -264,10 +264,10 @@ class DataGraphWidget(QGraphicsView):
             edge.update_position()
 
         # Set up labels
-        self.left_nodes = [node for node in self.nodes.values() if node.node_position[0] < self.width() / 2]
+        self.left_nodes = [node for node in self.nodes if node.node_position[0] < self.width() / 2]
         self.left_nodes = sorted(self.left_nodes, key=lambda x: x.node_position[1], reverse=True)
 
-        self.right_nodes = [node for node in self.nodes.values() if node.node_position[0] > self.width() / 2]
+        self.right_nodes = [node for node in self.nodes if node.node_position[0] > self.width() / 2]
         self.right_nodes = sorted(self.right_nodes, key=lambda x: x.node_position[1], reverse=True)
 
         for i, node in enumerate(self.left_nodes):
@@ -281,10 +281,11 @@ class DataGraphWidget(QGraphicsView):
     def set_data_collection(self, data_collection):
 
         # Get data and initialize nodes
-        self.nodes = dict((data, DataNode(data)) for data in data_collection)
+        self.data_to_nodes = dict((data, DataNode(data)) for data in data_collection)
+        self.nodes = list(self.data_to_nodes.values())
 
         # Get links and set up edges
-        self.edges = [Edge(self.nodes[data1], self.nodes[data2])
+        self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
                       for data1, data2 in get_connections(data_collection.external_links)]
 
         # Figure out positions
@@ -292,7 +293,7 @@ class DataGraphWidget(QGraphicsView):
 
         # Add nodes and edges to graph
 
-        for node in self.nodes.values():
+        for node in self.nodes:
             node.add_to_scene(self.scene)
 
         for edge in self.edges:
@@ -309,7 +310,7 @@ class DataGraphWidget(QGraphicsView):
         for edge in self.edges:
             edge.remove_from_scene(self.scene)
 
-        self.edges = [Edge(self.nodes[data1], self.nodes[data2])
+        self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
                       for data1, data2 in get_connections(links)]
 
         for edge in self.edges:
@@ -328,7 +329,7 @@ class DataGraphWidget(QGraphicsView):
 
         if not self.text_adjusted:
 
-            for node in self.nodes.values():
+            for node in self.nodes:
 
                 width = node.label.boundingRect().width()
                 height = node.label.boundingRect().height()
@@ -352,13 +353,13 @@ class DataGraphWidget(QGraphicsView):
             self.selection_level = 1
         else:
             self.selection_level = 0
-        self.selected_node1 = self.nodes.get(data1, None)
-        self.selected_node2 = self.nodes.get(data2, None)
+        self.selected_node1 = self.data_to_nodes.get(data1, None)
+        self.selected_node2 = self.data_to_nodes.get(data2, None)
         self._update_selected_edge()
         self._update_selected_colors()
 
     def find_object(self, event):
-        for obj in list(self.nodes.values()) + self.edges:
+        for obj in list(self.nodes) + self.edges:
             if obj.contains(event.localPos()):
                 return obj
 
@@ -468,9 +469,9 @@ class DataGraphWidget(QGraphicsView):
 
         if self.selected_node1 is not None and self.selection_level < 2:
 
-            direct, indirect = find_connections(self.selected_node1, self.nodes.values(), self.edges)
+            direct, indirect = find_connections(self.selected_node1, self.nodes, self.edges)
 
-            for node in self.nodes.values():
+            for node in self.nodes:
                 if node in direct or node in indirect:
                     colors[node] = COLOR_CONNECTED
                 else:
@@ -494,7 +495,7 @@ class DataGraphWidget(QGraphicsView):
 
     def set_colors(self, colors):
 
-        for obj in list(self.nodes.values()) + self.edges:
+        for obj in list(self.nodes) + self.edges:
             default_color = '0.8' if isinstance(obj, DataNode) else '0.5'
             obj.color = colors.get(obj, default_color)
             obj.update()
