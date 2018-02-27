@@ -53,6 +53,8 @@ v0.13.0 (unreleased)
 
 * Added initial support for customizing keyboard shortcuts. [#1475]
 
+* Added support for using relative paths in session files. [#1537]
+
 v0.12.4 (unreleased)
 --------------------
 

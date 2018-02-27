@@ -104,6 +104,8 @@ class LoadLog(object):
         else:
             self.watcher = None
 
+        self._absolute = True
+
     def _log_component(self, component):
         self.components.append(component)
 
@@ -150,7 +152,11 @@ class LoadLog(object):
             dold.update_components(mapping)
 
     def __gluestate__(self, context):
-        return dict(path=self.path,
+        if context.absolute_paths:
+            path = os.path.abspath(self.path)
+        else:
+            path = os.path.relpath(self.path)
+        return dict(path=path,
                     factory=context.do(self.factory),
                     kwargs=[list(self.kwargs.items())],
                     _protocol=1)

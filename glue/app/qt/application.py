@@ -907,7 +907,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # include file filter twice, so it shows up in Dialog
         outfile, file_filter = compat.getsavefilename(
-            parent=self, filters=("Glue Session (*.glu);; "
+            parent=self, filters=("Glue Session with absolute paths to data(*.glu);; "
+                                  "Glue Session with relative paths to data(*.glu);; "
                                   "Glue Session including data (*.glu)"))
 
         # This indicates that the user cancelled
@@ -919,8 +920,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             outfile += '.glu'
 
         with set_cursor_cm(Qt.WaitCursor):
-            self.save_session(
-                outfile, include_data="including data" in file_filter)
+            self.save_session(outfile,
+                              include_data="including data" in file_filter,
+                              absolute_paths="absolute" in file_filter)
 
     @messagebox_on_error("Failed to export session")
     def _choose_export_session(self, saver, checker, outmode):
