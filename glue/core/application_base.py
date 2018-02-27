@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import traceback
 from functools import wraps
 
@@ -11,7 +12,7 @@ from glue.core import command
 from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
-from glue.utils import as_list, PropertySetMixin
+from glue.utils import PropertySetMixin
 
 
 __all__ = ['Application', 'ViewerBase']
@@ -91,7 +92,7 @@ class Application(HubListener):
         return c
 
     @catch_error("Failed to save session")
-    def save_session(self, path, include_data=False):
+    def save_session(self, path, include_data=False, absolute_paths=True):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
@@ -99,9 +100,25 @@ class Application(HubListener):
         Note: Saving of client is not currently supported. Thus,
         restoring this session will lose all current viz windows
         """
+
         from glue.core.state import GlueSerializer
-        gs = GlueSerializer(self, include_data=include_data)
-        state = gs.dumps(indent=2)
+        gs = GlueSerializer(self,
+                            include_data=include_data,
+                            absolute_paths=absolute_paths)
+
+        # In case relative paths are needed in the session file, we do the
+        # serialization while setting the current directory to the directory
+        # in which the session file will be saved so that the relative paths
+        # are relative to the session file, not the current working directory.
+        start_dir = os.path.abspath('.')
+        session_dir = os.path.dirname(path) or '.'
+
+        try:
+            os.chdir(session_dir)
+            state = gs.dumps(indent=2)
+        finally:
+            os.chdir(start_dir)
+
         with open(path, 'w') as out:
             out.write(state)
 
@@ -122,10 +139,21 @@ class Application(HubListener):
         """
         from glue.core.state import GlueUnSerializer
 
-        with open(path) as infile:
-            state = GlueUnSerializer.load(infile)
+        # In case relative paths are needed in the session file, we do the
+        # loading while setting the current directory to the directory
+        # in which the session file is so that relative paths are interpreted
+        # as relative to the session file.
+        start_dir = os.path.abspath('.')
+        session_dir = os.path.dirname(path) or '.'
+        session_file = os.path.basename(path)
 
-        return state.object('__main__')
+        try:
+            os.chdir(session_dir)
+            with open(session_file) as infile:
+                state = GlueUnSerializer.load(infile)
+            return state.object('__main__')
+        finally:
+            os.chdir(start_dir)
 
     def new_tab(self):
         raise NotImplementedError()

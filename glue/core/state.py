@@ -239,13 +239,14 @@ class GlueSerializer(object):
     """
     dispatch = VersionedDict()
 
-    def __init__(self, obj, include_data=False):
+    def __init__(self, obj, include_data=False, absolute_paths=True):
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
         self._main = obj
         self.id(obj)
         self.include_data = include_data
+        self.absolute_paths = absolute_paths
 
     @classmethod
     def serializes(cls, obj, version=1):

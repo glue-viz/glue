@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+import json
 from mock import MagicMock
 
 from .. import Data
@@ -111,3 +113,36 @@ def test_nested_data():
     assert a in app.data_collection
     assert b in app.data_collection
     assert c in app.data_collection
+
+
+def test_session_paths(tmpdir):
+
+    os.chdir(tmpdir.strpath)
+    tmpdir.mkdir('data')
+
+    with open(os.path.join('data', 'data.csv'), 'w') as f:
+        f.write('a, b\n1, 2\n3, 4\n')
+
+    app = MockApplication()
+    app.load_data(os.path.join('data', 'data.csv'))
+
+    # Make sure the paths work whether the session file is saved in the current
+    # directory or in a sub-directory (this is important for relative links)
+    for save_dir in ('.', 'data'):
+
+        for absolute in (True, False):
+
+            print(save_dir, absolute)
+
+            session_file = tmpdir.join(save_dir).join('test.glu').strpath
+
+            app.save_session(session_file, absolute_paths=absolute)
+
+            with open(session_file) as f:
+                data = json.load(f)
+
+            for key, value in data.items():
+                if value.get('_type') == 'glue.core.data_factories.helpers.LoadLog':
+                    assert os.path.isabs(value['path']) is absolute
+
+            MockApplication.restore_session(session_file)
