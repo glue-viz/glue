@@ -17,10 +17,16 @@
    <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Click on two datasets to set up links or click on an existing connection to edit links. When one node is selected, the colors show directly and indirectly linked (blue) and inaccessible (red) datasets. </string>
+      <string>Click on two datasets to set up links or click on an existing connection to edit links. Selected datasets are shown in green. When one dataset is selected, the colors show directly and indirectly linked (blue) and inaccessible (red) datasets. </string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

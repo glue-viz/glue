@@ -8,13 +8,8 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
 
 from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color
 
-PI = 3.14256
-TWOPI = PI * 2
-
 COLOR_SELECTED = (0.2, 0.9, 0.2)
-
-COLOR_DIRECT = (0.6, 0.9, 0.9)
-COLOR_INDIRECT = (0.6, 0.9, 0.9)
+COLOR_CONNECTED = (0.6, 0.9, 0.9)
 COLOR_DISCONNECTED = (0.9, 0.6, 0.6)
 
 
@@ -476,17 +471,15 @@ class DataGraphWidget(QGraphicsView):
             direct, indirect = find_connections(self.selected_node1, self.nodes.values(), self.edges)
 
             for node in self.nodes.values():
-                if node in direct:
-                    colors[node] = COLOR_DIRECT
-                elif node in indirect:
-                    colors[node] = COLOR_INDIRECT
+                if node in direct or node in indirect:
+                    colors[node] = COLOR_CONNECTED
                 else:
                     colors[node] = COLOR_DISCONNECTED
 
             for edge in self.edges:
                 if (edge.node_source is self.selected_node1 or
                         edge.node_dest is self.selected_node1):
-                    colors[edge] = COLOR_DIRECT
+                    colors[edge] = COLOR_CONNECTED
 
         if self.selected_edge is not None:
             colors[self.selected_edge] = COLOR_SELECTED
