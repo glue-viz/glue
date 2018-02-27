@@ -240,9 +240,10 @@ def _slice_index(data, slc):
     """
     The axis over which to extract PV slices
     """
-    return max([i for i in range(len(slc))
-                if isinstance(slc[i], int)],
-               key=lambda x: data.shape[x])
+    for i in range(len(slc)):
+        if np.isreal(slc[i]):
+            return i
+    raise ValueError("Could not find slice index with slc={0}".format(slc))
 
 
 def _slice_label(data, slc):
