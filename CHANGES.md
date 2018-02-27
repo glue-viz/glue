@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Improved link editor to include a graph of links. [#1534]
+
 * Improve mouse interaction with ROIs in image viewers, including
   click-and-drag relocation. Allow for more customization of mouse/toolbar
   modes. [#1515]
