@@ -8,7 +8,6 @@ except ImportError:  # Python 2.7
     from inspect import getargspec as getfullargspec
 
 from qtpy import QtWidgets
-from qtpy import PYSIDE
 from glue import core
 from glue.config import link_function, link_helper
 from glue.utils import nonpartial
@@ -133,7 +132,6 @@ class LinkEquation(QtWidgets.QWidget):
 
         # Set up mapping of function/helper name -> function/helper tuple. For the helpers, we use the 'display' name if available.
         self._argument_widgets = []
-        self.spacer = None
         self._output_widget = ArgumentWidget("")
 
         # pyqt4 can't take self as second argument here
@@ -144,7 +142,8 @@ class LinkEquation(QtWidgets.QWidget):
         l.addWidget(self._ui)
         self.setLayout(l)
 
-        self._init_widgets()
+        self._ui.outputs_layout.addWidget(self._output_widget)
+
         self._populate_category_combo()
         self.category = 'General'
         self._populate_function_combo()
@@ -152,7 +151,7 @@ class LinkEquation(QtWidgets.QWidget):
         self._setup_editor()
 
     def set_result_visible(self, state):
-        self._ui.output_canvas.setVisible(state)
+        self._output_widget.setVisible(state)
         self._ui.output_label.setVisible(state)
 
     def is_helper(self):
@@ -162,26 +161,6 @@ class LinkEquation(QtWidgets.QWidget):
     def is_function(self):
         return self.function is not None and \
             type(self.function).__name__ == 'LinkFunction'
-
-    def _init_widgets(self):
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.setSpacing(1)
-        self._ui.input_canvas.setLayout(layout)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(1, 0, 1, 1)
-        self._ui.output_canvas.setLayout(layout)
-
-        layout.addWidget(self._output_widget)
-        spacer = QtWidgets.QSpacerItem(5, 5,
-                                       QtWidgets.QSizePolicy.Minimum,
-                                       QtWidgets.QSizePolicy.Expanding)
-        layout.addItem(spacer)
-
-        font = self._ui.info.font()
-        font.setPointSize(font.pointSize() * 1.4)
-        self._ui.info.setFont(font)
 
     @property
     def signature(self):
@@ -261,10 +240,6 @@ class LinkEquation(QtWidgets.QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum,
-                                        QtWidgets.QSizePolicy.Expanding)
-        self._ui.input_canvas.layout().addItem(self.spacer)
-
     def _setup_editor_helper(self):
         """Setup the editor for the selected link helper"""
         assert self.is_helper()
@@ -277,29 +252,21 @@ class LinkEquation(QtWidgets.QWidget):
         for a in args:
             self._add_argument_widget(a)
 
-        self.spacer = QtWidgets.QSpacerItem(5, 5, QtWidgets.QSizePolicy.Minimum,
-                                        QtWidgets.QSizePolicy.Expanding)
-        self._ui.input_canvas.layout().addItem(self.spacer)
-
     def _add_argument_widget(self, argument):
         """ Create and add a single argument widget to the input canvas
         :param arguement: The argument name (string)
         """
         widget = ArgumentWidget(argument)
         widget.editor.textChanged.connect(nonpartial(self._update_add_enabled))
-        self._ui.input_canvas.layout().addWidget(widget)
+        self._ui.inputs_layout.addWidget(widget)
         self._argument_widgets.append(widget)
 
     def _clear_input_canvas(self):
         """ Remove all widgets from the input canvas """
-        layout = self._ui.input_canvas.layout()
+        layout = self._ui.inputs_layout
         for a in self._argument_widgets:
             layout.removeWidget(a)
             a.close()
-
-        if not PYSIDE:
-            # PySide crashing here
-            layout.removeItem(self.spacer)
 
         self._argument_widgets = []
 

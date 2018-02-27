@@ -22,6 +22,8 @@ class ComponentSelector(QtWidgets.QWidget):
        >>> widget = ComponentSelector()
        >>> widget.setup(data_collection)
     """
+
+    data_changed = QtCore.Signal()
     component_changed = QtCore.Signal()
 
     def __init__(self, parent=None):
@@ -42,6 +44,8 @@ class ComponentSelector(QtWidgets.QWidget):
         ds.currentIndexChanged.connect(nonpartial(self._set_components))
         self._ui.component_selector.currentItemChanged.connect(
             lambda *args: self.component_changed.emit())
+        self._ui.data_selector.currentIndexChanged.connect(
+            lambda *args: self.data_changed.emit())
 
     def set_current_row(self, row):
         """Select which component is selected
@@ -71,11 +75,11 @@ class ComponentSelector(QtWidgets.QWidget):
     def _set_components(self):
         """ Set list of component widgets to match current data set """
         index = self._ui.data_selector.currentIndex()
+        c_list = self._ui.component_selector
+        c_list.clear()
         if index < 0:
             return
         data = self._data[index]
-        c_list = self._ui.component_selector
-        c_list.clear()
 
         # Coordinate components
         if len(data.coordinate_components) > 0:
@@ -97,19 +101,14 @@ class ComponentSelector(QtWidgets.QWidget):
                     c_list.addItem(item)
                     c_list.set_data(item, c)
 
-        # We allow 'hidden' components because we want to show things like coordinates,
-        # but we don't want to include hidden AND derived components which are
-        # generated from links.
-
         if len(set(data.derived_components) & set(data.visible_components)) > 0:
             item = QtWidgets.QListWidgetItem('Derived components')
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)
             for c in data.derived_components:
-                if not c.hidden:
-                    item = QtWidgets.QListWidgetItem(c.label)
-                    c_list.addItem(item)
-                    c_list.set_data(item, c)
+                item = QtWidgets.QListWidgetItem(c.label)
+                c_list.addItem(item)
+                c_list.set_data(item, c)
 
     def _set_data(self):
         """ Populate the data list with data sets in the collection """
@@ -145,6 +144,9 @@ class ComponentSelector(QtWidgets.QWidget):
 
     @data.setter
     def data(self, value):
+        if value is None:
+            self._ui.data_selector.setCurrentIndex(-1)
+            return
         for i, d in enumerate(self._data):
             if d is value:
                 self._ui.data_selector.setCurrentIndex(i)

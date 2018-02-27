@@ -11,7 +11,7 @@ from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
 
 from glue.core.application_base import Application
-from glue.core.message import ApplicationClosedMessage
+from glue.core.message import ApplicationClosedMessage, DataCollectionMessage
 from glue.core import command, Data
 from glue.core.coordinates import WCSCoordinates
 from glue import env
@@ -289,6 +289,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_link_data.setIcon(get_icon('glue_link'))
         self._button_link_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_link_data.clicked.connect(self._set_up_links)
+        self._on_data_collection_change()
 
         self._data_toolbar.addWidget(self._button_link_data)
 
@@ -373,6 +374,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.window().setWindowTitle("Console Log")
         self._log.resize(550, 550)
         self._log.hide()
+
+        self._hub.subscribe(self, DataCollectionMessage, handler=self._on_data_collection_change)
+
+    def _on_data_collection_change(self, *event):
+        self._button_link_data.setEnabled(len(self.data_collection) > 1)
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():

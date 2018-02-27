@@ -7,7 +7,8 @@ from qtpy.QtCore import Qt
 
 from glue import core
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui, HtmlItemDelegate
+from glue.utils.decorators import avoid_circular
+from glue.utils.qt import load_ui
 
 __all__ = ['LinkEditor']
 
@@ -23,22 +24,37 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
 
-        self._html_item_delegate = HtmlItemDelegate(self._ui.current_links)
-        self._ui.current_links.setItemDelegate(self._html_item_delegate)
-        self._ui.current_links.setWordWrap(False)
+        self._links = list(collection.external_links)
+
+        self._ui.graph_widget.set_data_collection(collection)
+        self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
         self._init_widgets()
         self._connect()
-        if len(collection) > 1:
-            self._ui.right_components.set_data_row(1)
+
         self._size = None
+
+        self._ui.left_components.data_changed.connect(self._on_data_change_combo)
+        self._ui.right_components.data_changed.connect(self._on_data_change_combo)
+
+        self._on_data_change_graph()
+
+    @avoid_circular
+    def _on_data_change_graph(self):
+        self._ui.left_components.data = getattr(self._ui.graph_widget.selected_node1, 'data', None)
+        self._ui.right_components.data = getattr(self._ui.graph_widget.selected_node2, 'data', None)
+        self._update_links_list()
+
+    @avoid_circular
+    def _on_data_change_combo(self):
+        graph = self._ui.graph_widget
+        graph.manual_select(self._ui.left_components.data, self._ui.right_components.data)
+        self._update_links_list()
 
     def _init_widgets(self):
         self._ui.left_components.setup(self._collection)
         self._ui.right_components.setup(self._collection)
         self._ui.signature_editor.hide()
-        for link in self._collection.links:
-            self._add_link(link)
 
     def _connect(self):
         self._ui.add_link.clicked.connect(nonpartial(self._add_new_link))
@@ -86,45 +102,60 @@ class LinkEditor(QtWidgets.QDialog):
         link1 = core.component_link.ComponentLink([comps[0]], comps[1])
         return [link1]
 
-    def _add_link(self, link):
+    def _add_link_to_list(self, link):
         current = self._ui.current_links
-        item = QtWidgets.QListWidgetItem(link.to_html())
-        item.setTextAlignment(Qt.AlignCenter)
-        current.addItem(item)
-        item.setHidden(link.hidden)
-        current.set_data(item, link)
+        from_ids = ', '.join(cid.label for cid in link.get_from_ids())
+        to_id = link.get_to_id().label
+        item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
+                                         [link._using.__name__, from_ids, to_id])
+        item.setData(0, Qt.UserRole, link)
 
     def _add_new_link(self):
+
         if not self.advanced:
             links = self._simple_links()
         else:
             links = self._ui.signature_editor.links()
             self._ui.signature_editor.clear_inputs()
 
-        for link in links:
-            self._add_link(link)
+        self._links.extend(links)
+
+        self._ui.graph_widget.set_links(self._links)
+        self._update_links_list()
 
     def links(self):
-        current = self._ui.current_links
-        return list(current.data.values())
+        return self._links
 
     def _remove_link(self):
-        current = self._ui.current_links
-        item = current.currentItem()
-        row = current.currentRow()
-        if item is None:
+
+        current = self._ui.current_links.currentItem()
+        if current is None:
             return
-        current.drop_data(item)
-        deleted = current.takeItem(row)
-        assert deleted == item  # sanity check
+        link = current.data(0, Qt.UserRole)
+
+        self._links.remove(link)
+
+        self._ui.graph_widget.set_links(self._links)
+        self._update_links_list()
 
     @classmethod
     def update_links(cls, collection):
         widget = cls(collection)
         isok = widget._ui.exec_()
         if isok:
-            links = widget.links()
-            collection.set_links(links)
+            collection.set_links(widget._links)
+
+    def _update_links_list(self):
+        self._ui.current_links.clear()
+        data1 = self._ui.left_components.data
+        data2 = self._ui.right_components.data
+        for link in self._links:
+            to_id = link.get_to_id()
+            if to_id.parent in (data1, data2):
+                for from_id in link.get_from_ids():
+                    if from_id.parent in (data1, data2):
+                        self._add_link_to_list(link)
+                        break
 
 
 def main():
@@ -134,9 +165,12 @@ def main():
 
     app = get_qapp()
 
-    x = np.array([1, 2, 3])
-    d = Data(label='data', x=x, y=x * 2)
-    dc = DataCollection(d)
+    dc = DataCollection()
+
+    for i in range(10):
+        x = np.array([1, 2, 3])
+        d = Data(label='data_{0:02d}'.format(i), x=x, y=x * 2)
+        dc.append(d)
 
     LinkEditor.update_links(dc)
 
