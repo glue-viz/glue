@@ -51,9 +51,9 @@ def test_slice_label():
 
 
 def test_slice_index():
-    d = Data(x=np.zeros((2, 3, 4, 1)))
-    assert _slice_index(d, (0, 'y', 'x', 0)) == 0
-    assert _slice_index(d, (0, 'y', 0, 'x')) == 2
+    d = Data(x=np.zeros((2, 3, 4)))
+    assert _slice_index(d, (0, 'y', 'x')) == 0
+    assert _slice_index(d, ('y', 0, 'x')) == 1
 
 
 class TestStandaloneImageViewer(object):
