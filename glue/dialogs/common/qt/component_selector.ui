@@ -28,7 +28,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Data Set</string>
+        <string>Datasets</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -48,7 +48,7 @@
         <enum>Qt::LeftToRight</enum>
        </property>
        <property name="text">
-        <string>Component Identifiers</string>
+        <string>Components</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

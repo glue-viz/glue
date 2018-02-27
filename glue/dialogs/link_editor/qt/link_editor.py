@@ -48,10 +48,7 @@ class LinkEditor(QtWidgets.QDialog):
     @avoid_circular
     def _on_data_change_combo(self):
         graph = self._ui.graph_widget
-        graph.selected_node1 = graph.nodes.get(self._ui.left_components.data, None)
-        graph.selected_node2 = graph.nodes.get(self._ui.right_components.data, None)
-        graph._update_selected_edge()
-        graph._update_selected_colors()
+        graph.manual_select(self._ui.left_components.data, self._ui.right_components.data)
         self._update_links_list()
 
     def _init_widgets(self):

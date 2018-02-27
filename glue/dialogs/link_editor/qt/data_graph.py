@@ -13,7 +13,7 @@ TWOPI = PI * 2
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 
-COLOR_DIRECT = (0.6, 0.9, 0.6)
+COLOR_DIRECT = (0.6, 0.9, 0.9)
 COLOR_INDIRECT = (0.6, 0.9, 0.9)
 COLOR_DISCONNECTED = (0.9, 0.6, 0.6)
 
@@ -184,11 +184,12 @@ def get_connections(dc_links):
     return links
 
 
-def layout_simple_circle(nodes, edges, center=None, radius=None):
+def layout_simple_circle(nodes, edges, center=None, radius=None, reorder=True):
 
     # Place nodes around a circle
 
-    nodes = order_nodes_by_connections(nodes, edges)
+    if reorder:
+        nodes = order_nodes_by_connections(nodes, edges)
 
     for i, node in enumerate(nodes):
         angle = 2 * np.pi * i / len(nodes)
@@ -247,11 +248,13 @@ class DataGraphWidget(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
 
+        self.selection_level = 0
+
     def resizeEvent(self, event):
         self.scene.setSceneRect(0, 0, self.width(), self.height())
-        self.relayout()
+        self.relayout(reorder=False)
 
-    def relayout(self):
+    def relayout(self, reorder=True):
 
         # Update radius
         for node in self.nodes.values():
@@ -259,7 +262,7 @@ class DataGraphWidget(QGraphicsView):
 
         layout_simple_circle(self.nodes.values(), self.edges,
                              center=(self.width() / 2, self.height() / 2),
-                             radius=self.height() / 3)
+                             radius=self.height() / 3, reorder=reorder)
 
         # Update edge positions
         for edge in self.edges:
@@ -322,6 +325,8 @@ class DataGraphWidget(QGraphicsView):
 
         self._update_selected_edge()
 
+        self._update_selected_colors()
+
     def paintEvent(self, event):
 
         super(DataGraphWidget, self).paintEvent(event)
@@ -343,6 +348,20 @@ class DataGraphWidget(QGraphicsView):
 
             self.text_adjusted = True
 
+    def manual_select(self, data1=None, data2=None):
+        if data1 is None and data2 is not None:
+            data1, data2 = data2, data1
+        if data2 is not None:
+            self.selection_level = 2
+        elif data1 is not None:
+            self.selection_level = 1
+        else:
+            self.selection_level = 0
+        self.selected_node1 = self.nodes.get(data1, None)
+        self.selected_node2 = self.nodes.get(data2, None)
+        self._update_selected_edge()
+        self._update_selected_colors()
+
     def find_object(self, event):
         for obj in list(self.nodes.values()) + self.edges:
             if obj.contains(event.localPos()):
@@ -353,34 +372,38 @@ class DataGraphWidget(QGraphicsView):
         # TODO: Don't update until the end
         # TODO: Only select object on top
 
-        if self.selected_node1 is not None or self.selected_node2 is not None:
-            return
-
         selected = self.find_object(event)
 
-        colors = {}
+        if selected is None:
 
-        if isinstance(selected, DataNode):
+            if self.selection_level == 0:
+                self.selected_node1 = None
+                self.selected_node2 = None
+                self._update_selected_edge()
+            elif self.selection_level == 1:
+                self.selected_node2 = None
+                self._update_selected_edge()
 
-            colors[selected] = COLOR_DIRECT
+        elif isinstance(selected, DataNode):
 
-            direct, indirect = find_connections(selected, self.nodes.values(), self.edges)
-
-            for node in self.nodes.values():
-                if node in direct:
-                    colors[node] = COLOR_DIRECT
-                elif node in indirect:
-                    colors[node] = COLOR_INDIRECT
-                else:
-                    colors[node] = COLOR_DISCONNECTED
+            if self.selection_level == 0:
+                self.selected_node1 = selected
+                self.selected_node2 = None
+            elif self.selection_level == 1:
+                if selected is not self.selected_node1:
+                    self.selected_node2 = selected
+                    self._update_selected_edge()
 
         elif isinstance(selected, Edge):
 
-            colors[selected] = COLOR_DIRECT
-            colors[selected.node_source] = COLOR_DIRECT
-            colors[selected.node_dest] = COLOR_DIRECT
+            if self.selection_level == 0:
+                self.selected_edge = selected
+                self.selected_node1 = selected.node_source
+                self.selected_node2 = selected.node_dest
 
-        self.set_colors(colors)
+        self._update_selected_colors()
+
+        self.selection_changed.emit()
 
     def mousePressEvent(self, event):
 
@@ -389,16 +412,34 @@ class DataGraphWidget(QGraphicsView):
 
         selected = self.find_object(event)
 
-        if isinstance(selected, DataNode):
+        if selected is None:
 
-            if self.selected_node1 is selected:
-                self.selected_node1 = None
-            elif self.selected_node2 is selected:
-                self.selected_node2 = None
-            elif self.selected_node1 is None:
+            self.selection_level = 0
+            self.selected_node1 = None
+            self.selected_node2 = None
+
+            self._update_selected_edge()
+
+        elif isinstance(selected, DataNode):
+
+            if self.selection_level == 0:
                 self.selected_node1 = selected
-            else:
-                self.selected_node2 = selected
+                self.selection_level += 1
+            elif self.selection_level == 1:
+                if selected is self.selected_node1:
+                    self.selected_node1 = None
+                    self.selection_level = 0
+                else:
+                    self.selected_node2 = selected
+                    self.selection_level = 2
+            elif self.selection_level == 2:
+                if selected is self.selected_node2:
+                    self.selected_node2 = None
+                    self.selection_level = 1
+                else:
+                    self.selected_node1 = selected
+                    self.selected_node2 = None
+                    self.selection_level = 1
 
             self._update_selected_edge()
 
@@ -408,16 +449,14 @@ class DataGraphWidget(QGraphicsView):
                 self.selected_edge = None
                 self.selected_node1 = None
                 self.selected_node2 = None
+                self.selected_level = 0
             else:
                 self.selected_edge = selected
                 self.selected_node1 = selected.node_source
                 self.selected_node2 = selected.node_dest
-
-        self._update_selected_colors()
+                self.selected_level = 2
 
         self.mouseMoveEvent(event)
-
-        self.selection_changed.emit()
 
     def _update_selected_edge(self):
         for edge in self.edges:
@@ -431,6 +470,23 @@ class DataGraphWidget(QGraphicsView):
     def _update_selected_colors(self):
 
         colors = {}
+
+        if self.selected_node1 is not None and self.selection_level < 2:
+
+            direct, indirect = find_connections(self.selected_node1, self.nodes.values(), self.edges)
+
+            for node in self.nodes.values():
+                if node in direct:
+                    colors[node] = COLOR_DIRECT
+                elif node in indirect:
+                    colors[node] = COLOR_INDIRECT
+                else:
+                    colors[node] = COLOR_DISCONNECTED
+
+            for edge in self.edges:
+                if (edge.node_source is self.selected_node1 or
+                        edge.node_dest is self.selected_node1):
+                    colors[edge] = COLOR_DIRECT
 
         if self.selected_edge is not None:
             colors[self.selected_edge] = COLOR_SELECTED
