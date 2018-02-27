@@ -55,7 +55,6 @@ class Application(HubListener):
             self._session = Session(data_collection=self._data,
                                     application=self)
 
-        EditSubsetMode().data_collection = self._data
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
         self._cmds.add_callback(lambda x: self._update_undo_redo_enabled())

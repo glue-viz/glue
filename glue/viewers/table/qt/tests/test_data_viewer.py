@@ -99,7 +99,7 @@ def test_table_widget(tmpdir):
     widget = gapp.new_data_viewer(TableViewer)
     widget.add_data(d)
 
-    subset_mode = EditSubsetMode()
+    subset_mode = gapp._session._edit_subset_mode
 
     # Create two subsets
 

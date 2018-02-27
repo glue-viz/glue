@@ -8,11 +8,6 @@ from glue.app.qt.actions import action
 from glue.utils import nonpartial
 
 
-def set_mode(mode):
-    edit_mode = EditSubsetMode()
-    edit_mode.mode = mode
-
-
 class EditSubsetModeToolBar(QtWidgets.QToolBar):
 
     def __init__(self, title="Subset Update Mode", parent=None):
@@ -30,7 +25,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         self._group = QtWidgets.QActionGroup(self)
         self._modes = {}
         self._add_actions()
-        self._modes[EditSubsetMode().mode].trigger()
+        self._edit_subset_mode = self.parent()._session.edit_subset_mode
+        self._modes[self._edit_subset_mode.mode].trigger()
         self._backup_mode = None
 
         spacer = QtWidgets.QWidget()
@@ -41,6 +37,10 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         self.addWidget(spacer)
 
     def _make_mode(self, name, tip, icon, mode):
+
+        def set_mode(mode):
+            self._edit_subset_mode.mode = mode
+
         a = action(name, self, tip, icon)
         a.setCheckable(True)
         a.triggered.connect(nonpartial(set_mode, mode))
@@ -74,7 +74,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         except KeyError:
             raise KeyError("Unrecognized mode: %s" % mode)
 
-        self._backup_mode = self._backup_mode or EditSubsetMode().mode
+        self._backup_mode = self._backup_mode or self._edit_subset_mode.mode
         self._modes[mode].trigger()  # mode class to action
 
     def unset_mode(self):

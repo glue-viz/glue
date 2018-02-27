@@ -297,7 +297,7 @@ class ApplySubsetState(Command):
             for subset in data.subsets:
                 self.old_states[subset] = subset.subset_state
 
-        mode = EditSubsetMode()
+        mode = session.edit_subset_mode
         mode.update(self.data_collection, self.subset_state)
 
     def undo(self, session):

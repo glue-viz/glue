@@ -217,7 +217,7 @@ class TableViewer(DataViewer):
         model = self.ui.table.selectionModel()
         selected_rows = [self.model.order[x.row()] for x in model.selectedRows()]
         subset_state = ElementSubsetState(indices=selected_rows, data=self.data)
-        mode = EditSubsetMode()
+        mode = self.session.edit_subset_mode
         mode.update(self._data, subset_state, focus_data=self.data)
         if clear:
             # We block the signals here to make sure that we don't update

@@ -298,7 +298,7 @@ class TestImageViewer(object):
         # messages regarding subset updates (this occurred when multiple)
         # datasets were present.
 
-        layer_tree = LayerTreeWidget()
+        layer_tree = LayerTreeWidget(session=self.session)
         layer_tree.set_checkable(False)
         layer_tree.setup(self.data_collection)
         layer_tree.bind_selection_to_edit_subset()
