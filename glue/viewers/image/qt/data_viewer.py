@@ -130,6 +130,9 @@ class ImageViewer(MatplotlibDataViewer):
         self._update_appearance_from_settings()
         self._update_axes()
 
+        self.update_x_ticklabel()
+        self.update_y_ticklabel()
+
         if relim:
             self.state.reset_limits()
 
