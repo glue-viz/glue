@@ -24,6 +24,8 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
 
+        self._links = list(collection.external_links)
+
         self._ui.graph_widget.set_data_collection(collection)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
@@ -103,7 +105,7 @@ class LinkEditor(QtWidgets.QDialog):
         link1 = core.component_link.ComponentLink([comps[0]], comps[1])
         return [link1]
 
-    def _add_link(self, link):
+    def _add_link_to_list(self, link):
         current = self._ui.current_links
         from_ids = ', '.join(cid.label for cid in link.get_from_ids())
         to_id = link.get_to_id().label
@@ -112,25 +114,31 @@ class LinkEditor(QtWidgets.QDialog):
         item.setData(0, Qt.UserRole, link)
 
     def _add_new_link(self):
+
         if not self.advanced:
             links = self._simple_links()
         else:
             links = self._ui.signature_editor.links()
             self._ui.signature_editor.clear_inputs()
 
-        for link in links:
-            self._add_link(link)
+        self._links.extend(links)
+
+        self._ui.graph_widget.set_links(self._links)
+        self._update_links_list()
 
     def links(self):
-        current = self._ui.current_links
-        return list(current.data.values())
+        return self._links
 
     def _remove_link(self):
+
         current = self._ui.current_links.currentItem()
         if current is None:
             return
         link = current.data(0, Qt.UserRole)
-        self._collection.remove_link(link)
+
+        self._links.remove(link)
+
+        self._ui.graph_widget.set_links(self._links)
         self._update_links_list()
 
     @classmethod
@@ -138,22 +146,19 @@ class LinkEditor(QtWidgets.QDialog):
         widget = cls(collection)
         isok = widget._ui.exec_()
         if isok:
-            links = widget.links()
-            collection.set_links(links)
+            collection.set_links(widget._links)
 
     def _update_links_list(self):
         self._ui.current_links.clear()
         data1 = self._ui.left_components.data
         data2 = self._ui.right_components.data
-        for link in self._collection.external_links:
+        for link in self._links:
             to_id = link.get_to_id()
             if to_id.parent in (data1, data2):
                 for from_id in link.get_from_ids():
                     if from_id.parent in (data1, data2):
-                        self._add_link(link)
+                        self._add_link_to_list(link)
                         break
-
-
 
 
 def main():

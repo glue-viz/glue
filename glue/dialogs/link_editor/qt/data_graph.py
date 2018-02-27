@@ -49,6 +49,9 @@ class Edge(QGraphicsLineItem):
     def add_to_scene(self, scene):
         scene.addItem(self)
 
+    def remove_from_scene(self, scene):
+        scene.removeItem(self)
+
     def contains(self, point):
 
         x0 = point.x()
@@ -124,6 +127,12 @@ class DataNode:
         scene.addItem(self.line1)
         scene.addItem(self.line2)
 
+    def remove_from_scene(self, scene):
+        scene.removeItem(self.node)
+        scene.removeItem(self.label)
+        scene.removeItem(self.line1)
+        scene.removeItem(self.line2)
+
     @property
     def node_position(self):
         pos = self.node.pos()
@@ -161,9 +170,9 @@ class DataNode:
         self.node.setBrush(mpl_to_qt4_color(value))
 
 
-def get_connections(data_collection):
+def get_connections(dc_links):
     links = set()
-    for link in data_collection.links:
+    for link in dc_links:
         to_id = link.get_to_id()
         for from_id in link.get_from_ids():
             data1 = from_id.parent
@@ -278,7 +287,7 @@ class DataGraphWidget(QGraphicsView):
 
         # Get links and set up edges
         self.edges = [Edge(self.nodes[data1], self.nodes[data2])
-                      for data1, data2 in get_connections(data_collection)]
+                      for data1, data2 in get_connections(data_collection.external_links)]
 
         # Figure out positions
         self.relayout()
@@ -296,6 +305,22 @@ class DataGraphWidget(QGraphicsView):
         self.selected_edge = None
         self.selected_node1 = None
         self.selected_node2 = None
+
+    def set_links(self, links):
+
+        for edge in self.edges:
+            edge.remove_from_scene(self.scene)
+
+        self.edges = [Edge(self.nodes[data1], self.nodes[data2])
+                      for data1, data2 in get_connections(links)]
+
+        for edge in self.edges:
+            edge.update_position()
+
+        for edge in self.edges:
+            edge.add_to_scene(self.scene)
+
+        self._update_selected_edge()
 
     def paintEvent(self, event):
 
@@ -366,12 +391,12 @@ class DataGraphWidget(QGraphicsView):
 
         if isinstance(selected, DataNode):
 
-            if self.selected_node1 is None:
-                self.selected_node1 = selected
-            elif self.selected_node1 is selected:
+            if self.selected_node1 is selected:
                 self.selected_node1 = None
             elif self.selected_node2 is selected:
                 self.selected_node2 = None
+            elif self.selected_node1 is None:
+                self.selected_node1 = selected
             else:
                 self.selected_node2 = selected
 
