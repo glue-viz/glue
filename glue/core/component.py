@@ -435,9 +435,6 @@ class CategoricalComponent(Component):
         if self._categorical_data.ndim > 1:
             raise ValueError("Categorical Data must be 1-dimensional")
 
-        # Disable changing of categories
-        self._categorical_data.setflags(write=False)
-
         self._categories = categories
         self._jitter_method = jitter
         self._is_jittered = False
