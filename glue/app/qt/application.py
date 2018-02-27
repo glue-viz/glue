@@ -240,7 +240,28 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._create_menu()
         self._connect()
         self.new_tab()
-        self._update_plot_dashboard(None)
+        self._update_viewer_in_focus()
+
+    def _update_viewer_in_focus(self, *args):
+
+        mdi_area = self.current_tab
+        active = mdi_area.activeSubWindow()
+
+        if active is None:
+            first_viewer = None
+            for win in mdi_area.subWindowList():
+                if self._viewer_in_focus is win.widget():
+                    break
+                elif isinstance(win.widget(), DataViewer):
+                    first_viewer = win.widget()
+            else:
+                self._viewer_in_focus = first_viewer
+                self._update_focus_decoration()
+                self._update_plot_dashboard()
+        else:
+            self._viewer_in_focus = active.widget()
+            self._update_focus_decoration()
+            self._update_plot_dashboard()
 
     def run_startup_action(self, name):
         if name in startup_action.members:
@@ -458,7 +479,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._total_tab_count += 1
         tab.addTab(widget, str("Tab %i" % self._total_tab_count))
         tab.setCurrentWidget(widget)
-        widget.subWindowActivated.connect(self._update_plot_dashboard)
+        widget.subWindowActivated.connect(self._update_viewer_in_focus)
 
     def close_tab(self, index, warn=True):
         """ Close a tab window and all associated data viewers """
@@ -526,7 +547,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         pos = getattr(new_widget, 'position', None)
         sub = new_widget.mdi_wrap()
 
-        sub.closed.connect(self._clear_dashboard)
+        sub.closed.connect(self._update_viewer_in_focus)
 
         if label:
             sub.setWindowTitle(label)
@@ -548,9 +569,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         """Arrange windows in current tab via tiling"""
         self.current_tab.tileSubWindows()
 
-    def _get_plot_dashboards(self, sub_window):
-
-        widget = sub_window.widget()
+    def _get_plot_dashboards(self, widget):
 
         if not isinstance(widget, DataViewer):
             return QtWidgets.QWidget(), QtWidgets.QWidget(), ""
@@ -575,14 +594,14 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._ui.plot_options_label.setText("Plot Options")
         self._ui.plot_layers_label.setText("Plot Layers")
 
-    def _update_plot_dashboard(self, sub_window):
+    def _update_plot_dashboard(self, *args):
+
         self._clear_dashboard()
 
-        if sub_window is None:
+        if self._viewer_in_focus is None:
             return
 
-        layer_view, options_widget, title = self._get_plot_dashboards(
-            sub_window)
+        layer_view, options_widget, title = self._get_plot_dashboards(self._viewer_in_focus)
 
         layout = self._ui.plot_layers.layout()
         layout.addWidget(layer_view)
@@ -604,18 +623,17 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _update_focus_decoration(self):
         mdi_area = self.current_tab
-        active = mdi_area.activeSubWindow()
-
         for win in mdi_area.subWindowList():
             widget = win.widget()
             if isinstance(widget, DataViewer):
-                widget.set_focus(win is active)
+                widget.set_focus(widget is self._viewer_in_focus)
 
     def _connect(self):
         self.setAcceptDrops(True)
         self._layer_widget.setup(self._data)
 
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        self.tab_widget.currentChanged.connect(self._update_viewer_in_focus)
 
     def _create_menu(self):
         mbar = self.menuBar()
@@ -872,7 +890,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             name += ': ' + tab.LABEL
         self.tab_widget.addTab(tab, name)
         self.tab_widget.setCurrentWidget(tab)
-        tab.subWindowActivated.connect(self._update_plot_dashboard)
+        tab.subWindowActivated.connect(self._update_viewer_in_focus)
 
         return tab
 
