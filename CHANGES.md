@@ -4,6 +4,8 @@ Full changelog
 v0.12.4 (2017-01-09)
 --------------------
 
+* Improve error message in PV slicer when _slice_index fails. [#1536]
+
 * Fixed a bug that caused an error in the terminal if creating a data
   viewer failed properly (with a GUI error message).
 
