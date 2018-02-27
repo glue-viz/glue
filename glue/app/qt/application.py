@@ -1167,6 +1167,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         for tab in self.viewers:
             for viewer in tab:
                 viewer.close(warn=False)
+        self._viewer_in_focus = None
+        self._clear_dashboard()
         self._log.close()
         self._hub.broadcast(ApplicationClosedMessage(None))
         event.accept()
