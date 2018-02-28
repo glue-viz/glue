@@ -74,6 +74,31 @@ class Roi(object):  # pragma: no cover
         """
         raise NotImplementedError()
 
+    def contains3d(self, x, y, z):
+        """Return true/false for each x/y/z pair.
+
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
+        z : :class:`numpy.ndarray`
+            Array of z locations
+
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y,z) tuple is inside the Roi.
+
+        Raises
+        ------
+        UndefinedROI
+            if not defined
+        """
+        raise NotImplementedError()
+
     def center(self):
         """Return the (x,y) coordinates of the ROI center"""
         raise NotImplementedError()
@@ -560,6 +585,67 @@ class PolygonalROI(VertexROIBase):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
+
+def _project(projection_matrix, x, y, z):
+    """Projects 3d coordinates to 2d coordinates using a 4x4 matrix"""
+    x = np.asarray(x)
+    y = np.asarray(y)
+    z = np.asarray(z)
+    # work in homogeneous coordinates so we can support perspective
+    # projections as well
+    vertices = np.array([x, y, z, np.ones(x.shape)])
+    # homogeneous screen coordinates
+    screen_h = np.tensordot(projection_matrix, vertices, axes=(1, 0))
+    # convert to screen coordinates, and we don't care about z
+    x, y = screen_h[:2] / screen_h[3]
+    return x, y
+
+class Projected3dROI(Roi):
+    """"A region of interest defined in screen coordinates.
+
+    The screen coordinates are defined by the projection matrix.
+    The projection matrix converts homogeneous coordinates (x, y, z, w), where
+    w is implicitly 1, to homogeneous screen coordinates (usually the product
+    of the world and projection matrix).
+    """
+    def __init__(self, roi_2d=None, projection_matrix=None):
+        super(Projected3dROI, self).__init__()
+        self.roi_2d = roi_2d
+        self.projection_matrix = np.asarray(projection_matrix)
+
+    def contains3d(self, x, y, z):
+        """"Test if the projected coordinates are contained in the 2d roi."""
+        if not self.defined():
+            raise UndefinedROI
+        x, y = _project(self.projection_matrix, x, y, z)
+        return self.roi_2d.contains(x, y)
+
+    def __gluestate__(self, context):
+        return dict(roi_2d=context.id(self.roi_2d), projection_matrix=self.projection_matrix.tolist())
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(roi_2d=context.object(rec['roi_2d']), projection_matrix=np.asarray(rec['projection_matrix']))
+
+    # TODO: these methods forward directly to roi_2d, not sure if this makes sense for all
+
+    def contains(self, x, y):
+        return self.roi_2d.contains(x, y)
+
+    def center(self):
+        return self.roi_2d.center()
+
+    def move_to(self, x, y):
+        return self.roi_2d.move_to(x, y)
+
+    def defined(self):
+        return self.roi_2d.defined()
+
+    def to_polygon(self):
+        return self.roi_2d.to_polygon()
+
+    def transformed(self, xfunc=None, yfunc=None):
+        return self.roi_2d.transformed(xfunc, yfunc)
 
 class Path(VertexROIBase):
 

@@ -229,6 +229,15 @@ def test_polygonal_roi():
     assert_equal(r2.vx, [0, 0, 1])
     assert_equal(r2.vy, [0, 1, 0])
 
+def test_projected3d_roi():
+    roi_2d = core.roi.PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
+    roi = core.roi.Projected3dROI(roi_2d=roi_2d, projection_matrix=np.eye(4))
+    roi_clone = clone(roi)
+    x = [1, 2, 3]
+    y = [2, 3, 4]
+    z = [5, 6, 7]
+    assert roi.contains(x, y).tolist() == roi_clone.contains(x, y).tolist()
+
 
 def test_matplotlib_cmap():
     from matplotlib import cm

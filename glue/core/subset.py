@@ -1091,6 +1091,49 @@ class InequalitySubsetState(SubsetState):
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
 
+class RoiSubsetState3d(SubsetState):
+    """Subset state for a roi that implements .contains3d
+    """
+
+    @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')
+    def __init__(self, xatt=None, yatt=None, zatt=None, roi=None):
+        super(RoiSubsetState3d, self).__init__()
+        self.xatt = xatt
+        self.yatt = yatt
+        self.zatt = zatt
+        self.roi = roi
+
+    @property
+    def attributes(self):
+        return (self.xatt, self.yatt, self.zatt)
+
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # TODO: make sure that pixel components don't actually take up much
+        #       memory and are just views
+        x = data[self.xatt, view]
+        y = data[self.yatt, view]
+        z = data[self.zatt, view]
+
+        if self.roi.defined():
+            result = self.roi.contains3d(x, y, z)
+        else:
+            result = np.zeros(x.shape, dtype=bool)
+
+        if result.shape != x.shape:
+            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
+
+        return result
+
+    def copy(self):
+        result = RoiSubsetState3d()
+        result.xatt = self.xatt
+        result.yatt = self.yatt
+        result.zatt = self.zatt
+        result.roi = self.roi
+        return result
+
 
 @contract(subsets='list(isinstance(Subset))', returns=Subset)
 def _combine(subsets, operator):

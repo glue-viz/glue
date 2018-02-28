@@ -12,7 +12,7 @@ from .. import roi as r
 from ..component import CategoricalComponent
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalROI,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
-                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI)
+                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI, Projected3dROI)
 
 
 FIG = Figure()
@@ -372,6 +372,44 @@ class TestPolygon(object):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
 
+
+class TestProjected3dROI(object):
+    # matrix that converts xyzw to yxzw
+    xyzw2yxzw = np.array([
+             [0, 1, 0, 0],
+             [0, 0, 1, 0],
+             [1, 0, 0, 0],
+             [0, 0, 0, 1]
+            ])
+    x = [1, 2, 3]
+    y = [2, 3, 4]
+    z = [5, 6, 7]
+    # repeat the arrays, 'rolled over' by 1
+    x_nd = [[1, 3], [2, 1], [3, 2]]
+    y_nd = [[2, 3], [3, 2], [4, 3]]
+    z_nd = [[5, 7], [6, 5], [7, 6]]
+
+
+    def test_contains2d(self):
+        roi_2d = PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
+        roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=np.eye(4))
+        assert roi.contains(self.x, self.y).tolist() == [True, True, False]
+
+    def test_contains3d(self):
+        roi_2d = PolygonalROI(vx=[1.5, 3.5, 3.5, 1.5], vy=[4, 4, 6.5, 6.5])
+        roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=self.xyzw2yxzw)
+        assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, True, False]
+        assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [True, True], [False, True]]
+
+
+    def test_forward(self):
+        # testing the calls that should be forwarded to roi_2d
+        roi_2d = PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
+        roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=np.eye(4))
+
+        assert roi.contains(self.x, self.y).tolist() == roi_2d.contains(self.x, self.y).tolist()
+        assert roi.to_polygon() == roi_2d.to_polygon()
+        assert roi.defined() == roi_2d.defined()
 
 class TestCategorical(object):
 
