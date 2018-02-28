@@ -79,19 +79,17 @@ class Roi(object):  # pragma: no cover
 
         Parameters
         ----------
-
-
-        x : ndarray
+        x : :class:`numpy.ndarray`
             Array of x locations
-        y : ndarray
+        y : :class:`numpy.ndarray`
             Array of y locations
-        z : ndarray
+        z : :class:`numpy.ndarray`
             Array of z locations
 
         Returns
         -------
-        ndarray
-            A Boolean array, where each element is True if the corresponding
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
             (x,y,z) tuple is inside the Roi.
 
         Raises
@@ -590,12 +588,9 @@ class PolygonalROI(VertexROIBase):
 
 def _project(projection_matrix, x, y, z):
     """Projects 3d coordinates to 2d coordinates using a 4x4 matrix"""
-    if not isinstance(x, np.ndarray):
-        x = np.asarray(x)
-    if not isinstance(y, np.ndarray):
-        y = np.asarray(y)
-    if not isinstance(z, np.ndarray):
-        z = np.asarray(z)
+    x = np.asarray(x)
+    y = np.asarray(y)
+    z = np.asarray(z)
     # work in homogeneous coordinates so we can support perspective
     # projections as well
     vertices = np.array([x, y, z, np.ones(x.shape)])
@@ -608,7 +603,7 @@ def _project(projection_matrix, x, y, z):
 class Projected3dROI(Roi):
     """"A region of interest defined in screen coordinates.
 
-    The screen coordiantes are defined by the projection matrix.
+    The screen coordinates are defined by the projection matrix.
     The projection matrix converts homogeneous coordinates (x, y, z, w), where
     w is implicitly 1, to homogeneous screen coordinates (usually the product
     of the world and projection matrix).
