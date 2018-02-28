@@ -1,9 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+from distutils.version import LooseVersion
+
 import numpy as np
 
+from matplotlib import __version__ as __mpl_version__
 from matplotlib.colors import Normalize
 from matplotlib.collections import LineCollection
+from matplotlib.lines import Line2D
 
 from mpl_scatter_density import ScatterDensityArtist
 
@@ -15,6 +19,8 @@ from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
+
+MATPLOTLIB_LT_20 = LooseVersion(__mpl_version__) < LooseVersion('2.0')
 
 STRETCHES = {'linear': LinearStretch,
              'sqrt': SqrtStretch,
@@ -59,6 +65,10 @@ class DensityMapLimits(object):
 
 
 def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):
+
+    if isinstance(artist, Line2D) and MATPLOTLIB_LT_20:
+        return
+
     if state is not None:
         vmin = state.cmap_vmin
         vmax = state.cmap_vmax

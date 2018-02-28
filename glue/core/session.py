@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core.command import CommandStack
 from glue.core.data_collection import DataCollection
+from glue.core.edit_subset_mode import EditSubsetMode
 
 
 class Session(object):
@@ -17,6 +18,5 @@ class Session(object):
         self.command_stack = command_stack or CommandStack()
         self.command_stack.session = self
 
-        # set the global data_collection for subset updates
-        from glue.core.edit_subset_mode import EditSubsetMode
-        EditSubsetMode().data_collection = self.data_collection
+        self.edit_subset_mode = EditSubsetMode()
+        self.edit_subset_mode.data_collection = self.data_collection

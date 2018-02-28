@@ -838,6 +838,7 @@ class CustomClient(GenericMplClient):
     def __init__(self, *args, **kwargs):
         self._coordinator = kwargs.pop('coordinator')
         kwargs.setdefault('axes_factory', self._coordinator.create_axes)
+        self.session = kwargs.pop('session', None)
         super(CustomClient, self).__init__(*args, **kwargs)
 
         self._coordinator.axes = self.axes
@@ -856,7 +857,7 @@ class CustomClient(GenericMplClient):
 
         s = self._coordinator._build_subset_state(roi=roi)
         if s:
-            EditSubsetMode().update(self.collect, s, focus_data=focus)
+            self.session.edit_subset_mode.update(self.collect, s, focus_data=focus)
 
     def _update_layer(self, layer):
         for artist in self.artists[layer]:
@@ -885,7 +886,8 @@ class CustomWidgetBase(DataViewer):
         self.client = CustomClient(self._data,
                                    self.central_widget.canvas.fig,
                                    layer_artist_container=self._layer_artist_container,
-                                   coordinator=self._coordinator)
+                                   coordinator=self._coordinator,
+                                   session=session)
 
         self.statusBar().setSizeGripEnabled(False)
         self._update_artists = []

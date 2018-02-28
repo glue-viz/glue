@@ -115,6 +115,15 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.array_data)
         assert cat_comp._categorical_data.shape == (4,)
 
+    def test_accepts_pandas(self):
+        # Regression test for a bug that caused read-only
+        # pandas DataFrame columns to cause issues
+        from pandas import DataFrame
+        df = DataFrame()
+        df['a'] = ['a', 'b', 'c']
+        print(df['a'].fillna(''), type)
+        CategoricalComponent(df['a'].fillna(''))
+
     def test_accepts_list(self):
         """Should accept a list and convert to numpy!"""
         cat_comp = CategoricalComponent(self.list_data)

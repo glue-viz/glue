@@ -21,7 +21,7 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density"
-    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph"
+    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -110,13 +110,13 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
+               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph"
                QT_PKG=False
 
     allow_failures:
 
       - os: linux
         env: PYTHON_VERSION=2.7 NUMPY_VERSION=dev
-             PIP_DEPENDENCIES="pytest-cov coveralls pyavm astrodendro plotly"
 
       - os: linux
         env: PYTHON_VERSION=2.7 QT_PKG=pyside

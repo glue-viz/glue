@@ -366,7 +366,7 @@ class TestScatterViewer(object):
         # messages regarding subset updates (this occurred when multiple)
         # datasets were present.
 
-        layer_tree = LayerTreeWidget()
+        layer_tree = LayerTreeWidget(session=self.session)
         layer_tree.set_checkable(False)
         layer_tree.setup(self.data_collection)
         layer_tree.bind_selection_to_edit_subset()
@@ -529,7 +529,7 @@ class TestScatterViewer(object):
         assert self.viewer.axes.get_ylim() == (719348.0, 719678.0)
 
         # Apply an ROI selection in plotting coordinates
-        edit = EditSubsetMode()
+        edit = self.session.edit_subset_mode
         edit.edit_subset = []
         roi = CircularROI(xc=719463, yc=719563, radius=200)
         self.viewer.apply_roi(roi)

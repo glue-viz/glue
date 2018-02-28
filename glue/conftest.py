@@ -14,12 +14,6 @@ def pytest_addoption(parser):
                      help="don't skip any tests with optional dependencies")
 
 
-def pytest_runtest_setup(item):
-    mode = EditSubsetMode()
-    mode.mode = ReplaceMode
-    mode.edit_subset = []
-
-
 def pytest_runtest_teardown(item, nextitem):
     sys.stderr = STDERR_ORIGINAL
 

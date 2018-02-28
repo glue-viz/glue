@@ -275,7 +275,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.setCentralWidget(self._ui)
         self._ui.tabWidget.setTabBar(GlueTabBar())
 
-        lw = LayerTreeWidget()
+        lw = LayerTreeWidget(session=self._session)
         lw.set_checkable(False)
         self._vb = QtWidgets.QVBoxLayout()
         self._vb.setContentsMargins(0, 0, 0, 0)
@@ -358,7 +358,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Selection mode toolbar
 
-        tbar = EditSubsetModeToolBar()
+        tbar = EditSubsetModeToolBar(parent=self)
         self._mode_toolbar = tbar
 
         self.addToolBar(self._mode_toolbar)

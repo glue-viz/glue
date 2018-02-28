@@ -19,7 +19,6 @@ from glue.core.decorators import singleton
 from glue.utils import as_list
 
 
-@singleton
 class EditSubsetMode(object):
     """
     Implements how new SubsetStates modify the edit_subset state

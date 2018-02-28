@@ -60,6 +60,9 @@ v0.13.0 (unreleased)
 
 * Remember last session filename and filter used. [#1537]
 
+* EditSubsetMode is now no longer a singleton class and is
+  instead instantiated at the Application/Session level. [#1538]
+
 v0.12.4 (unreleased)
 --------------------
 

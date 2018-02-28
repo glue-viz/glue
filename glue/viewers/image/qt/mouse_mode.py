@@ -26,8 +26,8 @@ class RoiClickAndDragMode(MouseMode):
         super(RoiClickAndDragMode, self).__init__(viewer, **kwargs)
 
         self._viewer = viewer
-        self._dc = self._viewer.state.data_collection
-        self._edit_subset_mode = EditSubsetMode()
+        self._dc = viewer.state.data_collection
+        self._edit_subset_mode = viewer.session.edit_subset_mode
 
         self._roi = None
         self._subset = None

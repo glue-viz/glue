@@ -4,16 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 from mock import MagicMock, patch
 
-from qtpy.QtCore import Qt
-from qtpy.QtTest import QTest
 from qtpy import QtWidgets
 from glue import core
-from glue.utils.qt import get_qapp
 from glue.tests import example_data
-from glue.core.edit_subset_mode import EditSubsetMode
+from glue.core.session import Session
 
-from ..layer_tree_widget import (LayerTreeWidget, Clipboard,
-                                 PlotAction, DeleteAction)
+from ..layer_tree_widget import LayerTreeWidget, Clipboard, PlotAction
 
 
 class TestLayerTree(object):
@@ -24,7 +20,8 @@ class TestLayerTree(object):
         self.data = example_data.test_data()
         self.collect = core.data_collection.DataCollection(list(self.data))
         self.hub = self.collect.hub
-        self.widget = LayerTreeWidget()
+        self.session = Session(data_collection=self.collect, hub=self.hub)
+        self.widget = LayerTreeWidget(session=self.session)
         self.win = QtWidgets.QMainWindow()
         self.win.setCentralWidget(self.widget)
         self.widget.setup(self.collect)
@@ -197,23 +194,23 @@ class TestLayerTree(object):
         assert sub.subset_state is not dummy_state
 
     def test_single_selection_updates_editable(self):
-        mode = EditSubsetMode()
         self.widget.bind_selection_to_edit_subset()
         self.add_layer()
         grp1 = self.collect.new_subset_group()
         grp2 = self.collect.new_subset_group()
+        mode = self.session.edit_subset_mode
         assert mode.edit_subset[0] is not grp1
         self.select_layers(grp1)
         assert mode.edit_subset[0] is grp1
 
     def test_multi_selection_updates_editable(self):
         """Selection disables edit_subset for all other data"""
-        mode = EditSubsetMode()
         self.widget.bind_selection_to_edit_subset()
         self.add_layer()
         self.add_layer()
         grps = [self.collect.new_subset_group() for _ in range(3)]
         self.select_layers(*grps[:2])
+        mode = self.session.edit_subset_mode
         assert grps[0] in mode.edit_subset
         assert grps[1] in mode.edit_subset
         assert grps[2] not in mode.edit_subset
