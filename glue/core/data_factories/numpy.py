@@ -10,8 +10,8 @@ __all__ = ['is_npy_npz', 'npy_npz_reader']
 def is_npy_npz(filename):
     """
     The first bytes are x93NUMPY (for npy) or PKx03x04 (for npz)
-    see: https://github.com/numpy/numpy/blob/master/doc/neps/npy-format.rst
     """
+    # See: https://github.com/numpy/numpy/blob/master/doc/neps/npy-format.rst
     from numpy.lib.format import MAGIC_PREFIX
     MAGIC_PREFIX_NPZ = b'PK\x03\x04'  # first 4 bytes for a zipfile
     tester = has_extension('npz .npz')
