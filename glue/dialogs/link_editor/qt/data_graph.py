@@ -48,24 +48,7 @@ class Edge(QGraphicsLineItem):
         scene.removeItem(self)
 
     def contains(self, point):
-
-        x0 = point.x()
-        y0 = point.y()
-        x1, y1 = self.node_source.node_position
-        x2, y2 = self.node_dest.node_position
-
-        dot = (x0 - x1) * (x2 - x1) + (y0 - y1) * (y2 - y1)
-        vec = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
-
-        frac = dot / vec
-
-        if frac < 0 or frac > 1:
-            return False
-
-        x3 = x1 + (x2 - x1) * frac
-        y3 = y1 + (y2 - y1) * frac
-
-        return np.hypot(x3 - x0, y3 - y0) < self.linewidth * 2
+        return super(Edge, self).contains(self.mapFromScene(point))
 
 
 class DataNode:
@@ -110,8 +93,16 @@ class DataNode:
         self.node.setRect(-value, -value, 2 * value, 2 * value)
 
     def contains(self, point):
-        x, y = self.node_position
-        return np.hypot(point.x() - x, point.y() - y) <= self.radius
+
+        # Check label
+        if self.label.contains(self.label.mapFromScene(point)):
+            return True
+
+        # Check node
+        if self.node.contains(self.node.mapFromScene(point)):
+            return True
+
+        return False
 
     def update(self):
         self.node.update()
