@@ -110,6 +110,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
+               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph"
                QT_PKG=False
 
     allow_failures:
