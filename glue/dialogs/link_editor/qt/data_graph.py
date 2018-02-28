@@ -267,7 +267,7 @@ class DataGraphWidget(QGraphicsView):
         self.left_nodes = [node for node in self.nodes if node.node_position[0] < self.width() / 2]
         self.left_nodes = sorted(self.left_nodes, key=lambda x: x.node_position[1], reverse=True)
 
-        self.right_nodes = [node for node in self.nodes if node.node_position[0] > self.width() / 2]
+        self.right_nodes = [node for node in self.nodes if node not in self.left_nodes]
         self.right_nodes = sorted(self.right_nodes, key=lambda x: x.node_position[1], reverse=True)
 
         for i, node in enumerate(self.left_nodes):
