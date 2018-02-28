@@ -432,16 +432,16 @@ class DataGraphWidget(QGraphicsView):
 
         elif isinstance(selected, Edge):
 
-            if self.selected_edge is selected:
+            if self.selected_edge is selected and self.selection_level == 2:
                 self.selected_edge = None
                 self.selected_node1 = None
                 self.selected_node2 = None
-                self.selected_level = 0
+                self.selection_level = 0
             else:
                 self.selected_edge = selected
                 self.selected_node1 = selected.node_source
                 self.selected_node2 = selected.node_dest
-                self.selected_level = 2
+                self.selection_level = 2
 
         self.mouseMoveEvent(event)
 
