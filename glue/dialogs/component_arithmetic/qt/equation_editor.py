@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 from collections import deque, OrderedDict
 
-from qtpy import QtWidgets, QtCore, PYQT5
+from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE

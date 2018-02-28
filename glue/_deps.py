@@ -107,17 +107,6 @@ class QtDependency(Dependency):
         return "%20s:\t%s" % (self.module, status)
 
 
-class PyQt4(QtDependency):
-
-    @property
-    def version(self):
-        try:
-            from PyQt4 import Qt
-            return "PyQt: {0} - Qt: {1}".format(Qt.PYQT_VERSION_STR, Qt.QT_VERSION_STR)
-        except (ImportError, AttributeError):
-            return 'unknown version'
-
-
 class PyQt5(QtDependency):
 
     @property
@@ -129,14 +118,14 @@ class PyQt5(QtDependency):
             return 'unknown version'
 
 
-class PySide(QtDependency):
+class PySide2(QtDependency):
 
     @property
     def version(self):
         try:
-            import PySide
-            from PySide import QtCore
-            return "PySide: {0} - Qt: {1}".format(PySide.__version__, QtCore.__version__)
+            import PySide2
+            from PySide2 import QtCore
+            return "PySide2: {0} - Qt: {1}".format(PySide2.__version__, QtCore.__version__)
         except (ImportError, AttributeError):
             return 'unknown version'
 
@@ -149,16 +138,15 @@ python = (
 )
 
 gui_framework = (
-    PyQt4('PyQt4', ''),
     PyQt5('PyQt5', ''),
-    PySide('PySide', '')
+    PySide2('PySide2', '')
 )
 
 required = (
     Dependency('qtpy', 'Required', min_version='1.2'),
     Dependency('setuptools', 'Required', min_version='1.0'),
     Dependency('numpy', 'Required', min_version='1.9'),
-    Dependency('matplotlib', 'Required for plotting', min_version='1.4'),
+    Dependency('matplotlib', 'Required for plotting', min_version='2.0'),
     Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='1.3'),
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),

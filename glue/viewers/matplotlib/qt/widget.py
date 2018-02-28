@@ -8,15 +8,10 @@ from matplotlib.figure import Figure
 
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
-from qtpy import PYQT5
 from glue.config import settings
 
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-else:
-    from matplotlib.backends.backend_qt4 import FigureManagerQT as FigureManager
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 # We want to ignore warnings about left==right and bottom==top since these are
 # not critical and the default behavior makes sense.

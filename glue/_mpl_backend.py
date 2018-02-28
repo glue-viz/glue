@@ -31,10 +31,7 @@ def set_mpl_backend():
     # standardize mpl setup
     rcdefaults()
 
-    if PYQT5:
-        rcParams['backend'] = 'Qt5Agg'
-    else:
-        rcParams['backend'] = 'Qt4Agg'
+    rcParams['backend'] = 'Qt5Agg'
 
     # disable key bindings in matplotlib
     for setting in list(rcParams.keys()):

@@ -50,7 +50,7 @@ we merge changes into the code base, all the tests are run on `Travis
 <https://travis-ci.org>`_ and `AppVeyor <https://www.appveyor.com/>`_. This is
 referred to as *Continuous Integration*. One of the nice things about continuous integration is that it allows us to
 automatically run the tests for different operating systems, Python versions,
-versions of Numpy, and Qt frameworks (PyQt4, PyQt5, and PySide).
+versions of Numpy, and Qt frameworks (PyQt5, and PySide2).
 
 `Travis <https://travis-ci.org>`_ runs tests on Linux and MacOS X, and `AppVeyor
 <https://www.appveyor.com/>`_ runs the tests on Windows. When you open a pull

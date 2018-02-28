@@ -90,19 +90,17 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=1.5
-               NUMPY_VERSION=1.11
+               MATPLOTLIB_VERSION=2.0
                PANDAS_VERSION=0.18
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
-               QT_PKG=pyqt
 
-        # Test with PySide, but due to segmentation faults, mark as an
-        # allowed failure.
+        # Test with PySide2
         - os: linux
           stage: Full
           env: PYTHON_VERSION=2.7
-               QT_PKG=pyside
+               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+               QT_PKG=pyside2
 
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
@@ -118,16 +116,10 @@ matrix:
       - os: linux
         env: PYTHON_VERSION=2.7 NUMPY_VERSION=dev
 
-      - os: linux
-        env: PYTHON_VERSION=2.7 QT_PKG=pyside
-
 before_install:
 
-  # Prepare dependency list. Note that in future, PyQt5 will be the pyqt conda
-  # package with a version of 5.x rather than a pyqt5 package, so we explicitly
-  # request pyqt=4 for PyQt4.
-  - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
-  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
+  # Prepare dependency list.
+  - if [[ $QT_PKG == pyside2 ]]; then export CONDA_DEPENDENCIES="pyside2 "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
@@ -161,6 +153,7 @@ install:
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
+      conda remove --no-pin --force pyside2 || true;
       conda remove --no-pin --force qt || true;
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
