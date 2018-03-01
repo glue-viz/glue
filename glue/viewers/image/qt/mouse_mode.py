@@ -81,7 +81,7 @@ class RoiClickAndDragMode(MouseMode):
     def release(self, event):
         if self._roi:
             self._roi.finalize_selection(event)
-            self._viewer.apply_roi(self._roi.roi())
+            self._viewer.apply_roi(self._roi.roi(), use_current=True)
 
             self._roi = None
             self._subset = None
