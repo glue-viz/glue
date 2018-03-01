@@ -99,6 +99,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAcceptDrops(True)
         self.setAnimated(False)
+        self.toolbar = None
         self._toolbars = []
         self._warn_close = True
         self.setContentsMargins(2, 2, 2, 2)
@@ -163,7 +164,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         # We tell the toolbar to do cleanup to make sure we get rid of any
         # circular references
-        self.toolbar.cleanup()
+        if self.toolbar:
+            self.toolbar.cleanup()
 
         self._warn_close = True
 
