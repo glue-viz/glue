@@ -253,7 +253,7 @@ class WCSCoordinates(Coordinates):
         self._dependent_axes = []
         for axis in range(wcs.naxis):
             world_dep = matrix[:, axis:axis + 1]
-            dependent = np.nonzero((world_dep & matrix).any(axis=0))[0]
+            dependent = tuple(np.nonzero((world_dep & matrix).any(axis=0))[0])
             self._dependent_axes.append(dependent)
 
     def world_axis_unit(self, axis):
