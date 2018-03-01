@@ -13,3 +13,4 @@ from .matplotlib import *
 from .misc import *
 from .geometry import *
 from .colors import *
+from .wcs import *

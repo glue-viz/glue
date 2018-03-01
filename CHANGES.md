@@ -66,6 +66,11 @@ v0.13.0 (unreleased)
 v0.12.4 (unreleased)
 --------------------
 
+* Fix calculation of dependent_axes to account for cases where there
+  are some non-zero non-diagonal PC values. Previously any such values 
+  resulted in all axes being returned as dependent axes even though this
+  isn't necessary. [#1552]
+
 * Improve error message in PV slicer when _slice_index fails. [#1536]
 
 * Fixed a bug that caused an error in the terminal if creating a data
