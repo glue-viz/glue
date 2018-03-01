@@ -17,6 +17,8 @@ env:
     - PYTEST_ARGS="--cov glue -vs"
     - ASTROPY_VERSION=stable
     - NUMPY_VERSION=stable
+    # We pin Sphinx due to https://github.com/sphinx-doc/sphinx/issues/4689
+    - SPHINX_VERSION=1.7.0
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
