@@ -25,7 +25,6 @@ def axis_correlation_matrix(wcs):
     # the other celestial coordinates.
     celestial = (wcs.wcs.axis_types // 1000) % 10 == 2
     celestial_indices = np.nonzero(celestial)[0]
-    print(celestial_indices)
     for world1 in celestial_indices:
         for world2 in celestial_indices:
             if world1 != world2:
