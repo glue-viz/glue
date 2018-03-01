@@ -48,24 +48,7 @@ class Edge(QGraphicsLineItem):
         scene.removeItem(self)
 
     def contains(self, point):
-
-        x0 = point.x()
-        y0 = point.y()
-        x1, y1 = self.node_source.node_position
-        x2, y2 = self.node_dest.node_position
-
-        dot = (x0 - x1) * (x2 - x1) + (y0 - y1) * (y2 - y1)
-        vec = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
-
-        frac = dot / vec
-
-        if frac < 0 or frac > 1:
-            return False
-
-        x3 = x1 + (x2 - x1) * frac
-        y3 = y1 + (y2 - y1) * frac
-
-        return np.hypot(x3 - x0, y3 - y0) < self.linewidth * 2
+        return super(Edge, self).contains(self.mapFromScene(point))
 
 
 class DataNode:
@@ -83,7 +66,7 @@ class DataNode:
         # Add text label
         self.label = QGraphicsTextItem(data.label)
         font = self.label.font()
-        font.setPointSize(8)
+        font.setPointSize(10)
         self.label.setFont(font)
 
         # Add line between label and node
@@ -110,8 +93,16 @@ class DataNode:
         self.node.setRect(-value, -value, 2 * value, 2 * value)
 
     def contains(self, point):
-        x, y = self.node_position
-        return np.hypot(point.x() - x, point.y() - y) <= self.radius
+
+        # Check label
+        if self.label.contains(self.label.mapFromScene(point)):
+            return True
+
+        # Check node
+        if self.node.contains(self.node.mapFromScene(point)):
+            return True
+
+        return False
 
     def update(self):
         self.node.update()
@@ -267,7 +258,7 @@ class DataGraphWidget(QGraphicsView):
         self.left_nodes = [node for node in self.nodes if node.node_position[0] < self.width() / 2]
         self.left_nodes = sorted(self.left_nodes, key=lambda x: x.node_position[1], reverse=True)
 
-        self.right_nodes = [node for node in self.nodes if node.node_position[0] > self.width() / 2]
+        self.right_nodes = [node for node in self.nodes if node not in self.left_nodes]
         self.right_nodes = sorted(self.right_nodes, key=lambda x: x.node_position[1], reverse=True)
 
         for i, node in enumerate(self.left_nodes):
@@ -441,16 +432,16 @@ class DataGraphWidget(QGraphicsView):
 
         elif isinstance(selected, Edge):
 
-            if self.selected_edge is selected:
+            if self.selected_edge is selected and self.selection_level == 2:
                 self.selected_edge = None
                 self.selected_node1 = None
                 self.selected_node2 = None
-                self.selected_level = 0
+                self.selection_level = 0
             else:
                 self.selected_edge = selected
                 self.selected_node1 = selected.node_source
                 self.selected_node2 = selected.node_dest
-                self.selected_level = 2
+                self.selection_level = 2
 
         self.mouseMoveEvent(event)
 
