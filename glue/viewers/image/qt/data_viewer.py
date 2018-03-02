@@ -106,24 +106,7 @@ class ImageViewer(MatplotlibDataViewer):
         return result
 
     def _on_slice_change(self, event=None):
-
-        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
-            return
-
-        coords = self.state.reference_data.coords
-        ix = self.state.x_att.axis
-        iy = self.state.y_att.axis
-        x_dep = list(coords.dependent_axes(ix))
-        y_dep = list(coords.dependent_axes(iy))
-        if ix in x_dep:
-            x_dep.remove(ix)
-        if iy in x_dep:
-            x_dep.remove(iy)
-        if ix in y_dep:
-            y_dep.remove(ix)
-        if iy in y_dep:
-            y_dep.remove(iy)
-        if x_dep or y_dep:
+        if self._changing_slice_requires_wcs_update:
             self._set_wcs(event=event, relim=False)
 
     def _set_wcs(self, event=None, relim=True):
@@ -149,6 +132,21 @@ class ImageViewer(MatplotlibDataViewer):
 
         if relim:
             self.state.reset_limits()
+
+        # Determine whether changing slices requires changing the WCS
+        ix = self.state.x_att.axis
+        iy = self.state.y_att.axis
+        x_dep = list(ref_coords.dependent_axes(ix))
+        y_dep = list(ref_coords.dependent_axes(iy))
+        if ix in x_dep:
+            x_dep.remove(ix)
+        if iy in x_dep:
+            x_dep.remove(iy)
+        if ix in y_dep:
+            y_dep.remove(ix)
+        if iy in y_dep:
+            y_dep.remove(iy)
+        self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
 
     def _roi_to_subset_state(self, roi):
         """ This method must be implemented in order for apply_roi from the

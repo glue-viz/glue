@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from glue.utils import unbroadcast, broadcast_to
+from glue.utils import unbroadcast, broadcast_to, axis_correlation_matrix
 
 
 __all__ = ['Coordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
@@ -244,6 +244,18 @@ class WCSCoordinates(Coordinates):
 
         self._wcs = wcs
 
+        # Pre-compute dependent axes. The matrix returned by
+        # axis_correlation_matrix is (n_world, n_pixel) but we want to know
+        # which pixel coordinates are linked to which other pixel coordinates.
+        # So to do this we take a column from the matrix and find if there are
+        # any entries in common with all other columns in the matrix.
+        matrix = axis_correlation_matrix(wcs)[::-1, ::-1]
+        self._dependent_axes = []
+        for axis in range(wcs.naxis):
+            world_dep = matrix[:, axis:axis + 1]
+            dependent = tuple(np.nonzero((world_dep & matrix).any(axis=0))[0])
+            self._dependent_axes.append(dependent)
+
     def world_axis_unit(self, axis):
         return str(self._wcs.wcs.cunit[self._wcs.naxis - 1 - axis])
 
@@ -256,36 +268,7 @@ class WCSCoordinates(Coordinates):
         return self._header
 
     def dependent_axes(self, axis):
-
-        # TODO: we should cache this
-
-        # if distorted, all bets are off
-        try:
-            if any([self._wcs.sip, self._wcs.det2im1, self._wcs.det2im2]):
-                return tuple(range(self._wcs.naxis))
-        except AttributeError:
-            pass
-
-        # here, axis is the index number in numpy convention
-        # we flip with [::-1] because WCS and numpy index
-        # conventions are reversed
-        pc = np.array(self._wcs.wcs.get_pc()[::-1, ::-1])
-        ndim = pc.shape[0]
-        pc[np.eye(ndim, dtype=np.bool)] = 0
-        axes = self._wcs.get_axis_types()[::-1]
-
-        # axes rotated
-        if pc[axis, :].any() or pc[:, axis].any():
-            return tuple(range(ndim))
-
-        # XXX can spectral still couple with other axes by this point??
-        if axes[axis].get('coordinate_type') != 'celestial':
-            return (axis,)
-
-        # in some cases, even the celestial coordinates are
-        # independent. We don't catch that here.
-        return tuple(i for i, a in enumerate(axes) if
-                     a.get('coordinate_type') == 'celestial')
+        return self._dependent_axes[axis]
 
     def __setstate__(self, state):
         self.__dict__ = state

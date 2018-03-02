@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 from glue.tests.helpers import requires_astropy
 
@@ -317,8 +317,32 @@ def test_coords_preserve_shape_3d():
     for r in result:
         assert r.shape == x.shape
 
+
 def test_world_axis_unit():
     coord = coordinates_from_header(header_from_string(HDR_3D_VALID_WCS))
     assert coord.world_axis_unit(0) == 'm / s'
     assert coord.world_axis_unit(1) == 'deg'
     assert coord.world_axis_unit(2) == 'deg'
+
+
+def test_dependent_axes_non_diagonal_pc():
+
+    # Fix a bug that occurred when non-diagonal PC elements
+    # were present in the WCS - in that case all other axes
+    # were returned as dependent axes even if this wasn't
+    # the case.
+
+    from astropy.wcs import WCS
+
+    wcs = WCS(naxis=3)
+    wcs.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
+    wcs.wcs.crval = 1, 1, 1
+    wcs.wcs.crpix = 1, 1, 1
+    wcs.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
+
+    # Remember that the axes numbers below are reversed compared
+    # to the WCS order above.
+    coord = WCSCoordinates(wcs=wcs)
+    assert_equal(coord.dependent_axes(0), [0])
+    assert_equal(coord.dependent_axes(1), [1, 2])
+    assert_equal(coord.dependent_axes(2), [1, 2])
