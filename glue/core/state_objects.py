@@ -289,6 +289,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
         self.margin = margin
         self.percentile_subset = percentile_subset
+        self.subset_indices = None
 
         if self.attribute is not None:
 
@@ -326,7 +327,11 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             data_values = self.data_values
 
             if data_values.size > self.percentile_subset:
-                data_values = np.random.choice(data_values.ravel(), self.percentile_subset)
+                if self.subset_indices is None or self.subset_indices[0] != data_values.size:
+                    self.subset_indices = (data_values.size,
+                                           np.random.randint(0, data_values.size,
+                                                             self.percentile_subset))
+                data_values = data_values.ravel()[self.subset_indices[1]]
 
             if log:
                 data_values = data_values[data_values > 0]
