@@ -31,20 +31,23 @@ class BaseTestExportPython:
             exec(f.read())
 
         msg = compare_images(expected, actual, tol=tol)
+
         if msg:
 
-            from base64 import b64encode
+            if os.environ.get('CI', 'false').lower() == 'true':
 
-            print("SCRIPT:")
-            with open(script, 'r') as f:
-                print(f.read())
+                from base64 import b64encode
 
-            print("EXPECTED:")
-            with open(expected, 'rb') as f:
-                print(b64encode(f.read()).decode())
+                print("SCRIPT:")
+                with open(script, 'r') as f:
+                    print(f.read())
 
-            print("ACTUAL:")
-            with open(actual, 'rb') as f:
-                print(b64encode(f.read()).decode())
+                print("EXPECTED:")
+                with open(expected, 'rb') as f:
+                    print(b64encode(f.read()).decode())
+
+                print("ACTUAL:")
+                with open(actual, 'rb') as f:
+                    print(b64encode(f.read()).decode())
 
             pytest.fail(msg, pytrace=False)

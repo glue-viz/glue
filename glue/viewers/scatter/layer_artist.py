@@ -355,23 +355,25 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     if 'alpha' in changed:
                         force = True
 
-                    if force or 'fill' in changed:
-
-                        if self.state.fill:
-                            colors = self.scatter_artist.get_edgecolors()
-                            self.scatter_artist.set_edgecolors('none')
-                            self.scatter_artist.set_facecolors(colors)
-                        else:
-                            colors = self.scatter_artist.get_facecolors()
-                            self.scatter_artist.set_edgecolors(colors)
-                            self.scatter_artist.set_facecolors('none')
-
                     if self.state.cmap_mode == 'Fixed':
-                        if force or 'color' in changed or 'cmap_mode' in changed:
-                            self.scatter_artist.set_color(self.state.color)
-                    elif force or any(prop in changed for prop in CMAP_PROPERTIES):
+                        if force or 'color' in changed or 'cmap_mode' in changed or 'fill' in changed:
+                            if self.state.fill:
+                                self.scatter_artist.set_facecolors(self.state.color)
+                                self.scatter_artist.set_edgecolors('none')
+                            else:
+                                self.scatter_artist.set_facecolors('none')
+                                self.scatter_artist.set_edgecolors(self.state.color)
+                    elif force or any(prop in changed for prop in CMAP_PROPERTIES) or 'fill' in changed:
+                        self.scatter_artist.set_edgecolors(None)
+                        self.scatter_artist.set_facecolors(None)
                         c = self.layer[self.state.cmap_att].ravel()
                         set_mpl_artist_cmap(self.scatter_artist, c, self.state)
+                        if self.state.fill:
+                            self.scatter_artist.set_edgecolors('none')
+                        else:
+                            colors = self.scatter_artist.get_facecolors()
+                            self.scatter_artist.set_facecolors('none')
+                            self.scatter_artist.set_edgecolors(colors)
 
                     if force or any(prop in changed for prop in MARKER_PROPERTIES):
 

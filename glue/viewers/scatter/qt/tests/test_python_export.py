@@ -31,6 +31,11 @@ class TestExportPython(BaseTestExportPython):
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
 
+    def test_simple_nofill(self, tmpdir):
+        self.viewer.state.layers[0].fill = False
+        self.viewer.state.layers[0].size_scaling = 10
+        self.assert_same(tmpdir)
+
     def test_simple_visual(self, tmpdir):
         self.viewer.state.layers[0].color = 'blue'
         self.viewer.state.layers[0].markersize = 30
@@ -46,6 +51,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].alpha = 0.8
         self.assert_same(tmpdir)
 
+    def test_cmap_mode_nofill(self, tmpdir):
+        self.viewer.state.layers[0].fill = False
+        self.test_cmap_mode(tmpdir)
+
     def test_size_mode(self, tmpdir):
         self.viewer.state.layers[0].size_mode = 'Linear'
         self.viewer.state.layers[0].size_att = self.data.id['d']
@@ -54,6 +63,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].size_scaling = 0.4
         self.viewer.state.layers[0].alpha = 0.7
         self.assert_same(tmpdir)
+
+    def test_size_mode_nofill(self, tmpdir):
+        self.viewer.state.layers[0].fill = False
+        self.test_size_mode(tmpdir)
 
     def test_line(self, tmpdir):
         self.viewer.state.layers[0].line_visible = True
