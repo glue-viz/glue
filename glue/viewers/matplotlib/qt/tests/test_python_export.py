@@ -34,20 +34,18 @@ class BaseTestExportPython:
 
         if msg:
 
-            if os.environ.get('CI', 'false').lower() == 'true':
+            from base64 import b64encode
 
-                from base64 import b64encode
+            print("SCRIPT:")
+            with open(script, 'r') as f:
+                print(f.read())
 
-                print("SCRIPT:")
-                with open(script, 'r') as f:
-                    print(f.read())
+            print("EXPECTED:")
+            with open(expected, 'rb') as f:
+                print(b64encode(f.read()).decode())
 
-                print("EXPECTED:")
-                with open(expected, 'rb') as f:
-                    print(b64encode(f.read()).decode())
-
-                print("ACTUAL:")
-                with open(actual, 'rb') as f:
-                    print(b64encode(f.read()).decode())
+            print("ACTUAL:")
+            with open(actual, 'rb') as f:
+                print(b64encode(f.read()).decode())
 
             pytest.fail(msg, pytrace=False)

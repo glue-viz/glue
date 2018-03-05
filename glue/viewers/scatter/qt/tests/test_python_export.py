@@ -32,6 +32,8 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_nofill(self, tmpdir):
+        if MATPLOTLIB_LT_20:
+            pytest.xfail()
         self.viewer.state.layers[0].fill = False
         self.viewer.state.layers[0].size_scaling = 10
         self.assert_same(tmpdir)
