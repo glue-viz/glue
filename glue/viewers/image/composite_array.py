@@ -5,9 +5,12 @@ from __future__ import absolute_import
 
 import numpy as np
 
+from glue.utils import view_shape
+
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch, ManualInterval, ContrastBiasStretch)
+
 
 __all__ = ['CompositeArray']
 
@@ -156,7 +159,7 @@ class CompositeArray(object):
             if self.shape is None:
                 return None
             else:
-                img = np.zeros(self.shape + (4,))[view]
+                img = np.zeros(view_shape(self.shape, view) + (4,))
         else:
             img = np.clip(img, 0, 1)
 
