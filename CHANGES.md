@@ -73,6 +73,9 @@ v0.12.4 (unreleased)
 
 * Improve error message in PV slicer when _slice_index fails. [#1536]
 
+* Fixed a bug that caused an error when trying to save a session that
+  included an image viewer with an aggregated slice. [#1561]
+
 * Fixed a bug that caused an error in the terminal if creating a data
   viewer failed properly (with a GUI error message).
 
