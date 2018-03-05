@@ -63,6 +63,8 @@ v0.13.0 (unreleased)
 * EditSubsetMode is now no longer a singleton class and is
   instead instantiated at the Application/Session level. [#1538]
 
+* Improve performance of image viewer. [#1558]
+
 v0.12.4 (unreleased)
 --------------------
 

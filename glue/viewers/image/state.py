@@ -57,13 +57,9 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.limits_cache = {}
 
-        self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
-                                                       lower='x_min', upper='x_max',
-                                                       limits_cache=self.limits_cache)
-
-        self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
-                                                       lower='y_min', upper='y_max',
-                                                       limits_cache=self.limits_cache)
+        # NOTE: we don't need to use StateAttributeLimitsHelper here because
+        # we can simply call reset_limits below when x/y attributes change.
+        # Using StateAttributeLimitsHelper makes things a lot slower.
 
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
@@ -184,11 +180,13 @@ class ImageViewerState(MatplotlibDataViewerState):
     def _on_xatt_change(self, *args):
         if self.x_att is not None:
             self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
+        self.reset_limits()
 
     @defer_draw
     def _on_yatt_change(self, *args):
         if self.y_att is not None:
             self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
+        self.reset_limits()
 
     @defer_draw
     def _on_xatt_world_change(self, *args):
@@ -306,6 +304,8 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view=None):
 
+        print("GET SLICED DATA", view)
+
         slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         full_view = slices
@@ -323,6 +323,8 @@ class BaseImageLayerState(MatplotlibLayerState):
         else:
 
             view_applied = False
+
+        print('  full view:', full_view)
 
         image = self._get_image(view=full_view)
 
