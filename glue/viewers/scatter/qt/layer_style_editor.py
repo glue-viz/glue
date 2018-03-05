@@ -118,6 +118,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.value_size_scaling.setVisible(not density)
         self.ui.label_size_mode.setVisible(not density)
         self.ui.label_size_scaling.setVisible(not density)
+        self.ui.label_fill.setVisible(not density)
+        self.ui.bool_fill.setVisible(not density)
 
     def _update_markers_visible(self, *args):
         self.ui.combosel_size_mode.setEnabled(self.layer_state.markers_visible)

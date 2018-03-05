@@ -28,7 +28,7 @@ STRETCHES = {'linear': LinearStretch,
              'log': LogStretch}
 
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
-MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size'])
+MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size', 'fill'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
 DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
@@ -336,8 +336,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
 
-                    if force or 'color' in changed:
-                        self.plot_artist.set_color(self.state.color)
+                    if force or 'color' in changed or 'fill' in changed:
+                        if self.state.fill:
+                            self.plot_artist.set_markeredgecolor('none')
+                            self.plot_artist.set_markerfacecolor(self.state.color)
+                        else:
+                            self.plot_artist.set_markeredgecolor(self.state.color)
+                            self.plot_artist.set_markerfacecolor('none')
 
                     if force or 'size' in changed or 'size_scaling' in changed:
                         self.plot_artist.set_markersize(self.state.size *
@@ -350,14 +355,23 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     if 'alpha' in changed:
                         force = True
 
+                    if force or 'fill' in changed:
+
+                        if self.state.fill:
+                            colors = self.scatter_artist.get_edgecolors()
+                            self.scatter_artist.set_edgecolors('none')
+                            self.scatter_artist.set_facecolors(colors)
+                        else:
+                            colors = self.scatter_artist.get_facecolors()
+                            self.scatter_artist.set_edgecolors(colors)
+                            self.scatter_artist.set_facecolors('none')
+
                     if self.state.cmap_mode == 'Fixed':
                         if force or 'color' in changed or 'cmap_mode' in changed:
-                            self.scatter_artist.set_facecolors(self.state.color)
-                            self.scatter_artist.set_edgecolor('none')
+                            self.scatter_artist.set_color(self.state.color)
                     elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                         c = self.layer[self.state.cmap_att].ravel()
                         set_mpl_artist_cmap(self.scatter_artist, c, self.state)
-                        self.scatter_artist.set_edgecolor('none')
 
                     if force or any(prop in changed for prop in MARKER_PROPERTIES):
 

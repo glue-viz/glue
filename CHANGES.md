@@ -7,6 +7,8 @@ v0.13.0 (unreleased)
 * Improve hiding/showing of side-panels. No longer hide side-panels
   when glue application goes out of focus. [#1535]
 
+* Added support for whether symbols are shown filled or not. [#1559]
+
 * Improved link editor to include a graph of links. [#1534]
 
 * Improve mouse interaction with ROIs in image viewers, including

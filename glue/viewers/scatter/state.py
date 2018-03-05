@@ -159,6 +159,7 @@ class ScatterLayerState(MatplotlibLayerState):
     size_vmin = DDCProperty(docstring="The lower level for the size mapping")
     size_vmax = DDCProperty(docstring="The upper level for the size mapping")
     size_scaling = DDCProperty(1, docstring="Relative scaling of the size")
+    fill = DDCProperty(True, docstring="Whether to fill the markers")
 
     # Density map
 
