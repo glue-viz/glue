@@ -588,12 +588,12 @@ class TestImageViewer(object):
         self.viewer.add_data(self.hypercube)
         self.viewer.state.slices = AggregateSlice(slice(1, 3), 10, np.sum), 3, 0, 0
 
-        filename = tmpdir.join('session.glu')
+        filename = tmpdir.join('session.glu').strpath
 
         self.application.save_session(filename)
+        self.application.close()
 
         app2 = GlueApplication.restore_session(filename)
-
         viewer_state = app2.viewers[0][0].state
         slices = viewer_state.slices
         assert isinstance(slices[0], AggregateSlice)
@@ -601,6 +601,8 @@ class TestImageViewer(object):
         assert slices[0].center == 10
         assert slices[0].function is np.sum
         assert slices[1:] == (3, 0, 0)
+
+        app2.close()
 
 
 class TestSessions(object):

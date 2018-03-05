@@ -24,11 +24,9 @@ class AggregateSlice(object):
         self.function = function
 
     def __gluestate__(self, context):
-        print("__gluestate__")
         state = dict(slice=context.do(self.slice),
                      center=self.center,
                      function=context.do(self.function))
-        print('state', state)
         return state
 
     @classmethod
