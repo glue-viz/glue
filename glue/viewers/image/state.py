@@ -23,6 +23,18 @@ class AggregateSlice(object):
         self.center = center
         self.function = function
 
+    def __gluestate__(self, context):
+        state = dict(slice=context.do(self.slice),
+                     center=self.center,
+                     function=context.do(self.function))
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(slice=context.object(rec['slice']),
+                   center=rec['center'],
+                   function=context.object(rec['function']))
+
 
 class ImageViewerState(MatplotlibDataViewerState):
     """
