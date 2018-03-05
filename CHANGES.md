@@ -71,6 +71,9 @@ v0.12.4 (unreleased)
 * Fixed a bug that caused an error in the terminal if creating a data
   viewer failed properly (with a GUI error message).
 
+* Fixed a bug that caused performance issues when hiding all image
+  layers from an image viewer. [#1557]
+
 * Improve plugin loading to be less sensitive to exact versions of
   installed dependencies for plugins. [#1487]
 

@@ -156,9 +156,9 @@ class CompositeArray(object):
             if self.shape is None:
                 return None
             else:
-                img = np.zeros(self.shape + (4,))
-
-        img = np.clip(img, 0, 1)
+                img = np.zeros(self.shape + (4,))[view]
+        else:
+            img = np.clip(img, 0, 1)
 
         return img
 
