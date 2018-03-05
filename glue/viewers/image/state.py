@@ -273,13 +273,15 @@ class ImageViewerState(MatplotlibDataViewerState):
         """
         Flip the x_min/x_max limits.
         """
-        self.x_lim_helper.flip_limits()
+        with delay_callback(self, 'x_min', 'x_max'):
+            self.x_min, self.x_max = self.x_max, self.x_min
 
     def flip_y(self):
         """
         Flip the y_min/y_max limits.
         """
-        self.y_lim_helper.flip_limits()
+        with delay_callback(self, 'y_min', 'y_max'):
+            self.y_min, self.y_max = self.y_max, self.y_min
 
 
 class BaseImageLayerState(MatplotlibLayerState):
@@ -304,8 +306,6 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view=None):
 
-        print("GET SLICED DATA", view)
-
         slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         full_view = slices
@@ -323,8 +323,6 @@ class BaseImageLayerState(MatplotlibLayerState):
         else:
 
             view_applied = False
-
-        print('  full view:', full_view)
 
         image = self._get_image(view=full_view)
 
