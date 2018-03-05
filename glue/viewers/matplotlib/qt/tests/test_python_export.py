@@ -31,6 +31,7 @@ class BaseTestExportPython:
             exec(f.read())
 
         msg = compare_images(expected, actual, tol=tol)
+
         if msg:
 
             from base64 import b64encode

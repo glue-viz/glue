@@ -71,13 +71,15 @@ def python_export_scatter_layer(layer, *args):
             if layer.state.cmap_mode == 'Fixed' and layer.state.size_mode == 'Fixed':
                 options = dict(color=layer.state.color,
                                markersize=layer.state.size * layer.state.size_scaling,
-                               mec='none',
                                alpha=layer.state.alpha,
                                zorder=layer.state.zorder)
+                if layer.state.fill:
+                    options['mec'] = 'none'
+                else:
+                    options['mfc'] = 'none'
                 script += "ax.plot(x, y, 'o', {0})\n\n".format(serialize_options(options))
             else:
-                options = dict(edgecolor='none',
-                               alpha=layer.state.alpha,
+                options = dict(alpha=layer.state.alpha,
                                zorder=layer.state.zorder)
 
                 if layer.state.cmap_mode == 'Fixed':
@@ -96,10 +98,21 @@ def python_export_scatter_layer(layer, *args):
                     else:
                         options['s'] = code('sizes ** 2')
 
-                if MATPLOTLIB_LT_20:
-                    script += "ax.scatter(x[keep], y[keep], {0})\n\n".format(serialize_options(options))
+                if layer.state.fill:
+                    options['edgecolor'] = 'none'
                 else:
-                    script += "ax.scatter(x, y, {0})\n\n".format(serialize_options(options))
+                    script += "s = "
+
+                if MATPLOTLIB_LT_20:
+                    script += "ax.scatter(x[keep], y[keep], {0})\n".format(serialize_options(options))
+                else:
+                    script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
+
+                if not layer.state.fill:
+                    script += "s.set_edgecolors(s.get_facecolors())\n"
+                    script += "s.set_facecolors('none')\n"
+
+                script += "\n"
 
     if layer.state.vector_visible:
 
