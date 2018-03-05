@@ -85,13 +85,15 @@ from glue.core.subset_group import coerce_subset_groups
 from glue.utils import lookup_class
 
 
-literals = tuple([type(None), float, int, bytes, bool, list, tuple])
+literals = tuple([type(None), float, int, bytes, bool])
 
 if six.PY2:
     literals += (long,)
 
 
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
+
+builtin_iterables = (tuple, list, set)
 
 JSON_ENCODER = json.JSONEncoder()
 
@@ -232,6 +234,25 @@ class VersionedDict(object):
         self._data[item][version] = value
 
 
+def as_nested_lists(obj):
+    items = []
+    for item in obj:
+        if type(item) in builtin_iterables:
+            item = as_nested_lists(item)
+        items.append(item)
+    return items
+
+
+def flattened(obj):
+    items = []
+    for item in obj:
+        if type(item) in builtin_iterables:
+            items += as_nested_lists(item)
+        else:
+            items.append(item)
+    return items
+
+
 class GlueSerializer(object):
 
     """
@@ -274,6 +295,12 @@ class GlueSerializer(object):
         if type(obj) in literals:
             return obj
 
+        # Now check for list, set, and tuple, and skip if they don't contain
+        # any non-literals.
+        if type(obj) in builtin_iterables:
+            if all(isinstance(x, literals) for x in flattened(obj)):
+                return as_nested_lists(obj)
+
         oid = id(obj)
 
         if oid in self._names:
@@ -312,6 +339,12 @@ class GlueSerializer(object):
         if type(obj) in literals:
             return obj
 
+        # Now check for list, set, and tuple, and skip if they don't contain
+        # any non-literals
+        if type(obj) in builtin_iterables:
+            if all(isinstance(x, literals) for x in flattened(obj)):
+                return as_nested_lists(obj)
+
         oid = id(obj)
         if oid in self._working:
             raise GlueSerializeError("Circular reference detected")
@@ -335,6 +368,7 @@ class GlueSerializer(object):
         return result
 
     def _dispatch(self, obj):
+
         if hasattr(obj, '__gluestate__'):
             return type(obj).__gluestate__, 1
 
@@ -465,7 +499,7 @@ class GlueUnSerializer(object):
             self._working.add(obj_id)
             rec = self._rec[obj_id]
 
-        elif isinstance(obj_id, literals):
+        elif isinstance(obj_id, literals) or isinstance(obj_id, (tuple, list)):
             return obj_id
         else:
             rec = obj_id
@@ -504,6 +538,46 @@ def _save_dict(state, context):
 def _load_dict(rec, context):
     return dict((context.object(key), context.object(value))
                 for key, value in rec['contents'].items())
+
+
+@saver(tuple)
+def _save_tuple(state, context):
+    return dict(contents=[context.do(item) for item in state])
+
+
+@loader(tuple)
+def _load_tuple(rec, context):
+    return tuple(_load_list(rec, context))
+
+
+@saver(list)
+def _save_list(state, context):
+    return dict(contents=[context.do(item) for item in state])
+
+
+@loader(list)
+def _load_list(rec, context):
+    return [context.object(item) for item in rec['contents']]
+
+
+@saver(set)
+def _save_set(state, context):
+    return dict(contents=[context.do(item) for item in state])
+
+
+@loader(set)
+def _load_set(rec, context):
+    return set(_load_list(rec, context))
+
+
+@saver(slice)
+def _save_slice(slc, context):
+    return dict(start=slc.start, stop=slc.stop, step=slc.step)
+
+
+@loader(slice)
+def _load_slice(rec, context):
+    return slice(rec['start'], rec['stop'], rec['step'])
 
 
 @saver(CompositeSubsetState)

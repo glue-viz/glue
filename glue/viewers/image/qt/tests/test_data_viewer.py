@@ -24,7 +24,7 @@ from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlib
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.viewers.scatter.state import ScatterLayerState
-from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
+from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState, AggregateSlice
 from glue.core.link_helpers import LinkSame
 from glue.app.qt import GlueApplication
 
@@ -81,7 +81,7 @@ class TestImageViewer(object):
         self.data_collection.append(self.image1_wcs)
         self.data_collection.append(self.hypercube_wcs)
 
-        self.viewer = ImageViewer(self.session)
+        self.viewer = self.application.new_data_viewer(ImageViewer)
 
         self.data_collection.register_to_hub(self.hub)
         self.viewer.register_to_hub(self.hub)
@@ -579,6 +579,30 @@ class TestImageViewer(object):
         assert self.viewer.layers[1].enabled  # scatter
         assert not self.viewer.layers[2].enabled  # image subset
         assert self.viewer.layers[3].enabled  # scatter subset
+
+    def test_save_aggregate_slice(self, tmpdir):
+
+        # Regressin test to make sure that image viewers that include
+        # aggregate slice objects in the slices can be saved/restored
+
+        self.viewer.add_data(self.hypercube)
+        self.viewer.state.slices = AggregateSlice(slice(1, 3), 10, np.sum), 3, 0, 0
+
+        filename = tmpdir.join('session.glu').strpath
+
+        self.application.save_session(filename)
+        self.application.close()
+
+        app2 = GlueApplication.restore_session(filename)
+        viewer_state = app2.viewers[0][0].state
+        slices = viewer_state.slices
+        assert isinstance(slices[0], AggregateSlice)
+        assert slices[0].slice == slice(1, 3)
+        assert slices[0].center == 10
+        assert slices[0].function is np.sum
+        assert slices[1:] == (3, 0, 0)
+
+        app2.close()
 
 
 class TestSessions(object):
