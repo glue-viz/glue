@@ -43,15 +43,6 @@ class StyleDialog(QtWidgets.QDialog):
         self.label_widget.setText(self.layer.label)
         self.label_widget.selectAll()
 
-        self.symbol_widget = QtWidgets.QComboBox()
-        for idx, symbol in enumerate(self._symbols):
-            icon = symbol_icon(symbol)
-            self.symbol_widget.addItem(icon, '')
-            if symbol is self.layer.style.marker:
-                self.symbol_widget.setCurrentIndex(idx)
-        self.symbol_widget.setIconSize(QtCore.QSize(20, 20))
-        self.symbol_widget.setMinimumSize(10, 32)
-
         self.color_widget = ColorWidget()
         self.color_widget.setStyleSheet('ColorWidget {border: 1px solid;}')
         color = self.layer.style.color
@@ -63,7 +54,6 @@ class StyleDialog(QtWidgets.QDialog):
 
         if self._edit_label:
             self.layout.addRow("Label", self.label_widget)
-        self.layout.addRow("Symbol", self.symbol_widget)
         self.layout.addRow("Color", self.color_widget)
         self.layout.addRow("Size", self.size_widget)
 
@@ -74,8 +64,6 @@ class StyleDialog(QtWidgets.QDialog):
 
     def _connect(self):
         self.color_widget.mousePressed.connect(self.query_color)
-        self.symbol_widget.currentIndexChanged.connect(
-            lambda x: self.set_color(self.color()))
         self.okcancel.accepted.connect(self.accept)
         self.okcancel.rejected.connect(self.reject)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -92,7 +80,7 @@ class StyleDialog(QtWidgets.QDialog):
 
     def set_color(self, color):
         self._color = color
-        pm = symbol_icon(self.symbol(), color).pixmap(30, 30)
+        pm = symbol_icon('o', color).pixmap(30, 30)
         self.color_widget.setPixmap(pm)
 
     def size(self):
@@ -101,15 +89,11 @@ class StyleDialog(QtWidgets.QDialog):
     def label(self):
         return str(self.label_widget.text())
 
-    def symbol(self):
-        return self._symbols[self.symbol_widget.currentIndex()]
-
     def update_style(self):
         if self._edit_label:
             self.layer.label = self.label()
         self.layer.style.color = qt4_to_mpl_color(self.color())
         self.layer.style.alpha = self.color().alpha() / 255.
-        self.layer.style.marker = self.symbol()
         self.layer.style.markersize = self.size()
 
     @classmethod
@@ -141,7 +125,10 @@ class StyleDialog(QtWidgets.QDialog):
 
 if __name__ == "__main__":
 
+    from glue.utils.qt import get_qapp
     from glue.core import Data
+
+    app = get_qapp()
 
     d = Data(label='data label', x=[1, 2, 3, 4])
     StyleDialog.edit_style(d)
@@ -149,6 +136,5 @@ if __name__ == "__main__":
     print("New layer properties")
     print(d.label)
     print('color: ', d.style.color)
-    print('marker: ', d.style.marker)
     print('marker size: ', d.style.markersize)
     print('alpha ', d.style.alpha)
