@@ -132,3 +132,16 @@ class TestCompositeArray(object):
         self.composite.deallocate('a')
         assert self.composite.shape is None
         assert self.composite[...] is None
+
+    def test_getitem_noactive(self):
+
+        # Regression test for a bug that caused __getitem__ to return an array
+        # with the wrong size if a view was used and no layers were active.
+
+        array = np.random.random((100, 100))
+
+        self.composite.allocate('a')
+        self.composite.set('a', array=array, visible=False)
+
+        assert self.composite[:].shape == (100, 100, 4)
+        assert self.composite[10:90, ::10].shape == (80, 10, 4)
