@@ -64,7 +64,8 @@ def view_shape(shape, view):
     """
     Return the shape of a view of an array.
 
-    Returns equivalent of ``np.zeros(shape)[view].shape``
+    Returns equivalent of ``np.zeros(shape)[view].shape`` but with minimal
+    memory usage.
 
     Parameters
     ----------
@@ -75,11 +76,8 @@ def view_shape(shape, view):
     """
     if view is None:
         return shape
-    shp = tuple(slice(0, s, 1) for s in shape)
-    xy = np.broadcast_arrays(*np.ogrid[shp])
-    assert xy[0].shape == shape
-
-    return xy[0][view].shape
+    else:
+        return np.broadcast_to(1, shape)[view].shape
 
 
 def stack_view(shape, *views):

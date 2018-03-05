@@ -274,25 +274,21 @@ class ImageSubsetArray(object):
         full_shape = self.layer_state.layer.shape
         return full_shape[y_axis], full_shape[x_axis]
 
-    @property
-    def nan_array(self):
-        return np.ones(self.shape) * np.nan
-
     def __getitem__(self, view=None):
 
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return self.nan_array
+            return None
 
         if not self.layer_artist._compatible_with_reference_data:
-            return self.nan_array
+            return None
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return self.nan_array
+            return None
         else:
             self.layer_artist.enable()
 
