@@ -29,7 +29,7 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.utils import nonpartial, defer_draw
-from glue.utils.qt import (pick_class, GlueTabBar,
+from glue.utils.qt import (pick_class, GlueTabBar, qurl_to_path,
                            set_cursor_cm, messagebox_on_error, load_ui)
 
 from glue.app.qt.feedback import submit_bug_report, submit_feedback
@@ -1129,25 +1129,23 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    @messagebox_on_error("Failed to load files")
     def dropEvent(self, event):
 
         urls = event.mimeData().urls()
 
-        for url in urls:
+        paths = [qurl_to_path(url) for url in urls]
 
-            # Get path to file
-            path = url.path()
-
-            # Workaround for a Qt bug that causes paths to start with a /
-            # on Windows: https://bugreports.qt.io/browse/QTBUG-46417
-            if sys.platform.startswith('win'):
-                if path.startswith('/') and path[2] == ':':
-                    path = path[1:]
-
-            if path.endswith('.glu'):
-                self.restore_session_and_close(path)
+        if any(path.endswith('.glu') for path in paths):
+            if len(paths) != 1:
+                raise Exception("When dragging and dropping files onto glue, "
+                                "only a single .glu session file can be "
+                                "dropped at a time, or multiple datasets, but "
+                                "not a mix of both.")
             else:
-                self.load_data(path)
+                self.restore_session_and_close(paths[0])
+        else:
+            self.load_data(paths)
 
         event.accept()
 
