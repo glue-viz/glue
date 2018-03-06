@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 from contextlib import contextmanager
 
 from qtpy import QtCore, QtWidgets
@@ -8,7 +9,8 @@ from qtpy.QtCore import Qt
 from qtpy.uic import loadUi
 from glue.utils.qt import get_text
 
-__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog', 'combo_as_string']
+__all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog',
+           'combo_as_string', 'qurl_to_path']
 
 
 def update_combobox(combo, labeldata, default_index=0):
@@ -208,3 +210,20 @@ def combo_as_string(combo):
     """
     items = [combo.itemText(i) for i in range(combo.count())]
     return ":".join(items)
+
+
+def qurl_to_path(url):
+    """
+    Convert a local QUrl to a normal path
+    """
+
+    # Get path to file
+    path = url.path()
+
+    # Workaround for a Qt bug that causes paths to start with a /
+    # on Windows: https://bugreports.qt.io/browse/QTBUG-46417
+    if sys.platform.startswith('win'):
+        if path.startswith('/') and path[2] == ':':
+            path = path[1:]
+
+    return path

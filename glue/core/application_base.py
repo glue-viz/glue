@@ -4,8 +4,8 @@ import os
 import traceback
 from functools import wraps
 
+from glue.external.six import string_types
 from glue.core.session import Session
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.hub import HubListener
 from glue.core import Data, Subset
 from glue.core import command
@@ -186,16 +186,31 @@ class Application(HubListener):
             yield key, value
 
     @catch_error("Could not load data")
-    def load_data(self, path):
+    def load_data(self, paths):
         """
         Given a path to a file, load the file as a Data object and add it to
         the current session.
 
         This returns the added `Data` object.
         """
-        d = load_data(path)
-        self.add_datasets(self.data_collection, d)
-        return d
+
+        if isinstance(paths, string_types):
+            paths = [paths]
+
+        datasets = []
+        for path in paths:
+            result = load_data(path)
+            if isinstance(result, Data):
+                datasets.append(result)
+            else:
+                datasets.extend(result)
+
+        self.add_datasets(self.data_collection, datasets)
+
+        if len(datasets) == 1:
+            return datasets[0]
+        else:
+            return datasets
 
     @catch_error("Could not add data")
     def add_data(self, *args, **kwargs):
