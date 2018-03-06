@@ -42,7 +42,7 @@ class EditSubsetMode(object):
         if self.data_collection is not None:
             self.data_collection.hub.broadcast(EditSubsetMessage(self, value))
 
-    def _combine_data(self, new_state):
+    def _combine_data(self, new_state, use_current=False):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
@@ -51,8 +51,9 @@ class EditSubsetMode(object):
 
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
+        :param use_current: Do not create a new subset even if using NewMode
         """
-        if not self._edit_subset or self.mode is NewMode:
+        if not self._edit_subset or (self.mode is NewMode and not use_current):
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
@@ -64,7 +65,7 @@ class EditSubsetMode(object):
     @contract(d='inst($DataCollection, $Data)',
               new_state='isinstance(SubsetState)',
               focus_data='inst($Data)|None')
-    def update(self, d, new_state, focus_data=None):
+    def update(self, d, new_state, focus_data=None, use_current=False):
         """ Apply a new subset state to editable subsets within a
         :class:`~glue.core.data.Data` or
         :class:`~glue.core.data_collection.DataCollection` instance
@@ -78,11 +79,14 @@ class EditSubsetMode(object):
         :param focus_data: The main data set in focus by the client,
         if relevant. If a data set is in focus and has no subsets,
         a new one will be created using new_state.
+
+        :param use_current: Do not create a new subset even if using NewMode
+        :type use_current: bool
         """
         logging.getLogger(__name__).debug("Update subset for %s", d)
 
         if isinstance(d, (Data, DataCollection)):
-            self._combine_data(new_state)
+            self._combine_data(new_state, use_current=use_current)
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))
