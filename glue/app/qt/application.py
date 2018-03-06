@@ -1129,6 +1129,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    @messagebox_on_error("Failed to load files")
     def dropEvent(self, event):
 
         urls = event.mimeData().urls()
@@ -1137,9 +1138,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         if any(path.endswith('.glu') for path in paths):
             if len(paths) != 1:
-                raise ValueError("When dragging and dropping files onto glue, "
-                                 "only a single .glu session file can be "
-                                 "dropped at a time, or multiple datasets.")
+                raise Exception("When dragging and dropping files onto glue, "
+                                "only a single .glu session file can be "
+                                "dropped at a time, or multiple datasets, but "
+                                "not a mix of both.")
             else:
                 self.restore_session_and_close(paths[0])
         else:
