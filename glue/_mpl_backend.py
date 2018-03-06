@@ -33,6 +33,11 @@ def set_mpl_backend():
     else:
         rcParams['backend'] = 'Qt4Agg'
 
+    # disable key bindings in matplotlib
+    for setting in list(rcParams.keys()):
+        if setting.startswith('keymap'):
+            rcParams[setting] = ''
+
     # The following is a workaround for the fact that Matplotlib checks the
     # rcParams at import time, not at run-time. I have opened an issue with
     # Matplotlib here: https://github.com/matplotlib/matplotlib/issues/5513
