@@ -146,3 +146,37 @@ def test_session_paths(tmpdir):
                     assert os.path.isabs(value['path']) is absolute
 
             MockApplication.restore_session(session_file)
+
+
+def test_load_data(tmpdir):
+
+    os.chdir(tmpdir.strpath)
+
+    with open('data1.csv', 'w') as f:
+        f.write('a, b\n1, 2\n3, 4\n')
+
+    with open('data2.csv', 'w') as f:
+        f.write('a, b\n1, 2\n3, 4\n')
+
+    app1 = Application()
+    data = app1.load_data('data1.csv')
+
+    assert len(app1.data_collection) == 1
+    assert isinstance(data, Data)
+
+    app2 = Application()
+    datasets = app2.load_data(['data1.csv', 'data2.csv'], skip_merge=True)
+
+    assert len(app2.data_collection) == 2
+    assert len(datasets) == 2
+    assert isinstance(datasets[0], Data)
+    assert isinstance(datasets[1], Data)
+
+    app3 = Application()
+    data = app3.load_data(['data1.csv', 'data2.csv'], auto_merge=True)
+
+    assert len(app3.data_collection) == 1
+    # NOTE: for now this still returns the individual datasets
+    assert len(datasets) == 2
+    assert isinstance(datasets[0], Data)
+    assert isinstance(datasets[1], Data)

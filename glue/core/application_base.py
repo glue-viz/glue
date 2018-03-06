@@ -186,7 +186,7 @@ class Application(HubListener):
             yield key, value
 
     @catch_error("Could not load data")
-    def load_data(self, paths):
+    def load_data(self, paths, skip_merge=False, auto_merge=False):
         """
         Given a path to a file, load the file as a Data object and add it to
         the current session.
@@ -205,7 +205,8 @@ class Application(HubListener):
             else:
                 datasets.extend(result)
 
-        self.add_datasets(self.data_collection, datasets)
+        self.add_datasets(self.data_collection, datasets,
+                          skip_merge=skip_merge, auto_merge=auto_merge)
 
         if len(datasets) == 1:
             return datasets[0]
@@ -254,7 +255,7 @@ class Application(HubListener):
         detail : str
             Longer context about the error
         """
-        raise NotImplementedError()
+        raise Exception(message + "(" + detail + ")")
 
     def do(self, command):
         return self._cmds.do(command)
@@ -275,7 +276,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     @classmethod
-    def add_datasets(cls, data_collection, datasets, auto_merge=False):
+    def add_datasets(cls, data_collection, datasets, skip_merge=False, auto_merge=False):
         """ Utility method to interactively add datasets to a
         data_collection
 
@@ -297,6 +298,8 @@ class Application(HubListener):
 
         suggested = []
 
+        print('auto_merge', auto_merge)
+
         for data in datasets:
 
             # If the data was already suggested, we skip over it
@@ -308,11 +311,12 @@ class Application(HubListener):
                      if d.shape == shp and d is not data]
 
             # If no other datasets have the same shape, we go to the next one
-            if not other:
+            if not other or skip_merge:
                 continue
 
             if auto_merge:
                 merges, label = [data] + other, data.label
+                print(merges, label)
             else:
                 merges, label = cls._choose_merge(data, other)
 
