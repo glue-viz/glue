@@ -298,8 +298,6 @@ class Application(HubListener):
 
         suggested = []
 
-        print('auto_merge', auto_merge)
-
         for data in datasets:
 
             # If the data was already suggested, we skip over it
@@ -316,7 +314,6 @@ class Application(HubListener):
 
             if auto_merge:
                 merges, label = [data] + other, data.label
-                print(merges, label)
             else:
                 merges, label = cls._choose_merge(data, other)
 
