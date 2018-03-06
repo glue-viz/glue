@@ -5,6 +5,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+import pytest
+from qtpy import QtWidgets
 import numpy as np
 from mock import patch, MagicMock
 
@@ -169,14 +171,49 @@ class TestGlueApplication(object):
             assert kwargs['default'] is ImageViewer
 
     def test_drop_load_data(self):
+
+        load_data = MagicMock()
+        load_session = MagicMock()
+        self.app.load_data = load_data
+        self.app.restore_session_and_close = load_session
+
+        e = MagicMock()
+
         m = QtCore.QMimeData()
         m.setUrls([QtCore.QUrl('test.fits')])
-        e = MagicMock()
         e.mimeData.return_value = m
-        load = MagicMock()
-        self.app.load_data = load
+
         self.app.dropEvent(e)
-        assert load.call_count == 1
+        assert load_data.called_once_with('test.fits')
+        assert load_session.call_count == 0
+
+        load_data.reset_mock()
+
+        m = QtCore.QMimeData()
+        m.setUrls([QtCore.QUrl('test1.fits'), QtCore.QUrl('test2.fits')])
+        e.mimeData.return_value = m
+        self.app.dropEvent(e)
+        assert load_data.called_once_with(['test1.fits', 'test2.fits'])
+        assert load_session.call_count == 0
+
+        load_data.reset_mock()
+
+        m = QtCore.QMimeData()
+        m.setUrls([QtCore.QUrl('test.glu')])
+        e.mimeData.return_value = m
+        self.app.dropEvent(e)
+        assert load_data.call_count == 0
+        assert load_session.called_once_with(['test.glu'])
+
+        load_data.reset_mock()
+
+        m = QtCore.QMimeData()
+        m.setUrls([QtCore.QUrl('test.glu'), QtCore.QUrl('test.fits')])
+        e.mimeData.return_value = m
+        with patch('qtpy.QtWidgets.QMessageBox') as mb:
+            self.app.dropEvent(e)
+            assert mb.call_count == 1
+            assert "When dragging and dropping files" in mb.call_args[0][2]
 
     def test_subset_facet(self):
         # regression test for 335

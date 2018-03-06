@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import traceback
 from functools import wraps
 
+from glue.external.six import string_types
 from glue.core.session import Session
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.hub import HubListener
@@ -159,16 +160,32 @@ class Application(HubListener):
             yield key, value
 
     @catch_error("Could not load data")
-    def load_data(self, path):
+    def load_data(self, paths, skip_merge=False, auto_merge=False):
         """
         Given a path to a file, load the file as a Data object and add it to
         the current session.
 
         This returns the added `Data` object.
         """
-        d = load_data(path)
-        self.add_datasets(self.data_collection, d)
-        return d
+
+        if isinstance(paths, string_types):
+            paths = [paths]
+
+        datasets = []
+        for path in paths:
+            result = load_data(path)
+            if isinstance(result, Data):
+                datasets.append(result)
+            else:
+                datasets.extend(result)
+
+        self.add_datasets(self.data_collection, datasets,
+                          skip_merge=skip_merge, auto_merge=auto_merge)
+
+        if len(datasets) == 1:
+            return datasets[0]
+        else:
+            return datasets
 
     @catch_error("Could not add data")
     def add_data(self, *args, **kwargs):
@@ -212,7 +229,7 @@ class Application(HubListener):
         detail : str
             Longer context about the error
         """
-        raise NotImplementedError()
+        raise Exception(message + "(" + detail + ")")
 
     def do(self, command):
         return self._cmds.do(command)
@@ -233,7 +250,7 @@ class Application(HubListener):
         raise NotImplementedError()
 
     @classmethod
-    def add_datasets(cls, data_collection, datasets, auto_merge=False):
+    def add_datasets(cls, data_collection, datasets, skip_merge=False, auto_merge=False):
         """ Utility method to interactively add datasets to a
         data_collection
 
@@ -266,7 +283,7 @@ class Application(HubListener):
                      if d.shape == shp and d is not data]
 
             # If no other datasets have the same shape, we go to the next one
-            if not other:
+            if not other or skip_merge:
                 continue
 
             if auto_merge:

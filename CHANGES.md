@@ -9,6 +9,9 @@ v0.12.4 (2017-01-09)
   resulted in all axes being returned as dependent axes even though this
   isn't necessary. [#1552]
 
+* Avoid prompting users multiple times to merge data when dragging
+  and dropping multiple data files onto glue. [#1564]
+
 * Improve error message in PV slicer when _slice_index fails. [#1536]
 
 * Fixed a bug that caused an error when trying to save a session that
