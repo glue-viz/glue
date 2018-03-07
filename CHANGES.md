@@ -87,7 +87,7 @@ v0.12.4 (unreleased)
   included an image viewer with an aggregated slice. [#1561]
 
 * Fixed a bug that caused an error in the terminal if creating a data
-  viewer failed properly (with a GUI error message).
+  viewer failed properly (with a GUI error message). [#1501]
 
 * Fixed a bug that caused performance issues when hiding all image
   layers from an image viewer. [#1557]
