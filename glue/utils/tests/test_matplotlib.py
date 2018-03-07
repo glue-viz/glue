@@ -10,7 +10,7 @@ from matplotlib.artist import Artist
 from numpy.testing import assert_allclose
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-from glue.tests.helpers import requires_scipy
+from glue.tests.helpers import requires_scipy, requires_skimage
 from glue.utils.misc import DeferredMethod
 
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
@@ -19,19 +19,18 @@ from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
 
 
 @requires_scipy
-class TestPointContour(object):
+@requires_skimage
+def test_point_contour():
+    data = np.array([[0, 0, 0, 0],
+                     [0, 2, 3, 0],
+                     [0, 4, 2, 0],
+                     [0, 0, 0, 0]])
+    xy = point_contour(2, 2, data)
+    x = np.array([2., 1., 0.5, 0.5, 1., 2., 2.5, 2.5, 2.])
+    y = np.array([2.5, 2.5, 2., 1., 0.5, 0.5, 1., 2., 2.5])
 
-    def test(self):
-        data = np.array([[0, 0, 0, 0],
-                         [0, 2, 3, 0],
-                         [0, 4, 2, 0],
-                         [0, 0, 0, 0]])
-        xy = point_contour(2, 2, data)
-        x = np.array([2., 2. + 1. / 3., 2., 2., 1, .5, 1, 1, 2])
-        y = np.array([2. / 3., 1., 2., 2., 2.5, 2., 1., 1., 2. / 3])
-
-        np.testing.assert_array_almost_equal(xy[:, 0], x)
-        np.testing.assert_array_almost_equal(xy[:, 1], y)
+    np.testing.assert_array_almost_equal(xy[:, 0], x)
+    np.testing.assert_array_almost_equal(xy[:, 1], y)
 
 
 def test_fast_limits_nans():

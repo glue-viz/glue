@@ -4,6 +4,8 @@ Full changelog
 v0.12.4 (2017-01-09)
 --------------------
 
+* Fix compatibility with Matplotlib 2.2. [#1566]
+
 * Fix calculation of dependent_axes to account for cases where there
   are some non-zero non-diagonal PC values. Previously any such values 
   resulted in all axes being returned as dependent axes even though this

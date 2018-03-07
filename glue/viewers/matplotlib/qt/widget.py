@@ -41,6 +41,8 @@ class MplCanvas(FigureCanvas):
         matplotlib.interactive(False)
         self.roi_callback = None
 
+        self._draw_zoom_rect = None
+
         self.fig = Figure(facecolor=settings.BACKGROUND_COLOR)
 
         FigureCanvas.__init__(self, self.fig)
@@ -67,32 +69,50 @@ class MplCanvas(FigureCanvas):
             self.resize_end.emit()
 
     def paintEvent(self, event):
-        # draw the zoom rectangle more prominently
-        try:
-            drawRect = self.drawRect
-            self.drawRect = False
-
-        except AttributeError:  # mpl  1.4
-            drawRect = self._drawRect
-            self._drawRect = None
 
         # super needs this
         if self.renderer is None:
             self.renderer = self.get_renderer()
 
         super(MplCanvas, self).paintEvent(event)
-        if drawRect:
-            try:
-                x, y, w, h = self.rect[0], self.rect[1], self.rect[2], self.rect[3]
-            except TypeError:  # mpl 1.4
-                x, y, w, h = drawRect
-            p = QtGui.QPainter(self)
-            p.setPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
-            p.drawRect(x, y, w, h)
-            p.end()
+
+        # See drawRectangle for what _draw_zoom_rect is
+        if self._draw_zoom_rect is not None:
+            painter = QtGui.QPainter(self)
+            self._draw_zoom_rect(painter)
+            painter.end()
 
         if self.roi_callback is not None:
             self.roi_callback(self)
+
+    def drawRectangle(self, rect):
+
+        # The default zoom rectangle in Matplotlib is quite faint, and there is
+        # no easy mechanism for changing the default appearance. However, the
+        # drawing of the zoom rectangle is done in the public method
+        # drawRectangle on the canvas. This method sets up a callback function
+        # that is then called during paintEvent. However, we shouldn't use the
+        # same private attribute since this might break, so we use a private
+        # attribute with a different name, which means the one matplotlib uses
+        # will remain empty and not plot anything.
+
+        if rect is None:
+            _draw_zoom_rect = None
+        else:
+            def _draw_zoom_rect(painter):
+                pen = QtGui.QPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
+                painter.setPen(pen)
+                try:
+                    dpi_ratio = self.devicePixelRatio() or 1
+                except AttributeError:  # Matplotlib <2
+                    dpi_ratio = 1
+                painter.drawRect(*(pt / dpi_ratio for pt in rect))
+
+        # This function will be called at the end of the paintEvent
+        self._draw_zoom_rect = _draw_zoom_rect
+
+        # We need to call update to force the canvas to be painted again
+        self.update()
 
     def resizeEvent(self, event):
         if not self._resize_timer.isActive():

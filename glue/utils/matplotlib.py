@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import types
 import logging
+import warnings
 from functools import wraps
 
 import numpy as np
@@ -202,21 +203,39 @@ def point_contour(x, y, data):
          y locations of the contour vertices
     """
     try:
-        from scipy import ndimage
+        from scipy.ndimage import label, binary_fill_holes
+        from skimage.measure import find_contours
     except ImportError:
-        raise ImportError("Image processing in Glue requires SciPy")
+        raise ImportError("Image processing in Glue requires SciPy and scikit-image")
 
+    # Find the intensity of the selected pixel
     inten = data[y, x]
-    labeled, nr_objects = ndimage.label(data >= inten)
-    z = data * (labeled == labeled[y, x])
-    y, x = np.mgrid[0:data.shape[0], 0:data.shape[1]]
-    from matplotlib import _cntr
-    cnt = _cntr.Cntr(x, y, z)
-    xy = cnt.trace(inten)
+
+    # Find all 'islands' above this intensity
+    labeled, nr_objects = label(data >= inten)
+
+    # Pick the object we clicked on
+    z = (labeled == labeled[y, x])
+
+    # Fill holes inside it so we don't get 'inner' contours
+    z = binary_fill_holes(z).astype(float)
+
+    # Pad the resulting array so that for contours that go to the edge we get
+    # one continuous contour
+    z = np.pad(z, 1, mode='constant')
+
+    # Finally find the contours around the island
+    xy = find_contours(z, 0.5, fully_connected='high')
+
     if not xy:
         return None
-    xy = xy[0]
-    return xy
+
+    if len(xy) > 1:
+        warnings.warn("Too many contours found, picking the first one")
+
+    # We need to flip the array to get (x, y), and subtract one to account for
+    # the padding
+    return xy[0][:,::-1] - 1
 
 
 class AxesResizer(object):
