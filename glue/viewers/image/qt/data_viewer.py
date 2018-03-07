@@ -68,6 +68,8 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
+        self._active_roi = None
+
     @defer_draw
     def update_x_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
@@ -147,6 +149,14 @@ class ImageViewer(MatplotlibDataViewer):
         if iy in y_dep:
             y_dep.remove(iy)
         self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
+
+    def _apply_subset(self, *args, **kwargs):
+        super(ImageViewer, self)._apply_subset(*args, **kwargs)
+        self._active_roi = args[0]
+
+    def _apply_empty_subset(self, *args, **kwargs):
+        super(ImageViewer, self)._apply_empty_subset(*args, **kwargs)
+        self._active_roi = None
 
     def _roi_to_subset_state(self, roi):
         """ This method must be implemented in order for apply_roi from the
