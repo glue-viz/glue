@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division, print_function
-
 from astropy.wcs import WCS
 
 from qtpy.QtWidgets import QMessageBox
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
+from .toolbar import ImageViewerToolbar
 
 from glue.core import command
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -37,7 +36,7 @@ IDENTITY_WCS.wcs.cdelt = [1., 1.]
 class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
-    _toolbar_cls = MatplotlibViewerToolbar
+    _toolbar_cls = ImageViewerToolbar
     _default_mouse_mode_cls = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
