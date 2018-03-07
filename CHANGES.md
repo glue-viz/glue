@@ -1,13 +1,15 @@
 Full changelog
 ==============
 
-v0.12.4 (2017-01-09)
+v0.12.5 (unreleased)
 --------------------
 
 * Fix compatibility with Matplotlib 2.2. [#1566]
 
+* Fix compatibility with some versions of pytest. [#1520]
+
 * Fix calculation of dependent_axes to account for cases where there
-  are some non-zero non-diagonal PC values. Previously any such values 
+  are some non-zero non-diagonal PC values. Previously any such values
   resulted in all axes being returned as dependent axes even though this
   isn't necessary. [#1552]
 
@@ -20,18 +22,21 @@ v0.12.4 (2017-01-09)
   included an image viewer with an aggregated slice. [#1561]
 
 * Fixed a bug that caused an error in the terminal if creating a data
-  viewer failed properly (with a GUI error message).
+  viewer failed properly (with a GUI error message). [#1501]
 
 * Fixed a bug that caused performance issues when hiding all image
-  layers from an image viewer. [#1557]
-
-* Improve plugin loading to be less sensitive to exact versions of
-  installed dependencies for plugins.
+  layers from an image viewer. [#1557, #1562]
 
 * Fixed a bug that caused layers to not always be properly removed
   when deleting a row from the layer list. [#1502]
 
 * Make JSON circular reference errors more explicit. [#1529]
+
+v0.12.4 (2018-01-09)
+--------------------
+
+* Improve plugin loading to be less sensitive to exact versions of
+  installed dependencies for plugins. [#1487]
 
 v0.12.3 (2017-11-14)
 --------------------
@@ -58,6 +63,9 @@ v0.12.1 (2017-10-30)
 
 v0.12.0 (2017-10-25)
 --------------------
+
+* Show a GUI error message when restoring a session via drag-and-drop
+  if session loading fails. [#1454]
 
 * Don't disable layer completely if it is not enabled, just disable checkbox.
   Also show warnings instead of layer style editor. [#1451]
@@ -114,14 +122,22 @@ v0.12.0 (2017-10-25)
 * Fixed a bug that caused a previously disabled image subset layer to not
   become visible when shown again. [#1450]
 
+* Added the ability to rename tabs programmatically. [#1405]
+
 v0.11.1 (2017-08-25)
 --------------------
 
 * Fixed bug that caused ModestImage references to not be properly deleted, in
   turn leading to issues/crashes when removing subsets from image viewers. [#1390]
 
+* Fixed bug with reading in old session files with a table viewer. [#1389]
+
 v0.11.0 (2017-08-22)
 --------------------
+
+* Added splash screen. [#694]
+
+* Make file extension check case-insensitive. [#1275]
 
 * Fixed bug that caused table viewer to not update when adding components. [#1386]
 
@@ -190,7 +206,7 @@ v0.11.0 (2017-08-22)
 * Rewrote the histogram, scatter, and image viewers to use the new state
   infrastructure. This significantly simplifies the actual histogram viewer code
   both in terms of number of lines and in terms of the number of
-  connections/callbacks that need to be set up manually. [#1278, #1289]
+  connections/callbacks that need to be set up manually. [#1278, #1289, #1388]
 
 * Updated EditSubsetMode so that Data objects no longer have an edit_subset
   attribute - instead, the current list of subsets being edited is kept in
@@ -208,6 +224,16 @@ v0.11.0 (2017-08-22)
 
 * Fix a bug that caused links to not get removed if associated datasets
   were removed. [#1329]
+
+* Fixed a bug that meant that the table viewer did not update when
+  a ``NumericalDataChangedMessage`` message was emitted. [#1378]
+
+* Added new combo helpers in ``glue.core.data_combo_helper`` which
+  are similar to those in ``glue.core.qt.data_combo_helper`` but
+  operate on ``SelectionCallbackProperty`` and are Qt-independent.
+  [#1346]
+
+* Rewrote installation instructions. [#1330]
 
 v0.10.4 (2017-05-23)
 --------------------
