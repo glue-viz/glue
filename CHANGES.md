@@ -75,7 +75,9 @@ v0.13.0 (unreleased)
 
 * Fixed saving of sessions with ``BinaryComponentLink``. [#1533]
 
-* Refactored/simplified handling of links between datasets. [#1533]
+* Refactored/simplified handling of links between datasets and
+  fixed performance issues when adding/removing links or loading
+  data collections with many links. [#1531, #1533]
 
 * Added the ability to customize the appearance of tick and axis
   labels in Matplotlib plots. [#1511]
@@ -116,9 +118,6 @@ v0.12.5 (unreleased)
   when deleting a row from the layer list. [#1502]
 
 * Make JSON circular reference errors more explicit. [#1529]
-
-* Fix performance issue when adding/removing links or loading data
-  collections with many links. [#1531]
 
 v0.12.4 (2018-01-09)
 --------------------
