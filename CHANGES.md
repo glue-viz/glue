@@ -15,7 +15,7 @@ v0.13.0 (unreleased)
   click-and-drag relocation. Allow for more customization of mouse/toolbar
   modes. [#1515]
 
-* Add a toolbar item to save data. [#1516]
+* Add a toolbar item to save data. [#1516, #1519]
 
 * Give instructions for how to move selections in status tip. [#1504]
 
@@ -59,24 +59,42 @@ v0.13.0 (unreleased)
 * Fixed a bug that caused errors when removing items from a selection
   property linked to a QComboBox. [#1476]
 
-* Added initial support for customizing keyboard shortcuts. [#1475]
+* Added initial support for customizing keyboard shortcuts. [#1475, #1514, #1524]
 
 * Added support for using relative paths in session files. [#1537]
 
 * Remember last session filename and filter used. [#1537]
 
 * EditSubsetMode is now no longer a singleton class and is
-  instead instantiated at the Application/Session level. [#1538]
+  instead instantiated at the Application/Session level. [#1530]
 
-* Improve performance of image viewer. [#1558, #1562]
+* Improve performance of image viewer. [#1558]
 
-v0.12.4 (unreleased)
+* Added new ``Projected3dROI`` and ``RoiSubsetState3d`` classes
+  to represent 3D selections made in the projection plane. [#1522]
+
+* Fixed saving of sessions with ``BinaryComponentLink``. [#1533]
+
+* Refactored/simplified handling of links between datasets. [#1533]
+
+* Added the ability to customize the appearance of tick and axis
+  labels in Matplotlib plots. [#1511]
+
+* Added the ability to export Python scripts from the main
+  Matplotlib-based viewers. [#1511]
+
+* Added a new selection mode that always forces the creation of a new subset.
+  [#1525]
+
+v0.12.5 (unreleased)
 --------------------
 
 * Fix compatibility with Matplotlib 2.2. [#1566]
 
+* Fix compatibility with some versions of pytest. [#1520]
+
 * Fix calculation of dependent_axes to account for cases where there
-  are some non-zero non-diagonal PC values. Previously any such values 
+  are some non-zero non-diagonal PC values. Previously any such values
   resulted in all axes being returned as dependent axes even though this
   isn't necessary. [#1552]
 
@@ -92,10 +110,7 @@ v0.12.4 (unreleased)
   viewer failed properly (with a GUI error message). [#1501]
 
 * Fixed a bug that caused performance issues when hiding all image
-  layers from an image viewer. [#1557]
-
-* Improve plugin loading to be less sensitive to exact versions of
-  installed dependencies for plugins. [#1487]
+  layers from an image viewer. [#1557, #1562]
 
 * Fixed a bug that caused layers to not always be properly removed
   when deleting a row from the layer list. [#1502]
@@ -104,6 +119,12 @@ v0.12.4 (unreleased)
 
 * Fix performance issue when adding/removing links or loading data
   collections with many links. [#1531]
+
+v0.12.4 (2018-01-09)
+--------------------
+
+* Improve plugin loading to be less sensitive to exact versions of
+  installed dependencies for plugins. [#1487]
 
 v0.12.3 (2017-11-14)
 --------------------
@@ -130,6 +151,9 @@ v0.12.1 (2017-10-30)
 
 v0.12.0 (2017-10-25)
 --------------------
+
+* Show a GUI error message when restoring a session via drag-and-drop
+  if session loading fails. [#1454]
 
 * Don't disable layer completely if it is not enabled, just disable checkbox.
   Also show warnings instead of layer style editor. [#1451]
@@ -186,14 +210,22 @@ v0.12.0 (2017-10-25)
 * Fixed a bug that caused a previously disabled image subset layer to not
   become visible when shown again. [#1450]
 
+* Added the ability to rename tabs programmatically. [#1405]
+
 v0.11.1 (2017-08-25)
 --------------------
 
 * Fixed bug that caused ModestImage references to not be properly deleted, in
   turn leading to issues/crashes when removing subsets from image viewers. [#1390]
 
+* Fixed bug with reading in old session files with a table viewer. [#1389]
+
 v0.11.0 (2017-08-22)
 --------------------
+
+* Added splash screen. [#694]
+
+* Make file extension check case-insensitive. [#1275]
 
 * Fixed bug that caused table viewer to not update when adding components. [#1386]
 
@@ -262,7 +294,7 @@ v0.11.0 (2017-08-22)
 * Rewrote the histogram, scatter, and image viewers to use the new state
   infrastructure. This significantly simplifies the actual histogram viewer code
   both in terms of number of lines and in terms of the number of
-  connections/callbacks that need to be set up manually. [#1278, #1289]
+  connections/callbacks that need to be set up manually. [#1278, #1289, #1388]
 
 * Updated EditSubsetMode so that Data objects no longer have an edit_subset
   attribute - instead, the current list of subsets being edited is kept in
@@ -280,6 +312,16 @@ v0.11.0 (2017-08-22)
 
 * Fix a bug that caused links to not get removed if associated datasets
   were removed. [#1329]
+
+* Fixed a bug that meant that the table viewer did not update when
+  a ``NumericalDataChangedMessage`` message was emitted. [#1378]
+
+* Added new combo helpers in ``glue.core.data_combo_helper`` which
+  are similar to those in ``glue.core.qt.data_combo_helper`` but
+  operate on ``SelectionCallbackProperty`` and are Qt-independent.
+  [#1346]
+
+* Rewrote installation instructions. [#1330]
 
 v0.10.4 (2017-05-23)
 --------------------
