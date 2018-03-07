@@ -238,7 +238,7 @@ def point_contour(x, y, data):
 
     # We need to flip the array to get (x, y), and subtract one to account for
     # the padding
-    return np.flip(xy[0] - 1, 1)
+    return xy[0][:,::-1] - 1
 
 
 class AxesResizer(object):
