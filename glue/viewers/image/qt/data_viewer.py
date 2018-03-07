@@ -6,6 +6,7 @@ from qtpy.QtWidgets import QMessageBox
 from .toolbar import ImageViewerToolbar
 
 from glue.core import command
+from glue.core.qt.roi import QtPolygonalROI
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -149,13 +150,22 @@ class ImageViewer(MatplotlibDataViewer):
             y_dep.remove(iy)
         self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
 
+    @property
+    def active_roi(self):
+        return self._active_roi
+
+    @active_roi.setter
+    def active_roi(self, roi):
+        pass
+        #self._active_roi = QtPolygonalROI(self._axes, roi=roi)
+
     def _apply_subset(self, *args, **kwargs):
         super(ImageViewer, self)._apply_subset(*args, **kwargs)
-        self._active_roi = args[0]
+        self.active_roi = args[0]
 
     def _apply_empty_subset(self, *args, **kwargs):
         super(ImageViewer, self)._apply_empty_subset(*args, **kwargs)
-        self._active_roi = None
+        self.active_roi = None
 
     def _roi_to_subset_state(self, roi):
         """ This method must be implemented in order for apply_roi from the
