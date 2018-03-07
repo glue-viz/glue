@@ -102,7 +102,11 @@ class MplCanvas(FigureCanvas):
             def _draw_zoom_rect(painter):
                 pen = QtGui.QPen(QtGui.QPen(Qt.red, 2, Qt.DotLine))
                 painter.setPen(pen)
-                painter.drawRect(*(pt / self._dpi_ratio for pt in rect))
+                try:
+                    dpi_ratio = self.devicePixelRatio() or 1
+                except AttributeError:  # Matplotlib <2
+                    dpi_ratio = 1
+                painter.drawRect(*(pt / dpi_ratio for pt in rect))
 
         # This function will be called at the end of the paintEvent
         self._draw_zoom_rect = _draw_zoom_rect
