@@ -116,7 +116,10 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def close(self, warn=True):
 
-        self._warn_close = warn
+        if warn and not self._confirm_close():
+            return
+
+        self._warn_close = False
 
         if getattr(self, '_mdi_wrapper', None) is not None:
             self._mdi_wrapper.close()

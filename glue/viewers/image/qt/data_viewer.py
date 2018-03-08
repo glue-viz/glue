@@ -66,8 +66,8 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
-    def close(self, **kwargs):
-        super(ImageViewer, self).close(**kwargs)
+    def closeEvent(self, *args):
+        super(ImageViewer, self).closeEvent(*args)
         if self.axes._composite_image is not None:
             self.axes._composite_image.remove()
             self.axes._composite_image = None
