@@ -9,10 +9,6 @@ v0.13.0 (unreleased)
 
 * Added support for whether symbols are shown filled or not. [#1559]
 
-* Fixed issues when attempting to close a viewer with the delete key. [#1574]
-
-* Disabled default Matplotlib key bindings. [#1574]
-
 * Improved link editor to include a graph of links. [#1534]
 
 * Improve mouse interaction with ROIs in image viewers, including
@@ -94,6 +90,10 @@ v0.13.0 (unreleased)
 
 v0.12.5 (unreleased)
 --------------------
+
+* Fixed issues when attempting to close a viewer with the delete key. [#1574]
+
+* Disabled default Matplotlib key bindings. [#1574]
 
 * Fix compatibility with Matplotlib 2.2. [#1566]
 
