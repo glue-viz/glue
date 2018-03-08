@@ -19,6 +19,7 @@ __all__ = ['SaveDataDialog']
 class SaveDataState(State):
 
     data = SelectionCallbackProperty()
+    subset = SelectionCallbackProperty()
     component = SelectionCallbackProperty()
     exporter = SelectionCallbackProperty()
 
@@ -50,6 +51,20 @@ class SaveDataState(State):
 
     def _on_data_change(self, event=None):
         self.component_helper.set_multiple_data([self.data])
+        self._sync_subsets()
+
+    def _sync_subsets(self):
+
+        def display_func(subset):
+            if subset is None:
+                return "All data"
+            else:
+                return subset.label
+
+        subsets = [None] + list(self.data.subsets)
+
+        SaveDataState.subset.set_choices(self, subsets)
+        SaveDataState.subset.set_display_func(self, display_func)
 
 
 class SaveDataDialog(QDialog):
@@ -116,7 +131,11 @@ class SaveDataDialog(QDialog):
             item = self.ui.list_component.item(idx)
             if item.checkState() == Qt.Checked:
                 components.append(self.state.data.id[item.text()])
-        export_data(self.state.data, components=components, exporter=self.state.exporter.function)
+        if self.state.subset is None:
+            data = self.state.data
+        else:
+            data = self.state.subset
+        export_data(data, components=components, exporter=self.state.exporter.function)
         super(SaveDataDialog, self).accept()
 
 
