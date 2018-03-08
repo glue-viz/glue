@@ -80,8 +80,7 @@ class ImageViewer(MatplotlibDataViewer):
         self.axes.coords[1].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
-    def close(self, **kwargs):
-        super(ImageViewer, self).close(**kwargs)
+    def closeEvent(self, *args):
         if self.axes._composite_image is not None:
             self.axes._composite_image.remove()
             self.axes._composite_image = None
