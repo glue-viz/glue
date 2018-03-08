@@ -28,6 +28,7 @@ class TestSaveDataDialog:
         self.data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
         self.data2 = Data(a=[1, 2, 3], b=[2, 3, 4], label='data2')
         self.dc = DataCollection([self.data1, self.data2])
+        self.dc.new_subset_group(label='my subset', subset_state=self.data1.id['x'] > 1.5)
 
         self.x = self.data1.id['x']
         self.y = self.data1.id['y']
@@ -67,6 +68,11 @@ class TestSaveDataDialog:
         self.dialog.ui.combosel_data.setCurrentIndex(1)
         func = self._accept()
         func.assert_called_once_with('test_file.fits', self.data2, components=[self.a, self.b])
+
+    def test_change_subset_accept(self):
+        self.dialog.ui.combosel_subset.setCurrentIndex(1)
+        func = self._accept()
+        func.assert_called_once_with('test_file.fits', self.data1.subsets[0], components=[self.x, self.y])
 
     def test_deselect_accept(self):
         self.dialog.ui.list_component.item(1).setCheckState(Qt.Unchecked)
