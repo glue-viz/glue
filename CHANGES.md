@@ -91,6 +91,10 @@ v0.13.0 (unreleased)
 v0.12.5 (unreleased)
 --------------------
 
+* Fixed issues when attempting to close a viewer with the delete key. [#1574]
+
+* Disabled default Matplotlib key bindings. [#1574]
+
 * Fix compatibility with Matplotlib 2.2. [#1566]
 
 * Fix compatibility with some versions of pytest. [#1520]

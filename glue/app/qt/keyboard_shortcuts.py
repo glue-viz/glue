@@ -48,4 +48,4 @@ def delete_current_window(session):
     if check_duplicate_shortcut("backspace"):
         return
 
-    return session.application.current_tab.activeSubWindow().widget().close(warn=True)
+    return session.application._viewer_in_focus.close(warn=True)
