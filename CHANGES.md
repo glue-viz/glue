@@ -15,7 +15,7 @@ v0.13.0 (unreleased)
   click-and-drag relocation. Allow for more customization of mouse/toolbar
   modes. [#1515]
 
-* Add a toolbar item to save data. [#1516, #1519]
+* Add a toolbar item to save data. [#1516, #1519, #1575]
 
 * Give instructions for how to move selections in status tip. [#1504]
 
