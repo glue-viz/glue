@@ -10,6 +10,7 @@ from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
 from glue.utils.qt import load_ui
 from glue.core.state_objects import State
+from glue.external.echo import ChoiceSeparator
 from glue.core.data_combo_helper import ComponentIDComboHelper, DataCollectionComboHelper
 from glue.core.data_exporters.qt.dialog import export_data
 
@@ -98,8 +99,13 @@ class SaveDataDialog(QDialog):
 
         for component in components:
 
-            item = QListWidgetItem(component.label)
-            item.setCheckState(Qt.Checked)
+            if isinstance(component, ChoiceSeparator):
+                item = QListWidgetItem(str(component))
+                item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+                item.setForeground(Qt.gray)
+            else:
+                item = QListWidgetItem(component.label)
+                item.setCheckState(Qt.Checked)
             self.ui.list_component.addItem(item)
 
     def _on_check_change(self, *event):
