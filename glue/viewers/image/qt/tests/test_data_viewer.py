@@ -620,6 +620,16 @@ class TestImageViewer(object):
         assert self.viewer.layers[1].subset_array.shape is None
         assert self.viewer.layers[3].subset_array.shape == (4, 5)
 
+    def test_preserve_slice(self):
+
+        # Regression test to make sure that when adding a second dataset to
+        # an image viewer, the current slice in a cube does not change.
+
+        self.viewer.add_data(self.hypercube)
+        self.viewer.state.slices = (1, 2, 3, 4)
+        self.viewer.add_data(self.image1)
+        assert self.viewer.state.slices == (1, 2, 3, 4)
+
 
 class TestSessions(object):
 
