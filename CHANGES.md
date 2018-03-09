@@ -4,6 +4,9 @@ Full changelog
 v0.12.5 (unreleased)
 --------------------
 
+* Fixed a bug when two datasets with a different number of dimensions
+  were in an image viewer and a subset was created. [#1577]
+
 * Fixed issues when attempting to close a viewer with the delete key. [#1574]
 
 * Disabled default Matplotlib key bindings. [#1574]

@@ -582,7 +582,7 @@ class TestImageViewer(object):
 
     def test_save_aggregate_slice(self, tmpdir):
 
-        # Regressin test to make sure that image viewers that include
+        # Regression test to make sure that image viewers that include
         # aggregate slice objects in the slices can be saved/restored
 
         self.viewer.add_data(self.hypercube)
@@ -603,6 +603,22 @@ class TestImageViewer(object):
         assert slices[1:] == (3, 0, 0)
 
         app2.close()
+
+    def test_subset_cube_image(self):
+
+        # Regression test to make sure that if an image and cube are present
+        # in an image viewer and a subset is also present, we don't get an
+        # error when trying to access the subset shape
+
+        self.viewer.add_data(self.image1)
+        self.data_collection.new_subset_group(label='subset',
+                                              subset_state=self.image1.id['x'] > 1.5)
+
+        self.viewer.add_data(self.hypercube)
+        self.viewer.state.reference_data = self.hypercube
+
+        assert self.viewer.layers[1].subset_array.shape is None
+        assert self.viewer.layers[3].subset_array.shape == (4, 5)
 
 
 class TestSessions(object):
