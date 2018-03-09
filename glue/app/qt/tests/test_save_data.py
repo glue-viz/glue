@@ -14,10 +14,11 @@ def components(list_widget):
     disabled = []
     for idx in range(list_widget.count()):
         item = list_widget.item(idx)
-        if item.checkState() == Qt.Checked:
-            enabled.append(item.text())
-        else:
-            disabled.append(item.text())
+        if item.flags() & Qt.ItemIsSelectable:
+            if item.checkState() == Qt.Checked:
+                enabled.append(item.text())
+            else:
+                disabled.append(item.text())
     return disabled, enabled
 
 
@@ -42,6 +43,12 @@ class TestSaveDataDialog:
     def test_defaults(self):
         disabled, enabled = components(self.dialog.ui.list_component)
         assert enabled == ['x', 'y']
+        assert disabled == []
+
+    def test_defaults_derived(self):
+        self.data1['z'] = self.data1.id['x'] + 1
+        disabled, enabled = components(self.dialog.ui.list_component)
+        assert enabled == ['x', 'y', 'z']
         assert disabled == []
 
     def test_change_data(self):
