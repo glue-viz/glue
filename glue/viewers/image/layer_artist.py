@@ -275,9 +275,15 @@ class ImageSubsetArray(object):
 
     @property
     def shape(self):
+
+        if not self.layer_artist._compatible_with_reference_data:
+            return None
+
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
+
         full_shape = self.layer_state.layer.shape
+
         return full_shape[y_axis], full_shape[x_axis]
 
     def __getitem__(self, view=None):
