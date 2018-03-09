@@ -114,9 +114,14 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.y_max = ny - 0.5
 
     def _reference_data_changed(self, *args):
-        with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
-            self._update_combo_att()
-            self._set_default_slices()
+        # This signal can get emitted if just the choices but not the actual
+        # reference data change, so we check here that the reference data has
+        # actually changed
+        if self.reference_data is not getattr(self, '_last_reference_data', None):
+            self._last_reference_data = self.reference_data
+            with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
+                self._update_combo_att()
+                self._set_default_slices()
 
     def _layers_changed(self, *args):
 

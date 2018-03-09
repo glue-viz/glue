@@ -4,6 +4,9 @@ Full changelog
 v0.12.5 (unreleased)
 --------------------
 
+* Fixed a bug which caused the current slices to be lost when adding a second
+  dataset to the image viewer. [#1581]
+
 * Fixed a bug when two datasets with a different number of dimensions
   were in an image viewer and a subset was created. [#1577]
 
