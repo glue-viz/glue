@@ -176,6 +176,9 @@ class LayerArtistModel(PythonListModel):
     def row_artist(self, row):
         return self.artists[row]
 
+    def artist_row(self, artist):
+        return self.artists.index(artist)
+
 
 class LayerArtistView(QtWidgets.QListView, HubListener):
 
@@ -251,6 +254,11 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         if len(rows) != 1:
             return
         return self.model().row_artist(rows[0].row())
+
+    def select_artist(self, artist):
+        model = self.selectionModel()
+        row = self.model().artist_row(artist)
+        model.select(model.model().index(row), model.ClearAndSelect)
 
     def single_selection(self):
         return self.current_artist() is not None
