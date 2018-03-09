@@ -85,6 +85,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     _default_mouse_mode_cls = None
     tools = []
 
+    _close_on_last_layer_removed = True
+
     def __init__(self, session, parent=None):
         """
         :type session: :class:`~glue.core.Session`
@@ -107,7 +109,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
         # close window when last plot layer deleted
-        self._layer_artist_container.on_empty(lambda: self.close(warn=False))
+        if self._close_on_last_layer_removed:
+            self._layer_artist_container.on_empty(lambda: self.close(warn=False))
         self._layer_artist_container.on_changed(self.update_window_title)
 
     @property
