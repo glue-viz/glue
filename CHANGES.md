@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.12.5 (unreleased)
+v0.12.5 (2018-03-10)
 --------------------
 
 * Fixed a bug which caused the current slices to be lost when adding a second
