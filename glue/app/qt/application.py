@@ -244,8 +244,20 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _update_viewer_in_focus(self, *args):
 
+        if not hasattr(self, '_viewer_in_focus'):
+            self._viewer_in_focus = None
+
         mdi_area = self.current_tab
         active = mdi_area.activeSubWindow()
+
+        # Disable any active tool in the viewer that was previously in focus.
+        # Note that we want to do this even if active is None, which means that
+        # the user may have switched application.
+        if self._viewer_in_focus is not None:
+            try:
+                self._viewer_in_focus.toolbar.active_tool = None
+            except AttributeError:
+                pass  # not all viewers have toolbars
 
         if active is None:
             first_viewer = None
