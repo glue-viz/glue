@@ -254,7 +254,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # Note that we want to do this even if active is None, which means that
         # the user may have switched application.
         if self._viewer_in_focus is not None:
-            self._viewer_in_focus.toolbar.active_tool = None
+            try:
+                self._viewer_in_focus.toolbar.active_tool = None
+            except AttributeError:
+                pass  # not all viewers have toolbars
 
         if active is None:
             first_viewer = None
