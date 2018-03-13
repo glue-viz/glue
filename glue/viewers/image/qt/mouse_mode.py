@@ -31,16 +31,35 @@ class RoiClickAndDragMode(MouseMode):
 
         self._roi = None
         self._subset = None
+        self._selected = False
+
+    def _draw_stuff(self, event):
+        self._roi._roi_store()
+        self._roi._scrubbing = True
+        self._roi._cx = event.xdata
+        self._roi._cy = event.ydata
+        self._roi._mid_selection = True
+        self._roi._sync_patch()
 
     def _select_roi(self, roi, index, event):
         self._roi = QtPolygonalROI(self._axes, roi=roi)
-        self._roi.start_selection(event, scrubbing=True)
+        #self._roi.start_selection(event, scrubbing=True)
+        self._draw_stuff(event)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
+
+    def _deselect_roi(self, event):
+        if self._roi:
+            self._roi.finalize_selection(event)
+            self._edit_subset_mode.edit_subset = []
+
+            self._roi = None
+            self._subset = None
 
     def _display_roi_context_menu(self, roi_index):
 
         def delete_roi(event):
             self._dc.remove_subset_group(self._dc.subset_groups[roi_index])
+            self._deselect_roi(event)
 
         context_menu = QMenu()
         action = QAction("Delete ROI", context_menu)
@@ -67,21 +86,23 @@ class RoiClickAndDragMode(MouseMode):
                     if event.button == _MPL_LEFT_CLICK:
                         self._select_roi(subset_state.roi, roi_index, event)
                         self._subset = layer.state.layer
+                        self._selected = True
                     elif event.button == _MPL_RIGHT_CLICK:
+                        self._select_roi(subset_state.roi, roi_index, event)
                         self._display_roi_context_menu(roi_index)
                     break
             roi_index += 1
+        else:
+            self._selected = False
+            self._deselect_roi(event)
 
     def move(self, event):
-        if self._roi is None:
+        if self._roi is None or not self._selected:
             return
 
         self._roi.update_selection(event)
 
     def release(self, event):
         if self._roi:
-            self._roi.finalize_selection(event)
             self._viewer.apply_roi(self._roi.roi(), use_current=True)
-
-            self._roi = None
-            self._subset = None
+            self._selected = False
