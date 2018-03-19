@@ -209,17 +209,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
+                self.density_artist.set_xy([], [])
+                self.density_artist.set_c(None)
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
                     self.plot_artist.set_data(x, y)
                     self.scatter_artist.set_offsets(np.zeros((0, 2)))
-                    self.density_artist.set_xy([], [])
                 else:
                     self.plot_artist.set_data([], [])
                     offsets = np.vstack((x, y)).transpose()
                     self.scatter_artist.set_offsets(offsets)
-                    self.density_artist.set_xy([], [])
         else:
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))
