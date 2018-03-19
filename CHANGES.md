@@ -102,6 +102,8 @@ v0.12.6 (unreleased)
   user has selected a custom order of the axes of a cube in the image
   viewer. [#1615]
 
+* Fixed ticks on log x-axis in histogram viewer. [#7310]
+
 v0.12.5 (unreleased)
 --------------------
 
