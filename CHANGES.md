@@ -93,6 +93,9 @@ v0.13.0 (unreleased)
 v0.12.6 (unreleased)
 --------------------
 
+* Fixed a non-deterministic error that happened when closing the
+  TableViewer. [#7310]
+
 * Fixed size of markers when value for size is out of vmin/vmax range. [#1609]
 
 * Fixed a bug which caused the y-axis in the PV slice viewer to be
