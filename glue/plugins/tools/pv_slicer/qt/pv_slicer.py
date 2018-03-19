@@ -57,8 +57,12 @@ class PVSlicerMode(PathMode):
                                          x=x, y=y, interpolation='nearest')
 
         result = self._slice_widget
-        result.axes.set_xlabel("Position Along Slice")
-        result.axes.set_ylabel(_slice_label(self.viewer.state.reference_data, self.viewer.state.wcsaxes_slice[::-1]))
+        result.axes.set_xlabel("Position along path")
+        if wcs is None:
+            result.axes.set_ylabel("Cube slice index")
+        else:
+            result.axes.set_ylabel(_slice_label(self.viewer.state.reference_data,
+                                                self.viewer.state.wcsaxes_slice[::-1]))
 
         result.show()
 
@@ -224,14 +228,16 @@ def _slice_from_path(x, y, data, attribute, slc):
     spacing = 1  # pixel
     x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
 
+    from astropy.wcs import WCS
+
     try:
         result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
-    except:  # sometimes pvextractor complains due to wcs. Try to recover
+        wcs = WCS(result.header)
+    except Exception:  # sometimes pvextractor complains due to wcs. Try to recover
         result = extract_pv_slice(cube, path=p, wcs=None, order=0)
+        wcs = None
 
-    from astropy.wcs import WCS
     data = result.data
-    wcs = WCS(result.header)
 
     return data, x, y, wcs
 

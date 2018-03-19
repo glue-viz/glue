@@ -95,6 +95,9 @@ v0.12.6 (unreleased)
 
 * Fixed size of markers when value for size is out of vmin/vmax range. [#1609]
 
+* Fix a bug which caused the y-axis in the PV slice viewer to be
+  incorrect if the WCS could not be computed. [#1615]
+
 v0.12.5 (unreleased)
 --------------------
 
