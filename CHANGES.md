@@ -95,6 +95,13 @@ v0.12.6 (unreleased)
 
 * Fixed size of markers when value for size is out of vmin/vmax range. [#1609]
 
+* Fixed a bug which caused the y-axis in the PV slice viewer to be
+  incorrect if the WCS could not be computed. [#1615]
+
+* Fixed a bug that caused the WCS of a PV slice to be incorrect if the
+  user has selected a custom order of the axes of a cube in the image
+  viewer. [#1615]
+
 v0.12.5 (unreleased)
 --------------------
 
