@@ -409,3 +409,40 @@ def test_state_serialization_datetime64():
     state2 = clone(state1)
 
     assert state2.a == np.datetime64(100, 'D')
+
+
+def test_nan_inf_minmax():
+
+    data = Data(x=[3, 1, -2, np.inf, np.nan], label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        lower = CallbackProperty()
+        upper = CallbackProperty()
+        percentile = CallbackProperty()
+        log = CallbackProperty()
+
+    state = SimpleState()
+
+    helper = StateAttributeLimitsHelper(state, attribute='comp',  # noqa
+                                        lower='lower', upper='upper',
+                                        percentile='percentile', log='log')
+
+    state.data = data
+    state.comp = data.id['x']
+
+    assert state.lower == -2
+    assert state.upper == +3
+
+    state.log = True
+
+    assert state.lower == +1
+    assert state.upper == +3
+
+    state.log = False
+    state.percentile = 99
+
+    assert_allclose(state.lower, -1.97)
+    assert_allclose(state.upper, +2.98)
