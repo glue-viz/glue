@@ -241,6 +241,18 @@ class TestScatterViewer(object):
         self.viewer.state.layers[0].points_mode = 'markers'
         assert len(self.viewer.layers[0].density_artist._x) == 0
 
+    def test_density_map_color(self):
+
+        # Regression test to make sure things don't crash when changing
+        # back to markers if the color mode is cmap
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.layers[0].points_mode = 'density'
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].points_mode = 'markers'
+        self.viewer.state.layers[0].points_mode = 'density'
+
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
