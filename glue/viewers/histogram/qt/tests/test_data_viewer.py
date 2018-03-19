@@ -97,6 +97,28 @@ class TestHistogramViewer(object):
         assert not viewer_state.x_log
         assert not viewer_state.y_log
 
+    def test_log_labels(self):
+
+        # Regression test to make sure the labels are correctly changed to log
+        # when the x-axis is in log space.
+
+        viewer_state = self.viewer.state
+        data = Data(x=np.logspace(-5, 5, 10000))
+        self.data_collection.append(data)
+
+        self.viewer.add_data(data)
+        viewer_state.x_log = True
+
+        labels = [x.get_text() for x in self.viewer.axes.xaxis.get_ticklabels()]
+        assert labels == ['$\\mathdefault{10^{-7}}$',
+                          '$\\mathdefault{10^{-5}}$',
+                          '$\\mathdefault{10^{-3}}$',
+                          '$\\mathdefault{10^{-1}}$',
+                          '$\\mathdefault{10^{1}}$',
+                          '$\\mathdefault{10^{3}}$',
+                          '$\\mathdefault{10^{5}}$',
+                          '$\\mathdefault{10^{7}}$']
+
     def test_flip(self):
 
         viewer_state = self.viewer.state
