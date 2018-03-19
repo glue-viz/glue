@@ -253,7 +253,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # Disable any active tool in the viewer that was previously in focus.
         # Note that we want to do this even if active is None, which means that
         # the user may have switched application.
-        if self._viewer_in_focus is not None:
+        if (self._viewer_in_focus is not None and
+                (active is None or active.widget() is not self._viewer_in_focus)):
             try:
                 self._viewer_in_focus.toolbar.active_tool = None
             except AttributeError:

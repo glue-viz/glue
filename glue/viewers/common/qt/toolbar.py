@@ -48,6 +48,13 @@ class BasicToolbar(QtWidgets.QToolBar):
     @active_tool.setter
     def active_tool(self, new_tool):
 
+        if isinstance(new_tool, six.string_types):
+            if new_tool in self.tools:
+                new_tool = self.tools[new_tool]
+            else:
+                raise ValueError("Unrecognized tool '{0}', should be one of {1}"
+                                 .format(new_tool, ", ".join(sorted(self.tools))))
+
         old_tool = self._active_tool
 
         # If the tool is as before, we don't need to do anything
