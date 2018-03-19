@@ -803,6 +803,9 @@ class SpectrumTool(object):
     @property
     def enabled(self):
         """Return whether the window is visible and active"""
+        # If the widget has been completely closed, accessing
+        # isVisible() can result in a 'wrapped C/C++ object'
+        # deleted RuntimeError.
         try:
             return self.widget.isVisible()
         except RuntimeError:
