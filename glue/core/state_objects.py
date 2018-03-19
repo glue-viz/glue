@@ -341,7 +341,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
             # they don't exclude inf/-inf
-            data_values = data_values[np.isfinite(data_values)]
+            if data_values.dtype.kind != 'M':
+                data_values = data_values[np.isfinite(data_values)]
 
             if percentile == 100:
 
