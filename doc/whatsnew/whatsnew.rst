@@ -91,7 +91,7 @@ Experimental SAMP plugin
 A number of Astronomy applications including `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, `Aladin
 <http://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
-`WorldWideTelescope <http://www.worldwidetelescope.org>`_ and more support a
+`WorldWideTelescope <http://www.worldwidetelescope.org/webclient>`_ and more support a
 message-passing system that allows data and subsets to be exchanged between
 applications. We have now developed a plugin that adds SAMP capabilities to
 glue. To try this out, you will need to install the `glue-samp
@@ -148,7 +148,7 @@ New Slack community
 We have now set up Slack for any glue help/discussions, and we encourage you to
 sign up! You will need to first get an account `here
 <https://glueviz-slack-invite.herokuapp.com>`_ after which you will be able to
-sign in to http://glueviz.slack.com.
+sign in to https://glueviz.slack.com.
 
 Improved interface
 ------------------

@@ -17,7 +17,7 @@ Glue is a Python library to explore relationships within and among related datas
  <iframe width="640" height="390" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
  </center>
 
-For more demos, check out the :ref:`videos <demo_videos>` page. You can also `follow us on Twitter <https://twitter.com/glueviz>`_ for previews 
+For more demos, check out the :ref:`videos <demo_videos>` page. You can also `follow us on Twitter <https://twitter.com/glueviz>`_ for previews
 of upcoming functionality!
 
 **The latest version of glue is v0.12** - find out :ref:`what's new in glue! <whatsnew>`
@@ -151,7 +151,7 @@ Publications
 ------------
 
 * `Goodman et al. (2012), Principles of high-dimensional data
-  visualization in astronomy <http://dx.doi.org/10.1002/asna.201211705>`_
+  visualization in astronomy <http://adsabs.harvard.edu/abs/2012AN....333..505G>`_
 * `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
   Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
 * `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration

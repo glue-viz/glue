@@ -68,7 +68,7 @@ Related GitHub issues: `#708 <https://github.com/glue-viz/glue/issues/708>`_
 Support for big data: more efficient viewers
 --------------------------------------------
 
-`Matplotlib <http://matplotlib.org/>`_ and `VisPy <http://vispy.org/>`_ both
+`Matplotlib <https://matplotlib.org/>`_ and `VisPy <http://vispy.org/>`_ both
 start becoming slow when the limit of a million points/markers is reached. This
 severely limits the size of the largest datasets that can be visualized in the
 scatter plot viewers, because the visualization will be slow even if the data

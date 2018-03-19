@@ -38,7 +38,7 @@ specify custom translation functions. Here's how:
 .. literalinclude:: scripts/config_link_example.py
 
 Some remarks about this code:
- #. ``link_function`` is used as a `decorator <https://stackoverflow.com/a/1594484/180783>`_. The decorator adds the function to Glue's list of link functions
+ #. ``link_function`` is used as a `decorator <https://stackoverflow.com/questions/739654/how-to-make-a-chain-of-function-decorators/1594484>`_. The decorator adds the function to Glue's list of link functions
  #. We provide a short summary of the function in the ``info`` keyword, and a list of ``output_labels``. Usually, only one quantity is returned, so ``output_labels`` has one element.
  #. Glue will always pass numpy arrays as inputs to a link function, and expects a numpy array (or a tuple of numpy arrays) as output
 
