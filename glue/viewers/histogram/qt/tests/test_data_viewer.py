@@ -110,14 +110,19 @@ class TestHistogramViewer(object):
         viewer_state.x_log = True
 
         labels = [x.get_text() for x in self.viewer.axes.xaxis.get_ticklabels()]
-        assert labels == ['$\\mathdefault{10^{-7}}$',
-                          '$\\mathdefault{10^{-5}}$',
-                          '$\\mathdefault{10^{-3}}$',
-                          '$\\mathdefault{10^{-1}}$',
-                          '$\\mathdefault{10^{1}}$',
-                          '$\\mathdefault{10^{3}}$',
-                          '$\\mathdefault{10^{5}}$',
-                          '$\\mathdefault{10^{7}}$']
+
+        # Different Matplotlib versions return slightly different
+        # labels, but the ones below should be present regardless
+        # of Matplotlib version.
+        expected_present = ['$\\mathdefault{10^{-5}}$',
+                            '$\\mathdefault{10^{-3}}$',
+                            '$\\mathdefault{10^{-1}}$',
+                            '$\\mathdefault{10^{1}}$',
+                            '$\\mathdefault{10^{3}}$',
+                            '$\\mathdefault{10^{5}}$']
+
+        for label in expected_present:
+            assert label in labels
 
     def test_flip(self):
 
