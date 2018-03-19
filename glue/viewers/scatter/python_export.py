@@ -28,11 +28,13 @@ def python_export_scatter_layer(layer, *args):
 
     if layer.state.size_mode == 'Linear':
 
+        imports = ['import numpy as np']
+
         script += "# Set up size values\n"
         script += "sizes = layer_data['{0}']\n".format(layer.state.size_att.label)
         script += "size_vmin = {0}\n".format(layer.state.size_vmin)
         script += "size_vmax = {0}\n".format(layer.state.size_vmax)
-        script += "sizes = 30 * (sizes - size_vmin) / (size_vmax - size_vmin) * {0}\n\n".format(layer.state.size_scaling)
+        script += "sizes = 30 * (np.clip((sizes - size_vmin) / (size_vmax - size_vmin), 0, 1) * 0.95 + 0.05) * {0}\n\n".format(layer.state.size_scaling)
 
     if MATPLOTLIB_LT_20:
         imports = ['import numpy as np']
