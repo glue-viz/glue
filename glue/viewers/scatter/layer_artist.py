@@ -383,8 +383,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         else:
                             s = self.layer[self.state.size_att].ravel()
                             s = ((s - self.state.size_vmin) /
-                                 (self.state.size_vmax - self.state.size_vmin)) * 30
-                            s *= self.state.size_scaling
+                                 (self.state.size_vmax - self.state.size_vmin))
+                            # The following ensures that the sizes are in the
+                            # range 3 to 30 before the final size_scaling.
+                            np.clip(s, 0, 1, out=s)
+                            s *= 0.95
+                            s += 0.05
+                            s *= (30 * self.state.size_scaling)
 
                         # Note, we need to square here because for scatter, s is actually
                         # proportional to the marker area, not radius.
