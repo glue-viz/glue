@@ -218,7 +218,11 @@ def _slice_from_path(x, y, data, attribute, slc):
     _swap(dims, s, ind, 0)
     _swap(dims, s, s.index('y'), 1)
     _swap(dims, s, s.index('x'), 2)
+
     cube = cube.transpose(dims)
+
+    if cube_wcs is not None:
+        cube_wcs = cube_wcs.sub([data.ndim - x for x in dims[::-1]])
 
     # slice down from >3D to 3D if needed
     s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
