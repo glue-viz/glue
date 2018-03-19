@@ -803,7 +803,13 @@ class SpectrumTool(object):
     @property
     def enabled(self):
         """Return whether the window is visible and active"""
-        return self.widget.isVisible()
+        # If the widget has been completely closed, accessing
+        # isVisible() can result in a 'wrapped C/C++ object'
+        # deleted RuntimeError.
+        try:
+            return self.widget.isVisible()
+        except RuntimeError:
+            return False
 
     def mdi_wrap(self):
         sub = GlueMdiSubWindow()
