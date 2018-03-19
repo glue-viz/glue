@@ -398,6 +398,44 @@ class TestApplicationSession(object):
         sg.style.color = '#112233'
         assert sg.subsets[0].style.color == '#112233'
 
+    def test_deselect_tool_on_viewer_change(self):
+
+        d = Data(label='hist', x=[[1, 2], [2, 3]])
+        dc = DataCollection([d])
+
+        app = GlueApplication(dc)
+        v1 = app.new_data_viewer(HistogramViewer, data=d)
+        v2 = app.new_data_viewer(HistogramViewer, data=d)
+
+        assert v1.toolbar.active_tool is None
+        assert v2.toolbar.active_tool is None
+
+        v2.toolbar.active_tool = 'select:xrange'
+
+        assert v1.toolbar.active_tool is None
+        assert v2.toolbar.active_tool.tool_id == 'select:xrange'
+
+        app.current_tab.activateNextSubWindow()
+
+        assert v1.toolbar.active_tool is None
+        assert v2.toolbar.active_tool is None
+
+        v1.toolbar.active_tool = 'select:xrange'
+
+        # Emit a signal without changing the active subWindow to make sure that
+        # the tool doesn't get reset.
+        app.current_tab.subWindowActivated.emit(app.current_tab.activeSubWindow())
+
+        assert v1.toolbar.active_tool.tool_id == 'select:xrange'
+        assert v2.toolbar.active_tool is None
+
+        app.current_tab.activateNextSubWindow()
+
+        assert v1.toolbar.active_tool is None
+        assert v2.toolbar.active_tool is None
+
+        app.close()
+
 
 def test_logger_close():
 
