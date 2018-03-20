@@ -253,6 +253,14 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         self.window_closed.emit()
 
+    def isVisible(self):
+        # Override this so as to catch RuntimeError: wrapped C/C++ object of
+        # type ... has been deleted
+        try:
+            return self.isVisible()
+        except RuntimeError:
+            return False
+
     def _confirm_close(self):
         """Ask for close confirmation
 

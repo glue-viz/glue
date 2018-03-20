@@ -63,8 +63,8 @@ class MatplotlibDataViewerState(State):
     x_axislabel_weight = DeferredDrawSelectionCallbackProperty(1, docstring='Weight of the x-axis label')
     y_axislabel_weight = DeferredDrawSelectionCallbackProperty(1, docstring='Weight of the y-axis label')
 
-    x_ticklabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the x-axis tick labels')
-    y_ticklabel_size = DeferredDrawCallbackProperty(10, docstring='Size of the y-axis tick labels')
+    x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
+    y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
 

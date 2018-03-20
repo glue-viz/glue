@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 from astropy.wcs import WCS
 
 from qtpy.QtWidgets import QMessageBox
@@ -32,6 +34,13 @@ IDENTITY_WCS.wcs.ctype = ["X", "Y"]
 IDENTITY_WCS.wcs.crval = [0., 0.]
 IDENTITY_WCS.wcs.crpix = [1., 1.]
 IDENTITY_WCS.wcs.cdelt = [1., 1.]
+
+EXTRA_FOOTER = """
+# Set tick label size - for now tick_params (called lower down) doesn't work
+# properly, but these lines won't be needed in future.
+ax.coords[0].set_ticklabel(size={x_ticklabel_size})
+ax.coords[1].set_ticklabel(size={y_ticklabel_size})
+""".strip()
 
 
 class ImageViewer(MatplotlibDataViewer):
@@ -129,6 +138,9 @@ class ImageViewer(MatplotlibDataViewer):
 
         self._update_appearance_from_settings()
         self._update_axes()
+
+        self.update_x_ticklabel()
+        self.update_y_ticklabel()
 
         if relim:
             self.state.reset_limits()
@@ -247,3 +259,8 @@ class ImageViewer(MatplotlibDataViewer):
             pass
 
         return imports, script
+
+    def _script_footer(self):
+        state_dict = self.state.as_dict()
+        imports, script = super(ImageViewer, self)._script_footer()
+        return [], EXTRA_FOOTER.format(**state_dict) + os.linesep * 2 + script
