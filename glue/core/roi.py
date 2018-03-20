@@ -586,20 +586,6 @@ class PolygonalROI(VertexROIBase):
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
 
-def _project(projection_matrix, x, y, z):
-    """Projects 3d coordinates to 2d coordinates using a 4x4 matrix"""
-    x = np.asarray(x)
-    y = np.asarray(y)
-    z = np.asarray(z)
-    # work in homogeneous coordinates so we can support perspective
-    # projections as well
-    vertices = np.array([x, y, z, np.ones(x.shape)])
-    # homogeneous screen coordinates
-    screen_h = np.tensordot(projection_matrix, vertices, axes=(1, 0))
-    # convert to screen coordinates, and we don't care about z
-    x, y = screen_h[:2] / screen_h[3]
-    return x, y
-
 class Projected3dROI(Roi):
     """"A region of interest defined in screen coordinates.
 
@@ -614,11 +600,57 @@ class Projected3dROI(Roi):
         self.projection_matrix = np.asarray(projection_matrix)
 
     def contains3d(self, x, y, z):
-        """"Test if the projected coordinates are contained in the 2d roi."""
+        """
+        Test whether the projected coordinates are contained in the 2d ROI.
+        """
+
         if not self.defined():
             raise UndefinedROI
-        x, y = _project(self.projection_matrix, x, y, z)
-        return self.roi_2d.contains(x, y)
+
+        x = np.asarray(x)
+        y = np.asarray(y)
+        z = np.asarray(z)
+
+        # Since the projection can significantly increase the memory usage, we
+        # do the following operation in chunks.
+
+        original_shape = x.shape
+
+        # FIXME: this can cause a copy to be made if the data is not
+        # contiguous (for example for broadcasted pixel coordinates).
+        x = x.ravel()
+        y = y.ravel()
+        z = z.ravel()
+
+        chunk_size = 1000000
+        array_size = len(x)
+
+        n_chunks = max(array_size // chunk_size, 1)
+
+        mask = np.zeros(array_size, dtype=bool)
+
+        for chunk in range(n_chunks):
+
+            imin = chunk * chunk_size
+            imax = min((chunk + 1) * chunk_size, array_size)
+
+            # Work in homogeneous coordinates so we can support perspective
+            # projections as well
+            vertices = np.array([x[imin:imax],
+                                 y[imin:imax],
+                                 z[imin:imax],
+                                 np.ones(imax - imin)])
+
+            # The following returns homogeneous screen coordinates
+            screen_h = np.tensordot(self.projection_matrix,
+                                    vertices, axes=(1, 0))
+
+            # Convert to screen coordinates, as we don't care about z
+            screen_x, screen_y = screen_h[:2] / screen_h[3]
+
+            mask[imin:imax] = self.roi_2d.contains(screen_x, screen_y)
+
+        return mask.reshape(original_shape)
 
     def __gluestate__(self, context):
         return dict(roi_2d=context.id(self.roi_2d), projection_matrix=self.projection_matrix.tolist())
