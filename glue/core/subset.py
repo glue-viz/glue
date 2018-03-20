@@ -17,7 +17,7 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to
+from glue.utils import view_shape, broadcast_to, floodfill
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -1090,6 +1090,67 @@ class InequalitySubsetState(SubsetState):
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, self)
+
+
+class FloodFillSubsetState(MaskSubsetState):
+    """
+    A subset state representing a flood-fill operation, which is computed
+    on-the-fly.
+    """
+
+    # TODO: we need to recompute the mask if the numerical values of the
+    # data changes.
+
+    def __init__(self, data, attribute, start_coords, threshold):
+
+        if len(start_coords) != data.ndim:
+            raise ValueError("start_coords should have as many values as data "
+                             "has dimensions.")
+
+        print(start_coords, data.shape)
+
+        self.attribute = attribute
+        self.data = data
+        self.start_coords = tuple(start_coords)
+        self.threshold = float(threshold)
+        self.cids = self.data.pixel_component_ids
+
+        self._compute_mask()
+
+    def _compute_mask(self):
+        mask = floodfill(self.data[self.attribute],
+                         self.start_coords, self.threshold)
+        self._mask_cache = (self._hash, mask)
+
+    @property
+    def _hash(self):
+        return self.data, self.attribute, self.start_coords, self.threshold, self.cids
+
+    @property
+    def mask(self):
+        if self._mask_cache[0] != self._hash:
+            self._compute_mask()
+        return self._mask_cache[1]
+
+    def copy(self):
+        return FloodFillSubsetState(self.data, self.attribute, self.start_coords,
+                                    self.threshold)
+
+    def __gluestate__(self, context):
+        return dict(data=context.id(self.data),
+                    attribute=context.id(self.attribute),
+                    start_coords=self.start_coords,
+                    threshold=self.threshold,
+                    cids=[context.id(c) for c in self.cids])
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['data']),
+                   context.object(rec['attribute']),
+                   context.object(rec['start_coords']),
+                   context.object(rec['threshold']),
+                   [context.object(c) for c in rec['cids']])
+
 
 class RoiSubsetState3d(SubsetState):
     """Subset state for a roi that implements .contains3d
