@@ -357,7 +357,10 @@ class Subset(object):
         self.subset_state = state
 
     def __del__(self):
-        self.delete()
+        try:
+            self.delete()
+        except Exception:
+            pass
 
     def __setattr__(self, attribute, value):
         object.__setattr__(self, attribute, value)

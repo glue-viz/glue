@@ -6,11 +6,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from glue.utils import unbroadcast
+
 from ..component import DerivedComponent
 from ..component_link import ComponentLink, BinaryComponentLink
 from ..data import ComponentID, Data, Component
-from ..data_collection import DataCollection
-from ..link_helpers import LinkSame
 from ..subset import InequalitySubsetState
 
 
@@ -293,3 +293,32 @@ def test_link_str():
     assert str(x + x + y) == ('((x + x) + y)')
 
     assert repr(x + y) == '<BinaryComponentLink: (x + y)>'
+
+
+def test_efficiency():
+
+    def add(x, y):
+        # Make sure we don't benefit from broadcasting here
+        return x.copy() + y.copy()
+
+    data = Data(x=np.ones((2, 3, 4, 5)), y=np.ones((2, 3, 4, 5)))
+
+    for i, from_ids in enumerate(([data.id['x'], data.id['y']],
+                                  data.world_component_ids[:2],
+                                  data.pixel_component_ids[:2])):
+
+        if i == 0:
+            expected_shape = (2, 3, 4, 5)
+        else:
+            expected_shape = (2, 3, 1, 1)
+
+        for cls in [ComponentLink, BinaryComponentLink]:
+
+            if cls is ComponentLink:
+                link = ComponentLink(from_ids, ComponentID('test'), using=add)
+            else:
+                link = BinaryComponentLink(from_ids[0], from_ids[1], add)
+
+            result = link.compute(data)
+            assert result.shape == (2, 3, 4, 5)
+            assert unbroadcast(result).shape == expected_shape

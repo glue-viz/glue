@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import numbers
-import logging
 import operator
 
 import numpy as np
@@ -10,7 +9,8 @@ from glue.external.six import add_metaclass
 from glue.core.contracts import contract, ContractsMeta
 from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
-
+from glue.utils import unbroadcast, broadcast_to
+from glue.logger import logger
 
 __all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
 
@@ -131,34 +131,64 @@ class ComponentLink(object):
 
     @contract(data='isinstance(Data)', view='array_view')
     def compute(self, data, view=None):
-        """For a given data set, compute the component comp_to given
-        the data associated with each comp_from and the ``using``
-        function
-
-        :param data: The data set to use
-        :param view: Optional view (e.g. slice) through the data to use
-
-
-        *Returns*:
-
-            The data associated with comp_to component
-
-        *Raises*:
-
-            InvalidAttribute, if the data set doesn't have all the
-            ComponentIDs needed for the transformation
         """
-        logger = logging.getLogger(__name__)
+        For a given data set, compute the component comp_to given the data
+        associated with each comp_from and the ``using`` function
+
+        This raises an :class:`glue.core.exceptions.IncompatibleAttribute` if the
+        data set doesn't have all the ComponentIDs needed for the transformation
+
+        Parameters
+        ----------
+        data : `~glue.core.data.Data`
+            The data set to use
+        view : `None` or `slice` or `tuple`
+            Optional view (e.g. slice) through the data to use
+
+        Returns
+        -------
+        result
+            The data associated with comp_to component
+        """
+
+        # First we get the values of all the 'from' components.
         args = [data[join_component_view(f, view)] for f in self._from]
-        logger.debug("shape of first argument: %s", args[0].shape)
+
+        # We keep track of the original shape of the arguments
+        original_shape = args[0].shape
+        logger.debug("shape of first argument: %s", original_shape)
+
+        # We now unbroadcast the arrays to only compute the link with the
+        # smallest number of values we can. This can help for cases where
+        # the link depends only on e.g. pixel components or world coordinates
+        # that themselves only depend on a subset of pixel components.
+        # Unbroadcasting is the act of returning the smallest array that
+        # contains all the information needed to be broadcasted back to its
+        # full value
+        args = [unbroadcast(arg) for arg in args]
+
+        # We now broadcast these to the smallest common shape in case the
+        # linking functions don't know how to broadcast arrays with different
+        # shapes.
+        args = np.broadcast_arrays(*args)
+
+        # We call the actual linking function
         result = self._using(*args)
+
         # We call asarray since link functions may return Python scalars in some cases
         result = np.asarray(result)
+
+        # In some cases, linking functions return ravelled arrays, so we
+        # fix this here.
         logger.debug("shape of result: %s", result.shape)
         if result.shape != args[0].shape:
             logger.debug("ComponentLink function %s changed shape. Fixing",
                          self._using.__name__)
             result.shape = args[0].shape
+
+        # Finally we broadcast the final result to desired shape
+        result = broadcast_to(result, original_shape)
+
         return result
 
     def get_from_ids(self):
@@ -297,8 +327,6 @@ class ComponentLink(object):
         return InequalitySubsetState(self, other, operator.ge)
 
 
-
-
 class CoordinateComponentLink(ComponentLink):
 
     @contract(comp_from='list(isinstance(ComponentID))',
@@ -399,13 +427,37 @@ class BinaryComponentLink(ComponentLink):
             self._right.replace_ids(old, new)
 
     def compute(self, data, view=None):
+
         left = self._left
         right = self._right
+
         if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]
         if not isinstance(self._right, numbers.Number):
             right = data[self._right, view]
-        return self._op(left, right)
+
+        # As described in more detail in ComponentLink.compute, we can
+        # 'unbroadcast' the arrays to ensure a minimal operation
+
+        original_shape = None
+
+        if isinstance(left, np.ndarray):
+            original_shape = left.shape
+            left = unbroadcast(left)
+
+        if isinstance(right, np.ndarray):
+            original_shape = right.shape
+            right = unbroadcast(right)
+
+        if original_shape is not None:
+            left, right = np.broadcast_arrays(left, right)
+
+        result = self._op(left, right)
+
+        if original_shape is None:
+            return result
+        else:
+            return broadcast_to(result, original_shape)
 
     def __gluestate__(self, context):
         left = context.id(self._left)

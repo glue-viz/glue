@@ -81,6 +81,9 @@ v0.13.0 (unreleased)
   fixed performance issues when adding/removing links or loading
   data collections with many links. [#1531, #1533]
 
+* Significantly improve performance of link computations when the
+  links depend only on pixel or world coordinate components. [#1585]
+
 * Added the ability to customize the appearance of tick and axis
   labels in Matplotlib plots. [#1511]
 

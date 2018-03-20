@@ -47,6 +47,9 @@ Core Data
 .. automodapi:: glue.core.state_objects
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.exceptions
+   :no-inheritance-diagram:
+
 User Interface
 ==============
 
