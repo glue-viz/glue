@@ -303,17 +303,22 @@ def test_efficiency():
 
     data = Data(x=np.ones((2, 3, 4, 5)), y=np.ones((2, 3, 4, 5)))
 
-    comp = ComponentLink([data.id['x'], data.id['y']], ComponentID('a'), using=add)
-    result = comp.compute(data)
-    assert result.shape == (2, 3, 4, 5)
-    assert unbroadcast(result).shape == (2, 3, 4, 5)
+    for i, from_ids in enumerate(([data.id['x'], data.id['y']],
+                                  data.world_component_ids[:2],
+                                  data.pixel_component_ids[:2])):
 
-    comp = ComponentLink(data.world_component_ids[:2], ComponentID('b'), using=add)
-    result = comp.compute(data)
-    assert result.shape == (2, 3, 4, 5)
-    assert unbroadcast(result).shape == (2, 3, 1, 1)
+        if i == 0:
+            expected_shape = (2, 3, 4, 5)
+        else:
+            expected_shape = (2, 3, 1, 1)
 
-    comp = ComponentLink(data.pixel_component_ids[:2], ComponentID('c'), using=add)
-    result = comp.compute(data)
-    assert result.shape == (2, 3, 4, 5)
-    assert unbroadcast(result).shape == (2, 3, 1, 1)
+        for cls in [ComponentLink, BinaryComponentLink]:
+
+            if cls is ComponentLink:
+                link = ComponentLink(from_ids, ComponentID('test'), using=add)
+            else:
+                link = BinaryComponentLink(from_ids[0], from_ids[1], add)
+
+            result = link.compute(data)
+            assert result.shape == (2, 3, 4, 5)
+            assert unbroadcast(result).shape == expected_shape

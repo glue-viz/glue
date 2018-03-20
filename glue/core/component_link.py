@@ -327,8 +327,6 @@ class ComponentLink(object):
         return InequalitySubsetState(self, other, operator.ge)
 
 
-
-
 class CoordinateComponentLink(ComponentLink):
 
     @contract(comp_from='list(isinstance(ComponentID))',
@@ -429,13 +427,26 @@ class BinaryComponentLink(ComponentLink):
             self._right.replace_ids(old, new)
 
     def compute(self, data, view=None):
+
         left = self._left
         right = self._right
+
         if not isinstance(self._left, numbers.Number):
             left = data[self._left, view]
         if not isinstance(self._right, numbers.Number):
             right = data[self._right, view]
-        return self._op(left, right)
+
+        # As described in more detail in ComponentLink.compute, we can
+        # 'unbroadcast' the arrays to ensure a minimal operation, since _op
+        # is not guaranteed to be a function that recognizes broadcasted arrays
+        original_shape = left.shape
+        left = unbroadcast(left)
+        right = unbroadcast(right)
+        left, right = np.broadcast_arrays(left, right)
+
+        result = self._op(left, right)
+
+        return broadcast_to(result, original_shape)
 
     def __gluestate__(self, context):
         left = context.id(self._left)
