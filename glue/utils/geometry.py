@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.utils import unbroadcast, broadcast_to
 
-__all__ = ['points_inside_poly', 'polygon_line_intersections']
+__all__ = ['points_inside_poly', 'polygon_line_intersections', 'floodfill']
 
 
 def points_inside_poly(x, y, vx, vy):
@@ -119,3 +119,21 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
     segments = list(zip(points[:-1][keep], points[1:][keep]))
 
     return segments
+
+
+def floodfill(data, start_coords, threshold):
+
+    from scipy.ndimage.measurements import label
+
+    # Determine value at the starting coordinates
+    value = data[start_coords]
+
+    # Determine all pixels that match
+    mask = (data > value * (2 - threshold)) & (data < value * threshold)
+
+    # Determine all individual chunks
+    labels, num_features = label(mask)
+
+    mask = labels == labels[start_coords]
+
+    return mask

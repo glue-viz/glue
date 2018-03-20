@@ -11,16 +11,20 @@ from numpy.testing import assert_equal
 
 from mock import MagicMock
 
-from glue.tests.helpers import requires_astropy
-
+from glue.tests.helpers import requires_astropy, requires_scipy
+from ..exceptions import IncompatibleAttribute
 from .. import DataCollection, ComponentLink
 from ..data import Data, Component
 from ..roi import CategoricalROI, RectangularROI
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
+from ..link_helpers import LinkSame
 from ..subset import (Subset, SubsetState,
                       ElementSubsetState, RoiSubsetState, RangeSubsetState,
-                      CategoricalROISubsetState, InequalitySubsetState, CategorySubsetState, MaskSubsetState, CategoricalROISubsetState2D, CategoricalMultiRangeSubsetState)
+                      CategoricalROISubsetState, InequalitySubsetState,
+                      CategorySubsetState, MaskSubsetState,
+                      CategoricalROISubsetState2D,
+                      CategoricalMultiRangeSubsetState, FloodFillSubsetState)
 from ..subset import AndState
 from ..subset import InvertState
 from ..subset import OrState
@@ -810,3 +814,61 @@ class TestCloneSubsetStates():
         data_clone = clone(self.data)
 
         assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
+
+@requires_scipy
+def test_floodfill_subset_state():
+
+    data = np.array([[9, 6, 2, 3],
+                     [4, 5, 2, 5],
+                     [2, 4, 1, 0],
+                     [5, 6, 0, -1]])
+
+    expected = np.array([[0, 0, 0, 0],
+                         [1, 1, 0, 0],
+                         [0, 1, 0, 0],
+                         [0, 0, 0, 0]])
+
+    data1 = Data(x=data)
+    data2 = Data(x=4 - data1['x'])
+
+    dc = DataCollection([data1, data2])
+
+    subset_state = FloodFillSubsetState(data1, data1.id['x'], (1, 0), 1.3)
+
+    dc.new_subset_group(label='subset', subset_state=subset_state)
+
+    result = data1.subsets[0].to_mask()
+    assert_equal(result, expected)
+
+    with pytest.raises(IncompatibleAttribute):
+        data2.subsets[0].to_mask()
+
+    # Check that setting up pixel links works
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data1.pixel_component_ids[1], data2.pixel_component_ids[1]))
+
+    result = data2.subsets[0].to_mask()
+    assert_equal(result, expected)
+
+    dc._link_manager.clear_links()
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[1], data2.pixel_component_ids[0]))
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[1]))
+
+    result = data2.subsets[0].to_mask()
+    assert_equal(result, expected.T)
+
+    # Check that (de)serialization works
+
+    dc_new = clone(dc)
+
+    result = dc_new[0].subsets[0].to_mask()
+    assert_equal(result, expected)
+
+    # Check that changing parameters invalidates the cache
+
+    dc[0].subsets[0].subset_state.threshold = 10
+    result = data1.subsets[0].to_mask()
+    assert_equal(result, 1)
