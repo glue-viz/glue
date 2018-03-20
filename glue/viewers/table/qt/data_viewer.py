@@ -163,6 +163,9 @@ class RowSelectTool(CheckableTool):
         self.viewer.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
     def deactivate(self):
+        # Don't do anything if the viewer has already been closed
+        if self.viewer is None:
+            return
         self.viewer.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.viewer.ui.table.clearSelection()
 
