@@ -135,7 +135,7 @@ class ComponentLink(object):
         For a given data set, compute the component comp_to given the data
         associated with each comp_from and the ``using`` function
 
-        This raises an :class:`glue.core.exceptions.InvalidAttribute` if the
+        This raises an :class:`glue.core.exceptions.IncompatibleAttribute` if the
         data set doesn't have all the ComponentIDs needed for the transformation
 
         Parameters
