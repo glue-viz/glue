@@ -18,6 +18,12 @@ class TestExportPython(BaseTestExportPython):
         ga = GlueApplication(self.data_collection)
         self.viewer = ga.new_data_viewer(ImageViewer)
         self.viewer.add_data(self.data)
+        # FIXME: On some platforms, using an integer label size
+        # causes some of the labels to be non-deterministically
+        # shifted by one pixel, so we pick a non-round font size
+        # to avoid this.
+        self.viewer.state.x_ticklabel_size = 8.21334111
+        self.viewer.state.y_ticklabel_size = 8.21334111
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
