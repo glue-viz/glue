@@ -437,16 +437,27 @@ class BinaryComponentLink(ComponentLink):
             right = data[self._right, view]
 
         # As described in more detail in ComponentLink.compute, we can
-        # 'unbroadcast' the arrays to ensure a minimal operation, since _op
-        # is not guaranteed to be a function that recognizes broadcasted arrays
-        original_shape = left.shape
-        left = unbroadcast(left)
-        right = unbroadcast(right)
-        left, right = np.broadcast_arrays(left, right)
+        # 'unbroadcast' the arrays to ensure a minimal operation
+
+        original_shape = None
+
+        if isinstance(left, np.ndarray):
+            original_shape = left.shape
+            left = unbroadcast(left)
+
+        if isinstance(right, np.ndarray):
+            original_shape = right.shape
+            right = unbroadcast(right)
+
+        if original_shape is not None:
+            left, right = np.broadcast_arrays(left, right)
 
         result = self._op(left, right)
 
-        return broadcast_to(result, original_shape)
+        if original_shape is None:
+            return result
+        else:
+            return broadcast_to(result, original_shape)
 
     def __gluestate__(self, context):
         left = context.id(self._left)
