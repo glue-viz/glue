@@ -129,7 +129,7 @@ def floodfill(data, start_coords, threshold):
     value = data[start_coords]
 
     # Determine all pixels that match
-    mask = (data > value / threshold) & (data < value * threshold)
+    mask = (data > value * (2 - threshold)) & (data < value * threshold)
 
     # Determine all individual chunks
     labels, num_features = label(mask)
