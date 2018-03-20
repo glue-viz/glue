@@ -1137,19 +1137,18 @@ class FloodFillSubsetState(MaskSubsetState):
                                     self.threshold)
 
     def __gluestate__(self, context):
-        return dict(data=context.id(self.data),
-                    attribute=context.id(self.attribute),
+        # We don't store the data since this would cause a circular reference.
+        # However we can recover the data from the attribute ComponentID.
+        return dict(attribute=context.id(self.attribute),
                     start_coords=self.start_coords,
-                    threshold=self.threshold,
-                    cids=[context.id(c) for c in self.cids])
+                    threshold=self.threshold)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(context.object(rec['data']),
-                   context.object(rec['attribute']),
+        attribute = context.object(rec['attribute'])
+        return cls(attribute.parent, attribute,
                    context.object(rec['start_coords']),
-                   context.object(rec['threshold']),
-                   [context.object(c) for c in rec['cids']])
+                   context.object(rec['threshold']))
 
 
 class RoiSubsetState3d(SubsetState):
