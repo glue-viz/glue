@@ -38,7 +38,7 @@ class HistogramViewer(MatplotlibDataViewer):
         if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'x', self.state._get_x_components(), False)
+            update_ticks(self.axes, 'x', self.state._get_x_components(), self.state.x_log)
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
