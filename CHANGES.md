@@ -4,6 +4,9 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Added a new ``FloodFillSubsetState`` class to represent and
+  calculate subsets made by a flood-fill algorithm. [#1616]
+
 * Improve hiding/showing of side-panels. No longer hide side-panels
   when glue application goes out of focus. [#1535]
 
