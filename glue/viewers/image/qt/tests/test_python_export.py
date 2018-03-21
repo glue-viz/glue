@@ -28,6 +28,11 @@ class TestExportPython(BaseTestExportPython):
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
 
+    def test_simple_att(self, tmpdir):
+        self.viewer.state.x_att = self.data.pixel_component_ids[1]
+        self.viewer.state.y_att = self.data.pixel_component_ids[0]
+        self.assert_same(tmpdir)
+
     def test_simple_visual(self, tmpdir):
         self.viewer.state.layers[0].cmap = plt.cm.RdBu
         self.viewer.state.layers[0].v_min = 0.2
