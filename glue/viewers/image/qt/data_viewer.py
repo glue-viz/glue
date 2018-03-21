@@ -63,8 +63,8 @@ class ImageViewer(MatplotlibDataViewer):
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon', 'image:contrast_bias',
-             'image:point_selection', 'save:python']
+             'select:polygon', 'image:point_selection',
+             'image:contrast_bias', 'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
