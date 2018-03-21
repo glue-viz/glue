@@ -84,7 +84,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=3.6
                DOC_TRIGGER=1
-               PYTEST_ARGS="--cov glue --no-optional-skip"
+               PYTEST_ARGS="--cov glue --cov-config .coveragerc --no-optional-skip"
                NO_CFG_FILES=true
 
         # Test with older package versions:
@@ -230,7 +230,7 @@ script:
 after_success:
 
   # Coverage testing
-  - if [[ $QT_PKG != False ]]; then coveralls; fi
+  - if [[ $QT_PKG != False ]]; then coveralls --rcfile=.coveragerc; fi
 
   # Trigger the building of the MacOS X app in the Travis-MacGlue repo
   - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
