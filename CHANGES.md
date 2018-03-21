@@ -4,6 +4,9 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Improve performance when changing visual attributes of subsets.
+  [#1617]
+
 * Added a new ``FloodFillSubsetState`` class to represent and
   calculate subsets made by a flood-fill algorithm. [#1616]
 

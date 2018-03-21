@@ -150,6 +150,8 @@ class DataViewerWithState(DataViewer):
             self.redraw()
 
     def _update_subset(self, message):
+        if message.attribute == 'style':
+            return
         if message.subset in self._layer_artist_container:
             for layer_artist in self._layer_artist_container[message.subset]:
                 layer_artist.update()

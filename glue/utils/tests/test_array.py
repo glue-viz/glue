@@ -2,11 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
+from numpy.testing import assert_equal
 
 from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
-                     shape_to_string, check_sorted, pretty_number, unbroadcast)
+                     shape_to_string, check_sorted, pretty_number, unbroadcast,
+                     iterate_chunks)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -114,3 +116,35 @@ def test_unbroadcast():
     z = unbroadcast(y)
     assert z.shape == (1, 1, 3)
     np.testing.assert_allclose(z[0, 0], x)
+
+
+@pytest.mark.parametrize(('chunk_shape', 'n_max'),
+                         [(None, 121), (None, 100000), (None, 5), ((3, 1, 2, 4, 1, 2), None)])
+def test_iterate_chunks(chunk_shape, n_max):
+
+    array = np.zeros((6, 3, 4, 5, 1, 8))
+
+    for slices in iterate_chunks(array.shape, chunk_shape=chunk_shape, n_max=n_max):
+
+        print(slices)
+
+        # Make sure empty slices aren't returned
+        assert array[slices].size > 0
+
+        # Increment all values in slice by 1
+        array[slices] += 1
+
+    assert_equal(array, 1)
+
+
+def test_iterate_chunks_invalid():
+
+    array = np.zeros((6, 3, 4, 5, 1, 8))
+
+    with pytest.raises(ValueError) as exc:
+        next(iterate_chunks(array.shape, chunk_shape=(6, 2, 1)))
+    assert exc.value.args[0] == 'chunk_shape should have the same length as shape'
+
+    with pytest.raises(ValueError) as exc:
+        next(iterate_chunks(array.shape, chunk_shape=(6, 2, 1, 5, 2, 8)))
+    assert exc.value.args[0] == 'chunk_shape should fit within shape'

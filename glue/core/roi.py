@@ -7,7 +7,7 @@ from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, Pat
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.exceptions import UndefinedROI
-from glue.utils import points_inside_poly
+from glue.utils import points_inside_poly, iterate_chunks
 
 
 np.seterr(all='ignore')
@@ -586,20 +586,6 @@ class PolygonalROI(VertexROIBase):
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
 
-def _project(projection_matrix, x, y, z):
-    """Projects 3d coordinates to 2d coordinates using a 4x4 matrix"""
-    x = np.asarray(x)
-    y = np.asarray(y)
-    z = np.asarray(z)
-    # work in homogeneous coordinates so we can support perspective
-    # projections as well
-    vertices = np.array([x, y, z, np.ones(x.shape)])
-    # homogeneous screen coordinates
-    screen_h = np.tensordot(projection_matrix, vertices, axes=(1, 0))
-    # convert to screen coordinates, and we don't care about z
-    x, y = screen_h[:2] / screen_h[3]
-    return x, y
-
 class Projected3dROI(Roi):
     """"A region of interest defined in screen coordinates.
 
@@ -614,11 +600,41 @@ class Projected3dROI(Roi):
         self.projection_matrix = np.asarray(projection_matrix)
 
     def contains3d(self, x, y, z):
-        """"Test if the projected coordinates are contained in the 2d roi."""
+        """
+        Test whether the projected coordinates are contained in the 2d ROI.
+        """
+
         if not self.defined():
             raise UndefinedROI
-        x, y = _project(self.projection_matrix, x, y, z)
-        return self.roi_2d.contains(x, y)
+
+        x = np.asarray(x)
+        y = np.asarray(y)
+        z = np.asarray(z)
+
+        # Since the projection can significantly increase the memory usage, we
+        # do the following operation in chunks. In future we could likely use
+        # e.g. vaex, dask, or other multi-threaded/fast libraries to speed this
+        # and other ROI code up.
+
+        mask = np.zeros(x.shape, dtype=bool)
+
+        for slices in iterate_chunks(x.shape, n_max=1000000):
+
+            # Work in homogeneous coordinates so we can support perspective
+            # projections as well
+            x_sub, y_sub, z_sub = x[slices], y[slices], z[slices]
+            vertices = np.array([x_sub, y_sub, z_sub, np.ones(x_sub.shape)])
+
+            # The following returns homogeneous screen coordinates
+            screen_h = np.tensordot(self.projection_matrix,
+                                    vertices, axes=(1, 0))
+
+            # Convert to screen coordinates, as we don't care about z
+            screen_x, screen_y = screen_h[:2] / screen_h[3]
+
+            mask[slices] = self.roi_2d.contains(screen_x, screen_y)
+
+        return mask
 
     def __gluestate__(self, context):
         return dict(roi_2d=context.id(self.roi_2d), projection_matrix=self.projection_matrix.tolist())
