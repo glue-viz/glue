@@ -7,7 +7,7 @@ import operator as op
 
 import pytest
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 
 from mock import MagicMock
 
@@ -15,7 +15,7 @@ from glue.tests.helpers import requires_astropy, requires_scipy
 from ..exceptions import IncompatibleAttribute
 from .. import DataCollection, ComponentLink
 from ..data import Data, Component
-from ..roi import CategoricalROI, RectangularROI
+from ..roi import CategoricalROI, RectangularROI, Projected3dROI, CircularROI
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
 from ..link_helpers import LinkSame
@@ -23,7 +23,7 @@ from ..subset import (Subset, SubsetState,
                       ElementSubsetState, RoiSubsetState, RangeSubsetState,
                       CategoricalROISubsetState, InequalitySubsetState,
                       CategorySubsetState, MaskSubsetState,
-                      CategoricalROISubsetState2D,
+                      CategoricalROISubsetState2D, RoiSubsetState3d,
                       CategoricalMultiRangeSubsetState, FloodFillSubsetState)
 from ..subset import AndState
 from ..subset import InvertState
@@ -872,3 +872,21 @@ def test_floodfill_subset_state():
     dc[0].subsets[0].subset_state.threshold = 10
     result = data1.subsets[0].to_mask()
     assert_equal(result, 1)
+
+
+def test_projected_3d_clone():
+
+    d = Data(x=[1, 2, 3], y=[2, 3, 4], z=[4, 3, 2])
+    roi_2d = CircularROI(2, 3, 4)
+    projection_matrix = np.random.uniform(-1, 1, 16).reshape((4, 4))
+    roi_3d = Projected3dROI(roi_2d=roi_2d, projection_matrix=projection_matrix)
+
+    subset_state = RoiSubsetState3d(d.id['y'], d.id['x'], d.id['z'], roi_3d)
+
+    subset_state_new = clone(subset_state)
+
+    assert subset_state_new.xatt.label == 'y'
+    assert subset_state_new.yatt.label == 'x'
+    assert subset_state_new.zatt.label == 'z'
+    assert isinstance(subset_state_new.roi, Projected3dROI)
+    assert_allclose(subset_state_new.roi.projection_matrix, projection_matrix)
