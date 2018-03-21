@@ -8,7 +8,6 @@ from qtpy.QtWidgets import QMessageBox
 
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 
-from glue.core import command
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -29,17 +28,23 @@ from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
 
 __all__ = ['ImageViewer']
 
-IDENTITY_WCS = WCS(naxis=2)
-IDENTITY_WCS.wcs.ctype = ["X", "Y"]
-IDENTITY_WCS.wcs.crval = [0., 0.]
-IDENTITY_WCS.wcs.crpix = [1., 1.]
-IDENTITY_WCS.wcs.cdelt = [1., 1.]
+
+def get_identity_wcs(naxis):
+
+    wcs = WCS(naxis=naxis)
+    wcs.wcs.ctype = ['X'] * naxis
+    wcs.wcs.crval = [0.] * naxis
+    wcs.wcs.crpix = [1.] * naxis
+    wcs.wcs.cdelt = [1.] * naxis
+
+    return wcs
+
 
 EXTRA_FOOTER = """
 # Set tick label size - for now tick_params (called lower down) doesn't work
 # properly, but these lines won't be needed in future.
-ax.coords[0].set_ticklabel(size={x_ticklabel_size})
-ax.coords[1].set_ticklabel(size={y_ticklabel_size})
+ax.coords[{x_att_axis}].set_ticklabel(size={x_ticklabel_size})
+ax.coords[{y_att_axis}].set_ticklabel(size={y_ticklabel_size})
 """.strip()
 
 
@@ -66,6 +71,7 @@ class ImageViewer(MatplotlibDataViewer):
              'save:python']
 
     def __init__(self, session, parent=None, state=None):
+        self._wcs_set = False
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
         self.state.add_callback('x_att', self._set_wcs)
@@ -80,13 +86,21 @@ class ImageViewer(MatplotlibDataViewer):
     @defer_draw
     def update_x_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
-        self.axes.coords[0].set_ticklabel(size=self.state.x_ticklabel_size)
+        if self._wcs_set and self.state.x_att is not None:
+            axis = self.state.x_att.axis
+        else:
+            axis = 0
+        self.axes.coords[axis].set_ticklabel(size=self.state.x_ticklabel_size)
         self.redraw()
 
     @defer_draw
     def update_y_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
-        self.axes.coords[1].set_ticklabel(size=self.state.y_ticklabel_size)
+        if self._wcs_set and self.state.y_att is not None:
+            axis = self.state.y_att.axis
+        else:
+            axis = 1
+        self.axes.coords[axis].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
     def closeEvent(self, *args):
@@ -130,7 +144,8 @@ class ImageViewer(MatplotlibDataViewer):
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice, **ref_coords.wcsaxes_dict)
         else:
-            self.axes.reset_wcs(IDENTITY_WCS)
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice,
+                                wcs=get_identity_wcs(self.state.reference_data.ndim))
 
         # Reset the axis labels to match the fact that the new axes have no labels
         self.state.x_axislabel = ''
@@ -159,6 +174,8 @@ class ImageViewer(MatplotlibDataViewer):
         if iy in y_dep:
             y_dep.remove(iy)
         self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
+
+        self._wcs_set = True
 
     def _roi_to_subset_state(self, roi):
         """ This method must be implemented in order for apply_roi from the
@@ -256,11 +273,15 @@ class ImageViewer(MatplotlibDataViewer):
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             raise NotImplementedError()
         else:
-            pass
+            imports.append('from glue.viewers.image.qt.data_viewer import get_identity_wcs')
+            script += "ax.reset_wcs(slices={0}, wcs=get_identity_wcs(ref_data.ndim))\n".format(self.state.wcsaxes_slice)
 
         return imports, script
 
     def _script_footer(self):
-        state_dict = self.state.as_dict()
         imports, script = super(ImageViewer, self)._script_footer()
-        return [], EXTRA_FOOTER.format(**state_dict) + os.linesep * 2 + script
+        options = dict(x_att_axis=0 if self.state.x_att is None else self.state.x_att.axis,
+                       y_att_axis=1 if self.state.y_att is None else self.state.y_att.axis,
+                       x_ticklabel_size=self.state.x_ticklabel_size,
+                       y_ticklabel_size=self.state.y_ticklabel_size)
+        return [], EXTRA_FOOTER.format(**options) + os.linesep * 2 + script
