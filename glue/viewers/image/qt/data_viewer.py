@@ -71,6 +71,7 @@ class ImageViewer(MatplotlibDataViewer):
              'save:python']
 
     def __init__(self, session, parent=None, state=None):
+        self._wcs_set = False
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
         self.state.add_callback('x_att', self._set_wcs)
@@ -85,14 +86,20 @@ class ImageViewer(MatplotlibDataViewer):
     @defer_draw
     def update_x_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
-        axis = 0 if self.state.x_att is None else self.state.x_att.axis
+        if self._wcs_set and self.state.x_att is not None:
+            axis = self.state.x_att.axis
+        else:
+            axis = 0
         self.axes.coords[axis].set_ticklabel(size=self.state.x_ticklabel_size)
         self.redraw()
 
     @defer_draw
     def update_y_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
-        axis = 0 if self.state.y_att is None else self.state.y_att.axis
+        if self._wcs_set and self.state.y_att is not None:
+            axis = self.state.y_att.axis
+        else:
+            axis = 0
         self.axes.coords[axis].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
@@ -167,6 +174,8 @@ class ImageViewer(MatplotlibDataViewer):
         if iy in y_dep:
             y_dep.remove(iy)
         self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
+
+        self._wcs_set = True
 
     def _roi_to_subset_state(self, roi):
         """ This method must be implemented in order for apply_roi from the
