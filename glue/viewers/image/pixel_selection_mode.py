@@ -17,9 +17,9 @@ class PixelSelectionTool(ToolbarModeBase):
     tool_id = 'image:point_selection'
     action_text = 'Pixel'
     tool_tip = 'Select a point based on mouse location'
-    status_tip = ('Mouse over to select a point, click to disable or enable mouse over.')
+    status_tip = ('Mouse over to select a point. Click on the image to enable or disable selection.')
 
-    _on_move = True
+    _on_move = False
 
     def __init__(self, *args, **kwargs):
         super(PixelSelectionTool, self).__init__(*args, **kwargs)
