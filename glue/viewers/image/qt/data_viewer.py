@@ -99,7 +99,7 @@ class ImageViewer(MatplotlibDataViewer):
         if self._wcs_set and self.state.y_att is not None:
             axis = self.state.y_att.axis
         else:
-            axis = 0
+            axis = 1
         self.axes.coords[axis].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
@@ -281,7 +281,7 @@ class ImageViewer(MatplotlibDataViewer):
     def _script_footer(self):
         imports, script = super(ImageViewer, self)._script_footer()
         options = dict(x_att_axis=0 if self.state.x_att is None else self.state.x_att.axis,
-                       y_att_axis=0 if self.state.y_att is None else self.state.y_att.axis,
+                       y_att_axis=1 if self.state.y_att is None else self.state.y_att.axis,
                        x_ticklabel_size=self.state.x_ticklabel_size,
                        y_ticklabel_size=self.state.y_ticklabel_size)
         return [], EXTRA_FOOTER.format(**options) + os.linesep * 2 + script
