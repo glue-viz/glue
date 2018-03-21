@@ -7,7 +7,7 @@ from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, Pat
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.exceptions import UndefinedROI
-from glue.utils import points_inside_poly
+from glue.utils import points_inside_poly, iterate_chunks
 
 
 np.seterr(all='ignore')
@@ -614,32 +614,14 @@ class Projected3dROI(Roi):
         # Since the projection can significantly increase the memory usage, we
         # do the following operation in chunks.
 
-        original_shape = x.shape
+        mask = np.zeros(x.shape, dtype=bool)
 
-        # FIXME: this can cause a copy to be made if the data is not
-        # contiguous (for example for broadcasted pixel coordinates).
-        x = x.ravel()
-        y = y.ravel()
-        z = z.ravel()
-
-        chunk_size = 1000000
-        array_size = len(x)
-
-        n_chunks = max(array_size // chunk_size, 1)
-
-        mask = np.zeros(array_size, dtype=bool)
-
-        for chunk in range(n_chunks):
-
-            imin = chunk * chunk_size
-            imax = min((chunk + 1) * chunk_size, array_size)
+        for slices in iterate_chunks(x.shape, n_max=1000000):
 
             # Work in homogeneous coordinates so we can support perspective
             # projections as well
-            vertices = np.array([x[imin:imax],
-                                 y[imin:imax],
-                                 z[imin:imax],
-                                 np.ones(imax - imin)])
+            x_sub, y_sub, z_sub = x[slices], y[slices], z[slices]
+            vertices = np.array([x_sub, y_sub, z_sub, np.ones(x_sub.shape)])
 
             # The following returns homogeneous screen coordinates
             screen_h = np.tensordot(self.projection_matrix,
@@ -648,9 +630,9 @@ class Projected3dROI(Roi):
             # Convert to screen coordinates, as we don't care about z
             screen_x, screen_y = screen_h[:2] / screen_h[3]
 
-            mask[imin:imax] = self.roi_2d.contains(screen_x, screen_y)
+            mask[slices] = self.roi_2d.contains(screen_x, screen_y)
 
-        return mask.reshape(original_shape)
+        return mask
 
     def __gluestate__(self, context):
         return dict(roi_2d=context.id(self.roi_2d), projection_matrix=self.projection_matrix.tolist())
