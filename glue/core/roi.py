@@ -612,7 +612,9 @@ class Projected3dROI(Roi):
         z = np.asarray(z)
 
         # Since the projection can significantly increase the memory usage, we
-        # do the following operation in chunks.
+        # do the following operation in chunks. In future we could likely use
+        # e.g. vaex, dask, or other multi-threaded/fast libraries to speed this
+        # and other ROI code up.
 
         mask = np.zeros(x.shape, dtype=bool)
 
