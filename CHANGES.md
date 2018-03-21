@@ -95,6 +95,9 @@ v0.13.0 (unreleased)
 
 * Added a new selection mode that always forces the creation of a new subset.
   [#1525]
+  
+* Added a mouse over pixel selection tool, which creates a one pixel subset
+  under the mouse cursor. [#1619]
 
 v0.12.6 (unreleased)
 --------------------
