@@ -26,6 +26,7 @@ from glue.viewers.image.composite_array import CompositeArray
 
 # Import the mouse mode to make sure it gets registered
 from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
+from glue.viewers.image.pixel_selection_mode import PixelSelectionTool  # noqa
 
 __all__ = ['ImageViewer']
 
@@ -63,7 +64,7 @@ class ImageViewer(MatplotlibDataViewer):
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
              'select:polygon', 'image:contrast_bias',
-             'save:python']
+             'image:point_selection', 'save:python']
 
     def __init__(self, session, parent=None, state=None):
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
