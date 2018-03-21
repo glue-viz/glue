@@ -9,7 +9,8 @@ from glue.external.six import string_types
 
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
-           'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast']
+           'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
+           'iterate_chunks']
 
 
 def unbroadcast(array):
@@ -175,3 +176,78 @@ def broadcast_to(array, shape):
     except AttributeError:
         array = np.asarray(array)
         return np.broadcast_arrays(array, np.ones(shape, array.dtype))[0]
+
+
+def find_chunk_shape(shape, n_max=None):
+    """
+    Given the shape of an n-dimensional array, and the maximum number of
+    elements in a chunk, return the largest chunk shape to use for iteration.
+
+    This currently assumes the optimal chunk shape to return is for C-contiguous
+    arrays.
+    """
+
+    if n_max is None:
+        return tuple(shape)
+
+    block_shape = []
+
+    max_repeat_remaining = n_max
+
+    for size in shape[::-1]:
+
+        if max_repeat_remaining > size:
+            block_shape.append(size)
+            max_repeat_remaining = max_repeat_remaining // size
+        else:
+            block_shape.append(max_repeat_remaining)
+            max_repeat_remaining = 1
+
+    return tuple(block_shape[::-1])
+
+
+def iterate_chunks(shape, chunk_shape=None, n_max=None):
+    """
+    Given a data shape and a chunk shape (or maximum chunk size), iteratively
+    return slice objects that can be used to slice the array.
+    """
+
+    if chunk_shape is None and n_max is None:
+        raise ValueError('Either chunk_shape or n_max should be specified')
+    elif chunk_shape is not None and n_max is not None:
+        raise ValueError('Either chunk_shape or n_max should be specified (not both)')
+    elif chunk_shape is None:
+        chunk_shape = find_chunk_shape(shape, n_max)
+    else:
+        if len(chunk_shape) != len(shape):
+            raise ValueError('chunk_shape should have the same length as shape')
+        elif any(x > y for (x, y) in zip(chunk_shape, shape)):
+            raise ValueError('chunk_shape should fit within shape')
+
+    ndim = len(chunk_shape)
+    start_index = [0] * ndim
+
+    shape = list(shape)
+
+    while start_index <= shape:
+
+        end_index = [min(start_index[i] + chunk_shape[i], shape[i]) for i in range(ndim)]
+
+        slices = [slice(start_index[i], end_index[i]) for i in range(ndim)]
+
+        yield slices
+
+        # Update chunk index. What we do is to increment the
+        # counter for the first dimension, and then if it
+        # exceeds the number of elements in that direction,
+        # cycle back to zero and advance in the next dimension,
+        # and so on.
+        start_index[0] += chunk_shape[0]
+        for i in range(ndim - 1):
+            if start_index[i] >= shape[i]:
+                start_index[i] = 0
+                start_index[i + 1] += chunk_shape[i + 1]
+
+        # We can now check whether the iteration is finished
+        if start_index[-1] >= shape[-1]:
+            break
