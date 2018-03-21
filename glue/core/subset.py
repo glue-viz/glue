@@ -1197,6 +1197,19 @@ class RoiSubsetState3d(SubsetState):
         result.roi = self.roi
         return result
 
+    def __gluestate__(self, context):
+        return dict(xatt=context.id(self.xatt),
+                    yatt=context.id(self.yatt),
+                    zatt=context.id(self.zatt),
+                    roi=context.id(self.roi))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return RoiSubsetState3d(context.object(rec['xatt']),
+                                context.object(rec['yatt']),
+                                context.object(rec['zatt']),
+                                context.object(rec['roi']))
+
 
 @contract(subsets='list(isinstance(Subset))', returns=Subset)
 def _combine(subsets, operator):
