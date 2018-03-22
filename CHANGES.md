@@ -7,6 +7,15 @@ v0.13.0 (unreleased)
 * Improve performance when changing visual attributes of subsets.
   [#1617]
 
+* Removed ``glue.core.qt.data_combo_helper`` (we now recommend using
+  the GUI framework-independent equivalent in
+  ``glue.core.data_combo_helper``). [#1625]
+
+* Removed ``glue.viewers.common.qt.attribute_limits_helper`` in favor
+  of ``glue.core.state_objects``. [#1625]
+
+* Removed unused function ``glue.utils.misc.defer``. [#1625]
+
 * Added a new ``FloodFillSubsetState`` class to represent and
   calculate subsets made by a flood-fill algorithm. [#1616]
 
