@@ -49,7 +49,9 @@ def test_hdf5_loader(suffix):
 def test_hdf5_loader_fromfile():
 
     datasets = df.load_data(os.path.join(DATA, 'data.hdf5'))
-    datasets = sorted(datasets, key=lambda x: x.label)
+
+    if datasets[1].label < datasets[0].label:
+        datasets = datasets[::-1]
 
     assert datasets[0].label == 'data[/a/tab]'
     assert_array_equal(datasets[0]['e'], [3, 2, 1])
