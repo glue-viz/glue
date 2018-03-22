@@ -1,13 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
 from glue.core import data_factories as df
+from glue.core import Data
 from glue.tests.helpers import requires_h5py, requires_astropy, make_file
 
 from ..helpers import auto_data
+
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
 @requires_h5py
@@ -37,4 +41,23 @@ def test_hdf5_loader(suffix):
     with make_file(data, suffix, decompress=True) as fname:
         d = df.load_data(fname)
         assert df.find_factory(fname) is df.hdf5_reader
-    assert_array_equal(d['/x'], [1, 2, 3])
+    assert_array_equal(d['x'], [1, 2, 3])
+
+
+@requires_astropy
+@requires_h5py
+def test_hdf5_loader_fromfile():
+
+    datasets = df.load_data(os.path.join(DATA, 'data.hdf5'))
+    datasets = sorted(datasets, key=lambda x: x.label)
+
+    assert datasets[0].label == 'data[/a/tab]'
+    assert_array_equal(datasets[0]['e'], [3, 2, 1])
+    assert_array_equal(datasets[0]['f'], [1.5, 2.5, 1.0])
+    assert_array_equal(datasets[0].get_component('g').labels, [b'a', b'b', b'c'])
+
+    assert datasets[1].label == 'data[/x]'
+    assert_array_equal(datasets[1]['x'], [1, 2, 3])
+
+    # data = df.hdf5_reader(os.path.join(DATA, 'data.hdf5'), auto_merge=True)
+    # assert isinstance(data, Data)
