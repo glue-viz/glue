@@ -108,8 +108,6 @@ def hdf5_reader(filename, format='auto', auto_merge=False, **kwargs):
                 column = array[column_name]
                 if column.ndim == 1:
                     component = Component.autotyped(column, units=column.unit)
-                    print(component)
-                    print(component.data)
                     data.add_component(component=component,
                                        label=column_name)
                 else:
