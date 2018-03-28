@@ -81,14 +81,12 @@ class DropdownTool(Tool):
     """
     A base class for all tools that show a drop-down menu
     """
-    pass
-
+    def __init__(self, *args, **kwargs):
+        self.subtools = kwargs.pop('subtools', [])
+        super(DropdownTool, self).__init__(*args, **kwargs)
 
 class SimpleToolMenu(DropdownTool):
     """
     A tool that has no action it iself but shows a dropdown of other tools.
     """
-
-    @property
-    def sub_tools(self):
-        return []
+    pass

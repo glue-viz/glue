@@ -85,6 +85,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     # This defines the mouse mode to be used when no toolbar modes are active
     _default_mouse_mode_cls = None
     tools = []
+    subtools = {}
 
     _close_on_last_layer_removed = True
 
@@ -318,7 +319,13 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         for tool_id in self.tools:
             mode_cls = viewer_tool.members[tool_id]
-            mode = mode_cls(self)
+            if tool_id in self.subtools:
+                subtools = []
+                for subtool_id in self.subtools[tool_id]:
+                    subtools.append(viewer_tool.members[subtool_id](self))
+                mode = mode_cls(self, subtools=subtools)
+            else:
+                mode = mode_cls(self)
             self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
