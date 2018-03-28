@@ -5,7 +5,7 @@ import numpy as np
 from qtpy import QtCore, QtWidgets
 
 from glue.config import colormaps
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
+from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.image.composite_array import CompositeArray
 from glue.external.modest_image import imshow
@@ -23,7 +23,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
     but with the ability to adjust contrast and resample.
     """
     window_closed = QtCore.Signal()
-    _toolbar_cls = MatplotlibViewerToolbar
+    _toolbar_cls = BasicToolbar
     tools = ['image:contrast', 'image:colormap']
 
     def __init__(self, image=None, wcs=None, parent=None, **kwargs):

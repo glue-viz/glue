@@ -97,7 +97,6 @@ from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
            "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
@@ -875,7 +874,6 @@ class CustomWidgetBase(DataViewer):
     LABEL = ''
 
     coordinator_cls = None
-    _toolbar_cls = MatplotlibViewerToolbar
 
     def __init__(self, session, parent=None):
         super(CustomWidgetBase, self).__init__(session, parent)

@@ -2,17 +2,24 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from qtpy import PYQT5
+
+if PYQT5:
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
 from glue.utils import defer_draw, mpl_to_datetime64
 from glue.utils.decorators import avoid_circular
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
-from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.command import ApplySubsetState
+
+# The following import is required to register the viewer tools
+from glue.viewers.matplotlib.qt import toolbar  # noqa
 
 __all__ = ['MatplotlibDataViewer']
 
@@ -46,8 +53,10 @@ plt.close(fig)
 
 class MatplotlibDataViewer(DataViewerWithState):
 
-    _toolbar_cls = MatplotlibViewerToolbar
     _state_cls = MatplotlibDataViewerState
+
+    tools = ['mpl:home', 'mpl:pan', 'mpl:zoom']
+    subtools = {'save': ['mpl:save']}
 
     def __init__(self, session, parent=None, wcs=None, state=None):
 
@@ -101,6 +110,14 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
+
+        # Set up virtual Matplotlib navigation toolbar (don't show it)
+        self._mpl_nav = NavigationToolbar2QT(self.central_widget.canvas, self)
+        self._mpl_nav.hide()
+
+    def closeEvent(self, event):
+        self._mpl_nav.setParent(None)
+        self._mpl_nav.parent = None
 
     @defer_draw
     def update_x_axislabel(self, *event):

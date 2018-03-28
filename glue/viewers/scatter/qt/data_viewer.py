@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.util import update_ticks
 
 from glue.utils import mpl_to_datetime64
@@ -17,16 +16,15 @@ __all__ = ['ScatterViewer']
 class ScatterViewer(MatplotlibDataViewer):
 
     LABEL = '2D Scatter'
-    _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = ScatterLayerStyleEditor
     _state_cls = ScatterViewerState
     _options_cls = ScatterOptionsWidget
     _data_artist_cls = ScatterLayerArtist
     _subset_artist_cls = ScatterLayerArtist
 
-    tools = ['select:rectangle', 'select:xrange',
+    tools = MatplotlibDataViewer.tools + ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon', 'save:python']
+             'select:polygon']
 
     def __init__(self, session, parent=None, state=None):
         super(ScatterViewer, self).__init__(session, parent, state=state)

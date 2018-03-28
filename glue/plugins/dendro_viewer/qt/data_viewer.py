@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.roi import PointROI
 from glue.core import command
@@ -25,7 +24,6 @@ class DendrogramViewer(MatplotlibDataViewer):
 
     LABEL = 'Dendrogram'
 
-    _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = DendrogramLayerStyleEditor
     _state_cls = DendrogramViewerState
     _options_cls = DendrogramOptionsWidget

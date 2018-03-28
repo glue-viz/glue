@@ -7,8 +7,6 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.tests.util import simple_session
 
-from ..toolbar import MatplotlibViewerToolbar
-
 
 class ToolbarModeTest(ToolbarModeBase):
 
@@ -29,8 +27,6 @@ class ToolbarModeTest(ToolbarModeBase):
 
 
 class ExampleViewer(DataViewer):
-
-    _toolbar_cls = MatplotlibViewerToolbar
 
     def __init__(self, session, parent=None):
         super(ExampleViewer, self).__init__(session, parent=parent)

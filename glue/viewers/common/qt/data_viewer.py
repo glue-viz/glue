@@ -14,6 +14,9 @@ from glue.config import settings
 from glue.external import six
 from glue.utils.noconflict import classmaker
 from glue.core.state import save
+from glue.config import viewer_tool
+from glue.viewers.common.qt.tool import SimpleToolMenu
+from glue.viewers.common.qt.toolbar import BasicToolbar
 
 __all__ = ['DataViewer']
 
@@ -59,6 +62,20 @@ data_collection = load('{data}')
 """.strip()
 
 
+@viewer_tool
+class SaveTool(SimpleToolMenu):
+    """
+    A generic 'save/export' tool that plugins can register new save/export tools
+    with.
+
+    To register a new save/export option, add an entry to the viewer
+    ``subtools['save']`` list.
+    """
+    tool_id = 'save'
+    icon = 'glue_filesave'
+    tool_tip = 'Save/export the plot'
+
+
 # Note: we need to use classmaker here because otherwise we run into issues when
 # trying to use the meta-class with the Qt class.
 
@@ -81,11 +98,12 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     LABEL = 'Override this'
 
-    _toolbar_cls = None
+    _toolbar_cls = BasicToolbar
     # This defines the mouse mode to be used when no toolbar modes are active
     _default_mouse_mode_cls = None
-    tools = []
-    subtools = {}
+    _inherit_tools = True
+    tools = ['save']
+    subtools = {'save': []}
 
     _close_on_last_layer_removed = True
 
@@ -317,11 +335,32 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         self.toolbar = self._toolbar_cls(self, default_mouse_mode_cls=self._default_mouse_mode_cls)
 
-        for tool_id in self.tools:
+        def get_tools_recursive(cls, tools, subtools):
+            if cls._inherit_tools and cls is not DataViewer:
+                for parent_cls in cls.__bases__:
+                    get_tools_recursive(parent_cls, tools, subtools)
+            for tool_id in cls.tools:
+                if tool_id not in tools:
+                    tools.append(tool_id)
+            for tool_id in cls.subtools:
+                if tool_id not in subtools:
+                    subtools[tool_id] = []
+                for subtool_id in cls.subtools[tool_id]:
+                    if subtool_id not in subtools[tool_id]:
+                        subtools[tool_id].append(subtool_id)
+            print(cls, tools, subtools)
+
+        # Need to include tools and subtools declared by parent classes unless
+        # specified otherwise
+        tool_ids = []
+        subtool_ids = {}
+        get_tools_recursive(self.__class__, tool_ids, subtool_ids)
+
+        for tool_id in tool_ids:
             mode_cls = viewer_tool.members[tool_id]
-            if tool_id in self.subtools:
+            if tool_id in subtool_ids:
                 subtools = []
-                for subtool_id in self.subtools[tool_id]:
+                for subtool_id in subtool_ids[tool_id]:
                     subtools.append(viewer_tool.members[subtool_id](self))
                 mode = mode_cls(self, subtools=subtools)
             else:
