@@ -70,3 +70,25 @@ class CheckableTool(Tool):
         Fired when the toolbar button is deactivated
         """
         pass
+
+
+# Classes to implement:
+# - Tool that just always shows drop-down when you click anywhere (need to use a qtoolbutton or qpushbutton?)
+# - Tool that shows the last used action as the default that can be clicked
+
+
+class DropdownTool(Tool):
+    """
+    A base class for all tools that show a drop-down menu
+    """
+    pass
+
+
+class SimpleToolMenu(DropdownTool):
+    """
+    A tool that has no action it iself but shows a dropdown of other tools.
+    """
+
+    @property
+    def sub_tools(self):
+        return []

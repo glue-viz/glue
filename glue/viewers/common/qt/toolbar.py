@@ -8,7 +8,7 @@ from qtpy.QtCore import Qt
 
 from glue.external import six
 from glue.core.callback_property import add_callback
-from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.qt.tool import Tool, CheckableTool, DropdownTool
 from glue.icons.qt import get_icon
 
 __all__ = ['BasicToolbar']
@@ -102,7 +102,7 @@ class BasicToolbar(QtWidgets.QToolBar):
         if self._default_mouse_mode is not None:
             self._default_mouse_mode.activate()
 
-    def add_tool(self, tool):
+    def _make_action(self, tool, menu=None):
 
         parent = QtWidgets.QToolBar.parent(self)
 
@@ -114,7 +114,22 @@ class BasicToolbar(QtWidgets.QToolBar):
         else:
             icon = tool.icon
 
-        action = QtWidgets.QAction(icon, tool.action_text, parent)
+        if isinstance(tool, DropdownTool):
+            # We use a QToolButton here explicitly so that we can make sure
+            # that the whole button opens the pop-up.
+            button = QtWidgets.QToolButton()
+            if tool.action_text:
+                button.setText(tool.action_text)
+            if icon:
+                button.setIcon(icon)
+            button.setPopupMode(button.InstantPopup)
+            button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            action = self.addWidget(button)
+            if menu:
+                button.setMenu(menu)
+            button.clicked.connect(button.showMenu)
+        else:
+            action = QtWidgets.QAction(icon, tool.action_text, parent)
 
         def toggle(checked):
             if checked:
@@ -124,8 +139,6 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         def trigger():
             self.active_tool = tool
-
-        parent.addAction(action)
 
         if isinstance(tool, CheckableTool):
             action.toggled.connect(toggle)
@@ -154,23 +167,37 @@ class BasicToolbar(QtWidgets.QToolBar):
             action.setToolTip(tool.tool_tip + " [shortcut: {0}]".format(shortcut))
 
         action.setCheckable(isinstance(tool, CheckableTool))
-        self.actions[tool.tool_id] = action
 
-        menu_actions = tool.menu_actions()
-        if len(menu_actions) > 0:
+        return action
+
+    def add_tool(self, tool):
+
+        print(tool)
+
+        if isinstance(tool, DropdownTool) and len(tool.sub_tools) > 0:
+            menu = QtWidgets.QMenu(self)
+            for t in tool.sub_tools:
+                action = self._make_action(t)
+                menu.addAction(action)
+        elif len(tool.menu_actions()) > 0:
             menu = QtWidgets.QMenu(self)
             for ma in tool.menu_actions():
                 ma.setParent(self)
                 menu.addAction(ma)
-            action.setMenu(menu)
-            menu.triggered.connect(trigger)
+        else:
+            menu = None
+
+        action = self._make_action(tool, menu=menu)
 
         self.addAction(action)
+
+        self.actions[tool.tool_id] = action
 
         # Bind tool visibility to tool.enabled
         def toggle(state):
             action.setVisible(state)
             action.setEnabled(state)
+
         add_callback(tool, 'enabled', toggle)
 
         self.tools[tool.tool_id] = tool
