@@ -257,7 +257,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
                 if label != cid_new.label:
                     cid_new.label = label
 
-            # Second deal with the renaming of components
+            # Second deal with the removal of components
             for cid_old in cids_existing:
                 if not any(cid_old is cid_new for cid_new in cids_all):
                     data.remove_component(cid_old)
