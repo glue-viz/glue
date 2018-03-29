@@ -37,34 +37,19 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     def _calculate_profile(self):
 
         try:
-            if isinstance(self.layer, Data):
-                data_values = self.layer[self._viewer_state.y_att]
-                mask = None
-            else:
-                data_values = self.layer.data[self._viewer_state.y_att].copy()
-                mask = self.layer.to_mask()
-                data_values[~mask] = np.nan
+            x, y = self.state.get_profile()
         except (IncompatibleAttribute, IndexError):
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
             self.enable()
 
-        if mask is not None and np.sum(mask) == 0:
-            self.plot_artist.set_data([], [])
-            return
-
-        # Collapse along all dimensions except x_att
-        # TODO: in future we should optimize the case where the mask is much
-        # smaller than the data to just average the relevant 'spaxels' in the
-        # data rather than collapsing the whole cube.
-        axes = list(range(data_values.ndim))
-        axes.remove(self._viewer_state.x_att.axis)
-        profile_values = self._viewer_state.function(data_values, axis=tuple(axes))
-        profile_values[np.isnan(profile_values)] = 0.
-
         # Update the data values
-        self.plot_artist.set_data(np.arange(len(profile_values)), profile_values)
+        self.plot_artist.set_data(x, y)
+        self._visible_data = x, y
+
+        if len(x) == 0:
+            return
 
         # TODO: the following was copy/pasted from the histogram viewer, maybe
         # we can find a way to avoid duplication?
@@ -77,8 +62,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        self.state._y_min = profile_values.min()
-        self.state._y_max = profile_values.max() * 1.2
+        self.state._y_min = y.min()
+        self.state._y_max = y.max() * 1.2
 
         largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
         if largest_y_max != self._viewer_state.y_max:

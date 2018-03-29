@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.core import Data
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -84,3 +85,25 @@ class ProfileLayerState(MatplotlibLayerState):
     """
 
     linewidth = DDCProperty(1, docstring='The width of the line')
+
+    def get_profile(self):
+
+        if isinstance(self.layer, Data):
+            data_values = self.layer[self.viewer_state.y_att]
+        else:
+            data_values = self.layer.data[self.viewer_state.y_att].copy()
+            mask = self.layer.to_mask()
+            if np.sum(mask) == 0:
+                return [], []
+            data_values[~mask] = np.nan
+
+        # Collapse along all dimensions except x_att
+        # TODO: in future we should optimize the case where the mask is much
+        # smaller than the data to just average the relevant 'spaxels' in the
+        # data rather than collapsing the whole cube.
+        axes = list(range(data_values.ndim))
+        axes.remove(self.viewer_state.x_att.axis)
+        profile_values = self.viewer_state.function(data_values, axis=tuple(axes))
+        profile_values[np.isnan(profile_values)] = 0.
+
+        return np.arange(len(profile_values)), profile_values

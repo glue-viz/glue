@@ -56,8 +56,13 @@ class NavigateMouseMode(MouseMode):
 
 
 class RangeModeState(State):
+
     x_min = CallbackProperty(None)
     x_max = CallbackProperty(None)
+
+    @property
+    def x_range(self):
+        return self.x_min, self.x_max
 
 
 PICK_THRESH = 0.05

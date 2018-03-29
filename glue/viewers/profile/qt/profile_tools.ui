@@ -107,7 +107,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QPlainTextEdit" name="text_log"/>
+        <widget class="QTextBrowser" name="text_log"/>
        </item>
       </layout>
      </widget>

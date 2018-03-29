@@ -74,6 +74,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     """
 
     window_closed = QtCore.Signal()
+    toolbar_added = QtCore.Signal()
 
     _layer_artist_container_cls = QtLayerArtistContainer
     _layer_style_widget_cls = None
@@ -314,6 +315,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             self.toolbar.add_tool(mode)
 
         self.addToolBar(self.toolbar)
+
+        self.toolbar_added.emit()
 
     def show_toolbars(self):
         """Re-enable any toolbars that were hidden with `hide_toolbars()`
