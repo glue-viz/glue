@@ -247,7 +247,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
 
             cids_derived = self._components_derived[data]
             cids_other = self._components_other[data]
-            cids_all = cids_derived + cids_other
+            cids_all = cids_other + cids_derived
             cids_existing = data.components
             components = dict((cid.uuid, cid) for cid in data.components)
 
@@ -277,7 +277,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
                     link = ParsedComponentLink(cid_new, pc)
                     data.add_component_link(link)
 
-            # Findally, reorder components
+            # Findally, reorder components as needed
             data.reorder_components(cids_all)
 
         super(ArithmeticEditorWidget, self).accept()

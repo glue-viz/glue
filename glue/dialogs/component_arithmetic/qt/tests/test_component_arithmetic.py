@@ -10,7 +10,7 @@ from glue.utils.qt import get_qapp
 from glue.core.component_link import ComponentLink
 from glue.core.parse import ParsedCommand, ParsedComponentLink
 
-from ..component_manager import ComponentManagerWidget, EquationEditorDialog
+from ..component_arithmetic import ArithmeticEditorWidget, EquationEditorDialog
 
 
 def auto_accept(equation):
@@ -91,7 +91,7 @@ class ChangeListener(HubListener):
         assert numerical is self.numerical
 
 
-class TestComponentManagerWidget:
+class TestArithmeticEditorWidget:
 
     def setup_method(self):
 
@@ -115,60 +115,18 @@ class TestComponentManagerWidget:
         self.listener2 = ChangeListener(self.data2)
 
     def test_nochanges(self):
-        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager = ArithmeticEditorWidget(self.data_collection)
         self.manager.show()
         self.manager.button_ok.click()
         self.listener1.assert_exact_changes()
         self.listener2.assert_exact_changes()
 
-    def test_remove(self):
-        x_cid = self.data1.id['x']
-        self.manager = ComponentManagerWidget(self.data_collection)
-        self.manager.show()
-        item = list(self.manager.list['main'])[0]
-        self.manager.list['main'].select_item(item)
-        self.manager.button_remove_main.click()
-        self.manager.button_ok.click()
-        self.listener1.assert_exact_changes(removed=[x_cid])
-        self.listener2.assert_exact_changes()
-
-    def test_rename_valid(self):
-        x_cid = self.data1.id['x']
-        self.manager = ComponentManagerWidget(self.data_collection)
-        self.manager.show()
-        item = list(self.manager.list['main'])[0]
-        item.setText(0, 'newname')
-        self.manager.button_ok.click()
-        assert self.manager.result() == 1
-        self.listener1.assert_exact_changes(renamed=[x_cid])
-        self.listener2.assert_exact_changes()
-        assert x_cid.label == 'newname'
-        assert_equal(self.data1['newname'], [1, 2, 3])
-
-    def test_rename_invalid(self):
-        x_cid = self.data1.id['x']
-        self.manager = ComponentManagerWidget(self.data_collection)
-        self.manager.show()
-        item = list(self.manager.list['main'])[0]
-        item.setText(0, 'y')
-        assert not self.manager.button_ok.isEnabled()
-        assert self.manager.ui.label_status.text() == 'Error: some components have duplicate names'
-        item = list(self.manager.list['main'])[0]
-        item.setText(0, 'a')
-        assert self.manager.button_ok.isEnabled()
-        assert self.manager.ui.label_status.text() == ''
-        self.manager.button_ok.click()
-        self.listener1.assert_exact_changes(renamed=[x_cid])
-        self.listener2.assert_exact_changes()
-        assert x_cid.label == 'a'
-        assert_equal(self.data1['a'], [1, 2, 3])
-
     def test_add_derived_and_rename(self):
-        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager = ArithmeticEditorWidget(self.data_collection)
         self.manager.show()
         with patch.object(EquationEditorDialog, 'exec_', auto_accept('{x} + {y}')):
             self.manager.button_add_derived.click()
-        item = list(self.manager.list['derived'])[0]
+        item = list(self.manager.list)[0]
         item.setText(0, 'new')
         self.manager.button_ok.click()
         self.listener1.assert_exact_changes(added=[self.data1.id['new']])
@@ -176,20 +134,20 @@ class TestComponentManagerWidget:
         assert_equal(self.data1['new'], [4.5, 6.5, 2.0])
 
     def test_add_derived_and_cancel(self):
-        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager = ArithmeticEditorWidget(self.data_collection)
         self.manager.show()
         with patch.object(EquationEditorDialog, 'exec_', auto_reject()):
             self.manager.button_add_derived.click()
-        assert len(self.manager.list['derived']) == 0
+        assert len(self.manager.list) == 0
 
     def test_edit_existing_equation(self):
         assert_equal(self.data2['d'], [3, 4, 1])
-        self.manager = ComponentManagerWidget(self.data_collection)
+        self.manager = ArithmeticEditorWidget(self.data_collection)
         self.manager.show()
-        assert len(self.manager.list['derived']) == 0
+        assert len(self.manager.list) == 0
         self.manager.combosel_data.setCurrentIndex(1)
-        assert len(self.manager.list['derived']) == 1
-        self.manager.list['derived'].select_cid(self.data2.id['d'])
+        assert len(self.manager.list) == 1
+        self.manager.list.select_cid(self.data2.id['d'])
         with patch.object(EquationEditorDialog, 'exec_', auto_accept('{a} + {b}')):
             self.manager.button_edit_derived.click()
         self.manager.button_ok.click()
@@ -197,16 +155,19 @@ class TestComponentManagerWidget:
         self.listener2.assert_exact_changes(numerical=True)
         assert_equal(self.data2['d'], [4.5, 2.0, 4.5])
 
-    def test_edit_equation_after_rename(self):
-        self.manager = ComponentManagerWidget(self.data_collection)
-        self.manager.show()
-        self.manager.combosel_data.setCurrentIndex(1)
-        self.manager.list['main'].select_cid(self.data2.id['a'])
-        self.manager.list['main'].selected_item.setText(0, 'renamed')
-        self.manager.list['derived'].select_cid(self.data2.id['d'])
-        with patch.object(EquationEditorDialog, 'exec_', auto_accept('{renamed} + 1')):
-            self.manager.button_edit_derived.click()
-        self.manager.button_ok.click()
-        self.listener1.assert_exact_changes()
-        self.listener2.assert_exact_changes(renamed=[self.data2.id['renamed']], numerical=True)
-        assert_equal(self.data2['d'], [4, 5, 2])
+    # TODO: add an updated version of the following test back once we add
+    # support for using derived components in derived components.
+    #
+    # def test_edit_equation_after_rename(self):
+    #     self.manager = ArithmeticEditorWidget(self.data_collection)
+    #     self.manager.show()
+    #     self.manager.combosel_data.setCurrentIndex(1)
+    #     self.manager.list['main'].select_cid(self.data2.id['a'])
+    #     self.manager.list['main'].selected_item.setText(0, 'renamed')
+    #     self.manager.list.select_cid(self.data2.id['d'])
+    #     with patch.object(EquationEditorDialog, 'exec_', auto_accept('{renamed} + 1')):
+    #         self.manager.button_edit_derived.click()
+    #     self.manager.button_ok.click()
+    #     self.listener1.assert_exact_changes()
+    #     self.listener2.assert_exact_changes(renamed=[self.data2.id['renamed']], numerical=True)
+    #     assert_equal(self.data2['d'], [4, 5, 2])

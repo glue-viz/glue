@@ -3,13 +3,10 @@ from __future__ import absolute_import, division, print_function
 import os
 from collections import defaultdict, Counter
 
-from qtpy import QtWidgets, QtGui, QtCore
+from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
-from glue.core import ComponentID
-from glue.core.parse import ParsedComponentLink, ParsedCommand
 from glue.utils.qt import load_ui
-from glue.core.message import NumericalDataChangedMessage
 
 __all__ = ['ComponentManagerWidget']
 
@@ -160,7 +157,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
     def accept(self):
 
-        for data in self._components:
+        for data in self._components_main:
 
             cids_main = self._components_main[data]
             cids_existing = data.components
