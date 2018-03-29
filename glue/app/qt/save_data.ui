@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>330</width>
-    <height>427</height>
+    <width>384</width>
+    <height>473</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,6 +35,62 @@
    <property name="verticalSpacing">
     <number>7</number>
    </property>
+   <item row="6" column="2">
+    <spacer name="horizontalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="7" column="0" colspan="5">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Select the file format to save to:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="3">
+    <widget class="QComboBox" name="combosel_subset"/>
+   </item>
+   <item row="1" column="1" colspan="3">
+    <widget class="QComboBox" name="combosel_data"/>
+   </item>
+   <item row="8" column="1" colspan="3">
+    <widget class="QComboBox" name="combosel_exporter"/>
+   </item>
+   <item row="1" column="0">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="1" colspan="3">
+    <widget class="QListWidget" name="list_component">
+     <property name="alternatingRowColors">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QToolButton" name="button_select_all">
+     <property name="text">
+      <string>Select All</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0" colspan="5">
     <widget class="QLabel" name="label_3">
      <property name="text">
@@ -67,7 +123,7 @@
      <item>
       <widget class="QPushButton" name="button_ok">
        <property name="text">
-        <string>OK</string>
+        <string>Export</string>
        </property>
        <property name="default">
         <bool>true</bool>
@@ -103,61 +159,15 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="3">
-    <widget class="QComboBox" name="combosel_data"/>
-   </item>
-   <item row="8" column="1" colspan="3">
-    <widget class="QComboBox" name="combosel_exporter"/>
-   </item>
-   <item row="1" column="0">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="7" column="0" colspan="5">
-    <widget class="QLabel" name="label_2">
+   <item row="9" column="0" colspan="5">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Select the file format to save to:</string>
+      <string>Once you click on 'Export' you will be prompted for the name of the file to export to</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item row="6" column="3">
-    <widget class="QToolButton" name="button_select_all">
-     <property name="text">
-      <string>Select All</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <spacer name="horizontalSpacer_4">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="5" column="1" colspan="3">
-    <widget class="QListWidget" name="list_component">
-     <property name="alternatingRowColors">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" colspan="3">
-    <widget class="QComboBox" name="combosel_subset"/>
    </item>
   </layout>
  </widget>
