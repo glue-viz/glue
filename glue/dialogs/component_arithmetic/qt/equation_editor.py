@@ -62,6 +62,9 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         # probably ignore that here)
         text = self.toPlainText()
 
+        # We need to be careful with < and > otherwise they get erased
+        text = text.replace('<', '&lt;').replace('>', '&gt;')
+
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
@@ -90,17 +93,22 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
 class EquationEditorDialog(QtWidgets.QDialog):
 
-    tip_text = ("Tip: attribute names in the expression should be surrounded "
-                "by { } brackets, and you can use Numpy functions using "
-                "np.&lt;function&gt;, as well as any other function defined "
-                "in your config.py file.")
+    tip_text = ("<b>Note:</b> Attribute names in the expression should be surrounded "
+                "by {{ }} brackets (e.g. {{{example}}}), and you can use "
+                "Numpy functions using np.&lt;function&gt;, as well as any "
+                "other function defined in your config.py file.<br><br>"
+                "<b>Example expressions:</b><br><br>"
+                "  - Subtract 10 from '{example}': {{{example}}} - 10<br>"
+                "  - Scale '{example}' to [0:1]: ({{{example}}} - np.min({{{example}}})) / np.ptp({{{example}}})<br>"
+                "  - Multiply '{example}' by pi: {{{example}}} * np.pi<br>"
+                "  - Use masking: {{{example}}} * ({{{example}}} &lt; 1)<br>")
+
 
     placeholder_text = ("Type any mathematical expression here - "
                         "you can include attribute names from the "
                         "drop-down below by selecting them and "
-                        "clicking 'Insert'. Note that attribute "
-                        "names should be written inside {{ }} "
-                        "brackets, e.g. {{{example}}}")
+                        "clicking 'Insert'. See below for examples "
+                        "of valid expressions")
 
     def __init__(self, label=None, data=None, equation=None, references=None, parent=None):
 
@@ -118,11 +126,11 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 self.references[cid.label] = cid
 
         if PYQT5:
-            example = list(self.references.keys())[0]
+            example = sorted(self.references, key=len)[0]
             self.ui.text_label.setPlaceholderText("New attribute name")
-            self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example, a=1))
+            self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example))
 
-        self.ui.label.setText(self.tip_text)
+        self.ui.label.setText(self.tip_text.format(example=example))
 
         if label is not None:
             self.ui.text_label.setText(label)
