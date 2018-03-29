@@ -79,6 +79,7 @@ dendro_viewer = glue.plugins.dendro_viewer:setup
 image_viewer = glue.viewers.image:setup
 scatter_viewer = glue.viewers.scatter:setup
 histogram_viewer = glue.viewers.histogram:setup
+profile_viewer = glue.viewers.profile:setup
 table_viewer = glue.viewers.table:setup
 data_exporters = glue.core.data_exporters:setup
 fits_format = glue.io.formats.fits:setup
