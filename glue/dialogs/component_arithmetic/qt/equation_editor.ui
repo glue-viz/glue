@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Derived Component Editor</string>
+   <string>Arithmetic Attribute Editor</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -35,8 +35,7 @@
       <number>5</number>
      </property>
      <item>
-      <widget class="QLineEdit" name="text_label">
-      </widget>
+      <widget class="QLineEdit" name="text_label"/>
      </item>
      <item>
       <widget class="QLabel" name="label_4">
@@ -87,7 +86,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Available components:</string>
+        <string>Available attributes:</string>
        </property>
       </widget>
      </item>
@@ -127,7 +126,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Tip: component names should be surrounded by curly brackets, and you can use Numpy functions using np.&lt;function&gt;, as well as any other function defined in your config.py file.</string>
+      <string>Tip: attribute names in the expression should be surrounded by curly brackets, and you can use Numpy functions using np.&lt;function&gt;, as well as any other function defined in your config.py file.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
@@ -184,7 +183,7 @@
   <customwidget>
    <class>ColorizedCompletionTextEdit</class>
    <extends>QTextEdit</extends>
-   <header>glue.dialogs.component_manager.qt.equation_editor</header>
+   <header>glue.dialogs.component_arithmetic.qt.equation_editor</header>
   </customwidget>
  </customwidgets>
  <resources/>

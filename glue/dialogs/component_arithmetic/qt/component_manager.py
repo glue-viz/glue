@@ -11,10 +11,12 @@ from glue.core.parse import ParsedComponentLink, ParsedCommand
 from glue.utils.qt import load_ui
 from glue.core.message import NumericalDataChangedMessage
 
-from glue.dialogs.component_manager.qt.equation_editor import EquationEditorDialog
+from glue.dialogs.component_arithmetic.qt.equation_editor import EquationEditorDialog
 
-__all__ = ['ComponentManagerWidget']
+__all__ = ['ArithmeticEditorWidget']
 
+
+# TODO: move the following class somewhere more general
 
 class ComponentTreeWidget(QtWidgets.QTreeWidget):
 
@@ -43,8 +45,8 @@ class ComponentTreeWidget(QtWidgets.QTreeWidget):
         selected = self.selected_item
         return None if selected is None else selected.data(0, Qt.UserRole)
 
-    def add_cid_and_label(self, cid, label):
-        item = QtWidgets.QTreeWidgetItem(self.invisibleRootItem(), [label])
+    def add_cid_and_label(self, cid, columns):
+        item = QtWidgets.QTreeWidgetItem(self.invisibleRootItem(), columns)
         item.setData(0, Qt.UserRole, cid)
         item.setFlags(item.flags() | Qt.ItemIsEditable)
         item.setFlags(item.flags() ^ Qt.ItemIsDropEnabled)
@@ -68,34 +70,29 @@ class ComponentTreeWidget(QtWidgets.QTreeWidget):
         super(ComponentTreeWidget, self).mousePressEvent(event)
 
 
-class ComponentManagerWidget(QtWidgets.QDialog):
+class ArithmeticEditorWidget(QtWidgets.QDialog):
 
     def __init__(self, data_collection=None, parent=None):
 
-        super(ComponentManagerWidget, self).__init__(parent=parent)
+        super(ArithmeticEditorWidget, self).__init__(parent=parent)
 
         self.ui = load_ui('component_manager.ui', self,
                           directory=os.path.dirname(__file__))
 
-        self.list = {}
-        self.list['main'] = self.ui.list_main_components
-        self.list['derived'] = self.ui.list_derived_components
+        self.list = self.ui.list_derived_components
 
         self.data_collection = data_collection
 
-        self._components = defaultdict(lambda: defaultdict(list))
+        self._components_derived = defaultdict(list)
+        self._components_other = defaultdict(list)
         self._state = defaultdict(dict)
 
         for data in data_collection:
 
-            for cid in data.main_components:
-                comp_state = {}
-                comp_state['cid'] = cid
-                comp_state['label'] = cid.label
-                self._state[data][cid] = comp_state
-                self._components[data]['main'].append(cid)
+            # First find all derived components (only ones based on arithmetic
+            # expressions)
 
-            self._components[data]['derived'] = []
+            self._components_derived[data] = []
 
             for cid in data.derived_components:
                 comp = data.get_component(cid)
@@ -105,18 +102,15 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     comp_state['label'] = cid.label
                     comp_state['equation'] = comp.link._parsed
                     self._state[data][cid] = comp_state
-                    self._components[data]['derived'].append(cid)
+                    self._components_derived[data].append(cid)
 
-            self._components[data]['other'] = []
+            # Keep track of all other components
 
-            handled_components = (data.pixel_component_ids +
-                                  data.world_component_ids +
-                                  self._components[data]['main'] +
-                                  self._components[data]['derived'])
+            self._components_other[data] = []
 
             for cid in data.components:
-                if cid not in handled_components:
-                    self._components[data]['other'].append(cid)
+                if cid not in self._components_derived[data]:
+                    self._components_other[data].append(cid)
 
         # Populate data combo
         for data in self.data_collection:
@@ -126,32 +120,22 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         self.ui.combosel_data.currentIndexChanged.connect(self._update_component_lists)
         self._update_component_lists()
 
-        self.ui.button_remove_main.clicked.connect(self._remove_main_component)
-
         self.ui.button_add_derived.clicked.connect(self._add_derived_component)
         self.ui.button_edit_derived.clicked.connect(self._edit_derived_component)
         self.ui.button_remove_derived.clicked.connect(self._remove_derived_component)
 
-        self.ui.list_main_components.itemSelectionChanged.connect(self._update_selection_main)
         self.ui.list_derived_components.itemSelectionChanged.connect(self._update_selection_derived)
 
-        self._update_selection_main()
         self._update_selection_derived()
 
-        self.ui.list_main_components.itemChanged.connect(self._update_state)
         self.ui.list_derived_components.itemChanged.connect(self._update_state)
-        self.ui.list_main_components.order_changed.connect(self._update_state)
         self.ui.list_derived_components.order_changed.connect(self._update_state)
 
         self.ui.button_ok.clicked.connect(self.accept)
         self.ui.button_cancel.clicked.connect(self.reject)
 
-    def _update_selection_main(self):
-        enabled = self.list['main'].selected_cid is not None
-        self.button_remove_main.setEnabled(enabled)
-
     def _update_selection_derived(self):
-        enabled = self.list['derived'].selected_cid is not None
+        enabled = self.list.selected_cid is not None
         self.button_edit_derived.setEnabled(enabled)
         self.button_remove_derived.setEnabled(enabled)
 
@@ -167,15 +151,22 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         # This gets called when the data is changed and we need to update the
         # components shown in the lists.
 
-        for component_list in ('main', 'derived'):
+        self.list.blockSignals(True)
 
-            self.list[component_list].blockSignals(True)
+        mapping = {}
+        for cid in self.data.components:
+            mapping[cid] = cid.label
 
-            self.list[component_list].clear()
-            for cid in self._components[self.data][component_list]:
-                self.list[component_list].add_cid_and_label(cid, self._state[self.data][cid]['label'])
+        self.list.clear()
+        for cid in self._components_derived[self.data]:
+            label = self._state[self.data][cid]['label']
+            if self._state[self.data][cid]['equation'] is None:
+                expression = ''
+            else:
+                expression = self._state[self.data][cid]['equation'].render(mapping)
+            self.list.add_cid_and_label(cid, [label, expression])
 
-            self.list[component_list].blockSignals(False)
+        self.list.blockSignals(False)
 
         self._validate()
 
@@ -183,10 +174,16 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         # Construct a list of all labels for the current dataset so that
         # we can check which ones are duplicates
-        labels = [c['label'] for c in self._state[self.data].values()]
+        labels = [c.label for c in self._components_other[self.data]]
+        labels.extend([c['label'] for c in self._state[self.data].values()])
         if len(labels) == 0:
             return
         label_count = Counter(labels)
+
+        # It's possible that the duplicates are entirely for components not
+        # shown in this editor, so we keep track here of whether an invalid
+        # component has been found.
+        invalid = False
 
         if label_count.most_common(1)[0][1] > 1:
 
@@ -196,54 +193,41 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             brush_red = QtGui.QBrush(Qt.red)
             brush_black = QtGui.QBrush(Qt.black)
 
-            for component_list in ('main', 'derived'):
+            self.list.blockSignals(True)
 
-                self.list[component_list].blockSignals(True)
+            for item in self.list:
+                label = item.text(0)
+                if label_count[label] > 1:
+                    item.setForeground(0, brush_red)
+                    invalid = True
+                else:
+                    item.setForeground(0, brush_black)
 
-                for item in self.list[component_list]:
-                    label = item.text(0)
-                    if label_count[label] > 1:
-                        item.setForeground(0, brush_red)
-                    else:
-                        item.setForeground(0, brush_black)
+            self.list.blockSignals(False)
 
-                self.list[component_list].blockSignals(False)
-
+        if invalid:
             self.ui.label_status.setStyleSheet('color: red')
             self.ui.label_status.setText('Error: some components have duplicate names')
             self.ui.button_ok.setEnabled(False)
             self.ui.combosel_data.setEnabled(False)
-
         else:
-
             self.ui.label_status.setStyleSheet('')
             self.ui.label_status.setText('')
             self.ui.button_ok.setEnabled(True)
             self.ui.combosel_data.setEnabled(True)
 
     def _update_state(self, *args):
-
-        for component_list in ('main', 'derived'):
-
-            self._components[self.data][component_list] = []
-            for item in self.list[component_list]:
-                cid = item.data(0, Qt.UserRole)
-                self._state[self.data][cid]['label'] = item.text(0)
-                self._components[self.data][component_list].append(cid)
-
+        self._components_derived[self.data] = []
+        for item in self.list:
+            cid = item.data(0, Qt.UserRole)
+            self._state[self.data][cid]['label'] = item.text(0)
+            self._components_derived[self.data].append(cid)
         self._update_component_lists()
 
-    def _remove_main_component(self, *args):
-        cid = self.list['main'].selected_cid
-        if cid is not None:
-            self._components[self.data]['main'].remove(cid)
-            self._state[self.data].pop(cid)
-            self._update_component_lists()
-
     def _remove_derived_component(self, *args):
-        cid = self.list['derived'].selected_cid
+        cid = self.list.selected_cid
         if cid is not None:
-            self._components[self.data]['derived'].remove(cid)
+            self._components_derived[self.data].remove(cid)
             self._state[self.data].pop(cid)
             self._update_component_lists()
 
@@ -254,41 +238,46 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         comp_state['label'] = ''
         comp_state['equation'] = None
 
-        self._components[self.data]['derived'].append(comp_state['cid'])
+        self._components_derived[self.data].append(comp_state['cid'])
         self._state[self.data][comp_state['cid']] = comp_state
 
         self._update_component_lists()
 
-        self.list['derived'].select_cid(comp_state['cid'])
+        self.list.select_cid(comp_state['cid'])
 
         result = self._edit_derived_component()
 
         if not result:  # user cancelled
-            self._components[self.data]['derived'].remove(comp_state['cid'])
+            self._components_derived[self.data].remove(comp_state['cid'])
             self._state[self.data].pop(comp_state['cid'])
             self._update_component_lists()
 
     def _edit_derived_component(self, event=None):
 
-        mapping = {}
-        references = {}
-        for cid in self._components[self.data]['main']:
-            label = self._state[self.data][cid]['label']
-            mapping[cid] = label
-            references[label] = cid
+        derived_item = self.list.selected_item
 
-        cid = self.list['derived'].selected_cid
-        item = self.list['derived'].selected_item
-
-        if item is None:
+        if derived_item is None:
             return False
 
-        label = self._state[self.data][cid]['label']
+        derived_cid = self.list.selected_cid
 
-        if self._state[self.data][cid]['equation'] is None:
+        # Note, we put the pixel/world components last as it's most likely the
+        # user wants to use one of the main components.
+        mapping = {}
+        references = {}
+        for cid in (self.data.main_components +
+                    self.data.pixel_component_ids +
+                    self.data.world_component_ids):
+            if cid is not derived_cid:
+                mapping[cid] = cid.label
+                references[cid.label] = cid
+
+        label = self._state[self.data][derived_cid]['label']
+
+        if self._state[self.data][derived_cid]['equation'] is None:
             equation = None
         else:
-            equation = self._state[self.data][cid]['equation'].render(mapping)
+            equation = self._state[self.data][derived_cid]['equation'].render(mapping)
 
         dialog = EquationEditorDialog(label=label, equation=equation, references=references, parent=self)
         dialog.setWindowFlags(self.windowFlags() | Qt.Window)
@@ -300,36 +289,34 @@ class ComponentManagerWidget(QtWidgets.QDialog):
             return False
 
         name, equation = dialog.get_final_label_and_parsed_command()
-        self._state[self.data][cid]['label'] = name
-        self._state[self.data][cid]['equation'] = equation
-        item.setText(0, name)
+        self._state[self.data][derived_cid]['label'] = name
+        self._state[self.data][derived_cid]['equation'] = equation
+        derived_item.setText(0, name)
 
         return True
 
     def accept(self):
 
-        for data in self._components:
+        for data in self._components_derived:
 
-            cids_main = self._components[data]['main']
-            cids_derived = self._components[data]['derived']
-            cids_other = self._components[data]['other']
+            cids_derived = self._components_derived[data]
+            cids_other = self._components_other[data]
+            cids_all = cids_derived + cids_other
+            cids_existing = data.components
+            components = dict((cid.uuid, cid) for cid in data.components)
 
             # First deal with renaming of components
-            for cid_new in cids_main + cids_derived:
+            for cid_new in cids_derived:
                 label = self._state[data][cid_new]['label']
                 if label != cid_new.label:
                     cid_new.label = label
 
-            cids_all = data.pixel_component_ids + data.world_component_ids + cids_main + cids_derived + cids_other
-
-            cids_existing = data.components
-
+            # Second deal with the renaming of components
             for cid_old in cids_existing:
                 if not any(cid_old is cid_new for cid_new in cids_all):
                     data.remove_component(cid_old)
 
-            components = dict((cid.uuid, cid) for cid in data.components)
-
+            # Third, update/add arithmetic expressions as needed
             for cid_new in cids_derived:
                 if any(cid_new is cid_old for cid_old in cids_existing):
                     comp = data.get_component(cid_new)
@@ -344,9 +331,10 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     link = ParsedComponentLink(cid_new, pc)
                     data.add_component_link(link)
 
+            # Findally, reorder components
             data.reorder_components(cids_all)
 
-        super(ComponentManagerWidget, self).accept()
+        super(ArithmeticEditorWidget, self).accept()
 
 
 if __name__ == "__main__":  # pragma: nocover
@@ -365,5 +353,5 @@ if __name__ == "__main__":  # pragma: nocover
     dc.append(Data(label='test1', x=x, y=y))
     dc.append(Data(label='test2', a=x, b=y))
 
-    widget = ComponentManagerWidget(dc)
+    widget = ArithmeticEditorWidget(dc)
     widget.exec_()
