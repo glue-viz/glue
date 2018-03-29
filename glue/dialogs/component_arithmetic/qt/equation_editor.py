@@ -90,24 +90,24 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
 class EquationEditorDialog(QtWidgets.QDialog):
 
+    tip_text = ("Tip: attribute names in the expression should be surrounded "
+                "by { } brackets, and you can use Numpy functions using "
+                "np.&lt;function&gt;, as well as any other function defined "
+                "in your config.py file.")
+
+    placeholder_text = ("Type any mathematical expression here - "
+                        "you can include attribute names from the "
+                        "drop-down below by selecting them and "
+                        "clicking 'Insert'. Note that attribute "
+                        "names should be written inside {{ }} "
+                        "brackets, e.g. {{{example}}}")
+
     def __init__(self, label=None, data=None, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
-
-        if PYQT5:
-            self.ui.text_label.setPlaceholderText("New attribute name")
-            self.ui.expression.setPlaceholderText("Type any mathematical expression here - "
-                                                  "you can include attribute names from the "
-                                                  "drop-down below by selecting them and "
-                                                  "clicking 'Insert'")
-
-        if label is not None:
-            self.ui.text_label.setText(label)
-
-        self.ui.text_label.textChanged.connect(self._update_status)
 
         # Get mapping from label to component ID
         if references is not None:
@@ -116,6 +116,18 @@ class EquationEditorDialog(QtWidgets.QDialog):
             self.references = OrderedDict()
             for cid in data.primary_components:
                 self.references[cid.label] = cid
+
+        if PYQT5:
+            example = list(self.references.keys())[0]
+            self.ui.text_label.setPlaceholderText("New attribute name")
+            self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example, a=1))
+
+        self.ui.label.setText(self.tip_text)
+
+        if label is not None:
+            self.ui.text_label.setText(label)
+
+        self.ui.text_label.textChanged.connect(self._update_status)
 
         # Populate component combo
         for label, cid in self.references.items():

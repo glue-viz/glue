@@ -126,7 +126,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Tip: attribute names in the expression should be surrounded by curly brackets, and you can use Numpy functions using np.&lt;function&gt;, as well as any other function defined in your config.py file.</string>
+      <string></string>
      </property>
      <property name="alignment">
       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
