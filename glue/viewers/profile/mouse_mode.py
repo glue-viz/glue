@@ -42,6 +42,18 @@ class NavigateMouseMode(MouseMode):
             self._line = self._axes.axvline(self.state.x, color=COLOR)
         self._canvas.draw()
 
+    def deactivate(self):
+        if hasattr(self, '_line'):
+            self._line.set_visible(False)
+        self._canvas.draw()
+        super(NavigateMouseMode, self).deactivate()
+
+    def activate(self):
+        if hasattr(self, '_line'):
+            self._line.set_visible(True)
+        self._canvas.draw()
+        super(NavigateMouseMode, self).activate()
+
 
 class RangeModeState(State):
     x_min = CallbackProperty(None)
@@ -122,3 +134,17 @@ class RangeMouseMode(MouseMode):
                            self._axes.axvline(self.state.x_max, color=COLOR),
                            self._axes.plot([self.state.x_min, self.state.x_max], [y_mid, y_mid], color=COLOR)[0])
         self._canvas.draw()
+
+    def deactivate(self):
+        if hasattr(self, '_lines'):
+            for line in self._lines:
+                line.set_visible(False)
+        self._canvas.draw()
+        super(RangeMouseMode, self).deactivate()
+
+    def activate(self):
+        if hasattr(self, '_lines'):
+            for line in self._lines:
+                line.set_visible(True)
+        self._canvas.draw()
+        super(RangeMouseMode, self).activate()
