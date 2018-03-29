@@ -664,7 +664,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.addAction(self._actions['session_save'])
         menu.addAction(self._actions['export_data'])
         if 'session_export' in self._actions:
-            submenu = menu.addMenu("E&xport")
+            submenu = menu.addMenu("Advanced E&xporters")
             for a in self._actions['session_export']:
                 submenu.addAction(a)
         menu.addSeparator()
@@ -795,7 +795,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
-        a = action('&Save Session', self,
+        a = action('&Export Session', self,
                    tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
