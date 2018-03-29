@@ -98,9 +98,9 @@ class EquationEditorDialog(QtWidgets.QDialog):
                           directory=os.path.dirname(__file__))
 
         if PYQT5:
-            self.ui.text_label.setPlaceholderText("New component name")
+            self.ui.text_label.setPlaceholderText("New attribute name")
             self.ui.expression.setPlaceholderText("Type any mathematical expression here - "
-                                                  "you can include component names from the "
+                                                  "you can include attribute names from the "
                                                   "drop-down below by selecting them and "
                                                   "clicking 'Insert'")
 

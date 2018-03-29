@@ -33,10 +33,11 @@ class ComponentTreeWidget(QtWidgets.QTreeWidget):
         selected = self.selected_item
         return None if selected is None else selected.data(0, Qt.UserRole)
 
-    def add_cid_and_label(self, cid, columns):
+    def add_cid_and_label(self, cid, columns, editable=True):
         item = QtWidgets.QTreeWidgetItem(self.invisibleRootItem(), columns)
         item.setData(0, Qt.UserRole, cid)
-        item.setFlags(item.flags() | Qt.ItemIsEditable)
+        if editable:
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
         item.setFlags(item.flags() ^ Qt.ItemIsDropEnabled)
 
     def __iter__(self):

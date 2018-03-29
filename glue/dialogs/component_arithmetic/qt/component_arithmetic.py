@@ -76,6 +76,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
 
         self.ui.list_derived_components.itemChanged.connect(self._update_state)
         self.ui.list_derived_components.order_changed.connect(self._update_state)
+        self.ui.list_derived_components.itemDoubleClicked.connect(self._edit_derived_component)
 
         self.ui.button_ok.clicked.connect(self.accept)
         self.ui.button_cancel.clicked.connect(self.reject)
@@ -110,7 +111,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
                 expression = ''
             else:
                 expression = self._state[self.data][cid]['equation'].render(mapping)
-            self.list.add_cid_and_label(cid, [label, expression])
+            self.list.add_cid_and_label(cid, [label, expression], editable=False)
 
         self.list.blockSignals(False)
 
