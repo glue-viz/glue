@@ -251,7 +251,7 @@
   <customwidget>
    <class>ComponentTreeWidget</class>
    <extends>QTreeWidget</extends>
-   <header>glue.dialogs.component_arithmetic.qt.component_manager</header>
+   <header>glue.dialogs.component_arithmetic.qt.component_arithmetic</header>
   </customwidget>
  </customwidgets>
  <resources/>

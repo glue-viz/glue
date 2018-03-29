@@ -76,7 +76,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
 
         super(ArithmeticEditorWidget, self).__init__(parent=parent)
 
-        self.ui = load_ui('component_manager.ui', self,
+        self.ui = load_ui('component_arithmetic.ui', self,
                           directory=os.path.dirname(__file__))
 
         self.list = self.ui.list_derived_components

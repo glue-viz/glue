@@ -1,1 +1,1 @@
-from .component_manager import ArithmeticEditorWidget  # noqa
+from .component_arithmetic import ArithmeticEditorWidget  # noqa
