@@ -6,6 +6,9 @@ from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
 from glue.viewers.profile.qt.options_widget import ProfileOptionsWidget
 from glue.viewers.profile.state import ProfileViewerState
+from glue.viewers.profile.mouse_mode import NavigateMouseMode
+
+from glue.viewers.common.qt import toolbar_mode  # noqa
 
 __all__ = ['ProfileViewer']
 
@@ -19,6 +22,7 @@ class ProfileViewer(MatplotlibDataViewer):
     _options_cls = ProfileOptionsWidget
     _data_artist_cls = ProfileLayerArtist
     _subset_artist_cls = ProfileLayerArtist
+    _default_mouse_mode_cls = NavigateMouseMode
 
     tools = ['select:xrange']
 

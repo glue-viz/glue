@@ -74,12 +74,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _layers_changed(self, *args):
-        print("X_ATT [bef]", self.x_att)
-        print("Y_ATT [bef]", self.y_att)
         self.x_att_helper.set_multiple_data(self.layers_data)
         self.y_att_helper.set_multiple_data(self.layers_data)
-        print("X_ATT [aft]", self.x_att)
-        print("Y_ATT [aft]", self.y_att)
 
 
 class ProfileLayerState(MatplotlibLayerState):
