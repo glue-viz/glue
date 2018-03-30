@@ -1,15 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtWidgets
-from qtpy.QtCore import Qt
-
 from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
 from glue.viewers.profile.qt.options_widget import ProfileOptionsWidget
 from glue.viewers.profile.state import ProfileViewerState
-from glue.viewers.profile.qt.profile_tools import ProfileTools
 
 from glue.viewers.common.qt import toolbar_mode  # noqa
 

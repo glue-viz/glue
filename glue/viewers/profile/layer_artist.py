@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.utils import defer_draw
-from glue.core import Data
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute

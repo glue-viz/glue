@@ -1,5 +1,3 @@
-import weakref
-
 from glue.external.echo import CallbackProperty, delay_callback
 from glue.core.state_objects import State
 from glue.viewers.common.qt.mouse_mode import MouseMode
