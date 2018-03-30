@@ -35,12 +35,13 @@ COLLAPSE_FUNCS = {np.nanmean: 'Mean',
 
 
 @viewer_tool
-class ProfileTool(Tool):
+class ProfileAnalysisTool(Tool):
 
-    tool_id = 'profile-tools'
+    icon = 'glue_spectrum'
+    tool_id = 'profile-analysis'
 
     def __init__(self, viewer):
-        super(ProfileTool, self).__init__(viewer)
+        super(ProfileAnalysisTool, self).__init__(viewer)
         self._profile_tools = ProfileTools(viewer)
         container_widget = QtWidgets.QSplitter(Qt.Horizontal)
         plot_widget = viewer.centralWidget()

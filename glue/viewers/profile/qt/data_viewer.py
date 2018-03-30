@@ -26,7 +26,7 @@ class ProfileViewer(MatplotlibDataViewer):
     _data_artist_cls = ProfileLayerArtist
     _subset_artist_cls = ProfileLayerArtist
 
-    tools = ['select:xrange', 'profile-tools']
+    tools = ['select:xrange', 'profile-analysis']
 
     def __init__(self, session, parent=None, state=None):
         super(ProfileViewer, self).__init__(session, parent, state=state)
