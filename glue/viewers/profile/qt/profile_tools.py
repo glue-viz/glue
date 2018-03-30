@@ -1,4 +1,5 @@
 import os
+import weakref
 import traceback
 
 import numpy as np
@@ -67,8 +68,12 @@ class ProfileTools(QtWidgets.QWidget):
 
         fix_tab_widget_fontsize(self.ui.tabs)
 
-        self.viewer = parent
+        self._viewer = weakref.ref(parent)
         self.image_viewer = None
+
+    @property
+    def viewer(self):
+        return self._viewer()
 
     def enable(self):
 

@@ -1,3 +1,5 @@
+import weakref
+
 from glue.external.echo import CallbackProperty, delay_callback
 from glue.core.state_objects import State
 from glue.viewers.common.qt.mouse_mode import MouseMode
@@ -19,7 +21,6 @@ class NavigateMouseMode(MouseMode):
         self.state = NavigationModeState()
         self.state.add_callback('x', self._update_artist)
         self.pressed = False
-        self._viewer = viewer
         self._press_callback = press_callback
 
     def press(self, event):
@@ -81,7 +82,6 @@ class RangeMouseMode(MouseMode):
 
         self.mode = None
         self.move_params = None
-        self._viewer = viewer
 
     def press(self, event):
 
@@ -131,7 +131,6 @@ class RangeMouseMode(MouseMode):
 
     def _update_artist(self, *args):
         y_min, y_max = self._axes.get_ylim()
-        y_mid = 0.5 * (y_min + y_max)
         if hasattr(self, '_lines'):
             self._lines[0].set_data([self.state.x_min, self.state.x_min], [0, 1])
             self._lines[1].set_data([self.state.x_max, self.state.x_max], [0, 1])
