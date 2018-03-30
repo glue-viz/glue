@@ -38,7 +38,7 @@ class TestProfileViewer(object):
 
     def setup_method(self, method):
 
-        self.data = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
+        self.data = Data(label='d1', x=np.arange(24).reshape((3, 4, 2)))
 
         self.app = GlueApplication()
         self.session = self.app.session
@@ -51,3 +51,11 @@ class TestProfileViewer(object):
 
     def teardown_method(self, method):
         self.viewer.close()
+
+    def test_functions(self):
+        self.viewer.add_data(self.data)
+        self.viewer.state.function = np.nanmean
+        assert len(self.viewer.layers) == 1
+        layer_artist = self.viewer.layers[0]
+        assert_allclose(layer_artist._visible_data[0], [0, 1, 2])
+        assert_allclose(layer_artist._visible_data[1], [3.5, 11.5, 19.5])
