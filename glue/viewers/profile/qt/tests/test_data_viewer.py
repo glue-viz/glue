@@ -59,3 +59,12 @@ class TestProfileViewer(object):
         layer_artist = self.viewer.layers[0]
         assert_allclose(layer_artist._visible_data[0], [0, 1, 2])
         assert_allclose(layer_artist._visible_data[1], [3.5, 11.5, 19.5])
+
+    def test_incompatible(self):
+        self.viewer.add_data(self.data)
+        data2 = Data(y=np.random.random((3, 4, 2)))
+        self.data_collection.append(data2)
+        self.viewer.add_data(data2)
+        assert len(self.viewer.layers) == 2
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
