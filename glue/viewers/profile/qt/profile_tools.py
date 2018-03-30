@@ -25,12 +25,12 @@ __all__ = ['ProfileTools']
 MODES = ['navigate', 'fit', 'collapse']
 
 COLLAPSE_FUNCS = {np.nanmean: 'Mean',
-             np.nanmedian: 'Median',
-             np.nanmin: 'Minimum',
-             np.nanmax: 'Maximum',
-             np.nansum: 'Sum',
-             mom1: 'Moment 1',
-             mom2: 'Moment 2'}
+                  np.nanmedian: 'Median',
+                  np.nanmin: 'Minimum',
+                  np.nanmax: 'Maximum',
+                  np.nansum: 'Sum',
+                  mom1: 'Moment 1',
+                  mom2: 'Moment 2'}
 
 
 @viewer_tool
@@ -249,11 +249,9 @@ class ProfileTools(QtWidgets.QWidget):
 
         func = self.collapse_function
         x_range = self.rng_mode.state.x_range
-        imin, imax = int(x_range[0]), int(x_range[1])
+        imin, imax = int(min(x_range)), int(max(x_range))
 
-        print("on_collapse")
         for data in self._visible_data():
-            print("VIS", data.label)
             for viewer in self._viewers_with_data_slice(data, self.viewer.state.x_att):
                 print(type(viewer))
 
@@ -271,16 +269,6 @@ class ProfileTools(QtWidgets.QWidget):
                 print(slices)
 
                 viewer.state.slices = tuple(slices)
-
-        # Save a local copy of the collapsed array
-        # for layer_state in self.viewer_state.layers:
-        #     if layer_state.layer is self.viewer_state.reference_data:
-        #         break
-        # else:
-        #     raise Exception("Couldn't find layer corresponding to reference data")
-        #
-        # self._agg = layer_state.get_sliced_data()
-        # pass
 
     @property
     def mode(self):

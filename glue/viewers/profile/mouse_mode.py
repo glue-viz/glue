@@ -67,7 +67,7 @@ class RangeModeState(State):
         return self.x_min, self.x_max
 
 
-PICK_THRESH = 0.05
+PICK_THRESH = 0.02
 
 
 class RangeMouseMode(MouseMode):
@@ -135,11 +135,17 @@ class RangeMouseMode(MouseMode):
         if hasattr(self, '_lines'):
             self._lines[0].set_data([self.state.x_min, self.state.x_min], [0, 1])
             self._lines[1].set_data([self.state.x_max, self.state.x_max], [0, 1])
-            self._lines[2].set_data([self.state.x_min, self.state.x_max], [y_mid, y_mid])
+            self._interval.set_xy([[self.state.x_min, 0],
+                                   [self.state.x_min, 1],
+                                   [self.state.x_max, 1],
+                                   [self.state.x_max, 0],
+                                   [self.state.x_min, 0]])
         else:
             self._lines = (self._axes.axvline(self.state.x_min, color=COLOR),
-                           self._axes.axvline(self.state.x_max, color=COLOR),
-                           self._axes.plot([self.state.x_min, self.state.x_max], [y_mid, y_mid], color=COLOR)[0])
+                           self._axes.axvline(self.state.x_max, color=COLOR))
+            self._interval = self._axes.axvspan(self.state.x_min,
+                                                self.state.x_max,
+                                                color=COLOR, alpha=0.05)
         self._canvas.draw()
 
     def deactivate(self):

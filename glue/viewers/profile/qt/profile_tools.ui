@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>237</width>
-    <height>270</height>
+    <width>272</width>
+    <height>265</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,10 @@
        <item>
         <widget class="QLabel" name="navigate_instructions">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To &lt;span style=&quot; font-weight:600;&quot;&gt;slide &lt;/span&gt;through the cube, drag the handle or double-click&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To &lt;span style=&quot; font-weight:600;&quot;&gt;slide &lt;/span&gt;through any cubes in image viewers that show the same data as the one here, drag the handle from side to side.&lt;/p&gt;&lt;p&gt;Note that modifying the sliders in the image viewers will not change the slider here or in other viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignJustify|Qt::AlignVCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
