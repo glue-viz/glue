@@ -72,7 +72,6 @@ entry_points = """
 export_d3po = glue.plugins.export_d3po:setup
 export_plotly = glue.plugins.exporters.plotly:setup
 pv_slicer = glue.plugins.tools.pv_slicer:setup
-spectrum_tool = glue.plugins.tools.spectrum_tool:setup
 coordinate_helpers = glue.plugins.coordinate_helpers:setup
 spectral_cube = glue.plugins.data_factories.spectral_cube:setup
 dendro_viewer = glue.plugins.dendro_viewer:setup
