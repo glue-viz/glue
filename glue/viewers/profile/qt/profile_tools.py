@@ -14,11 +14,23 @@ from glue.viewers.profile.mouse_mode import NavigateMouseMode, RangeMouseMode
 from glue.viewers.profile.qt.fitters import FitSettingsWidget
 from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
+from glue.viewers.image.state import AggregateSlice
+from glue.core.aggregate import mom1, mom2
+from glue.core import Data
+from glue.viewers.image.qt import ImageViewer
 
 __all__ = ['ProfileTools']
 
 
 MODES = ['navigate', 'fit', 'collapse']
+
+COLLAPSE_FUNCS = {np.nanmean: 'Mean',
+             np.nanmedian: 'Median',
+             np.nanmin: 'Minimum',
+             np.nanmax: 'Maximum',
+             np.nansum: 'Sum',
+             mom1: 'Moment 1',
+             mom2: 'Moment 2'}
 
 
 @viewer_tool
@@ -34,13 +46,6 @@ class ProfileTool(Tool):
         container_widget.addWidget(plot_widget)
         container_widget.addWidget(self._profile_tools)
         viewer.setCentralWidget(container_widget)
-        # container_widget = QtWidgets.QWidget()
-        # container_layout = QtWidgets.QHBoxLayout()
-        # plot_widget = viewer.centralWidget()
-        # container_widget.setLayout(container_layout)
-        # container_layout.addWidget(plot_widget)
-        # container_layout.addWidget(self._profile_tools)
-        # viewer.setCentralWidget(container_widget)
         self._profile_tools.enable()
         self._profile_tools.hide()
 
@@ -63,11 +68,15 @@ class ProfileTools(QtWidgets.QWidget):
         fix_tab_widget_fontsize(self.ui.tabs)
 
         self.viewer = parent
+        self.image_viewer = None
 
     def enable(self):
 
-        self.nav_mode = NavigateMouseMode(self.viewer)
+        self.nav_mode = NavigateMouseMode(self.viewer,
+                                          press_callback=self._on_nav_activate)
         self.rng_mode = RangeMouseMode(self.viewer)
+
+        self.nav_mode.state.add_callback('x', self._on_slider_change)
 
         self.ui.tabs.setCurrentIndex(0)
 
@@ -92,6 +101,9 @@ class ProfileTools(QtWidgets.QWidget):
         for fitter in list(fit_plugin):
             self.ui.combosel_fit_function.addItem(fitter.label, userData=fitter())
 
+        for func, display in COLLAPSE_FUNCS.items():
+            self.ui.combosel_collapse_function.addItem(display, userData=func)
+
         self._toolbar_connected = False
 
         self.viewer.toolbar_added.connect(self._on_toolbar_added)
@@ -100,6 +112,25 @@ class ProfileTools(QtWidgets.QWidget):
     def fitter(self):
         # FIXME: might not work with PyQt4
         return self.ui.combosel_fit_function.currentData()
+
+    @property
+    def collapse_function(self):
+        # FIXME: might not work with PyQt4
+        return self.ui.combosel_collapse_function.currentData()
+
+    def _on_nav_activate(self, *args):
+        self._nav_data = self._visible_data()
+        self._nav_viewers = {}
+        for data in self._nav_data:
+            self._nav_viewers[data] = self._viewers_with_data_slice(data, self.viewer.state.x_att)
+
+    def _on_slider_change(self, *args):
+        x = self.nav_mode.state.x
+        for data in self._nav_data:
+            for viewer in self._nav_viewers[data]:
+                slices = list(viewer.state.slices)
+                slices[self.viewer.state.x_att.axis] = int(x)
+                viewer.state.slices = slices
 
     def _on_settings(self):
         d = FitSettingsWidget(self.fitter)
@@ -191,8 +222,65 @@ class ProfileTools(QtWidgets.QWidget):
 
         self.canvas.draw()
 
+    def _visible_data(self):
+        datasets = []
+        for layer_artist in self.viewer.layers:
+            if layer_artist.enabled and layer_artist.visible:
+                if isinstance(layer_artist.state.layer, Data):
+                    datasets.append(layer_artist.state.layer)
+        return datasets
+
+    def _viewers_with_data_slice(self, data, xatt):
+
+        if self.viewer.session.application is None:
+            return []
+
+        viewers = []
+        for tab in self.viewer.session.application.viewers:
+            for viewer in tab:
+                if isinstance(viewer, ImageViewer):
+                    for layer_artist in viewer._layer_artist_container[data]:
+                        if layer_artist.enabled and layer_artist.visible:
+                            if len(viewer.state.slices) >= xatt.axis:
+                                viewers.append(viewer)
+        return viewers
+
     def _on_collapse(self):
-        pass
+
+        func = self.collapse_function
+        x_range = self.rng_mode.state.x_range
+        imin, imax = int(x_range[0]), int(x_range[1])
+
+        print("on_collapse")
+        for data in self._visible_data():
+            print("VIS", data.label)
+            for viewer in self._viewers_with_data_slice(data, self.viewer.state.x_att):
+                print(type(viewer))
+
+                slices = list(viewer.state.slices)
+
+                current_slice = slices[self.viewer.state.x_att.axis]
+
+                if isinstance(current_slice, AggregateSlice):
+                    current_slice = current_slice.center
+
+                slices[self.viewer.state.x_att.axis] = AggregateSlice(slice(imin, imax),
+                                                                      current_slice,
+                                                                      func)
+
+                print(slices)
+
+                viewer.state.slices = tuple(slices)
+
+        # Save a local copy of the collapsed array
+        # for layer_state in self.viewer_state.layers:
+        #     if layer_state.layer is self.viewer_state.reference_data:
+        #         break
+        # else:
+        #     raise Exception("Couldn't find layer corresponding to reference data")
+        #
+        # self._agg = layer_state.get_sliced_data()
+        # pass
 
     @property
     def mode(self):

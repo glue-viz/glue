@@ -14,14 +14,16 @@ class NavigationModeState(State):
 
 class NavigateMouseMode(MouseMode):
 
-    def __init__(self, viewer):
+    def __init__(self, viewer, press_callback=None):
         super(NavigateMouseMode, self).__init__(viewer)
         self.state = NavigationModeState()
         self.state.add_callback('x', self._update_artist)
         self.pressed = False
         self._viewer = viewer
+        self._press_callback = press_callback
 
     def press(self, event):
+        self._press_callback()
         self.pressed = True
         if not event.inaxes:
             return
