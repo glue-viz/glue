@@ -135,7 +135,7 @@ class ProfileTools(QtWidgets.QWidget):
         for data in self._nav_data:
             for viewer in self._nav_viewers[data]:
                 slices = list(viewer.state.slices)
-                slices[self.viewer.state.x_att.axis] = int(x)
+                slices[self.viewer.state.x_att.axis] = int(round(x))
                 viewer.state.slices = slices
 
     def _on_settings(self):

@@ -8,6 +8,7 @@ from glue.viewers.profile.qt.options_widget import ProfileOptionsWidget
 from glue.viewers.profile.state import ProfileViewerState
 
 from glue.viewers.common.qt import toolbar_mode  # noqa
+from glue.viewers.profile.qt.profile_tools import ProfileAnalysisTool  # noqa
 
 __all__ = ['ProfileViewer']
 
