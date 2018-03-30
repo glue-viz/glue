@@ -19,21 +19,25 @@ class NavigateMouseMode(MouseMode):
         self.state = NavigationModeState()
         self.state.add_callback('x', self._update_artist)
         self.pressed = False
+        self.active = False
         self._press_callback = press_callback
 
     def press(self, event):
-        self._press_callback()
-        self.pressed = True
-        if not event.inaxes:
+        if not self.active or not event.inaxes:
             return
+        if self._press_callback is not None:
+            self._press_callback()
+        self.pressed = True
         self.state.x = event.xdata
 
     def move(self, event):
-        if not self.pressed or not event.inaxes:
+        if not self.active or not self.pressed or not event.inaxes:
             return
         self.state.x = event.xdata
 
     def release(self, event):
+        if not self.active:
+            return
         self.pressed = False
 
     def _update_artist(self, *args):
@@ -48,12 +52,14 @@ class NavigateMouseMode(MouseMode):
             self._line.set_visible(False)
         self._canvas.draw()
         super(NavigateMouseMode, self).deactivate()
+        self.active = False
 
     def activate(self):
         if hasattr(self, '_line'):
             self._line.set_visible(True)
         self._canvas.draw()
         super(NavigateMouseMode, self).activate()
+        self.active = True
 
 
 class RangeModeState(State):
@@ -81,12 +87,14 @@ class RangeMouseMode(MouseMode):
         self.mode = None
         self.move_params = None
 
+        self.active = False
+
     def press(self, event):
 
-        self.pressed = True
-
-        if not event.inaxes:
+        if not self.active or not event.inaxes:
             return
+
+        self.pressed = True
 
         x_min, x_max = self._axes.get_xlim()
         x_range = abs(x_max - x_min)
@@ -109,7 +117,7 @@ class RangeMouseMode(MouseMode):
 
     def move(self, event):
 
-        if not self.pressed or not event.inaxes:
+        if not self.active or not self.pressed or not event.inaxes:
             return
 
         if self.mode == 'move-x-min':
@@ -123,6 +131,8 @@ class RangeMouseMode(MouseMode):
                 self.state.x_max = orig_x_max + (event.xdata - orig_click)
 
     def release(self, event):
+        if not self.active:
+            return
         self.pressed = False
         self.mode = None
         self.move_params
@@ -153,6 +163,7 @@ class RangeMouseMode(MouseMode):
 
         self._canvas.draw()
         super(RangeMouseMode, self).deactivate()
+        self.active = False
 
     def activate(self):
         if hasattr(self, '_lines'):
@@ -161,3 +172,4 @@ class RangeMouseMode(MouseMode):
             self._interval.set_visible(True)
         self._canvas.draw()
         super(RangeMouseMode, self).activate()
+        self.active = True
