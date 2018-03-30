@@ -136,7 +136,7 @@ class ProfileTools(QtWidgets.QWidget):
             for viewer in self._nav_viewers[data]:
                 slices = list(viewer.state.slices)
                 slices[self.viewer.state.x_att.axis] = int(round(x))
-                viewer.state.slices = slices
+                viewer.state.slices = tuple(slices)
 
     def _on_settings(self):
         d = FitSettingsWidget(self.fitter)
@@ -162,7 +162,7 @@ class ProfileTools(QtWidgets.QWidget):
             for layer_artist in fit_results:
                 report += ("<b><font color='{0}'>{1}</font>"
                            "</b>".format(to_hex(layer_artist.state.color),
-                                                    layer_artist.layer.label))
+                                                layer_artist.layer.label))
                 report += "<pre>" + fitter.summarize(fit_results[layer_artist], x, y) + "</pre>"
             self._report_fit(report)
             self._plot_fit(fitter, fit_results, x, y)
@@ -186,6 +186,9 @@ class ProfileTools(QtWidgets.QWidget):
 
         self._fit_worker = w  # hold onto a reference
         w.start()
+
+    def wait_for_fit(self):
+        self._fit_worker.wait()
 
     def _report_fit(self, report):
         self.ui.text_log.document().setHtml(report)
@@ -265,7 +268,6 @@ class ProfileTools(QtWidgets.QWidget):
 
         for data in self._visible_data():
             for viewer in self._viewers_with_data_slice(data, self.viewer.state.x_att):
-                print(type(viewer))
 
                 slices = list(viewer.state.slices)
 
@@ -277,8 +279,6 @@ class ProfileTools(QtWidgets.QWidget):
                 slices[self.viewer.state.x_att.axis] = AggregateSlice(slice(imin, imax),
                                                                       current_slice,
                                                                       func)
-
-                print(slices)
 
                 viewer.state.slices = tuple(slices)
 
