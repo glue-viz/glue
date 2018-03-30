@@ -91,7 +91,8 @@ class ProfileLayerState(MatplotlibLayerState):
         if isinstance(self.layer, Data):
             data_values = self.layer[self.viewer_state.y_att]
         else:
-            data_values = self.layer.data[self.viewer_state.y_att].copy()
+            # We need to force a copy *and* convert to float just in case
+            data_values = np.array(self.layer.data[self.viewer_state.y_att], dtype=float)
             mask = self.layer.to_mask()
             if np.sum(mask) == 0:
                 return [], []
