@@ -9,7 +9,6 @@ from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
 from glue.viewers.profile.qt.options_widget import ProfileOptionsWidget
 from glue.viewers.profile.state import ProfileViewerState
-from glue.viewers.profile.mouse_mode import RangeMouseMode
 from glue.viewers.profile.qt.profile_tools import ProfileTools
 
 from glue.viewers.common.qt import toolbar_mode  # noqa
@@ -27,22 +26,12 @@ class ProfileViewer(MatplotlibDataViewer):
     _data_artist_cls = ProfileLayerArtist
     _subset_artist_cls = ProfileLayerArtist
 
-    tools = ['select:xrange']
+    tools = ['select:xrange', 'profile-tools']
 
     def __init__(self, session, parent=None, state=None):
         super(ProfileViewer, self).__init__(session, parent, state=state)
         self.state.add_callback('x_att', self._update_axes)
         self.state.add_callback('y_att', self._update_axes)
-        self._profile_tools.enable()
-
-    def setCentralWidget(self, widget):
-        self._profile_tools = ProfileTools(self)
-        container_widget = QtWidgets.QWidget()
-        container_layout = QtWidgets.QHBoxLayout()
-        container_widget.setLayout(container_layout)
-        container_layout.addWidget(widget)
-        container_layout.addWidget(self._profile_tools)
-        super(ProfileViewer, self).setCentralWidget(container_widget)
 
     def _update_axes(self, *args):
 

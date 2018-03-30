@@ -22,12 +22,12 @@ class Tool(object):
 
     enabled = CallbackProperty(True)
 
-    icon = None
+    icon = 'glue_spectrum'
     tool_id = None
-    action_text = None
-    tool_tip = None
-    status_tip = None
-    shortcut = None
+    action_text = ''
+    tool_tip = ''
+    status_tip = ''
+    shortcut = ''
 
     def __init__(self, viewer=None):
         self.viewer = viewer

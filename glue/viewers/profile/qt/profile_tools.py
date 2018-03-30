@@ -1,20 +1,54 @@
 import os
 import traceback
 
+import numpy as np
+
+from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
 
 from matplotlib.colors import to_hex
 
-from glue.config import fit_plugin
+from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.viewers.profile.mouse_mode import NavigateMouseMode, RangeMouseMode
 from glue.viewers.profile.qt.fitters import FitSettingsWidget
 from glue.utils.qt import Worker
+from glue.viewers.common.qt.tool import Tool
 
 __all__ = ['ProfileTools']
 
 
 MODES = ['navigate', 'fit', 'collapse']
+
+
+@viewer_tool
+class ProfileTool(Tool):
+
+    tool_id = 'profile-tools'
+
+    def __init__(self, viewer):
+        super(ProfileTool, self).__init__(viewer)
+        self._profile_tools = ProfileTools(viewer)
+        container_widget = QtWidgets.QSplitter(Qt.Horizontal)
+        plot_widget = viewer.centralWidget()
+        container_widget.addWidget(plot_widget)
+        container_widget.addWidget(self._profile_tools)
+        viewer.setCentralWidget(container_widget)
+        # container_widget = QtWidgets.QWidget()
+        # container_layout = QtWidgets.QHBoxLayout()
+        # plot_widget = viewer.centralWidget()
+        # container_widget.setLayout(container_layout)
+        # container_layout.addWidget(plot_widget)
+        # container_layout.addWidget(self._profile_tools)
+        # viewer.setCentralWidget(container_widget)
+        self._profile_tools.enable()
+        self._profile_tools.hide()
+
+    def activate(self):
+        if self._profile_tools.isVisible():
+            self._profile_tools.hide()
+        else:
+            self._profile_tools.show()
 
 
 class ProfileTools(QtWidgets.QWidget):
@@ -131,14 +165,16 @@ class ProfileTools(QtWidgets.QWidget):
             if layer.enabled and layer.visible:
                 if hasattr(layer, '_visible_data'):
                     x, y = layer._visible_data
+                    x = np.asarray(x)
+                    y = np.asarray(y)
+                    keep = (x >= min(xlim)) & (x <= max(xlim))
                     if len(x) > 0:
-                        results[layer] = fitter.build_and_fit(x, y)
+                        results[layer] = fitter.build_and_fit(x[keep], y[keep])
 
         return results, x, y
 
     def _clear_fit(self):
         for artist in self._fit_artists[:]:
-            print(artist)
             artist.remove()
             self._fit_artists.remove(artist)
 
