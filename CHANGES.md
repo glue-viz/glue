@@ -4,6 +4,10 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Re-write spectrum viewer into a generic profile viewer that uses
+  subsets to define the areas in which to compute profiles rather
+  than custom ROIs. [#1635]
+
 * Improve performance when changing visual attributes of subsets.
   [#1617]
 
