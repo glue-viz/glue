@@ -11,7 +11,7 @@ from matplotlib.colors import to_hex
 from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.viewers.profile.mouse_mode import NavigateMouseMode, RangeMouseMode
-from glue.viewers.profile.qt.fitters import FitSettingsWidget
+from glue.core.qt.fitters import FitSettingsWidget
 from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
 from glue.viewers.image.state import AggregateSlice
@@ -144,6 +144,9 @@ class ProfileTools(QtWidgets.QWidget):
         responsive
         """
 
+        if self.rng_mode.state.x_min is None or self.rng_mode.state.x_max is None:
+            return
+
         x_range = self.rng_mode.state.x_range
         fitter = self.fitter
 
@@ -246,6 +249,9 @@ class ProfileTools(QtWidgets.QWidget):
         return viewers
 
     def _on_collapse(self):
+
+        if self.rng_mode.state.x_min is None or self.rng_mode.state.x_max is None:
+            return
 
         func = self.collapse_function
         x_range = self.rng_mode.state.x_range

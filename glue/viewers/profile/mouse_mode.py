@@ -150,14 +150,17 @@ class RangeMouseMode(MouseMode):
 
     def deactivate(self):
         if hasattr(self, '_lines'):
-            for line in self._lines:
-                line.set_visible(False)
+            self._lines[0].set_visible(False)
+            self._lines[1].set_visible(False)
+            self._interval.set_visible(False)
+
         self._canvas.draw()
         super(RangeMouseMode, self).deactivate()
 
     def activate(self):
         if hasattr(self, '_lines'):
-            for line in self._lines:
-                line.set_visible(True)
+            self._lines[0].set_visible(True)
+            self._lines[1].set_visible(True)
+            self._interval.set_visible(True)
         self._canvas.draw()
         super(RangeMouseMode, self).activate()
