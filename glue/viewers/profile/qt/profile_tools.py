@@ -1,6 +1,7 @@
 import os
 import weakref
 import traceback
+from collections import OrderedDict
 
 import numpy as np
 
@@ -25,13 +26,13 @@ __all__ = ['ProfileTools']
 
 MODES = ['navigate', 'fit', 'collapse']
 
-COLLAPSE_FUNCS = {np.nanmean: 'Mean',
-                  np.nanmedian: 'Median',
-                  np.nanmin: 'Minimum',
-                  np.nanmax: 'Maximum',
-                  np.nansum: 'Sum',
-                  mom1: 'Moment 1',
-                  mom2: 'Moment 2'}
+COLLAPSE_FUNCS = OrderedDict([(np.nanmean, 'Mean'),
+                              (np.nanmedian, 'Median'),
+                              (np.nanmin, 'Minimum'),
+                              (np.nanmax, 'Maximum'),
+                              (np.nansum, 'Sum'),
+                              (mom1, 'Moment 1'),
+                              (mom2, 'Moment 2')])
 
 
 @viewer_tool
