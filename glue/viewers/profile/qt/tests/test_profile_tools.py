@@ -19,6 +19,7 @@ from glue.utils.qt import combo_as_string, get_qapp
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.viewers.image.state import AggregateSlice
 
 from glue.viewers.image.qt import ImageViewer
 from ..data_viewer import ProfileViewer
@@ -68,3 +69,22 @@ class TestProfileTools(object):
         app = get_qapp()
         app.processEvents()
         assert self.profile_tools.text_log.toPlainText().startswith('d1\nCoefficients')
+        self.profile_tools.ui.button_clear.click()
+        assert self.profile_tools.text_log.toPlainText() == ''
+
+    def test_collapse(self):
+        # TODO: need to deterministically set to polynomial fitter
+        self.viewer.add_data(self.data)
+        image_viewer = self.app.new_data_viewer(ImageViewer)
+        image_viewer.add_data(self.data)
+        self.profile_tools.ui.tabs.setCurrentIndex(2)
+        x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[15, 4]])[0]
+        self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+        self.profile_tools.ui.button_collapse.click()
+        assert isinstance(image_viewer.state.slices[0], AggregateSlice)
+        assert image_viewer.state.slices[0].slice.start == 0
+        assert image_viewer.state.slices[0].slice.stop == 14
+        assert image_viewer.state.slices[0].center == 0
+        assert image_viewer.state.slices[0].function is np.nanmean
