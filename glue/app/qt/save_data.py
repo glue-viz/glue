@@ -58,7 +58,7 @@ class SaveDataState(State):
 
         def display_func(subset):
             if subset is None:
-                return "All data"
+                return "All data (no subsets applied)"
             else:
                 return subset.label
 

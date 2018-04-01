@@ -311,7 +311,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._data_toolbar.addWidget(self._button_open_data)
 
         self._button_save_data = QtWidgets.QToolButton()
-        self._button_save_data.setText("Save Data")
+        self._button_save_data.setText("Export Data/Subsets")
         self._button_save_data.setIcon(get_icon('glue_filesave'))
         self._button_save_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_save_data.clicked.connect(nonpartial(self._choose_save_data))
@@ -345,7 +345,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._data_toolbar.addWidget(self._button_open_session)
 
         self._button_save_session = QtWidgets.QToolButton()
-        self._button_save_session.setText("Save Session")
+        self._button_save_session.setText("Export Session")
         self._button_save_session.setIcon(get_icon('glue_filesave'))
         self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_save_session.clicked.connect(nonpartial(self._choose_save_session))
@@ -662,8 +662,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         menu.addAction(self._actions['session_reset'])
         menu.addAction(self._actions['session_restore'])
         menu.addAction(self._actions['session_save'])
+        menu.addAction(self._actions['export_data'])
         if 'session_export' in self._actions:
-            submenu = menu.addMenu("E&xport")
+            submenu = menu.addMenu("Advanced E&xporters")
             for a in self._actions['session_export']:
                 submenu.addAction(a)
         menu.addSeparator()
@@ -794,7 +795,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a.triggered.connect(nonpartial(self.gather_current_tab))
         self._actions['gather'] = a
 
-        a = action('&Save Session', self,
+        a = action('&Export Session', self,
                    tip='Save the current session')
         a.triggered.connect(nonpartial(self._choose_save_session))
         self._actions['session_save'] = a
@@ -850,6 +851,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                    tip='Reset session to clean state')
         a.triggered.connect(nonpartial(self._reset_session))
         self._actions['session_reset'] = a
+
+        a = action('Export D&ata/Subsets', self,
+                   tip='Export data to a file')
+        a.triggered.connect(nonpartial(self._choose_save_data))
+        self._actions['export_data'] = a
 
         a = action("Undo", self,
                    tip='Undo last action',
