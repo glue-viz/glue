@@ -22,6 +22,7 @@ from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.viewers.image.state import AggregateSlice
 
 from glue.viewers.image.qt import ImageViewer
+from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from ..data_viewer import ProfileViewer
 
 
@@ -29,7 +30,9 @@ class TestProfileTools(object):
 
     def setup_method(self, method):
 
-        self.data = Data(label='d1', x=np.arange(240).reshape((30, 4, 2)))
+        self.data = Data(label='d1')
+        self.data.coords = SimpleCoordinates()
+        self.data['x'] = np.arange(240).reshape((30, 4, 2))
 
         self.app = GlueApplication()
         self.session = self.app.session
@@ -48,13 +51,25 @@ class TestProfileTools(object):
         self.viewer.close()
 
     def test_navigate_sync_image(self):
+
         self.viewer.add_data(self.data)
         image_viewer = self.app.new_data_viewer(ImageViewer)
         image_viewer.add_data(self.data)
         assert image_viewer.state.slices == (0, 0, 0)
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
         x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        self.viewer.axes.figure.canvas.button_release_event(x, y, 1)
         assert image_viewer.state.slices == (1, 0, 0)
+
+        self.viewer.state.x_att = self.data.world_component_ids[0]
+
+        x, y = self.viewer.axes.transData.transform([[10, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        self.viewer.axes.figure.canvas.button_release_event(x, y, 1)
+        assert image_viewer.state.slices == (5, 0, 0)
 
     def test_fit_polynomial(self):
         # TODO: need to deterministically set to polynomial fitter

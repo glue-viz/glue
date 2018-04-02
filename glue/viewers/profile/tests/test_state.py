@@ -1,16 +1,26 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from glue.core import Data
+from glue.core import Data, Coordinates
 from glue.core.tests.test_state import clone
 
 from ..state import ProfileViewerState, ProfileLayerState
+
+class SimpleCoordinates(Coordinates):
+
+    def world2pixel(self, *world):
+        return tuple([0.5 * w for w in world])
+
+    def pixel2world(self, *pixel):
+        return tuple([2 * p for p in pixel])
 
 
 class TestProfileViewerState:
 
     def setup_method(self, method):
-        self.data = Data(label='d1', x=np.arange(24).reshape((3, 4, 2)))
+        self.data = Data(label='d1')
+        self.data.coords = SimpleCoordinates()
+        self.data['x'] = np.arange(24).reshape((3, 4, 2))
         self.viewer_state = ProfileViewerState()
         self.layer_state = ProfileLayerState(viewer_state=self.viewer_state,
                                              layer=self.data)
@@ -19,6 +29,12 @@ class TestProfileViewerState:
     def test_basic(self):
         x, y = self.layer_state.get_profile()
         assert_allclose(x, [0, 1, 2])
+        assert_allclose(y, [3.5, 11.5, 19.5])
+
+    def test_basic_world(self):
+        self.viewer_state.x_att = self.data.world_component_ids[0]
+        x, y = self.layer_state.get_profile()
+        assert_allclose(x, [0, 2, 4])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_x_att(self):

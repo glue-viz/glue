@@ -20,6 +20,7 @@ from glue.viewers.image.state import AggregateSlice
 from glue.core.aggregate import mom1, mom2
 from glue.core import Data
 from glue.viewers.image.qt import ImageViewer
+from glue.core.link_manager import is_convertible_to_single_pixel_cid
 
 __all__ = ['ProfileTools']
 
@@ -141,16 +142,29 @@ class ProfileTools(QtWidgets.QWidget):
         self._nav_data = self._visible_data()
         self._nav_viewers = {}
         for data in self._nav_data:
-            self._nav_viewers[data] = self._viewers_with_data_slice(data, self.viewer.state.x_att)
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+            self._nav_viewers[data] = self._viewers_with_data_slice(data, pix_cid)
 
     def _on_slider_change(self, *args):
-        print("ON SLIDER CHANGE")
+
         x = self.nav_mode.state.x
-        print("X",x)
+
         for data in self._nav_data:
+
+            if self.viewer.state.x_att in data.pixel_component_ids:
+                axis = self.viewer.state.x_att.axis
+                slc = int(round(x))
+            else:
+                pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+                axis = pix_cid.axis
+                axis_view = [0] * data.ndim
+                axis_view[pix_cid.axis] = slice(None)
+                axis_values = data[self.viewer.state.x_att, axis_view]
+                slc = int(np.argmin(np.abs(axis_values - x)))
+
             for viewer in self._nav_viewers[data]:
                 slices = list(viewer.state.slices)
-                slices[self.viewer.state.x_att.axis] = int(round(x))
+                slices[axis] = slc
                 viewer.state.slices = tuple(slices)
 
     def _on_settings(self):
