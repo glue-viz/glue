@@ -141,7 +141,6 @@ class ProfileLayerState(MatplotlibLayerState):
 
         # Collapse along all dimensions except x_att
         profile_values = self.viewer_state.function(data_values, axis=axes)
-        profile_values[np.isnan(profile_values)] = 0.
 
         # Finally, we get the coordinate values for the requested axis
         axis_view = [0] * data.ndim
