@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleAttribute
@@ -29,6 +29,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for a Profile viewer.
     """
 
+    reference_data = DDSCProperty(docstring='The dataset that is used to define the '
+                                            'available pixel/world components, and '
+                                            'which defines the coordinate frame in '
+                                            'which the images are shown')
+
     x_att = DDSCProperty(docstring='The data component to use for the x-axis '
                                    'of the profile (should be a pixel component)')
 
@@ -43,10 +48,13 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         super(ProfileViewerState, self).__init__()
 
+        self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
+
         self.x_lim_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
                                                        upper='x_max')
 
         self.add_callback('layers', self._layers_changed)
+        self.add_callback('reference_data', self._reference_data_changed)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, categorical=False,
@@ -57,6 +65,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
         ProfileViewerState.function.set_display_func(self, FUNCTIONS.get)
 
         self.update_from_dict(kwargs)
+
+    def _update_combo_ref_data(self):
+        self.ref_data_helper.set_multiple_data(self.layers_data)
 
     def reset_limits(self):
         with delay_callback(self, 'x_min', 'x_max'):
@@ -79,8 +90,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _layers_changed(self, *args):
-        self.x_att_helper.set_multiple_data(self.layers_data)
-        self.y_att_helper.set_multiple_data(self.layers_data)
+        self._update_combo_ref_data()
+
+    @defer_draw
+    def _reference_data_changed(self, *args):
+        self.x_att_helper.set_multiple_data([self.reference_data])
+        self.y_att_helper.set_multiple_data([self.reference_data])
 
 
 class ProfileLayerState(MatplotlibLayerState):
