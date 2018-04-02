@@ -296,10 +296,14 @@ class ProfileTools(QtWidgets.QWidget):
         self.nav_mode.deactivate()
 
     def _on_tab_change(self, *event):
-        mode = self.mode
-        if mode == 'navigate':
-            self.rng_mode.deactivate()
-            self.nav_mode.activate()
+        if self.isVisible():
+            mode = self.mode
+            if mode == 'navigate':
+                self.rng_mode.deactivate()
+                self.nav_mode.activate()
+            else:
+                self.rng_mode.activate()
+                self.nav_mode.deactivate()
         else:
-            self.rng_mode.activate()
+            self.rng_mode.deactivate()
             self.nav_mode.deactivate()
