@@ -1,24 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-import os
-from collections import Counter
-
-import pytest
 import numpy as np
 
-from numpy.testing import assert_equal, assert_allclose
+from numpy.testing import assert_allclose
 
-from glue.core.message import SubsetUpdateMessage
-from glue.core import HubListener, Data
-from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
-from glue import core
+from glue.core import Data
 from glue.app.qt import GlueApplication
-from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string, get_qapp
-from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
-from glue.core.state import GlueUnSerializer
-from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.utils.qt import get_qapp
 from glue.viewers.image.state import AggregateSlice
 
 from glue.viewers.image.qt import ImageViewer
@@ -72,33 +60,96 @@ class TestProfileTools(object):
         assert image_viewer.state.slices == (5, 0, 0)
 
     def test_fit_polynomial(self):
+
         # TODO: need to deterministically set to polynomial fitter
+
         self.viewer.add_data(self.data)
         self.profile_tools.ui.tabs.setCurrentIndex(1)
+
+        # First try in pixel coordinates
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
         x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
         x, y = self.viewer.axes.transData.transform([[15, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
         assert_allclose(self.profile_tools.rng_mode.state.x_range, (1, 15))
+
         self.profile_tools.ui.button_fit.click()
         self.profile_tools.wait_for_fit()
         app = get_qapp()
         app.processEvents()
-        assert self.profile_tools.text_log.toPlainText().startswith('d1\nCoefficients')
+
+        pixel_log = self.profile_tools.text_log.toPlainText().splitlines()
+        assert pixel_log[0] == 'd1'
+        assert pixel_log[1] == 'Coefficients:'
+        assert pixel_log[-2] == '8.000000e+00'
+        assert pixel_log[-1] == '3.500000e+00'
+
         self.profile_tools.ui.button_clear.click()
         assert self.profile_tools.text_log.toPlainText() == ''
 
+        # Next, try in world coordinates
+
+        self.viewer.state.x_att = self.data.world_component_ids[0]
+
+        x, y = self.viewer.axes.transData.transform([[2, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[30, 4]])[0]
+        self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
+        assert_allclose(self.profile_tools.rng_mode.state.x_range, (2, 30))
+
+        self.profile_tools.ui.button_fit.click()
+        self.profile_tools.wait_for_fit()
+        app = get_qapp()
+        app.processEvents()
+
+        world_log = self.profile_tools.text_log.toPlainText().splitlines()
+        assert world_log[0] == 'd1'
+        assert world_log[1] == 'Coefficients:'
+        assert world_log[-2] == '4.000000e+00'
+        assert world_log[-1] == '3.500000e+00'
+
     def test_collapse(self):
-        # TODO: need to deterministically set to polynomial fitter
+
         self.viewer.add_data(self.data)
+
         image_viewer = self.app.new_data_viewer(ImageViewer)
         image_viewer.add_data(self.data)
+
         self.profile_tools.ui.tabs.setCurrentIndex(2)
+
+        # First try in pixel coordinates
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
         x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
         x, y = self.viewer.axes.transData.transform([[15, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
         self.profile_tools.ui.button_collapse.click()
+
+        assert isinstance(image_viewer.state.slices[0], AggregateSlice)
+        assert image_viewer.state.slices[0].slice.start == 1
+        assert image_viewer.state.slices[0].slice.stop == 15
+        assert image_viewer.state.slices[0].center == 0
+        assert image_viewer.state.slices[0].function is np.nanmean
+
+        # Next, try in world coordinates
+
+        self.viewer.state.x_att = self.data.world_component_ids[0]
+
+        x, y = self.viewer.axes.transData.transform([[2, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[30, 4]])[0]
+        self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
+        self.profile_tools.ui.button_collapse.click()
+
         assert isinstance(image_viewer.state.slices[0], AggregateSlice)
         assert image_viewer.state.slices[0].slice.start == 1
         assert image_viewer.state.slices[0].slice.stop == 15

@@ -124,6 +124,12 @@ class ProfileTools(QtWidgets.QWidget):
 
         self.viewer.toolbar_added.connect(self._on_toolbar_added)
 
+        self.viewer.state.add_callback('x_att', self._on_x_att_change)
+
+    def _on_x_att_change(self, *event):
+        self.nav_mode.clear()
+        self.rng_mode.clear()
+
     @property
     def fitter(self):
         try:
@@ -149,23 +155,32 @@ class ProfileTools(QtWidgets.QWidget):
 
         x = self.nav_mode.state.x
 
+        if x is None:
+            return
+
         for data in self._nav_data:
 
-            if self.viewer.state.x_att in data.pixel_component_ids:
-                axis = self.viewer.state.x_att.axis
-                slc = int(round(x))
-            else:
-                pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
-                axis = pix_cid.axis
-                axis_view = [0] * data.ndim
-                axis_view[pix_cid.axis] = slice(None)
-                axis_values = data[self.viewer.state.x_att, axis_view]
-                slc = int(np.argmin(np.abs(axis_values - x)))
+            axis, slc = self._get_axis_and_pixel_slice(data, x)
 
             for viewer in self._nav_viewers[data]:
                 slices = list(viewer.state.slices)
                 slices[axis] = slc
                 viewer.state.slices = tuple(slices)
+
+    def _get_axis_and_pixel_slice(self, data, x):
+
+        if self.viewer.state.x_att in data.pixel_component_ids:
+            axis = self.viewer.state.x_att.axis
+            slc = int(round(x))
+        else:
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+            axis = pix_cid.axis
+            axis_view = [0] * data.ndim
+            axis_view[pix_cid.axis] = slice(None)
+            axis_values = data[self.viewer.state.x_att, axis_view]
+            slc = int(np.argmin(np.abs(axis_values - x)))
+
+        return axis, slc
 
     def _on_settings(self):
         d = FitSettingsWidget(self.fitter)
@@ -293,21 +308,27 @@ class ProfileTools(QtWidgets.QWidget):
 
         func = self.collapse_function
         x_range = self.rng_mode.state.x_range
-        imin, imax = int(min(x_range)), int(max(x_range))
 
         for data in self._visible_data():
-            for viewer in self._viewers_with_data_slice(data, self.viewer.state.x_att):
+
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+
+            for viewer in self._viewers_with_data_slice(data, pix_cid):
 
                 slices = list(viewer.state.slices)
 
-                current_slice = slices[self.viewer.state.x_att.axis]
+                # TODO: don't need to fetch axis twice
+                axis, imin = self._get_axis_and_pixel_slice(data, x_range[0])
+                axis, imax = self._get_axis_and_pixel_slice(data, x_range[1])
+
+                current_slice = slices[axis]
 
                 if isinstance(current_slice, AggregateSlice):
                     current_slice = current_slice.center
 
-                slices[self.viewer.state.x_att.axis] = AggregateSlice(slice(imin, imax),
-                                                                      current_slice,
-                                                                      func)
+                slices[axis] = AggregateSlice(slice(imin, imax),
+                                              current_slice,
+                                              func)
 
                 viewer.state.slices = tuple(slices)
 

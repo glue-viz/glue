@@ -42,9 +42,13 @@ class NavigateMouseMode(MouseMode):
 
     def _update_artist(self, *args):
         if hasattr(self, '_line'):
-            self._line.set_data([self.state.x, self.state.x], [0, 1])
+            if self.state.x is None:
+                self._line.set_visible(False)
+            else:
+                self._line.set_data([self.state.x, self.state.x], [0, 1])
         else:
-            self._line = self._axes.axvline(self.state.x, color=COLOR)
+            if self.state.x is not None:
+                self._line = self._axes.axvline(self.state.x, color=COLOR)
         self._canvas.draw()
 
     def deactivate(self):
@@ -60,6 +64,9 @@ class NavigateMouseMode(MouseMode):
         self._canvas.draw()
         super(NavigateMouseMode, self).activate()
         self.active = True
+
+    def clear(self):
+        self.state.x = None
 
 
 class RangeModeState(State):
@@ -140,19 +147,25 @@ class RangeMouseMode(MouseMode):
     def _update_artist(self, *args):
         y_min, y_max = self._axes.get_ylim()
         if hasattr(self, '_lines'):
-            self._lines[0].set_data([self.state.x_min, self.state.x_min], [0, 1])
-            self._lines[1].set_data([self.state.x_max, self.state.x_max], [0, 1])
-            self._interval.set_xy([[self.state.x_min, 0],
-                                   [self.state.x_min, 1],
-                                   [self.state.x_max, 1],
-                                   [self.state.x_max, 0],
-                                   [self.state.x_min, 0]])
+            if self.state.x_min is None or self.state.x_max is None:
+                self._lines[0].set_visible(False)
+                self._lines[1].set_visible(False)
+                self._interval.set_visible(False)
+            else:
+                self._lines[0].set_data([self.state.x_min, self.state.x_min], [0, 1])
+                self._lines[1].set_data([self.state.x_max, self.state.x_max], [0, 1])
+                self._interval.set_xy([[self.state.x_min, 0],
+                                       [self.state.x_min, 1],
+                                       [self.state.x_max, 1],
+                                       [self.state.x_max, 0],
+                                       [self.state.x_min, 0]])
         else:
-            self._lines = (self._axes.axvline(self.state.x_min, color=COLOR),
-                           self._axes.axvline(self.state.x_max, color=COLOR))
-            self._interval = self._axes.axvspan(self.state.x_min,
-                                                self.state.x_max,
-                                                color=COLOR, alpha=0.05)
+            if self.state.x_min is not None and self.state.x_max is not None:
+                self._lines = (self._axes.axvline(self.state.x_min, color=COLOR),
+                               self._axes.axvline(self.state.x_max, color=COLOR))
+                self._interval = self._axes.axvspan(self.state.x_min,
+                                                    self.state.x_max,
+                                                    color=COLOR, alpha=0.05)
         self._canvas.draw()
 
     def deactivate(self):
@@ -173,3 +186,8 @@ class RangeMouseMode(MouseMode):
         self._canvas.draw()
         super(RangeMouseMode, self).activate()
         self.active = True
+
+    def clear(self):
+        with delay_callback(self.state, 'x_min', 'x_max'):
+            self.state.x_min = None
+            self.state.x_max = None
