@@ -50,7 +50,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, categorical=False,
-                                                   world_coord=False, pixel_coord=True)
+                                                   world_coord=True, pixel_coord=True)
         self.y_att_helper = ComponentIDComboHelper(self, 'y_att', numeric=True)
 
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))
