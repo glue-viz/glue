@@ -20,7 +20,7 @@ class TestProfileViewerState:
     def setup_method(self, method):
         self.data = Data(label='d1')
         self.data.coords = SimpleCoordinates()
-        self.data['x'] = np.arange(24).reshape((3, 4, 2))
+        self.data['x'] = np.arange(24).reshape((3, 4, 2)).astype(float)
         self.viewer_state = ProfileViewerState()
         self.layer_state = ProfileLayerState(viewer_state=self.viewer_state,
                                              layer=self.data)

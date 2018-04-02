@@ -20,7 +20,7 @@ class TestProfileTools(object):
 
         self.data = Data(label='d1')
         self.data.coords = SimpleCoordinates()
-        self.data['x'] = np.arange(240).reshape((30, 4, 2))
+        self.data['x'] = np.arange(240).reshape((30, 4, 2)).astype(float)
 
         self.app = GlueApplication()
         self.session = self.app.session
