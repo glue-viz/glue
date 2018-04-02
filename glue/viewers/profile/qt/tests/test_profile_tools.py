@@ -70,12 +70,12 @@ class TestProfileTools(object):
 
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
 
-        x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-        x, y = self.viewer.axes.transData.transform([[15, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[15.1, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
 
-        assert_allclose(self.profile_tools.rng_mode.state.x_range, (1, 15))
+        assert_allclose(self.profile_tools.rng_mode.state.x_range, (0.9, 15.1))
 
         self.profile_tools.ui.button_fit.click()
         self.profile_tools.wait_for_fit()
@@ -95,12 +95,12 @@ class TestProfileTools(object):
 
         self.viewer.state.x_att = self.data.world_component_ids[0]
 
-        x, y = self.viewer.axes.transData.transform([[2, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[1.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-        x, y = self.viewer.axes.transData.transform([[30, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[30.1, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
 
-        assert_allclose(self.profile_tools.rng_mode.state.x_range, (2, 30))
+        assert_allclose(self.profile_tools.rng_mode.state.x_range, (1.9, 30.1))
 
         self.profile_tools.ui.button_fit.click()
         self.profile_tools.wait_for_fit()
@@ -126,9 +126,9 @@ class TestProfileTools(object):
 
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
 
-        x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-        x, y = self.viewer.axes.transData.transform([[15, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[15.1, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
 
         self.profile_tools.ui.button_collapse.click()
@@ -143,9 +143,9 @@ class TestProfileTools(object):
 
         self.viewer.state.x_att = self.data.world_component_ids[0]
 
-        x, y = self.viewer.axes.transData.transform([[2, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[1.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-        x, y = self.viewer.axes.transData.transform([[30, 4]])[0]
+        x, y = self.viewer.axes.transData.transform([[30.1, 4]])[0]
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
 
         self.profile_tools.ui.button_collapse.click()
