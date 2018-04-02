@@ -1,5 +1,3 @@
-# TODO: move to glue.core.qt
-
 from qtpy import QtWidgets, QtGui
 
 from glue.core.qt.simpleforms import build_form_item

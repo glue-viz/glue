@@ -3,24 +3,16 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-from collections import Counter
 
-import pytest
 import numpy as np
 
 from numpy.testing import assert_equal, assert_allclose
 
-from glue.core.message import SubsetUpdateMessage
-from glue.core import HubListener, Data
+from glue.core import Data
 from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
-from glue import core
 from glue.app.qt import GlueApplication
-from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string
+from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
-from glue.core.state import GlueUnSerializer
-from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
 
 from ..data_viewer import ProfileViewer
@@ -103,14 +95,14 @@ class TestProfileViewer(object):
         self.viewer.add_data(data2)
 
         assert self.viewer.layers[0].enabled
-        assert not self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
 
-        self.data_collection.add_link(ComponentLink([self.data.world_component_ids[0]], data2.world_component_ids[1], using=lambda x: 2 * x))
-
-        assert self.viewer.layers[0].enabled
-        assert not self.viewer.layers[0].enabled
-
-        self.data_collection.add_link(ComponentLink([self.data.id['x']], data2.id['y'], using=lambda x: 3 * x))
+        self.data_collection.add_link(ComponentLink([data2.world_component_ids[1]], self.data.world_component_ids[0], using=lambda x: 2 * x))
 
         assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
+
+        self.data_collection.add_link(ComponentLink([data2.id['y']], self.data.id['x'], using=lambda x: 3 * x))
+
         assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
