@@ -94,9 +94,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _reference_data_changed(self, *args):
-        self.x_att_helper.set_multiple_data([self.reference_data])
-        self.y_att_helper.set_multiple_data([self.reference_data])
-
+        if self.reference_data is None:
+            self.x_att_helper.set_multiple_data([])
+            self.y_att_helper.set_multiple_data([])
+        else:
+            self.x_att_helper.set_multiple_data([self.reference_data])
+            self.y_att_helper.set_multiple_data([self.reference_data])
 
 class ProfileLayerState(MatplotlibLayerState):
     """

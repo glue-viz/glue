@@ -24,6 +24,7 @@ from glue.viewers.image.state import AggregateSlice
 from glue.viewers.image.qt import ImageViewer
 from ..data_viewer import ProfileViewer
 
+
 class TestProfileTools(object):
 
     def setup_method(self, method):
@@ -84,7 +85,7 @@ class TestProfileTools(object):
         self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
         self.profile_tools.ui.button_collapse.click()
         assert isinstance(image_viewer.state.slices[0], AggregateSlice)
-        assert image_viewer.state.slices[0].slice.start == 0
-        assert image_viewer.state.slices[0].slice.stop == 14
+        assert image_viewer.state.slices[0].slice.start == 1
+        assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
         assert image_viewer.state.slices[0].function is np.nanmean

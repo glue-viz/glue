@@ -69,7 +69,7 @@ class TestProfileViewerState:
 
         x, y = self.layer_state.get_profile()
         assert_allclose(x, [0, 1, 2])
-        assert_allclose(y, [0., 13., 19.5])
+        assert_allclose(y, [np.nan, 13., 19.5])
 
         subset.subset_state = self.data.id['x'] > 100
 
@@ -95,13 +95,13 @@ class TestProfileViewerState:
 
     def test_limits(self):
 
-        assert self.viewer_state.x_min == 0
-        assert self.viewer_state.x_max == 2
+        assert self.viewer_state.x_min == -0.5
+        assert self.viewer_state.x_max == 2.5
 
         self.viewer_state.flip_x()
 
-        assert self.viewer_state.x_min == 2
-        assert self.viewer_state.x_max == 0
+        assert self.viewer_state.x_min == 2.5
+        assert self.viewer_state.x_max == -0.5
 
         self.viewer_state.x_min = 1
         self.viewer_state.x_max = 1.5
@@ -111,5 +111,5 @@ class TestProfileViewerState:
 
         self.viewer_state.reset_limits()
 
-        assert self.viewer_state.x_min == 0
-        assert self.viewer_state.x_max == 2
+        assert self.viewer_state.x_min == -0.5
+        assert self.viewer_state.x_max == 2.5

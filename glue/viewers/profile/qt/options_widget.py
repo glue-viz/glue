@@ -36,9 +36,15 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
 
     def _on_attribute_change(self, *args):
+
+        if self.viewer_state.x_att is None:
+            self.ui.text_warning.hide()
+            return
+
         for layer_state in self.viewer_state.layers:
             if layer_state.independent_x_att:
                 self.ui.text_warning.hide()
                 return
+
         self.ui.text_warning.show()
         self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))

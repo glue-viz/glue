@@ -77,6 +77,15 @@ class ProfileTools(QtWidgets.QWidget):
     def viewer(self):
         return self._viewer()
 
+    def show(self, *args):
+        super(ProfileTools, self).show(*args)
+        self._on_tab_change()
+
+    def hide(self, *args):
+        super(ProfileTools, self).hide(*args)
+        self.rng_mode.deactivate()
+        self.nav_mode.deactivate()
+
     def enable(self):
 
         self.nav_mode = NavigateMouseMode(self.viewer,
@@ -88,7 +97,6 @@ class ProfileTools(QtWidgets.QWidget):
         self.ui.tabs.setCurrentIndex(0)
 
         self.ui.tabs.currentChanged.connect(self._on_tab_change)
-        self._on_tab_change()
 
         self.ui.button_settings.clicked.connect(self._on_settings)
         self.ui.button_fit.clicked.connect(self._on_fit)
@@ -117,13 +125,17 @@ class ProfileTools(QtWidgets.QWidget):
 
     @property
     def fitter(self):
-        # FIXME: might not work with PyQt4
-        return self.ui.combosel_fit_function.currentData()
+        try:
+            return self.ui.combosel_fit_function.currentData()
+        except AttributeError:  # PYQT4
+            return self.ui.combosel_fit_function.data(self.ui.combosel_fit_function.currentIndex())
 
     @property
     def collapse_function(self):
-        # FIXME: might not work with PyQt4
-        return self.ui.combosel_collapse_function.currentData()
+        try:
+            return self.ui.combosel_collapse_function.currentData()
+        except AttributeError:  # PYQT4
+            return self.ui.combosel_collapse_function.data(self.ui.combosel_collapse_function.currentIndex())
 
     def _on_nav_activate(self, *args):
         self._nav_data = self._visible_data()
@@ -132,7 +144,9 @@ class ProfileTools(QtWidgets.QWidget):
             self._nav_viewers[data] = self._viewers_with_data_slice(data, self.viewer.state.x_att)
 
     def _on_slider_change(self, *args):
+        print("ON SLIDER CHANGE")
         x = self.nav_mode.state.x
+        print("X",x)
         for data in self._nav_data:
             for viewer in self._nav_viewers[data]:
                 slices = list(viewer.state.slices)
@@ -296,14 +310,10 @@ class ProfileTools(QtWidgets.QWidget):
         self.nav_mode.deactivate()
 
     def _on_tab_change(self, *event):
-        if self.isVisible():
-            mode = self.mode
-            if mode == 'navigate':
-                self.rng_mode.deactivate()
-                self.nav_mode.activate()
-            else:
-                self.rng_mode.activate()
-                self.nav_mode.deactivate()
-        else:
+        mode = self.mode
+        if mode == 'navigate':
             self.rng_mode.deactivate()
+            self.nav_mode.activate()
+        else:
+            self.rng_mode.activate()
             self.nav_mode.deactivate()
