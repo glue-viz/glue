@@ -21,6 +21,7 @@ from glue.utils.qt import combo_as_string
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.viewers.profile.tests.test_state import SimpleCoordinates
 
 from ..data_viewer import ProfileViewer
 
@@ -38,7 +39,9 @@ class TestProfileViewer(object):
 
     def setup_method(self, method):
 
-        self.data = Data(label='d1', x=np.arange(24).reshape((3, 4, 2)))
+        self.data = Data(label='d1')
+        self.data.coords = SimpleCoordinates()
+        self.data['x'] = np.arange(24).reshape((3, 4, 2))
 
         self.app = GlueApplication()
         self.session = self.app.session
@@ -68,3 +71,46 @@ class TestProfileViewer(object):
         assert len(self.viewer.layers) == 2
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
+
+    def test_selection(self):
+
+        self.viewer.add_data(self.data)
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
+        roi = XRangeROI(0.9, 2.1)
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+        assert_equal(self.data.subsets[0].to_mask()[:, 0, 0], [0, 1, 1])
+
+        self.viewer.state.x_att = self.data.world_component_ids[0]
+
+        roi = XRangeROI(1.9, 3.1)
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.data.subsets) == 1
+        assert_equal(self.data.subsets[0].to_mask()[:, 0, 0], [0, 1, 0])
+
+    def test_enabled_layers(self):
+
+        data2 = Data(label='d1', y=np.arange(24).reshape((3, 4, 2)))
+        self.data_collection.append(data2)
+
+        self.viewer.add_data(self.data)
+        self.viewer.add_data(data2)
+
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[0].enabled
+
+        self.data_collection.add_link(ComponentLink([self.data.world_component_ids[0]], data2.world_component_ids[1], using=lambda x: 2 * x))
+
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[0].enabled
+
+        self.data_collection.add_link(ComponentLink([self.data.id['x']], data2.id['y'], using=lambda x: 3 * x))
+
+        assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[0].enabled
