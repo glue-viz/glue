@@ -8,6 +8,7 @@ from glue.core import Subset
 from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
+from glue.core.component_id import PixelComponentID
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
@@ -321,6 +322,13 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             self.set(percentile=percentile, log=log)
 
         else:
+
+            # Shortcut if the component ID is a pixel component ID
+            if isinstance(self.component_id, PixelComponentID) and percentile == 100 and not log:
+                lower = -0.5
+                upper = self.data.shape[self.component_id.axis] - 0.5
+                self.set(lower=lower, upper=upper, percentile=percentile, log=log)
+                return
 
             exclude = (100 - percentile) / 2.
 
