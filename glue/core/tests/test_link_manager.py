@@ -5,11 +5,11 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from ..component_link import ComponentLink
-from ..data import ComponentID, DerivedComponent
-from ..data import Data, Component
+from ..data import ComponentID, DerivedComponent, Data, Component
+from ..coordinates import Coordinates
 from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
-                            find_dependents)
+                            find_dependents, is_convertible_to_single_pixel_cid)
 from ..link_helpers import LinkSame
 
 comp = Component(data=np.array([1, 2, 3]))
@@ -300,3 +300,61 @@ class TestLinkManager(object):
 
         assert len(d1.externally_derivable_components) == 0
         assert len(d2.externally_derivable_components) == 0
+
+
+def test_is_convertible_to_single_pixel_cid():
+
+    # This tests the function is_convertible_to_single_pixel_cid, which gives
+    # for a given dataset the pixel component ID that can be uniquely
+    # transformed into the requested component ID.
+
+    # Set up a coordinate object which has an independent first axis and
+    # has the second and third axes depend on each other. The transformation
+    # itself is irrelevant since for this function to work we only care about
+    # whether or not an axis is independent.
+
+    class CustomCoordinates(Coordinates):
+        def dependent_axes(self, axis):
+            if axis == 0:
+                return (0,)
+            else:
+                return (1, 2)
+
+    data1 = Data()
+    data1.coords = CustomCoordinates()
+    data1['x'] = np.ones((4, 3, 4))
+    px1, py1, pz1 = data1.pixel_component_ids
+    wx1, wy1, wz1 = data1.world_component_ids
+    data1['a'] = px1 * 2
+    data1['b'] = wx1 * 2
+    data1['c'] = wy1 * 2
+    data1['d'] = wx1 * 2 + px1
+    data1['e'] = wx1 * 2 + wy1
+
+    # Pixel component IDs should just be returned directly
+    for cid in data1.pixel_component_ids:
+        assert is_convertible_to_single_pixel_cid(data1, cid) is cid
+
+    # Only the first world component should return a valid pixel component
+    # ID since the two other world components are interlinked
+    assert is_convertible_to_single_pixel_cid(data1, wx1) is px1
+    assert is_convertible_to_single_pixel_cid(data1, wy1) is None
+    assert is_convertible_to_single_pixel_cid(data1, wz1) is None
+
+    # a and b are ultimately linked to the first pixel coordinate, whereas c
+    # depends on the second world coordinate which is interlinked with the third
+    # Finally, d is ok because it really only depends on px1
+    assert is_convertible_to_single_pixel_cid(data1, data1.id['a']) is px1
+    assert is_convertible_to_single_pixel_cid(data1, data1.id['b']) is px1
+    assert is_convertible_to_single_pixel_cid(data1, data1.id['c']) is None
+    assert is_convertible_to_single_pixel_cid(data1, data1.id['d']) is px1
+    assert is_convertible_to_single_pixel_cid(data1, data1.id['e']) is None
+
+    # We now create a second dataset and set up links
+    data2 = Data(y=np.ones((4, 5, 6, 7)), z=np.zeros((4, 5, 6, 7)))
+    dc = DataCollection([data1, data2])
+    dc.add_link(ComponentLink([data1.id['a'], px1], data2.id['y'], using=lambda x: 2 * x))
+    dc.add_link(ComponentLink([wy1], data2.id['z'], using=lambda x: 2 * x))
+
+    assert is_convertible_to_single_pixel_cid(data1, data2.id['y']) is px1
+    assert is_convertible_to_single_pixel_cid(data1, data2.id['z']) is None

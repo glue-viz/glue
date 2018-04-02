@@ -306,3 +306,42 @@ def is_equivalent_cid(data, cid1, cid2):
     cid2 = _find_identical_reference_cid(data, cid2)
 
     return cid1 is cid2
+
+
+def is_convertible_to_single_pixel_cid(data, cid):
+    """
+    Given a dataset and a component ID, determine whether a pixel component
+    exists in data such that the component ID can be derived solely from the
+    pixel component. Returns `None` if no such pixel component ID can be found
+    and returns the pixel component ID if one exists.
+
+    Parameters
+    ----------
+    data : `~glue.core.Data`
+        The data in which to check for pixel components IDs
+    cid : `~glue.core.ComponentID`
+        The component ID to search for
+    """
+    if cid in data.pixel_component_ids:
+        return cid
+    else:
+        try:
+            target_comp = data.get_component(cid)
+        except IncompatibleAttribute:
+            return None
+        if cid in data.world_component_ids:
+            if len(data.coords.dependent_axes(target_comp.axis)) == 1:
+                return data.pixel_component_ids[target_comp.axis]
+            else:
+                return None
+        else:
+            if isinstance(target_comp, DerivedComponent):
+                from_ids = [is_convertible_to_single_pixel_cid(data, cid)
+                            for cid in target_comp.link.get_from_ids()]
+                if None in from_ids:
+                    return None
+                else:
+                    # Use set to get rid of duplicates
+                    from_ids = list(set(from_ids))
+                    if len(from_ids) == 1:
+                        return is_convertible_to_single_pixel_cid(data, from_ids[0])
