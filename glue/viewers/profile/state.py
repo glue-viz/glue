@@ -90,6 +90,10 @@ class ProfileLayerState(MatplotlibLayerState):
 
     linewidth = DDCProperty(1, docstring='The width of the line')
 
+    @property
+    def independent_x_att(self):
+        return is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att) is not None
+
     def get_profile(self):
 
         # Check what pixel axis in the current dataset x_att corresponds to

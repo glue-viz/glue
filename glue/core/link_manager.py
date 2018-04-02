@@ -28,7 +28,7 @@ from glue.core.component_link import ComponentLink
 from glue.core.data import Data
 from glue.core.component import DerivedComponent
 from glue.core.exceptions import IncompatibleAttribute
-
+from glue.core.subset import Subset
 
 __all__ = ['accessible_links', 'discover_links', 'find_dependents',
            'LinkManager', 'is_equivalent_cid']
@@ -322,6 +322,8 @@ def is_convertible_to_single_pixel_cid(data, cid):
     cid : `~glue.core.ComponentID`
         The component ID to search for
     """
+    if isinstance(data, Subset):
+        data = data.data
     if cid in data.pixel_component_ids:
         return cid
     else:

@@ -10,6 +10,12 @@ from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 __all__ = ['ProfileOptionsWidget']
 
 
+WARNING_TEXT = ("Warning: the coordinate '{label}' is not aligned with pixel "
+                "grid for any of the datasets, so no profiles could be "
+                "computed. Try selecting another world coordinates or one of the "
+                "pixel coordinates.")
+
+
 class ProfileOptionsWidget(QtWidgets.QWidget):
 
     def __init__(self, viewer_state, session, parent=None):
@@ -26,3 +32,13 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         self.viewer_state = viewer_state
 
         self.session = session
+
+        self.viewer_state.add_callback('x_att', self._on_attribute_change)
+
+    def _on_attribute_change(self, *args):
+        for layer_state in self.viewer_state.layers:
+            if layer_state.independent_x_att:
+                self.ui.text_warning.hide()
+                return
+        self.ui.text_warning.show()
+        self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))

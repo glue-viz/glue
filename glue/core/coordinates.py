@@ -177,7 +177,7 @@ class Coordinates(object):
         return "World {}".format(axis)
 
     def dependent_axes(self, axis):
-        """Return a tuple of which world-axes are non-indepndent
+        """Return a tuple of which world-axes are non-independent
         from a given pixel axis
 
         The axis index is given in numpy ordering convention (note that
