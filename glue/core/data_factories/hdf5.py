@@ -22,7 +22,7 @@ def mmap_info_to_array(info, mapping):
     return np.frombuffer(mapping, dtype=dtype, count=length, offset=offset).reshape(shape)
 
 
-def extract_hdf5_datasets(filename):
+def extract_hdf5_datasets(filename, memmap=True):
     '''
     Recursive function that returns a dictionary with all the datasets found in
     an HDF5 file or group. `handle` should be an instance of h5py.highlevel.File
@@ -44,7 +44,7 @@ def extract_hdf5_datasets(filename):
                 offset = item.id.get_offset()
                 # If an offset is available, the data is contiguous and we can
                 # use memory mapping for efficiency.
-                if offset is None:
+                if not memmap or offset is None:
                     arrays[full_path] = item.value
                 else:
                     arrays[full_path] = dict(offset=offset, shape=item.shape, dtype=item.dtype)
@@ -73,21 +73,22 @@ def is_hdf5(filename):
 
 
 @data_factory(label="HDF5 file", identifier=is_hdf5, priority=100)
-def hdf5_reader(filename, format='auto', auto_merge=False, **kwargs):
+def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
     """
     Read in all datasets from an HDF5 file
 
     Parameters
     ----------
-    source: str or HDUList
-        The pathname to the FITS file.
-        If an HDUList is passed in, simply use that.
+    filename : str
+        The filename of the HDF5 file
+    memmap : bool, optional
+        Whether to use memory mapping
     """
 
     from astropy.table import Table
 
     # Read in all datasets
-    datasets = extract_hdf5_datasets(filename)
+    datasets = extract_hdf5_datasets(filename, memmap=memmap)
 
     label_base = os.path.basename(filename).rpartition('.')[0]
 
