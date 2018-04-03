@@ -935,6 +935,56 @@ class MaskSubsetState(SubsetState):
                    [context.object(c) for c in rec['cids']])
 
 
+class SliceSubsetState(SubsetState):
+    """
+    A subset defined by a slice in an array
+    """
+
+    def __init__(self, slices):
+        """
+        :param slices: Dictionary of slices, defining the slices to apply to the array.
+        """
+        self.slices = slices
+        self.cids = set(self.slices.keys())
+
+    def copy(self):
+        return SliceSubsetState(self.slices)
+
+    def to_mask(self, data, view=None):
+
+        view = view or slice(None)
+
+        mask = np.zeros(data.shape, dtype=bool)
+
+        # shortcut for data on the same pixel grid
+        # should really just check for equivalence not equality of components
+        if not self.cids <= set(data.pixel_component_ids):
+            return np.zeros(data.shape, dtype=bool)
+
+        slices = [slice(None)] * data.ndim
+        for cid, slc in self.slices.items():
+            slices[cid.axis] = slc
+
+        mask[slices] = True
+
+        return mask[view]
+
+    def to_array(self, data, att):
+        slices = [slice(None)] * data.ndim
+        for cid, slc in self.slices.items():
+            if np.isreal(slc):
+                slc = slice(slc, slc + 1)
+            slices[cid.axis] = slc
+        return data[att, slices]
+
+    def __gluestate__(self, context):
+        return dict(slices=context.do(self.slices))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['slices']))
+
+
 class CategorySubsetState(SubsetState):
 
     def __init__(self, attribute, values):
@@ -1109,8 +1159,6 @@ class FloodFillSubsetState(MaskSubsetState):
         if len(start_coords) != data.ndim:
             raise ValueError("start_coords should have as many values as data "
                              "has dimensions.")
-
-        print(start_coords, data.shape)
 
         self.attribute = attribute
         self.data = data

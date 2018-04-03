@@ -16,6 +16,7 @@ from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboH
 from glue.utils import defer_draw
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.subset import SliceSubsetState
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -137,13 +138,16 @@ class ProfileLayerState(MatplotlibLayerState):
             data = self.layer
             data_values = data[self.viewer_state.y_att]
         else:
-            # We need to force a copy *and* convert to float just in case
             data = self.layer.data
-            data_values = np.array(data[self.viewer_state.y_att], dtype=float)
-            mask = self.layer.to_mask()
-            if np.sum(mask) == 0:
-                return [], []
-            data_values[~mask] = np.nan
+            if isinstance(self.layer.subset_state, SliceSubsetState):
+                data_values = self.layer.subset_state.to_array(self.layer.data, self.viewer_state.y_att)
+            else:
+                # We need to force a copy *and* convert to float just in case
+                data_values = np.array(data[self.viewer_state.y_att], dtype=float)
+                mask = self.layer.to_mask()
+                if np.sum(mask) == 0:
+                    return [], []
+                data_values[~mask] = np.nan
 
         # Collapse along all dimensions except x_att
         with warnings.catch_warnings():
