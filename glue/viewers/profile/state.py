@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
 from collections import OrderedDict
 
 import numpy as np
@@ -145,7 +146,9 @@ class ProfileLayerState(MatplotlibLayerState):
             data_values[~mask] = np.nan
 
         # Collapse along all dimensions except x_att
-        profile_values = self.viewer_state.function(data_values, axis=axes)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            profile_values = self.viewer_state.function(data_values, axis=axes)
 
         # Finally, we get the coordinate values for the requested axis
         axis_view = [0] * data.ndim
