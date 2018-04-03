@@ -16,6 +16,7 @@ from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
 from glue.app.qt.actions import action
+from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.dialogs.component_manager.qt import ComponentManagerWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
 from glue.dialogs.data_wizard.qt import data_wizard
@@ -527,6 +528,10 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         mode.edit_subset = [s for s in self.selected_layers() if isinstance(s, core.SubsetGroup)]
 
     def _create_component(self):
+        dialog = ArithmeticEditorWidget(self.data_collection)
+        dialog.exec_()
+
+    def _manage_components(self):
         dialog = ComponentManagerWidget(self.data_collection)
         dialog.exec_()
 
@@ -559,12 +564,17 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         sep.setSeparator(True)
         tree.addAction(sep)
 
-        a = action("Add/edit data components", self,
-                   tip="Change existing data components and add new "
-                       "components derived from existing ones")
+        a = action("Add/edit arithmetic attributes", self,
+                   tip="Add/edit attributes derived from existing ones")
         tree.addAction(a)
         a.triggered.connect(nonpartial(self._create_component))
         self._actions['new_component'] = a
+
+        a = action("Reorder/rename data attributes", self,
+                   tip="Reorder/rename data attributes")
+        tree.addAction(a)
+        a.triggered.connect(nonpartial(self._manage_components))
+        self._actions['manage_components'] = a
 
         # Add user-defined layer actions. Note that _asdict is actually a public
         # method, but just has an underscore to prevent conflict with

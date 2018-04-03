@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>411</width>
-    <height>247</height>
+    <width>477</width>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Derived Component Editor</string>
+   <string>Equation Editor</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -35,8 +35,7 @@
       <number>5</number>
      </property>
      <item>
-      <widget class="QLineEdit" name="text_label">
-      </widget>
+      <widget class="QLineEdit" name="text_label"/>
      </item>
      <item>
       <widget class="QLabel" name="label_4">
@@ -63,7 +62,7 @@
    <item>
     <widget class="ColorizedCompletionTextEdit" name="expression">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -86,8 +85,14 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Available components:</string>
+        <string>Available attributes:</string>
        </property>
       </widget>
      </item>
@@ -121,19 +126,28 @@
    </item>
    <item>
     <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="font">
       <font>
        <italic>false</italic>
       </font>
      </property>
      <property name="text">
-      <string>Tip: component names should be surrounded by curly brackets, and you can use Numpy functions using np.&lt;function&gt;, as well as any other function defined in your config.py file.</string>
+      <string/>
      </property>
      <property name="alignment">
       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
@@ -184,7 +198,7 @@
   <customwidget>
    <class>ColorizedCompletionTextEdit</class>
    <extends>QTextEdit</extends>
-   <header>glue.dialogs.component_manager.qt.equation_editor</header>
+   <header>glue.dialogs.component_arithmetic.qt.equation_editor</header>
   </customwidget>
  </customwidgets>
  <resources/>

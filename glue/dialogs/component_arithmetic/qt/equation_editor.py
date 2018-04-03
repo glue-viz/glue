@@ -62,6 +62,9 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
         # probably ignore that here)
         text = self.toPlainText()
 
+        # We need to be careful with < and > otherwise they get erased
+        text = text.replace('<', '&lt;').replace('>', '&gt;')
+
         def format_components(m):
             component = m.group(0)
             if component in self.word_list:
@@ -90,24 +93,29 @@ class ColorizedCompletionTextEdit(CompletionTextEdit):
 
 class EquationEditorDialog(QtWidgets.QDialog):
 
+    tip_text = ("<b>Note:</b> Attribute names in the expression should be surrounded "
+                "by {{ }} brackets (e.g. {{{example}}}), and you can use "
+                "Numpy functions using np.&lt;function&gt;, as well as any "
+                "other function defined in your config.py file.<br><br>"
+                "<b>Example expressions:</b><br><br>"
+                "  - Subtract 10 from '{example}': {{{example}}} - 10<br>"
+                "  - Scale '{example}' to [0:1]: ({{{example}}} - np.min({{{example}}})) / np.ptp({{{example}}})<br>"
+                "  - Multiply '{example}' by pi: {{{example}}} * np.pi<br>"
+                "  - Use masking: {{{example}}} * ({{{example}}} &lt; 1)<br>")
+
+
+    placeholder_text = ("Type any mathematical expression here - "
+                        "you can include attribute names from the "
+                        "drop-down below by selecting them and "
+                        "clicking 'Insert'. See below for examples "
+                        "of valid expressions")
+
     def __init__(self, label=None, data=None, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
-
-        if PYQT5:
-            self.ui.text_label.setPlaceholderText("New component name")
-            self.ui.expression.setPlaceholderText("Type any mathematical expression here - "
-                                                  "you can include component names from the "
-                                                  "drop-down below by selecting them and "
-                                                  "clicking 'Insert'")
-
-        if label is not None:
-            self.ui.text_label.setText(label)
-
-        self.ui.text_label.textChanged.connect(self._update_status)
 
         # Get mapping from label to component ID
         if references is not None:
@@ -116,6 +124,19 @@ class EquationEditorDialog(QtWidgets.QDialog):
             self.references = OrderedDict()
             for cid in data.primary_components:
                 self.references[cid.label] = cid
+
+        example = sorted(self.references, key=len)[0]
+
+        if PYQT5:
+            self.ui.text_label.setPlaceholderText("New attribute name")
+            self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example))
+
+        self.ui.label.setText(self.tip_text.format(example=example))
+
+        if label is not None:
+            self.ui.text_label.setText(label)
+
+        self.ui.text_label.textChanged.connect(self._update_status)
 
         # Populate component combo
         for label, cid in self.references.items():
