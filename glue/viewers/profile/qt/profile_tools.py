@@ -12,7 +12,7 @@ from matplotlib.colors import to_hex
 
 from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
-from glue.viewers.profile.mouse_mode import NavigateMouseMode, RangeMouseMode
+from glue.viewers.profile.qt.mouse_mode import NavigateMouseMode, RangeMouseMode
 from glue.core.qt.fitters import FitSettingsWidget
 from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
