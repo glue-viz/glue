@@ -19,7 +19,7 @@ from glue.utils.misc import DeferredMethod
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
            'color2rgb', 'point_contour', 'cache_axes', 'DeferDrawMeta',
-           'datetime64_to_mpl', 'mpl_to_datetime64']
+           'datetime64_to_mpl', 'mpl_to_datetime64', 'color2hex']
 
 
 def renderless_figure():
@@ -190,6 +190,17 @@ def color2rgb(color):
     from matplotlib.colors import ColorConverter
     result = ColorConverter().to_rgb(color)
     return result
+
+
+def color2hex(color):
+    try:
+        from matplotlib.colors import to_hex
+        result = to_hex(color)
+    except ImportError:  # MPL 1.5
+        from matplotlib.colors import ColorConverter
+        result = ColorConverter().to_hex(color)
+    return result
+
 
 
 def point_contour(x, y, data):

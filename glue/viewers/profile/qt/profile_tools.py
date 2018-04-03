@@ -8,8 +8,7 @@ import numpy as np
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
 
-from matplotlib.colors import to_hex
-
+from glue.utils import color2hex
 from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.viewers.profile.qt.mouse_mode import NavigateMouseMode, RangeMouseMode
@@ -205,8 +204,8 @@ class ProfileTools(QtWidgets.QWidget):
             report = ""
             for layer_artist in fit_results:
                 report += ("<b><font color='{0}'>{1}</font>"
-                           "</b>".format(to_hex(layer_artist.state.color),
-                                                layer_artist.layer.label))
+                           "</b>".format(color2hex(layer_artist.state.color),
+                                                   layer_artist.layer.label))
                 report += "<pre>" + fitter.summarize(fit_results[layer_artist], x, y) + "</pre>"
             self._report_fit(report)
             self._plot_fit(fitter, fit_results, x, y)

@@ -16,7 +16,7 @@ from glue.utils.misc import DeferredMethod
 from ..matplotlib import (point_contour, fast_limits, all_artists, new_artists,
                           remove_artists, view_cascade, get_extent, color2rgb,
                           defer_draw, freeze_margins, datetime64_to_mpl,
-                          mpl_to_datetime64)
+                          mpl_to_datetime64, color2hex)
 
 
 @requires_scipy
@@ -132,6 +132,10 @@ def test_defer_draw_exception():
                          (('red', (1, 0, 0)), ('green', (0, 0.5020, 0)), ('orange', (1., 0.6470, 0.))))
 def test_color2rgb(color, rgb):
     assert_allclose(color2rgb(color), rgb, atol=0.001)
+
+
+def test_color2hex():
+    assert color2hex('red') == '#ff0000'
 
 
 def test_freeze_margins():
