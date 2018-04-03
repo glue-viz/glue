@@ -44,8 +44,14 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
-        # Update the data values
-        self.plot_artist.set_data(x, y)
+        # Update the data values.
+        if len(x) > 0:
+            self.plot_artist.set_data(x, y)
+            self.plot_artist.set_visible(True)
+        else:
+            # We need to do this otherwise we get issues on Windows when
+            # passing an empty list to plot_artist
+            self.plot_artist.set_visible(False)
         self._visible_data = x, y
 
         if len(x) == 0:
