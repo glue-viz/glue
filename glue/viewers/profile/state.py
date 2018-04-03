@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
+
 import numpy as np
 
 from glue.core import Data
@@ -17,11 +19,11 @@ from glue.core.exceptions import IncompatibleAttribute
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = {np.nanmean: 'Mean',
-             np.nanmedian: 'Median',
-             np.nanmin: 'Minimum',
-             np.nanmax: 'Maximum',
-             np.nansum: 'Sum'}
+FUNCTIONS = OrderedDict([(np.nanmean, 'Mean'),
+                         (np.nanmedian, 'Median'),
+                         (np.nanmin, 'Minimum'),
+                         (np.nanmax, 'Maximum'),
+                         (np.nansum, 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
