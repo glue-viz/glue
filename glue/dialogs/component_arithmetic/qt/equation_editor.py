@@ -125,8 +125,9 @@ class EquationEditorDialog(QtWidgets.QDialog):
             for cid in data.primary_components:
                 self.references[cid.label] = cid
 
+        example = sorted(self.references, key=len)[0]
+
         if PYQT5:
-            example = sorted(self.references, key=len)[0]
             self.ui.text_label.setPlaceholderText("New attribute name")
             self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example))
 
