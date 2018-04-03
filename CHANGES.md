@@ -22,6 +22,9 @@ v0.13.0 (unreleased)
 * Improve hiding/showing of side-panels. No longer hide side-panels
   when glue application goes out of focus. [#1535]
 
+* Use memory-mapping with contiguous arrays in HDF5 files, resulting
+  in improved performance for large files. [#1628]
+
 * Deselect tools when the viewer focus changes. [#1584, #1608]
 
 * Added support for whether symbols are shown filled or not. [#1559]

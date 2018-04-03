@@ -20,15 +20,8 @@ def extract_data_hdf5(filename, use_datasets='all'):
     the same dimensions, an Exception is raised.
     '''
 
-    import h5py
-
-    # Open file
-    file_handle = h5py.File(filename, 'r')
-
-    # Define function to read
-
     # Read in all datasets
-    datasets = extract_hdf5_datasets(file_handle)
+    datasets = extract_hdf5_datasets(filename)
 
     # Only keep non-tabular datasets
     remove = []
@@ -39,18 +32,15 @@ def extract_data_hdf5(filename, use_datasets='all'):
         datasets.pop(key)
 
     # Check that dimensions of all datasets are the same
-    reference_shape = datasets[list(datasets.keys())[0]].value.shape
+    reference_shape = datasets[list(datasets.keys())[0]].shape
     for key in datasets:
-        if datasets[key].value.shape != reference_shape:
+        if datasets[key].shape != reference_shape:
             raise Exception("Datasets are not all the same dimensions")
 
     # Extract data
     arrays = {}
     for key in datasets:
-        arrays[key] = datasets[key].value
-
-    # Close HDF5 file
-    file_handle.close()
+        arrays[key] = datasets[key]
 
     return arrays
 
