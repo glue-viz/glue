@@ -42,7 +42,7 @@ class BaseFitter1D(object):
             else:
                 setattr(self, k, v)
 
-    def plot(self, fit_result, axes, x):
+    def plot(self, fit_result, axes, x, linewidth=None, alpha=None, color=None):
         """
         Plot the result of a fit.
 
@@ -54,8 +54,8 @@ class BaseFitter1D(object):
                   plots will not be properly cleared if this isn't provided
         """
         y = self.predict(fit_result, x)
-        result = axes.plot(x, y, '#4daf4a',
-                           lw=3, alpha=0.8,
+        result = axes.plot(x, y, color,
+                           lw=linewidth, alpha=alpha,
                            scalex=False, scaley=False)
         return result
 
