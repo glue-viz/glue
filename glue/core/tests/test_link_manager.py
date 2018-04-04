@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from itertools import product
+
 import numpy as np
 
 from ..component_link import ComponentLink
@@ -9,7 +11,8 @@ from ..data import ComponentID, DerivedComponent, Data, Component
 from ..coordinates import Coordinates
 from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
-                            find_dependents, is_convertible_to_single_pixel_cid)
+                            find_dependents, is_convertible_to_single_pixel_cid,
+                            equivalent_pixel_cids)
 from ..link_helpers import LinkSame
 
 comp = Component(data=np.array([1, 2, 3]))
@@ -358,3 +361,64 @@ def test_is_convertible_to_single_pixel_cid():
 
     assert is_convertible_to_single_pixel_cid(data1, data2.id['y']) is px1
     assert is_convertible_to_single_pixel_cid(data1, data2.id['z']) is None
+
+
+def test_equivalent_pixel_cids():
+
+    # This tests the equivalent_pixel_cids function which checks whether all
+    # pixel component IDs in a dataset are equivalent to pixel component IDs
+    # in another dataset.
+
+    data1 = Data(x=np.ones((2, 4, 3)))
+    data2 = Data(y=np.ones((4, 3, 2)))
+    data3 = Data(z=np.ones((2, 3)))
+
+    dc = DataCollection([data1, data2, data3])
+
+    # Checking data against itself should give the normal axis order
+
+    assert equivalent_pixel_cids(data1, data1) == [0, 1, 2]
+    assert equivalent_pixel_cids(data3, data3) == [0, 1]
+
+    # Checking data against unlinked data should give None
+
+    for d1, d2 in product(dc, dc):
+        if d1 is not d2:
+            assert equivalent_pixel_cids(d1, d2) is None
+
+    # Add one set of links, which shouldn't change anything
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[2]))
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data3.pixel_component_ids[0]))
+
+    for d1, d2 in product(dc, dc):
+        if d1 is not d2:
+            assert equivalent_pixel_cids(d1, d2) is None
+
+    # Add links between a second set of axes
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[2], data2.pixel_component_ids[1]))
+    dc.add_link(LinkSame(data1.pixel_component_ids[2], data3.pixel_component_ids[1]))
+
+    # At this point, data3 has all its axes contained in data1 and data2
+
+    assert equivalent_pixel_cids(data1, data2) is None
+    assert equivalent_pixel_cids(data2, data1) is None
+    assert equivalent_pixel_cids(data1, data3) == [0, 2]
+    assert equivalent_pixel_cids(data3, data1) is None
+    assert equivalent_pixel_cids(data2, data3) == [2, 1]
+    assert equivalent_pixel_cids(data3, data2) is None
+
+    # Finally we can link the third set of axes
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[1], data2.pixel_component_ids[0]))
+
+    # At this point, data1 and data2 should now be linked. Note that in cases
+    # where the target has more dimensions than the reference, we always get None
+
+    assert equivalent_pixel_cids(data1, data2) == [1, 2, 0]
+    assert equivalent_pixel_cids(data2, data1) == [2, 0, 1]
+    assert equivalent_pixel_cids(data1, data3) == [0, 2]
+    assert equivalent_pixel_cids(data3, data1) is None
+    assert equivalent_pixel_cids(data2, data3) == [2, 1]
+    assert equivalent_pixel_cids(data3, data2) is None
