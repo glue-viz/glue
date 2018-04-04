@@ -1021,7 +1021,6 @@ class SliceSubsetState(SubsetState):
         return cls(rec['reference_data'], context.object(rec['slices']))
 
     def __setgluestate_callback__(self, context):
-        print("IN CALLBACK")
         self.reference_data = context.object(self.reference_data)
         self._pad_slices()
 

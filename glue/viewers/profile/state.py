@@ -42,10 +42,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
     x_att = DDSCProperty(docstring='The data component to use for the x-axis '
                                    'of the profile (should be a pixel component)')
 
-    y_att = DDSCProperty(docstring='The data component to use for the y-axis '
-                                       'of the profile')
-
     function = DDSCProperty(docstring='The function to use for collapsing data')
+
+    normalize = DDCProperty(False, docstring='Whether to normalize all profiles '
+                                             'to the [0:1] range')
 
     # TODO: add function to use
 
@@ -60,11 +60,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed)
+        self.add_callback('normalize', self._reset_y_limits)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, categorical=False,
                                                    world_coord=True, pixel_coord=True)
-        self.y_att_helper = ComponentIDComboHelper(self, 'y_att', numeric=True)
 
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))
         ProfileViewerState.function.set_display_func(self, FUNCTIONS.get)
@@ -75,9 +75,15 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.ref_data_helper.set_multiple_data(self.layers_data)
 
     def reset_limits(self):
-        with delay_callback(self, 'x_min', 'x_max'):
+        with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
             self.x_lim_helper.percentile = 100
             self.x_lim_helper.update_values(force=True)
+            self._reset_y_limits()
+
+    def _reset_y_limits(self, *event):
+        if self.normalize:
+            self.y_min = -0.1
+            self.y_max = +1.1
 
     def _update_priority(self, name):
         if name == 'layers':
@@ -101,10 +107,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
     def _reference_data_changed(self, *args):
         if self.reference_data is None:
             self.x_att_helper.set_multiple_data([])
-            self.y_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
-            self.y_att_helper.set_multiple_data([self.reference_data])
+
 
 class ProfileLayerState(MatplotlibLayerState):
     """
@@ -113,17 +118,69 @@ class ProfileLayerState(MatplotlibLayerState):
 
     linewidth = DDCProperty(1, docstring='The width of the line')
 
+    attribute = DDSCProperty(docstring='The attribute shown in the layer')
+    v_min = DDCProperty(docstring='The lower level shown')
+    v_max = DDCProperty(docstring='The upper leven shown')
+    percentile = DDSCProperty(docstring='The percentile value used to '
+                                        'automatically calculate levels')
+
+    def __init__(self, layer=None, viewer_state=None, **kwargs):
+
+        super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
+
+        self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
+                                                           numeric=True, categorical=False)
+
+        percentile_display = {100: 'Min/Max',
+                              99.5: '99.5%',
+                              99: '99%',
+                              95: '95%',
+                              90: '90%',
+                              'Custom': 'Custom'}
+
+        ProfileLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
+        ProfileLayerState.percentile.set_display_func(self, percentile_display.get)
+
+        self.add_callback('layer', self._update_attribute, priority=1000)
+        self.add_callback('layer', self._update_profile, priority=1000)
+        self.add_callback('attribute', self._update_profile, priority=1000)
+        if self.viewer_state is not None:
+            self.viewer_state.add_callback('x_att', self._update_profile, priority=1000)
+            self.viewer_state.add_callback('function', self._update_profile, priority=1000)
+
+        if layer is not None:
+            self._update_attribute()
+
+        self.update_from_dict(kwargs)
+
+    def _update_attribute(self, *args):
+        if self.layer is not None:
+            self.attribute_att_helper.set_multiple_data([self.layer])
+            self.attribute = self.layer.visible_components[0]
+
     @property
     def independent_x_att(self):
         return is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att) is not None
 
-    def get_profile(self):
+    def normalize_values(self, values):
+        return (np.asarray(values) - self.v_min) / (self.v_max - self.v_min)
+
+    @property
+    def profile(self):
+        return self._profile
+
+    def _update_profile(self, *event):
+
+        if self.viewer_state is None or self.viewer_state.x_att is None or self.attribute is None:
+            self._profile = None, None
+            return
 
         # Check what pixel axis in the current dataset x_att corresponds to
         pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
 
         if pix_cid is None:
-            raise IncompatibleAttribute()
+            self._profile = None, None
+            return
 
         # If we get here, then x_att does correspond to a single pixel axis in
         # the cube, so we now prepare a list of axes to collapse over.
@@ -137,17 +194,18 @@ class ProfileLayerState(MatplotlibLayerState):
 
         if isinstance(self.layer, Data):
             data = self.layer
-            data_values = data[self.viewer_state.y_att]
+            data_values = data[self.attribute]
         else:
             data = self.layer.data
             if isinstance(self.layer.subset_state, SliceSubsetState):
-                data_values = self.layer.subset_state.to_array(self.layer.data, self.viewer_state.y_att)
+                data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
             else:
                 # We need to force a copy *and* convert to float just in case
-                data_values = np.array(data[self.viewer_state.y_att], dtype=float)
+                data_values = np.array(data[self.attribute], dtype=float)
                 mask = self.layer.to_mask()
                 if np.sum(mask) == 0:
-                    return [], []
+                    self._profile = [], []
+                    return
                 data_values[~mask] = np.nan
 
         # Collapse along all dimensions except x_att
@@ -160,4 +218,7 @@ class ProfileLayerState(MatplotlibLayerState):
         axis_view[pix_cid.axis] = slice(None)
         axis_values = data[self.viewer_state.x_att, axis_view]
 
-        return axis_values, profile_values
+        with delay_callback(self, 'v_min', 'v_max'):
+            self._profile = axis_values, profile_values
+            self.v_min = nanmin(profile_values)
+            self.v_max = nanmax(profile_values)

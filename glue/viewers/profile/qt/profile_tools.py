@@ -135,14 +135,14 @@ class ProfileTools(QtWidgets.QWidget):
         try:
             return self.ui.combosel_fit_function.currentData()
         except AttributeError:  # PYQT4
-            return self.ui.combosel_fit_function.data(self.ui.combosel_fit_function.currentIndex())
+            return self.ui.combosel_fit_function.itemData(self.ui.combosel_fit_function.currentIndex())
 
     @property
     def collapse_function(self):
         try:
             return self.ui.combosel_collapse_function.currentData()
         except AttributeError:  # PYQT4
-            return self.ui.combosel_collapse_function.data(self.ui.combosel_collapse_function.currentIndex())
+            return self.ui.combosel_collapse_function.itemData(self.ui.combosel_collapse_function.currentIndex())
 
     def _on_nav_activate(self, *args):
         self._nav_data = self._visible_data()
@@ -203,13 +203,16 @@ class ProfileTools(QtWidgets.QWidget):
         def on_success(result):
             fit_results, x, y = result
             report = ""
+            normalize = {}
             for layer_artist in fit_results:
                 report += ("<b><font color='{0}'>{1}</font>"
                            "</b>".format(color2hex(layer_artist.state.color),
                                                    layer_artist.layer.label))
                 report += "<pre>" + fitter.summarize(fit_results[layer_artist], x, y) + "</pre>"
+                if self.viewer.state.normalize:
+                    normalize[layer_artist] = layer_artist.state.normalize_values
             self._report_fit(report)
-            self._plot_fit(fitter, fit_results, x, y)
+            self._plot_fit(fitter, fit_results, x, y, normalize)
 
         def on_fail(exc_info):
             exc = '\n'.join(traceback.format_exception(*exc_info))
@@ -265,7 +268,7 @@ class ProfileTools(QtWidgets.QWidget):
             artist.remove()
             self._fit_artists.remove(artist)
 
-    def _plot_fit(self, fitter, fit_result, x, y):
+    def _plot_fit(self, fitter, fit_result, x, y, normalize):
 
         self._clear_fit()
 
@@ -274,7 +277,8 @@ class ProfileTools(QtWidgets.QWidget):
             self._fit_artists.append(fitter.plot(fit_result[layer], self.axes, x,
                                                  alpha=layer.state.alpha,
                                                  linewidth=layer.state.linewidth * 0.5,
-                                                 color=layer.state.color)[0])
+                                                 color=layer.state.color,
+                                                 normalize=normalize.get(layer, None))[0])
 
         self.canvas.draw()
 
