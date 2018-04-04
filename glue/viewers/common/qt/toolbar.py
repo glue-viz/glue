@@ -92,7 +92,7 @@ class BasicToolbar(QtWidgets.QToolBar):
             self.tool_deactivated.emit()
 
     def activate_tool(self, tool):
-        if self._default_mouse_mode is not None:
+        if isinstance(tool, CheckableTool) and self._default_mouse_mode is not None:
             self._default_mouse_mode.deactivate()
         tool.activate()
 
