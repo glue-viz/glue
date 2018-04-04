@@ -256,7 +256,6 @@ _loaded_plugins = set()
 _installed_plugins = set()
 
 REQUIRED_PLUGINS = ['glue.plugins.tools.pv_slicer',
-                    'glue.plugins.tools.spectrum_tool',
                     'glue.plugins.coordinate_helpers',
                     'glue.viewers.image',
                     'glue.viewers.scatter',
