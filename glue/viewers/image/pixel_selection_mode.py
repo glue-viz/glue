@@ -47,8 +47,11 @@ class PixelSelectionTool(ToolbarModeBase):
         x = int(round(x))
         y = int(round(y))
 
-        subset_state = SliceSubsetState({self.viewer.state.x_att: x,
-                                         self.viewer.state.y_att: y})
+        slices = [slice(None)] * self.viewer.state.reference_data.ndim
+        slices[self.viewer.state.x_att.axis] = slice(x, x + 1)
+        slices[self.viewer.state.y_att.axis] = slice(y, y + 1)
+
+        subset_state = SliceSubsetState(self.viewer.state.reference_data, slices)
 
         cmd = ApplySubsetState(data_collection=self.viewer._data,
                                subset_state=subset_state,

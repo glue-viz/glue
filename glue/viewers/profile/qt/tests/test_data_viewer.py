@@ -10,6 +10,7 @@ from numpy.testing import assert_equal, assert_allclose
 
 from glue.core import Data
 from glue.core.roi import XRangeROI
+from glue.core.subset import SliceSubsetState
 from glue.app.qt import GlueApplication
 from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
@@ -103,6 +104,16 @@ class TestProfileViewer(object):
         assert not self.viewer.layers[1].enabled
 
         self.data_collection.add_link(ComponentLink([data2.id['y']], self.data.id['x'], using=lambda x: 3 * x))
+
+        assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
+
+    def test_slice_subset_state(self):
+
+        self.viewer.add_data(self.data)
+
+        subset = self.data.new_subset()
+        subset.subset_state = SliceSubsetState(self.data, [slice(1, 2), slice(None)])
 
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled

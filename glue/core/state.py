@@ -440,6 +440,7 @@ class GlueUnSerializer(object):
         self._objs = {}   # map name -> object
         self._working = set()
         self._rec = json.loads(string) if string else json.load(fobj)
+        self._callbacks = []
 
     @classmethod
     def loads(cls, string):
@@ -507,6 +508,9 @@ class GlueUnSerializer(object):
         func = self._dispatch(rec)
         obj = func(rec, self)
 
+        if hasattr(obj, '__setgluestate_callback__'):
+            self._callbacks.append(obj.__setgluestate_callback__)
+
         # loader functions might yield the constructed value,
         # and then futher populate it. This deals with circular
         # dependencies.
@@ -521,7 +525,18 @@ class GlueUnSerializer(object):
             for _ in gen:  # ... and finish constructing it
                 pass
 
+        self._try_callbacks()
+
         return obj
+
+    def _try_callbacks(self):
+        for callback in self._callbacks[:]:
+            try:
+                callback(self)
+            except Exception:
+                pass
+            else:
+                self._callbacks.remove(callback)
 
 
 saver = GlueSerializer.serializes

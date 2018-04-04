@@ -17,14 +17,15 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to, floodfill
+from glue.utils import view_shape, broadcast_to, floodfill, combine_slices
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
            'RangeSubsetState', 'MultiRangeSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
            'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
-           'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D']
+           'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D',
+           'SliceSubsetState']
 
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
@@ -940,50 +941,89 @@ class SliceSubsetState(SubsetState):
     A subset defined by a slice in an array
     """
 
-    def __init__(self, slices):
-        """
-        :param slices: Dictionary of slices, defining the slices to apply to the array.
-        """
+    def __init__(self, reference_data, slices):
+        self.reference_data = reference_data
         self.slices = slices
-        self.cids = set(self.slices.keys())
+        self._pad_slices()
+
+    def _pad_slices(self):
+        from glue.core.data import Data
+        if isinstance(self.reference_data, Data) and len(self.slices) < self.reference_data.ndim:
+            self.slices = self.slices + [slice(None)] * (self.reference_data.ndim - len(self.slices))
 
     def copy(self):
-        return SliceSubsetState(self.slices)
+        return SliceSubsetState(self.reference_data, self.slices)
 
     def to_mask(self, data, view=None):
 
-        view = view or slice(None)
+        if view is None:
+            view = Ellipsis
+        elif isinstance(view, slice) or np.isscalar(view):
+            view = [view]
 
-        mask = np.zeros(data.shape, dtype=bool)
+        # Figure out the shape of the final mask given the requested view
+        shape = view_shape(data.shape, view)
 
-        # shortcut for data on the same pixel grid
-        # should really just check for equivalence not equality of components
-        if not self.cids <= set(data.pixel_component_ids):
-            return np.zeros(data.shape, dtype=bool)
+        if data is self.reference_data:
 
-        slices = [slice(None)] * data.ndim
-        for cid, slc in self.slices.items():
-            slices[cid.axis] = slc
+            slices = self.slices
 
-        mask[slices] = True
+        else:
 
-        return mask[view]
+            # Check if we can transform list of slices to match this dataset
+            order = data.pixel_aligned_data.get(self.reference_data, None)
+
+            if order is None:
+                # We use broadcast_to for minimal memory usage
+                return broadcast_to(False, shape)
+            else:
+                # Reorder slices
+                slices = [self.slices[idx] for idx in order]
+
+        # The original slices assume the full array, not the array with the view
+        # applied, so we need to now adjust the slices accordingly.
+        if view is Ellipsis:
+            subslices = slices
+        else:
+            subslices = []
+            for i in range(data.ndim):
+                if i >= len(view):
+                    subslices.append(slices[i])
+                elif np.isscalar(view[i]):
+                    beg, end, stp = slices[i].indices(data.shape[i])
+                    if view[i] < beg or view[i] >= end or (view[i] - beg) % stp != 0:
+                        return broadcast_to(False, shape)
+                else:
+                    subslices.append(combine_slices(view[i], slices[i], data.shape[i]))
+
+        # Create mask with final shape
+        mask = np.zeros(shape, dtype=bool)
+        mask[subslices] = True
+
+        return mask
 
     def to_array(self, data, att):
-        slices = [slice(None)] * data.ndim
-        for cid, slc in self.slices.items():
-            if np.isreal(slc):
-                slc = slice(slc, slc + 1)
-            slices[cid.axis] = slc
+        if data is self.reference_data:
+            slices = self.slices
+        else:
+            order = data.pixel_aligned_data.get(self.reference_data, None)
+            if order is None:
+                raise IncompatibleAttribute()
+            slices = [self.slices[idx] for idx in order]
         return data[att, slices]
 
     def __gluestate__(self, context):
-        return dict(slices=context.do(self.slices))
+        return dict(slices=context.do(self.slices),
+                    reference_data=context.id(self.reference_data))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(context.object(rec['slices']))
+        return cls(rec['reference_data'], context.object(rec['slices']))
 
+    def __setgluestate_callback__(self, context):
+        print("IN CALLBACK")
+        self.reference_data = context.object(self.reference_data)
+        self._pad_slices()
 
 class CategorySubsetState(SubsetState):
 

@@ -24,7 +24,8 @@ from ..subset import (Subset, SubsetState,
                       CategoricalROISubsetState, InequalitySubsetState,
                       CategorySubsetState, MaskSubsetState,
                       CategoricalROISubsetState2D, RoiSubsetState3d,
-                      CategoricalMultiRangeSubsetState, FloodFillSubsetState)
+                      CategoricalMultiRangeSubsetState, FloodFillSubsetState,
+                      SliceSubsetState)
 from ..subset import AndState
 from ..subset import InvertState
 from ..subset import OrState
@@ -890,3 +891,52 @@ def test_projected_3d_clone():
     assert subset_state_new.zatt.label == 'z'
     assert isinstance(subset_state_new.roi, Projected3dROI)
     assert_allclose(subset_state_new.roi.projection_matrix, projection_matrix)
+
+
+def test_slice_subset_state():
+
+    data1 = Data(x=np.arange(24).reshape((2, 3, 4)))
+
+    slices = [slice(None), slice(1, 3), slice(None, None, 2)]
+    subset_state = SliceSubsetState(data1, slices)
+
+    expected_mask = np.zeros((2, 3, 4))
+    expected_mask[slices] = 1
+    assert_equal(subset_state.to_mask(data1), expected_mask)
+
+    view = [slice(0, 1), slice(None), slice(None)]
+    assert_equal(subset_state.to_mask(data1, view=view), expected_mask[view])
+
+    data2 = Data(x=np.arange(24).reshape((3, 4, 2)))
+    data_collection = DataCollection([data1, data2])
+
+    assert_equal(subset_state.to_mask(data2), 0)
+
+    data_collection.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[2]))
+
+    assert_equal(subset_state.to_mask(data2), 0)
+
+    data_collection.add_link(LinkSame(data1.pixel_component_ids[1], data2.pixel_component_ids[0]))
+    data_collection.add_link(LinkSame(data1.pixel_component_ids[2], data2.pixel_component_ids[1]))
+
+    assert_equal(subset_state.to_mask(data2), expected_mask.transpose().swapaxes(0, 1))
+
+    view = [slice(None), slice(1, 3), slice(None)]
+    assert_equal(subset_state.to_mask(data2, view=view), expected_mask.transpose().swapaxes(0, 1)[view])
+
+
+def test_slice_subset_state_clone():
+
+    data1 = Data(x=np.arange(24).reshape((2, 3, 4)))
+
+    slices = [slice(None), slice(1, 3), slice(None, None, 2)]
+    subset_state = SliceSubsetState(data1, slices)
+    subset = data1.new_subset()
+    subset.subset_state = subset_state
+
+    expected_mask = np.zeros((2, 3, 4))
+    expected_mask[slices] = 1
+    assert_equal(data1.subsets[0].to_mask(), expected_mask)
+
+    data2 = clone(data1)
+    assert_equal(data2.subsets[0].to_mask(), expected_mask)
