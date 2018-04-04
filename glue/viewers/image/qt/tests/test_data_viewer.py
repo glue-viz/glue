@@ -44,6 +44,23 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
     def test_double_add_ignored(self):
         pass
 
+    def test_slice_change_single_draw(self):
+
+        # Regression test for a bug that caused Matplotlib to draw once per
+        # data/subset when changing slices.
+
+        self.viewer.add_data(self.data)
+
+        self.data_collection.new_subset_group(label='a', subset_state=self.data.id['x'] > 1)
+        self.data_collection.new_subset_group(label='b', subset_state=self.data.id['x'] > 2)
+        self.data_collection.new_subset_group(label='c', subset_state=self.data.id['x'] > 3)
+
+        self.init_draw_count()
+
+        assert self.draw_count == 0
+        self.viewer.state.slices = (1, 1, 1)
+        assert self.draw_count == 1
+
 
 class MyCoords(Coordinates):
     def axis_label(self, i):
