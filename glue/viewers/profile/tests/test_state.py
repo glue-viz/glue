@@ -30,53 +30,53 @@ class TestProfileViewerState:
         self.viewer_state.layers.append(self.layer_state)
 
     def test_basic(self):
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_basic_world(self):
         self.viewer_state.x_att = self.data.world_component_ids[0]
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 2, 4])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_x_att(self):
 
         self.viewer_state.x_att = self.data.pixel_component_ids[0]
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
         self.viewer_state.x_att = self.data.pixel_component_ids[1]
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 1, 2, 3])
         assert_allclose(y, [8.5, 10.5, 12.5, 14.5])
 
         self.viewer_state.x_att = self.data.pixel_component_ids[2]
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 1])
         assert_allclose(y, [11, 12])
 
     def test_function(self):
 
         self.viewer_state.function = nanmean
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
         self.viewer_state.function = nanmin
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(y, [0, 8, 16])
 
         self.viewer_state.function = nanmax
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(y, [7, 15, 23])
 
         self.viewer_state.function = nansum
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(y, [28, 92, 156])
 
         self.viewer_state.function = nanmedian
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_subset(self):
@@ -86,30 +86,32 @@ class TestProfileViewerState:
 
         self.layer_state.layer = subset
 
-        x, y = self.layer_state.get_profile()
+        x, y = self.layer_state.profile
         assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [np.nan, 13., 19.5])
 
         subset.subset_state = self.data.id['x'] > 100
 
-        x, y = self.layer_state.get_profile()
+        # TODO: the fact we have to call this isn't ideal
+        self.layer_state._update_profile()
+        x, y = self.layer_state.profile
         assert len(x) == 0
         assert len(y) == 0
 
     def test_clone(self):
 
         self.viewer_state.x_att = self.data.pixel_component_ids[1]
-        self.viewer_state.y_att = self.data.id['x']
         self.viewer_state.function = nanmedian
 
+        self.layer_state.attribute = self.data.id['x']
         self.layer_state.linewidth = 3
 
         viewer_state_new = clone(self.viewer_state)
 
         assert viewer_state_new.x_att.label == 'Pixel Axis 1 [y]'
-        assert viewer_state_new.y_att.label == 'x'
         assert viewer_state_new.function is nanmedian
 
+        assert self.layer_state.attribute.label == 'x'
         assert self.layer_state.linewidth == 3
 
     def test_limits(self):

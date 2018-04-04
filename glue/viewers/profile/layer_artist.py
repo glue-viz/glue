@@ -35,23 +35,27 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _calculate_profile(self):
 
-        try:
-            x, y = self.state.get_profile()
-        except (IncompatibleAttribute, IndexError):
+        x, y = self.state.profile
+
+        if x is None or y is None:
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
             self.enable()
 
+        self._visible_data = x, y
+
         # Update the data values.
         if len(x) > 0:
+            # Normalize profile values to the [0:1] range based on limits
+            if self._viewer_state.normalize:
+                y = self.state.normalize_values(y)
             self.plot_artist.set_data(x, y)
             self.plot_artist.set_visible(True)
         else:
             # We need to do this otherwise we get issues on Windows when
             # passing an empty list to plot_artist
             self.plot_artist.set_visible(False)
-        self._visible_data = x, y
 
         if len(x) == 0:
             return
@@ -67,16 +71,18 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        self.state._y_min = nanmin(y)
-        self.state._y_max = nanmax(y) * 1.2
+        if not self._viewer_state.normalize:
 
-        largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
-        if largest_y_max != self._viewer_state.y_max:
-            self._viewer_state.y_max = largest_y_max
+            self.state._y_min = nanmin(y)
+            self.state._y_max = nanmax(y) * 1.2
 
-        smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
-        if smallest_y_min != self._viewer_state.y_min:
-            self._viewer_state.y_min = smallest_y_min
+            largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
+            if largest_y_max != self._viewer_state.y_max:
+                self._viewer_state.y_max = largest_y_max
+
+            smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
+            if smallest_y_min != self._viewer_state.y_min:
+                self._viewer_state.y_min = smallest_y_min
 
         self.redraw()
 
@@ -100,7 +106,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         # TODO: we need to factor the following code into a common method.
 
         if (self._viewer_state.x_att is None or
-                self._viewer_state.y_att is None or
+                self.state.attribute is None or
                 self.state.layer is None):
             return
 
@@ -126,7 +132,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'y_att', 'attribute', 'function')):
+        if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
             self._calculate_profile()
             force = True  # make sure scaling and visual attributes are updated
 
@@ -135,5 +141,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
+        self.state._update_profile()
         self._update_profile(force=True)
         self.redraw()

@@ -23,20 +23,24 @@ class ProfileViewer(MatplotlibDataViewer):
     _data_artist_cls = ProfileLayerArtist
     _subset_artist_cls = ProfileLayerArtist
 
+    allow_duplicate_data = True
+
     tools = ['select:xrange', 'profile-analysis']
 
     def __init__(self, session, parent=None, state=None):
         super(ProfileViewer, self).__init__(session, parent, state=state)
         self.state.add_callback('x_att', self._update_axes)
-        self.state.add_callback('y_att', self._update_axes)
+        self.state.add_callback('normalize', self._update_axes)
 
     def _update_axes(self, *args):
 
         if self.state.x_att is not None:
             self.state.x_axislabel = self.state.x_att.label
 
-        if self.state.y_att is not None:
-            self.state.y_axislabel = self.state.y_att.label
+        if self.state.normalize:
+            self.state.y_axislabel = 'Normalized data values'
+        else:
+            self.state.y_axislabel = 'Data values'
 
         self.axes.figure.canvas.draw()
 
