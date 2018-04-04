@@ -18,7 +18,7 @@ from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
 from glue.viewers.image.state import AggregateSlice
 from glue.core.aggregate import mom1, mom2
-from glue.core import Data
+from glue.core import Data, Subset
 from glue.viewers.image.qt import ImageViewer
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 
@@ -279,12 +279,14 @@ class ProfileTools(QtWidgets.QWidget):
         self.canvas.draw()
 
     def _visible_data(self):
-        datasets = []
+        datasets = set()
         for layer_artist in self.viewer.layers:
             if layer_artist.enabled and layer_artist.visible:
                 if isinstance(layer_artist.state.layer, Data):
-                    datasets.append(layer_artist.state.layer)
-        return datasets
+                    datasets.add(layer_artist.state.layer)
+                elif isinstance(layer_artist.state.layer, Subset):
+                    datasets.add(layer_artist.state.layer.data)
+        return list(datasets)
 
     def _viewers_with_data_slice(self, data, xatt):
 
