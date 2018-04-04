@@ -1,10 +1,13 @@
 import numpy as np
+
 from numpy.testing import assert_allclose
 
 from glue.core import Data, Coordinates
 from glue.core.tests.test_state import clone
+from glue.utils import nanmean, nanmedian, nansum, nanmin, nanmax
 
 from ..state import ProfileViewerState, ProfileLayerState
+
 
 class SimpleCoordinates(Coordinates):
 
@@ -56,23 +59,23 @@ class TestProfileViewerState:
 
     def test_function(self):
 
-        self.viewer_state.function = np.nanmean
+        self.viewer_state.function = nanmean
         x, y = self.layer_state.get_profile()
         assert_allclose(y, [3.5, 11.5, 19.5])
 
-        self.viewer_state.function = np.nanmin
+        self.viewer_state.function = nanmin
         x, y = self.layer_state.get_profile()
         assert_allclose(y, [0, 8, 16])
 
-        self.viewer_state.function = np.nanmax
+        self.viewer_state.function = nanmax
         x, y = self.layer_state.get_profile()
         assert_allclose(y, [7, 15, 23])
 
-        self.viewer_state.function = np.nansum
+        self.viewer_state.function = nansum
         x, y = self.layer_state.get_profile()
         assert_allclose(y, [28, 92, 156])
 
-        self.viewer_state.function = np.nanmedian
+        self.viewer_state.function = nanmedian
         x, y = self.layer_state.get_profile()
         assert_allclose(y, [3.5, 11.5, 19.5])
 
@@ -97,7 +100,7 @@ class TestProfileViewerState:
 
         self.viewer_state.x_att = self.data.pixel_component_ids[1]
         self.viewer_state.y_att = self.data.id['x']
-        self.viewer_state.function = np.nanmedian
+        self.viewer_state.function = nanmedian
 
         self.layer_state.linewidth = 3
 
@@ -105,7 +108,7 @@ class TestProfileViewerState:
 
         assert viewer_state_new.x_att.label == 'Pixel Axis 1 [y]'
         assert viewer_state_new.y_att.label == 'x'
-        assert viewer_state_new.function is np.nanmedian
+        assert viewer_state_new.function is nanmedian
 
         assert self.layer_state.linewidth == 3
 

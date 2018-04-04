@@ -241,6 +241,16 @@ class LinkManager(HubListener):
                 comps[cid] = d
             data._set_externally_derivable_components(comps)
 
+        # Now update information about pixel-aligned data
+        for data1 in data_collection:
+            equivalent = {}
+            for data2 in data_collection:
+                if data1 is not data2:
+                    order = equivalent_pixel_cids(data2, data1)
+                    if order is not None:
+                        equivalent[data2] = order
+            data1._set_pixel_aligned_data(equivalent)
+
     @property
     def _links(self):
         if self.data_collection is None:
@@ -347,3 +357,35 @@ def is_convertible_to_single_pixel_cid(data, cid):
                     from_ids = list(set(from_ids))
                     if len(from_ids) == 1:
                         return is_convertible_to_single_pixel_cid(data, from_ids[0])
+
+
+def equivalent_pixel_cids(reference, target):
+    """
+    Given two datasets with potentially linked pixel coordinates, determine
+    whether the two datasets have an equivalent set of pixel component IDs.
+
+    Note that the target can have fewer pixel components than the reference.
+
+    This returns either the order of the reference pixel component IDs in the
+    target dataset, or `None` if there is no match
+    """
+
+    # Shortcut - if target has more dimensions than the reference, we know
+    # it's impossible for all pixel components in target to be contained in the
+    # reference
+    if target.ndim > reference.ndim:
+        return
+
+    # Shortcut, if target is reference, we can just return the axis order
+    if target is reference:
+        return list(range(reference.ndim))
+
+    order = []
+    for tar_cid in target.pixel_component_ids:
+        for iref, ref_cid in enumerate(reference.pixel_component_ids):
+            if is_equivalent_cid(reference, ref_cid, tar_cid):
+                order.append(iref)
+                break
+        else:
+            return None
+    return order

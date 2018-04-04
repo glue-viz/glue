@@ -2,8 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import defer_draw
-from glue.core import Data
+from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
@@ -68,8 +67,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        self.state._y_min = y.min()
-        self.state._y_max = y.max() * 1.2
+        self.state._y_min = nanmin(y)
+        self.state._y_max = nanmax(y) * 1.2
 
         largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
         if largest_y_max != self._viewer_state.y_max:

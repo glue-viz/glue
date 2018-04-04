@@ -197,8 +197,8 @@ def color2hex(color):
         from matplotlib.colors import to_hex
         result = to_hex(color)
     except ImportError:  # MPL 1.5
-        from matplotlib.colors import ColorConverter
-        result = ColorConverter().to_hex(color)
+        from matplotlib.colors import ColorConverter, rgb2hex
+        result = rgb2hex(ColorConverter().to_rgb(color))
     return result
 
 

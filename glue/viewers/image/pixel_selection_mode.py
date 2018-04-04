@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 from glue.core import roi
 from glue.config import viewer_tool
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+from glue.core.command import ApplySubsetState
+from glue.core.subset import SliceSubsetState
 
 __all__ = ['PixelSelectionTool']
 
@@ -45,7 +47,13 @@ class PixelSelectionTool(ToolbarModeBase):
         x = int(round(x))
         y = int(round(y))
 
-        p = roi.RectangularROI(x-0.5, x+0.5, y-0.5, y+0.5)
+        slices = [slice(None)] * self.viewer.state.reference_data.ndim
+        slices[self.viewer.state.x_att.axis] = slice(x, x + 1)
+        slices[self.viewer.state.y_att.axis] = slice(y, y + 1)
 
-        if roi:
-            self.viewer.apply_roi(p)
+        subset_state = SliceSubsetState(self.viewer.state.reference_data, slices)
+
+        cmd = ApplySubsetState(data_collection=self.viewer._data,
+                               subset_state=subset_state,
+                               use_current=False)
+        self.viewer._session.command_stack.do(cmd)

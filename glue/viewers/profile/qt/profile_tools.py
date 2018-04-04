@@ -4,11 +4,12 @@ import traceback
 from collections import OrderedDict
 
 import numpy as np
+import bottleneck as bt
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
 
-from glue.utils import color2hex
+from glue.utils import color2hex, nanmean, nanmedian, nanmin, nanmax, nansum
 from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.viewers.profile.qt.mouse_mode import NavigateMouseMode, RangeMouseMode
@@ -17,7 +18,7 @@ from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
 from glue.viewers.image.state import AggregateSlice
 from glue.core.aggregate import mom1, mom2
-from glue.core import Data
+from glue.core import Data, Subset
 from glue.viewers.image.qt import ImageViewer
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 
@@ -26,11 +27,11 @@ __all__ = ['ProfileTools']
 
 MODES = ['navigate', 'fit', 'collapse']
 
-COLLAPSE_FUNCS = OrderedDict([(np.nanmean, 'Mean'),
-                              (np.nanmedian, 'Median'),
-                              (np.nanmin, 'Minimum'),
-                              (np.nanmax, 'Maximum'),
-                              (np.nansum, 'Sum'),
+COLLAPSE_FUNCS = OrderedDict([(nanmean, 'Mean'),
+                              (nanmedian, 'Median'),
+                              (nanmin, 'Minimum'),
+                              (nanmax, 'Maximum'),
+                              (nansum, 'Sum'),
                               (mom1, 'Moment 1'),
                               (mom2, 'Moment 2')])
 
@@ -278,12 +279,14 @@ class ProfileTools(QtWidgets.QWidget):
         self.canvas.draw()
 
     def _visible_data(self):
-        datasets = []
+        datasets = set()
         for layer_artist in self.viewer.layers:
             if layer_artist.enabled and layer_artist.visible:
                 if isinstance(layer_artist.state.layer, Data):
-                    datasets.append(layer_artist.state.layer)
-        return datasets
+                    datasets.add(layer_artist.state.layer)
+                elif isinstance(layer_artist.state.layer, Subset):
+                    datasets.add(layer_artist.state.layer.data)
+        return list(datasets)
 
     def _viewers_with_data_slice(self, data, xatt):
 

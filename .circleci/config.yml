@@ -15,7 +15,6 @@ jobs:
           name: Check Python, setuptools, and pip versions
           command: |
             python3 --version
-            easy_install3 --version
             pip3 --version
       - run:
           name: Install glue and dependencies

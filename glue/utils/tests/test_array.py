@@ -1,14 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
+from itertools import product
+
 import pytest
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 
+from glue.tests.helpers import HYPOTHESIS_INSTALLED
 from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
-                     iterate_chunks)
+                     iterate_chunks, combine_slices, nanmean, nanmedian, nansum, nanmin, nanmax)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -148,3 +151,81 @@ def test_iterate_chunks_invalid():
     with pytest.raises(ValueError) as exc:
         next(iterate_chunks(array.shape, chunk_shape=(6, 2, 1, 5, 2, 8)))
     assert exc.value.args[0] == 'chunk_shape should fit within shape'
+
+
+FUNCTIONS = [nanmean, nanmedian, nanmin, nanmax, nansum]
+AXIS = [None, 0, 2, 3, (0, 1), (2, 3), (0, 1, 2), (0, 1, 2, 3)]
+ARRAY = np.random.random((4, 5, 2, 7))
+ARRAY[ARRAY < 0.1] = np.nan
+
+
+@pytest.mark.parametrize(('function', 'axis'), product(FUNCTIONS, AXIS))
+def test_nanfunctions(function, axis):
+    name = function.__name__
+    np_func = getattr(np, name)
+    assert_allclose(function(ARRAY, axis=axis), np_func(ARRAY, axis=axis))
+
+
+
+SLICE_CASES = [
+    (slice(None), slice(5), 10),
+    (slice(None), slice(1, 5), 10),
+    (slice(None), slice(1, 5, 2), 10),
+    (slice(1, 8), slice(1, 5), 10),
+    (slice(1, 8), slice(1, 5, 2), 10),
+    (slice(1, 9, 2), slice(2, 5), 10),
+    (slice(1, 9, 2), slice(2, 6), 10),
+    (slice(1, 20, 2), slice(3, 18, 2), 20),
+    (slice(1, 20, 2), slice(4, 18, 2), 20),
+    (slice(1, 20, 2), slice(4, 18, 3), 20),
+    (slice(1, None), slice(None, None, 2), 2),
+    (slice(2), slice(None), 3)]
+
+
+@pytest.mark.parametrize(('slice1', 'slice2', 'length'), SLICE_CASES)
+def test_combine_slices(slice1, slice2, length):
+
+    # Rather than hard-code the expected result, we can directly check that
+    # the resulting slice gives the same indices if applied after the first
+    # compared to a manual check
+
+    indices1 = list(range(*slice1.indices(length)))
+    indices2 = list(range(*slice2.indices(length)))
+
+    expected = [indices1.index(idx) for idx in indices2 if idx in indices1]
+
+    actual = list(range(*combine_slices(slice1, slice2, length).indices(length)))
+
+    assert actual == expected
+
+
+if HYPOTHESIS_INSTALLED:
+
+    from hypothesis import given, settings
+    from hypothesis.strategies import none, integers
+
+    @given(beg1=none() | integers(-100, 100),
+           end1=none() | integers(-100, 100),
+           stp1=none() | integers(1, 100),
+           beg2=none() | integers(-100, 100),
+           end2=none() | integers(-100, 100),
+           stp2=none() | integers(1, 100),
+           length=integers(0, 100))
+    @settings(max_examples=10000, derandomize=True)
+    def test_combine_slices_hypot(beg1, end1, stp1, beg2, end2, stp2, length):
+
+        slice1 = slice(beg1, end1, stp1)
+        slice2 = slice(beg2, end2, stp2)
+
+        # Rather than hard-code the expected result, we can directly check that
+        # the resulting slice gives the same indices if applied after the first
+        # compared to a manual check
+
+        indices1 = list(range(*slice1.indices(length)))
+        indices2 = list(range(*slice2.indices(length)))
+
+        expected = [indices1.index(idx) for idx in indices2 if idx in indices1]
+
+        actual = list(range(*combine_slices(slice1, slice2, length).indices(length)))
+
+        assert actual == expected

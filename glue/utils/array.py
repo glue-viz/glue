@@ -4,13 +4,16 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 import pandas as pd
+import bottleneck as bt
 
 from glue.external.six import string_types
+from glue.external.six.moves import range
 
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
-           'iterate_chunks']
+           'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
+           'nanmin', 'nanmax']
 
 
 def unbroadcast(array):
@@ -251,3 +254,112 @@ def iterate_chunks(shape, chunk_shape=None, n_max=None):
         # We can now check whether the iteration is finished
         if start_index[-1] >= shape[-1]:
             break
+
+
+def combine_slices(slice1, slice2, length):
+    """
+    Given two slices that can be applied to a 1D array and the length of that
+    array, this returns a new slice which is the one that should be applied to
+    the array instead of slice2 if slice1 has already been applied.
+    """
+
+    beg1, end1, step1 = slice1.indices(length)
+    beg2, end2, step2 = slice2.indices(length)
+
+    if beg2 >= end1 or end2 <= beg1:
+        return slice(0, 0, 1)
+
+    beg = max(beg1, beg2)
+    end = min(end1, end2)
+    if (beg - beg2) % step2 != 0:
+        beg += step2 - ((beg - beg2) % step2)
+
+    # Now we want to find the two first overlap indices inside the overlap
+    # range. Loop over indices of second slice (but with min/max constraints
+    # of first added) and check if they are valid indices given slice1
+
+    indices = []
+
+    for idx in range(beg, end, step2):
+        if (idx - beg1) % step1 == 0:
+            indices.append((idx - beg1) // step1)
+            if len(indices) == 2:
+                break
+
+    if len(indices) == 0:
+        return slice(0, 0, 1)
+    elif len(indices) == 1:
+        return slice(indices[0], indices[0] + 1, 1)
+    else:
+        end_new = (end - beg1) // step1
+        if (end - beg1) % step1 != 0:
+            end_new += 1
+        return slice(indices[0], end_new, indices[1] - indices[0])
+
+
+def _move_tuple_axes_first(array, axis):
+    """
+    Bottleneck can only take integer axis, not tuple, so this function takes all
+    the axes to be operated on and combines them into the first dimension of the
+    array so that we can then use axis=0
+    """
+
+    # Figure out how many axes we are operating over
+    naxis = len(axis)
+
+    # Add remaining axes to the axis tuple
+    axis += tuple(i for i in range(array.ndim) if i not in axis)
+
+    # The new position of each axis is just in order
+    destination = tuple(range(array.ndim))
+
+    # Reorder the array so that the axes being operated on are at the beginning
+    array_new = np.moveaxis(array, axis, destination)
+
+    # Figure out the size of the product of the dimensions being operated on
+    first = np.prod(array_new.shape[:naxis])
+
+    # Collapse the dimensions being operated on into a single dimension so that
+    # we can then use axis=0 with the bottleneck functions
+    array_new = array_new.reshape((first,) + array_new.shape[naxis:])
+
+    return array_new
+
+
+def nanmean(array, axis=None):
+    if isinstance(axis, tuple):
+        array = _move_tuple_axes_first(array, axis=axis)
+        axis = 0
+    return bt.nanmean(array, axis=axis)
+
+
+def nanmedian(array, axis=None):
+    if isinstance(axis, tuple):
+        array = _move_tuple_axes_first(array, axis=axis)
+        axis = 0
+    return bt.nanmedian(array, axis=axis)
+
+
+def nansum(array, axis=None):
+    if isinstance(axis, tuple):
+        array = _move_tuple_axes_first(array, axis=axis)
+        axis = 0
+    return bt.nansum(array, axis=axis)
+
+
+def nanmin(array, axis=None):
+    if isinstance(axis, tuple):
+        array = _move_tuple_axes_first(array, axis=axis)
+        axis = 0
+    return bt.nanmin(array, axis=axis)
+
+
+def nanmax(array, axis=None):
+    if isinstance(axis, tuple):
+        array = _move_tuple_axes_first(array, axis=axis)
+        axis = 0
+    return bt.nanmax(array, axis=axis)
+
+
+array = np.random.random((2, 5, 4, 2, 3))
+nanmean(array, axis=(1, 2))

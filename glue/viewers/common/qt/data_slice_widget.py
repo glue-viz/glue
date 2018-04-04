@@ -70,7 +70,8 @@ class SliceWidget(QtWidgets.QWidget):
         # Figure out the optimal format to use to show the world values. We do
         # this by figuring out the precision needed so that when converted to
         # a string, every string value is different.
-        if world is not None:
+
+        if world is not None and len(world) > 1:
             if np.max(np.abs(world)) > 1e5 or np.max(np.abs(world)) < 1e-5:
                 fmt_type = 'e'
             else:

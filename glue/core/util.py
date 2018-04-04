@@ -13,6 +13,8 @@ from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 
+from glue.utils import nanmin, nanmax
+
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
            "row_lookup", 'small_view', 'small_view_array', 'visible_limits',
@@ -153,9 +155,9 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
             raise ValueError("Cannot infer data limits for ComponentID %s"
                              % cid)
         if lo is None:
-            lo = np.nanmin(vals)
+            lo = nanmin(vals)
         if hi is None:
-            hi = np.nanmax(vals)
+            hi = nanmax(vals)
 
     reverse = lo > hi
     if log:
@@ -341,7 +343,7 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    lo, hi = np.nanmin(data), np.nanmax(data)
+    lo, hi = nanmin(data), nanmax(data)
     if not np.isfinite(lo):
         return
 

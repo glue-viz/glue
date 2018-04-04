@@ -1,8 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
 from collections import OrderedDict
 
 import numpy as np
+import bottleneck as bt
 
 from glue.core import Data
 from glue.external.echo import delay_callback
@@ -12,18 +14,19 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.subset import SliceSubsetState
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(np.nanmean, 'Mean'),
-                         (np.nanmedian, 'Median'),
-                         (np.nanmin, 'Minimum'),
-                         (np.nanmax, 'Maximum'),
-                         (np.nansum, 'Sum')])
+FUNCTIONS = OrderedDict([(nanmean, 'Mean'),
+                         (nanmedian, 'Median'),
+                         (nanmin, 'Minimum'),
+                         (nanmax, 'Maximum'),
+                         (nansum, 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -136,16 +139,21 @@ class ProfileLayerState(MatplotlibLayerState):
             data = self.layer
             data_values = data[self.viewer_state.y_att]
         else:
-            # We need to force a copy *and* convert to float just in case
             data = self.layer.data
-            data_values = np.array(data[self.viewer_state.y_att], dtype=float)
-            mask = self.layer.to_mask()
-            if np.sum(mask) == 0:
-                return [], []
-            data_values[~mask] = np.nan
+            if isinstance(self.layer.subset_state, SliceSubsetState):
+                data_values = self.layer.subset_state.to_array(self.layer.data, self.viewer_state.y_att)
+            else:
+                # We need to force a copy *and* convert to float just in case
+                data_values = np.array(data[self.viewer_state.y_att], dtype=float)
+                mask = self.layer.to_mask()
+                if np.sum(mask) == 0:
+                    return [], []
+                data_values[~mask] = np.nan
 
         # Collapse along all dimensions except x_att
-        profile_values = self.viewer_state.function(data_values, axis=axes)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            profile_values = self.viewer_state.function(data_values, axis=axes)
 
         # Finally, we get the coordinate values for the requested axis
         axis_view = [0] * data.ndim

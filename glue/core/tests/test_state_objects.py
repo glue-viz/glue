@@ -1,11 +1,15 @@
 import numpy as np
+
 from numpy.testing import assert_allclose
 
 from glue.external.echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
+from glue.utils import nanmedian
 
 from .test_state import clone
-from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper, StateAttributeHistogramHelper
+from ..state_objects import (State, StateAttributeLimitsHelper,
+                             StateAttributeSingleValueHelper,
+                             StateAttributeHistogramHelper)
 
 
 class SimpleTestState(State):
@@ -166,7 +170,7 @@ class TestStateAttributeSingleValueHelper():
         self.state = SimpleState()
 
         self.helper = StateAttributeSingleValueHelper(self.state, attribute='comp',
-                                                      function=np.nanmedian, value='val')
+                                                      function=nanmedian, value='val')
 
         self.state.data = self.data
 
