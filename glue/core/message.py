@@ -160,6 +160,10 @@ class ExternallyDerivableComponentsChangedMessage(DataMessage):
     pass
 
 
+class PixelAlignedDataChangedMessage(DataMessage):
+    pass
+
+
 class ComponentsChangedMessage(DataMessage):
     pass
 

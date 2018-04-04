@@ -245,9 +245,10 @@ class LinkManager(HubListener):
         for data1 in data_collection:
             equivalent = {}
             for data2 in data_collection:
-                order = equivalent_pixel_cids(data1, data2)
-                if order is not None:
-                    equivalent[data2] = order
+                if data1 is not data2:
+                    order = equivalent_pixel_cids(data2, data1)
+                    if order is not None:
+                        equivalent[data2] = order
             data1._set_pixel_aligned_data(equivalent)
 
     @property

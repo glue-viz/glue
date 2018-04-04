@@ -11,7 +11,8 @@ from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
                                ComponentReplacedMessage, DataReorderComponentMessage,
-                               ExternallyDerivableComponentsChangedMessage)
+                               ExternallyDerivableComponentsChangedMessage,
+                               PixelAlignedDataChangedMessage)
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
@@ -79,6 +80,7 @@ class Data(object):
         # Components
         self._components = OrderedDict()
         self._externally_derivable_components = OrderedDict()
+        self._pixel_aligned_data = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
 
@@ -464,6 +466,44 @@ class Data(object):
         if self.hub:
             msg = ExternallyDerivableComponentsChangedMessage(self)
             self.hub.broadcast(msg)
+
+    def _set_pixel_aligned_data(self, pixel_aligned_data):
+        """
+        Pixel-aligned data are datasets that contain pixel component IDs
+        that are equivalent (identically, not transformed) with all pixel
+        component IDs in the present dataset.
+
+        Note that the other datasets may have more but not fewer dimensions, so
+        this information may not be symmetric between datasets with differing
+        numbers of dimensions.
+        """
+
+        # First check if anything has changed, as if not then we should just
+        # leave things as-is and avoid emitting a message.
+        if len(self._pixel_aligned_data) == len(pixel_aligned_data):
+            for data in self._pixel_aligned_data:
+                if data not in pixel_aligned_data or pixel_aligned_data[data] != self._pixel_aligned_data[data]:
+                    break
+            else:
+                return
+
+        self._pixel_aligned_data = pixel_aligned_data
+        if self.hub:
+            msg = PixelAlignedDataChangedMessage(self)
+            self.hub.broadcast(msg)
+
+    @property
+    def pixel_aligned_data(self):
+        """
+        Information about other datasets in the same data collection that have
+        matching or a subset of pixel component IDs.
+
+        This is returned as a dictionary where each key is a dataset with
+        matching pixel component IDs, and the value is the order in which the
+        pixel component IDs of the other dataset can be found in the current
+        one.
+        """
+        return self._pixel_aligned_data
 
     @contract(link=ComponentLink,
               label='cid_like|None',

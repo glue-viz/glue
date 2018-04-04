@@ -9,12 +9,14 @@ from numpy.testing import assert_array_equal, assert_equal
 
 from ..coordinates import Coordinates
 from ..component_link import ComponentLink
+from ..link_helpers import LinkSame
 from ..data import Data, Component, ComponentID, DerivedComponent
 from ..data_collection import DataCollection
 from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
                        DataCollectionDeleteMessage, DataAddComponentMessage,
-                       ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage)
+                       ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage,
+                       PixelAlignedDataChangedMessage)
 from ..exceptions import IncompatibleAttribute
 
 from .test_state import clone
@@ -33,6 +35,9 @@ class HubLog(HubListener):
 
     def clear(self):
         self.messages[:] = []
+
+    def messages_by_type(self, klass):
+        return [msg for msg in self.messages if isinstance(msg, klass)]
 
 
 class TestDataCollection(object):
@@ -435,3 +440,55 @@ class TestDataCollection(object):
         assert len(dc2[0].coordinate_links) == 2
         assert len(dc2[0].derived_links) == 1
         assert len(dc2._link_manager._external_links) == 1
+
+    def test_pixel_aligned(self):
+
+        data1 = Data(x=np.ones((2, 4, 3)))
+        data2 = Data(y=np.ones((4, 3, 2)))
+        data3 = Data(z=np.ones((2, 3)))
+
+        self.dc.extend([data1, data2, data3])
+
+        # Add one set of links, which shouldn't change anything
+
+        self.dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[2]))
+        self.dc.add_link(LinkSame(data1.pixel_component_ids[0], data3.pixel_component_ids[0]))
+
+        assert len(data1.pixel_aligned_data) == 0
+        assert len(data2.pixel_aligned_data) == 0
+        assert len(data3.pixel_aligned_data) == 0
+        assert len(self.log.messages_by_type(PixelAlignedDataChangedMessage)) == 0
+
+        # Add links between a second set of axes
+
+        self.dc.add_link(LinkSame(data1.pixel_component_ids[2], data2.pixel_component_ids[1]))
+        self.dc.add_link(LinkSame(data1.pixel_component_ids[2], data3.pixel_component_ids[1]))
+
+        # At this point, data3 has all its axes contained in data1 and data2
+
+        assert len(data1.pixel_aligned_data) == 0
+        assert len(data2.pixel_aligned_data) == 0
+        assert len(data3.pixel_aligned_data) == 2
+        assert data3.pixel_aligned_data[data1] == [0, 2]
+        assert data3.pixel_aligned_data[data2] == [2, 1]
+        messages = self.log.messages_by_type(PixelAlignedDataChangedMessage)
+        assert len(messages) == 1
+        assert messages[0].data is data3
+
+        # Finally we can link the third set of axes
+
+        self.dc.add_link(LinkSame(data1.pixel_component_ids[1], data2.pixel_component_ids[0]))
+
+        # At this point, data1 and data2 should now be linked
+
+        assert len(data1.pixel_aligned_data) == 1
+        assert data1.pixel_aligned_data[data2] == [2, 0, 1]
+        assert len(data2.pixel_aligned_data) == 1
+        assert data2.pixel_aligned_data[data1] == [1, 2, 0]
+        assert len(data3.pixel_aligned_data) == 2
+        assert data3.pixel_aligned_data[data1] == [0, 2]
+        assert data3.pixel_aligned_data[data2] == [2, 1]
+        messages = self.log.messages_by_type(PixelAlignedDataChangedMessage)
+        assert len(messages) == 3
+        assert messages[1].data is data1
+        assert messages[2].data is data2
