@@ -6,13 +6,14 @@ from functools import partial
 
 
 import numpy as np
-import bottleneck as bt
 import pandas as pd
 
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from matplotlib.dates import AutoDateLocator, AutoDateFormatter
+
+from glue.utils import nanmin, nanmax
 
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
@@ -154,9 +155,9 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
             raise ValueError("Cannot infer data limits for ComponentID %s"
                              % cid)
         if lo is None:
-            lo = bt.nanmin(vals)
+            lo = nanmin(vals)
         if hi is None:
-            hi = bt.nanmax(vals)
+            hi = nanmax(vals)
 
     reverse = lo > hi
     if log:
@@ -342,7 +343,7 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    lo, hi = bt.nanmin(data), bt.nanmax(data)
+    lo, hi = nanmin(data), nanmax(data)
     if not np.isfinite(lo):
         return
 

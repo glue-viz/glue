@@ -3,9 +3,9 @@ from __future__ import absolute_import, division, print_function
 from collections import defaultdict
 
 import numpy as np
-import bottleneck as bt
 
 from glue.core import Subset
+from glue.utils import nanmin, nanmax
 from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
@@ -486,8 +486,8 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                     lower = values.min()
                     upper = values.max()
                 else:
-                    lower = bt.nanmin(values)
-                    upper = bt.nanmax(values)
+                    lower = nanmin(values)
+                    upper = nanmax(values)
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)
 

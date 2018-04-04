@@ -5,7 +5,6 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
-import bottleneck as bt
 
 from numpy.testing import assert_equal, assert_allclose
 
@@ -16,6 +15,7 @@ from glue.app.qt import GlueApplication
 from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
+from glue.utils import nanmean
 
 from ..data_viewer import ProfileViewer
 
@@ -51,7 +51,7 @@ class TestProfileViewer(object):
 
     def test_functions(self):
         self.viewer.add_data(self.data)
-        self.viewer.state.function = bt.nanmean
+        self.viewer.state.function = nanmean
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
         assert_allclose(layer_artist._visible_data[0], [0, 1, 2])

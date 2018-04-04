@@ -1,15 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
+from itertools import product
+
 import pytest
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 
 from glue.tests.helpers import HYPOTHESIS_INSTALLED
 from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
-                     iterate_chunks, combine_slices)
+                     iterate_chunks, combine_slices, nanmean, nanmedian, nansum, nanmin, nanmax)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -149,6 +151,20 @@ def test_iterate_chunks_invalid():
     with pytest.raises(ValueError) as exc:
         next(iterate_chunks(array.shape, chunk_shape=(6, 2, 1, 5, 2, 8)))
     assert exc.value.args[0] == 'chunk_shape should fit within shape'
+
+
+FUNCTIONS = [nanmean, nanmedian, nanmin, nanmax, nansum]
+AXIS = [None, 0, 2, 3, (0, 1), (2, 3), (0, 1, 2), (0, 1, 2, 3)]
+ARRAY = np.random.random((4, 5, 2, 7))
+ARRAY[ARRAY < 0.1] = np.nan
+
+
+@pytest.mark.parametrize(('function', 'axis'), product(FUNCTIONS, AXIS))
+def test_nanfunctions(function, axis):
+    name = function.__name__
+    np_func = getattr(np, name)
+    assert_allclose(function(ARRAY, axis=axis), np_func(ARRAY, axis=axis))
+
 
 
 SLICE_CASES = [

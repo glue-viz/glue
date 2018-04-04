@@ -11,7 +11,7 @@ from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
                                              ValueProperty)
 from glue.utils.array import pretty_number
-from glue.utils import Pointer
+from glue.utils import Pointer, nanmin, nanmax
 from glue.utils.qt import cmap2pixmap
 
 # We do the following import to register the custom Qt Widget there
@@ -63,8 +63,8 @@ class SubsetFacet(QtWidgets.QDialog):
         wmin = self.ui.value_min
         wmax = self.ui.value_max
 
-        wmin.setText(pretty_number(bt.nanmin(vals)))
-        wmax.setText(pretty_number(bt.nanmax(vals)))
+        wmin.setText(pretty_number(nanmin(vals)))
+        wmax.setText(pretty_number(nanmax(vals)))
 
     @property
     def cmap(self):

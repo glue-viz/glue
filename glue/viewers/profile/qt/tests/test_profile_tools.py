@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+import bottleneck as bt
 
 from numpy.testing import assert_allclose
 
 from glue.core import Data
 from glue.app.qt import GlueApplication
+from glue.utils import nanmean
 from glue.utils.qt import get_qapp
 from glue.viewers.image.state import AggregateSlice
 
@@ -137,7 +139,7 @@ class TestProfileTools(object):
         assert image_viewer.state.slices[0].slice.start == 1
         assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
-        assert image_viewer.state.slices[0].function is np.nanmean
+        assert image_viewer.state.slices[0].function is nanmean
 
         # Next, try in world coordinates
 
@@ -154,4 +156,4 @@ class TestProfileTools(object):
         assert image_viewer.state.slices[0].slice.start == 1
         assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
-        assert image_viewer.state.slices[0].function is np.nanmean
+        assert image_viewer.state.slices[0].function is nanmean

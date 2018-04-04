@@ -14,7 +14,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import SliceSubsetState
@@ -22,11 +22,11 @@ from glue.core.subset import SliceSubsetState
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(bt.nanmean, 'Mean'),
-                         (bt.nanmedian, 'Median'),
-                         (bt.nanmin, 'Minimum'),
-                         (bt.nanmax, 'Maximum'),
-                         (bt.nansum, 'Sum')])
+FUNCTIONS = OrderedDict([(nanmean, 'Mean'),
+                         (nanmedian, 'Median'),
+                         (nanmin, 'Minimum'),
+                         (nanmax, 'Maximum'),
+                         (nansum, 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):

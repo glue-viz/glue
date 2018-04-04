@@ -1,5 +1,7 @@
 import numpy as np
+
 from glue.viewers.common.python_export import code, serialize_options
+from glue.utils import nanmin, nanmax
 
 
 def python_export_histogram_layer(layer, *args):
@@ -11,8 +13,8 @@ def python_export_histogram_layer(layer, *args):
     imports = ["import numpy as np"]
 
     x = layer.layer[layer._viewer_state.x_att]
-    x_min = bt.nanmin(x)
-    x_max = bt.nanmax(x)
+    x_min = nanmin(x)
+    x_max = nanmax(x)
 
     hist_x_min = layer._viewer_state.hist_x_min
     hist_x_max = layer._viewer_state.hist_x_max
