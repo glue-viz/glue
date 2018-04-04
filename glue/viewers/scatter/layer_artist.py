@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from distutils.version import LooseVersion
 
 import numpy as np
+import bottleneck as bt
 
 from matplotlib import __version__ as __mpl_version__
 from matplotlib.colors import Normalize
@@ -61,7 +62,7 @@ class DensityMapLimits(object):
         return 0
 
     def max(self, array):
-        return 10. ** (np.log10(np.nanmax(array)) * self.contrast)
+        return 10. ** (np.log10(bt.nanmax(array)) * self.contrast)
 
 
 def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):
@@ -277,7 +278,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            vmax = np.nanmax(np.hypot(vx, vy))
+            vmax = bt.nanmax(np.hypot(vx, vy))
 
             self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
                                                   pivot=self.state.vector_origin,

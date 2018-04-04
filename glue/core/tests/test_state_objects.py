@@ -1,11 +1,15 @@
 import numpy as np
+import bottleneck as bt
+
 from numpy.testing import assert_allclose
 
 from glue.external.echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
 
 from .test_state import clone
-from ..state_objects import State, StateAttributeLimitsHelper, StateAttributeSingleValueHelper, StateAttributeHistogramHelper
+from ..state_objects import (State, StateAttributeLimitsHelper,
+                             StateAttributeSingleValueHelper,
+                             StateAttributeHistogramHelper)
 
 
 class SimpleTestState(State):
@@ -166,7 +170,7 @@ class TestStateAttributeSingleValueHelper():
         self.state = SimpleState()
 
         self.helper = StateAttributeSingleValueHelper(self.state, attribute='comp',
-                                                      function=np.nanmedian, value='val')
+                                                      function=bt.nanmedian, value='val')
 
         self.state.data = self.data
 

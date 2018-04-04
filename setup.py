@@ -119,6 +119,7 @@ install_requires = ['numpy>=1.9',
                     'dill>=0.2',
                     'xlrd>=1.0',
                     'h5py>=2.4',
+                    'bottleneck>=1.2',
                     'mpl-scatter-density>=0.3']
 
 extras_require = {

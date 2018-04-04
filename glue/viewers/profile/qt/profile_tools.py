@@ -4,6 +4,7 @@ import traceback
 from collections import OrderedDict
 
 import numpy as np
+import bottleneck as bt
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
@@ -26,11 +27,11 @@ __all__ = ['ProfileTools']
 
 MODES = ['navigate', 'fit', 'collapse']
 
-COLLAPSE_FUNCS = OrderedDict([(np.nanmean, 'Mean'),
-                              (np.nanmedian, 'Median'),
-                              (np.nanmin, 'Minimum'),
-                              (np.nanmax, 'Maximum'),
-                              (np.nansum, 'Sum'),
+COLLAPSE_FUNCS = OrderedDict([(bt.nanmean, 'Mean'),
+                              (bt.nanmedian, 'Median'),
+                              (bt.nanmin, 'Minimum'),
+                              (bt.nanmax, 'Maximum'),
+                              (bt.nansum, 'Sum'),
                               (mom1, 'Moment 1'),
                               (mom2, 'Moment 2')])
 

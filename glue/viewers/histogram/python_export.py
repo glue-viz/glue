@@ -11,8 +11,8 @@ def python_export_histogram_layer(layer, *args):
     imports = ["import numpy as np"]
 
     x = layer.layer[layer._viewer_state.x_att]
-    x_min = np.nanmin(x)
-    x_max = np.nanmax(x)
+    x_min = bt.nanmin(x)
+    x_max = bt.nanmax(x)
 
     hist_x_min = layer._viewer_state.hist_x_min
     hist_x_max = layer._viewer_state.hist_x_max

@@ -2,13 +2,14 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import numpy as np
+import bottleneck as bt
 from matplotlib import cm
 
 from qtpy import QtWidgets, QtGui
 from glue.core.util import colorize_subsets, facet_subsets
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import (ButtonProperty, FloatLineProperty,
-                                       ValueProperty)
+                                             ValueProperty)
 from glue.utils.array import pretty_number
 from glue.utils import Pointer
 from glue.utils.qt import cmap2pixmap
@@ -62,8 +63,8 @@ class SubsetFacet(QtWidgets.QDialog):
         wmin = self.ui.value_min
         wmax = self.ui.value_max
 
-        wmin.setText(pretty_number(np.nanmin(vals)))
-        wmax.setText(pretty_number(np.nanmax(vals)))
+        wmin.setText(pretty_number(bt.nanmin(vals)))
+        wmax.setText(pretty_number(bt.nanmax(vals)))
 
     @property
     def cmap(self):

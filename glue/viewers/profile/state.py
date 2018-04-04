@@ -4,6 +4,7 @@ import warnings
 from collections import OrderedDict
 
 import numpy as np
+import bottleneck as bt
 
 from glue.core import Data
 from glue.external.echo import delay_callback
@@ -21,11 +22,11 @@ from glue.core.subset import SliceSubsetState
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(np.nanmean, 'Mean'),
-                         (np.nanmedian, 'Median'),
-                         (np.nanmin, 'Minimum'),
-                         (np.nanmax, 'Maximum'),
-                         (np.nansum, 'Sum')])
+FUNCTIONS = OrderedDict([(bt.nanmean, 'Mean'),
+                         (bt.nanmedian, 'Median'),
+                         (bt.nanmin, 'Minimum'),
+                         (bt.nanmax, 'Maximum'),
+                         (bt.nansum, 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):

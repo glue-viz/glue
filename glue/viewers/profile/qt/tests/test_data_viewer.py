@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
+import bottleneck as bt
 
 from numpy.testing import assert_equal, assert_allclose
 
@@ -50,7 +51,7 @@ class TestProfileViewer(object):
 
     def test_functions(self):
         self.viewer.add_data(self.data)
-        self.viewer.state.function = np.nanmean
+        self.viewer.state.function = bt.nanmean
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
         assert_allclose(layer_artist._visible_data[0], [0, 1, 2])

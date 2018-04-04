@@ -6,6 +6,7 @@ from functools import partial
 
 
 import numpy as np
+import bottleneck as bt
 import pandas as pd
 
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
@@ -153,9 +154,9 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
             raise ValueError("Cannot infer data limits for ComponentID %s"
                              % cid)
         if lo is None:
-            lo = np.nanmin(vals)
+            lo = bt.nanmin(vals)
         if hi is None:
-            hi = np.nanmax(vals)
+            hi = bt.nanmax(vals)
 
     reverse = lo > hi
     if log:
@@ -341,7 +342,7 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    lo, hi = np.nanmin(data), np.nanmax(data)
+    lo, hi = bt.nanmin(data), bt.nanmax(data)
     if not np.isfinite(lo):
         return
 
