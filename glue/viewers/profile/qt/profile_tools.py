@@ -135,14 +135,14 @@ class ProfileTools(QtWidgets.QWidget):
         try:
             return self.ui.combosel_fit_function.currentData()
         except AttributeError:  # PYQT4
-            return self.ui.combosel_fit_function.data(self.ui.combosel_fit_function.currentIndex())
+            return self.ui.combosel_fit_function.itemData(self.ui.combosel_fit_function.currentIndex())
 
     @property
     def collapse_function(self):
         try:
             return self.ui.combosel_collapse_function.currentData()
         except AttributeError:  # PYQT4
-            return self.ui.combosel_collapse_function.data(self.ui.combosel_collapse_function.currentIndex())
+            return self.ui.combosel_collapse_function.itemData(self.ui.combosel_collapse_function.currentIndex())
 
     def _on_nav_activate(self, *args):
         self._nav_data = self._visible_data()
