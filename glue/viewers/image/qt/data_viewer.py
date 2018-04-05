@@ -74,6 +74,7 @@ class ImageViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None, state=None):
         self._wcs_set = False
+        self._changing_slice_requires_wcs_update = None
         super(ImageViewer, self).__init__(session, parent=parent, wcs=True, state=state)
         self.axes.set_adjustable('datalim')
         self.state.add_callback('x_att', self._set_wcs)

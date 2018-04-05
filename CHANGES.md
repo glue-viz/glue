@@ -138,6 +138,9 @@ v0.12.6 (unreleased)
 
 * Fixed ticks on log x-axis in histogram viewer. [#7310]
 
+* Fixed a bug that led to poor performance when slicing through data cubes.
+  [#1554]
+
 v0.12.5 (unreleased)
 --------------------
 

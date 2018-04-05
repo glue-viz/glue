@@ -85,6 +85,10 @@ class MatplotlibDataViewerState(State):
     def layers_data(self):
         return [layer_state.layer for layer_state in self.layers]
 
+    @defer_draw
+    def _notify_global(self, *args, **kwargs):
+        super(MatplotlibDataViewerState, self)._notify_global(*args, **kwargs)
+
 
 class MatplotlibLayerState(State):
     """
@@ -125,3 +129,7 @@ class MatplotlibLayerState(State):
         message = LayerArtistUpdatedMessage(self)
         if self.layer is not None and self.layer.hub is not None:
             self.layer.hub.broadcast(message)
+
+    @defer_draw
+    def _notify_global(self, *args, **kwargs):
+        super(MatplotlibLayerState, self)._notify_global(*args, **kwargs)
