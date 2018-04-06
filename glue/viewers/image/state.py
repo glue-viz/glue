@@ -15,6 +15,7 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw, view_shape
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
+from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -370,30 +371,84 @@ class BaseImageLayerState(MatplotlibLayerState):
             return image[view]
 
     def _get_reprojected_image(self, view=None):
+        """
+        Get the image for this layer on the same pixel grid as the reference
+        image. This uses interpolation if needed if the pixel grids are not
+        lined up.
+        """
+
+        # First, check whether the data is simply the reference data - if so
+        # we can just use _get_image (which assumed alignment with reference_data)
+        # to get the image to use.
+
         if self.layer.data is self.viewer_state.reference_data:
-            # Also if pixel coordinates are the same
             return self._get_image(view=view)
-        else:
-            pixel_coords = [self.viewer_state.reference_data[pix, view]
-                            for pix in self.layer.pixel_component_ids]
-            coords = np.array([p.ravel() for p in pixel_coords])
-            # Now prepare a view that we can use to get the value to interpolate
-            # since we want to avoid having to access the full array of values
-            interp_view = []
-            for icoord, coord in enumerate(coords):
-                cmin, cmax = coord.min(), coord.max()
-                nmax = self.layer.shape[icoord]
-                # TODO: figure out exact thresholds to use here
-                if cmin > nmax or cmax < 0:
-                    return np.ones(pixel_coords[0].shape) * np.nan
-                cmin = max(0, cmin)
-                cmax = min(nmax, cmax)
-                interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
-                coord -= cmin
-            original = self._get_image(view=interp_view).astype(float)
-            # order=3 (default) doesn't work if there are NaN values
-            result = map_coordinates(original, coords, cval=np.nan, order=0)
-            return result.reshape(pixel_coords[0].shape)
+
+        # Second, we check whether the current data is linked pixel-wise with
+        # the reference data.
+
+        order = self.layer.data.pixel_aligned_data.get(self.viewer_state.reference_data)
+
+        if order is not None:
+
+            # order gives the order of the pixel components of the reference
+            # data in the current data. With this we adjust the view and then
+            # check that the result is a 2D array - if not, it means for example
+            # that the layer is a 2D image and the reference data is a 3D cube
+            # and that we are not slicing one of the dimensions in the 3D cube
+            # that is also in the 2D image, resulting in a 1D array (which it
+            # doesn't make sense to show.
+
+            view = [view[idx] for idx in order]
+            image = self._get_image(view=view)
+
+            if image.ndim != 2:
+                raise IncompatibleAttribute()
+            else:
+                # Now check whether we need to transpose the image
+                x_axis = self.viewer_state.x_att.axis
+                y_axis = self.viewer_state.y_att.axis
+                if order.index(x_axis) > order.index(y_axis):
+                    image = image.transpose()
+                return image
+
+        # Now the real fun begins! The pixel grids are not lined up. Fun times!
+
+        # Start off by finding all the pixel coordinates of the current view
+        # in the reference frame of the current layer data.
+        pixel_coords = [self.viewer_state.reference_data[pix, view]
+                        for pix in self.layer.pixel_component_ids]
+        coords = np.array([p.ravel() for p in pixel_coords])
+
+        # Now figure out for each coordinate the range of values present so that
+        # we can prepare a view that we can use to get the value to interpolate
+        # since we want to avoid having to access the full array of values
+        interp_view = []
+        for icoord, coord in enumerate(coords):
+
+            cmin, cmax = coord.min(), coord.max()
+            nmax = self.layer.shape[icoord]
+
+            # If all pixel coordinates in the view fall outside the layer data
+            # along any dimension, we can stop.
+            if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
+                return broadcast_to(np.nan, pixel_coords[0].shape)
+            else:
+                cmin, cmax = max(0, cmin), min(nmax, cmax)
+
+            interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
+            coord -= cmin
+
+        # Finally, we get the layer data for the part that overlaps with the
+        # interpolation positions.
+        original = self._get_image(view=interp_view).astype(float)
+
+        # And we carry out the interpolation with map_coordinates. We use
+        # order=0 to preserve the apparance of the pixels (in addition, order=3
+        # for instance doesn't work properly if NaN values are present)
+        image = map_coordinates(original, coords, cval=np.nan, order=0)
+
+        return image.reshape(pixel_coords[0].shape)
 
     def _get_image(self, view=None):
         raise NotImplementedError()
