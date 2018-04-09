@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from collections import defaultdict
 
 import numpy as np
-from scipy.ndimage import map_coordinates
 
 from glue.core import Data
 from glue.config import colormaps
