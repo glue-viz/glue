@@ -403,18 +403,18 @@ class BaseImageLayerState(MatplotlibLayerState):
                 # view in the reference frame of the current layer data.
                 pixel_coords = [self.viewer_state.reference_data[pix, full_view]
                                 for pix in self.layer.pixel_component_ids]
-                coords = np.array([p.ravel() for p in pixel_coords])
+                coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
 
                 # Now figure out for each coordinate the range of values present
                 # so that we can prepare a view that we can use to get the value
                 # to interpolate since we want to avoid having to access the
-                # full array of values
+                # full array of values.
 
                 interp_view = []
 
                 for icoord, coord in enumerate(coords):
 
-                    cmin, cmax = int(coord.min()), int(np.ceil(coord.max()))
+                    cmin, cmax = coord.min(), coord.max()
                     nmax = self.layer.shape[icoord]
 
                     # If all pixel coordinates in the view fall outside the
@@ -430,13 +430,17 @@ class BaseImageLayerState(MatplotlibLayerState):
 
                 # Finally, we get the layer data for the part that overlaps with
                 # the interpolation positions.
-                original = self._get_image(view=interp_view).astype(float)
+                original = self._get_image(view=interp_view)
 
-                # And we carry out the interpolation with map_coordinates. We
-                # use order=0 to preserve the apparance of the pixels (in
-                # addition, order=3 for instance doesn't work properly if NaN
-                # values are present)
-                image = map_coordinates(original, coords, cval=np.nan, order=0)
+                # We now do a nearest-neighbor interpolation. We don't use
+                # map_coordinates because it is picky about array endian-ness
+                # and if we just use normal Numpy slicing we can preserve the
+                # data type (and avoid memory copies)
+                keep = np.ones(len(coords[0]), dtype=bool)
+                image = np.zeros(len(coords[0])) * np.nan
+                for icoord, coord in enumerate(coords):
+                    keep[(coord < 0) | (coord >= original.shape[icoord])] = False
+                image[keep] = original[[coord[keep] for coord in coords]]
 
                 # Finally convert array back to a 2D array
                 image = image.reshape(pixel_coords[0].shape)
