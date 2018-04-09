@@ -3,7 +3,7 @@ from glue.viewers.common.python_export import code, serialize_options
 
 def python_export_image_layer(layer, *args):
 
-    if not layer.enabled or not layer.visible or not layer._compatible_with_reference_data:
+    if not layer.enabled or not layer.visible:
         return [], None
 
     script = ""
@@ -45,7 +45,7 @@ def python_export_image_layer(layer, *args):
 
 def python_export_image_subset_layer(layer, *args):
 
-    if not layer.enabled or not layer.visible or not layer._compatible_with_reference_data:
+    if not layer.enabled or not layer.visible:
         return [], None
 
     script = ""

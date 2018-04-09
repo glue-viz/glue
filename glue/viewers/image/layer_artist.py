@@ -12,9 +12,10 @@ from glue.viewers.image.python_export import python_export_image_layer, python_e
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
-from glue.core.link_manager import is_equivalent_cid
 from glue.core import Data, HubListener
-from glue.core.message import ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage
+from glue.core.message import (ComponentsChangedMessage,
+                               ExternallyDerivableComponentsChangedMessage,
+                               PixelAlignedDataChangedMessage)
 from glue.external.modest_image import imshow
 
 
@@ -33,11 +34,15 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self.state.add_global_callback(self._update_image)
 
         self.layer.hub.subscribe(self, ComponentsChangedMessage,
-                                 handler=self._update_image,
+                                 handler=self.update,
                                  filter=self._is_data_object)
 
         self.layer.hub.subscribe(self, ExternallyDerivableComponentsChangedMessage,
-                                 handler=self._update_image,
+                                 handler=self.update,
+                                 filter=self._is_data_object)
+
+        self.layer.hub.subscribe(self, PixelAlignedDataChangedMessage,
+                                 handler=self.update,
                                  filter=self._is_data_object)
 
     def _is_data_object(self, message):
@@ -98,7 +103,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         x_axis = self._viewer_state.x_att.axis
         y_axis = self._viewer_state.y_att.axis
 
-        full_shape = self.layer.shape
+        full_shape = self._viewer_state.reference_data.shape
 
         return full_shape[y_axis], full_shape[x_axis]
 
@@ -184,14 +189,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self._update_visual_attributes()
 
     @defer_draw
-    def update(self):
-
+    def update(self, *event):
         self._update_image(force=True)
-
-        # Reset the axes stack so that pressing the home button doesn't go back
-        # to a previous irrelevant view.
-        self.axes.figure.canvas.toolbar.update()
-
         self.redraw()
 
 
@@ -232,7 +231,7 @@ class ImageSubsetArray(object):
             return None
 
         if not self.layer_artist.visible:
-            return self.nan_array
+            return None
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
@@ -338,6 +337,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
             self._update_visual_attributes()
 
     @defer_draw
-    def update(self):
+    def update(self, *event):
         self._update_image(force=True)
         self.redraw()
