@@ -327,13 +327,16 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view=None):
 
+        # TODO: we should do some caching here to avoid e.g. reprojecting
+        # the same data multiple times.
+
         slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         full_view = slices
 
-        # NOTE: view should be that which should just be applied to the data
-        # slice, not to all the dimensions of the data - thus it should have
-        # at most two dimension
+        # The view should be that which should just be applied to the data
+        # slice, not to all the dimensions of the data - thus it should have at
+        # most two dimension
 
         if view is not None:
 
@@ -393,6 +396,8 @@ class BaseImageLayerState(MatplotlibLayerState):
                 # the view as we can't deal with this currently
                 if any(isinstance(v, AggregateSlice) for v in full_view):
                     raise IncompatibleDataException()
+                else:
+                    agg_func = None
 
                 # Start off by finding all the pixel coordinates of the current
                 # view in the reference frame of the current layer data.
@@ -404,10 +409,12 @@ class BaseImageLayerState(MatplotlibLayerState):
                 # so that we can prepare a view that we can use to get the value
                 # to interpolate since we want to avoid having to access the
                 # full array of values
+
                 interp_view = []
+
                 for icoord, coord in enumerate(coords):
 
-                    cmin, cmax = coord.min(), coord.max()
+                    cmin, cmax = int(coord.min()), int(np.ceil(coord.max()))
                     nmax = self.layer.shape[icoord]
 
                     # If all pixel coordinates in the view fall outside the
@@ -415,9 +422,10 @@ class BaseImageLayerState(MatplotlibLayerState):
                     if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
                         return broadcast_to(np.nan, pixel_coords[0].shape)
                     else:
-                        cmin, cmax = max(0, cmin), min(nmax, cmax)
+                        cmin, cmax = max(0, cmin), min(nmax, cmax + 1)
 
-                    interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
+                    interp_view.append(slice(cmin, cmax))
+
                     coord -= cmin
 
                 # Finally, we get the layer data for the part that overlaps with
@@ -430,24 +438,30 @@ class BaseImageLayerState(MatplotlibLayerState):
                 # values are present)
                 image = map_coordinates(original, coords, cval=np.nan, order=0)
 
-                # The reprojection takes care of the transposition, so we
-                # overwrite transpose defined previously
-                transpose = False
+                # Finally convert array back to a 2D array
+                image = image.reshape(pixel_coords[0].shape)
 
         # Apply aggregation functions if needed
 
-        if image.ndim != len(agg_func):
-            raise ValueError("Sliced image dimensions ({0}) does not match "
-                             "aggregation function list ({1})"
-                             .format(image.ndim, len(agg_func)))
+        if agg_func is None:
 
-        for axis in range(image.ndim - 1, -1, -1):
-            func = agg_func[axis]
-            if func is not None:
-                image = func(image, axis=axis)
+            if image.ndim != 2:
+                raise IncompatibleDataException()
 
-        if image.ndim != 2:
-            raise ValueError("Image after aggregation should have two dimensions")
+        else:
+
+            if image.ndim != len(agg_func):
+                raise ValueError("Sliced image dimensions ({0}) does not match "
+                                 "aggregation function list ({1})"
+                                 .format(image.ndim, len(agg_func)))
+
+            for axis in range(image.ndim - 1, -1, -1):
+                func = agg_func[axis]
+                if func is not None:
+                    image = func(image, axis=axis)
+
+            if image.ndim != 2:
+                raise ValueError("Image after aggregation should have two dimensions")
 
         if transpose:
             image = image.transpose()

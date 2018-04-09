@@ -33,14 +33,12 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self.state.add_global_callback(self._update_image)
 
         self.layer.hub.subscribe(self, ComponentsChangedMessage,
-                                 handler=self._update_compatibility,
+                                 handler=self._update_image,
                                  filter=self._is_data_object)
 
         self.layer.hub.subscribe(self, ExternallyDerivableComponentsChangedMessage,
-                                 handler=self._update_compatibility,
+                                 handler=self._update_image,
                                  filter=self._is_data_object)
-
-        self._update_compatibility()
 
     def _is_data_object(self, message):
         if isinstance(self.layer, Data):
@@ -54,31 +52,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 
     def _update_image(self, force=False, **kwargs):
         raise NotImplementedError()
-
-    @defer_draw
-    def _update_compatibility(self, *args, **kwargs):
-        """
-        Determine compatibility of data with reference data. For the data to be
-        compatible with the reference data, the number of dimensions has to
-        match and the pixel component IDs have to be equivalent.
-        """
-
-        if self._viewer_state.reference_data is None:
-            self._compatible_with_reference_data = False
-            self.disable('No reference data defined')
-            return
-
-        if self.layer is self._viewer_state.reference_data:
-            self._compatible_with_reference_data = True
-            self.enable()
-            return
-
-        # TEMP: for now just assume we are compatible, then need to reimplement
-        # this check based on any coordinate links, not necessarily exact
-        # equivalence of pixel coordinates.
-
-        self._compatible_with_reference_data = True
-        self.enable()
 
 
 class ImageLayerArtist(BaseImageLayerArtist):
@@ -119,9 +92,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     def get_image_shape(self):
 
-        if not self._compatible_with_reference_data:
-            return None
-
         if self._viewer_state.x_att is None or self._viewer_state.y_att is None:
             return None
 
@@ -133,9 +103,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
         return full_shape[y_axis], full_shape[x_axis]
 
     def get_image_data(self, view=None):
-
-        if not self._compatible_with_reference_data:
-            return None
 
         try:
             image = self.state.get_sliced_data(view=view)
@@ -205,9 +172,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed or 'layer' in changed:
-            self._update_compatibility()
-
         if force or any(prop in changed for prop in ('layer', 'attribute',
                                                      'slices', 'x_att', 'y_att')):
             self._update_image_data()
@@ -253,9 +217,6 @@ class ImageSubsetArray(object):
     @property
     def shape(self):
 
-        if not self.layer_artist._compatible_with_reference_data:
-            return None
-
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
 
@@ -272,9 +233,6 @@ class ImageSubsetArray(object):
 
         if not self.layer_artist.visible:
             return self.nan_array
-
-        if not self.layer_artist._compatible_with_reference_data:
-            return None
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
@@ -361,9 +319,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed or 'layer' in changed:
-            self._update_compatibility()
-
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
             self.image_artist.invalidate_cache()
@@ -384,6 +339,5 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self):
-        # TODO: determine why this gets called when changing the transparency slider
         self._update_image(force=True)
         self.redraw()

@@ -4,10 +4,20 @@ import numpy as np
 from numpy.testing import assert_equal
 
 from glue.core import Data, DataCollection
+from glue.core.coordinates import Coordinates
 from glue.core.link_helpers import LinkSame
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 
 from ..state import ImageViewerState, ImageLayerState, AggregateSlice
+
+
+class SimpleCoordinates(Coordinates):
+
+    def world2pixel(self, *world):
+        return tuple([0.4 * w for w in world])
+
+    def pixel2world(self, *pixel):
+        return tuple([2.5 * p for p in pixel])
 
 
 class TestImageViewerState(object):
@@ -165,12 +175,26 @@ class TestReprojection():
         self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[2],
                                                self.data5.pixel_component_ids[0]))
 
+        # A dataset that is not on the same pixel grid and requires reprojection
+        self.data6 = Data()
+        self.data6.coords = SimpleCoordinates()
+        self.array_nonaligned = np.arange(60).reshape((5, 3, 4))
+        self.data6['x'] = np.array(self.array_nonaligned)
+        self.data_collection.append(self.data6)
+        self.data_collection.add_link(LinkSame(self.data1.world_component_ids[0],
+                                               self.data6.world_component_ids[1]))
+        self.data_collection.add_link(LinkSame(self.data1.world_component_ids[1],
+                                               self.data6.world_component_ids[2]))
+        self.data_collection.add_link(LinkSame(self.data1.world_component_ids[2],
+                                               self.data6.world_component_ids[0]))
+
         self.viewer_state = ImageViewerState()
         self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data1))
         self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data2))
         self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data3))
         self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data4))
         self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data5))
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data6))
 
         self.viewer_state.reference_data = self.data1
 
@@ -250,3 +274,51 @@ class TestReprojection():
 
         image = self.viewer_state.layers[4].get_sliced_data(view=view)
         assert_equal(image, self.array[::3, 0, 1::2, 0].transpose())
+
+    def test_reproject(self):
+
+        # Test a case where the data needs to actually be reprojected
+
+        # As for the previous test, but this time with a view applied
+
+        self.viewer_state.x_att = self.data1.pixel_component_ids[0]
+        self.viewer_state.y_att = self.data1.pixel_component_ids[2]
+        self.viewer_state.slices = (3, 2, 4, 1)
+
+        view = [slice(1, None, 2), slice(None, None, 3)]
+
+        actual = self.viewer_state.layers[5].get_sliced_data(view=view)
+
+        # The data to be reprojected is 3-dimensional. The axes we have set
+        # correspond to 1 (for x) and 0 (for y). The third dimension of the
+        # data to be reprojected should be sliced. This is linked with the
+        # second dimension of the original data, for which the slice index is
+        # 2. Since the data to be reprojected has coordinates that are 2.5 times
+        # those of the reference data, this means the slice index should be 0.8,
+        # which rounded corresponds to 1.
+        expected = self.array_nonaligned[:, :, 1]
+
+        # Now in the frame of the reference data, the data to show are indices
+        # [0, 3] along x and [1, 3, 5, 7] along y. Applying the transformation,
+        # this gives values of [0, 1.2] and [0.4, 1.2, 2, 2.8] for x and y,
+        # and rounded, this gives [0, 1] and [0, 1, 2, 3]. As a reminder, in the
+        # data to reproject, dimension 0 is y and dimension 1 is x
+        expected = expected[:4, :2]
+
+        # Let's make sure this works!
+        assert_equal(actual, expected)
+
+    def test_too_many_dimensions(self):
+
+        # If we change the reference data, then the first dataset won't be
+        # visible anymore because it has too many dimensions
+
+        self.viewer_state.reference_data = self.data4
+
+        with pytest.raises(IncompatibleAttribute):
+            self.viewer_state.layers[0].get_sliced_data()
+
+        self.viewer_state.reference_data = self.data6
+
+        with pytest.raises(IncompatibleAttribute):
+            self.viewer_state.layers[0].get_sliced_data()
