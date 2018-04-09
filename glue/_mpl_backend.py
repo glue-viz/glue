@@ -12,13 +12,16 @@ class MatplotlibBackendSetter(object):
             set_mpl_backend()
 
     def find_spec(self, name, import_path, target_module=None):
-        pass
+        if self.enabled and name.startswith('matplotlib'):
+            self.enabled = False
+            set_mpl_backend()
+
 
 def set_mpl_backend():
 
     try:
         from qtpy import PYQT5
-    except:
+    except Exception:
         # If Qt isn't available, we don't have to worry about
         # setting the backend
         return

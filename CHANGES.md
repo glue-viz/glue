@@ -121,6 +121,8 @@ v0.13.0 (unreleased)
 v0.12.6 (unreleased)
 --------------------
 
+* Fixed a bug that caused matplotlibrc files to not be ignored. [#1649]
+
 * Fixed a non-deterministic error that happened when closing the
   TableViewer. [#7310]
 
