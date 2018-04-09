@@ -14,7 +14,6 @@ env:
   global:
     # We add astropy-ci-extras to have the latest version of Astropy with older Numpy versions.
     - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
-    - PYTEST_ARGS="--cov glue -vs"
     - ASTROPY_VERSION=stable
     - NUMPY_VERSION=1.13
     # We pin Sphinx due to https://github.com/sphinx-doc/sphinx/issues/4689
@@ -75,7 +74,6 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               PYTEST_ARGS="--cov glue"
                CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
                PIP_DEPENDENCIES="pytest-cov coveralls"
                REMOVE_INSTALL_REQUIRES=1
@@ -84,7 +82,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=3.6
                DOC_TRIGGER=1
-               PYTEST_ARGS="--cov glue --cov-config .coveragerc --no-optional-skip"
+               PYTEST_ARGS="--no-optional-skip"
                NO_CFG_FILES=true
 
         # Test with older package versions:
@@ -211,7 +209,7 @@ script:
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
-  - python setup.py test -a "$PYTEST_ARGS"
+  - pytest --cov glue --durations=20 -vs $PYTEST_ARGS glue
 
   # In the following, we use separate if statements for each line, to make
   # sure the exit code from each one is taken into account for the overall
