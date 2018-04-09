@@ -1,7 +1,11 @@
+import pytest
+
 import numpy as np
 from numpy.testing import assert_equal
 
-from glue.core import Data
+from glue.core import Data, DataCollection
+from glue.core.link_helpers import LinkSame
+from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 
 from ..state import ImageViewerState, ImageLayerState, AggregateSlice
 
@@ -54,6 +58,7 @@ class TestImageViewerState(object):
         assert self.state.y_att_world is w2
         assert self.state.x_att is p1
         assert self.state.x_att_world is w1
+
 
 class TestSlicingAggregation():
 
@@ -109,3 +114,139 @@ class TestSlicingAggregation():
         result = self.layer_state.get_sliced_data()
         assert result.shape == (7, 5)
         assert_equal(result, 3)  # sum along 3 indices in one of the dimensions
+
+
+class TestReprojection():
+
+    def setup_method(self, method):
+
+        self.data_collection = DataCollection()
+
+        self.array = np.arange(3024).reshape((6, 7, 8, 9))
+
+        # The reference dataset. Shape is (6, 7, 8, 9).
+        self.data1 = Data(x=self.array)
+        self.data_collection.append(self.data1)
+
+        # A dataset with the same shape but not linked. Shape is (6, 7, 8, 9).
+        self.data2 = Data(x=self.array)
+        self.data_collection.append(self.data2)
+
+        # A dataset with the same number of dimesnions but in a different
+        # order, linked to the first. Shape is (9, 7, 6, 8).
+        self.data3 = Data(x=np.moveaxis(self.array, (3, 1, 0, 2), (0, 1, 2, 3)))
+        self.data_collection.append(self.data3)
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[0],
+                                               self.data3.pixel_component_ids[2]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[1],
+                                               self.data3.pixel_component_ids[1]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[2],
+                                               self.data3.pixel_component_ids[3]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[3],
+                                               self.data3.pixel_component_ids[0]))
+
+        # A dataset with fewer dimensions, linked to the first one. Shape is
+        # (8, 7, 6)
+        self.data4 = Data(x=self.array[:, :, :, 0].transpose())
+        self.data_collection.append(self.data4)
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[0],
+                                               self.data4.pixel_component_ids[2]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[1],
+                                               self.data4.pixel_component_ids[1]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[2],
+                                               self.data4.pixel_component_ids[0]))
+
+        # A dataset with even fewer dimensions, linked to the first one. Shape
+        # is (8, 6)
+        self.data5 = Data(x=self.array[:, 0, :, 0].transpose())
+        self.data_collection.append(self.data5)
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[0],
+                                               self.data5.pixel_component_ids[1]))
+        self.data_collection.add_link(LinkSame(self.data1.pixel_component_ids[2],
+                                               self.data5.pixel_component_ids[0]))
+
+        self.viewer_state = ImageViewerState()
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data1))
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data2))
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data3))
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data4))
+        self.viewer_state.layers.append(ImageLayerState(viewer_state=self.viewer_state, layer=self.data5))
+
+        self.viewer_state.reference_data = self.data1
+
+    def test_default_axis_order(self):
+
+        # Start off with a combination of x/y that means that only one of the
+        # other datasets will be matched.
+
+        self.viewer_state.x_att = self.data1.pixel_component_ids[3]
+        self.viewer_state.y_att = self.data1.pixel_component_ids[2]
+        self.viewer_state.slices = (3, 2, 4, 1)
+
+        image = self.viewer_state.layers[0].get_sliced_data()
+        assert_equal(image, self.array[3, 2, :, :])
+
+        with pytest.raises(IncompatibleAttribute):
+            self.viewer_state.layers[1].get_sliced_data()
+
+        image = self.viewer_state.layers[2].get_sliced_data()
+        assert_equal(image, self.array[3, 2, :, :])
+
+        with pytest.raises(IncompatibleDataException):
+            self.viewer_state.layers[3].get_sliced_data()
+
+        with pytest.raises(IncompatibleDataException):
+            self.viewer_state.layers[4].get_sliced_data()
+
+    def test_transpose_axis_order(self):
+
+        # Next make it so the x/y axes correspond to the dimensions with length
+        # 6 and 8 which most datasets will be compatible with, and this also
+        # requires a tranposition.
+
+        self.viewer_state.x_att = self.data1.pixel_component_ids[0]
+        self.viewer_state.y_att = self.data1.pixel_component_ids[2]
+        self.viewer_state.slices = (3, 2, 4, 1)
+
+        image = self.viewer_state.layers[0].get_sliced_data()
+        print(image.shape)
+        assert_equal(image, self.array[:, 2, :, 1].transpose())
+
+        with pytest.raises(IncompatibleAttribute):
+            self.viewer_state.layers[1].get_sliced_data()
+
+        image = self.viewer_state.layers[2].get_sliced_data()
+        print(image.shape)
+        assert_equal(image, self.array[:, 2, :, 1].transpose())
+
+        image = self.viewer_state.layers[3].get_sliced_data()
+        assert_equal(image, self.array[:, 2, :, 0].transpose())
+
+        image = self.viewer_state.layers[4].get_sliced_data()
+        assert_equal(image, self.array[:, 0, :, 0].transpose())
+
+    def test_transpose_axis_order_view(self):
+
+        # As for the previous test, but this time with a view applied
+
+        self.viewer_state.x_att = self.data1.pixel_component_ids[0]
+        self.viewer_state.y_att = self.data1.pixel_component_ids[2]
+        self.viewer_state.slices = (3, 2, 4, 1)
+
+        view = [slice(1, None, 2), slice(None, None, 3)]
+
+        image = self.viewer_state.layers[0].get_sliced_data(view=view)
+        assert_equal(image, self.array[::3, 2, 1::2, 1].transpose())
+
+        with pytest.raises(IncompatibleAttribute):
+            self.viewer_state.layers[1].get_sliced_data(view=view)
+
+        image = self.viewer_state.layers[2].get_sliced_data(view=view)
+        print(image.shape)
+        assert_equal(image, self.array[::3, 2, 1::2, 1].transpose())
+
+        image = self.viewer_state.layers[3].get_sliced_data(view=view)
+        assert_equal(image, self.array[::3, 2, 1::2, 0].transpose())
+
+        image = self.viewer_state.layers[4].get_sliced_data(view=view)
+        assert_equal(image, self.array[::3, 0, 1::2, 0].transpose())

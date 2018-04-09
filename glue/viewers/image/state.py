@@ -12,10 +12,10 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape
+from glue.utils import defer_draw, view_shape, broadcast_to
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleDataException
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -331,7 +331,16 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         full_view = slices
 
-        if view is not None and len(view) == 2:
+        # NOTE: view should be that which should just be applied to the data
+        # slice, not to all the dimensions of the data - thus it should have
+        # at most two dimension
+
+        if view is not None:
+
+            if len(view) > 2:
+                raise ValueError('view should have at most two elements')
+            if len(view) == 1:
+                view = view + [slice(None)]
 
             x_axis = self.viewer_state.x_att.axis
             y_axis = self.viewer_state.y_att.axis
@@ -339,13 +348,91 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[x_axis] = view[1]
             full_view[y_axis] = view[0]
 
-            view_applied = True
+        # First, check whether the data is simply the reference data - if so
+        # we can just use _get_image (which assumed alignment with reference_data)
+        # to get the image to use.
 
+        if self.layer.data is self.viewer_state.reference_data:
+            image = self._get_image(view=full_view)
         else:
 
-            view_applied = False
+            # Second, we check whether the current data is linked pixel-wise with
+            # the reference data.
 
-        image = self._get_reprojected_image(view=full_view)
+            order = self.layer.data.pixel_aligned_data.get(self.viewer_state.reference_data)
+
+            if order is not None:
+
+                # order gives the order of the pixel components of the reference
+                # data in the current data. With this we adjust the view and then
+                # check that the result is a 2D array - if not, it means for example
+                # that the layer is a 2D image and the reference data is a 3D cube
+                # and that we are not slicing one of the dimensions in the 3D cube
+                # that is also in the 2D image, resulting in a 1D array (which it
+                # doesn't make sense to show.
+
+                full_view = [full_view[idx] for idx in order]
+                image = self._get_image(view=full_view)
+
+                if image.ndim != 2:
+                    raise IncompatibleDataException()
+                else:
+                    # Now check whether we need to transpose the image - we need
+                    # to update this since the previously defined ``tranpose``
+                    # value assumed data in the order of the reference data
+                    x_axis = self.viewer_state.x_att.axis
+                    y_axis = self.viewer_state.y_att.axis
+                    transpose = order.index(x_axis) < order.index(y_axis)
+
+            else:
+
+                # Now the real fun begins! The pixel grids are not lined up. Fun
+                # times!
+
+                # Let's make sure there are no AggregateSlice variables in
+                # the view as we can't deal with this currently
+                if any(isinstance(v, AggregateSlice) for v in full_view):
+                    raise IncompatibleDataException()
+
+                # Start off by finding all the pixel coordinates of the current
+                # view in the reference frame of the current layer data.
+                pixel_coords = [self.viewer_state.reference_data[pix, full_view]
+                                for pix in self.layer.pixel_component_ids]
+                coords = np.array([p.ravel() for p in pixel_coords])
+
+                # Now figure out for each coordinate the range of values present
+                # so that we can prepare a view that we can use to get the value
+                # to interpolate since we want to avoid having to access the
+                # full array of values
+                interp_view = []
+                for icoord, coord in enumerate(coords):
+
+                    cmin, cmax = coord.min(), coord.max()
+                    nmax = self.layer.shape[icoord]
+
+                    # If all pixel coordinates in the view fall outside the
+                    # layer data along any dimension, we can stop.
+                    if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
+                        return broadcast_to(np.nan, pixel_coords[0].shape)
+                    else:
+                        cmin, cmax = max(0, cmin), min(nmax, cmax)
+
+                    interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
+                    coord -= cmin
+
+                # Finally, we get the layer data for the part that overlaps with
+                # the interpolation positions.
+                original = self._get_image(view=interp_view).astype(float)
+
+                # And we carry out the interpolation with map_coordinates. We
+                # use order=0 to preserve the apparance of the pixels (in
+                # addition, order=3 for instance doesn't work properly if NaN
+                # values are present)
+                image = map_coordinates(original, coords, cval=np.nan, order=0)
+
+                # The reprojection takes care of the transposition, so we
+                # overwrite transpose defined previously
+                transpose = False
 
         # Apply aggregation functions if needed
 
@@ -365,90 +452,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         if transpose:
             image = image.transpose()
 
-        if view_applied or view is None:
-            return image
-        else:
-            return image[view]
-
-    def _get_reprojected_image(self, view=None):
-        """
-        Get the image for this layer on the same pixel grid as the reference
-        image. This uses interpolation if needed if the pixel grids are not
-        lined up.
-        """
-
-        # First, check whether the data is simply the reference data - if so
-        # we can just use _get_image (which assumed alignment with reference_data)
-        # to get the image to use.
-
-        if self.layer.data is self.viewer_state.reference_data:
-            return self._get_image(view=view)
-
-        # Second, we check whether the current data is linked pixel-wise with
-        # the reference data.
-
-        order = self.layer.data.pixel_aligned_data.get(self.viewer_state.reference_data)
-
-        if order is not None:
-
-            # order gives the order of the pixel components of the reference
-            # data in the current data. With this we adjust the view and then
-            # check that the result is a 2D array - if not, it means for example
-            # that the layer is a 2D image and the reference data is a 3D cube
-            # and that we are not slicing one of the dimensions in the 3D cube
-            # that is also in the 2D image, resulting in a 1D array (which it
-            # doesn't make sense to show.
-
-            view = [view[idx] for idx in order]
-            image = self._get_image(view=view)
-
-            if image.ndim != 2:
-                raise IncompatibleAttribute()
-            else:
-                # Now check whether we need to transpose the image
-                x_axis = self.viewer_state.x_att.axis
-                y_axis = self.viewer_state.y_att.axis
-                if order.index(x_axis) > order.index(y_axis):
-                    image = image.transpose()
-                return image
-
-        # Now the real fun begins! The pixel grids are not lined up. Fun times!
-
-        # Start off by finding all the pixel coordinates of the current view
-        # in the reference frame of the current layer data.
-        pixel_coords = [self.viewer_state.reference_data[pix, view]
-                        for pix in self.layer.pixel_component_ids]
-        coords = np.array([p.ravel() for p in pixel_coords])
-
-        # Now figure out for each coordinate the range of values present so that
-        # we can prepare a view that we can use to get the value to interpolate
-        # since we want to avoid having to access the full array of values
-        interp_view = []
-        for icoord, coord in enumerate(coords):
-
-            cmin, cmax = coord.min(), coord.max()
-            nmax = self.layer.shape[icoord]
-
-            # If all pixel coordinates in the view fall outside the layer data
-            # along any dimension, we can stop.
-            if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
-                return broadcast_to(np.nan, pixel_coords[0].shape)
-            else:
-                cmin, cmax = max(0, cmin), min(nmax, cmax)
-
-            interp_view.append(slice(int(cmin), int(np.ceil(cmax))))
-            coord -= cmin
-
-        # Finally, we get the layer data for the part that overlaps with the
-        # interpolation positions.
-        original = self._get_image(view=interp_view).astype(float)
-
-        # And we carry out the interpolation with map_coordinates. We use
-        # order=0 to preserve the apparance of the pixels (in addition, order=3
-        # for instance doesn't work properly if NaN values are present)
-        image = map_coordinates(original, coords, cval=np.nan, order=0)
-
-        return image.reshape(pixel_coords[0].shape)
+        return image
 
     def _get_image(self, view=None):
         raise NotImplementedError()
