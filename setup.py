@@ -47,25 +47,6 @@ with open('README.rst') as infile:
 
 cmdclass = {}
 
-
-class PyTest(Command):
-
-    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        self.pytest_args = ""
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        # import here, cause outside the eggs aren't loaded
-        import pytest
-        errno = pytest.main(self.pytest_args + ' glue')
-        sys.exit(errno)
-
-cmdclass['test'] = PyTest
-
 # Define built-in plugins
 entry_points = """
 [glue.plugins]

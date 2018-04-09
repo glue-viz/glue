@@ -47,5 +47,4 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% python setup.py test"
-
+  - "%CMD_IN_ENV% pytest --durations=20 glue"
