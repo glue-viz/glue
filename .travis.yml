@@ -209,7 +209,7 @@ script:
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
-  - pytest --cov glue --durations=20 -vs $PYTEST_ARGS
+  - pytest --cov glue --durations=20 -vs $PYTEST_ARGS glue
 
   # In the following, we use separate if statements for each line, to make
   # sure the exit code from each one is taken into account for the overall
