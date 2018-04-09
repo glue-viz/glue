@@ -12,9 +12,10 @@ from glue.viewers.image.python_export import python_export_image_layer, python_e
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
-from glue.core.link_manager import is_equivalent_cid
 from glue.core import Data, HubListener
-from glue.core.message import ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage
+from glue.core.message import (ComponentsChangedMessage,
+                               ExternallyDerivableComponentsChangedMessage,
+                               PixelAlignedDataChangedMessage)
 from glue.external.modest_image import imshow
 
 
@@ -33,14 +34,16 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         self.state.add_global_callback(self._update_image)
 
         self.layer.hub.subscribe(self, ComponentsChangedMessage,
-                                 handler=self._update_compatibility,
+                                 handler=self.update,
                                  filter=self._is_data_object)
 
         self.layer.hub.subscribe(self, ExternallyDerivableComponentsChangedMessage,
-                                 handler=self._update_compatibility,
+                                 handler=self.update,
                                  filter=self._is_data_object)
 
-        self._update_compatibility()
+        self.layer.hub.subscribe(self, PixelAlignedDataChangedMessage,
+                                 handler=self.update,
+                                 filter=self._is_data_object)
 
     def _is_data_object(self, message):
         if isinstance(self.layer, Data):
@@ -54,54 +57,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 
     def _update_image(self, force=False, **kwargs):
         raise NotImplementedError()
-
-    @defer_draw
-    def _update_compatibility(self, *args, **kwargs):
-        """
-        Determine compatibility of data with reference data. For the data to be
-        compatible with the reference data, the number of dimensions has to
-        match and the pixel component IDs have to be equivalent.
-        """
-
-        if self._viewer_state.reference_data is None:
-            self._compatible_with_reference_data = False
-            self.disable('No reference data defined')
-            return
-
-        if self.layer is self._viewer_state.reference_data:
-            self._compatible_with_reference_data = True
-            self.enable()
-            return
-
-        # Check whether the pixel component IDs of the dataset are equivalent
-        # to that of the reference dataset. In future this is where we could
-        # allow for these to be different and implement reprojection.
-        if self.layer.ndim != self._viewer_state.reference_data.ndim:
-            self._compatible_with_reference_data = False
-            self.disable('Data dimensions do not match reference data')
-            return
-
-        # Determine whether pixel component IDs are equivalent
-
-        pids = self.layer.pixel_component_ids
-        pids_ref = self._viewer_state.reference_data.pixel_component_ids
-
-        if isinstance(self.layer, Data):
-            data = self.layer
-        else:
-            data = self.layer.data
-
-        for i in range(data.ndim):
-            if not is_equivalent_cid(data, pids[i], pids_ref[i]):
-                self._compatible_with_reference_data = False
-                self.disable('Pixel component IDs do not match. You can try '
-                             'fixing this by linking the pixel component IDs '
-                             'of this dataset with those of the reference '
-                             'dataset.')
-                return
-
-        self._compatible_with_reference_data = True
-        self.enable()
 
 
 class ImageLayerArtist(BaseImageLayerArtist):
@@ -142,23 +97,17 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     def get_image_shape(self):
 
-        if not self._compatible_with_reference_data:
-            return None
-
         if self._viewer_state.x_att is None or self._viewer_state.y_att is None:
             return None
 
         x_axis = self._viewer_state.x_att.axis
         y_axis = self._viewer_state.y_att.axis
 
-        full_shape = self.layer.shape
+        full_shape = self._viewer_state.reference_data.shape
 
         return full_shape[y_axis], full_shape[x_axis]
 
     def get_image_data(self, view=None):
-
-        if not self._compatible_with_reference_data:
-            return None
 
         try:
             image = self.state.get_sliced_data(view=view)
@@ -228,9 +177,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed or 'layer' in changed:
-            self._update_compatibility()
-
         if force or any(prop in changed for prop in ('layer', 'attribute',
                                                      'slices', 'x_att', 'y_att')):
             self._update_image_data()
@@ -243,14 +189,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self._update_visual_attributes()
 
     @defer_draw
-    def update(self):
-
+    def update(self, *event):
         self._update_image(force=True)
-
-        # Reset the axes stack so that pressing the home button doesn't go back
-        # to a previous irrelevant view.
-        self.axes.figure.canvas.toolbar.update()
-
         self.redraw()
 
 
@@ -276,13 +216,10 @@ class ImageSubsetArray(object):
     @property
     def shape(self):
 
-        if not self.layer_artist._compatible_with_reference_data:
-            return None
-
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
 
-        full_shape = self.layer_state.layer.shape
+        full_shape = self.viewer_state.reference_data.shape
 
         return full_shape[y_axis], full_shape[x_axis]
 
@@ -293,7 +230,7 @@ class ImageSubsetArray(object):
                 self.viewer_state is None):
             return None
 
-        if not self.layer_artist._compatible_with_reference_data:
+        if not self.layer_artist.visible:
             return None
 
         try:
@@ -381,9 +318,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
 
-        if 'reference_data' in changed or 'layer' in changed:
-            self._update_compatibility()
-
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
             self.image_artist.invalidate_cache()
@@ -403,7 +337,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
             self._update_visual_attributes()
 
     @defer_draw
-    def update(self):
-        # TODO: determine why this gets called when changing the transparency slider
+    def update(self, *event):
         self._update_image(force=True)
         self.redraw()

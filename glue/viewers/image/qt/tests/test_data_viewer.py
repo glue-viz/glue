@@ -634,7 +634,7 @@ class TestImageViewer(object):
         self.viewer.add_data(self.hypercube)
         self.viewer.state.reference_data = self.hypercube
 
-        assert self.viewer.layers[1].subset_array.shape is None
+        assert self.viewer.layers[1].subset_array.shape == (4, 5)
         assert self.viewer.layers[3].subset_array.shape == (4, 5)
 
     def test_preserve_slice(self):

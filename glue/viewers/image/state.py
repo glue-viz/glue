@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from collections import defaultdict
 
+import numpy as np
+
 from glue.core import Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -9,9 +11,10 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape
+from glue.utils import defer_draw, view_shape, broadcast_to
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
+from glue.core.exceptions import IncompatibleDataException
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -323,11 +326,23 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view=None):
 
+        # TODO: we should do some caching here to avoid e.g. reprojecting
+        # the same data multiple times.
+
         slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         full_view = slices
 
-        if view is not None and len(view) == 2:
+        # The view should be that which should just be applied to the data
+        # slice, not to all the dimensions of the data - thus it should have at
+        # most two dimension
+
+        if view is not None:
+
+            if len(view) > 2:
+                raise ValueError('view should have at most two elements')
+            if len(view) == 1:
+                view = view + [slice(None)]
 
             x_axis = self.viewer_state.x_att.axis
             y_axis = self.viewer_state.y_att.axis
@@ -335,36 +350,126 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[x_axis] = view[1]
             full_view[y_axis] = view[0]
 
-            view_applied = True
+        # First, check whether the data is simply the reference data - if so
+        # we can just use _get_image (which assumed alignment with reference_data)
+        # to get the image to use.
 
+        if self.layer.data is self.viewer_state.reference_data:
+            image = self._get_image(view=full_view)
         else:
 
-            view_applied = False
+            # Second, we check whether the current data is linked pixel-wise with
+            # the reference data.
 
-        image = self._get_image(view=full_view)
+            order = self.layer.data.pixel_aligned_data.get(self.viewer_state.reference_data)
+
+            if order is not None:
+
+                # order gives the order of the pixel components of the reference
+                # data in the current data. With this we adjust the view and then
+                # check that the result is a 2D array - if not, it means for example
+                # that the layer is a 2D image and the reference data is a 3D cube
+                # and that we are not slicing one of the dimensions in the 3D cube
+                # that is also in the 2D image, resulting in a 1D array (which it
+                # doesn't make sense to show.
+
+                full_view = [full_view[idx] for idx in order]
+                image = self._get_image(view=full_view)
+
+                if image.ndim != 2:
+                    raise IncompatibleDataException()
+                else:
+                    # Now check whether we need to transpose the image - we need
+                    # to update this since the previously defined ``tranpose``
+                    # value assumed data in the order of the reference data
+                    x_axis = self.viewer_state.x_att.axis
+                    y_axis = self.viewer_state.y_att.axis
+                    transpose = order.index(x_axis) < order.index(y_axis)
+
+            else:
+
+                # Now the real fun begins! The pixel grids are not lined up. Fun
+                # times!
+
+                # Let's make sure there are no AggregateSlice variables in
+                # the view as we can't deal with this currently
+                if any(isinstance(v, AggregateSlice) for v in full_view):
+                    raise IncompatibleDataException()
+                else:
+                    agg_func = None
+
+                # Start off by finding all the pixel coordinates of the current
+                # view in the reference frame of the current layer data.
+                pixel_coords = [self.viewer_state.reference_data[pix, full_view]
+                                for pix in self.layer.pixel_component_ids]
+                coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
+
+                # Now figure out for each coordinate the range of values present
+                # so that we can prepare a view that we can use to get the value
+                # to interpolate since we want to avoid having to access the
+                # full array of values.
+
+                interp_view = []
+
+                for icoord, coord in enumerate(coords):
+
+                    cmin, cmax = coord.min(), coord.max()
+                    nmax = self.layer.shape[icoord]
+
+                    # If all pixel coordinates in the view fall outside the
+                    # layer data along any dimension, we can stop.
+                    if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
+                        return broadcast_to(np.nan, pixel_coords[0].shape)
+                    else:
+                        cmin, cmax = max(0, cmin), min(nmax, cmax + 1)
+
+                    interp_view.append(slice(cmin, cmax))
+
+                    coord -= cmin
+
+                # Finally, we get the layer data for the part that overlaps with
+                # the interpolation positions.
+                original = self._get_image(view=interp_view)
+
+                # We now do a nearest-neighbor interpolation. We don't use
+                # map_coordinates because it is picky about array endian-ness
+                # and if we just use normal Numpy slicing we can preserve the
+                # data type (and avoid memory copies)
+                keep = np.ones(len(coords[0]), dtype=bool)
+                image = np.zeros(len(coords[0])) * np.nan
+                for icoord, coord in enumerate(coords):
+                    keep[(coord < 0) | (coord >= original.shape[icoord])] = False
+                image[keep] = original[[coord[keep] for coord in coords]]
+
+                # Finally convert array back to a 2D array
+                image = image.reshape(pixel_coords[0].shape)
 
         # Apply aggregation functions if needed
 
-        if image.ndim != len(agg_func):
-            raise ValueError("Sliced image dimensions ({0}) does not match "
-                             "aggregation function list ({1})"
-                             .format(image.ndim, len(agg_func)))
+        if agg_func is None:
 
-        for axis in range(image.ndim - 1, -1, -1):
-            func = agg_func[axis]
-            if func is not None:
-                image = func(image, axis=axis)
+            if image.ndim != 2:
+                raise IncompatibleDataException()
 
-        if image.ndim != 2:
-            raise ValueError("Image after aggregation should have two dimensions")
+        else:
+
+            if image.ndim != len(agg_func):
+                raise ValueError("Sliced image dimensions ({0}) does not match "
+                                 "aggregation function list ({1})"
+                                 .format(image.ndim, len(agg_func)))
+
+            for axis in range(image.ndim - 1, -1, -1):
+                func = agg_func[axis]
+                if func is not None:
+                    image = func(image, axis=axis)
+
+            if image.ndim != 2:
+                raise ValueError("Image after aggregation should have two dimensions")
 
         if transpose:
             image = image.transpose()
 
-        if view_applied or view is None:
-            return image
-        else:
-            return image[view]
+        return image
 
     def _get_image(self, view=None):
         raise NotImplementedError()
@@ -477,6 +582,9 @@ class ImageSubsetLayerState(BaseImageLayerState):
     """
     A state class that includes all the attributes for subset layers in an image plot.
     """
+
+    # TODO: we can save memory by not showing subset multiple times for
+    # different image datasets since the footprint should be the same.
 
     def _get_image(self, view=None):
         return self.layer.to_mask(view=view)
