@@ -306,19 +306,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 
 class BaseImageLayerState(MatplotlibLayerState):
 
-    def __init__(self, *args, **kwargs):
-
-        super(BaseImageLayerState, self).__init__(*args, **kwargs)
-
-        self._viewer_callbacks_set = False
-        self._cache = None
-
-        # Maybe not needed:
-        # self.viewer_state.add_callback('layer', self.reset_cache)
-        # self.viewer_state.add_callback('reference_data', self.reset_cache)
-
-        # Also need to listen for ExternallyDerivableComponentsChangedMessage
-        # and PixelAlignedDataChangedMessage and reset cache, and subset update.
+    _viewer_callbacks_set = False
+    _cache = None
 
     def get_sliced_data_shape(self, view=None):
 
