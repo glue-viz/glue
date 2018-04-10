@@ -928,8 +928,6 @@ class Data(object):
         else:
             raise IncompatibleAttribute(key)
 
-        shp = view_shape(self.shape, view)
-
         if view is not None:
             result = comp[view]
         else:
@@ -938,8 +936,6 @@ class Data(object):
             else:
                 result = comp.data
 
-        assert result.shape == shp, \
-            "Component view returned bad shape: %s %s" % (result.shape, shp)
         return result
 
     def __setitem__(self, key, value):
