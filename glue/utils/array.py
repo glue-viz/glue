@@ -271,6 +271,9 @@ def combine_slices(slice1, slice2, length):
     beg1, end1, step1 = slice1.indices(length)
     beg2, end2, step2 = slice2.indices(length)
 
+    if step1 < 0 or step2 < 0:
+        raise ValueError("combine_slices does not support slices with negative step")
+
     if beg2 >= end1 or end2 <= beg1:
         return slice(0, 0, 1)
 
