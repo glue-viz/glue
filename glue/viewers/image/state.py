@@ -4,17 +4,17 @@ from collections import defaultdict
 
 import numpy as np
 
-from glue.core import Data
+from glue.core import Data, Subset
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape, broadcast_to
+from glue.utils import defer_draw, view_shape
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -306,6 +306,9 @@ class ImageViewerState(MatplotlibDataViewerState):
 
 class BaseImageLayerState(MatplotlibLayerState):
 
+    _viewer_callbacks_set = False
+    _cache = None
+
     def get_sliced_data_shape(self, view=None):
 
         if (self.viewer_state.reference_data is None or
@@ -326,12 +329,40 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     def get_sliced_data(self, view=None):
 
-        # TODO: we should do some caching here to avoid e.g. reprojecting
-        # the same data multiple times.
+        # Getting the sliced data can be computationally expensive in some cases
+        # in particular when reprojecting data/subsets. To avoid recomputing
+        # these in cases where it isn't necessary, for example if the reference
+        # data is a spectral cube and the layer is a 2D mosaic, we set up a
+        # cache at the end of this method, and we then set up callbacks to
+        # reset the cache if any of the following properties change. We need
+        # to set a very high priority so that this is the first thing to happen.
+        # Note that we need to set up the callbacks here as the viewer_state is
+        # not always set in the __init__, for example when loading up sessions.
+        # We also need to make sure that the cache gets reset when the links
+        # change or when the subset changes. This is taken care of by calling
+        # reset_cache in the layer artist update() method, which gets called
+        # for these cases.
 
-        slices, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
+        if not self._viewer_callbacks_set:
+            self.viewer_state.add_callback('slices', self.reset_cache_from_slices,
+                                           echo_old=True, priority=100000)
+            self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('y_att', self.reset_cache, priority=100000)
+            if self.is_callback_property('attribute'):  # this isn't the case for subsets
+                self.add_callback('attribute', self.reset_cache, priority=100000)
+            self._viewer_callbacks_set = True
 
-        full_view = slices
+        if self._cache is not None:
+            if view == self._cache['view']:
+                return self._cache['image']
+
+        # In the cache, we need to keep track of which slice indices should
+        # cause the cache to be reset. By default, we assume that any changes
+        # in slices should cause the cache to get reset, and in the reprojection
+        # code below we then set up more specific conditions.
+        reset_slices = True
+
+        full_view, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
 
         # The view should be that which should just be applied to the data
         # slice, not to all the dimensions of the data - thus it should have at
@@ -404,32 +435,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                                 for pix in self.layer.pixel_component_ids]
                 coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
 
-                # Now figure out for each coordinate the range of values present
-                # so that we can prepare a view that we can use to get the value
-                # to interpolate since we want to avoid having to access the
-                # full array of values.
-
-                interp_view = []
-
-                for icoord, coord in enumerate(coords):
-
-                    cmin, cmax = coord.min(), coord.max()
-                    nmax = self.layer.shape[icoord]
-
-                    # If all pixel coordinates in the view fall outside the
-                    # layer data along any dimension, we can stop.
-                    if cmin > nmax or cmax < 0:  # TODO: figure out exact thresholds to use here
-                        return broadcast_to(np.nan, pixel_coords[0].shape)
-                    else:
-                        cmin, cmax = max(0, cmin), min(nmax, cmax + 1)
-
-                    interp_view.append(slice(cmin, cmax))
-
-                    coord -= cmin
-
-                # Finally, we get the layer data for the part that overlaps with
-                # the interpolation positions.
-                original = self._get_image(view=interp_view)
+                # TODO: add test when image is smaller than cube
 
                 # We now do a nearest-neighbor interpolation. We don't use
                 # map_coordinates because it is picky about array endian-ness
@@ -438,11 +444,24 @@ class BaseImageLayerState(MatplotlibLayerState):
                 keep = np.ones(len(coords[0]), dtype=bool)
                 image = np.zeros(len(coords[0])) * np.nan
                 for icoord, coord in enumerate(coords):
-                    keep[(coord < 0) | (coord >= original.shape[icoord])] = False
-                image[keep] = original[[coord[keep] for coord in coords]]
+                    keep[(coord < 0) | (coord >= self.layer.shape[icoord])] = False
+                coords = [coord[keep] for coord in coords]
+                image[keep] = self._get_image(view=coords)
 
                 # Finally convert array back to a 2D array
                 image = image.reshape(pixel_coords[0].shape)
+
+                # Determine which slice indices should cause the cache to get
+                # reset and the image to be re-projected.
+
+                reset_slices = []
+                single_pixel = (0,) * self.layer.ndim
+                for pix in self.viewer_state.reference_data.pixel_component_ids:
+                    try:
+                        self.layer[pix, single_pixel]
+                        reset_slices.append(True)
+                    except IncompatibleAttribute:
+                        reset_slices.append(False)
 
         # Apply aggregation functions if needed
 
@@ -469,7 +488,31 @@ class BaseImageLayerState(MatplotlibLayerState):
         if transpose:
             image = image.transpose()
 
+        self._cache = {'view': view, 'image': image, 'reset_slices': reset_slices}
+
         return image
+
+    def reset_cache_from_slices(self, slice_before, slice_after):
+
+        # When the slice changes, we don't necessarily need to reset the cache
+        # as the slice being changed may not have a counterpart in the image
+        # shown. For instance, when showing a spectral cube and a 2D image, the
+        # 2D image doesn't need to be reprojected every time the spectral slice
+        # changes. The reset_slices key in the cache dictionary is either `True`
+        # if any change in slice should cause the cache to get reset, or it is
+        # a list of boolean values for each slice dimension.
+
+        if self._cache is not None:
+            if self._cache['reset_slices'] is True:
+                self.reset_cache()
+            else:
+                reset_slices = self._cache['reset_slices']
+                for islice in range(len(slice_before)):
+                    if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
+                        return self.reset_cache()
+
+    def reset_cache(self, *event):
+        self._cache = None
 
     def _get_image(self, view=None):
         raise NotImplementedError()

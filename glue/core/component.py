@@ -300,6 +300,12 @@ class CoordinateComponent(Component):
             if view is None:
                 view = Ellipsis
 
+            # If the view is a tuple or list of arrays, we should actually just
+            # convert these straight to world coordinates since the indices
+            # of the pixel coordinates are the pixel coordinates themselves.
+            if isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray):
+                return np.array(self._data.coords.pixel2world(*view[::-1])[::-1])[self.axis]
+
             # For 1D arrays, slice can be given as a single slice but we need
             # to wrap it in a list to make the following code work correctly,
             # as it is then consistent with higher-dimensional cases.
