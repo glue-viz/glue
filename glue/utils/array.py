@@ -215,6 +215,11 @@ def iterate_chunks(shape, chunk_shape=None, n_max=None):
     return slice objects that can be used to slice the array.
     """
 
+    # Shortcut - if there are any 0 elements in the shape, there are no
+    # chunks to iterate over.
+    if np.prod(shape) == 0:
+        return
+
     if chunk_shape is None and n_max is None:
         raise ValueError('Either chunk_shape or n_max should be specified')
     elif chunk_shape is not None and n_max is not None:

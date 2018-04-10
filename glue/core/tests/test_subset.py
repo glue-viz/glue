@@ -31,6 +31,7 @@ from ..subset import InvertState
 from ..subset import OrState
 from ..subset import XorState
 from .test_state import clone
+from ..roi import RectangularROI
 
 
 class TestSubset(object):
@@ -456,7 +457,6 @@ class TestSubsetViews(object):
 
 
 def roifac(comp, cid):
-    from ..roi import RectangularROI
 
     result = RoiSubsetState()
     result.xatt = cid
@@ -464,6 +464,16 @@ def roifac(comp, cid):
     roi = RectangularROI()
     roi.update_limits(0.5, 0.5, 1.5, 1.5)
     result.roi = roi
+    return result
+
+
+def roifac3d(comp, cid):
+
+    roi_2d = RectangularROI(0.5, 0.5, 1.5, 1.5)
+    roi_3d = Projected3dROI(roi_2d=roi_2d, projection_matrix=np.arange(16).reshape((4, 4)))
+
+    result = RoiSubsetState3d(xatt=cid, yatt=cid, zatt=cid, roi=roi_3d)
+
     return result
 
 
@@ -505,6 +515,18 @@ def basefac(comp, cid):
     return SubsetState()
 
 
+def maskfac(comp, cid):
+    return MaskSubsetState([[0, 1], [1, 1]], cid.parent.pixel_component_ids)
+
+
+def floodfac(comp, cid):
+    return FloodFillSubsetState(cid.parent, cid, [0, 0], 1.2)
+
+
+def slicefac(comp, cid):
+    return SliceSubsetState(cid.parent, [slice(None), slice(0, 1)])
+
+
 views = (np.s_[:],
          np.s_[::-1, 0],
          np.s_[0, :],
@@ -513,8 +535,8 @@ views = (np.s_[:],
          np.where(np.array([[True, False], [False, True]])),
          np.zeros((2, 2), dtype=bool),
          )
-facs = [roifac, rangefac, orfac, andfac, xorfac, invertfac,
-        elementfac, inequalityfac, basefac]
+facs = [roifac, roifac3d, rangefac, orfac, andfac, xorfac, invertfac,
+        elementfac, inequalityfac, basefac, maskfac, floodfac, slicefac]
 
 
 @pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
@@ -533,9 +555,7 @@ def test_mask_of_view_is_view_of_mask(statefac, view):
     np.testing.assert_array_equal(v1, v2)
 
     v1 = s[cid, view]
-    m0 = np.zeros_like(c.data, dtype=bool)
-    m0[view] = True
-    v2 = c.data[s.to_mask() & m0]
+    v2 = c.data[view][s.to_mask(view)]
     np.testing.assert_array_equal(v1, v2)
 
 

@@ -911,7 +911,8 @@ class MaskSubsetState(SubsetState):
 
     def to_mask(self, data, view=None):
 
-        view = view or slice(None)
+        if view is None:
+            view = slice(None)
 
         # shortcut for data on the same pixel grid
         if data.pixel_component_ids == self.cids:
@@ -980,6 +981,12 @@ class SliceSubsetState(SubsetState):
                 # Reorder slices
                 slices = [self.slices[idx] for idx in order]
 
+        if (isinstance(view, np.ndarray) or
+                (isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray))):
+            mask = np.zeros(data.shape, dtype=bool)
+            mask[slices] = True
+            return mask[view]
+
         # The original slices assume the full array, not the array with the view
         # applied, so we need to now adjust the slices accordingly.
         if view is Ellipsis:
@@ -993,8 +1000,15 @@ class SliceSubsetState(SubsetState):
                     beg, end, stp = slices[i].indices(data.shape[i])
                     if view[i] < beg or view[i] >= end or (view[i] - beg) % stp != 0:
                         return broadcast_to(False, shape)
+                elif isinstance(view[i], slice):
+                    if view[i].step is not None and view[i].step < 0:
+                        beg, end, step = view[i].indices(data.shape[i])
+                        v = slice(end + 1, beg + 1, -step)
+                    else:
+                        v = view[i]
+                    subslices.append(combine_slices(v, slices[i], data.shape[i]))
                 else:
-                    subslices.append(combine_slices(view[i], slices[i], data.shape[i]))
+                    raise TypeError("Unexpected view item: {0}".format(view[i]))
 
         # Create mask with final shape
         mask = np.zeros(shape, dtype=bool)
