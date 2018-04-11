@@ -11,7 +11,7 @@ from numpy.testing import assert_equal, assert_allclose
 
 from mock import MagicMock
 
-from glue.tests.helpers import requires_astropy, requires_scipy
+from glue.tests.helpers import requires_astropy, requires_scipy, SCIPY_INSTALLED
 from ..exceptions import IncompatibleAttribute
 from .. import DataCollection, ComponentLink
 from ..data import Data, Component
@@ -536,7 +536,10 @@ views = (np.s_[:],
          np.zeros((2, 2), dtype=bool),
          )
 facs = [roifac, roifac3d, rangefac, orfac, andfac, xorfac, invertfac,
-        elementfac, inequalityfac, basefac, maskfac, floodfac, slicefac]
+        elementfac, inequalityfac, basefac, maskfac, slicefac]
+
+if SCIPY_INSTALLED:
+    facs.append(floodfac)
 
 
 @pytest.mark.parametrize(('statefac', 'view'), [(f, v) for f in facs
