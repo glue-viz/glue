@@ -215,6 +215,11 @@ def iterate_chunks(shape, chunk_shape=None, n_max=None):
     return slice objects that can be used to slice the array.
     """
 
+    # Shortcut - if there are any 0 elements in the shape, there are no
+    # chunks to iterate over.
+    if np.prod(shape) == 0:
+        return
+
     if chunk_shape is None and n_max is None:
         raise ValueError('Either chunk_shape or n_max should be specified')
     elif chunk_shape is not None and n_max is not None:
@@ -265,6 +270,9 @@ def combine_slices(slice1, slice2, length):
 
     beg1, end1, step1 = slice1.indices(length)
     beg2, end2, step2 = slice2.indices(length)
+
+    if step1 < 0 or step2 < 0:
+        raise ValueError("combine_slices does not support slices with negative step")
 
     if beg2 >= end1 or end2 <= beg1:
         return slice(0, 0, 1)
