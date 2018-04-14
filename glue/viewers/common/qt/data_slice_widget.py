@@ -6,7 +6,7 @@ import numpy as np
 
 from qtpy import QtCore, QtWidgets
 from glue.utils.qt import load_ui
-from glue.utils import nonpartial
+from glue.utils import nonpartial, format_minimal
 from glue.icons.qt import get_icon
 from glue.core.state_objects import State, CallbackProperty
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
@@ -72,13 +72,7 @@ class SliceWidget(QtWidgets.QWidget):
         # a string, every string value is different.
 
         if world is not None and len(world) > 1:
-            if np.max(np.abs(world)) > 1e5 or np.max(np.abs(world)) < 1e-5:
-                fmt_type = 'e'
-            else:
-                fmt_type = 'f'
-            relative = np.abs(np.diff(world) / world[:-1])
-            ndec = max(2, min(int(np.ceil(-np.log10(np.min(relative)))) + 1, 15))
-            self.label_fmt = "{:." + str(ndec) + fmt_type + "}"
+            self.label_fmt = format_minimal(world)[0]
         else:
             self.label_fmt = "{:g}"
 

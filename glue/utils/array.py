@@ -13,7 +13,7 @@ from glue.external.six.moves import range
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax']
+           'nanmin', 'nanmax', 'format_minimal']
 
 
 def unbroadcast(array):
@@ -369,5 +369,24 @@ def nanmax(array, axis=None):
     return bt.nanmax(array, axis=axis)
 
 
-array = np.random.random((2, 5, 4, 2, 3))
-nanmean(array, axis=(1, 2))
+def format_minimal(values):
+    """
+    Find the shortest format that can be used to represent all values in an
+    array such that all the string representations are different.
+
+    The current implementation is not incredibly efficient, but it takes only
+    ~30ms for a 1000 element array and 200ms for a 10000 element array. One
+    could probably make a more efficient implementation but this is good enough
+    for now for what we use it for.
+    """
+    values = np.asarray(values)
+    if np.max(np.abs(values)) > 1e5 or np.min(np.diff(values)) < 1e-5:
+        fmt_type = 'e'
+    else:
+        fmt_type = 'f'
+    for ndec in range(1, 15):
+        fmt = '{{:.{0}{1}}}'.format(ndec, fmt_type)
+        strings = [fmt.format(x) for x in values]
+        if len(strings) == len(set(strings)):
+            break
+    return fmt, strings
