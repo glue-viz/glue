@@ -121,6 +121,9 @@ v0.13.0 (unreleased)
 v0.12.6 (unreleased)
 --------------------
 
+* Fixed an issue that caused an IndexError when quitting glue in some
+  cases. [#1657]
+
 * Fixed a bug that caused matplotlibrc files to not be ignored. [#1649]
 
 * Fixed a non-deterministic error that happened when closing the
