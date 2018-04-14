@@ -87,6 +87,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
         )
         data = Data(label=label)
         data.coords = coords
+        data.meta.update(OrderedDict(hdu.header))
         groups[hdu_name] = data
         extension_by_shape[shape] = hdu_name
         return data

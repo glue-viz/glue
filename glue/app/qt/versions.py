@@ -6,13 +6,13 @@ from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, CenteredDialog
 from glue._deps import get_status_as_odict
 
 __all__ = ['QVersionsDialog']
 
 
-class QVersionsDialog(QtWidgets.QDialog):
+class QVersionsDialog(CenteredDialog):
 
     def __init__(self, *args, **kwargs):
 
@@ -30,27 +30,16 @@ class QVersionsDialog(QtWidgets.QDialog):
         self._clipboard = QtWidgets.QApplication.clipboard()
         self.ui.button_copy.clicked.connect(nonpartial(self._copy))
 
-
-
     def _update_deps(self):
         status = get_status_as_odict()
         self._text = ""
         for name, version in [('Glue', __version__)] + list(status.items()):
-            check = QtWidgets.QTreeWidgetItem(self.ui.version_tree.invisibleRootItem(),
-                                          [name, version])
+            QtWidgets.QTreeWidgetItem(self.ui.version_tree.invisibleRootItem(),
+                                      [name, version])
             self._text += "{0}: {1}\n".format(name, version)
 
     def _copy(self):
         self._clipboard.setText(self._text)
-
-    def center(self):
-        # Adapted from StackOverflow
-        # https://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
-        frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
 
 
 if __name__ == "__main__":

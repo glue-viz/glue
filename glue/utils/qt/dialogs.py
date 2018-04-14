@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy import QtWidgets
 
-__all__ = ['pick_item', 'pick_class', 'get_text']
+__all__ = ['pick_item', 'pick_class', 'get_text', 'CenteredDialog']
 
 
 def pick_item(items, labels, title="Pick an item", label="Pick an item",
@@ -84,3 +84,18 @@ def get_text(title='Enter a label', default=None):
     result, isok = QtWidgets.QInputDialog.getText(None, title, title, text=default)
     if isok:
         return str(result)
+
+
+class CenteredDialog(QtWidgets.QDialog):
+    """
+    A dialog that is centered on the screen.
+    """
+
+    def center(self):
+        # Adapted from StackOverflow
+        # https://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
+        frameGm = self.frameGeometry()
+        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())

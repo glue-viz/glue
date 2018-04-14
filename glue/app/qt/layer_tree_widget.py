@@ -25,6 +25,7 @@ from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.core.message import EditSubsetMessage
 from glue.core.hub import HubListener
+from glue.app.qt.metadata import MetadataDialog
 
 
 @core.decorators.singleton
@@ -141,6 +142,24 @@ class FacetAction(LayerAction):
             default = None
         SubsetFacet.facet(self._layer_tree.data_collection,
                           parent=self._layer_tree, default=default)
+
+
+class MetadataAction(LayerAction):
+
+    _title = "View metadata/header"
+    _tooltip = "View metadata/header"
+    _shortcut = QtGui.QKeySequence('Ctrl+I')
+
+    def _can_trigger(self):
+        return self.single_selection_data() or self.single_selection_subset()
+
+    def _do_action(self):
+        layers = self.selected_layers()
+        if isinstance(layers[0], core.Subset):
+            data = layers[0].data
+        else:
+            data = layers[0]
+        MetadataDialog(data).exec_()
 
 
 class NewAction(LayerAction):
@@ -556,6 +575,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         self._actions['clear'] = ClearAction(self)
         self._actions['delete'] = DeleteAction(self)
         self._actions['facet'] = FacetAction(self)
+        self._actions['metadata'] = MetadataAction(self)
         self._actions['merge'] = MergeAction(self)
         self._actions['maskify'] = MaskifySubsetAction(self)
         self._actions['link'] = LinkAction(self)
