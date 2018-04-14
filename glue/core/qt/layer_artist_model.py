@@ -43,7 +43,7 @@ class LayerArtistModel(PythonListModel):
 
     def data(self, index, role):
         """Retrieve data at each index"""
-        if not index.isValid():
+        if not index.isValid() or index.row() >= len(self.artists):
             return None
         if role == Qt.DecorationRole:
             art = self.artists[index.row()]
@@ -63,7 +63,7 @@ class LayerArtistModel(PythonListModel):
 
     def flags(self, index):
         result = super(LayerArtistModel, self).flags(index)
-        if index.isValid():
+        if index.isValid() and index.row() < len(self.artists):
             art = self.artists[index.row()]
             if art.enabled:
                 result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
