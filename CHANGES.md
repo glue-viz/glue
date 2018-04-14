@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Added a new metadata/header viewer for datasets/subsets. [#1659]
+
 * Re-write spectrum viewer into a generic profile viewer that uses
   subsets to define the areas in which to compute profiles rather
   than custom ROIs. [#1635]
@@ -114,7 +116,7 @@ v0.13.0 (unreleased)
 
 * Added a new selection mode that always forces the creation of a new subset.
   [#1525]
-  
+
 * Added a mouse over pixel selection tool, which creates a one pixel subset
   under the mouse cursor. [#1619]
 
