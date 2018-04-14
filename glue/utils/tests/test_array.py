@@ -11,7 +11,8 @@ from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
-                     iterate_chunks, combine_slices, nanmean, nanmedian, nansum, nanmin, nanmax)
+                     iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
+                     nanmin, nanmax, format_minimal)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -229,3 +230,32 @@ if HYPOTHESIS_INSTALLED:
         actual = list(range(*combine_slices(slice1, slice2, length).indices(length)))
 
         assert actual == expected
+
+
+def test_format_minimal():
+
+    # TODO: in future could consider detecting integer cases
+    fmt, strings = format_minimal([133, 1444, 3300])
+    assert fmt == "{:.1f}"
+    assert strings == ['133.0', '1444.0', '3300.0']
+
+    # TODO: in future could consider detecting if all intervals are integers
+    fmt, strings = format_minimal([133., 1444., 3300.])
+    assert fmt == "{:.1f}"
+    assert strings == ['133.0', '1444.0', '3300.0']
+
+    fmt, strings = format_minimal([3, 4.3, 4.4, 5])
+    assert fmt == "{:.1f}"
+    assert strings == ['3.0', '4.3', '4.4', '5.0']
+
+    fmt, strings = format_minimal([3, 4.325, 4.326, 5])
+    assert fmt == "{:.3f}"
+    assert strings == ['3.000', '4.325', '4.326', '5.000']
+
+    fmt, strings = format_minimal([-3, 0., 0.993e-4, 5])
+    assert fmt == "{:.4f}"
+    assert strings == ['-3.0000', '0.0000', '0.0001', '5.0000']
+
+    fmt, strings = format_minimal([-3, 0., 0.993e-8, 5])
+    assert fmt == "{:.1e}"
+    assert strings == ['-3.0e+00', '0.0e+00', '9.9e-09', '5.0e+00']

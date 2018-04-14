@@ -47,7 +47,7 @@ v0.13.0 (unreleased)
 
 * Improve the display of data cube slice labels to include only the
   precision required given the separation of world coordinate values.
-  [#1500]
+  [#1500, #1660]
 
 * Removed the ability to edit the marker symbol in the style dialog
   since this isn't recognized by any viewer anymore. [#1560]
