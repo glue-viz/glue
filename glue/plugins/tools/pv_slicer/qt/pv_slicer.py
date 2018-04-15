@@ -1,10 +1,18 @@
 import numpy as np
 
-from glue.viewers.matplotlib.toolbar_mode import PathMode
-from glue.viewers.image.qt import StandaloneImageViewer
+from glue.core import Data
+from glue.core.coordinates import coordinates_from_wcs
+from glue.viewers.common.qt.toolbar_mode import PathMode
 from glue.config import viewer_tool
-from glue.utils import defer_draw
+from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.coordinate_helpers import axis_label
+
+
+class PVSliceData(Data):
+    parent_data = None
+    parent_data_x = None
+    parent_data_y = None
+    parent_viewer = None
 
 
 @viewer_tool
@@ -26,6 +34,7 @@ class PVSlicerMode(PathMode):
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
 
     def _on_reference_data_change(self, reference_data):
+        print(reference_data, reference_data.ndim)
         if reference_data is not None:
             self.enabled = reference_data.ndim == 3
 
@@ -37,147 +46,86 @@ class PVSlicerMode(PathMode):
         """
         Extract a PV-like slice, given a path traced on the widget
         """
-        vx, vy = mode.roi().to_polygon()
-        self._build_from_vertices(vx, vy)
 
-    def _build_from_vertices(self, vx, vy):
+        vx, vy = mode.roi().to_polygon()
+
         pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.viewer.state.reference_data,
                                                self.viewer.state.layers[0].attribute,
                                                self.viewer.state.wcsaxes_slice[::-1])
-        if self._slice_widget is None:
-            self._slice_widget = PVSliceWidget(image=pv_slice, wcs=wcs,
-                                               image_viewer=self.viewer,
-                                               x=x, y=y, interpolation='nearest')
-            self.viewer._session.application.add_widget(self._slice_widget,
-                                                        label='Custom Slice')
-            self._slice_widget.window_closed.connect(self._clear_path)
-        else:
-            self._slice_widget.set_image(image=pv_slice, wcs=wcs,
-                                         x=x, y=y, interpolation='nearest')
 
-        result = self._slice_widget
-        result.axes.set_xlabel("Position along path")
+        xlabel = "Position along path"
         if wcs is None:
-            result.axes.set_ylabel("Cube slice index")
+            ylabel = "Cube slice index"
         else:
-            result.axes.set_ylabel(_slice_label(self.viewer.state.reference_data,
-                                                self.viewer.state.wcsaxes_slice[::-1]))
+            ylabel = _slice_label(self.viewer.state.reference_data,
+                                  self.viewer.state.wcsaxes_slice[::-1])
 
-        result.show()
+        wcs.wcs.ctype = [xlabel, ylabel]
 
-    def close(self):
-        if self._slice_widget:
-            self._slice_widget.close()
-        return super(PVSlicerMode, self).close()
+        data = PVSliceData(label=self.viewer.state.reference_data.label + " [slice]")
+        data.coords = coordinates_from_wcs(wcs)
+        data[self.viewer.state.layers[0].attribute] = pv_slice
+
+        # TODO: use weak references
+        data.parent_data = self.viewer.state.reference_data
+        data.parent_data_x = x
+        data.parent_data_y = y
+        data.parent_viewer = self.viewer
+
+        selected = self.viewer.session.application.selected_layers()
+
+        print(selected)
+
+        if len(selected) == 1 and isinstance(selected[0], PVSliceData):
+            selected[0].update_values_from_data(data)
+        else:
+            self.viewer.session.data_collection.append(data)
 
 
-class PVSliceWidget(StandaloneImageViewer):
+@viewer_tool
+class PVLinkCursorMode(ToolbarModeBase):
+    """
+    Selects pixel under mouse cursor.
+    """
 
-    """ A standalone image widget with extra interactivity for PV slices """
+    icon = "glue_point"
+    tool_id = 'pv:crosshair'
 
-    def __init__(self, image=None, wcs=None, image_viewer=None,
-                 x=None, y=None, **kwargs):
-        """
-        :param image: 2D Numpy array representing the PV Slice
-        :param wcs: WCS for the PV slice
-        :param image_viewer: Parent ImageViewer this was extracted from
-        :param kwargs: Extra keywords are passed to imshow
-        """
-        self._crosshairs = None
-        self._parent = image_viewer
-        super(PVSliceWidget, self).__init__(image=image, wcs=wcs, **kwargs)
-        conn = self.axes.figure.canvas.mpl_connect
-        self._down_id = conn('button_press_event', self._on_click)
-        self._move_id = conn('motion_notify_event', self._on_move)
-        self.axes.format_coord = self._format_coord
-        self._x = x
-        self._y = y
-        self._parent.state.add_callback('x_att', self.reset)
-        self._parent.state.add_callback('y_att', self.reset)
+    _pressed = False
 
-    def _format_coord(self, x, y):
-        """
-        Return a formatted location label for the taskbar
+    def __init__(self, *args, **kwargs):
+        super(PVLinkCursorMode, self).__init__(*args, **kwargs)
+        self._move_callback = self._on_move
+        self._press_callback = self._on_move
+        self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
 
-        :param x: x pixel location in slice array
-        :param y: y pixel location in slice array
-        """
+    def _on_reference_data_change(self, reference_data):
+        self.enabled = isinstance(reference_data, PVSliceData)
+        self.data = reference_data
 
-        # xy -> xyz in image view
-        pix = self._pos_in_parent(xdata=x, ydata=y)
+    def _on_move(self, mode):
 
-        # xyz -> data pixel coords
-        # accounts for fact that image might be shown transposed/rotated
-        s = list(self._slc)
-        idx = _slice_index(self._parent.state.reference_data, self._slc)
-        s[s.index('x')] = pix[0]
-        s[s.index('y')] = pix[1]
-        s[idx] = pix[2]
+        # Find position of click in the image viewer
+        xdata, ydata = self._event_xdata, self._event_ydata
 
-        # labels = self._parent.coordinate_labels(s)
-        # return '         '.join(labels)
-        return ''
-
-    def set_image(self, image=None, wcs=None, x=None, y=None, **kwargs):
-        super(PVSliceWidget, self).set_image(image=image, wcs=wcs, **kwargs)
-        self._axes.set_aspect('auto')
-        self._axes.set_xlim(-0.5, image.shape[1] - 0.5)
-        self._axes.set_ylim(-0.5, image.shape[0] - 0.5)
-        self._slc = self._parent.state.wcsaxes_slice[::-1]
-        self._x = x
-        self._y = y
-
-    @defer_draw
-    def _sync_slice(self, event):
-        s = list(self._slc)
-        # XXX breaks if display_data changes
-        _, _, z = self._pos_in_parent(event)
-        s[_slice_index(self._parent.state.reference_data, s)] = int(z)
-        self._parent.state.slices = tuple(s)
-
-    @defer_draw
-    def _draw_crosshairs(self, event):
-        x, y, _ = self._pos_in_parent(event)
-        self._parent.show_crosshairs(x, y)
-
-    @defer_draw
-    def _on_move(self, event):
-        if not event.button:
-            return
-
-        if not event.inaxes or event.canvas.toolbar.mode != '':
-            return
-
-        self._sync_slice(event)
-        self._draw_crosshairs(event)
-
-    def _pos_in_parent(self, event=None, xdata=None, ydata=None):
-
-        if event is not None:
-            xdata = event.xdata
-            ydata = event.ydata
+        # TODO: Make this robust in case the axes have been swapped
 
         # Find position slice where cursor is
-        ind = int(round(np.clip(xdata, 0, self._im_array.shape[1] - 1)))
+        ind = int(round(np.clip(xdata, 0, self.data.shape[1] - 1)))
 
         # Find pixel coordinate in input image for this slice
-        x = self._x[ind]
-        y = self._y[ind]
+        x = self.data.parent_data_x[ind]
+        y = self.data.parent_data_y[ind]
 
         # The 3-rd coordinate in the input WCS is simply the second
         # coordinate in the PV slice.
         z = ydata
 
-        return x, y, z
+        self.data.parent_viewer.show_crosshairs(x, y)
 
-    def _on_click(self, event):
-        if not event.inaxes or event.canvas.toolbar.mode != '':
-            return
-        self._sync_slice(event)
-        self._draw_crosshairs(event)
-
-    def reset(self, *args):
-        self.close()
+        s = list(self.data.parent_viewer.state.wcsaxes_slice[::-1])
+        s[_slice_index(self.data.parent_viewer.state.reference_data, s)] = int(z)
+        self.data.parent_viewer.state.slices = tuple(s)
 
 
 def _slice_from_path(x, y, data, attribute, slc):

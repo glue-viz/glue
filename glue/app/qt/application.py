@@ -487,6 +487,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         dialog = ArithmeticEditorWidget(self.data_collection)
         dialog.exec_()
 
+    def selected_layers(self):
+        return self._layer_widget.selected_layers()
+
     def _on_data_collection_change(self, *event):
         self._button_save_data.setEnabled(len(self.data_collection) > 0)
         self._button_link_data.setEnabled(len(self.data_collection) > 1)
