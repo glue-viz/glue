@@ -7,6 +7,8 @@ v0.13.0 (unreleased)
 * Started adding helpful information dialogs that can be
   hidden. [#1669]
 
+* Make it possible to have a 'None' entry in the ComponentIDComboHelper. [#1661]
+
 * Added a new metadata/header viewer for datasets/subsets. [#1659]
 
 * Re-write spectrum viewer into a generic profile viewer that uses

@@ -103,6 +103,13 @@ class ComboHelper(HubListener):
         return prop.set_display_func(self.state, display)
 
 
+def display_func_label(cid):
+    if cid is None:
+        return ''
+    else:
+        return cid.label
+
+
 class ComponentIDComboHelper(ComboHelper):
     """
     The purpose of this class is to set up a combo (represented by a
@@ -134,22 +141,25 @@ class ComponentIDComboHelper(ComboHelper):
         Show world coordinate components
     derived : bool, optional
         Show derived components
+    none : bool, optional
+        Add an entry that means 'None'
     """
 
     def __init__(self, state, selection_property,
                  data_collection=None, data=None,
                  numeric=True, categorical=True,
-                 pixel_coord=False, world_coord=False, derived=True):
+                 pixel_coord=False, world_coord=False, derived=True, none=False):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
 
-        self.display = lambda x: x.label
+        self.display = display_func_label
 
         self._numeric = numeric
         self._categorical = categorical
         self._pixel_coord = pixel_coord
         self._world_coord = world_coord
         self._derived = derived
+        self._none = none
 
         if data is None:
             self._manual_data = False
@@ -219,6 +229,15 @@ class ComponentIDComboHelper(ComboHelper):
         self._derived = value
         self.refresh()
 
+    @property
+    def none(self):
+        return self._none
+
+    @none.setter
+    def none(self, value):
+        self._none = value
+        self.refresh()
+
     def append_data(self, data, refresh=True):
 
         if self._manual_data:
@@ -284,6 +303,10 @@ class ComponentIDComboHelper(ComboHelper):
     def refresh(self, *args):
 
         choices = []
+
+        if self._none:
+            choices.append(None)
+
 
         for data in self._data:
 
@@ -386,7 +409,7 @@ class BaseDataComboHelper(ComboHelper):
 
         super(BaseDataComboHelper, self).__init__(state, selection_property)
 
-        self.display = lambda x: x.label
+        self.display = display_func_label
 
         self._component_id_helpers = []
         self.state.add_callback(self.selection_property, self.refresh_component_ids)
