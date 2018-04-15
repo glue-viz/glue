@@ -109,7 +109,7 @@ class TestLinkEquation(object):
             def bad(x):
                 pass
             self.widget.function = (bad, None, None)
-        assert exc.value.args[0].startswith('Cannot find data')
+        assert 'is not in valid choices' in exc.value.args[0]
 
     def test_make_link_function(self):
         widget = LinkEquation()

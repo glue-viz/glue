@@ -6,6 +6,8 @@ from collections import deque, OrderedDict
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
+from glue.external.echo import SelectionCallbackProperty
+from glue.external.echo.qt import connect_combo_selection
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
 from glue.utils.qt import load_ui, CompletionTextEdit
 
@@ -110,12 +112,15 @@ class EquationEditorDialog(QtWidgets.QDialog):
                         "clicking 'Insert'. See below for examples "
                         "of valid expressions")
 
+    attribute = SelectionCallbackProperty()
+
     def __init__(self, label=None, data=None, equation=None, references=None, parent=None):
 
         super(EquationEditorDialog, self).__init__(parent=parent)
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
+        connect_combo_selection(self, 'attribute', self.ui.combosel_component)
 
         # Get mapping from label to component ID
         if references is not None:
@@ -127,9 +132,8 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         example = sorted(self.references, key=len)[0]
 
-        if PYQT5:
-            self.ui.text_label.setPlaceholderText("New attribute name")
-            self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example))
+        self.ui.text_label.setPlaceholderText("New attribute name")
+        self.ui.expression.setPlaceholderText(self.placeholder_text.format(example=example))
 
         self.ui.label.setText(self.tip_text.format(example=example))
 
@@ -139,8 +143,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
         self.ui.text_label.textChanged.connect(self._update_status)
 
         # Populate component combo
-        for label, cid in self.references.items():
-            self.ui.combosel_component.addItem(label, userData=cid)
+        EquationEditorDialog.attribute.set_choices(self, list(self.references))
 
         # Set up labels for auto-completion
         labels = ['{' + label + '}' for label in self.references]
@@ -158,7 +161,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
         self._update_status()
 
     def _insert_component(self):
-        label = self.ui.combosel_component.currentText()
+        label = self.attribute
         self.expression.insertPlainText('{' + label + '}')
 
     def _update_status(self):
