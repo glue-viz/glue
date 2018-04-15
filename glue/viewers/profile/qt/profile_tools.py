@@ -4,7 +4,6 @@ import traceback
 from collections import OrderedDict
 
 import numpy as np
-import bottleneck as bt
 
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
@@ -21,6 +20,8 @@ from glue.core.aggregate import mom1, mom2
 from glue.core import Data, Subset
 from glue.viewers.image.qt import ImageViewer
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
+from glue.external.echo import SelectionCallbackProperty
+from glue.external.echo.qt import connect_combo_selection
 
 __all__ = ['ProfileTools']
 
@@ -62,12 +63,17 @@ class ProfileAnalysisTool(Tool):
 
 class ProfileTools(QtWidgets.QWidget):
 
+    fit_function = SelectionCallbackProperty()
+    collapse_function = SelectionCallbackProperty()
+
     def __init__(self, parent=None):
 
         super(ProfileTools, self).__init__(parent=parent)
 
         self.ui = load_ui('profile_tools.ui', self,
                           directory=os.path.dirname(__file__))
+        connect_combo_selection(self, 'fit_function', self.ui.combosel_fit_function)
+        connect_combo_selection(self, 'collapse_function', self.ui.combosel_collapse_function)
 
         fix_tab_widget_fontsize(self.ui.tabs)
 
@@ -114,11 +120,11 @@ class ProfileTools(QtWidgets.QWidget):
 
         self._fit_artists = []
 
-        for fitter in list(fit_plugin):
-            self.ui.combosel_fit_function.addItem(fitter.label, userData=fitter())
+        ProfileTools.fit_function.set_choices(self, list(fit_plugin))
+        ProfileTools.fit_function.set_display_func(self, lambda fitter: fitter.label)
 
-        for func, display in COLLAPSE_FUNCS.items():
-            self.ui.combosel_collapse_function.addItem(display, userData=func)
+        ProfileTools.collapse_function.set_choices(self, list(COLLAPSE_FUNCS))
+        ProfileTools.collapse_function.set_display_func(self, COLLAPSE_FUNCS.get)
 
         self._toolbar_connected = False
 
@@ -129,20 +135,6 @@ class ProfileTools(QtWidgets.QWidget):
     def _on_x_att_change(self, *event):
         self.nav_mode.clear()
         self.rng_mode.clear()
-
-    @property
-    def fitter(self):
-        try:
-            return self.ui.combosel_fit_function.currentData()
-        except AttributeError:  # PYQT4
-            return self.ui.combosel_fit_function.itemData(self.ui.combosel_fit_function.currentIndex())
-
-    @property
-    def collapse_function(self):
-        try:
-            return self.ui.combosel_collapse_function.currentData()
-        except AttributeError:  # PYQT4
-            return self.ui.combosel_collapse_function.itemData(self.ui.combosel_collapse_function.currentIndex())
 
     def _on_nav_activate(self, *args):
         self._nav_data = self._visible_data()
@@ -183,7 +175,7 @@ class ProfileTools(QtWidgets.QWidget):
         return axis, slc
 
     def _on_settings(self):
-        d = FitSettingsWidget(self.fitter)
+        d = FitSettingsWidget(self.fit_function())
         d.exec_()
 
     def _on_fit(self):
@@ -198,7 +190,7 @@ class ProfileTools(QtWidgets.QWidget):
             return
 
         x_range = self.rng_mode.state.x_range
-        fitter = self.fitter
+        fitter = self.fit_function()
 
         def on_success(result):
             fit_results, x, y = result
