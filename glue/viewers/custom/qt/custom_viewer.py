@@ -874,6 +874,7 @@ class CustomWidgetBase(DataViewer):
     LABEL = ''
 
     coordinator_cls = None
+    tools = ['select:rectangle', 'select:polygon']
 
     def __init__(self, session, parent=None):
         super(CustomWidgetBase, self).__init__(session, parent)
@@ -910,13 +911,6 @@ class CustomWidgetBase(DataViewer):
 
         self.client._redraw()
         self._coordinator.settings_changed()
-
-    @property
-    def tools(self):
-        if self._coordinator.selections_enabled:
-            return ['select:rectangle', 'select:polygon']
-        else:
-            return []
 
     def add_data(self, data):
         """Add a new data set to the widget

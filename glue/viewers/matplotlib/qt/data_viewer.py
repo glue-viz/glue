@@ -116,6 +116,7 @@ class MatplotlibDataViewer(DataViewerWithState):
         self._mpl_nav.hide()
 
     def closeEvent(self, event):
+        super(MatplotlibDataViewer, self).closeEvent(event)
         self._mpl_nav.setParent(None)
         self._mpl_nav.parent = None
 

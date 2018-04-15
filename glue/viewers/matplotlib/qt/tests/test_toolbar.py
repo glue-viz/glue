@@ -3,7 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.viewers.matplotlib.qt.widget import MplWidget
-from glue.viewers.common.qt.data_viewer import DataViewer
+from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.tests.util import simple_session
 
@@ -26,14 +26,11 @@ class ToolbarModeTest(ToolbarModeBase):
         self.last_mode = 'MOVE'
 
 
-class ExampleViewer(DataViewer):
+class ExampleViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None):
         super(ExampleViewer, self).__init__(session, parent=parent)
-        self.central_widget = MplWidget(parent)
-        self._axes = self.central_widget.canvas.fig.add_subplot(111)
-        self._axes.plot([1, 2, 3])[0]
-        self.setCentralWidget(self.central_widget)
+        self.axes.plot([1, 2, 3])[0]
 
     def initialize_toolbar(self):
         super(ExampleViewer, self).initialize_toolbar()
@@ -42,10 +39,6 @@ class ExampleViewer(DataViewer):
 
     def callback(self, mode):
         self._called_back = True
-
-    @property
-    def axes(self):
-        return self._axes
 
 
 class TestToolbar(object):
@@ -75,16 +68,16 @@ class TestToolbar(object):
 
         self.viewer.toolbar.actions['mpl:pan'].toggle()
         assert self.viewer.toolbar.active_tool.tool_id == 'mpl:pan'
-        assert self.viewer.toolbar._mpl_nav.mode == 'pan/zoom'
+        assert self.viewer._mpl_nav.mode == 'pan/zoom'
 
         self.viewer.toolbar.actions['mpl:pan'].toggle()
         assert self.viewer.toolbar.active_tool is None
-        assert self.viewer.toolbar._mpl_nav.mode == ''
+        assert self.viewer._mpl_nav.mode == ''
 
         self.viewer.toolbar.actions['mpl:zoom'].trigger()
         assert self.viewer.toolbar.active_tool.tool_id == 'mpl:zoom'
-        assert self.viewer.toolbar._mpl_nav.mode == 'zoom rect'
+        assert self.viewer._mpl_nav.mode == 'zoom rect'
 
         self.viewer.toolbar.actions['test'].trigger()
         assert self.viewer.toolbar.active_tool.tool_id == 'test'
-        assert self.viewer.toolbar._mpl_nav.mode == ''
+        assert self.viewer._mpl_nav.mode == ''
