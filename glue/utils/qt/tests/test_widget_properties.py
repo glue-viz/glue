@@ -2,8 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from glue.external.echo import CallbackProperty
 from qtpy import QtWidgets
+
+from glue.external.echo.qt.connect import UserDataWrapper
 
 from ..widget_properties import (CurrentComboDataProperty,
                                  CurrentComboTextProperty,
@@ -22,8 +23,8 @@ def test_combo_data():
 
         def __init__(self):
             self._combo = QtWidgets.QComboBox()
-            self._combo.addItem('a', 'a')
-            self._combo.addItem('b', 'b')
+            self._combo.addItem('a', UserDataWrapper('a'))
+            self._combo.addItem('b', UserDataWrapper('b'))
 
     tc = TestClass()
 
