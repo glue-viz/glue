@@ -15,6 +15,9 @@ v0.13.0 (unreleased)
 
 * Remove support for Matplotlib 1.5. [#1662]
 
+* Renamed ``qt4_to_mpl_color`` to ``qt_to_mpl_color`` and
+  ``mpl_to_qt4_color`` to ``mpl_to_qt_color``. [#1662]
+
 * Improve performance when changing visual attributes of subsets.
   [#1617]
 

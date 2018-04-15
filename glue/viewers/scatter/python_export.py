@@ -3,8 +3,6 @@ from matplotlib import __version__
 
 from glue.viewers.common.python_export import code, serialize_options
 
-MATPLOTLIB_LT_20 = LooseVersion(__version__) < LooseVersion('2.0')
-
 
 def python_export_scatter_layer(layer, *args):
 
@@ -35,11 +33,6 @@ def python_export_scatter_layer(layer, *args):
         script += "size_vmin = {0}\n".format(layer.state.size_vmin)
         script += "size_vmax = {0}\n".format(layer.state.size_vmax)
         script += "sizes = 30 * (np.clip((sizes - size_vmin) / (size_vmax - size_vmin), 0, 1) * 0.95 + 0.05) * {0}\n\n".format(layer.state.size_scaling)
-
-    if MATPLOTLIB_LT_20:
-        imports = ['import numpy as np']
-        script += "# Due to a bug in Matplotlib 1.5 we need to filter out NaN values\n"
-        script += "keep = ~np.isnan(x) & ~np.isnan(y)\n"
 
     if layer.state.markers_visible:
         if layer.state.density_map:
@@ -87,28 +80,19 @@ def python_export_scatter_layer(layer, *args):
                 if layer.state.cmap_mode == 'Fixed':
                     options['facecolor'] = layer.state.color
                 else:
-                    if MATPLOTLIB_LT_20:
-                        options['c'] = code('colors[keep]')
-                    else:
-                        options['c'] = code('colors')
+                    options['c'] = code('colors')
 
                 if layer.state.size_mode == 'Fixed':
                     options['s'] = code('{0} ** 2'.format(layer.state.size * layer.state.size_scaling))
                 else:
-                    if MATPLOTLIB_LT_20:
-                        options['s'] = code('sizes[keep] ** 2')
-                    else:
-                        options['s'] = code('sizes ** 2')
+                    options['s'] = code('sizes ** 2')
 
                 if layer.state.fill:
                     options['edgecolor'] = 'none'
                 else:
                     script += "s = "
 
-                if MATPLOTLIB_LT_20:
-                    script += "ax.scatter(x[keep], y[keep], {0})\n".format(serialize_options(options))
-                else:
-                    script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
+                script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
 
                 if not layer.state.fill:
                     script += "s.set_edgecolors(s.get_facecolors())\n"

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from qtpy.QtCore import Qt
 from qtpy import QtCore, QtWidgets
 from glue.icons.qt import POINT_ICONS, symbol_icon
-from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color
+from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
 
 
 class ColorWidget(QtWidgets.QLabel):
@@ -46,7 +46,7 @@ class StyleDialog(QtWidgets.QDialog):
         self.color_widget = ColorWidget()
         self.color_widget.setStyleSheet('ColorWidget {border: 1px solid;}')
         color = self.layer.style.color
-        color = mpl_to_qt4_color(color, alpha=self.layer.style.alpha)
+        color = mpl_to_qt_color(color, alpha=self.layer.style.alpha)
         self.set_color(color)
 
         self.okcancel = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
@@ -92,7 +92,7 @@ class StyleDialog(QtWidgets.QDialog):
     def update_style(self):
         if self._edit_label:
             self.layer.label = self.label()
-        self.layer.style.color = qt4_to_mpl_color(self.color())
+        self.layer.style.color = qt_to_mpl_color(self.color())
         self.layer.style.alpha = self.color().alpha() / 255.
         self.layer.style.markersize = self.size()
 

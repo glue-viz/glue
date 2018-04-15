@@ -8,7 +8,7 @@ from qtpy import QtCore, QtGui
 from glue.utils.qt import get_qapp
 from qtpy.QtCore import Qt
 from glue.core import Data, DataCollection
-from glue.utils.qt import qt4_to_mpl_color
+from glue.utils.qt import qt_to_mpl_color
 from glue.app.qt import GlueApplication
 
 from ..data_viewer import DataTableModel, TableViewer
@@ -78,7 +78,7 @@ def check_values_and_color(model, data, colors):
             if colors[i] is None:
                 assert brush is None
             else:
-                assert qt4_to_mpl_color(brush.color()) == colors[i]
+                assert qt_to_mpl_color(brush.color()) == colors[i]
 
 
 def test_table_widget(tmpdir):

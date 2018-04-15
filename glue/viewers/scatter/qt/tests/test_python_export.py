@@ -11,8 +11,6 @@ from glue.app.qt.application import GlueApplication
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython, random_with_nan
 from glue.viewers.scatter.qt import ScatterViewer
 
-MATPLOTLIB_LT_20 = LooseVersion(__version__) < LooseVersion('2.0')
-
 
 class TestExportPython(BaseTestExportPython):
 
@@ -32,8 +30,6 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_nofill(self, tmpdir):
-        if MATPLOTLIB_LT_20:
-            pytest.xfail()
         self.viewer.state.layers[0].fill = False
         self.viewer.state.layers[0].size_scaling = 10
         self.assert_same(tmpdir)
@@ -110,8 +106,6 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_errorbarxy_cmap(self, tmpdir):
-        if MATPLOTLIB_LT_20:
-            pytest.xfail()
         self.viewer.state.layers[0].cmap_mode = 'Linear'
         self.viewer.state.layers[0].cmap_vmin = 0.2
         self.viewer.state.layers[0].cmap_vmax = 0.7

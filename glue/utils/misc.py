@@ -52,7 +52,7 @@ def nonpartial(func, *args, **kwargs):
 
     This is used when connecting slots to ``QAction.triggered`` signals, which
     appear to have different signatures, which seem to add and extra argument
-    in PyQt4 but not PySide
+    in PyQt but not PySide
     """
     def result(*a, **k):
         return func(*args, **kwargs)

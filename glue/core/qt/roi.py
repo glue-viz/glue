@@ -6,7 +6,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui
 
 from glue.core import roi as _roi
-from glue.utils.qt import mpl_to_qt4_color
+from glue.utils.qt import mpl_to_qt_color
 
 
 class QtROI(object):
@@ -86,9 +86,9 @@ class QtROI(object):
 
     def get_painter(self, canvas):
         p = QtGui.QPainter(canvas)
-        facecolor = mpl_to_qt4_color(self.plot_opts['facecolor'],
+        facecolor = mpl_to_qt_color(self.plot_opts['facecolor'],
                                      self.plot_opts['alpha'])
-        edgecolor = mpl_to_qt4_color(self.plot_opts['edgecolor'],
+        edgecolor = mpl_to_qt_color(self.plot_opts['edgecolor'],
                                      self.plot_opts['alpha'])
 
         pen = QtGui.QPen(edgecolor)

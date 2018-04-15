@@ -6,7 +6,7 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
                             QGraphicsTextItem, QGraphicsEllipseItem,
                             QGraphicsLineItem)
 
-from glue.utils.qt import mpl_to_qt4_color, qt4_to_mpl_color
+from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 COLOR_CONNECTED = (0.6, 0.9, 0.9)
@@ -14,7 +14,7 @@ COLOR_DISCONNECTED = (0.9, 0.6, 0.6)
 
 
 def get_pen(color, linewidth=1):
-    color = mpl_to_qt4_color(color)
+    color = mpl_to_qt_color(color)
     return QPen(color, linewidth, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
 
 
@@ -35,7 +35,7 @@ class Edge(QGraphicsLineItem):
 
     @property
     def color(self):
-        return qt4_to_mpl_color(self.pen().color())
+        return qt_to_mpl_color(self.pen().color())
 
     @color.setter
     def color(self, value):
@@ -149,11 +149,11 @@ class DataNode:
 
     @property
     def color(self):
-        return qt4_to_mpl_color(self.node.brush().color())
+        return qt_to_mpl_color(self.node.brush().color())
 
     @color.setter
     def color(self, value):
-        self.node.setBrush(mpl_to_qt4_color(value))
+        self.node.setBrush(mpl_to_qt_color(value))
 
 
 def get_connections(dc_links):
