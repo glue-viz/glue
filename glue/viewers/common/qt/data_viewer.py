@@ -348,7 +348,6 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                 for subtool_id in cls.subtools[tool_id]:
                     if subtool_id not in subtools[tool_id]:
                         subtools[tool_id].append(subtool_id)
-            print(cls, tools, subtools)
 
         # Need to include tools and subtools declared by parent classes unless
         # specified otherwise

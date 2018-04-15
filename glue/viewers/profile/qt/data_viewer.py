@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
@@ -16,7 +15,6 @@ __all__ = ['ProfileViewer']
 class ProfileViewer(MatplotlibDataViewer):
 
     LABEL = '1D Profile'
-    _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = ProfileLayerStyleEditor
     _state_cls = ProfileViewerState
     _options_cls = ProfileOptionsWidget
