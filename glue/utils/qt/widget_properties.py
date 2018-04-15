@@ -25,6 +25,8 @@ from glue.logger import logger
 from glue.external.six.moves import reduce
 from glue.utils.array import pretty_number
 
+from glue.external.echo.qt.connect import _find_combo_data
+
 # Backward-compatibility
 from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,
                                    connect_combo_data as connect_current_combo,
@@ -98,7 +100,7 @@ class CurrentComboDataProperty(WidgetProperty):
         if widget.currentIndex() == -1:
             return None
         else:
-            return widget.itemData(widget.currentIndex())
+            return widget.itemData(widget.currentIndex()).data
 
     def setter(self, widget, value):
         """
@@ -264,16 +266,3 @@ class ValueProperty(WidgetProperty):
             vmin, vmax = self.value_range
             val = (val - vmin) / (vmax - vmin) * (imax - imin) + imin
         widget.setValue(val)
-
-
-def _find_combo_data(widget, value):
-    """
-    Returns the index in a combo box where itemData == value
-
-    Raises a ValueError if data is not found
-    """
-    i = widget.findData(value)
-    if i == -1:
-        raise ValueError("{0} not found in combo box".format(value))
-    else:
-        return i

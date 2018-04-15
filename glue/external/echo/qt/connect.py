@@ -292,7 +292,7 @@ def _find_combo_data(widget, value):
     # Here we check that the result is True, because some classes may overload
     # == and return other kinds of objects whether true or false.
     for idx in range(widget.count()):
-        if widget.itemData(idx).data is value or (widget.itemData(idx).data == value) is True:
+        if widget.itemData(idx) is not None and (widget.itemData(idx).data is value or (widget.itemData(idx).data == value) is True):
             return idx
     else:
         raise ValueError("%s not found in combo box" % (value,))
