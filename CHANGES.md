@@ -13,6 +13,8 @@ v0.13.0 (unreleased)
 * Added support for PySide2 and remove support for PyQt4 and
   PySide. [#1662]
 
+* Remove support for Matplotlib 1.5. [#1662]
+
 * Improve performance when changing visual attributes of subsets.
   [#1617]
 

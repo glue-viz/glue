@@ -82,7 +82,7 @@ except ImportError:
     try:
         import PySide2  # noqa
     except ImportError:
-        print("Glue requires PyQt5 or PySide to be installed")
+        print("Glue requires PyQt5 or PySide2 to be installed")
         sys.exit(1)
 
 install_requires = ['numpy>=1.9',
