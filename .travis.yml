@@ -94,6 +94,7 @@ matrix:
                PANDAS_VERSION=0.18
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
         # Test with PySide2
         - os: linux
@@ -143,7 +144,7 @@ install:
   - LC_ALL=C
 
   # Uninstall PyQt if we are using PySide
-  - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
+  - if [ $QT_PKG == pyside2 ]; then conda remove --no-pin --force pyqt sip || true; fi
 
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
@@ -182,7 +183,7 @@ install:
 
   # We need to install glue in order to make sure that the entry points are
   # installed.
-  - pip install . --no-deps
+  - pip install . --no-deps --verbose
 
   # Check that all the plugins load correctly
   - python -c 'from glue.logger import logger; logger.setLevel("DEBUG"); from glue.main import load_plugins; load_plugins()'
