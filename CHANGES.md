@@ -10,6 +10,9 @@ v0.13.0 (unreleased)
   subsets to define the areas in which to compute profiles rather
   than custom ROIs. [#1635]
 
+* Added support for PySide2 and remove support for PyQt4 and
+  PySide. [#1662]
+
 * Improve performance when changing visual attributes of subsets.
   [#1617]
 
