@@ -184,10 +184,7 @@ class DeferDrawMeta(type):
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = defer_draw(attr_value)
 
-        if PY2:
-            return type.__new__(cls, name, bases, attrs)
-        else:
-            return super().__new__(cls, name, bases, attrs)
+        return super(DeferDrawMeta, cls).__new__(cls, name, bases, attrs)
 
 
 def color2rgb(color):
