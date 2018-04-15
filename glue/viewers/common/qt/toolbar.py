@@ -129,7 +129,10 @@ class BasicToolbar(QtWidgets.QToolBar):
                 button.setMenu(menu)
             button.clicked.connect(button.showMenu)
         else:
-            action = QtWidgets.QAction(icon, tool.action_text, parent)
+            if icon:
+                action = QtWidgets.QAction(icon, tool.action_text, parent)
+            else:
+                action = QtWidgets.QAction(tool.action_text, parent)
 
         def toggle(checked):
             if checked:
