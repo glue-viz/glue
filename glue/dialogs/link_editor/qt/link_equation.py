@@ -228,7 +228,7 @@ class LinkEquation(QtWidgets.QWidget):
     def _setup_editor(self):
         if self.is_function():
             self._setup_editor_function()
-        else:
+        elif self.is_helper():
             self._setup_editor_helper()
 
     def _setup_editor_function(self):

@@ -1448,4 +1448,7 @@ class ChoiceElement(FormElement):
         return w
 
     def value(self, layer=None, view=None):
-        return self.params[self.ui.currentText()]
+        if self.ui.currentIndex() < 0:
+            return None
+        else:
+            return self.params[self.ui.currentText()]

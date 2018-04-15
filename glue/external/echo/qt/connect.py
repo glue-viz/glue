@@ -113,7 +113,11 @@ def connect_combo_data(instance, prop, widget):
         if idx == -1:
             setattr(instance, prop, None)
         else:
-            setattr(instance, prop, widget.itemData(idx).data)
+            data_wrapper = widget.itemData(idx)
+            if data_wrapper is None:
+                setattr(instance, prop, None)
+            else:
+                setattr(instance, prop, data_wrapper.data)
 
     add_callback(instance, prop, update_widget)
     widget.currentIndexChanged.connect(update_prop)
@@ -371,7 +375,11 @@ def connect_combo_selection(instance, prop, widget, display=str):
         if idx == -1:
             setattr(instance, prop, None)
         else:
-            setattr(instance, prop, widget.itemData(idx).data)
+            data_wrapper = widget.itemData(idx)
+            if data_wrapper is None:
+                setattr(instance, prop, None)
+            else:
+                setattr(instance, prop, data_wrapper.data)
 
     add_callback(instance, prop, update_widget)
     widget.currentIndexChanged.connect(update_prop)
