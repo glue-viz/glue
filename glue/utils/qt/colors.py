@@ -186,18 +186,21 @@ class QColorBox(QtWidgets.QLabel):
         self.setPixmap(pixmap)
 
 
+from glue.external.echo.qt.connect import UserDataWrapper
+
+
 class QColormapCombo(QtWidgets.QComboBox):
 
     def __init__(self, *args, **kwargs):
         super(QColormapCombo, self).__init__(*args, **kwargs)
         for label, cmap in config.colormaps:
-            self.addItem("", userData=cmap)
+            self.addItem("", userData=UserDataWrapper(cmap))
         self._update_icons()
 
     def _update_icons(self):
         self.setIconSize(QtCore.QSize(self.width(), 15))
         for index in range(self.count()):
-            cmap = self.itemData(index)
+            cmap = self.itemData(index).data
             icon = QtGui.QIcon(cmap2pixmap(cmap, size=(self.width(), 15), steps=200))
             self.setItemIcon(index, icon)
 

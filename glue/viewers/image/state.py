@@ -52,14 +52,14 @@ class ImageViewerState(MatplotlibDataViewerState):
                                          'shown on the x axis', default_index=-1)
     y_att_world = DDSCProperty(docstring='The component ID giving the world component '
                                          'shown on the y axis', default_index=-2)
-    aspect = DDCProperty('equal', docstring='Whether to enforce square pixels (``equal``) '
+    aspect = DDSCProperty(0, docstring='Whether to enforce square pixels (``equal``) '
                                             'or fill the axes (``auto``)')
     reference_data = DDSCProperty(docstring='The dataset that is used to define the '
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
                                             'which the images are shown')
     slices = DDCProperty(docstring='The current slice along all dimensions')
-    color_mode = DDCProperty('Colormaps', docstring='Whether each layer can have '
+    color_mode = DDSCProperty(0, docstring='Whether each layer can have '
                                                     'its own colormap (``Colormaps``) or '
                                                     'whether each layer is assigned '
                                                     'a single color (``One color per layer``)')
@@ -97,6 +97,12 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
+
+        aspect_display = {'equal': 'Square Pixels', 'auto': 'Automatic'}
+        ImageViewerState.aspect.set_choices(self, ['equal', 'auto'])
+        ImageViewerState.aspect.set_display_func(self, aspect_display.get)
+
+        ImageViewerState.color_mode.set_choices(self, ['Colormaps', 'One color per layer'])
 
         self.update_from_dict(kwargs)
 

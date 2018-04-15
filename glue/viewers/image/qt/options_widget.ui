@@ -74,7 +74,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="combodata_aspect">
+        <widget class="QComboBox" name="combosel_aspect">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
@@ -124,7 +124,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="combotext_color_mode">
+        <widget class="QComboBox" name="combosel_color_mode">
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>

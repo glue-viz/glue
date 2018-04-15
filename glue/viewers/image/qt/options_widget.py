@@ -23,13 +23,6 @@ class ImageOptionsWidget(QtWidgets.QWidget):
 
         fix_tab_widget_fontsize(self.ui.tab_widget)
 
-        self.ui.combodata_aspect.addItem("Square Pixels", userData='equal')
-        self.ui.combodata_aspect.addItem("Automatic", userData='auto')
-        self.ui.combodata_aspect.setCurrentIndex(0)
-
-        self.ui.combotext_color_mode.addItem("Colormaps")
-        self.ui.combotext_color_mode.addItem("One color per layer")
-
         autoconnect_callbacks_to_qt(viewer_state, self.ui)
 
         self.viewer_state = viewer_state

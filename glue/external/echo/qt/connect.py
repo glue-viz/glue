@@ -19,6 +19,11 @@ __all__ = ['connect_checkable_button', 'connect_text', 'connect_combo_data',
            'connect_combo_selection']
 
 
+class UserDataWrapper(object):
+    def __init__(self, data):
+        self.data = data
+
+
 def connect_checkable_button(instance, prop, widget):
     """
     Connect a boolean callback property with a Qt button widget.
@@ -108,7 +113,7 @@ def connect_combo_data(instance, prop, widget):
         if idx == -1:
             setattr(instance, prop, None)
         else:
-            setattr(instance, prop, widget.itemData(idx))
+            setattr(instance, prop, widget.itemData(idx).data)
 
     add_callback(instance, prop, update_widget)
     widget.currentIndexChanged.connect(update_prop)
@@ -304,11 +309,6 @@ def _find_combo_text(widget, value):
         raise ValueError("%s not found in combo box" % value)
     else:
         return i
-
-
-class UserDataWrapper(object):
-    def __init__(self, data):
-        self.data = data
 
 
 def connect_combo_selection(instance, prop, widget, display=str):
