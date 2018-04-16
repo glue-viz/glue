@@ -2,10 +2,11 @@ import numpy as np
 
 from glue.core import Data
 from glue.core.coordinates import coordinates_from_wcs
+from glue.core.coordinate_helpers import axis_label
 from glue.viewers.common.qt.toolbar_mode import PathMode
 from glue.config import viewer_tool
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
-from glue.core.coordinate_helpers import axis_label
+from glue.viewers.image.qt import ImageViewer
 
 
 class PVSliceData(Data):
@@ -74,12 +75,25 @@ class PVSlicerMode(PathMode):
 
         selected = self.viewer.session.application.selected_layers()
 
-        print(selected)
-
         if len(selected) == 1 and isinstance(selected[0], PVSliceData):
             selected[0].update_values_from_data(data)
+            data = selected[0]
+            for tab in self.viewer.session.application.viewers:
+                for viewer in tab:
+                    if data in viewer._layer_artist_container:
+                        open_viewer = False
+                        break
+                if not open_viewer:
+                    break
+            else:
+                open_viewer = True
         else:
             self.viewer.session.data_collection.append(data)
+            open_viewer = True
+
+        print("OPEN VIEWER", open_viewer)
+        if open_viewer:
+            self.viewer.session.application.new_data_viewer(ImageViewer, data=data)
 
 
 @viewer_tool
