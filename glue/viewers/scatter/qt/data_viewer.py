@@ -22,7 +22,7 @@ class ScatterViewer(MatplotlibDataViewer):
     _data_artist_cls = ScatterLayerArtist
     _subset_artist_cls = ScatterLayerArtist
 
-    tools = MatplotlibDataViewer.tools + ['select:rectangle', 'select:xrange',
+    tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
              'select:polygon']
 
