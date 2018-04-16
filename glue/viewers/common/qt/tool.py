@@ -3,7 +3,7 @@
 
 from glue.core.callback_property import CallbackProperty
 
-__all__ = ['Tool', 'CheckableTool']
+__all__ = ['Tool', 'CheckableTool', 'DropdownTool', 'SimpleToolMenu']
 
 
 class Tool(object):
@@ -76,14 +76,9 @@ class CheckableTool(Tool):
         pass
 
 
-# Classes to implement:
-# - Tool that just always shows drop-down when you click anywhere (need to use a qtoolbutton or qpushbutton?)
-# - Tool that shows the last used action as the default that can be clicked
-
-
 class DropdownTool(Tool):
     """
-    A base class for all tools that show a drop-down menu
+    A base class for all tools that show a drop-down menu.
     """
     def __init__(self, *args, **kwargs):
         self.subtools = kwargs.pop('subtools', [])

@@ -175,8 +175,6 @@ class BasicToolbar(QtWidgets.QToolBar):
 
     def add_tool(self, tool):
 
-        print(tool)
-
         if isinstance(tool, DropdownTool) and len(tool.subtools) > 0:
             menu = QtWidgets.QMenu(self)
             for t in tool.subtools:
