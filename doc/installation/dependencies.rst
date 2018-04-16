@@ -11,7 +11,7 @@ Glue has the following required dependencies:
 * `Pandas <http://pandas.pydata.org/>`_ 0.14 or later
 * `Astropy <http://www.astropy.org>`_ 1.0 or higher
 * `setuptools <http://setuptools.readthedocs.io/en/latest/>`_ 1.0 or later
-* Either `PyQt5 <https://www.riverbankcomputing.com/software/pyqt/intro`__ or
+* Either `PyQt5 <https://www.riverbankcomputing.com/software/pyqt/intro>`__ or
   `PySide2 <https://wiki.qt.io/PySide2>`__
 * `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.2 or higher - this is an
   abstraction layer for the Python Qt packages

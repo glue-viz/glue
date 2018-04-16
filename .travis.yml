@@ -99,7 +99,7 @@ matrix:
         # Test with PySide2
         - os: linux
           stage: Full
-          env: PYTHON_VERSION=2.7
+          env: PYTHON_VERSION=3.6
                CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
                QT_PKG=pyside2
 
