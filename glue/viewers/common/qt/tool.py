@@ -31,7 +31,7 @@ class Tool(object):
 
     def __init__(self, viewer=None):
         self.viewer = viewer
-        self.viewer.window_closed.connect(self.close)
+        self.viewer.window_closed.connect(self._do_close)
 
     def activate(self):
         """
@@ -46,8 +46,12 @@ class Tool(object):
         """
         return []
 
-    def close(self, *args):
-        self.viewer.window_closed.disconnect(self.close)
+    def _do_close(self, *args):
+        # We do this so that tools can override close
+        self.close()
+
+    def close(self):
+        self.viewer.window_closed.disconnect(self._do_close)
         self.viewer = None
 
 

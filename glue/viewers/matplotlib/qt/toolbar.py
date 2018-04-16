@@ -1,18 +1,53 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy import PYQT5
+
+if PYQT5:
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
 from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool, Tool
 
 
-__all__ = ['MatplotlibTool', 'MatplotlibCheckableTool', 'HomeTool', 'SaveTool', 'PanTool', 'ZoomTool']
+__all__ = ['MatplotlibTool', 'MatplotlibCheckableTool', 'HomeTool', 'SaveTool',
+           'PanTool', 'ZoomTool']
+
+
+def _ensure_mpl_nav(viewer):
+    # Set up virtual Matplotlib navigation toolbar (don't show it)
+    if not hasattr(viewer, '_mpl_nav'):
+        viewer._mpl_nav = NavigationToolbar2QT(viewer.central_widget.canvas, viewer)
+        viewer._mpl_nav.hide()
+
+
+def _cleanup_mpl_nav(viewer):
+    if getattr(viewer, '_mpl_nav', None) is not None:
+        viewer._mpl_nav.setParent(None)
+        viewer._mpl_nav.parent = None
 
 
 class MatplotlibTool(Tool):
-    pass
+
+    def __init__(self, viewer=None):
+        super(MatplotlibTool, self).__init__(viewer=viewer)
+        _ensure_mpl_nav(viewer)
+
+    def close(self):
+        _cleanup_mpl_nav(self.viewer)
+        super(MatplotlibTool, self).close()
 
 
 class MatplotlibCheckableTool(CheckableTool):
-    pass
+
+    def __init__(self, viewer=None):
+        super(MatplotlibCheckableTool, self).__init__(viewer=viewer)
+        _ensure_mpl_nav(viewer)
+
+    def close(self):
+        _cleanup_mpl_nav(self.viewer)
+        super(MatplotlibCheckableTool, self).close()
 
 
 @viewer_tool

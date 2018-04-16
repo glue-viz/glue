@@ -2,13 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from qtpy import PYQT5
-
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
-
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
@@ -110,15 +103,6 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
-
-        # Set up virtual Matplotlib navigation toolbar (don't show it)
-        self._mpl_nav = NavigationToolbar2QT(self.central_widget.canvas, self)
-        self._mpl_nav.hide()
-
-    def closeEvent(self, event):
-        super(MatplotlibDataViewer, self).closeEvent(event)
-        self._mpl_nav.setParent(None)
-        self._mpl_nav.parent = None
 
     @defer_draw
     def update_x_axislabel(self, *event):
