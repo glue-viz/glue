@@ -4,7 +4,7 @@ from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool, Tool
 
 
-__all__ = ['HomeTool', 'SaveTool', 'PanTool', 'ZoomTool']
+__all__ = ['MatplotlibTool', 'MatplotlibCheckableTool', 'HomeTool', 'SaveTool', 'PanTool', 'ZoomTool']
 
 
 class MatplotlibTool(Tool):
