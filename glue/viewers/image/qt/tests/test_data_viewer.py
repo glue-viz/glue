@@ -107,6 +107,9 @@ class TestImageViewer(object):
 
     def teardown_method(self, method):
         self.viewer.close()
+        self.viewer = None
+        self.application.close()
+        self.application = None
 
     def test_basic(self):
 

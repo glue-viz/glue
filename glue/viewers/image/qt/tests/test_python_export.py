@@ -15,8 +15,8 @@ class TestExportPython(BaseTestExportPython):
         with NumpyRNGContext(12345):
             self.data = Data(cube=np.random.random((30, 50, 20)))
         self.data_collection = DataCollection([self.data])
-        ga = GlueApplication(self.data_collection)
-        self.viewer = ga.new_data_viewer(ImageViewer)
+        self.app = GlueApplication(self.data_collection)
+        self.viewer = self.app.new_data_viewer(ImageViewer)
         self.viewer.add_data(self.data)
         # FIXME: On some platforms, using an integer label size
         # causes some of the labels to be non-deterministically
@@ -24,6 +24,12 @@ class TestExportPython(BaseTestExportPython):
         # to avoid this.
         self.viewer.state.x_ticklabel_size = 8.21334111
         self.viewer.state.y_ticklabel_size = 8.21334111
+
+    def teardown_method(self, method):
+        self.viewer.close()
+        self.viewer = None
+        self.app.close()
+        self.app = None
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)

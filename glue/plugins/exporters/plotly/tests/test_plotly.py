@@ -23,6 +23,10 @@ class TestPlotly(object):
         self.app = GlueApplication(dc)
         self.data = d
 
+    def teardown_method(self, method):
+        self.app.close()
+        self.app = None
+
     def test_scatter(self):
         app = self.app
         d = self.data

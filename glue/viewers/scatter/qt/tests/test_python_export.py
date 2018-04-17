@@ -20,11 +20,17 @@ class TestExportPython(BaseTestExportPython):
             self.data = Data(**dict((name, random_with_nan(100, nan_index=idx + 1)) for idx, name in enumerate('abcdefgh')))
         self.data['angle'] = np.random.uniform(0, 360, 100)
         self.data_collection = DataCollection([self.data])
-        ga = GlueApplication(self.data_collection)
-        self.viewer = ga.new_data_viewer(ScatterViewer)
+        self.app = GlueApplication(self.data_collection)
+        self.viewer = self.app.new_data_viewer(ScatterViewer)
         self.viewer.add_data(self.data)
         self.viewer.state.x_att = self.data.id['a']
         self.viewer.state.y_att = self.data.id['b']
+
+    def teardown_method(self, method):
+        self.viewer.close()
+        self.viewer = None
+        self.app.close()
+        self.app = None
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
