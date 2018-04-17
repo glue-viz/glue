@@ -6,6 +6,13 @@ import sys
 from glue.config import CFG_DIR as CFG_DIR_ORIG
 from glue.core.edit_subset_mode import EditSubsetMode, ReplaceMode
 
+try:
+    import objgraph
+except ImportError:
+    OBJGRAPH_INSTALLED = False
+else:
+    OBJGRAPH_INSTALLED = True
+
 STDERR_ORIGINAL = sys.stderr
 
 
@@ -39,7 +46,7 @@ def pytest_configure(config):
     except ImportError:
         pass
     else:
-        app = get_qapp()
+        get_qapp()
 
     # Force loading of plugins
     from glue.main import load_plugins
@@ -54,5 +61,20 @@ def pytest_report_header(config):
 
 
 def pytest_unconfigure(config):
+
+    # Reset configuration directory to original one
     from glue import config
     config.CFG_DIR = CFG_DIR_ORIG
+
+    # Remove reference to QApplication to prevent segmentation fault on PySide
+    from glue.utils.qt import app
+    app.qapp = None
+
+    # Make sure there are no lingering references to GlueApplication
+    if OBJGRAPH_INSTALLED:
+        obj = objgraph.by_type('GlueApplication')
+        if len(obj) > 0:
+            objgraph.show_backrefs(objgraph.by_type('GlueApplication'))
+            raise ValueError('There are {0} remaining references to GlueApplication'.format(len(obj)))
+
+        objgraph.show_most_common_types(limit=100)
