@@ -93,16 +93,19 @@ class TestGlueApplication(object):
 
     @requires_ipython
     def test_toggle_terminal(self):
-        term = MagicMock()
-        self.app._terminal = term
+        with patch.object(self.app, '_terminal') as term:
 
-        term.isVisible.return_value = False
-        self.app._button_ipython.click()
-        assert term.show.call_count == 1
+            self.app._terminal = term
 
-        term.isVisible.return_value = True
-        self.app._button_ipython.click()
-        assert term.hide.call_count == 1
+            term.isVisible.return_value = False
+            self.app._button_ipython.click()
+            assert term.show.call_count == 1
+
+            term.isVisible.return_value = True
+            self.app._button_ipython.click()
+            assert term.hide.call_count == 1
+
+            term.reset_mock()
 
     def test_close_tab(self):
 
