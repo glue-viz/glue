@@ -503,7 +503,10 @@ class DataCollectionView(QtWidgets.QTreeView, HubListener):
     def _update_viewport(self, *args, **kwargs):
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in color/labels/content
-        self.viewport().update()
+        try:
+            self.viewport().update()
+        except RuntimeError:
+            pass
 
     def edit_label(self, index):
         if not (self._model.flags(index) & Qt.ItemIsEditable):
