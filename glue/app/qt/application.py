@@ -306,7 +306,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_open_data.setText("Open Data")
         self._button_open_data.setIcon(get_icon('glue_open'))
         self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_data.clicked.connect(nonpartial(self._choose_load_data))
+        self._button_open_data.clicked.connect(self._choose_load_data_wizard)
 
         self._data_toolbar.addWidget(self._button_open_data)
 
@@ -738,6 +738,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         window.show()
         window.exec_()
 
+    def _choose_load_data_wizard(self, *args):
+        self._choose_load_data(data_importer=data_wizard)
+
     def _choose_load_data(self, data_importer=None):
         if data_importer is None:
             self.add_datasets(self.data_collection, data_wizard())
@@ -763,7 +766,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a = action("&New Data Viewer", self,
                    tip="Open a new visualization window in the current tab",
                    shortcut=QtGui.QKeySequence.New)
-        a.triggered.connect(nonpartial(self.choose_new_data_viewer))
+        a.triggered.connect(self._choose_new_data_viewer_nodata)
         self._actions['viewer_new'] = a
 
         if len(qt_client.members) == 0:
@@ -804,8 +807,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # also add it again below in the Import menu for consistency.
         a = action("&Open Data Set", self, tip="Open a new data set",
                    shortcut=QtGui.QKeySequence.Open)
-        a.triggered.connect(nonpartial(self._choose_load_data,
-                                       data_wizard))
+        a.triggered.connect(self._choose_load_data_wizard)
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
@@ -815,15 +817,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Add default file loader (later we can add this to the registry)
         a = action("Import from file", self, tip="Import from file")
-        a.triggered.connect(nonpartial(self._choose_load_data,
-                                       data_wizard))
+        a.triggered.connect(self._choose_load_data_wizard)
         acts.append(a)
 
         for i in importer:
             label, data_importer = i
             a = action(label, self, tip=label)
-            a.triggered.connect(nonpartial(self._choose_load_data,
-                                           data_importer))
+            a.triggered.connect(self._choose_load_data_wizard)
             acts.append(a)
 
         self._actions['data_importers'] = acts
@@ -918,6 +918,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         tab.subWindowActivated.connect(self._update_viewer_in_focus)
 
         return tab
+
+    def _choose_new_data_viewer_nodata(self):
+        self.choose_new_data_viewer()
 
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
