@@ -1188,6 +1188,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
+
+        # Clear the namespace in the terminal to avoid cicular references
+        if self._terminal is not None:
+            self._terminal.widget().clear_ns(['data_collection', 'dc', 'hub', 'session', 'application'])
+
         for tab in self.viewers:
             for viewer in tab:
                 viewer.close(warn=False)
