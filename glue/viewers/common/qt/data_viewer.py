@@ -88,6 +88,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     _close_on_last_layer_removed = True
 
+    _closed = False
+
     def __init__(self, session, parent=None):
         """
         :type session: :class:`~glue.core.Session`
@@ -151,6 +153,9 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
     def close(self, warn=True):
 
+        if self._closed:
+            return
+
         if warn and not self._confirm_close():
             return
 
@@ -175,6 +180,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             self.toolbar.cleanup()
 
         self._warn_close = True
+
+        self._closed = True
 
     def mdi_wrap(self):
         """Wrap this object in a GlueMdiSubWindow"""
