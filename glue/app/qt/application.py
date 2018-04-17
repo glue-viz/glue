@@ -1048,7 +1048,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Make sure the closeEvent gets executed to close the GlueLogger
         self._log.close()
-        self.app.processEvents()
+        if self.app is not None:
+            self.app.processEvents()
 
         ga = GlueApplication()
         ga.start(block=False)
@@ -1230,6 +1231,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         event.accept()
         if self._original_app is not None:
             self._original_app.setWindowIcon(self._original_icon)
+            self._original_app = None
+        self.app = None
 
     def report_error(self, message, detail):
         """

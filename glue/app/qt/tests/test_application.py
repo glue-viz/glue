@@ -5,8 +5,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-import pytest
-from qtpy import QtWidgets
 import numpy as np
 from mock import patch, MagicMock
 
@@ -19,6 +17,7 @@ from glue.tests.helpers import requires_ipython
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
+from glue.utils.qt import get_qapp
 
 
 from ..application import GlueApplication, GlueLogger
@@ -444,7 +443,9 @@ def test_logger_close():
 
     app = GlueApplication()
     app.close()
-    app.app.processEvents()
+
+    qapp = get_qapp()
+    qapp.processEvents()
 
     assert not isinstance(sys.stderr, GlueLogger)
 
