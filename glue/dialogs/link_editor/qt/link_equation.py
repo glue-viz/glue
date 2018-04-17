@@ -139,8 +139,6 @@ class LinkEquation(QtWidgets.QWidget):
         # for some reason. Manually embed
         self._ui = load_ui('link_equation.ui', None,
                            directory=os.path.dirname(__file__))
-        connect_combo_selection(self, 'category', self._ui.category)
-        connect_combo_selection(self, 'function', self._ui.function)
 
         l = QtWidgets.QHBoxLayout()
         l.addWidget(self._ui)
@@ -278,6 +276,7 @@ class LinkEquation(QtWidgets.QWidget):
         f = [f for f in link_function.members if len(f.output_labels) == 1]
         categories = sorted(set(l.category for l in f + link_helper.members))
         LinkEquation.category.set_choices(self, categories)
+        connect_combo_selection(self, 'category', self._ui.category)
 
     def _populate_function_combo(self):
         """ Add name of functions to function combo box """
@@ -285,3 +284,4 @@ class LinkEquation(QtWidgets.QWidget):
         functions = [l for l in f + link_helper.members if l.category == self.category]
         LinkEquation.function.set_choices(self, functions)
         LinkEquation.function.set_display_func(self, lambda l: get_function_name(l[0]))
+        connect_combo_selection(self, 'function', self._ui.function)

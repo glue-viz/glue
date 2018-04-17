@@ -120,7 +120,6 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         self.ui = load_ui('equation_editor.ui', self,
                           directory=os.path.dirname(__file__))
-        connect_combo_selection(self, 'attribute', self.ui.combosel_component)
 
         # Get mapping from label to component ID
         if references is not None:
@@ -144,6 +143,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         # Populate component combo
         EquationEditorDialog.attribute.set_choices(self, list(self.references))
+        connect_combo_selection(self, 'attribute', self.ui.combosel_component)
 
         # Set up labels for auto-completion
         labels = ['{' + label + '}' for label in self.references]

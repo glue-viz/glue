@@ -23,7 +23,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
         self.ui = load_ui('component_manager.ui', self,
                           directory=os.path.dirname(__file__))
-        connect_combo_selection(self, 'data', self.ui.combosel_data)
 
         self.list = {}
         self.list = self.ui.list_main_components
@@ -54,6 +53,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         # Populate data combo
         ComponentManagerWidget.data.set_choices(self, list(self.data_collection))
         ComponentManagerWidget.data.set_display_func(self, lambda x: x.label)
+        connect_combo_selection(self, 'data', self.ui.combosel_data)
 
         self.ui.combosel_data.setCurrentIndex(0)
         self.ui.combosel_data.currentIndexChanged.connect(self._update_component_lists)
