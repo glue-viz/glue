@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import weakref
 import warnings
 import webbrowser
 
@@ -185,6 +186,39 @@ class GlueLogger(QtWidgets.QWidget):
             sys.stderr = self._stderr_original
 
 
+class ExportHelper(object):
+    """
+    This class is needed because setting up the callbacks requires using
+    nonpartial but if the callback was a method on GlueApplication this would
+    result in a circular reference - hence we use a helper object with a
+    weak reference to the application.
+    """
+
+    def __init__(self, app):
+        self.app = weakref.ref(app)
+
+    @messagebox_on_error("Failed to export session")
+    def _choose_export_session(self, saver, checker, outmode):
+        app = self.app()
+        if app is None:
+            return
+        checker(app)
+        if outmode is None:
+            return saver(app)
+        elif outmode in ['file', 'directory']:
+            outfile, file_filter = compat.getsavefilename(parent=app)
+            if not outfile:
+                return
+            return saver(app, outfile)
+        else:
+            assert outmode == 'label'
+            label, ok = QtWidgets.QInputDialog.getText(app, 'Choose a label:',
+                                                       'Choose a label:')
+            if not ok:
+                return
+            return saver(app, label)
+
+
 class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
@@ -198,6 +232,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._original_app = QtWidgets.QApplication.instance()
         if self._original_app is not None:
             self._original_icon = self._original_app.windowIcon()
+
+        self._export_helper = ExportHelper(self)
 
         # Now we can get the application instance, which involves setting it
         # up if it doesn't already exist.
@@ -836,7 +872,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 a = action(label, self,
                            tip='Export the current session to %s format' %
                            label)
-                a.triggered.connect(nonpartial(self._choose_export_session,
+                a.triggered.connect(nonpartial(self._export_helper._choose_export_session,
                                                saver, checker, mode))
                 acts.append(a)
 
@@ -974,24 +1010,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self.save_session(outfile,
                               include_data="including data" in file_filter,
                               absolute_paths="absolute" in file_filter)
-
-    @messagebox_on_error("Failed to export session")
-    def _choose_export_session(self, saver, checker, outmode):
-        checker(self)
-        if outmode is None:
-            return saver(self)
-        elif outmode in ['file', 'directory']:
-            outfile, file_filter = compat.getsavefilename(parent=self)
-            if not outfile:
-                return
-            return saver(self, outfile)
-        else:
-            assert outmode == 'label'
-            label, ok = QtWidgets.QInputDialog.getText(self, 'Choose a label:',
-                                                       'Choose a label:')
-            if not ok:
-                return
-            return saver(self, label)
 
     @messagebox_on_error("Failed to restore session")
     def _restore_session(self, *args, show=True):
