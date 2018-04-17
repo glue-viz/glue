@@ -2,8 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import string
 from functools import partial
-from contextlib import contextmanager
 
+from glue.external.echo.callback_container import CallbackContainer
 from glue.external.six import PY2
 from glue.external.six.moves import reduce
 
@@ -135,7 +135,7 @@ class CallbackMixin(object):
     """
 
     def __init__(self):
-        self._callbacks = []
+        self._callbacks = CallbackContainer()
 
     def add_callback(self, function):
         self._callbacks.append(function)

@@ -1250,7 +1250,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         pm = QtPluginManager(installed=_installed_plugins)
         pm.ui.exec_()
 
-    def _update_undo_redo_enabled(self):
+    def _update_undo_redo_enabled(self, *args):
         undo, redo = self._cmds.can_undo_redo()
         self._actions['undo'].setEnabled(undo)
         self._actions['redo'].setEnabled(redo)

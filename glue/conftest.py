@@ -70,11 +70,13 @@ def pytest_unconfigure(config):
     from glue.utils.qt import app
     app.qapp = None
 
-    # Make sure there are no lingering references to GlueApplication
     if OBJGRAPH_INSTALLED:
+
+        # Make sure there are no lingering references to GlueApplication
         obj = objgraph.by_type('GlueApplication')
         if len(obj) > 0:
             objgraph.show_backrefs(objgraph.by_type('GlueApplication'))
             raise ValueError('There are {0} remaining references to GlueApplication'.format(len(obj)))
 
-        objgraph.show_most_common_types(limit=100)
+        # Uncomment when checking for memory leaks
+        # objgraph.show_most_common_types(limit=100)
