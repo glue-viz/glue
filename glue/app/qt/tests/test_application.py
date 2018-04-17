@@ -45,20 +45,24 @@ class TestGlueApplication(object):
         self.app.new_tab()
         assert tab_count(self.app) == t0 + 1
 
-    def test_save_session(self):
-        self.app.save_session = MagicMock()
-        with patch('qtpy.compat.getsavefilename') as fd:
-            fd.return_value = '/tmp/junk', 'jnk'
-            self.app._choose_save_session()
-            self.app.save_session.assert_called_once_with('/tmp/junk.glu', include_data=False, absolute_paths=False)
+    def test_save_session_ok(self):
+        with patch.object(self.app, 'save_session') as save:
+            with patch('qtpy.compat.getsavefilename') as fd:
+                fd.return_value = '/tmp/junk', 'jnk'
+                self.app._choose_save_session()
+                save.assert_called_once_with('/tmp/junk.glu', include_data=False, absolute_paths=False)
+                fd.reset_mock()
+            save.reset_mock()
 
     def test_save_session_cancel(self):
         """shouldnt try to save file if no file name provided"""
-        self.app.save_session = MagicMock()
-        with patch('qtpy.compat.getsavefilename') as fd:
-            fd.return_value = '', 'jnk'
-            self.app._choose_save_session()
-            assert self.app.save_session.call_count == 0
+        with patch.object(self.app, 'save_session') as save:
+            with patch('glue.app.qt.application.compat.getsavefilename') as fd:
+                fd.return_value = '', 'jnk'
+                self.app._choose_save_session()
+                assert save.call_count == 0
+                fd.reset_mock()
+            save.reset_mock()
 
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
@@ -73,6 +77,9 @@ class TestGlueApplication(object):
                 with patch('qtpy.QtWidgets.QMessageBox') as mb:
                     self.app._choose_save_session()
                     assert mb.call_count == 1
+                    mb.reset_mock()
+                op.reset_mock()
+            fd.reset_mock()
 
     @requires_ipython
     def test_terminal_present(self):
@@ -129,6 +136,8 @@ class TestGlueApplication(object):
             self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct
 
+            pc.reset_mock()
+
     def test_new_data_viewer(self):
 
         with patch('glue.app.qt.application.pick_class') as pc:
@@ -140,6 +149,8 @@ class TestGlueApplication(object):
             viewer = self.app.choose_new_data_viewer()
             assert len(self.app.current_tab.subWindowList()) == ct + 1
             viewer.close()
+
+            pc.reset_mock()
 
     def test_move(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
@@ -168,6 +179,8 @@ class TestGlueApplication(object):
             self.app.choose_new_data_viewer(data=d2)
             args, kwargs = pc.call_args
             assert kwargs['default'] is ImageViewer
+
+            pc.reset_mock()
 
     def test_drop_load_data(self):
 
@@ -213,6 +226,9 @@ class TestGlueApplication(object):
             self.app.dropEvent(e)
             assert mb.call_count == 1
             assert "When dragging and dropping files" in mb.call_args[0][2]
+            mb.reset_mock()
+
+        load_data.reset_mock()
 
     def test_subset_facet(self):
         # regression test for 335
