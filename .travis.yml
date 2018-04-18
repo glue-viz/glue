@@ -97,6 +97,13 @@ matrix:
                NUMPY_VERSION=1.11
 
         # Test with PySide2
+
+        - os: osx
+          stage: Full
+          env: PYTHON_VERSION=3.6
+               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+               QT_PKG=pyside2
+
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
