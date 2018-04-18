@@ -1012,7 +1012,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                               absolute_paths="absolute" in file_filter)
 
     @messagebox_on_error("Failed to restore session")
-    def _restore_session(self, *args, show=True):
+    def _restore_session(self, *args):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
         file_name, file_filter = compat.getopenfilename(
@@ -1031,10 +1031,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         return (len([viewer for tab in self.viewers for viewer in tab]) == 0 and
                 len(self.data_collection) == 0)
 
-    def _reset_session(self, *args, show=True, warn=True):
+    def _reset_session(self, *args, **kwargs):
         """
         Reset session to clean state.
         """
+
+        warn = kwargs.pop('warn', False)
 
         if not os.environ.get('GLUE_TESTING') and warn and not self.is_empty:
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
