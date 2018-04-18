@@ -121,8 +121,19 @@ matrix:
 
     allow_failures:
 
+      # For now PySide2 can give segfaults when the process terminates - see
+      # https://bugreports.qt.io/browse/PYSIDE-585
+      # We therefore need to mark these as allowed failures for now
+
+      - os: osx
+        env: PYTHON_VERSION=3.6
+             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+             QT_PKG=pyside2
+
       - os: linux
-        env: PYTHON_VERSION=2.7 NUMPY_VERSION=dev
+        env: PYTHON_VERSION=3.6
+             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+             QT_PKG=pyside2
 
 before_install:
 
