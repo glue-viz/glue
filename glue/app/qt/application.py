@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import weakref
 import warnings
 import webbrowser
 
@@ -102,10 +103,10 @@ class GlueLogger(QtWidgets.QWidget):
         self._text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         clear = QtWidgets.QPushButton("Clear")
-        clear.clicked.connect(nonpartial(self._clear))
+        clear.clicked.connect(self._clear)
 
         report = QtWidgets.QPushButton("Send Bug Report")
-        report.clicked.connect(nonpartial(self._send_report))
+        report.clicked.connect(self._send_report)
 
         if isinstance(sys.stderr, GlueLogger):
             if isinstance(sys.stderr._stderr_original, GlueLogger):
@@ -151,14 +152,14 @@ class GlueLogger(QtWidgets.QWidget):
         """
         pass
 
-    def _send_report(self):
+    def _send_report(self, *args):
         """
         Send the contents of the log as a bug report
         """
         text = self._text.document().toPlainText()
         submit_bug_report(text)
 
-    def _clear(self):
+    def _clear(self, *args):
         """
         Erase the log
         """
@@ -185,6 +186,39 @@ class GlueLogger(QtWidgets.QWidget):
             sys.stderr = self._stderr_original
 
 
+class ExportHelper(object):
+    """
+    This class is needed because setting up the callbacks requires using
+    nonpartial but if the callback was a method on GlueApplication this would
+    result in a circular reference - hence we use a helper object with a
+    weak reference to the application.
+    """
+
+    def __init__(self, app):
+        self.app = weakref.ref(app)
+
+    @messagebox_on_error("Failed to export session")
+    def _choose_export_session(self, saver, checker, outmode):
+        app = self.app()
+        if app is None:
+            return
+        checker(app)
+        if outmode is None:
+            return saver(app)
+        elif outmode in ['file', 'directory']:
+            outfile, file_filter = compat.getsavefilename(parent=app)
+            if not outfile:
+                return
+            return saver(app, outfile)
+        else:
+            assert outmode == 'label'
+            label, ok = QtWidgets.QInputDialog.getText(app, 'Choose a label:',
+                                                       'Choose a label:')
+            if not ok:
+                return
+            return saver(app, label)
+
+
 class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
@@ -198,6 +232,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._original_app = QtWidgets.QApplication.instance()
         if self._original_app is not None:
             self._original_icon = self._original_app.windowIcon()
+
+        self._export_helper = ExportHelper(self)
 
         # Now we can get the application instance, which involves setting it
         # up if it doesn't already exist.
@@ -306,7 +342,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_open_data.setText("Open Data")
         self._button_open_data.setIcon(get_icon('glue_open'))
         self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_data.clicked.connect(nonpartial(self._choose_load_data))
+        self._button_open_data.clicked.connect(self._choose_load_data_wizard)
 
         self._data_toolbar.addWidget(self._button_open_data)
 
@@ -314,7 +350,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_save_data.setText("Export Data/Subsets")
         self._button_save_data.setIcon(get_icon('glue_filesave'))
         self._button_save_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_save_data.clicked.connect(nonpartial(self._choose_save_data))
+        self._button_save_data.clicked.connect(self._choose_save_data)
 
         self._data_toolbar.addWidget(self._button_save_data)
 
@@ -340,7 +376,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_open_session.setText("Open Session")
         self._button_open_session.setIcon(get_icon('glue_open'))
         self._button_open_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_session.clicked.connect(nonpartial(self._restore_session))
+        self._button_open_session.clicked.connect(self._restore_session)
 
         self._data_toolbar.addWidget(self._button_open_session)
 
@@ -348,7 +384,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_save_session.setText("Export Session")
         self._button_save_session.setIcon(get_icon('glue_filesave'))
         self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_save_session.clicked.connect(nonpartial(self._choose_save_session))
+        self._button_save_session.clicked.connect(self._choose_save_session)
 
         self._data_toolbar.addWidget(self._button_save_session)
 
@@ -392,7 +428,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_preferences.setText("Preferences")
         self._button_preferences.setIcon(get_icon('glue_settings'))
         self._button_preferences.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_preferences.clicked.connect(nonpartial(self._edit_settings))
+        self._button_preferences.clicked.connect(self._edit_settings)
 
         self._console_toolbar.addWidget(self._button_preferences)
 
@@ -481,7 +517,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return self.current_tab
         return self._ui.tabWidget.widget(index)
 
-    def new_tab(self):
+    def new_tab(self, *args):
         """Spawn a new tab page"""
         layout = QtWidgets.QGridLayout()
         layout.setSpacing(1)
@@ -574,11 +610,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         return sub
 
-    def _edit_settings(self):
+    def _edit_settings(self, *args):
         self._editor = PreferencesDialog(self, parent=self)
         self._editor.show()
 
-    def gather_current_tab(self):
+    def gather_current_tab(self, *args):
         """Arrange windows in current tab via tiling"""
         self.current_tab.tileSubWindows()
 
@@ -738,6 +774,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         window.show()
         window.exec_()
 
+    def _choose_load_data_wizard(self, *args):
+        self._choose_load_data(data_importer=data_wizard)
+
     def _choose_load_data(self, data_importer=None):
         if data_importer is None:
             self.add_datasets(self.data_collection, data_wizard())
@@ -752,7 +791,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                                     "Data objects")
             self.add_datasets(self.data_collection, data)
 
-    def _choose_save_data(self):
+    def _choose_save_data(self, *args):
         dialog = SaveDataDialog(data_collection=self.data_collection, parent=self)
         dialog.exec_()
 
@@ -763,7 +802,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a = action("&New Data Viewer", self,
                    tip="Open a new visualization window in the current tab",
                    shortcut=QtGui.QKeySequence.New)
-        a.triggered.connect(nonpartial(self.choose_new_data_viewer))
+        a.triggered.connect(self._choose_new_data_viewer_nodata)
         self._actions['viewer_new'] = a
 
         if len(qt_client.members) == 0:
@@ -771,7 +810,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         a = action("New Fixed Layout Tab", self,
                    tip="Create a new tab with a fixed layout")
-        a.triggered.connect(nonpartial(self.choose_new_fixed_layout_tab))
+        a.triggered.connect(self.choose_new_fixed_layout_tab)
         self._actions['fixed_layout_tab_new'] = a
 
         if len(qt_fixed_layout_tab.members) == 0:
@@ -780,7 +819,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a = action('New &Tab', self,
                    shortcut=QtGui.QKeySequence.AddTab,
                    tip='Add a new tab')
-        a.triggered.connect(nonpartial(self.new_tab))
+        a.triggered.connect(self.new_tab)
         self._actions['tab_new'] = a
 
         a = action('&Rename Tab', self,
@@ -792,20 +831,19 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         a = action('&Gather Windows', self,
                    tip='Gather plot windows side-by-side',
                    shortcut='Ctrl+G')
-        a.triggered.connect(nonpartial(self.gather_current_tab))
+        a.triggered.connect(self.gather_current_tab)
         self._actions['gather'] = a
 
         a = action('&Export Session', self,
                    tip='Save the current session')
-        a.triggered.connect(nonpartial(self._choose_save_session))
+        a.triggered.connect(self._choose_save_session)
         self._actions['session_save'] = a
 
         # Add file loader as first item in File menu for convenience. We then
         # also add it again below in the Import menu for consistency.
         a = action("&Open Data Set", self, tip="Open a new data set",
                    shortcut=QtGui.QKeySequence.Open)
-        a.triggered.connect(nonpartial(self._choose_load_data,
-                                       data_wizard))
+        a.triggered.connect(self._choose_load_data_wizard)
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
@@ -815,15 +853,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Add default file loader (later we can add this to the registry)
         a = action("Import from file", self, tip="Import from file")
-        a.triggered.connect(nonpartial(self._choose_load_data,
-                                       data_wizard))
+        a.triggered.connect(self._choose_load_data_wizard)
         acts.append(a)
 
         for i in importer:
             label, data_importer = i
             a = action(label, self, tip=label)
-            a.triggered.connect(nonpartial(self._choose_load_data,
-                                           data_importer))
+            a.triggered.connect(self._choose_load_data_wizard)
             acts.append(a)
 
         self._actions['data_importers'] = acts
@@ -836,7 +872,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 a = action(label, self,
                            tip='Export the current session to %s format' %
                            label)
-                a.triggered.connect(nonpartial(self._choose_export_session,
+                a.triggered.connect(nonpartial(self._export_helper._choose_export_session,
                                                saver, checker, mode))
                 acts.append(a)
 
@@ -844,30 +880,30 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         a = action('Open S&ession', self,
                    tip='Restore a saved session')
-        a.triggered.connect(nonpartial(self._restore_session))
+        a.triggered.connect(self._restore_session)
         self._actions['session_restore'] = a
 
         a = action('Reset S&ession', self,
                    tip='Reset session to clean state')
-        a.triggered.connect(nonpartial(self._reset_session))
+        a.triggered.connect(self._reset_session)
         self._actions['session_reset'] = a
 
         a = action('Export D&ata/Subsets', self,
                    tip='Export data to a file')
-        a.triggered.connect(nonpartial(self._choose_save_data))
+        a.triggered.connect(self._choose_save_data)
         self._actions['export_data'] = a
 
         a = action("Undo", self,
                    tip='Undo last action',
                    shortcut=QtGui.QKeySequence.Undo)
-        a.triggered.connect(nonpartial(self.undo))
+        a.triggered.connect(self.undo)
         a.setEnabled(False)
         self._actions['undo'] = a
 
         a = action("Redo", self,
                    tip='Redo last action',
                    shortcut=QtGui.QKeySequence.Redo)
-        a.triggered.connect(nonpartial(self.redo))
+        a.triggered.connect(self.redo)
         a.setEnabled(False)
         self._actions['redo'] = a
 
@@ -884,10 +920,16 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         a = action('&Plugin Manager', self,
                    tip='Open plugin manager')
-        a.triggered.connect(nonpartial(self.plugin_manager))
+        a.triggered.connect(self.plugin_manager)
         self._actions['plugin_manager'] = a
 
-    def choose_new_fixed_layout_tab(self):
+    def undo(self, *args):
+        super(GlueApplication, self).undo()
+
+    def redo(self, *args):
+        super(GlueApplication, self).redo()
+
+    def choose_new_fixed_layout_tab(self, *args):
         """
         Creates a new tab with a fixed layout
         """
@@ -913,6 +955,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         return tab
 
+    def _choose_new_data_viewer_nodata(self):
+        self.choose_new_data_viewer()
+
     def choose_new_data_viewer(self, data=None):
         """ Create a new visualization window in the current tab
         """
@@ -936,7 +981,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     new_data_viewer = defer_draw(Application.new_data_viewer)
 
-    def _choose_save_session(self):
+    def _choose_save_session(self, *args):
         """ Save the data collection and hub to file.
 
         Can be restored via restore_session
@@ -966,26 +1011,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                               include_data="including data" in file_filter,
                               absolute_paths="absolute" in file_filter)
 
-    @messagebox_on_error("Failed to export session")
-    def _choose_export_session(self, saver, checker, outmode):
-        checker(self)
-        if outmode is None:
-            return saver(self)
-        elif outmode in ['file', 'directory']:
-            outfile, file_filter = compat.getsavefilename(parent=self)
-            if not outfile:
-                return
-            return saver(self, outfile)
-        else:
-            assert outmode == 'label'
-            label, ok = QtWidgets.QInputDialog.getText(self, 'Choose a label:',
-                                                       'Choose a label:')
-            if not ok:
-                return
-            return saver(self, label)
-
     @messagebox_on_error("Failed to restore session")
-    def _restore_session(self, show=True):
+    def _restore_session(self, *args):
         """ Load a previously-saved state, and restart the session """
         fltr = "Glue sessions (*.glu)"
         file_name, file_filter = compat.getopenfilename(
@@ -1004,10 +1031,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         return (len([viewer for tab in self.viewers for viewer in tab]) == 0 and
                 len(self.data_collection) == 0)
 
-    def _reset_session(self, show=True, warn=True):
+    def _reset_session(self, *args, **kwargs):
         """
         Reset session to clean state.
         """
+
+        warn = kwargs.pop('warn', False)
 
         if not os.environ.get('GLUE_TESTING') and warn and not self.is_empty:
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
@@ -1021,7 +1050,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Make sure the closeEvent gets executed to close the GlueLogger
         self._log.close()
-        self.app.processEvents()
+        if self.app is not None:
+            self.app.processEvents()
 
         ga = GlueApplication()
         ga.start(block=False)
@@ -1188,6 +1218,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
+
+        # Clear the namespace in the terminal to avoid cicular references
+        if self._terminal is not None:
+            self._terminal.widget().clear_ns(['data_collection', 'dc', 'hub', 'session', 'application'])
+
         for tab in self.viewers:
             for viewer in tab:
                 viewer.close(warn=False)
@@ -1198,6 +1233,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         event.accept()
         if self._original_app is not None:
             self._original_app.setWindowIcon(self._original_icon)
+            self._original_app = None
+        self.app = None
 
     def report_error(self, message, detail):
         """
@@ -1213,12 +1250,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         qmb.resize(400, qmb.size().height())
         qmb.exec_()
 
-    def plugin_manager(self):
+    def plugin_manager(self, *args):
         from glue.main import _installed_plugins
         pm = QtPluginManager(installed=_installed_plugins)
         pm.ui.exec_()
 
-    def _update_undo_redo_enabled(self):
+    def _update_undo_redo_enabled(self, *args):
         undo, redo = self._cmds.can_undo_redo()
         self._actions['undo'].setEnabled(undo)
         self._actions['redo'].setEnabled(redo)

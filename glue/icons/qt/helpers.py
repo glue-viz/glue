@@ -5,7 +5,7 @@ from qtpy import QtWidgets, QtGui
 
 from matplotlib.colors import Colormap
 
-from glue.utils.qt import mpl_to_qt4_color, tint_pixmap, cmap2pixmap
+from glue.utils.qt import mpl_to_qt_color, tint_pixmap, cmap2pixmap
 from glue.icons import icon_path
 
 __all__ = ['symbol_icon', 'layer_icon', 'layer_artist_icon', 'get_icon', 'POINT_ICONS']
@@ -37,7 +37,7 @@ def layer_icon(layer):
     """
     icon = POINT_ICONS.get(layer.style.marker, 'circle_point')
     bm = QtGui.QBitmap(icon_path(icon))
-    color = mpl_to_qt4_color(layer.style.color)
+    color = mpl_to_qt_color(layer.style.color)
     pm = tint_pixmap(bm, color)
     return QtGui.QIcon(pm)
 
@@ -59,7 +59,7 @@ def layer_artist_icon(artist):
                                                          'glue_circle_point')))
         else:
             bm = QtGui.QBitmap(icon_path('glue_box_point'))
-        color = mpl_to_qt4_color(color)
+        color = mpl_to_qt_color(color)
         pm = tint_pixmap(bm, color)
 
     return QtGui.QIcon(pm)

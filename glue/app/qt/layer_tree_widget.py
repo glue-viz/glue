@@ -6,6 +6,7 @@ editing the data collection
 from __future__ import absolute_import, division, print_function
 
 import os
+import weakref
 
 from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import Qt
@@ -112,7 +113,7 @@ class PlotAction(LayerAction):
 
     def __init__(self, tree, app):
         super(PlotAction, self).__init__(tree)
-        self.app = app
+        self.app = weakref.ref(app)
 
     def _can_trigger(self):
         if not self.single_selection():
@@ -122,7 +123,9 @@ class PlotAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0].data
-        self.app.choose_new_data_viewer(data)
+        app = self.app()
+        if app is not None:
+            app.choose_new_data_viewer(data)
 
 
 class FacetAction(LayerAction):

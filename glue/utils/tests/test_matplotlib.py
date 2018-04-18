@@ -101,7 +101,7 @@ def test_defer_draw():
     assert result == 3.5
 
 
-def test_defer_draw_exception():
+def test_defer_draw_exception(tmpdir):
 
     # Regression test for a bug that meant that if an exception happened during
     # drawing, the draw method was not restored correctly
@@ -118,7 +118,7 @@ def test_defer_draw_exception():
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.add_artist(ProblematicArtist())
-        fig.canvas.draw()
+        fig.savefig(tmpdir.join('test.png').strpath)
 
     with pytest.raises(ValueError) as exc:
         result = draw_figure()

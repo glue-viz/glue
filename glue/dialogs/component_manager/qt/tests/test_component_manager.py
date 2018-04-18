@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from numpy.testing import assert_equal
 
 from glue.core import Data, DataCollection, ComponentID
-from glue.utils.qt import get_qapp
 from glue.core.component_link import ComponentLink
 from glue.core.parse import ParsedCommand, ParsedComponentLink
 
@@ -14,8 +13,6 @@ from glue.dialogs.component_arithmetic.qt.tests.test_component_arithmetic import
 class TestComponentManagerWidget:
 
     def setup_method(self):
-
-        self.app = get_qapp()
 
         self.data1 = Data(x=[1, 2, 3], y=[3.5, 4.5, -1.0], z=['a', 'r', 'w'])
         self.data2 = Data(a=[3, 4, 1], b=[1.5, -2.0, 3.5], c=['y', 'e', 'r'])

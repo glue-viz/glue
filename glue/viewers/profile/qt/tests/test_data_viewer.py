@@ -55,6 +55,9 @@ class TestProfileViewer(object):
 
     def teardown_method(self, method):
         self.viewer.close()
+        self.viewer = None
+        self.app.close()
+        self.app = None
 
     def test_functions(self):
         self.viewer.add_data(self.data)

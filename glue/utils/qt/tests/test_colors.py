@@ -5,12 +5,12 @@ from mock import MagicMock
 from glue.external.echo import CallbackProperty
 from qtpy import QtGui
 
-from ..colors import qt4_to_mpl_color, QColorBox, connect_color, QColormapCombo
+from ..colors import qt_to_mpl_color, QColorBox, connect_color, QColormapCombo
 
 
 def test_colors():
-    assert qt4_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
-    assert qt4_to_mpl_color(QtGui.QColor(255, 255, 255)) == '#ffffff'
+    assert qt_to_mpl_color(QtGui.QColor(255, 0, 0)) == '#ff0000'
+    assert qt_to_mpl_color(QtGui.QColor(255, 255, 255)) == '#ffffff'
 
 
 # TODO: add a test for the other way around

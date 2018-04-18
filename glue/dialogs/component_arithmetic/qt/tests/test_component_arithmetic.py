@@ -6,7 +6,6 @@ from numpy.testing import assert_equal
 
 from glue.core import Data, DataCollection, HubListener, ComponentID
 from glue.core import message as msg
-from glue.utils.qt import get_qapp
 from glue.core.component_link import ComponentLink
 from glue.core.parse import ParsedCommand, ParsedComponentLink
 
@@ -95,8 +94,6 @@ class TestArithmeticEditorWidget:
 
     def setup_method(self):
 
-        self.app = get_qapp()
-
         self.data1 = Data(x=[1, 2, 3], y=[3.5, 4.5, -1.0], z=['a', 'r', 'w'])
         self.data2 = Data(a=[3, 4, 1], b=[1.5, -2.0, 3.5], c=['y', 'e', 'r'])
 
@@ -115,59 +112,63 @@ class TestArithmeticEditorWidget:
         self.listener2 = ChangeListener(self.data2)
 
     def test_nochanges(self):
-        self.manager = ArithmeticEditorWidget(self.data_collection)
-        self.manager.show()
-        self.manager.button_ok.click()
+        editor = ArithmeticEditorWidget(self.data_collection)
+        editor.show()
+        editor.button_ok.click()
         self.listener1.assert_exact_changes()
         self.listener2.assert_exact_changes()
+        editor.close()
 
     def test_add_derived_and_rename(self):
-        self.manager = ArithmeticEditorWidget(self.data_collection)
-        self.manager.show()
+        editor = ArithmeticEditorWidget(self.data_collection)
+        editor.show()
         with patch.object(EquationEditorDialog, 'exec_', auto_accept('{x} + {y}')):
-            self.manager.button_add_derived.click()
-        item = list(self.manager.list)[0]
+            editor.button_add_derived.click()
+        item = list(editor.list)[0]
         item.setText(0, 'new')
-        self.manager.button_ok.click()
+        editor.button_ok.click()
         self.listener1.assert_exact_changes(added=[self.data1.id['new']])
         self.listener2.assert_exact_changes()
         assert_equal(self.data1['new'], [4.5, 6.5, 2.0])
+        editor.close()
 
     def test_add_derived_and_cancel(self):
-        self.manager = ArithmeticEditorWidget(self.data_collection)
-        self.manager.show()
+        editor = ArithmeticEditorWidget(self.data_collection)
+        editor.show()
         with patch.object(EquationEditorDialog, 'exec_', auto_reject()):
-            self.manager.button_add_derived.click()
-        assert len(self.manager.list) == 0
+            editor.button_add_derived.click()
+        assert len(editor.list) == 0
+        editor.close()
 
     def test_edit_existing_equation(self):
         assert_equal(self.data2['d'], [3, 4, 1])
-        self.manager = ArithmeticEditorWidget(self.data_collection)
-        self.manager.show()
-        assert len(self.manager.list) == 0
-        self.manager.combosel_data.setCurrentIndex(1)
-        assert len(self.manager.list) == 1
-        self.manager.list.select_cid(self.data2.id['d'])
+        editor = ArithmeticEditorWidget(self.data_collection)
+        editor.show()
+        assert len(editor.list) == 0
+        editor.combosel_data.setCurrentIndex(1)
+        assert len(editor.list) == 1
+        editor.list.select_cid(self.data2.id['d'])
         with patch.object(EquationEditorDialog, 'exec_', auto_accept('{a} + {b}')):
-            self.manager.button_edit_derived.click()
-        self.manager.button_ok.click()
+            editor.button_edit_derived.click()
+        editor.button_ok.click()
         self.listener1.assert_exact_changes()
         self.listener2.assert_exact_changes(numerical=True)
         assert_equal(self.data2['d'], [4.5, 2.0, 4.5])
+        editor.close()
 
     # TODO: add an updated version of the following test back once we add
     # support for using derived components in derived components.
     #
     # def test_edit_equation_after_rename(self):
-    #     self.manager = ArithmeticEditorWidget(self.data_collection)
-    #     self.manager.show()
-    #     self.manager.combosel_data.setCurrentIndex(1)
-    #     self.manager.list['main'].select_cid(self.data2.id['a'])
-    #     self.manager.list['main'].selected_item.setText(0, 'renamed')
-    #     self.manager.list.select_cid(self.data2.id['d'])
+    #     editor = ArithmeticEditorWidget(self.data_collection)
+    #     editor.show()
+    #     editor.combosel_data.setCurrentIndex(1)
+    #     editor.list['main'].select_cid(self.data2.id['a'])
+    #     editor.list['main'].selected_item.setText(0, 'renamed')
+    #     editor.list.select_cid(self.data2.id['d'])
     #     with patch.object(EquationEditorDialog, 'exec_', auto_accept('{renamed} + 1')):
-    #         self.manager.button_edit_derived.click()
-    #     self.manager.button_ok.click()
+    #         editor.button_edit_derived.click()
+    #     editor.button_ok.click()
     #     self.listener1.assert_exact_changes()
     #     self.listener2.assert_exact_changes(renamed=[self.data2.id['renamed']], numerical=True)
     #     assert_equal(self.data2['d'], [4, 5, 2])

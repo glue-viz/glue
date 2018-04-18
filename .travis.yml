@@ -22,7 +22,7 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density bottleneck"
-    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt"
+    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -90,19 +90,25 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=1.5
-               NUMPY_VERSION=1.11
+               MATPLOTLIB_VERSION=2.0
                PANDAS_VERSION=0.18
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
-               QT_PKG=pyqt
+               NUMPY_VERSION=1.11
 
-        # Test with PySide, but due to segmentation faults, mark as an
-        # allowed failure.
+        # Test with PySide2
+
+        - os: osx
+          stage: Full
+          env: PYTHON_VERSION=3.6
+               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+               QT_PKG=pyside2
+
         - os: linux
           stage: Full
-          env: PYTHON_VERSION=2.7
-               QT_PKG=pyside
+          env: PYTHON_VERSION=3.6
+               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+               QT_PKG=pyside2
 
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
@@ -115,19 +121,24 @@ matrix:
 
     allow_failures:
 
-      - os: linux
-        env: PYTHON_VERSION=2.7 NUMPY_VERSION=dev
+      # For now PySide2 can give segfaults when the process terminates - see
+      # https://bugreports.qt.io/browse/PYSIDE-585
+      # We therefore need to mark these as allowed failures for now
+
+      - os: osx
+        env: PYTHON_VERSION=3.6
+             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+             QT_PKG=pyside2
 
       - os: linux
-        env: PYTHON_VERSION=2.7 QT_PKG=pyside
+        env: PYTHON_VERSION=3.6
+             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
+             QT_PKG=pyside2
 
 before_install:
 
-  # Prepare dependency list. Note that in future, PyQt5 will be the pyqt conda
-  # package with a version of 5.x rather than a pyqt5 package, so we explicitly
-  # request pyqt=4 for PyQt4.
-  - if [[ $QT_PKG == pyside ]]; then export CONDA_DEPENDENCIES="pyside "$CONDA_DEPENDENCIES; fi
-  - if [[ $QT_PKG == pyqt ]]; then export CONDA_DEPENDENCIES="pyqt=4 "$CONDA_DEPENDENCIES; fi
+  # Prepare dependency list.
+  - if [[ $QT_PKG == pyside2 ]]; then export CONDA_DEPENDENCIES="pyside2 "$CONDA_DEPENDENCIES; fi
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
@@ -151,7 +162,7 @@ install:
   - LC_ALL=C
 
   # Uninstall PyQt if we are using PySide
-  - if [ $QT_PKG == pyside ]; then conda remove --no-pin --force pyqt sip || true; fi
+  - if [ $QT_PKG == pyside2 ]; then conda remove --no-pin --force pyqt sip || true; fi
 
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
@@ -161,6 +172,7 @@ install:
       conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
+      conda remove --no-pin --force pyside2 || true;
       conda remove --no-pin --force qt || true;
       pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
@@ -189,7 +201,7 @@ install:
 
   # We need to install glue in order to make sure that the entry points are
   # installed.
-  - pip install . --no-deps
+  - pip install . --no-deps --verbose
 
   # Check that all the plugins load correctly
   - python -c 'from glue.logger import logger; logger.setLevel("DEBUG"); from glue.main import load_plugins; load_plugins()'

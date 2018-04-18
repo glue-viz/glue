@@ -6,12 +6,16 @@ from collections import defaultdict, Counter
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
+from glue.external.echo import SelectionCallbackProperty
+from glue.external.echo.qt import connect_combo_selection
 from glue.utils.qt import load_ui
 
 __all__ = ['ComponentManagerWidget']
 
 
 class ComponentManagerWidget(QtWidgets.QDialog):
+
+    data = SelectionCallbackProperty()
 
     def __init__(self, data_collection=None, parent=None):
 
@@ -47,8 +51,9 @@ class ComponentManagerWidget(QtWidgets.QDialog):
                     self._components_other[data].append(cid)
 
         # Populate data combo
-        for data in self.data_collection:
-            self.ui.combosel_data.addItem(data.label, userData=data)
+        ComponentManagerWidget.data.set_choices(self, list(self.data_collection))
+        ComponentManagerWidget.data.set_display_func(self, lambda x: x.label)
+        connect_combo_selection(self, 'data', self.ui.combosel_data)
 
         self.ui.combosel_data.setCurrentIndex(0)
         self.ui.combosel_data.currentIndexChanged.connect(self._update_component_lists)
@@ -69,13 +74,6 @@ class ComponentManagerWidget(QtWidgets.QDialog):
     def _update_selection_main(self):
         enabled = self.list.selected_cid is not None
         self.button_remove_main.setEnabled(enabled)
-
-    @property
-    def data(self):
-        try:
-            return self.ui.combosel_data.currentData()
-        except AttributeError:  # PyQt4
-            return self.ui.combosel_data.itemData(self.ui.combosel_data.currentIndex())
 
     def _update_component_lists(self, *args):
 

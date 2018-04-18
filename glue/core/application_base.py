@@ -57,7 +57,7 @@ class Application(HubListener):
 
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
-        self._cmds.add_callback(lambda x: self._update_undo_redo_enabled())
+        self._cmds.add_callback(self._update_undo_redo_enabled)
 
         self._settings = {}
         for key, value, validator in settings:

@@ -40,6 +40,9 @@ class TestSaveDataDialog:
 
         self.dialog = SaveDataDialog(data_collection=self.dc)
 
+    def teardown_method(self, method):
+        self.app = None
+
     def test_defaults(self):
         disabled, enabled = components(self.dialog.ui.list_component)
         assert enabled == ['x', 'y']

@@ -53,13 +53,12 @@ PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
 
 H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 
-PYQT4_INSTALLED, requires_pyqt4 = make_skipper('PyQt4')
 PYQT5_INSTALLED, requires_pyqt5 = make_skipper('PyQt5')
-PYSIDE_INSTALLED, requires_pyside = make_skipper('PySide')
+PYSIDE2_INSTALLED, requires_pyside2 = make_skipper('PySide2')
 
 HYPOTHESIS_INSTALLED, requires_hypothesis = make_skipper('hypothesis')
 
-QT_INSTALLED = PYQT4_INSTALLED or PYQT5_INSTALLED or PYSIDE_INSTALLED
+QT_INSTALLED = PYQT5_INSTALLED or PYSIDE2_INSTALLED
 
 SPECTRAL_CUBE_INSTALLED, requires_spectral_cube = make_skipper('spectral_cube',
                                                                label='spectral-cube')

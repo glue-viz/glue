@@ -11,8 +11,6 @@ from glue.app.qt.application import GlueApplication
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython, random_with_nan
 from glue.viewers.scatter.qt import ScatterViewer
 
-MATPLOTLIB_LT_20 = LooseVersion(__version__) < LooseVersion('2.0')
-
 
 class TestExportPython(BaseTestExportPython):
 
@@ -22,18 +20,22 @@ class TestExportPython(BaseTestExportPython):
             self.data = Data(**dict((name, random_with_nan(100, nan_index=idx + 1)) for idx, name in enumerate('abcdefgh')))
         self.data['angle'] = np.random.uniform(0, 360, 100)
         self.data_collection = DataCollection([self.data])
-        ga = GlueApplication(self.data_collection)
-        self.viewer = ga.new_data_viewer(ScatterViewer)
+        self.app = GlueApplication(self.data_collection)
+        self.viewer = self.app.new_data_viewer(ScatterViewer)
         self.viewer.add_data(self.data)
         self.viewer.state.x_att = self.data.id['a']
         self.viewer.state.y_att = self.data.id['b']
+
+    def teardown_method(self, method):
+        self.viewer.close()
+        self.viewer = None
+        self.app.close()
+        self.app = None
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
 
     def test_simple_nofill(self, tmpdir):
-        if MATPLOTLIB_LT_20:
-            pytest.xfail()
         self.viewer.state.layers[0].fill = False
         self.viewer.state.layers[0].size_scaling = 10
         self.assert_same(tmpdir)
@@ -110,8 +112,6 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_errorbarxy_cmap(self, tmpdir):
-        if MATPLOTLIB_LT_20:
-            pytest.xfail()
         self.viewer.state.layers[0].cmap_mode = 'Linear'
         self.viewer.state.layers[0].cmap_vmin = 0.2
         self.viewer.state.layers[0].cmap_vmax = 0.7

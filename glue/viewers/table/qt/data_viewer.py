@@ -20,7 +20,7 @@ from glue.core.subset import ElementSubsetState
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.state import lookup_class_with_patches
 from glue.utils.colors import alpha_blend_colors
-from glue.utils.qt import mpl_to_qt4_color, messagebox_on_error
+from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['TableViewer', 'TableLayerArtist']
@@ -113,7 +113,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
             # Blend the colors using alpha blending
             if len(colors) > 0:
                 color = alpha_blend_colors(colors, additional_alpha=0.5)
-                color = mpl_to_qt4_color(color)
+                color = mpl_to_qt_color(color)
                 return QtGui.QBrush(color)
 
     def sort(self, column, ascending):

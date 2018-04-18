@@ -13,7 +13,7 @@ from ..data_viewer import DataViewer
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
-
+from glue.utils.qt import get_qapp
 
 # TODO: We should maybe consider running these tests for all
 # registered Qt viewers.
@@ -58,18 +58,26 @@ class BaseTestDataViewer(object):
         app.close()
 
     def test_close_on_last_layer_remove(self):
+
         # regression test for 391
+
+        # Note: processEvents is needed for things to work correctly with PySide2
+        qtapp = get_qapp()
 
         d1 = Data(x=np.random.random((2,) * self.ndim))
         d2 = Data(y=np.random.random((2,) * self.ndim))
         dc = DataCollection([d1, d2])
         app = GlueApplication(dc)
-        with patch.object(self.widget_cls, 'close') as close:
-            w = app.new_data_viewer(self.widget_cls, data=d1)
-            w.add_data(d2)
-            dc.remove(d1)
-            dc.remove(d2)
-        assert close.call_count >= 1
+        w = app.new_data_viewer(self.widget_cls, data=d1)
+        w.add_data(d2)
+        qtapp.processEvents()
+        assert len(app.viewers[0]) == 1
+        dc.remove(d1)
+        qtapp.processEvents()
+        assert len(app.viewers[0]) == 1
+        dc.remove(d2)
+        qtapp.processEvents()
+        assert len(app.viewers[0]) == 0
         app.close()
 
     def test_viewer_size(self, tmpdir):

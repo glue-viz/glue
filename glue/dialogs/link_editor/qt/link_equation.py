@@ -11,8 +11,9 @@ from qtpy import QtWidgets
 from glue import core
 from glue.config import link_function, link_helper
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui, messagebox_on_error, update_combobox
-from glue.utils.qt.widget_properties import CurrentComboTextProperty, CurrentComboDataProperty
+from glue.utils.qt import load_ui, messagebox_on_error
+from glue.external.echo import SelectionCallbackProperty
+from glue.external.echo.qt import connect_combo_selection
 
 __all__ = ['LinkEquation']
 
@@ -124,8 +125,8 @@ class LinkEquation(QtWidgets.QWidget):
        widget = LinkEquation()
     """
 
-    category = CurrentComboTextProperty('_ui.category')
-    function = CurrentComboDataProperty('_ui.function')
+    category = SelectionCallbackProperty()
+    function = SelectionCallbackProperty()
 
     def __init__(self, parent=None):
         super(LinkEquation, self).__init__(parent)
@@ -138,6 +139,7 @@ class LinkEquation(QtWidgets.QWidget):
         # for some reason. Manually embed
         self._ui = load_ui('link_equation.ui', None,
                            directory=os.path.dirname(__file__))
+
         l = QtWidgets.QHBoxLayout()
         l.addWidget(self._ui)
         self.setLayout(l)
@@ -224,7 +226,7 @@ class LinkEquation(QtWidgets.QWidget):
     def _setup_editor(self):
         if self.is_function():
             self._setup_editor_function()
-        else:
+        elif self.is_helper():
             self._setup_editor_helper()
 
     def _setup_editor_function(self):
@@ -273,10 +275,13 @@ class LinkEquation(QtWidgets.QWidget):
     def _populate_category_combo(self):
         f = [f for f in link_function.members if len(f.output_labels) == 1]
         categories = sorted(set(l.category for l in f + link_helper.members))
-        update_combobox(self._ui.category, list(zip(categories, categories)))
+        LinkEquation.category.set_choices(self, categories)
+        connect_combo_selection(self, 'category', self._ui.category)
 
     def _populate_function_combo(self):
         """ Add name of functions to function combo box """
         f = [f for f in link_function.members if len(f.output_labels) == 1]
-        functions = ((get_function_name(l[0]), l) for l in f + link_helper.members if l.category == self.category)
-        update_combobox(self._ui.function, functions)
+        functions = [l for l in f + link_helper.members if l.category == self.category]
+        LinkEquation.function.set_choices(self, functions)
+        LinkEquation.function.set_display_func(self, lambda l: get_function_name(l[0]))
+        connect_combo_selection(self, 'function', self._ui.function)

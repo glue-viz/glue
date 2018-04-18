@@ -1,10 +1,12 @@
 import os
 
+import pytest
 import numpy as np
 from mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
 from glue import custom_viewer
+from glue.tests.helpers import PYSIDE2_INSTALLED
 from glue.core import HubListener, Application, Data, DataCollection
 from glue.core.message import SettingsChangeMessage
 from qtpy import QtWidgets
@@ -295,6 +297,7 @@ def _generate_custom_viewer():
     raise Exception("Failed to find custom viewer in qt_client")
 
 
+@pytest.mark.skipif('PYSIDE2_INSTALLED')
 def test_foreground_background_settings():
 
     d_1d = Data(x=np.random.random(100), y=np.random.random(100), label='Data 1d')

@@ -12,6 +12,7 @@ import matplotlib.dates as dates
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
 
+from glue.external.six import PY2
 from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
@@ -183,7 +184,7 @@ class DeferDrawMeta(type):
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = defer_draw(attr_value)
 
-        return type.__new__(cls, name, bases, attrs)
+        return super(DeferDrawMeta, cls).__new__(cls, name, bases, attrs)
 
 
 def color2rgb(color):
@@ -200,7 +201,6 @@ def color2hex(color):
         from matplotlib.colors import ColorConverter, rgb2hex
         result = rgb2hex(ColorConverter().to_rgb(color))
     return result
-
 
 
 def point_contour(x, y, data):

@@ -23,17 +23,22 @@ class TestPlotly(object):
         self.app = GlueApplication(dc)
         self.data = d
 
+    def teardown_method(self, method):
+        self.app.close()
+        self.app = None
+
     def test_scatter(self):
-        app = self.app
+
         d = self.data
         d.style.markersize = 6
         d.style.color = '#ff0000'
         d.style.alpha = .4
-        v = app.new_data_viewer(ScatterViewer, data=d)
-        v.state.x_att = d.id['y']
-        v.state.y_att = d.id['x']
 
-        args, kwargs = build_plotly_call(app)
+        viewer = self.app.new_data_viewer(ScatterViewer, data=d)
+        viewer.state.x_att = d.id['y']
+        viewer.state.y_att = d.id['x']
+
+        args, kwargs = build_plotly_call(self.app)
         data = args[0]['data'][0]
 
         expected = dict(type='scatter', mode='markers', name=d.label,
@@ -48,18 +53,20 @@ class TestPlotly(object):
         layout = args[0]['layout']
         assert layout['showlegend']
 
+        viewer.close()
+
     def test_scatter_subset(self):
-        app = self.app
+
         d = self.data
         s = d.new_subset(label='subset')
         s.subset_state = d.id['x'] > 1
         s.style.marker = 's'
 
-        v = app.new_data_viewer(ScatterViewer, data=d)
-        v.state.x_att = d.id['x']
-        v.state.y_att = d.id['x']
+        viewer = self.app.new_data_viewer(ScatterViewer, data=d)
+        viewer.state.x_att = d.id['x']
+        viewer.state.y_att = d.id['x']
 
-        args, kwargs = build_plotly_call(app)
+        args, kwargs = build_plotly_call(self.app)
         data = args[0]['data']
 
         # check that subset is on Top
@@ -67,23 +74,23 @@ class TestPlotly(object):
         assert data[0]['name'] == 'data'
         assert data[1]['name'] == 'subset'
 
+        viewer.close()
+
     def test_axes(self):
 
-        app = self.app
+        viewer = self.app.new_data_viewer(ScatterViewer, data=self.data)
 
-        v = app.new_data_viewer(ScatterViewer, data=self.data)
+        viewer.state.x_log = True
+        viewer.state.x_min = 10
+        viewer.state.x_max = 100
+        viewer.state.x_att = self.data.id['x']
 
-        v.state.x_log = True
-        v.state.x_min = 10
-        v.state.x_max = 100
-        v.state.x_att = self.data.id['x']
+        viewer.state.y_log = False
+        viewer.state.y_min = 2
+        viewer.state.y_max = 4
+        viewer.state.y_att = self.data.id['y']
 
-        v.state.y_log = False
-        v.state.y_min = 2
-        v.state.y_max = 4
-        v.state.y_att = self.data.id['y']
-
-        args, kwargs = build_plotly_call(app)
+        args, kwargs = build_plotly_call(self.app)
 
         xaxis = dict(type='log', rangemode='normal',
                      range=[1, 2], title='x', zeroline=False)
@@ -95,17 +102,20 @@ class TestPlotly(object):
         for k, v in layout['yaxis'].items():
             assert yaxis.get(k, v) == v
 
+        viewer.close()
+
     def test_histogram(self):
-        app = self.app
+
         d = self.data
         d.style.color = '#000000'
-        v = app.new_data_viewer(HistogramViewer, data=d)
-        v.component = d.id['y']
-        v.state.hist_x_min = 0
-        v.state.hist_x_max = 10
-        v.state.hist_n_bin = 20
 
-        args, kwargs = build_plotly_call(app)
+        viewer = self.app.new_data_viewer(HistogramViewer, data=d)
+        viewer.component = d.id['y']
+        viewer.state.hist_x_min = 0
+        viewer.state.hist_x_max = 10
+        viewer.state.hist_n_bin = 20
+
+        args, kwargs = build_plotly_call(self.app)
 
         expected = dict(
             name='data',
@@ -118,3 +128,5 @@ class TestPlotly(object):
         for k in expected:
             assert expected[k] == data[0][k]
         assert args[0]['layout']['barmode'] == 'overlay'
+
+        viewer.close()

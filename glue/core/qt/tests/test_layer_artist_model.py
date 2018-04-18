@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from mock import MagicMock
 
 from qtpy.QtCore import Qt
-from qtpy import PYQT5
 from glue.core import Data, Hub
 from glue.core.layer_artist import LayerArtistBase as _LayerArtist
 
@@ -104,10 +103,8 @@ def test_flags():
                 Qt.ItemIsDragEnabled |
                 Qt.ItemIsEnabled |
                 Qt.ItemIsSelectable |
-                Qt.ItemIsUserCheckable)
-
-    if PYQT5:
-        expected |= Qt.ItemNeverHasChildren
+                Qt.ItemIsUserCheckable |
+                Qt.ItemNeverHasChildren)
 
     assert model.flags(model.index(0)) == expected
 

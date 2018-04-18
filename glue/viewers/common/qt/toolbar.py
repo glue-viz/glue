@@ -122,7 +122,7 @@ class BasicToolbar(QtWidgets.QToolBar):
             else:
                 self.active_tool = None
 
-        def trigger(checked):
+        def trigger():
             self.active_tool = tool
 
         parent.addAction(action)

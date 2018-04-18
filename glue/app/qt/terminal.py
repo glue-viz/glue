@@ -184,6 +184,11 @@ class DragAndDropTerminal(RichJupyterWidget):
         else:
             event.ignore()
 
+    def clear_ns(self, names):
+        if self.shell is not None:
+            for name in names:
+                self.shell.user_ns.pop(name)
+
 
 FROM_TERMINAL_MESSAGE = """
 Due to a limitation in IPython, the IPython terminal in glue does not work well

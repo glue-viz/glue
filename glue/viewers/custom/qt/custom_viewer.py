@@ -89,6 +89,7 @@ from glue.core import Data
 from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_artists
 from glue import core
+from glue.external.echo.qt.connect import UserDataWrapper
 
 from glue.viewers.common.viz_client import GenericMplClient
 
@@ -1397,7 +1398,7 @@ class ComponenentElement(FormElement, core.hub.HubListener):
 
         comps = self._list_components()
         for c in comps:
-            combo.addItem(c.label, userData=c)
+            combo.addItem(c.label, userData=UserDataWrapper(c))
 
         try:
             combo.setCurrentIndex(comps.index(old))
@@ -1447,4 +1448,7 @@ class ChoiceElement(FormElement):
         return w
 
     def value(self, layer=None, view=None):
-        return self.params[self.ui.currentText()]
+        if self.ui.currentIndex() < 0:
+            return None
+        else:
+            return self.params[self.ui.currentText()]

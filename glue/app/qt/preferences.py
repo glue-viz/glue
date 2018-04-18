@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import weakref
 import platform
 
 import numpy as np
@@ -34,7 +35,7 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         super(PreferencesDialog, self).__init__(parent=parent)
 
-        self.app = application
+        self._app = weakref.ref(application)
 
         self.ui = load_ui('preferences.ui', self,
                           directory=os.path.dirname(__file__))
@@ -112,12 +113,12 @@ class PreferencesDialog(QtWidgets.QDialog):
 
         # Trigger viewers to update defaults
 
-        self.app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')))
+        app = self._app()
 
-        # If requested, trigger data to update color
-
-        if self.data_apply:
-            self.app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
+        if app is not None:
+            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')))
+            if self.data_apply:  # If requested, trigger data to update color
+                app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 
         super(PreferencesDialog, self).accept()
 

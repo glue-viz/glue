@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtCore, QtGui, QtWidgets, PYQT5
+from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.core.hub import HubListener
 from glue.core import message as m
@@ -252,8 +252,6 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
         # without this reference, PySide clobbers instance
         # data of model items
         self.register_to_hub(self.data_collection.hub)
-        if not PYQT5:
-            self.setSupportedDragActions(Qt.CopyAction)
 
     def supportedDragActions(self):
         return Qt.CopyAction
@@ -427,8 +425,6 @@ class DataCollectionModel(QtCore.QAbstractItemModel, HubListener):
     def invalidate(self, *args):
         self.root = DataCollectionItem(self.data_collection)
         self._items.clear()
-        if not PYQT5:
-            self.reset()
         self.layoutChanged.emit()
 
     def glue_data(self, indices):
@@ -507,7 +503,10 @@ class DataCollectionView(QtWidgets.QTreeView, HubListener):
     def _update_viewport(self, *args, **kwargs):
         # This forces the widget containing the list view to update/redraw,
         # reflecting any changes in color/labels/content
-        self.viewport().update()
+        try:
+            self.viewport().update()
+        except RuntimeError:
+            pass
 
     def edit_label(self, index):
         if not (self._model.flags(index) & Qt.ItemIsEditable):

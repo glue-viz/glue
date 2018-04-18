@@ -1,5 +1,5 @@
 import platform
-from qtpy import QtCore, QtGui, QtWidgets, PYQT5
+from qtpy import QtCore, QtGui, QtWidgets
 
 __all__ = ['get_qapp', 'fix_tab_widget_fontsize']
 
@@ -34,10 +34,8 @@ def get_qapp(icon_path=None):
         font.setPointSize(font.pointSize() - size_offset)
         qapp.setFont(font)
 
-    # Make sure we use high resolution icons with PyQt5 for HDPI
-    # displays.
-    if PYQT5:
-        qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    # Make sure we use high resolution icons for HDPI displays.
+    qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
 
     return qapp
 

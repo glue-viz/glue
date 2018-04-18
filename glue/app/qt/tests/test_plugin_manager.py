@@ -69,7 +69,7 @@ def test_permission_fail(tmpdir):
 
     config2 = ph.PluginConfig.load()
 
-    with patch.object(QtWidgets.QMessageBox, 'exec_', return_value=None) as qmb:
+    with patch('qtpy.QtWidgets.QMessageBox') as qmb:
         w = QtPluginManager()
         w.finalize()
 

@@ -4,9 +4,17 @@ import os
 import sys
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
-from glue.core.edit_subset_mode import EditSubsetMode, ReplaceMode
+
+try:
+    import objgraph
+except ImportError:
+    OBJGRAPH_INSTALLED = False
+else:
+    OBJGRAPH_INSTALLED = True
 
 STDERR_ORIGINAL = sys.stderr
+
+ON_APPVEYOR = os.environ.get('APPVEYOR', 'False') == 'True'
 
 
 def pytest_addoption(parser):
@@ -39,7 +47,7 @@ def pytest_configure(config):
     except ImportError:
         pass
     else:
-        app = get_qapp()
+        get_qapp()
 
     # Force loading of plugins
     from glue.main import load_plugins
@@ -54,5 +62,25 @@ def pytest_report_header(config):
 
 
 def pytest_unconfigure(config):
+
+    # Reset configuration directory to original one
     from glue import config
     config.CFG_DIR = CFG_DIR_ORIG
+
+    # Remove reference to QApplication to prevent segmentation fault on PySide
+    try:
+        from glue.utils.qt import app
+        app.qapp = None
+    except ImportError:  # for when we run the tests without the qt directories
+        pass
+
+    if OBJGRAPH_INSTALLED and not ON_APPVEYOR:
+
+        # Make sure there are no lingering references to GlueApplication
+        obj = objgraph.by_type('GlueApplication')
+        if len(obj) > 0:
+            objgraph.show_backrefs(objgraph.by_type('GlueApplication'))
+            raise ValueError('There are {0} remaining references to GlueApplication'.format(len(obj)))
+
+        # Uncomment when checking for memory leaks
+        # objgraph.show_most_common_types(limit=100)

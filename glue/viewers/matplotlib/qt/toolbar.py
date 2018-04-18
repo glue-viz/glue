@@ -1,17 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 from qtpy import QtCore
-from qtpy import PYQT5
 
 from glue.icons.qt import get_icon
 from glue.viewers.common.qt.tool import CheckableTool, Tool
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.common.qt.toolbar import BasicToolbar
 
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 
 __all__ = ['HomeTool', 'SaveTool', 'PanTool', 'ZoomTool', 'MatplotlibViewerToolbar']
 

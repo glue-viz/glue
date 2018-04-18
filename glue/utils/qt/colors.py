@@ -11,12 +11,12 @@ from glue.utils.qt.widget_properties import WidgetProperty
 
 from matplotlib import cm
 
-__all__ = ['mpl_to_qt4_color', 'qt4_to_mpl_color', 'cmap2pixmap',
+__all__ = ['mpl_to_qt_color', 'qt_to_mpl_color', 'cmap2pixmap',
            'tint_pixmap', 'QColorBox', 'ColorProperty', 'connect_color',
            'QColormapCombo']
 
 
-def mpl_to_qt4_color(color, alpha=None):
+def mpl_to_qt_color(color, alpha=None):
     """
     Convert a matplotlib color stirng into a Qt QColor object
 
@@ -42,7 +42,7 @@ def mpl_to_qt4_color(color, alpha=None):
     return QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
 
 
-def qt4_to_mpl_color(qcolor):
+def qt_to_mpl_color(qcolor):
     """
     Convert a QColor object into a string that matplotlib understands
 
@@ -165,7 +165,7 @@ class QColorBox(QtWidgets.QLabel):
     def query_color(self):
         color = QtWidgets.QColorDialog.getColor(self._qcolor, parent=self)
         if color.isValid():
-            self.setColor(qt4_to_mpl_color(color))
+            self.setColor(qt_to_mpl_color(color))
 
     def setColor(self, color):
         self._color = color
@@ -175,7 +175,7 @@ class QColorBox(QtWidgets.QLabel):
         return self._color
 
     def on_color_change(self):
-        self._qcolor = mpl_to_qt4_color(self.color())
+        self._qcolor = mpl_to_qt_color(self.color())
         image = QtGui.QImage(70, 22, QtGui.QImage.Format_RGB32)
         try:
             image.fill(self._qcolor)
@@ -186,18 +186,21 @@ class QColorBox(QtWidgets.QLabel):
         self.setPixmap(pixmap)
 
 
+from glue.external.echo.qt.connect import UserDataWrapper
+
+
 class QColormapCombo(QtWidgets.QComboBox):
 
     def __init__(self, *args, **kwargs):
         super(QColormapCombo, self).__init__(*args, **kwargs)
         for label, cmap in config.colormaps:
-            self.addItem("", userData=cmap)
+            self.addItem("", userData=UserDataWrapper(cmap))
         self._update_icons()
 
     def _update_icons(self):
         self.setIconSize(QtCore.QSize(self.width(), 15))
         for index in range(self.count()):
-            cmap = self.itemData(index)
+            cmap = self.itemData(index).data
             icon = QtGui.QIcon(cmap2pixmap(cmap, size=(self.width(), 15), steps=200))
             self.setItemIcon(index, icon)
 
