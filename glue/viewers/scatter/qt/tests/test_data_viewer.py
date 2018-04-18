@@ -23,6 +23,7 @@ from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlib
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.app.qt import GlueApplication
+from glue.tests.helpers import PYSIDE2_INSTALLED
 
 from ..data_viewer import ScatterViewer
 
@@ -256,6 +257,7 @@ class TestScatterViewer(object):
         self.viewer.state.layers[0].points_mode = 'markers'
         self.viewer.state.layers[0].points_mode = 'density'
 
+    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
