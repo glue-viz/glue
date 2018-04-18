@@ -4,7 +4,6 @@ import os
 import sys
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
-from glue.core.edit_subset_mode import EditSubsetMode, ReplaceMode
 
 try:
     import objgraph
@@ -14,6 +13,8 @@ else:
     OBJGRAPH_INSTALLED = True
 
 STDERR_ORIGINAL = sys.stderr
+
+ON_APPVEYOR = os.environ.get('APPVEYOR', 'False') == 'True'
 
 
 def pytest_addoption(parser):
@@ -67,10 +68,13 @@ def pytest_unconfigure(config):
     config.CFG_DIR = CFG_DIR_ORIG
 
     # Remove reference to QApplication to prevent segmentation fault on PySide
-    from glue.utils.qt import app
-    app.qapp = None
+    try:
+        from glue.utils.qt import app
+        app.qapp = None
+    except ImportError:  # for when we run the tests without the qt directories
+        pass
 
-    if OBJGRAPH_INSTALLED:
+    if OBJGRAPH_INSTALLED and not ON_APPVEYOR:
 
         # Make sure there are no lingering references to GlueApplication
         obj = objgraph.by_type('GlueApplication')
