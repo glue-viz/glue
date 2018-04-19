@@ -131,6 +131,9 @@ v0.13.0 (unreleased)
 v0.12.6 (unreleased)
 --------------------
 
+* Fixed an issue that caused sliders to not be correctly updated when
+  switching reference data in the image viewer. [#1665]
+
 * Fixed an issue that caused an IndexError when quitting glue in some
   cases. [#1657]
 

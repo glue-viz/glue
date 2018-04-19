@@ -27,6 +27,10 @@ class MultiSliceWidgetHelper(object):
 
         self._sliders = []
 
+        self._reference_data = None
+        self._x_att = None
+        self._y_att = None
+
         self.sync_sliders_from_state()
 
     @property
@@ -63,27 +67,15 @@ class MultiSliceWidgetHelper(object):
         if self.viewer_state.x_att is self.viewer_state.y_att:
             return
 
-        # TODO: figure out why there are no current circular calls (normally
-        # we should need to add @avoid_circular)
+        # Update sliders if needed
 
-        # Update number of sliders if needed
+        if (self.viewer_state.reference_data is not self._reference_data or
+                self.viewer_state.x_att is not self._x_att or
+                self.viewer_state.y_att is not self._y_att):
 
-        if self.data.ndim != len(self._sliders):
-            reinitialize = True
-        else:
-            for i in range(self.data.ndim):
-                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
-                    if self._sliders[i] is not None:
-                        reinitialize = True
-                        break
-                else:
-                    if self._sliders[i] is None:
-                        reinitialize = True
-                        break
-            else:
-                reinitialize = False
-
-        if reinitialize:
+            self._reference_data = self.viewer_state.reference_data
+            self._x_att = self.viewer_state.x_att
+            self._y_att = self.viewer_state.y_att
 
             self._clear()
 
