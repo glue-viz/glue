@@ -51,6 +51,10 @@ class Coordinates(object):
         """
         return args
 
+    @property
+    def default_world_coords(self, ndim):
+        return np.zeros(ndim, dtype=float)
+
     # PY3: pixel2world_single_axis(self, *pixel, axis=None)
 
     def pixel2world_single_axis(self, *pixel, **kwargs):
@@ -287,6 +291,11 @@ class WCSCoordinates(Coordinates):
     def world2pixel(self, *world):
         # PY3: can just do world2pix(*world, 0)
         return self._wcs.wcs_world2pix(*(tuple(world) + (0,)))
+    def default_world_coords(self, ndim):
+        if ndim != self._wcs.naxis:
+            raise ValueError("Requested default world coordinates for {0} "
+                             "dimensions, WCS has {1}".format(ndim, self._wcs.naxis))
+        return self._wcs.wcs.crval
 
     def axis_label(self, axis):
         header = self._header
