@@ -128,6 +128,9 @@ v0.13.0 (unreleased)
 * Added a mouse over pixel selection tool, which creates a one pixel subset
   under the mouse cursor. [#1619]
 
+* Fixed an issue that caused sliders to not be correctly updated when
+  switching reference data in the image viewer. [#1665]
+
 v0.12.6 (unreleased)
 --------------------
 

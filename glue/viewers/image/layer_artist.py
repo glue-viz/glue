@@ -9,6 +9,7 @@ from glue.utils import defer_draw
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
+from glue.viewers.image.pixel_selection_mode import PixelSubsetState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
@@ -17,6 +18,7 @@ from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
 from glue.external.modest_image import imshow
+
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -276,7 +278,30 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         self.image_artist = imshow(self.axes, self.subset_array,
                                    origin='lower', interpolation='nearest',
                                    vmin=0, vmax=1, aspect=self._viewer_state.aspect)
-        self.mpl_artists = [self.image_artist]
+
+        self._line_x = self.axes.axvline(0)
+        self._line_x.set_visible(False)
+
+        self._line_y = self.axes.axhline(0)
+        self._line_y.set_visible(False)
+
+        self.mpl_artists = [self.image_artist, self._line_x, self._line_y]
+
+    @defer_draw
+    def _update_data(self):
+        if isinstance(self.state.layer.subset_state, PixelSubsetState):
+            slices = self.state.layer.subset_state.slices
+            x = slices[self._viewer_state.x_att.axis].start
+            y = slices[self._viewer_state.y_att.axis].start
+            self._line_x.set_data([x, x], [0, 1])
+            self._line_x.set_visible(True)
+            self._line_y.set_data([0, 1], [y, y])
+            self._line_y.set_visible(True)
+        else:
+            self._line_x.set_visible(False)
+            self._line_y.set_visible(False)
+        self.image_artist.invalidate_cache()
+        self.redraw()  # forces subset to be recomputed
 
     @defer_draw
     def _update_visual_attributes(self):
@@ -284,11 +309,14 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         if not self.enabled:
             return
 
-        # TODO: deal with color using a colormap instead of having to change data
-
-        self.image_artist.set_visible(self.state.visible)
-        self.image_artist.set_zorder(self.state.zorder)
-        self.image_artist.set_alpha(self.state.alpha)
+        for artist in self.mpl_artists:
+            if artist is self.image_artist:
+                artist.set_visible(self.state.visible)
+                artist.set_alpha(self.state.alpha)
+            else:
+                artist.set_color(self.state.color)
+                artist.set_alpha(self.state.alpha * 0.5)
+            artist.set_zorder(self.state.zorder)
 
         self.redraw()
 
@@ -321,8 +349,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
-            self.image_artist.invalidate_cache()
-            self.redraw()  # forces subset to be recomputed
+            self._update_data()
             force = True  # make sure scaling and visual attributes are updated
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):

@@ -51,6 +51,9 @@ class Coordinates(object):
         """
         return args
 
+    def default_world_coords(self, ndim):
+        return np.zeros(ndim, dtype=float)
+
     # PY3: pixel2world_single_axis(self, *pixel, axis=None)
 
     def pixel2world_single_axis(self, *pixel, **kwargs):
@@ -80,6 +83,9 @@ class Coordinates(object):
 
         if axis is None:
             raise ValueError("axis needs to be set")
+
+        if np.size(pixel[0]) == 0:
+            return np.array([], dtype=float)
 
         original_shape = pixel[0].shape
         pixel_new = []
@@ -122,6 +128,9 @@ class Coordinates(object):
 
         if axis is None:
             raise ValueError("axis needs to be set")
+
+        if np.size(world[0]) == 0:
+            return np.array([], dtype=float)
 
         original_shape = world[0].shape
         world_new = []
@@ -282,11 +291,23 @@ class WCSCoordinates(Coordinates):
 
     def pixel2world(self, *pixel):
         # PY3: can just do pix2world(*pixel, 0)
-        return self._wcs.wcs_pix2world(*(tuple(pixel) + (0,)))
+        if np.size(pixel[0]) == 0:
+            return tuple(np.array([], dtype=float) for p in pixel)
+        else:
+            return self._wcs.wcs_pix2world(*(tuple(pixel) + (0,)))
 
     def world2pixel(self, *world):
         # PY3: can just do world2pix(*world, 0)
-        return self._wcs.wcs_world2pix(*(tuple(world) + (0,)))
+        if np.size(world[0]) == 0:
+            return tuple(np.array([], dtype=float) for w in world)
+        else:
+            return self._wcs.wcs_world2pix(*(tuple(world) + (0,)))
+
+    def default_world_coords(self, ndim):
+        if ndim != self._wcs.naxis:
+            raise ValueError("Requested default world coordinates for {0} "
+                             "dimensions, WCS has {1}".format(ndim, self._wcs.naxis))
+        return self._wcs.wcs.crval
 
     def axis_label(self, axis):
         header = self._header

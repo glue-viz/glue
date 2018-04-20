@@ -9,16 +9,21 @@ from glue.core.subset import SliceSubsetState
 __all__ = ['PixelSelectionTool']
 
 
+class PixelSubsetState(SliceSubsetState):
+    def copy(self):
+        return PixelSubsetState(self.reference_data, self.slices)
+
+
 @viewer_tool
 class PixelSelectionTool(ToolbarModeBase):
     """
     Selects pixel under mouse cursor.
     """
 
-    icon = "glue_point"
+    icon = "glue_crosshair"
     tool_id = 'image:point_selection'
     action_text = 'Pixel'
-    tool_tip = 'Select a point based on mouse location'
+    tool_tip = 'Select a single pixel based on mouse location'
     status_tip = ('Mouse over to select a point. Click on the image to enable or disable selection.')
 
     _on_move = False
@@ -51,7 +56,7 @@ class PixelSelectionTool(ToolbarModeBase):
         slices[self.viewer.state.x_att.axis] = slice(x, x + 1)
         slices[self.viewer.state.y_att.axis] = slice(y, y + 1)
 
-        subset_state = SliceSubsetState(self.viewer.state.reference_data, slices)
+        subset_state = PixelSubsetState(self.viewer.state.reference_data, slices)
 
         cmd = ApplySubsetState(data_collection=self.viewer._data,
                                subset_state=subset_state,

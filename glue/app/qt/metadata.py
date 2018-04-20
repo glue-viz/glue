@@ -26,7 +26,7 @@ class MetadataDialog(CenteredDialog):
         self.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
 
         self._text = ""
-        for name, value in OrderedDict(data.coords.header).items():
+        for name, value in OrderedDict(data.meta).items():
             QtWidgets.QTreeWidgetItem(self.ui.meta_tree.invisibleRootItem(), [name, str(value)])
 
         if data.label:

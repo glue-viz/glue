@@ -355,12 +355,19 @@ class CoordinateComponentLink(ComponentLink):
         attr = 'pixel2world_single_axis' if self.pixel2world else 'world2pixel_single_axis'
         func = getattr(self.coords, attr)
 
+        # NOTE: in the past, we set any non-specified arguemnts to 0 for the
+        # input coordinates, but this caused issues because in astropy.wcs
+        # if one specifies e.g. (0, 0, 3000.) for (ra, dec, velocity), and if
+        # (0, 0) for RA/Dec would return (nan, nan) normally, the velocity
+        # is also NaN even though it is decoupled from the other coordinates.
+        default = self.coords.default_world_coords(self.ndim)
+
         args2 = [None] * self.ndim
         for f, a in zip(self.from_needed, args):
             args2[f] = a
         for i in range(self.ndim):
             if args2[i] is None:
-                args2[i] = np.zeros_like(args[0])
+                args2[i] = np.ones_like(args[0]) * default[self.ndim - 1 - i]
         args2 = tuple(args2)
 
         return func(*args2[::-1], axis=self.ndim - 1 - self.index)
