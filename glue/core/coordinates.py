@@ -51,7 +51,6 @@ class Coordinates(object):
         """
         return args
 
-    @property
     def default_world_coords(self, ndim):
         return np.zeros(ndim, dtype=float)
 
