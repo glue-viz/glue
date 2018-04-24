@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from glue.core import Data
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -141,6 +142,14 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
-        self.state._update_profile()
+        try:
+            self.state._update_profile()
+        except IncompatibleAttribute:
+            if isinstance(self.state.layer, Data):
+                self.disable_invalid_attributes(self.state.attribute)
+            else:
+                self.disable_incompatible_subset()
+        else:
+            self.enable()
         self._update_profile(force=True)
         self.redraw()
