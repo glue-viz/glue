@@ -11,7 +11,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape
+from glue.utils import defer_draw, view_shape, unbroadcast
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
@@ -314,6 +314,7 @@ class BaseImageLayerState(MatplotlibLayerState):
 
     _viewer_callbacks_set = False
     _cache = None
+    _pixel_cache = None
 
     def get_sliced_data_shape(self, view=None):
 
@@ -436,10 +437,75 @@ class BaseImageLayerState(MatplotlibLayerState):
                     agg_func = None
 
                 # Start off by finding all the pixel coordinates of the current
-                # view in the reference frame of the current layer data.
-                pixel_coords = [self.viewer_state.reference_data[pix, full_view]
-                                for pix in self.layer.pixel_component_ids]
-                coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
+                # view in the reference frame of the current layer data. In
+                # principle we could do something as simple as:
+                #
+                #   pixel_coords = [self.viewer_state.reference_data[pix, full_view]
+                #                   for pix in self.layer.pixel_component_ids]
+                #   coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
+                #
+                # However this is sub-optimal because in reality some of these
+                # pixel coordinate conversions won't change when the view is
+                # changed (e.g. when a slice index changes). We therefore
+                # cache each transformed pixel coordinate.
+
+                if self._pixel_cache is None:
+                    # The cache hasn't been set yet or has been reset so we
+                    # initialize it here.
+                    self._pixel_cache = {'view': full_view,
+                                         'related': [None] * len(full_view),
+                                         'coord': [None] * len(full_view),
+                                         'shape': None}
+                else:
+                    # The cache is still active, so we construct a list called
+                    # view_changes which has a list of booleans that indicate
+                    # for each dimention whether the view has changed since the
+                    # lasst call.
+                    cached_view = self._pixel_cache['view']
+                    view_changed = [cv != v for (cv, v) in zip(cached_view, full_view)]
+
+                coords = []
+
+                for ipix, pix in enumerate(self.layer.pixel_component_ids):
+
+                    # We now figure out whether we need to recompute the
+                    # pixel transformation for this coordinate. Start off by
+                    # assuming that we need to
+                    recompute = True
+                    if self._pixel_cache['related'][ipix] is not None:
+                        # If the cache is set and none of the dimensions where
+                        # the view changed are also dimensions related to the
+                        # current one, then we are fine using the cache.
+                        if not np.any(np.logical_and(view_changed,
+                                                     self._pixel_cache['related'][ipix])):
+                            recompute = False
+
+
+                    if recompute:
+
+                        # Start off by finding all the pixel coordinates of the current
+                        # view in the reference frame of the current layer data.
+                        pixel_coord = self.viewer_state.reference_data[pix, full_view]
+                        coord = np.round(pixel_coord.ravel()).astype(int)
+
+                        # Now update cache - basically check which dimesnions in
+                        # the output of the transformation rely on broadcasting.
+                        sub_data = self.viewer_state.reference_data[pix, [slice(0, 2)] * self.viewer_state.reference_data.ndim]
+                        sub_data = unbroadcast(sub_data)
+                        related = [x > 1 for x in sub_data.shape]
+                        self._pixel_cache['related'][ipix] = related
+                        self._pixel_cache['coord'][ipix] = coord
+                        self._pixel_cache['shape'] = pixel_coord.shape
+                        original_shape = pixel_coord.shape
+
+                    else:
+
+                        coord = self._pixel_cache['coord'][ipix]
+                        original_shape = self._pixel_cache['shape']
+
+                    coords.append(coord)
+
+                self._pixel_cache['view'] = full_view
 
                 # TODO: add test when image is smaller than cube
 
@@ -455,7 +521,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                 image[keep] = self._get_image(view=coords)
 
                 # Finally convert array back to a 2D array
-                image = image.reshape(pixel_coords[0].shape)
+                image = image.reshape(original_shape)
 
                 # Determine which slice indices should cause the cache to get
                 # reset and the image to be re-projected.
