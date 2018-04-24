@@ -336,6 +336,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self.toolbar = self._toolbar_cls(self, default_mouse_mode_cls=self._default_mouse_mode_cls)
 
         def get_tools_recursive(cls, tools, subtools):
+            if not issubclass(cls, DataViewer):
+                return
             if cls._inherit_tools and cls is not DataViewer:
                 for parent_cls in cls.__bases__:
                     get_tools_recursive(parent_cls, tools, subtools)
