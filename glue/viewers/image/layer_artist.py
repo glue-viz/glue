@@ -233,8 +233,9 @@ class ImageSubsetArray(object):
                 self.viewer_state is None):
             return broadcast_to(np.nan, self.shape)
 
-        if not self.layer_artist.visible:
-            return broadcast_to(np.nan, self.shape)
+        # We should compute the mask even if the layer is not visible as we need
+        # the layer to show up properly when it is made visible (which doesn't
+        # trigger __getitem__)
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
