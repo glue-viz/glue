@@ -110,6 +110,8 @@ class PreferencesDialog(QtWidgets.QDialog):
         # Save to disk if requested
         if self.save_to_disk:
             save_settings()
+        else:
+            settings._save_to_disk = True
 
         # Trigger viewers to update defaults
 

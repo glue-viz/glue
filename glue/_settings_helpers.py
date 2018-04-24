@@ -10,6 +10,10 @@ from glue.logger import logger
 def save_settings():
 
     from glue.config import settings, CFG_DIR
+
+    if not getattr(settings, '_save_to_disk', True):
+        return
+
     settings_cfg = os.path.join(CFG_DIR, 'settings.cfg')
 
     config = configparser.ConfigParser()

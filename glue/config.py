@@ -180,6 +180,12 @@ class SettingRegistry(DictRegistry):
             value = self._members.get(key, self._defaults[key])
             yield key, value, self._validators[key]
 
+    def __str__(self):
+        s = ""
+        for name, value, validator in self:
+            s += "{0}: {1}\n".format(name, value)
+        return s
+
     def reset_defaults(self):
         self._members.clear()
 
@@ -829,3 +835,5 @@ settings.add('DATA_ALPHA', 0.8, validator=float)
 settings.add('BACKGROUND_COLOR', '#FFFFFF')
 settings.add('FOREGROUND_COLOR', '#000000')
 settings.add('SHOW_LARGE_DATA_WARNING', True, validator=bool)
+settings.add('SHOW_INFO_PROFILE_OPEN', True, validator=bool)
+settings.add('SHOW_WARN_PROFILE_DUPLICATE', True, validator=bool)

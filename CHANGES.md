@@ -4,6 +4,9 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Started adding helpful information dialogs that can be
+  hidden. [#1669]
+
 * Added a new metadata/header viewer for datasets/subsets. [#1659]
 
 * Re-write spectrum viewer into a generic profile viewer that uses
@@ -139,7 +142,7 @@ v0.13.0 (unreleased)
   switching reference data in the image viewer. [#1665]
 
 * Fixed a bug that caused Data.meta to not be saved/restored from session
-  files. [#1669]
+  files. [#1668]
 
 v0.12.6 (unreleased)
 --------------------
