@@ -20,7 +20,6 @@ from glue.core.message import (ComponentsChangedMessage,
 from glue.external.modest_image import imshow
 
 
-
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
@@ -96,6 +95,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         super(ImageLayerArtist, self).remove()
         if self.uuid in self.composite:
             self.composite.deallocate(self.uuid)
+            self.composite_image.invalidate_cache()
 
     def get_image_shape(self):
 
@@ -355,6 +355,10 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):
             self._update_visual_attributes()
+
+    def remove(self):
+        super(ImageSubsetLayerArtist, self).remove()
+        self.image_artist.invalidate_cache()
 
     def enable(self):
         super(ImageSubsetLayerArtist, self).enable()
