@@ -311,6 +311,21 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image1)
         self.data_collection.new_subset_group(subset_state=self.catalog.id['c'] > 1, label='A')
 
+    def test_invisible_subset(self):
+
+        # Regression test for a bug that caused a subset layer that started
+        # off as invisible to have issues when made visible. We emulate the
+        # initial invisible (but enabled) state by invalidating the cache.
+
+        self.viewer.add_data(self.image1)
+        self.data_collection.new_subset_group(subset_state=self.image1.id['x'] > 1, label='A')
+        self.viewer.layers[1].visible = False
+        self.viewer.layers[1].image_artist.invalidate_cache()
+        self.viewer.layers[1].redraw()
+        assert not np.any(self.viewer.layers[1].image_artist._A.mask)
+        self.viewer.layers[1].visible = True
+        assert not np.any(self.viewer.layers[1].image_artist._A.mask)
+
     def test_apply_roi_single(self):
 
         # Regression test for a bug that caused mode.update to be called
