@@ -17,3 +17,4 @@ class ProfileViewerTool(Tool):
         for data in self.viewer.session.data_collection:
             if data in self.viewer._layer_artist_container:
                 profile_viewer.add_data(data)
+        profile_viewer.state.reference_data = self.viewer.state.reference_data
