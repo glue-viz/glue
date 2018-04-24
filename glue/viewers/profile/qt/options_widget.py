@@ -35,6 +35,8 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
 
+        self.ui.text_warning.hide()
+
     def _on_attribute_change(self, *args):
 
         if self.viewer_state.x_att is None:
