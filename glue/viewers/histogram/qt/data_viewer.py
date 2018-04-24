@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.utils import mpl_to_datetime64
@@ -18,14 +17,13 @@ __all__ = ['HistogramViewer']
 class HistogramViewer(MatplotlibDataViewer):
 
     LABEL = '1D Histogram'
-    _toolbar_cls = MatplotlibViewerToolbar
     _layer_style_widget_cls = HistogramLayerStyleEditor
     _state_cls = HistogramViewerState
     _options_cls = HistogramOptionsWidget
     _data_artist_cls = HistogramLayerArtist
     _subset_artist_cls = HistogramLayerArtist
 
-    tools = ['select:xrange', 'save:python']
+    tools = ['select:xrange']
 
     def __init__(self, session, parent=None, state=None):
         super(HistogramViewer, self).__init__(session, parent, state=state)

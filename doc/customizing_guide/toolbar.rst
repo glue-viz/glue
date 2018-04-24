@@ -182,16 +182,8 @@ tools that should be present in the toolbar:
         tools = ['custom_tool']
 
 In the example above, the viewer will include an toolbar with one tool (the one
-we defined above). There are currently two main classes available for toolbars:
-
-* :class:`~glue.viewers.common.qt.toolbar.BasicToolbar`: this is the most basic
-  kind of toolbar - it comes with no tools by default.
-
-* :class:`~glue.viewers.matplotlib.qt.toolbar.MatplotlibViewerToolbar`: this is
-  a subclass of :class:`~glue.viewers.common.qt.toolbar.BasicToolbar` that
-  includes the standard Matplotlib buttons by default (home, zoom, pan, etc.).
-  This toolbar can only be used if your data viewer includes a Matplotlib canvas
-  accessible at ``viewer.canvas``.
+we defined above). Currently the only toolbar class that is defined
+is :class:`~glue.viewers.common.qt.toolbar.BasicToolbar`.
 
 Note that the toolbar is set up after ``__init__`` has run. Therefore, if you
 want to do any custom set-up to the toolbar after it has been set up, you

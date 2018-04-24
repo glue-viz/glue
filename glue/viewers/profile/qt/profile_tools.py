@@ -40,7 +40,7 @@ COLLAPSE_FUNCS = OrderedDict([(nanmean, 'Mean'),
 @viewer_tool
 class ProfileAnalysisTool(Tool):
 
-    icon = 'glue_spectrum'
+    action_text = 'Options'
     tool_id = 'profile-analysis'
 
     def __init__(self, viewer):

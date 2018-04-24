@@ -1,123 +1,110 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtCore
+from qtpy import PYQT5
 
-from glue.icons.qt import get_icon
+if PYQT5:
+    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+
+from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool, Tool
-from glue.viewers.common.qt.mouse_mode import MouseMode
-from glue.viewers.common.qt.toolbar import BasicToolbar
-
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-
-__all__ = ['HomeTool', 'SaveTool', 'PanTool', 'ZoomTool', 'MatplotlibViewerToolbar']
 
 
-class HomeTool(Tool):
+__all__ = ['MatplotlibTool', 'MatplotlibCheckableTool', 'HomeTool', 'SaveTool',
+           'PanTool', 'ZoomTool']
 
-    def __init__(self, viewer, toolbar=None):
-        super(HomeTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:home'
-        self.icon = get_icon('glue_home')
-        self.action_text = 'Home'
-        self.tool_tip = 'Reset original zoom'
-        self.shortcut = 'H'
-        self.checkable = False
-        self.toolbar = toolbar
+
+def _ensure_mpl_nav(viewer):
+    # Set up virtual Matplotlib navigation toolbar (don't show it)
+    if not hasattr(viewer, '_mpl_nav'):
+        viewer._mpl_nav = NavigationToolbar2QT(viewer.central_widget.canvas, viewer)
+        viewer._mpl_nav.hide()
+
+
+def _cleanup_mpl_nav(viewer):
+    if getattr(viewer, '_mpl_nav', None) is not None:
+        viewer._mpl_nav.setParent(None)
+        viewer._mpl_nav.parent = None
+
+
+class MatplotlibTool(Tool):
+
+    def __init__(self, viewer=None):
+        super(MatplotlibTool, self).__init__(viewer=viewer)
+        _ensure_mpl_nav(viewer)
+
+    def close(self):
+        _cleanup_mpl_nav(self.viewer)
+        super(MatplotlibTool, self).close()
+
+
+class MatplotlibCheckableTool(CheckableTool):
+
+    def __init__(self, viewer=None):
+        super(MatplotlibCheckableTool, self).__init__(viewer=viewer)
+        _ensure_mpl_nav(viewer)
+
+    def close(self):
+        _cleanup_mpl_nav(self.viewer)
+        super(MatplotlibCheckableTool, self).close()
+
+
+@viewer_tool
+class HomeTool(MatplotlibTool):
+
+    tool_id = 'mpl:home'
+    icon = 'glue_home'
+    action_text = 'Home'
+    tool_tip = 'Reset original zoom'
+    shortcut = 'H'
 
     def activate(self):
         if hasattr(self.viewer, 'state') and hasattr(self.viewer.state, 'reset_limits'):
             self.viewer.state.reset_limits()
         else:
-            self.toolbar.home()
+            self.viewer._mpl_nav.home()
 
 
-class SaveTool(Tool):
+@viewer_tool
+class SaveTool(MatplotlibTool):
 
-    def __init__(self, viewer, toolbar=None):
-        super(SaveTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:save'
-        self.icon = get_icon('glue_filesave')
-        self.action_text = 'Save'
-        self.tool_tip = 'Save the figure'
-        self.shortcut = 'Ctrl+Shift+S'
-        self.toolbar = toolbar
+    tool_id = 'mpl:save'
+    icon = 'glue_filesave'
+    action_text = 'Save plot to file'
+    tool_tip = 'Save the figure'
 
     def activate(self):
-        self.toolbar.save_figure()
+        self.viewer._mpl_nav.save_figure()
 
 
-class PanTool(CheckableTool):
+@viewer_tool
+class PanTool(MatplotlibCheckableTool):
 
-    def __init__(self, viewer, toolbar=None):
-        super(PanTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:pan'
-        self.icon = get_icon('glue_move')
-        self.action_text = 'Pan'
-        self.tool_tip = 'Pan axes with left mouse, zoom with right'
-        self.shortcut = 'M'
-        self.toolbar = toolbar
+    tool_id = 'mpl:pan'
+    icon = 'glue_move'
+    action_text = 'Pan'
+    tool_tip = 'Pan axes with left mouse, zoom with right'
+    shortcut = 'M'
 
     def activate(self):
-        self.toolbar.pan()
+        self.viewer._mpl_nav.pan()
 
     def deactivate(self):
-        self.toolbar.pan()
+        self.viewer._mpl_nav.pan()
 
 
-class ZoomTool(CheckableTool):
+@viewer_tool
+class ZoomTool(MatplotlibCheckableTool):
 
-    def __init__(self, viewer, toolbar=None):
-        super(ZoomTool, self).__init__(viewer=viewer)
-        self.tool_id = 'mpl:zoom'
-        self.icon = get_icon('glue_zoom_to_rect')
-        self.action_text = 'Zoom'
-        self.tool_tip = 'Zoom to rectangle'
-        self.shortcut = 'Z'
-        self.toolbar = toolbar
+    tool_id = 'mpl:zoom'
+    icon = 'glue_zoom_to_rect'
+    action_text = 'Zoom'
+    tool_tip = 'Zoom to rectangle'
+    shortcut = 'Z'
 
     def activate(self):
-        self.toolbar.zoom()
+        self.viewer._mpl_nav.zoom()
 
     def deactivate(self):
-        self.toolbar.zoom()
-
-
-class MatplotlibViewerToolbar(BasicToolbar):
-
-    pan_begin = QtCore.Signal()
-    pan_end = QtCore.Signal()
-
-    def __init__(self, viewer, default_mouse_mode_cls=None):
-
-        self.canvas = viewer.central_widget.canvas
-
-        # Set up virtual Matplotlib navigation toolbar (don't show it)
-        self._mpl_nav = NavigationToolbar2QT(self.canvas, viewer)
-        self._mpl_nav.hide()
-
-        BasicToolbar.__init__(self, viewer, default_mouse_mode_cls=default_mouse_mode_cls)
-
-        viewer.window_closed.connect(self.close)
-
-    def close(self, *args):
-        self._mpl_nav.setParent(None)
-        self._mpl_nav.parent = None
-
-    def setup_default_modes(self):
-
-        super(MatplotlibViewerToolbar, self).setup_default_modes()
-
-        # Set up default Matplotlib Tools - this gets called by the __init__
-        # call to the parent class above.
-
-        home_mode = HomeTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(home_mode)
-
-        save_mode = SaveTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(save_mode)
-
-        pan_mode = PanTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(pan_mode)
-
-        zoom_mode = ZoomTool(self.parent(), toolbar=self._mpl_nav)
-        self.add_tool(zoom_mode)
+        self.viewer._mpl_nav.zoom()

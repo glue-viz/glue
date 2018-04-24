@@ -33,6 +33,13 @@ v0.13.0 (unreleased)
 * Added a new ``FloodFillSubsetState`` class to represent and
   calculate subsets made by a flood-fill algorithm. [#1616]
 
+* Added the ability to easily create viewer tools with dropdown
+  menus. [#1634]
+
+* Remove the ``MatplotlibViewerToolbar`` class as it is now no
+  longer needed - instead you can just list the matplotlib tools
+  directly in the ``tools`` attribute of the viewer. [#1634]
+
 * Improve hiding/showing of side-panels. No longer hide side-panels
   when glue application goes out of focus. [#1535]
 

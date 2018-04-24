@@ -97,7 +97,6 @@ from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.utils.qt.widget_properties import (ValueProperty, ButtonProperty,
                                              CurrentComboProperty)
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
 
 __all__ = ["AttributeInfo", "ViewerState", "UserDefinedFunction",
            "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
@@ -875,7 +874,7 @@ class CustomWidgetBase(DataViewer):
     LABEL = ''
 
     coordinator_cls = None
-    _toolbar_cls = MatplotlibViewerToolbar
+    tools = ['select:rectangle', 'select:polygon']
 
     def __init__(self, session, parent=None):
         super(CustomWidgetBase, self).__init__(session, parent)
@@ -912,13 +911,6 @@ class CustomWidgetBase(DataViewer):
 
         self.client._redraw()
         self._coordinator.settings_changed()
-
-    @property
-    def tools(self):
-        if self._coordinator.selections_enabled:
-            return ['select:rectangle', 'select:polygon']
-        else:
-            return []
 
     def add_data(self, data):
         """Add a new data set to the widget

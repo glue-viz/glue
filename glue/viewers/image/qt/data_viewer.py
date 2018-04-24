@@ -6,8 +6,6 @@ from astropy.wcs import WCS
 
 from qtpy.QtWidgets import QMessageBox
 
-from glue.viewers.matplotlib.qt.toolbar import MatplotlibViewerToolbar
-
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -53,7 +51,6 @@ ax.coords[{y_att_axis}].set_ticklabel(size={y_ticklabel_size})
 class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
-    _toolbar_cls = MatplotlibViewerToolbar
     _default_mouse_mode_cls = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
@@ -70,7 +67,7 @@ class ImageViewer(MatplotlibDataViewer):
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
              'select:polygon', 'image:point_selection', 'image:contrast_bias',
-             'save:python', 'profile-viewer']
+             'profile-viewer']
 
     def __init__(self, session, parent=None, state=None):
         self._wcs_set = False

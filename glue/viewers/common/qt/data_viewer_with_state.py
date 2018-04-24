@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
 from glue.core import message as msg
@@ -21,6 +22,8 @@ class DataViewerWithState(DataViewer):
     allow_duplicate_data = False
     allow_duplicate_subset = False
 
+    _options_cls = None
+
     def __init__(self, session, parent=None, wcs=None, state=None):
 
         super(DataViewerWithState, self).__init__(session, parent)
@@ -32,8 +35,11 @@ class DataViewerWithState(DataViewer):
 
         # Set up the options widget, which will include options that control the
         # viewer state
-        self.options = self._options_cls(viewer_state=self.state,
-                                         session=session)
+        if self._options_cls is None:
+            self.options = QtWidgets.QWidget()
+        else:
+            self.options = self._options_cls(viewer_state=self.state,
+                                             session=session)
 
         # When layer artists are removed from the layer artist container, we need
         # to make sure we remove matching layer states in the viewer state

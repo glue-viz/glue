@@ -3,7 +3,7 @@
 
 from glue.core.callback_property import CallbackProperty
 
-__all__ = ['Tool', 'CheckableTool']
+__all__ = ['Tool', 'CheckableTool', 'DropdownTool', 'SimpleToolMenu']
 
 
 class Tool(object):
@@ -31,7 +31,7 @@ class Tool(object):
 
     def __init__(self, viewer=None):
         self.viewer = viewer
-        self.viewer.window_closed.connect(self.close)
+        self.viewer.window_closed.connect(self._do_close)
 
     def activate(self):
         """
@@ -46,8 +46,12 @@ class Tool(object):
         """
         return []
 
-    def close(self, *args):
-        self.viewer.window_closed.disconnect(self.close)
+    def _do_close(self, *args):
+        # We do this so that tools can override close
+        self.close()
+
+    def close(self):
+        self.viewer.window_closed.disconnect(self._do_close)
         self.viewer = None
 
 
@@ -70,3 +74,20 @@ class CheckableTool(Tool):
         Fired when the toolbar button is deactivated
         """
         pass
+
+
+class DropdownTool(Tool):
+    """
+    A base class for all tools that show a drop-down menu.
+    """
+    def __init__(self, *args, **kwargs):
+        self.subtools = kwargs.pop('subtools', [])
+        super(DropdownTool, self).__init__(*args, **kwargs)
+
+
+class SimpleToolMenu(DropdownTool):
+    """
+    A base class for tools that have no action it themselves but show a dropdown
+    of other tools.
+    """
+    pass
