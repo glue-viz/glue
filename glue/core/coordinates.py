@@ -89,9 +89,12 @@ class Coordinates(object):
 
         original_shape = pixel[0].shape
         pixel_new = []
-        dep_axes = self.dependent_axes(axis)
+
+        # NOTE: the axis passed to this function is the WCS axis not the Numpy
+        # axis, so we need to convert it as needed.
+        dep_axes = self.dependent_axes(len(pixel) - 1 - axis)
         for ip, p in enumerate(pixel):
-            if ip in dep_axes:
+            if (len(pixel) - 1 - ip) in dep_axes:
                 pixel_new.append(unbroadcast(p))
             else:
                 pixel_new.append(p.flat[0])
@@ -134,9 +137,11 @@ class Coordinates(object):
 
         original_shape = world[0].shape
         world_new = []
-        dep_axes = self.dependent_axes(axis)
+        # NOTE: the axis passed to this function is the WCS axis not the Numpy
+        # axis, so we need to convert it as needed.
+        dep_axes = self.dependent_axes(len(world) - 1 - axis)
         for iw, w in enumerate(world):
-            if iw in dep_axes:
+            if (len(world) - 1 - iw) in dep_axes:
                 world_new.append(unbroadcast(w))
             else:
                 world_new.append(w.flat[0])

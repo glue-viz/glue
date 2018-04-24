@@ -11,7 +11,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape
+from glue.utils import defer_draw, view_shape, unbroadcast
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
@@ -313,7 +313,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 class BaseImageLayerState(MatplotlibLayerState):
 
     _viewer_callbacks_set = False
-    _cache = None
+    _image_cache = None
+    _pixel_cache = None
 
     def get_sliced_data_shape(self, view=None):
 
@@ -358,9 +359,9 @@ class BaseImageLayerState(MatplotlibLayerState):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
 
-        if self._cache is not None:
-            if view == self._cache['view']:
-                return self._cache['image']
+        if self._image_cache is not None:
+            if view == self._image_cache['view']:
+                return self._image_cache['image']
 
         # In the cache, we need to keep track of which slice indices should
         # cause the cache to be reset. By default, we assume that any changes
@@ -436,10 +437,59 @@ class BaseImageLayerState(MatplotlibLayerState):
                     agg_func = None
 
                 # Start off by finding all the pixel coordinates of the current
-                # view in the reference frame of the current layer data.
-                pixel_coords = [self.viewer_state.reference_data[pix, full_view]
-                                for pix in self.layer.pixel_component_ids]
-                coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
+                # view in the reference frame of the current layer data. In
+                # principle we could do something as simple as:
+                #
+                #   pixel_coords = [self.viewer_state.reference_data[pix, full_view]
+                #                   for pix in self.layer.pixel_component_ids]
+                #   coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
+                #
+                # However this is sub-optimal because in reality some of these
+                # pixel coordinate conversions won't change when the view is
+                # changed (e.g. when a slice index changes). We therefore
+                # cache each transformed pixel coordinate.
+
+                if self._pixel_cache is None:
+                    # The cache hasn't been set yet or has been reset so we
+                    # initialize it here.
+                    self._pixel_cache = {'reset_slices': [None] * self.layer.ndim,
+                                         'coord': [None] * self.layer.ndim,
+                                         'shape': [None] * self.layer.ndim,
+                                         'view': None}
+
+                coords = []
+
+                sub_data_view = [slice(0, 2)] * self.viewer_state.reference_data.ndim
+
+                for ipix, pix in enumerate(self.layer.pixel_component_ids):
+
+                    if self._pixel_cache['view'] != view or self._pixel_cache['coord'][ipix] is None:
+
+                        # Start off by finding all the pixel coordinates of the current
+                        # view in the reference frame of the current layer data.
+                        pixel_coord = self.viewer_state.reference_data[pix, full_view]
+                        coord = np.round(pixel_coord.ravel()).astype(int)
+
+                        # Now update cache - basically check which dimensions in
+                        # the output of the transformation rely on broadcasting.
+                        # The 'reset_slices' item is a list that indicates
+                        # whether the cache should be reset when the index along
+                        # a given dimension changes.
+                        sub_data = self.viewer_state.reference_data[pix, sub_data_view]
+                        sub_data = unbroadcast(sub_data)
+                        self._pixel_cache['reset_slices'][ipix] = [x > 1 for x in sub_data.shape]
+                        self._pixel_cache['coord'][ipix] = coord
+                        self._pixel_cache['shape'][ipix] = pixel_coord.shape
+                        original_shape = pixel_coord.shape
+
+                    else:
+
+                        coord = self._pixel_cache['coord'][ipix]
+                        original_shape = self._pixel_cache['shape'][ipix]
+
+                    coords.append(coord)
+
+                self._pixel_cache['view'] = view
 
                 # TODO: add test when image is smaller than cube
 
@@ -455,7 +505,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                 image[keep] = self._get_image(view=coords)
 
                 # Finally convert array back to a 2D array
-                image = image.reshape(pixel_coords[0].shape)
+                image = image.reshape(original_shape)
 
                 # Determine which slice indices should cause the cache to get
                 # reset and the image to be re-projected.
@@ -494,7 +544,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         if transpose:
             image = image.transpose()
 
-        self._cache = {'view': view, 'image': image, 'reset_slices': reset_slices}
+        self._image_cache = {'view': view, 'image': image, 'reset_slices': reset_slices}
 
         return image
 
@@ -508,17 +558,34 @@ class BaseImageLayerState(MatplotlibLayerState):
         # if any change in slice should cause the cache to get reset, or it is
         # a list of boolean values for each slice dimension.
 
-        if self._cache is not None:
-            if self._cache['reset_slices'] is True:
-                self.reset_cache()
+        # We do this first for the image cache, which is the cache of the
+        # reprojected slice.
+
+        if self._image_cache is not None:
+            if self._image_cache['reset_slices'] is True:
+                self._image_cache = None
             else:
-                reset_slices = self._cache['reset_slices']
+                reset_slices = self._image_cache['reset_slices']
                 for islice in range(len(slice_before)):
                     if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
-                        return self.reset_cache()
+                        self._image_cache = None
+                        break
+
+        # And we then deal with the pixel transformation cache.
+
+        if self._pixel_cache is not None:
+            for ipix in range(self.layer.ndim):
+                reset_slices = self._pixel_cache['reset_slices'][ipix]
+                if reset_slices is not None:
+                    for islice in range(len(slice_before)):
+                        if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
+                            self._pixel_cache['coord'][ipix] = None
+                            self._pixel_cache['reset_slices'][ipix] = None
+                            break
 
     def reset_cache(self, *event):
-        self._cache = None
+        self._image_cache = None
+        self._pixel_cache = None
 
     def _get_image(self, view=None):
         raise NotImplementedError()
