@@ -141,3 +141,15 @@ class TestProfileViewer(object):
         assert app.viewers[0][0].layers[1].enabled
 
         app.close()
+
+    def test_incompatible_on_add(self):
+
+        # Regression test for a bug when adding a dataset to a profile viewer
+        # with a single incompatible subset.
+
+        subset_state = SliceSubsetState(self.data, [slice(1, 2), slice(None)])
+        self.data_collection.new_subset_group(subset_state=subset_state, label='s1')
+
+        data2 = Data(x=[[2, 3], [4, 3]], label='d2')
+        self.data_collection.append(data2)
+        self.viewer.add_data(data2)
