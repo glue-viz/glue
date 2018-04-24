@@ -563,7 +563,7 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         if self._image_cache is not None:
             if self._image_cache['reset_slices'] is True:
-                self.reset_cache()
+                self._image_cache = None
             else:
                 reset_slices = self._image_cache['reset_slices']
                 for islice in range(len(slice_before)):
