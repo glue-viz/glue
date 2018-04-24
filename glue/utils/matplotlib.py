@@ -165,7 +165,10 @@ def defer_draw(func):
             # We need to use another try...finally block here in case the
             # executed deferred draw calls fail for any reason
             try:
-                FigureCanvasAgg.draw.execute_deferred_calls()
+                try:
+                    FigureCanvasAgg.draw.execute_deferred_calls()
+                except RuntimeError:  # For C/C++ errors
+                    pass
             finally:
                 FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
         return result
