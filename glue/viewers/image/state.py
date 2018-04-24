@@ -452,9 +452,9 @@ class BaseImageLayerState(MatplotlibLayerState):
                 if self._pixel_cache is None:
                     # The cache hasn't been set yet or has been reset so we
                     # initialize it here.
-                    self._pixel_cache = {'reset_slices': [None] * len(full_view),
-                                         'coord': [None] * len(full_view),
-                                         'shape': [None] * len(full_view),
+                    self._pixel_cache = {'reset_slices': [None] * self.layer.ndim,
+                                         'coord': [None] * self.layer.ndim,
+                                         'shape': [None] * self.layer.ndim,
                                          'view': None}
 
                 coords = []
