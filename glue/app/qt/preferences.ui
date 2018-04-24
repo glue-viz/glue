@@ -6,180 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>404</height>
+    <width>462</width>
+    <height>375</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Preferences</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QTabWidget" name="tab_widget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>User interface</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <property name="horizontalSpacing">
-        <number>10</number>
-       </property>
-       <property name="verticalSpacing">
-        <number>15</number>
-       </property>
-       <item row="0" column="2">
-        <widget class="QComboBox" name="combo_theme">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-         <item>
-          <property name="text">
-           <string>Black on White</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>White on Black</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Custom</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Background color:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Foreground color:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Default data color:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QColorBox" name="color_default_data">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QColorBox" name="color_foreground">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="8" column="2">
-        <widget class="QCheckBox" name="checkbox_show_large_data_warning">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Show warnings for large data</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="2">
-        <widget class="QCheckBox" name="checkbox_apply">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Theme for viewers:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="2">
-        <widget class="QSlider" name="slider_alpha">
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Default data transparency:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Apply to existing datasets:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QColorBox" name="color_background">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="3">
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -223,6 +57,219 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tab_widget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>User interface</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Theme for viewers:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="combo_theme">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Black on White</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>White on Black</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Custom</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Background color:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QColorBox" name="color_background">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Foreground color:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QColorBox" name="color_foreground">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Default data color:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QColorBox" name="color_default_data">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Default data transparency:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QSlider" name="slider_alpha">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Apply to existing datasets:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="checkbox_apply">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="10" column="0">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_reset_dialogs">
+           <property name="text">
+            <string>Reset visibility of info messages and warnings</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+      <zorder>combo_theme</zorder>
+      <zorder>label_2</zorder>
+      <zorder>label_3</zorder>
+      <zorder>label_4</zorder>
+      <zorder>color_default_data</zorder>
+      <zorder>color_foreground</zorder>
+      <zorder>line</zorder>
+      <zorder>checkbox_apply</zorder>
+      <zorder>label_5</zorder>
+      <zorder>slider_alpha</zorder>
+      <zorder>label</zorder>
+      <zorder>label_6</zorder>
+      <zorder>color_background</zorder>
+      <zorder>line_2</zorder>
+      <zorder>horizontalLayoutWidget</zorder>
+      <zorder>verticalSpacer_2</zorder>
+      <zorder>button_reset_dialogs</zorder>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>

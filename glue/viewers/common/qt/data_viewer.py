@@ -10,7 +10,6 @@ from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistW
 from glue.utils.qt import get_qapp
 from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
-from glue.config import settings
 from glue.external import six
 from glue.utils.noconflict import classmaker
 from glue.core.state import save
@@ -301,22 +300,6 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                                                    defaultButton=QtWidgets.QMessageBox.Cancel)
             return dialog == QtWidgets.QMessageBox.Ok
         return True
-
-    def _confirm_large_data(self, data):
-        if not settings.SHOW_LARGE_DATA_WARNING:
-            # Ignoring large data warning
-            return True
-        else:
-            warn_msg = ("WARNING: Data set has %i points, and may render slowly."
-                        " Continue?" % data.size)
-            title = "Add large data set?"
-            ok = QtWidgets.QMessageBox.Ok
-            cancel = QtWidgets.QMessageBox.Cancel
-            buttons = ok | cancel
-            result = QtWidgets.QMessageBox.question(self, title, warn_msg,
-                                                    buttons=buttons,
-                                                    defaultButton=cancel)
-            return result == ok
 
     def layer_view(self):
         return self._view

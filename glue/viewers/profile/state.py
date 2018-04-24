@@ -202,21 +202,25 @@ class ProfileLayerState(MatplotlibLayerState):
         # smaller than the data to just average the relevant 'spaxels' in the
         # data rather than collapsing the whole cube.
 
-        if isinstance(self.layer, Data):
-            data = self.layer
-            data_values = data[self.attribute]
-        else:
-            data = self.layer.data
-            if isinstance(self.layer.subset_state, SliceSubsetState):
-                data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
+        try:
+            if isinstance(self.layer, Data):
+                data = self.layer
+                data_values = data[self.attribute]
             else:
-                # We need to force a copy *and* convert to float just in case
-                data_values = np.array(data[self.attribute], dtype=float)
-                mask = self.layer.to_mask()
-                if np.sum(mask) == 0:
-                    self._profile = [], []
-                    return
-                data_values[~mask] = np.nan
+                data = self.layer.data
+                if isinstance(self.layer.subset_state, SliceSubsetState):
+                    data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
+                else:
+                    # We need to force a copy *and* convert to float just in case
+                    data_values = np.array(data[self.attribute], dtype=float)
+                    mask = self.layer.to_mask()
+                    if np.sum(mask) == 0:
+                        self._profile = [], []
+                        return
+                    data_values[~mask] = np.nan
+        except IncompatibleAttribute:
+            self._profile = None, None
+            return
 
         # Collapse along all dimensions except x_att
         with warnings.catch_warnings():

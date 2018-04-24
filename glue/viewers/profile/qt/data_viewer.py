@@ -21,6 +21,8 @@ class ProfileViewer(MatplotlibDataViewer):
     _data_artist_cls = ProfileLayerArtist
     _subset_artist_cls = ProfileLayerArtist
 
+    large_data_size = 1e8
+
     allow_duplicate_data = True
 
     tools = ['select:xrange', 'profile-analysis']

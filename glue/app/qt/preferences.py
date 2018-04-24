@@ -28,7 +28,6 @@ class PreferencesDialog(QtWidgets.QDialog):
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
-    show_large_data_warning = ButtonProperty('ui.checkbox_show_large_data_warning')
     save_to_disk = ButtonProperty('ui.checkbox_save')
 
     def __init__(self, application, parent=None):
@@ -43,7 +42,9 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.ui.cancel.clicked.connect(self.reject)
         self.ui.ok.clicked.connect(self.accept)
 
-        self.ui.combo_theme.currentIndexChanged.connect(nonpartial(self._update_colors_from_theme))
+        self.ui.combo_theme.currentIndexChanged.connect(self._update_colors_from_theme)
+
+        self.ui.button_reset_dialogs.clicked.connect(self._reset_dialogs)
 
         # The following is needed because of a bug in Qt which means that
         # tab titles don't get scaled right.
@@ -57,7 +58,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
-        self.show_large_data_warning = settings.SHOW_LARGE_DATA_WARNING
 
         self._update_theme_from_colors()
 
@@ -69,7 +69,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             self.ui.tab_widget.addTab(pane, label)
             self.panes.append(pane)
 
-    def _update_theme_from_colors(self):
+    def _update_theme_from_colors(self, *args):
         if (rgb(self.background) == (1, 1, 1) and rgb(self.foreground) == (0, 0, 0)
                 and rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'Black on White'
@@ -79,7 +79,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         else:
             self.theme = 'Custom'
 
-    def _update_colors_from_theme(self):
+    def _update_colors_from_theme(self, *args):
         if self.theme == 'Black on White':
             self.foreground = 'black'
             self.background = 'white'
@@ -93,6 +93,12 @@ class PreferencesDialog(QtWidgets.QDialog):
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
+    def _reset_dialogs(self, *args):
+        from glue.config import settings
+        for key, _, _ in settings:
+            if key.lower().startswith(('show_info', 'show_warn', 'show_large')):
+                setattr(settings, key, True)
+
     def accept(self):
 
         # Update default settings
@@ -102,7 +108,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
-        settings.SHOW_LARGE_DATA_WARNING = self.show_large_data_warning
 
         for pane in self.panes:
             pane.finalize()
@@ -110,6 +115,8 @@ class PreferencesDialog(QtWidgets.QDialog):
         # Save to disk if requested
         if self.save_to_disk:
             save_settings()
+        else:
+            settings._save_to_disk = True
 
         # Trigger viewers to update defaults
 
