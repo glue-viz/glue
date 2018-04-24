@@ -78,8 +78,8 @@ class DataViewerWithState(DataViewer):
             return True
 
         if self.large_data_size is not None and data.size >= self.large_data_size:
-            proceed = warn('Add large data set?', 'Data set has %i points, and '
-                           'may render slowly.'.format(data.size), default='Cancel',
+            proceed = warn('Add large data set?', 'Data set {0:s} has {1:d} points, and '
+                           'may render slowly.'.format(data.label, data.size), default='Cancel',
                            setting='show_large_data_warning')
             if not proceed:
                 return False

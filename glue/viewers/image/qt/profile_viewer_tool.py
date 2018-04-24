@@ -39,8 +39,14 @@ class ProfileViewerTool(Tool):
 
         from glue.viewers.profile.qt import ProfileViewer
         profile_viewer = self.viewer.session.application.new_data_viewer(ProfileViewer)
+        any_added = False
         for data in self.viewer.session.data_collection:
             if data in self.viewer._layer_artist_container:
-                profile_viewer.add_data(data)
-        profile_viewer.state.reference_data = self.viewer.state.reference_data
-        self.profile_viewers.append(weakref.ref(profile_viewer))
+                result = profile_viewer.add_data(data)
+                any_added = any_added or result
+        if any_added:
+            if self.viewer.state.reference_data in profile_viewer._layer_artist_container:
+                profile_viewer.state.reference_data = self.viewer.state.reference_data
+            self.profile_viewers.append(weakref.ref(profile_viewer))
+        else:
+            profile_viewer.close()
