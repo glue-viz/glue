@@ -772,3 +772,14 @@ def test_preserve_datetime():
     dates = np.array([1, 2, 3], dtype='M8[D]')
     data = Data(dates=dates)
     assert isinstance(data.get_component('dates'), DateTimeComponent)
+
+
+def test_clone_meta():
+    # Regression test for a bug that caused metadata to not be preserved
+    # when saving/loading sessions.
+    data1 = Data(x=[1, 2, 3])
+    data1.meta['a'] = 1
+    data1.meta['b'] = 'test'
+    data2 = clone(data1)
+    assert data2.meta['a'] == 1
+    assert data2.meta['b'] == 'test'
