@@ -346,3 +346,26 @@ def test_dependent_axes_non_diagonal_pc():
     assert_equal(coord.dependent_axes(0), [0])
     assert_equal(coord.dependent_axes(1), [1, 2])
     assert_equal(coord.dependent_axes(2), [1, 2])
+
+
+def test_pixel2world_single_axis():
+
+    # Regression test for a bug in pixel2world_single_axis which was due to
+    # incorrect indexing order (WCS vs Numpy)
+
+    from astropy.wcs import WCS
+
+    wcs = WCS(naxis=3)
+    wcs.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
+    wcs.wcs.crval = 1, 1, 1
+    wcs.wcs.crpix = 1, 1, 1
+    wcs.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
+
+    x = np.array([0.2, 0.4, 0.6])
+    y = np.array([0.3, 0.6, 0.9])
+    z = np.array([0.5, 0.5, 0.5])
+
+    coord = WCSCoordinates(wcs=wcs)
+    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=0), [1.21004705, 1.42012044, 1.63021455])
+    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=1), [1.24999002, 1.499947, 1.74985138])
+    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=2), [1.5, 1.5, 1.5])
