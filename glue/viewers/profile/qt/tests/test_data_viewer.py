@@ -17,6 +17,7 @@ from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.utils import nanmean
+from glue.core.tests.test_state import clone
 
 from ..data_viewer import ProfileViewer
 
@@ -64,7 +65,7 @@ class TestProfileViewer(object):
         self.viewer.state.function = nanmean
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
-        assert_allclose(layer_artist._visible_data[0], [0, 1, 2])
+        assert_allclose(layer_artist._visible_data[0], [0, 2, 4])
         assert_allclose(layer_artist._visible_data[1], [3.5, 11.5, 19.5])
 
     def test_incompatible(self):
@@ -123,3 +124,20 @@ class TestProfileViewer(object):
 
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled
+
+    def test_clone(self):
+
+        # Regression test for a bug that meant that deserializing a profile
+        # viewer resulted in disabled layers
+
+        self.viewer.add_data(self.data)
+
+        subset = self.data.new_subset()
+        subset.subset_state = SliceSubsetState(self.data, [slice(1, 2), slice(None)])
+
+        app = clone(self.app)
+
+        assert app.viewers[0][0].layers[0].enabled
+        assert app.viewers[0][0].layers[1].enabled
+
+        app.close()

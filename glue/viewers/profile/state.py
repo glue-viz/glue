@@ -109,6 +109,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
+            self.x_att = self.reference_data.world_component_ids[0]
 
 
 class ProfileLayerState(MatplotlibLayerState):
@@ -144,9 +145,6 @@ class ProfileLayerState(MatplotlibLayerState):
         self.add_callback('layer', self._update_attribute, priority=1000)
         self.add_callback('layer', self._update_profile, priority=1000)
         self.add_callback('attribute', self._update_profile, priority=1000)
-        if self.viewer_state is not None:
-            self.viewer_state.add_callback('x_att', self._update_profile, priority=1000)
-            self.viewer_state.add_callback('function', self._update_profile, priority=1000)
 
         if layer is not None:
             self._update_attribute()
@@ -164,6 +162,18 @@ class ProfileLayerState(MatplotlibLayerState):
 
     def normalize_values(self, values):
         return (np.asarray(values) - self.v_min) / (self.v_max - self.v_min)
+
+    @property
+    def viewer_state(self):
+        return self._viewer_state
+
+    @viewer_state.setter
+    def viewer_state(self, viewer_state):
+        self._viewer_state = viewer_state
+        if viewer_state is not None:
+            self._viewer_state.add_callback('x_att', self._update_profile, priority=1000)
+            self._viewer_state.add_callback('function', self._update_profile, priority=1000)
+            self._update_profile()
 
     @property
     def profile(self):

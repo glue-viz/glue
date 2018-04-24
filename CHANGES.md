@@ -138,6 +138,9 @@ v0.13.0 (unreleased)
 * Fixed an issue that caused sliders to not be correctly updated when
   switching reference data in the image viewer. [#1665]
 
+* Fixed a bug that caused Data.meta to not be saved/restored from session
+  files. [#1669]
+
 v0.12.6 (unreleased)
 --------------------
 

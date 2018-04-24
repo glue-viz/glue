@@ -939,6 +939,7 @@ def _load_data_4(rec, context):
 def _save_data_5(data, context):
     result = _save_data_4(data, context)
     result['primary_owner'] = [context.id(cid) for cid in data.components if cid.parent is data]
+    result['meta'] = context.do(data.meta)
     return result
 
 
@@ -958,6 +959,8 @@ def _load_data_5(rec, context):
         result.uuid = rec['uuid']
     else:
         result.uuid = str(uuid.uuid4())
+    if 'meta' in rec:
+        result.meta.update(context.object(rec['meta']))
 
 
 @saver(ComponentID)

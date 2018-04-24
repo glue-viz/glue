@@ -5,7 +5,7 @@ import weakref
 
 import numpy as np
 
-from glue.utils import defer_draw
+from glue.utils import defer_draw, broadcast_to
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
@@ -18,7 +18,6 @@ from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
 from glue.external.modest_image import imshow
-
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -96,6 +95,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         super(ImageLayerArtist, self).remove()
         if self.uuid in self.composite:
             self.composite.deallocate(self.uuid)
+            self.composite_image.invalidate_cache()
 
     def get_image_shape(self):
 
@@ -231,16 +231,17 @@ class ImageSubsetArray(object):
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return None
+            return broadcast_to(np.nan, self.shape)
 
-        if not self.layer_artist.visible:
-            return None
+        # We should compute the mask even if the layer is not visible as we need
+        # the layer to show up properly when it is made visible (which doesn't
+        # trigger __getitem__)
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return None
+            return broadcast_to(np.nan, self.shape)
         else:
             self.layer_artist.enable()
 
@@ -354,6 +355,10 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('zorder', 'visible', 'alpha')):
             self._update_visual_attributes()
+
+    def remove(self):
+        super(ImageSubsetLayerArtist, self).remove()
+        self.image_artist.invalidate_cache()
 
     def enable(self):
         super(ImageSubsetLayerArtist, self).enable()
