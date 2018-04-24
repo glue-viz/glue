@@ -109,6 +109,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
+            self.x_att = self.reference_data.world_component_ids[0]
 
 
 class ProfileLayerState(MatplotlibLayerState):
