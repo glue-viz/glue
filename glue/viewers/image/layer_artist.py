@@ -5,7 +5,7 @@ import weakref
 
 import numpy as np
 
-from glue.utils import defer_draw
+from glue.utils import defer_draw, broadcast_to
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
@@ -231,16 +231,16 @@ class ImageSubsetArray(object):
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return None
+            return broadcast_to(np.nan, self.shape)
 
         if not self.layer_artist.visible:
-            return None
+            return broadcast_to(np.nan, self.shape)
 
         try:
             mask = self.layer_state.get_sliced_data(view=view)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return None
+            return broadcast_to(np.nan, self.shape)
         else:
             self.layer_artist.enable()
 
