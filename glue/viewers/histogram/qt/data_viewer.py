@@ -23,6 +23,8 @@ class HistogramViewer(MatplotlibDataViewer):
     _data_artist_cls = HistogramLayerArtist
     _subset_artist_cls = HistogramLayerArtist
 
+    large_data_size = 2e7
+
     tools = ['select:xrange']
 
     def __init__(self, session, parent=None, state=None):

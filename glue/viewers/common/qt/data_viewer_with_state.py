@@ -5,6 +5,7 @@ from qtpy.QtCore import Qt
 
 from glue.core import message as msg
 from glue.core import Data, Subset
+from glue.core.qt.dialogs import warn
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
 from glue.external import six
@@ -21,6 +22,7 @@ class DataViewerWithState(DataViewer):
 
     allow_duplicate_data = False
     allow_duplicate_subset = False
+    large_data_size = None
 
     _options_cls = None
 
@@ -74,6 +76,13 @@ class DataViewerWithState(DataViewer):
         # Check if data already exists in viewer
         if not self.allow_duplicate_data and data in self._layer_artist_container:
             return True
+
+        if self.large_data_size is not None and data.size >= self.large_data_size:
+            proceed = warn('Add large data set?', 'Data set has %i points, and '
+                           'may render slowly.'.format(data.size), default='Cancel',
+                           setting='show_large_data_warning')
+            if not proceed:
+                return False
 
         if data not in self.session.data_collection:
             raise IncompatibleDataException("Data not in DataCollection")
