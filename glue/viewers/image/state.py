@@ -574,11 +574,13 @@ class BaseImageLayerState(MatplotlibLayerState):
         # And we then deal with the pixel transformation cache.
 
         if self._pixel_cache is not None:
-            for islice in range(len(slice_before)):
-                reset_slices = self._pixel_cache['reset_slices'][islice]
-                if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
-                    self._pixel_cache['coord'][islice] = None
-                    self._pixel_cache['reset_slices'][islice] = None
+            for ipix in range(self.layer.ndim):
+                reset_slices = self._pixel_cache['reset_slices'][ipix]
+                for islice in range(len(slice_before)):
+                    if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
+                        self._pixel_cache['coord'][ipix] = None
+                        self._pixel_cache['reset_slices'][ipix] = None
+                        break
 
     def reset_cache(self, *event):
         self._image_cache = None
