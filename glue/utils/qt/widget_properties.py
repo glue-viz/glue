@@ -25,7 +25,7 @@ from glue.logger import logger
 from glue.external.six.moves import reduce
 from glue.utils.array import pretty_number
 
-from glue.external.echo.qt.connect import _find_combo_data
+from glue.external.echo.qt.connect import _find_combo_data, UserDataWrapper
 
 # Backward-compatibility
 from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,
@@ -100,7 +100,11 @@ class CurrentComboDataProperty(WidgetProperty):
         if widget.currentIndex() == -1:
             return None
         else:
-            return widget.itemData(widget.currentIndex()).data
+            data = widget.itemData(widget.currentIndex())
+            if isinstance(data, UserDataWrapper):
+                return data.data
+            else:
+                return data
 
     def setter(self, widget, value):
         """
