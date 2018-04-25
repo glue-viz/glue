@@ -135,8 +135,10 @@ class ComponentIDComboHelper(ComboHelper):
         Show world coordinate components
     derived : bool, optional
         Show derived components
-    none : bool, optional
-        Add an entry that means 'None'
+    none : bool or str, optional
+        Add an entry that means `None`. If a string, this is the display string
+        that will be shown for the `None` entry, otherwise an empty string is
+        shown.
     """
 
     def __init__(self, state, selection_property,
