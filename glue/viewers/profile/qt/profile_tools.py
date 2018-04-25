@@ -72,8 +72,6 @@ class ProfileTools(QtWidgets.QWidget):
 
         self.ui = load_ui('profile_tools.ui', self,
                           directory=os.path.dirname(__file__))
-        connect_combo_selection(self, 'fit_function', self.ui.combosel_fit_function)
-        connect_combo_selection(self, 'collapse_function', self.ui.combosel_collapse_function)
 
         fix_tab_widget_fontsize(self.ui.tabs)
 
@@ -122,9 +120,11 @@ class ProfileTools(QtWidgets.QWidget):
 
         ProfileTools.fit_function.set_choices(self, list(fit_plugin))
         ProfileTools.fit_function.set_display_func(self, lambda fitter: fitter.label)
+        connect_combo_selection(self, 'fit_function', self.ui.combosel_fit_function)
 
         ProfileTools.collapse_function.set_choices(self, list(COLLAPSE_FUNCS))
         ProfileTools.collapse_function.set_display_func(self, COLLAPSE_FUNCS.get)
+        connect_combo_selection(self, 'collapse_function', self.ui.combosel_collapse_function)
 
         self._toolbar_connected = False
 

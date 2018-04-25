@@ -72,6 +72,11 @@ class BasicToolbar(QtWidgets.QToolBar):
                     button.setChecked(False)
                     button.blockSignals(False)
 
+        # We need to then set that no tool is set so that if the next tool
+        # opens a viewer that needs to check whether a tool is active, we
+        # know that it isn't.
+        self._active_tool = None
+
         # ... and enable the new one
         if new_tool is not None:
             self.activate_tool(new_tool)
@@ -87,7 +92,6 @@ class BasicToolbar(QtWidgets.QToolBar):
             self.parent().set_status(new_tool.status_tip)
             self.tool_activated.emit()
         else:
-            self._active_tool = None
             self.parent().set_status('')
             self.tool_deactivated.emit()
 

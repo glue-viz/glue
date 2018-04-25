@@ -2,10 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from qtpy import PYQT5
 
-if PYQT5:
-    from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 
 from glue.config import viewer_tool
 from glue.viewers.common.qt.tool import CheckableTool, Tool
