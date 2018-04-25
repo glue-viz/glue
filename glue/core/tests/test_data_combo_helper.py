@@ -335,7 +335,7 @@ def test_component_id_combo_helper_none():
     data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
     dc = DataCollection([data])
 
-    helper = ComponentIDComboHelper(state, 'combo', dc)  # noqa
+    helper = ComponentIDComboHelper(state, 'combo', dc)
     helper.append_data(data)
 
     assert selection_choices(state, 'combo') == "x:y"
@@ -343,3 +343,17 @@ def test_component_id_combo_helper_none():
     helper.none = True
 
     assert selection_choices(state, 'combo') == ":x:y"
+
+    helper.none = 'banana'
+
+    assert selection_choices(state, 'combo') == "banana:x:y"
+
+    # Try with initializing none=... from the start
+
+    helper = ComponentIDComboHelper(state, 'combo', dc, none=True)
+    helper.append_data(data)
+    assert selection_choices(state, 'combo') == ":x:y"
+
+    helper = ComponentIDComboHelper(state, 'combo', dc, none='banana')
+    helper.append_data(data)
+    assert selection_choices(state, 'combo') == "banana:x:y"
