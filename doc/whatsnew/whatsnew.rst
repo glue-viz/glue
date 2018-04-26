@@ -117,7 +117,7 @@ provides a more intuitive interface for exporting data and subsets:
    :align: center
    :width: 350
 
-This dialog is accessible via the 'Export Data/Subsets' button in the toolbar:
+This dialog is accessible via the **Export Data/Subsets** button in the toolbar:
 
 .. image:: images/v0.13/export_data_button.png
    :align: center
