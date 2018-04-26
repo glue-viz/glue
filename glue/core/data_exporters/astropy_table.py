@@ -53,6 +53,7 @@ def table_exporter(fmt, label, extension):
     return factory
 
 
+csv_exporter = table_exporter('ascii.csv', 'Comma-separated table', ['csv'])
 ipac_exporter = table_exporter('ascii.ipac', 'IPAC Catalog', ['tbl'])
 latex_exporter = table_exporter('ascii.latex', 'LaTeX Table', ['tex'])
 votable_exporter = table_exporter('votable', 'VO Table', ['xml', 'vot'])
