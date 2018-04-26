@@ -9,6 +9,7 @@ dependencies:
   - astropy
   - dill
   - h5py
+  - bottleneck
   - scipy
   - scikit-image
   - ipython
