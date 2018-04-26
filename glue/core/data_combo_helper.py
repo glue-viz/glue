@@ -15,6 +15,7 @@ from glue.core.message import (DataReorderComponentMessage,
                                ComponentReplacedMessage,
                                DataRenameComponentMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
+from glue.external.six import string_types
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper']
@@ -134,16 +135,33 @@ class ComponentIDComboHelper(ComboHelper):
         Show world coordinate components
     derived : bool, optional
         Show derived components
+    none : bool or str, optional
+        Add an entry that means `None`. If a string, this is the display string
+        that will be shown for the `None` entry, otherwise an empty string is
+        shown.
     """
 
     def __init__(self, state, selection_property,
                  data_collection=None, data=None,
                  numeric=True, categorical=True,
-                 pixel_coord=False, world_coord=False, derived=True):
+                 pixel_coord=False, world_coord=False, derived=True, none=False):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
 
-        self.display = lambda x: x.label
+        if isinstance(none, string_types):
+            self._none = True
+            self._none_label = none
+        else:
+            self._none = none
+            self._none_label = ''
+
+        def display_func_label(cid):
+            if cid is None:
+                return self._none_label
+            else:
+                return cid.label
+
+        self.display = display_func_label
 
         self._numeric = numeric
         self._categorical = categorical
@@ -219,6 +237,20 @@ class ComponentIDComboHelper(ComboHelper):
         self._derived = value
         self.refresh()
 
+    @property
+    def none(self):
+        return self._none
+
+    @none.setter
+    def none(self, value):
+        if isinstance(value, string_types):
+            self._none = True
+            self._none_label = value
+        else:
+            self._none = value
+            self._none_label = ''
+        self.refresh()
+
     def append_data(self, data, refresh=True):
 
         if self._manual_data:
@@ -284,6 +316,10 @@ class ComponentIDComboHelper(ComboHelper):
     def refresh(self, *args):
 
         choices = []
+
+        if self._none:
+            choices.append(None)
+
 
         for data in self._data:
 
@@ -386,7 +422,10 @@ class BaseDataComboHelper(ComboHelper):
 
         super(BaseDataComboHelper, self).__init__(state, selection_property)
 
-        self.display = lambda x: x.label
+        def display_func_label(cid):
+            return cid.label
+
+        self.display = display_func_label
 
         self._component_id_helpers = []
         self.state.add_callback(self.selection_property, self.refresh_component_ids)
