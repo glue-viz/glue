@@ -1,10 +1,11 @@
-import h5py
 import numpy as np
 from glue.core import Data
+from glue.tests.helpers import requires_h5py
 
 from ..hdf5 import hdf5_writer
 
 
+@requires_h5py
 def test_hdf5_writer_data(tmpdir):
 
     filename = tmpdir.join('test1.hdf5').strpath
@@ -14,7 +15,9 @@ def test_hdf5_writer_data(tmpdir):
 
     hdf5_writer(filename, data)
 
-    f = h5py.File(filename)
+    from h5py import File
+
+    f = File(filename)
     assert len(f) == 2
     np.testing.assert_equal(f['x'].value, data['x'])
     np.testing.assert_equal(f['y'].value, data['y'])
@@ -26,12 +29,13 @@ def test_hdf5_writer_data(tmpdir):
 
     hdf5_writer(filename, data, components=[data.id['x']])
 
-    f = h5py.File(filename)
+    f = File(filename)
     assert len(f) == 1
     np.testing.assert_equal(f['x'].value, data['x'])
     f.close()
 
 
+@requires_h5py
 def test_hdf5_writer_subset(tmpdir):
 
     filename = tmpdir.join('test').strpath
@@ -44,7 +48,9 @@ def test_hdf5_writer_subset(tmpdir):
 
     hdf5_writer(filename, subset)
 
-    f = h5py.File(filename)
+    from h5py import File
+
+    f = File(filename)
     assert np.all(np.isnan(f['x'].value[0]))
     assert np.all(np.isnan(f['y'].value[0]))
     np.testing.assert_equal(f['x'].value[1], data['x'][1])
