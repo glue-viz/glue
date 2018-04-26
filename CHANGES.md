@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Added a CSV and HDF5 data/subset exporter. [#1676]
+
 * Started adding helpful information dialogs that can be
   hidden. [#1669]
 
