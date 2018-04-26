@@ -46,6 +46,24 @@ variable as for markers:
    :align: center
    :width: 500
 
+On-the-fly reprojection
+-----------------------
+
+Previously, the 2D image viewer only allowed multiple datasets to be shown at
+the same time if all pixel coordinates were linked between the different
+datasets. The image viewer will now automatically overlay data even if it is
+linked by world coordinates instead of pixel coordinates:
+
+.. image:: images/v0.13/reprojection.jpg
+   :align: center
+   :width: 400
+
+For astronomers reading this, this means being able to overplot images and
+cubes with different WCS transformations, provided that you have set up links
+between the world coordinates - and this includes being able to show 2D images
+and 3D spectral cubes at the same time (if you do this, note that the reference
+data needs to be the dataset you want to slice over).
+
 Arithmetic component editor
 ---------------------------
 
