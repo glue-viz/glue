@@ -64,7 +64,7 @@ between the world coordinates - and this includes being able to show 2D images
 and 3D spectral cubes at the same time (if you do this, note that the reference
 data needs to be the dataset you want to slice over).
 
-Arithmetic component editor
+Arithmetic attribute editor
 ---------------------------
 
 Glue has long had the ability to define so-called 'arithmetic'
@@ -84,7 +84,7 @@ and the equation editor itself has also been improved:
    :align: center
    :width: 400
 
-The arithmetic component editor is accessible via a new toolbar button:
+The arithmetic attribute editor is accessible via a new toolbar button:
 
 .. image:: images/v0.13/arithmetic_button.png
    :align: center
@@ -201,7 +201,7 @@ to more data viewers in future.
 Datatime64 support
 ------------------
 
-Datasets that include components with a Numpy ``datetime64`` dtype will now
+Datasets that include attributes with a Numpy ``datetime64`` dtype will now
 be recognized by the scatter and histogram viewers, which will correctly format
 the axis labels using dates/times. In future we will make it possible to use
 this functionality to format dates/times read from files.
