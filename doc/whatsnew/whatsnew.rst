@@ -26,15 +26,226 @@ If instead you installed glue with pip, you can update with::
 What's new in glue v0.13?
 =========================
 
-ROI Mouse Interaction
+Scatter density maps
+--------------------
+
+The 2D scatter viewer can now show data using a density map rather than individual
+markers - this makes it possible to now plot tens to hundreds of millions of
+points efficiently.
+
+.. image:: images/v0.13/scatter_density.png
+   :align: center
+   :width: 500
+
+Whether data is shown as a density map or markers can be controlled for each
+layer, and by default glue will automatically decide which one to use depending
+on the size of the data. It is also possible to color-code points by a third
+variable as for markers:
+
+.. image:: images/v0.13/scatter_density_color.png
+   :align: center
+   :width: 500
+
+On-the-fly reprojection
+-----------------------
+
+Previously, the 2D image viewer only allowed multiple datasets to be shown at
+the same time if all pixel coordinates were linked between the different
+datasets. The image viewer will now automatically overlay data even if it is
+linked by world coordinates instead of pixel coordinates:
+
+.. image:: images/v0.13/reprojection.jpg
+   :align: center
+   :width: 400
+
+For astronomers reading this, this means being able to overplot images and
+cubes with different WCS transformations, provided that you have set up links
+between the world coordinates - and this includes being able to show 2D images
+and 3D spectral cubes at the same time (if you do this, note that the reference
+data needs to be the dataset you want to slice over).
+
+Arithmetic attribute editor
+---------------------------
+
+Glue has long had the ability to define so-called 'arithmetic'
+attributes/components, which are data attributes that depend on other data
+attributes via an arithmetic expression. However, editing or removing existing
+arithmetic attributes was not possible. We have now re-written the dialog for
+arithmetic attributes to make it possible to go back and edit existing
+expressions or remove unneeded arithmetic attributes:
+
+.. image:: images/v0.13/arithmetic_main.png
+   :align: center
+   :width: 400
+
+and the equation editor itself has also been improved:
+
+.. image:: images/v0.13/arithmetic_equation.png
+   :align: center
+   :width: 400
+
+The arithmetic attribute editor is accessible via a new toolbar button:
+
+.. image:: images/v0.13/arithmetic_button.png
+   :align: center
+   :width: 300
+
+Organize data attributes
+------------------------
+
+We have also added a new dialog that can be used to rename or reorder existing
+attributes in the data. In future, this dialog will be used to also change the
+types of attributes (for example to indicate that an attribute should be
+interpreted as a time):
+
+.. image:: images/v0.13/organize_components.png
+   :align: center
+   :width: 400
+
+This dialog can be found in the **Data Manager** menu as **Reorder/rename data
+attributes**.
+
+Export data/subset dialog
+-------------------------
+
+While exporting datasets and subsets has been possible in the past by
+control-clicking on datasets/subsets in the data collection view in the top left
+of the glue window, we have now added a new **Export Data/Subsets** dialog which
+provides a more intuitive interface for exporting data and subsets:
+
+.. image:: images/v0.13/export_data.png
+   :align: center
+   :width: 350
+
+This dialog is accessible via the 'Export Data/Subsets' button in the toolbar:
+
+.. image:: images/v0.13/export_data_button.png
+   :align: center
+   :width: 180
+
+Metadata explorer
+-----------------
+
+Data objects have a ``.meta`` attribute that can be used to store arbitrary
+metadata. For example for FITS files (in astronomy), this contains the header of
+the file. We have now added the ability to visualize this metadata:
+
+.. image:: images/v0.13/metadata.png
+   :align: center
+   :width: 350
+
+To view the metadata for a given dataset, control-click on the dataset in the
+top left data collection view and select **View metadata/header**.
+
+New link editor
+---------------
+
+The ability to link datasets is one of the core pieces of functionality in glue.
+However, when dealing with more than a few datasets, the list of existing links
+was previously difficult to conceptualize. We have now improved the link editor
+to include a visualization all links between datasets, and to make it so that
+links are only listed for the currently selected datasets. To set up one or more
+links between two datasets, you can select both datasets in the graph then add
+links below. You can also edit existing links between two datasets by clicking
+on the line connecting them:
+
+.. image:: images/v0.13/link_editor.png
+   :align: center
+   :width: 600
+
+Profile viewer
+--------------
+
+Glue now features a new profile viewer that can be used to show data collapsed
+along all but one dimension using a variety of functions (mean, median, maximum,
+minimim, and so on). This new viewer replaces the previous 'spectrum' tool
+(which was restricted to 3 dimensions and mostly designed to work with
+astronomical data) and includes the same functionality to fit models to profiles
+or collapse data in an image viewer based on an interval selected in the profile
+viewer. The new profile viewer makes it possible to visualize the profile for
+subsets as well as for the whole dataset.
+
+.. image:: images/v0.13/profile_with_image.png
+   :align: center
+   :width: 600
+
+To create a profile viewer, either click on the profile icon (|profile_icon|) in
+an image viewer, or drag a dataset onto the main canvas and select **1D
+Profile**.
+
+.. |profile_icon| image:: images/v0.13/profile_icon.png
+
+Single-pixel extraction tool
+----------------------------
+
+We have also added a new subset selection mode in the image viewer which is to
+select a single pixel in the image plane. When used in conjunction with the
+profile viewer, this makes it possible to hover over an image and see the
+profile (e.g. spectrum) at the current mouse position:
+
+.. image:: images/v0.13/profile_single_pixel.png
+   :align: center
+   :width: 600
+
+Export Python scripts
 ---------------------
 
-It is now possible to select and manipulate regions of interest (ROIs) using
-the mouse. Previously, only newly created ROIs could be resized and relocated.
-Now it is possible to relocate any ROI simply by left-clicking on it and
-dragging it to a new location. Right-clicking on an existing ROI opens a
-context menu with an option for deleting that ROI. This makes user interaction
-with ROIs much more intuitive.
+While it has been possible for a while to export plots to e.g. PNG, PDF, or EPS
+files from different image viewers it is now possible to export a Python script
+that can be used to reproduce the plot for some of the core viewers (including
+the 2D scatter and image viewers and the histogram viewer). To use this
+functionality, click on the **Save** icon and select **Save Python script to
+reproduce plot**. This functionality is still experimental, and will be extended
+to more data viewers in future.
+
+Datatime64 support
+------------------
+
+Datasets that include attributes with a Numpy ``datetime64`` dtype will now
+be recognized by the scatter and histogram viewers, which will correctly format
+the axis labels using dates/times. In future we will make it possible to use
+this functionality to format dates/times read from files.
+
+Relative paths in session files
+-------------------------------
+
+When exporting a session file from glue, it is now possible to select to refer
+to the data files using relative paths rather than absolute paths. The relative
+paths are determine relative to the location of the session file. This makes it
+easier to send small session files to other users who have the same data already
+on disk.
+
+Mouse interaction with subsets in the image viewer
+--------------------------------------------------
+
+It is now possible to select and manipulate subsets in the image viewer using
+the mouse. Previously, only newly created subsets could be resized and
+relocated. Now it is possible to relocate any subset simply by left-clicking on
+it and dragging it to a new location. Right-clicking on an existing subset opens
+a context menu with an option for deleting that subset. Note that for now this
+only works with the image viewer but in future we will generalize this to other
+viewers.
+
+Performance
+-----------
+
+This release includes a number of significant performance enhancements (both
+in terms of speed and memory usage). The linking infrastructure has been
+refactored to be much more efficient (previously, linking more than a dozen
+datasets together could lead to significant performance issues), and the
+propagation of selections across datasets in the presence of linking functions
+has also been improved. Reading HDF5 files will now use memory mapping when
+possible to avoid loading all the data into memory, and 3D selections are
+represented in a much more memory-efficient way.
+
+PySide2
+-------
+
+Glue 0.13 is now compatible with the `PySide2
+<http://wiki.qt.io/Qt_for_Python>`_ library (the Python bindings for Qt5
+developed by the Qt company). Since PySide2 was still in pre-release at the time
+of writing, we recommend using Glue with PyQt5 for now. In parallel with this,
+support for PyQt4 and PySide has now been removed from glue.
 
 .. _whatsnew_012:
 

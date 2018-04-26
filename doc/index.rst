@@ -17,10 +17,11 @@ Glue is a Python library to explore relationships within and among related datas
  <iframe width="640" height="390" src="https://www.youtube.com/embed/qO3RQiRjWA4?rel=0" frameborder="0" allowfullscreen></iframe>
  </center>
 
-For more demos, check out the :ref:`videos <demo_videos>` page. You can also `follow us on Twitter <https://twitter.com/glueviz>`_ for previews
-of upcoming functionality!
+For more demos, check out the :ref:`videos <demo_videos>` page. You can also
+`follow us on Twitter <https://twitter.com/glueviz>`_ for previews of upcoming
+functionality!
 
-**The latest version of glue is v0.12** - find out :ref:`what's new in glue! <whatsnew>`
+**The latest version of glue is v0.13** - find out :ref:`what's new in glue! <whatsnew>`
 
 Getting started
 ---------------

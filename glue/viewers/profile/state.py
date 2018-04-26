@@ -4,9 +4,8 @@ import warnings
 from collections import OrderedDict
 
 import numpy as np
-import bottleneck as bt
 
-from glue.core import Data
+from glue.core import Data, Coordinates
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -109,7 +108,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
-            self.x_att = self.reference_data.world_component_ids[0]
+            if type(self.reference_data.coords) == Coordinates:
+                self.x_att = self.reference_data.pixel_component_ids[0]
+            else:
+                self.x_att = self.reference_data.world_component_ids[0]
 
 
 class ProfileLayerState(MatplotlibLayerState):
@@ -154,7 +156,6 @@ class ProfileLayerState(MatplotlibLayerState):
     def _update_attribute(self, *args):
         if self.layer is not None:
             self.attribute_att_helper.set_multiple_data([self.layer])
-            self.attribute = self.layer.visible_components[0]
 
     @property
     def independent_x_att(self):
@@ -223,9 +224,12 @@ class ProfileLayerState(MatplotlibLayerState):
             return
 
         # Collapse along all dimensions except x_att
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            profile_values = self.viewer_state.function(data_values, axis=axes)
+        if self.layer.ndim > 1:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                profile_values = self.viewer_state.function(data_values, axis=axes)
+        else:
+            profile_values = data_values
 
         # Finally, we get the coordinate values for the requested axis
         axis_view = [0] * data.ndim
