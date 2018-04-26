@@ -52,5 +52,5 @@ License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
    :target: https://groups.google.com/forum/#!forum/glue-viz
 .. |Developer mailing list| image:: http://img.shields.io/badge/mailing%20list-development-green.svg?style=flat
    :target: https://groups.google.com/forum/#!forum/glue-viz-dev
-.. |Glue demo| image:: doc/readme.gif
+.. |Glue demo| image:: https://raw.githubusercontent.com/glue-viz/glue/master/doc/readme.gif
    :target: http://vimeo.com/53378575
