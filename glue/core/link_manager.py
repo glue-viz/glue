@@ -348,8 +348,8 @@ def is_convertible_to_single_pixel_cid(data, cid):
                 return None
         else:
             if isinstance(target_comp, DerivedComponent):
-                from_ids = [is_convertible_to_single_pixel_cid(data, cid)
-                            for cid in target_comp.link.get_from_ids()]
+                from_ids = [is_convertible_to_single_pixel_cid(data, c)
+                            for c in target_comp.link.get_from_ids()]
                 if None in from_ids:
                     return None
                 else:

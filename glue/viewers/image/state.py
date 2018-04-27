@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from glue.core import Data, Subset
+from glue.core import Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,

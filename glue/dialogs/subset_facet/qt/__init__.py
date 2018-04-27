@@ -1,1 +1,1 @@
-from .subset_facet import *
+from .subset_facet import *  # noqa

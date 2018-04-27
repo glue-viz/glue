@@ -76,19 +76,20 @@ def _build_custom_contracts():
             if not isinstance(value[0], ComponentID):
                 return False
             s_[value[1:]]
-        except:
+        except Exception:
             return False
 
     @new_contract
     def array_view(value):
         try:
             s_[value]
-        except:
+        except Exception:
             return False
 
     @new_contract
     def callable(value):
         return hasattr(value, '__call__')
+
 
 try:
     from contracts import contract, ContractsMeta

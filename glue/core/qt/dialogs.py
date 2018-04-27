@@ -1,6 +1,8 @@
 # Infrastructure for helpful warnings/dialogs that can be hidden if needed
 # (and therefore connect to the settings).
 
+from __future__ import absolute_import, division, print_function
+
 from qtpy.QtWidgets import QMessageBox, QCheckBox
 
 from glue.config import settings

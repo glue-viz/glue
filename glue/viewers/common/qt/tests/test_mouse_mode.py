@@ -8,7 +8,7 @@ from mock import MagicMock
 
 from ..mouse_mode import MouseMode
 from ..toolbar_mode import (RectangleMode, CircleMode, PolyMode, ContrastMode,
-                          LassoMode)
+                            LassoMode)
 
 
 class Event(object):

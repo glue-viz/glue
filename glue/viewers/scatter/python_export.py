@@ -1,5 +1,4 @@
-from distutils.version import LooseVersion
-from matplotlib import __version__
+from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.python_export import code, serialize_options
 

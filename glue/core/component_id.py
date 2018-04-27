@@ -14,6 +14,7 @@ __all__ = ['ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDLis
 
 # access to ComponentIDs via .item[name]
 
+
 class ComponentIDList(list):
 
     def __contains__(self, cid):

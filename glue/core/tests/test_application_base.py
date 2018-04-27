@@ -102,7 +102,6 @@ def test_nested_data():
 
     datasets = [x, [[[y, z]], a], [[[[b, c]]]]]
 
-
     app = Application()
 
     app.add_datasets(app.data_collection, datasets)

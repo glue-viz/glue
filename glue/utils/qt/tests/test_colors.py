@@ -24,7 +24,7 @@ def test_color_box():
     func = MagicMock()
 
     label = QColorBox()
-    label.resize(100,100)
+    label.resize(100, 100)
     label.colorChanged.connect(func)
     label.setColor('#472822')
 

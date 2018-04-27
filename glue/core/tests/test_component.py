@@ -269,6 +269,7 @@ def check_link(result, left, right):
     if isinstance(right, ComponentID):
         assert right in result.get_from_ids()
 
+
 # componentID overload
 COMPARE_OPS = (operator.gt, operator.ge, operator.lt, operator.le)
 NUMBER_OPS = (operator.add, operator.mul, operator.truediv, operator.sub)

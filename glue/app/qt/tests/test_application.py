@@ -14,7 +14,7 @@ from glue.core.data import Data
 from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
-from glue.tests.helpers import requires_ipython, PYSIDE2_INSTALLED
+from glue.tests.helpers import requires_ipython, PYSIDE2_INSTALLED  # noqa
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
@@ -141,7 +141,6 @@ class TestGlueApplication(object):
             assert len(self.app.current_tab.subWindowList()) == ct
 
             pc.reset_mock()
-
 
     @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_new_data_viewer_ok(self):
@@ -337,7 +336,7 @@ class TestApplicationSession(object):
 
     def test_data_application(self):
         dc = DataCollection([Data(label='test',
-                                            x=[1, 2, 3], y=[2, 3, 4])])
+                                  x=[1, 2, 3], y=[2, 3, 4])])
         app = GlueApplication(dc)
         self.check_clone(app)
 
@@ -492,6 +491,7 @@ def test_reset_session_terminal():
 
     app.close()
     app2.close()
+
 
 def test_open_session_terminal(tmpdir):
 

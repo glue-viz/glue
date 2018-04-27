@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu, QAction
 
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.subset import RoiSubsetState
 from glue.core.qt.roi import QtPolygonalROI
 from glue.viewers.common.qt.mouse_mode import MouseMode

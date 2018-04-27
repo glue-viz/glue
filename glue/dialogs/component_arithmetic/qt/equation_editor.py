@@ -105,7 +105,6 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 "  - Multiply '{example}' by pi: {{{example}}} * np.pi<br>"
                 "  - Use masking: {{{example}}} * ({{{example}}} &lt; 1)<br>")
 
-
     placeholder_text = ("Type any mathematical expression here - "
                         "you can include attribute names from the "
                         "drop-down below by selecting them and "
@@ -146,7 +145,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
         connect_combo_selection(self, 'attribute', self.ui.combosel_component)
 
         # Set up labels for auto-completion
-        labels = ['{' + label + '}' for label in self.references]
+        labels = ['{' + l + '}' for l in self.references]
         self.ui.expression.set_word_list(labels)
 
         if equation is not None:

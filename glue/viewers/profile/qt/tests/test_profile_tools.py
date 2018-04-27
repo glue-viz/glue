@@ -2,12 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-import bottleneck as bt
 
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.tests.helpers import PYSIDE2_INSTALLED
+from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 from glue.app.qt import GlueApplication
 from glue.utils import nanmean
 from glue.utils.qt import get_qapp
@@ -65,7 +64,6 @@ class TestProfileTools(object):
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
         self.viewer.axes.figure.canvas.button_release_event(x, y, 1)
         assert image_viewer.state.slices == (5, 0, 0)
-
 
     @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_fit_polynomial(self):

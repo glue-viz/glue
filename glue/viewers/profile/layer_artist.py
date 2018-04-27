@@ -23,7 +23,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_profile)
         self.state.add_global_callback(self._update_profile)
 
-        self.plot_artist = self.axes.plot([1,2,3], [3,4,5], 'k-', drawstyle='steps-mid')[0]
+        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid')[0]
 
         self.mpl_artists = [self.plot_artist]
 

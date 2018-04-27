@@ -85,5 +85,5 @@ class PluginConfig(object):
         This is used to filter out plugins that are not installed.
         """
         for key in list(self.plugins.keys())[:]:
-            if not key in keep:
+            if key not in keep:
                 self.plugins.pop(key)

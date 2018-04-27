@@ -1,6 +1,8 @@
 # The classes in this file define toolbar tools. Mouse modes specifically
 # are defined in mouse_modes.py
 
+from __future__ import absolute_import, division, print_function
+
 from glue.core.callback_property import CallbackProperty
 
 __all__ = ['Tool', 'CheckableTool', 'DropdownTool', 'SimpleToolMenu']
@@ -80,6 +82,7 @@ class DropdownTool(Tool):
     """
     A base class for all tools that show a drop-down menu.
     """
+
     def __init__(self, *args, **kwargs):
         self.subtools = kwargs.pop('subtools', [])
         super(DropdownTool, self).__init__(*args, **kwargs)

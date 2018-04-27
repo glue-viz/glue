@@ -23,7 +23,7 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
-from glue.core.message import Message, LayerArtistEnabledMessage, LayerArtistUpdatedMessage, LayerArtistDisabledMessage
+from glue.core.message import LayerArtistEnabledMessage, LayerArtistUpdatedMessage, LayerArtistDisabledMessage
 
 
 class LayerArtistModel(PythonListModel):

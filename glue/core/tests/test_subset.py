@@ -31,7 +31,6 @@ from ..subset import InvertState
 from ..subset import OrState
 from ..subset import XorState
 from .test_state import clone
-from ..roi import RectangularROI
 
 
 class TestSubset(object):
@@ -186,6 +185,7 @@ class TestSubset(object):
         s = Subset(Data())
         with pytest.raises(TypeError):
             s.subset_state = 5
+
 
 target_states = ((op.and_, AndState),
                  (op.or_, OrState),
@@ -740,7 +740,7 @@ class TestCloneSubsetStates():
 
     def test_category_multi_range_subset_state(self):
 
-        ranges = {'a': [(1.0, 1.1), (1.3, 1.6)], 'b':[(1.1, 1.4), (1.7, 1.8)], 'c':[(1.1, 1.2)]}
+        ranges = {'a': [(1.0, 1.1), (1.3, 1.6)], 'b': [(1.1, 1.4), (1.7, 1.8)], 'c': [(1.1, 1.2)]}
 
         subset = self.data.new_subset()
         subset.subset_state = CategoricalMultiRangeSubsetState(ranges, self.data.id['b'], self.data.id['c'])

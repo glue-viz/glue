@@ -21,8 +21,6 @@ def test_glue_action_button():
     assert b.toolTip() == a.toolTip()
     assert b.whatsThis() == a.whatsThis()
 
-    #stays in sync
+    # stays in sync
     a.setText('test2')
     assert b.text() == 'test2'
-
-

@@ -22,7 +22,7 @@ def is_readable_by_astropy(filename, **kwargs):
     # therefore only used as a last attempt if all else fails.
     try:
         astropy_table_read(filename, **kwargs)
-    except:
+    except Exception:
         return False
     else:
         return True
@@ -42,7 +42,7 @@ def astropy_table_read(*args, **kwargs):
     if 'format' not in kwargs:
         try:
             return Table.read(*args, format='ascii', **kwargs)
-        except:
+        except Exception:
             pass
 
     # If the above didn't work, attempt to read with no specified format
@@ -117,6 +117,7 @@ def formatted_table_factory(format, label):
     factory.__name__ = '%s_factory' % format
 
     return factory
+
 
 sextractor_factory = formatted_table_factory('sextractor', 'SExtractor Catalog')
 cds_factory = formatted_table_factory('cds', 'CDS Catalog')

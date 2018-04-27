@@ -146,8 +146,8 @@ class LoadLog(object):
 
             mapping = dict((c, log.component(self.id(c)).data)
                            for c in dold._components.values()
-                           if c in self.components
-                           and type(c) == Component)
+                           if c in self.components and
+                           type(c) == Component)
             dold.coords = dnew.coords
             dold.update_components(mapping)
 

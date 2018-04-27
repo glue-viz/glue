@@ -18,8 +18,6 @@ class TestQGlue(object):
 
     def setup_method(self, method):
 
-        from glue.app.qt import GlueApplication
-
         from astropy.table import Table
         from astropy.io.fits import HDUList, ImageHDU
 
@@ -61,7 +59,6 @@ class TestQGlue(object):
         with patch('glue.app.qt.GlueApplication') as ga:
             qglue(data1=pandas_data)
             ga.assert_called_once()
-
 
     def test_single_pandas(self):
         with patch('glue.app.qt.GlueApplication') as ga:

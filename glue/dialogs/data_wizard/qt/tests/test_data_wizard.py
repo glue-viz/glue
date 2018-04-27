@@ -12,6 +12,8 @@ def dummy_factory(filename):
     result = Data()
     result.made_with_dummy_factory = True
     return result
+
+
 dummy_factory_member = [f for f in data_factory.members
                         if f[0] is dummy_factory][0]
 

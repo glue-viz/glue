@@ -10,7 +10,6 @@ import numpy as np
 
 from numpy.testing import assert_allclose, assert_equal
 
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.config import colormaps
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
@@ -23,7 +22,7 @@ from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlib
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.app.qt import GlueApplication
-from glue.tests.helpers import PYSIDE2_INSTALLED
+from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 
 from ..data_viewer import ScatterViewer
 
@@ -317,7 +316,6 @@ class TestScatterViewer(object):
         assert viewer3.state.layers[0].visible
         assert viewer3.state.layers[1].visible
         assert not viewer3.state.layers[2].visible
-
 
     def test_session_line_back_compat(self):
 

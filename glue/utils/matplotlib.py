@@ -12,7 +12,6 @@ import matplotlib.dates as dates
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
 
-from glue.external.six import PY2
 from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
@@ -252,7 +251,7 @@ def point_contour(x, y, data):
 
     # We need to flip the array to get (x, y), and subtract one to account for
     # the padding
-    return xy[0][:,::-1] - 1
+    return xy[0][:, ::-1] - 1
 
 
 class AxesResizer(object):

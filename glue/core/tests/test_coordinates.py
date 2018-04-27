@@ -199,6 +199,7 @@ class TestCoordinatesFromHeader(object):
         coord = coordinates_from_header(hdr)
         assert type(coord) == Coordinates
 
+
 HDR_2D_VALID = """
 SIMPLE  =                    T / Written by IDL:  Wed Jul 27 10:01:47 2011
 BITPIX  =                  -32 / number of bits per data pixel

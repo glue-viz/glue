@@ -1,4 +1,4 @@
-import numpy as np
+from __future__ import absolute_import, division, print_function
 
 from glue.viewers.common.python_export import code, serialize_options
 from glue.utils import nanmin, nanmax

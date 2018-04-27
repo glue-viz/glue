@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from mock import patch
 
 import os
@@ -13,7 +15,7 @@ def test_roundtrip(tmpdir):
     settings.add('STRING', 'green', str)
     settings.add('INT', 3, int)
     settings.add('FLOAT', 5.5, float)
-    settings.add('LIST', [1,2,3], list)
+    settings.add('LIST', [1, 2, 3], list)
 
     with patch('glue.config.settings', settings):
         with patch('glue.config.CFG_DIR', tmpdir.strpath):
@@ -44,7 +46,7 @@ def test_roundtrip(tmpdir):
             settings.STRING = 'red'
             settings.INT = 5
 
-            # Loading settings will only change settings that have not been 
+            # Loading settings will only change settings that have not been
             # changed from the defaults...
             load_settings()
 

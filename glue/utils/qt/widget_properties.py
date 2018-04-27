@@ -28,10 +28,10 @@ from glue.utils.array import pretty_number
 from glue.external.echo.qt.connect import _find_combo_data, UserDataWrapper
 
 # Backward-compatibility
-from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,
-                                   connect_combo_data as connect_current_combo,
-                                   connect_combo_text as connect_current_combo_text,
-                                   connect_float_text as connect_float_edit,
+from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,  # noqa
+                                   connect_combo_data as connect_current_combo,  # noqa
+                                   connect_combo_text as connect_current_combo_text,  # noqa
+                                   connect_float_text as connect_float_edit,  # noqa
                                    connect_value, connect_text)  # noqa
 
 connect_int_spin = connect_value
@@ -121,6 +121,7 @@ class CurrentComboDataProperty(WidgetProperty):
             else:
                 raise ValueError("Cannot find data '{0}' in combo box".format(value))
         widget.setCurrentIndex(idx)
+
 
 CurrentComboProperty = CurrentComboDataProperty
 
@@ -240,7 +241,7 @@ class ValueProperty(WidgetProperty):
         linear.
     """
 
-    def __init__(self, att, docstring='',value_range=None, log=False):
+    def __init__(self, att, docstring='', value_range=None, log=False):
         super(ValueProperty, self).__init__(att, docstring=docstring)
 
         if log:

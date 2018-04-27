@@ -375,12 +375,7 @@ class TestPolygon(object):
 
 class TestProjected3dROI(object):
     # matrix that converts xyzw to yxzw
-    xyzw2yxzw = np.array([
-             [0, 1, 0, 0],
-             [0, 0, 1, 0],
-             [1, 0, 0, 0],
-             [0, 0, 0, 1]
-            ])
+    xyzw2yxzw = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
     x = [1, 2, 3]
     y = [2, 3, 4]
     z = [5, 6, 7]
@@ -388,7 +383,6 @@ class TestProjected3dROI(object):
     x_nd = [[1, 3], [2, 1], [3, 2]]
     y_nd = [[2, 3], [3, 2], [4, 3]]
     z_nd = [[5, 7], [6, 5], [7, 6]]
-
 
     def test_contains2d(self):
         roi_2d = PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
@@ -401,7 +395,6 @@ class TestProjected3dROI(object):
         assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, True, False]
         assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [True, True], [False, True]]
 
-
     def test_forward(self):
         # testing the calls that should be forwarded to roi_2d
         roi_2d = PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
@@ -410,6 +403,7 @@ class TestProjected3dROI(object):
         assert roi.contains(self.x, self.y).tolist() == roi_2d.contains(self.x, self.y).tolist()
         assert roi.to_polygon() == roi_2d.to_polygon()
         assert roi.defined() == roi_2d.defined()
+
 
 class TestCategorical(object):
 
@@ -457,7 +451,7 @@ class TestCategorical(object):
 
     def test_empty_categories(self):
         roi = CategoricalROI()
-        contains = roi.contains(np.array(['a','b','c']), None)
+        contains = roi.contains(np.array(['a', 'b', 'c']), None)
         np.testing.assert_array_equal(contains, [0, 0, 0])
 
 
@@ -1001,5 +995,6 @@ class TestUtil(object):
         pixel = r.data_to_pixel(self.axes, data[:, 0], data[:, 1])
         assert_almost_equal(pixel[0, 0], xp, 3)
         assert_almost_equal(pixel[0, 1], yp, 3)
+
 
 del TestMpl  # prevents unittest discovery from running abstract base class

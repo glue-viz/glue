@@ -1,11 +1,7 @@
-"""These classes define the behavior of how new subset states affect
-    the edit_subset of a Data object.
-
-   The EditSubsetMode is universal in Glue -- all datasets and clients
-   share the same mode. This is enforced by making the base
-   EditSubsetMode object a singleton.
 """
-# pylint: disable=I0011, R0903
+These classes define the behavior of how new subset states affect the
+edit_subset of a Data object.
+"""
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,7 +11,6 @@ from glue.core.contracts import contract
 from glue.core.message import EditSubsetMessage
 from glue.core.data_collection import DataCollection
 from glue.core.data import Data
-from glue.core.decorators import singleton
 from glue.utils import as_list
 
 

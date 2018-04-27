@@ -17,7 +17,6 @@ from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.qt.tool import CheckableTool
 from glue.core.subset import ElementSubsetState
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.state import lookup_class_with_patches
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error

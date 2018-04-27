@@ -180,5 +180,6 @@ def main():  # pragma: no cover
     w.show()
     app.exec_()
 
+
 if __name__ == "__main__":  # pragma: no cover
     main()

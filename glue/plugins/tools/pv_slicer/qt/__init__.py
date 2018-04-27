@@ -1,1 +1,1 @@
-from .pv_slicer import *
+from .pv_slicer import *  # noqa

@@ -8,9 +8,9 @@ glue.external, and can only import standard library or external dependencies.
 
 from __future__ import absolute_import, division, print_function
 
-from .array import *
-from .matplotlib import *
-from .misc import *
-from .geometry import *
-from .colors import *
-from .wcs import *
+from .array import *  # noqa
+from .matplotlib import *  # noqa
+from .misc import *  # noqa
+from .geometry import *  # noqa
+from .colors import *  # noqa
+from .wcs import *  # noqa

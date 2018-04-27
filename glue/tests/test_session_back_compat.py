@@ -6,7 +6,7 @@ import os
 import pytest
 import numpy as np
 
-from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt, PYSIDE2_INSTALLED
+from glue.tests.helpers import requires_astropy, requires_h5py, requires_qt, PYSIDE2_INSTALLED  # noqa
 from glue.core.component import CoordinateComponent, Component
 from glue.core.state import GlueUnSerializer
 from glue.core.component_id import PixelComponentID

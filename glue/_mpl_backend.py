@@ -1,3 +1,6 @@
+from __future__ import absolute_import, division, print_function
+
+
 class MatplotlibBackendSetter(object):
     """
     Import hook to make sure the proper Qt backend is set when importing
@@ -20,7 +23,7 @@ class MatplotlibBackendSetter(object):
 def set_mpl_backend():
 
     try:
-        from qtpy import PYQT5
+        from qtpy import PYQT5  # noqa
     except Exception:
         # If Qt isn't available, we don't have to worry about
         # setting the backend

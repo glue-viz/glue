@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import numpy as np
-import bottleneck as bt
 from matplotlib import cm
 
 from qtpy import QtWidgets, QtGui
@@ -15,7 +14,7 @@ from glue.utils import Pointer, nanmin, nanmax
 from glue.utils.qt import cmap2pixmap
 
 # We do the following import to register the custom Qt Widget there
-from glue.dialogs.common.qt import component_selector  # pylint: disable=W0611
+from glue.dialogs.common.qt import component_selector  # noqa
 
 __all__ = ['SubsetFacet']
 

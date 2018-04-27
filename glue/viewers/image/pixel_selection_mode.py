@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.core import roi
 from glue.config import viewer_tool
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.command import ApplySubsetState

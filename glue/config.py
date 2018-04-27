@@ -190,7 +190,7 @@ class SettingRegistry(DictRegistry):
         self._members.clear()
 
     def is_default(self, setting):
-        return setting in self._defaults and not setting in self._members
+        return setting in self._defaults and setting not in self._members
 
 
 class QGlueParserRegistry(Registry):
@@ -619,12 +619,12 @@ class LayerActionRegistry(Registry):
         # Backward-compatibility
         if callback is not None:
             self.add(self.item(label, tooltip, callback, icon, True,
-                     False, False, True))
+                               False, False, True))
             return True
 
         def adder(func):
             self.add(self.item(label, tooltip, func, icon, single,
-                     data, subset_group, subset))
+                               data, subset_group, subset))
             return func
         return adder
 
@@ -733,6 +733,7 @@ class KeyboardShortcut(DictRegistry):
             return func
         return adder
 
+
 qt_client = QtClientRegistry()
 qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
@@ -812,7 +813,7 @@ def _default_search_order():
     return search_order[::-1]
 
 
-###### Now define global settings ######
+# ##### Now define global settings ######
 
 GRAY = '#7F7F7F'
 BLUE = "#1F78B4"

@@ -594,6 +594,7 @@ class Projected3dROI(Roi):
     w is implicitly 1, to homogeneous screen coordinates (usually the product
     of the world and projection matrix).
     """
+
     def __init__(self, roi_2d=None, projection_matrix=None):
         super(Projected3dROI, self).__init__()
         self.roi_2d = roi_2d
@@ -662,6 +663,7 @@ class Projected3dROI(Roi):
 
     def transformed(self, xfunc=None, yfunc=None):
         return self.roi_2d.transformed(xfunc, yfunc)
+
 
 class Path(VertexROIBase):
 

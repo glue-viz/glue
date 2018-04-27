@@ -18,7 +18,7 @@ def tabular_data(path, **kwargs):
     for fac in [astropy_tabular_data, pandas_read_table]:
         try:
             return fac(path, **kwargs)
-        except:
+        except Exception:
             pass
     else:
         raise IOError("Could not parse file: %s" % path)

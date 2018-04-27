@@ -441,8 +441,6 @@ class TestROICreation(object):
         assert isinstance(s, RangeSubsetState)
         assert s.att == 'ydata'
 
-
-
     def test_range_roi_categorical(self):
 
         d = Data(x=['a', 'b', 'c'], y=[1, 2, 3])

@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy import PYQT5
-
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 
 from glue.config import viewer_tool

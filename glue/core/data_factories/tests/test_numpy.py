@@ -10,7 +10,7 @@ from glue.core import data_factories as df
 
 def test_npy_load(tmpdir):
     data = np.array([("a", 152.2352, -21.513), ("b", 21.412, 35.1341)],
-                    dtype=[('name', '|S1'),('ra', 'f8'),('dec', 'f8')])
+                    dtype=[('name', '|S1'), ('ra', 'f8'), ('dec', 'f8')])
 
     with open(tmpdir.join('test.npy').strpath, 'wb') as f:
         np.save(f, data)

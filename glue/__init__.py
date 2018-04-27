@@ -119,15 +119,17 @@ def custom_viewer(name, **kwargs):
     from .viewers.custom.qt import CustomViewer
     return CustomViewer.create_new_subclass(name, **kwargs)
 
+
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
 
 from .qglue import qglue
 
-from .version import __version__
+from .version import __version__  # noqa
 
-from .main import load_plugins
+from .main import load_plugins  # noqa
+
 
 def test(no_optional_skip=False):
     from pytest import main
@@ -136,6 +138,7 @@ def test(no_optional_skip=False):
     if no_optional_skip:
         args.append('--no-optional-skip')
     return main(args=args)
+
 
 from glue._settings_helpers import load_settings
 load_settings()
@@ -150,5 +153,6 @@ load_settings()
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
 
 sys.excepthook = handle_exception

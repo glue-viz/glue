@@ -62,8 +62,8 @@ def test_memoize_unhashable():
     def func(x, view=None):
         return 2 * x
 
-    assert func(1, view=slice(1,2,3)) == 2
-    assert func(1, view=slice(1,2,3)) == 2
+    assert func(1, view=slice(1, 2, 3)) == 2
+    assert func(1, view=slice(1, 2, 3)) == 2
 
 
 def test_memoize_attribute():
