@@ -15,6 +15,8 @@ The basic usage pattern is thus:
    methods in a MouseMode, for additional behavior
 """
 
+from __future__ import absolute_import, division, print_function
+
 import os
 
 from qtpy import QtGui, QtWidgets

@@ -1,3 +1,6 @@
+from __future__ import absolute_import, division, print_function
+
+
 class MatplotlibBackendSetter(object):
     """
     Import hook to make sure the proper Qt backend is set when importing

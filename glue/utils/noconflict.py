@@ -4,6 +4,8 @@
 #
 # The code at the above URL was released under the PSF license.
 
+from __future__ import absolute_import, division, print_function
+
 import inspect
 import types
 

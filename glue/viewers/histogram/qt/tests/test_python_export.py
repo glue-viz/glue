@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 from astropy.utils import NumpyRNGContext
 
 from glue.core import Data, DataCollection
