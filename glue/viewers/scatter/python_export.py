@@ -130,6 +130,7 @@ def python_export_scatter_layer(layer, *args):
                        headwidth=hw, headlength=hl,
                        scale_units='width',
                        scale=scale,
+                       angles='xy',
                        alpha=layer.state.alpha,
                        zorder=layer.state.zorder)
 
