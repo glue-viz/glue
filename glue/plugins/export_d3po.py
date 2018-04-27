@@ -90,7 +90,7 @@ def save_histogram(plot, index):
     result['type'] = 'histogram'
     result['xAxis'] = dict(columnName=plot.state.x_att.label,
                            bins=plot.state.hist_n_bin,
-                           range=[plot.state.hist_x_min])
+                           range=[plot.state.hist_x_min, plot.state.hist_x_max])
     # XXX normed, cumultive, log
     return result
 
