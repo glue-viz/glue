@@ -161,13 +161,15 @@ dataset:
 
 .. figure:: images/link_editor.png
    :align: center
+   :width: 600px
 
-The image has an attribute **Right Ascension**. This is the same quantity as the
-**RAJ2000** attribute in the **Point Sources** dataset -- they are both
-describing Right Ascension (the horizontal spatial coordinate on the sky).
-Select these entries, and click **Glue** to instruct the program that these
-quantities are equivalent. Likewise, link **Declination** and **DEJ2000**
-(Declination, the other coordinate). Click **OK**.
+Select the two datasets in the network diagram in the top panel, or from the
+drop-down menus underneath. The image has an attribute **Right Ascension**. This
+is the same quantity as the **RAJ2000** attribute in the **Point Sources**
+dataset -- they are both describing Right Ascension (the horizontal spatial
+coordinate on the sky). Select these entries, and click **Glue** to instruct the
+program that these quantities are equivalent. Likewise, link **Declination** and
+**DEJ2000** (Declination, the other coordinate). Click **OK**.
 
 .. note:: What does this do? This tells Glue how to derive the catalog-defined
           quantities **DEJ2000** and **RAJ2000** using data from the image, and
