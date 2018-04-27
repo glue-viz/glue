@@ -10,7 +10,7 @@ def test_navigate_mouse_mode():
     callback = MagicMock()
 
     fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
+    ax = fig.add_subplot(1, 1, 1)
     ax.set_xlim(0, 10)
     viewer = MagicMock()
     viewer.axes = ax

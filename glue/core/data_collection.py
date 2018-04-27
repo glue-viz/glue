@@ -180,7 +180,6 @@ class DataCollection(HubListener):
         self._link_manager.clear_links()
         self._link_manager.add_link(links)
 
-
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub.
 

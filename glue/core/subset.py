@@ -556,7 +556,7 @@ class RoiSubsetState(SubsetState):
 
         if (x.ndim == data.ndim and
             self.xatt in data.pixel_component_ids and
-            self.yatt in data.pixel_component_ids):
+                self.yatt in data.pixel_component_ids):
 
             # This is a special case - the ROI is defined in pixel space, so we
             # can apply it to a single slice and then broadcast it to all other
@@ -714,6 +714,7 @@ class CategoricalROISubsetState2D(SubsetState):
     att2 : :class:`~glue.core.component_id.ComponentID`
         The component ID matching the values of the ``categories`` dictionary
     """
+
     def __init__(self, categories, att1, att2):
         self.categories = categories
         self.att1 = att1
@@ -868,6 +869,7 @@ class CompositeSubsetState(SubsetState):
     def __str__(self):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
+
 
 class OrState(CompositeSubsetState):
     op = operator.or_
@@ -1038,6 +1040,7 @@ class SliceSubsetState(SubsetState):
         self.reference_data = context.object(self.reference_data)
         self._pad_slices()
 
+
 class CategorySubsetState(SubsetState):
 
     def __init__(self, attribute, values):
@@ -1183,7 +1186,6 @@ class InequalitySubsetState(SubsetState):
                     right = comp.labels[view]
                 else:
                     right = comp.data[view]
-
 
         return self._operator(left, right)
 

@@ -65,7 +65,7 @@ class GlueItemWidget(object):
         """
         Convenience method to set data associated with a ``QxxWidgetItem``.
         """
-        #item.setData(Qt.UserRole, data)
+        # item.setData(Qt.UserRole, data)
         self._mime_data[id(item)] = data
 
     def drop_data(self, item):

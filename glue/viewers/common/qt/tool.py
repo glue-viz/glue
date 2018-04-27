@@ -80,6 +80,7 @@ class DropdownTool(Tool):
     """
     A base class for all tools that show a drop-down menu.
     """
+
     def __init__(self, *args, **kwargs):
         self.subtools = kwargs.pop('subtools', [])
         super(DropdownTool, self).__init__(*args, **kwargs)

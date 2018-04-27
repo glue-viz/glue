@@ -62,7 +62,6 @@ def pandas_read_table(path, **kwargs):
     :param kwargs: All kwargs are passed to pandas.read_csv
     :returns: :class:`glue.core.data.Data` object
     """
-    import pandas as pd
     try:
         from pandas.io.common import CParserError
     except ImportError:  # pragma: no cover
@@ -100,15 +99,10 @@ def pandas_read_table(path, **kwargs):
     raise IOError("Could not parse %s using pandas" % path)
 
 
-try:
-    import pandas as pd
-except ImportError:
-    pass
-else:
-    @qglue_parser(pd.DataFrame)
-    def _parse_data_dataframe(data, label):
-        label = label or 'Data'
-        result = Data(label=label)
-        for c in data.columns:
-            result.add_component(data[c], str(c))
-        return [result]
+@qglue_parser(pd.DataFrame)
+def _parse_data_dataframe(data, label):
+    label = label or 'Data'
+    result = Data(label=label)
+    for c in data.columns:
+        result.add_component(data[c], str(c))
+    return [result]

@@ -1,9 +1,7 @@
-from distutils.version import LooseVersion
+from __future__ import absolute_import, division, print_function
 
-import pytest
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import __version__
 from astropy.utils import NumpyRNGContext
 
 from glue.core import Data, DataCollection

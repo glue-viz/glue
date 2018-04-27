@@ -174,5 +174,6 @@ def main():
 
     LinkEditor.update_links(dc)
 
+
 if __name__ == "__main__":
     main()

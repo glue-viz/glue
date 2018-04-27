@@ -50,7 +50,7 @@ class StyleDialog(QtWidgets.QDialog):
         self.set_color(color)
 
         self.okcancel = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
-                                               QtWidgets.QDialogButtonBox.Cancel)
+                                                   QtWidgets.QDialogButtonBox.Cancel)
 
         if self._edit_label:
             self.layout.addRow("Label", self.label_widget)
@@ -70,8 +70,8 @@ class StyleDialog(QtWidgets.QDialog):
 
     def query_color(self, *args):
         color = QtWidgets.QColorDialog.getColor(self._color, self.color_widget,
-                                            "",
-                                            QtWidgets.QColorDialog.ShowAlphaChannel)
+                                                "",
+                                                QtWidgets.QColorDialog.ShowAlphaChannel)
         if color.isValid():
             self.set_color(color)
 

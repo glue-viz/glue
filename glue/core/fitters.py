@@ -381,4 +381,5 @@ def _report_fitter(fitter):
         return "Converged in %i iterations" % fitter.fit_info['nfev']
     return 'Converged'
 
+
 __FITTERS__ = [PolynomialFitter, GaussianFitter]

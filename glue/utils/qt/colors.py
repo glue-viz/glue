@@ -62,7 +62,7 @@ def qt_to_mpl_color(qcolor):
     return str(hexid)
 
 
-def cmap2pixmap(cmap, steps=50, size=(100,100)):
+def cmap2pixmap(cmap, steps=50, size=(100, 100)):
     """
     Convert a maplotlib colormap into a QPixmap
 
@@ -84,7 +84,7 @@ def cmap2pixmap(cmap, steps=50, size=(100,100)):
     inds = np.linspace(0, 1, steps)
     rgbas = sm.to_rgba(inds)
     rgbas = [QtGui.QColor(int(r * 255), int(g * 255),
-                    int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
+                          int(b * 255), int(a * 255)).rgba() for r, g, b, a in rgbas]
     im = QtGui.QImage(steps, 1, QtGui.QImage.Format_Indexed8)
     im.setColorTable(rgbas)
     for i in range(steps):
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     app = get_qapp()
 
     label = QColorBox()
-    label.resize(100,100)
+    label.resize(100, 100)
     label.show()
     label.raise_()
     app.exec_()

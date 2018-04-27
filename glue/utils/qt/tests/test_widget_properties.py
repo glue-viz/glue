@@ -67,7 +67,7 @@ def test_combo_text():
     assert exc.value.args[0] == "Cannot find text 'c' in combo box"
 
     tc.co = None
-    assert tc.co == None
+    assert tc.co is None
     assert tc._combo.currentIndex() == -1
 
 

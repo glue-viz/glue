@@ -232,11 +232,11 @@ class ParsedCommand(object):
         # We now import math modules if not already defined in local or
         # global variables
         if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy
+            import numpy  # noqa
         if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np
+            import numpy as np  # noqa
         if 'math' not in global_variables and 'math' not in locals():
-            import math
+            import math  # noqa
 
         return eval(cmd, global_variables, locals())  # careful!
 

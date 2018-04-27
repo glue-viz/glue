@@ -2,9 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.core.roi import PointROI
-from glue.core import command
 from glue.core.subset import CategorySubsetState
 from glue.core.exceptions import IncompatibleDataException
 from glue.utils.qt import messagebox_on_error

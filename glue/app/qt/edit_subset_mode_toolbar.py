@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from qtpy import QtCore, QtWidgets
-from glue.core.edit_subset_mode import (EditSubsetMode, NewMode, OrMode,
+from glue.core.edit_subset_mode import (NewMode, OrMode,
                                         AndNotMode, AndMode, XorMode,
                                         ReplaceMode)
 from glue.app.qt.actions import action

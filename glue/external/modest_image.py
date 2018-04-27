@@ -57,7 +57,7 @@ class ModestImage(mi.AxesImage):
 
         if (self._A.ndim not in (2, 3) or
                 (self._A.ndim == 3 and self._A.shape[-1] not in (3, 4))):
-                raise TypeError("Invalid dimensions for image data")
+            raise TypeError("Invalid dimensions for image data")
 
         self.invalidate_cache()
 

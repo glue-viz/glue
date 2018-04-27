@@ -6,7 +6,7 @@ from mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
 from glue import custom_viewer
-from glue.tests.helpers import PYSIDE2_INSTALLED
+from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 from glue.core import HubListener, Application, Data, DataCollection
 from glue.core.message import SettingsChangeMessage
 from qtpy import QtWidgets

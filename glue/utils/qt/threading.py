@@ -6,6 +6,7 @@ __all__ = ['Worker']
 
 
 class Worker(QtCore.QThread):
+
     result = QtCore.Signal(object)
     error = QtCore.Signal(object)
 
@@ -33,6 +34,6 @@ class Worker(QtCore.QThread):
         try:
             result = self.func(*self.args, **self.kwargs)
             self.result.emit(result)
-        except:
+        except Exception:
             import sys
             self.error.emit(sys.exc_info())

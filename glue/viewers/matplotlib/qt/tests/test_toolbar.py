@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.tests.util import simple_session

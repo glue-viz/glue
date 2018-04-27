@@ -62,7 +62,7 @@ def img_data(file_name):
         from pyavm import AVM
         avm = AVM(str(file_name))  # avoid unicode
         wcs = avm.to_wcs()
-    except:
+    except Exception:
         pass
     else:
         result.coords = coordinates_from_wcs(wcs)

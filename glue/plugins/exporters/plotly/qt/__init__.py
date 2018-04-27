@@ -1,1 +1,1 @@
-from .exporter import QtPlotlyExporter
+from .exporter import QtPlotlyExporter  # noqa

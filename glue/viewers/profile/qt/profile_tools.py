@@ -199,7 +199,7 @@ class ProfileTools(QtWidgets.QWidget):
             for layer_artist in fit_results:
                 report += ("<b><font color='{0}'>{1}</font>"
                            "</b>".format(color2hex(layer_artist.state.color),
-                                                   layer_artist.layer.label))
+                                         layer_artist.layer.label))
                 report += "<pre>" + fitter.summarize(fit_results[layer_artist], x, y) + "</pre>"
                 if self.viewer.state.normalize:
                     normalize[layer_artist] = layer_artist.state.normalize_values

@@ -135,7 +135,7 @@ class QtPlotlyExporter(QtWidgets.QDialog):
             traceback.print_exc(file=sys.stdout)
             print('-' * 60)
             if ('the supplied API key doesn\'t match our records' in exc.args[0] or
-                'Sign in failed' in exc.args[0]):
+                    'Sign in failed' in exc.args[0]):
                 username = auth['username'] or plotly.get_credentials()['username']
                 self.set_status("Authentication failed".format(username), color='red')
             elif "filled its quota of private files" in exc.args[0]:
@@ -143,7 +143,7 @@ class QtPlotlyExporter(QtWidgets.QDialog):
             else:
                 self.set_status("An unexpected error occurred", color='red')
             return
-        except:
+        except Exception:
             print("Plotly exception:")
             print('-' * 60)
             traceback.print_exc(file=sys.stdout)

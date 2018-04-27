@@ -12,7 +12,6 @@ from glue.core.message import (DataReorderComponentMessage,
                                DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
-                               ComponentReplacedMessage,
                                DataRenameComponentMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
 from glue.external.six import string_types
@@ -319,7 +318,6 @@ class ComponentIDComboHelper(ComboHelper):
 
         if self._none:
             choices.append(None)
-
 
         for data in self._data:
 

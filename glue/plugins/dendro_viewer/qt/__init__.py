@@ -1,1 +1,1 @@
-from .data_viewer import DendrogramViewer
+from .data_viewer import DendrogramViewer  # noqa

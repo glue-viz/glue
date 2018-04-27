@@ -3,4 +3,4 @@
 
 
 def setup():
-    from . import subset_mask
+    from . import subset_mask  # noqa

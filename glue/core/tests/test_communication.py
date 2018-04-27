@@ -76,7 +76,7 @@ class TestCommunication(object):
         h = Hub()
         d = Data()
         c = _TestClient(DataCollection([d]))
-        assert not c in h._subscriptions
+        assert c not in h._subscriptions
         c.register_to_hub(h)
         assert c in h._subscriptions
 

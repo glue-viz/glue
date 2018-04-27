@@ -31,7 +31,7 @@ def test_shape_to_string():
 @pytest.mark.skipif("not PY2")
 def test_shape_to_string_long():
     # Shape includes long ints on Windows
-    assert shape_to_string((long(1), long(4), long(3))) == "(1, 4, 3)"
+    assert shape_to_string((long(1), long(4), long(3))) == "(1, 4, 3)"  # noqa
 
 
 def test_view_shape():
@@ -165,7 +165,6 @@ def test_nanfunctions(function, axis):
     name = function.__name__
     np_func = getattr(np, name)
     assert_allclose(function(ARRAY, axis=axis), np_func(ARRAY, axis=axis))
-
 
 
 SLICE_CASES = [

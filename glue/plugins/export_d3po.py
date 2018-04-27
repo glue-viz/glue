@@ -6,7 +6,6 @@ import json
 from glue.core import Subset
 
 
-
 DISPATCH = {}
 
 

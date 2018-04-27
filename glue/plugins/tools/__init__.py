@@ -3,7 +3,7 @@ from copy import deepcopy
 
 def setup():
 
-    from glue.plugins.tools import python_export
+    from glue.plugins.tools import python_export  # noqa
 
     from glue.viewers.histogram.qt.data_viewer import HistogramViewer
     HistogramViewer.subtools = deepcopy(HistogramViewer.subtools)

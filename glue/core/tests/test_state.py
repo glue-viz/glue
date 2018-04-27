@@ -18,7 +18,6 @@ from ..state import (GlueSerializer, GlueUnSerializer,
                      saver, loader, VersionedDict)
 
 
-
 def clone(object, include_data=False):
     gs = GlueSerializer(object, include_data=include_data)
     oid = gs.id(object)
@@ -229,6 +228,7 @@ def test_polygonal_roi():
     assert_equal(r2.vx, [0, 0, 1])
     assert_equal(r2.vy, [0, 1, 0])
 
+
 def test_projected3d_roi():
     roi_2d = core.roi.PolygonalROI(vx=[0.5, 2.5, 2.5, 0.5], vy=[1, 1, 3.5, 3.5])
     roi = core.roi.Projected3dROI(roi_2d=roi_2d, projection_matrix=np.eye(4))
@@ -278,12 +278,12 @@ def test_no_circular():
 
 
 def test_categorical_component():
-    c = CategoricalComponent(['a','b','c','a','b'], categories=['a','b','c'])
+    c = CategoricalComponent(['a', 'b', 'c', 'a', 'b'], categories=['a', 'b', 'c'])
     c2 = clone(c)
     assert isinstance(c2, CategoricalComponent)
     np.testing.assert_array_equal(c.codes, [0, 1, 2, 0, 1])
-    np.testing.assert_array_equal(c.labels, ['a','b','c','a','b'])
-    np.testing.assert_array_equal(c.categories, ['a','b','c'])
+    np.testing.assert_array_equal(c.labels, ['a', 'b', 'c', 'a', 'b'])
+    np.testing.assert_array_equal(c.categories, ['a', 'b', 'c'])
 
 
 def test_datetime_component():
@@ -303,19 +303,19 @@ class TestVersioning(object):
     def setup_method(self, method):
 
         @saver(DummyClass, version=1)
-        def s(d, context):
+        def s1(d, context):
             return dict(v=3)
 
         @loader(DummyClass, version=1)
-        def l(d, context):
+        def l1(d, context):
             return 3
 
         @saver(DummyClass, version=2)
-        def s(d, context):
+        def s2(d, context):
             return dict(v=4)
 
         @loader(DummyClass, version=2)
-        def l(rec, context):
+        def l2(rec, context):
             return 4
 
     def teardown_method(self, method):

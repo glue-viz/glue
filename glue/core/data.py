@@ -24,7 +24,6 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
-from glue.utils import view_shape
 
 
 # Note: leave all the following imports for component and component_id since

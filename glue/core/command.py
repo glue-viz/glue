@@ -6,7 +6,6 @@ from abc import ABCMeta, abstractmethod
 
 from glue.utils import CallbackMixin
 from glue.core.data_factories import load_data
-from glue.core.edit_subset_mode import EditSubsetMode
 
 MAX_UNDO = 50
 """

@@ -105,7 +105,6 @@ class EquationEditorDialog(QtWidgets.QDialog):
                 "  - Multiply '{example}' by pi: {{{example}}} * np.pi<br>"
                 "  - Use masking: {{{example}}} * ({{{example}}} &lt; 1)<br>")
 
-
     placeholder_text = ("Type any mathematical expression here - "
                         "you can include attribute names from the "
                         "drop-down below by selecting them and "

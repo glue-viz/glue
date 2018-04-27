@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from mock import patch
 
-from qtpy import QtWidgets
-
 from glue import _plugin_helpers as ph
 from glue.main import load_plugins
 

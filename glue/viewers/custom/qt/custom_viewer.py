@@ -86,7 +86,6 @@ from qtpy.QtCore import Qt
 from glue.core.layer_artist import MatplotlibLayerArtist
 from glue.config import qt_client
 from glue.core import Data
-from glue.core.edit_subset_mode import EditSubsetMode
 from glue.utils import nonpartial, as_list, all_artists, new_artists, remove_artists
 from glue import core
 from glue.external.echo.qt.connect import UserDataWrapper

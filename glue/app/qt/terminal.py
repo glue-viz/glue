@@ -18,7 +18,6 @@ from __future__ import absolute_import, division, print_function
 from qtpy import QtWidgets
 
 from IPython import get_ipython
-from IPython.terminal.interactiveshell import TerminalInteractiveShell
 
 from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
 from ipykernel.connect import get_connection_file

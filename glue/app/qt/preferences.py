@@ -9,7 +9,6 @@ from matplotlib.colors import ColorConverter
 
 from qtpy import QtWidgets
 from glue.core.message import SettingsChangeMessage
-from glue.utils import nonpartial
 from glue.utils.qt import load_ui, ColorProperty, get_qapp
 from glue.utils.qt.widget_properties import (CurrentComboTextProperty,
                                              ValueProperty, ButtonProperty)
@@ -70,11 +69,11 @@ class PreferencesDialog(QtWidgets.QDialog):
             self.panes.append(pane)
 
     def _update_theme_from_colors(self, *args):
-        if (rgb(self.background) == (1, 1, 1) and rgb(self.foreground) == (0, 0, 0)
-                and rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
+        if (rgb(self.background) == (1, 1, 1) and rgb(self.foreground) == (0, 0, 0) and
+                rgb(self.data_color) == (0.35, 0.35, 0.35) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'Black on White'
-        elif (rgb(self.background) == (0, 0, 0) and rgb(self.foreground) == (1, 1, 1)
-              and rgb(self.data_color) == (0.75, 0.75, 0.75) and np.allclose(self.data_alpha, 0.8)):
+        elif (rgb(self.background) == (0, 0, 0) and rgb(self.foreground) == (1, 1, 1) and
+                rgb(self.data_color) == (0.75, 0.75, 0.75) and np.allclose(self.data_alpha, 0.8)):
             self.theme = 'White on Black'
         else:
             self.theme = 'Custom'
@@ -132,7 +131,6 @@ class PreferencesDialog(QtWidgets.QDialog):
 
 if __name__ == "__main__":
 
-    from glue.utils.qt import get_qapp
     app = get_qapp()
     widget = PreferencesDialog()
     widget.show()

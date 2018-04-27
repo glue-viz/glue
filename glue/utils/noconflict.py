@@ -10,13 +10,14 @@ import types
 from glue.external import six
 
 if six.PY2:
-    import __builtin__
+    import __builtin__  # noqa
     CLASS_TYPE = types.ClassType
 else:
-    import builtins
+    import builtins  # noqa
     CLASS_TYPE = type
 
 __all__ = ['classmaker']
+
 
 def skip_redundant(iterable, skipset=None):
     """
@@ -35,6 +36,7 @@ def remove_redundant(metaclasses):
     for meta in metaclasses:  # determines the metaclasses to be skipped
         skipset.update(inspect.getmro(meta)[1:])
     return tuple(skip_redundant(metaclasses, skipset))
+
 
 memoized_metaclasses_map = {}
 
@@ -64,6 +66,7 @@ def get_noconflict_metaclass(bases, left_metas, right_metas):
         meta = classmaker()(metaname, needed_metas, {})
     memoized_metaclasses_map[needed_metas] = meta
     return meta
+
 
 def classmaker(left_metas=(), right_metas=()):
     def make_class(name, bases, adict):

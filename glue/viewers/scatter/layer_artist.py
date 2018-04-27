@@ -1,13 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from distutils.version import LooseVersion
-
 import numpy as np
 
-from matplotlib import __version__ as __mpl_version__
 from matplotlib.colors import Normalize
 from matplotlib.collections import LineCollection
-from matplotlib.lines import Line2D
 
 from mpl_scatter_density import ScatterDensityArtist
 

@@ -8,5 +8,6 @@ LAYER_MIME_TYPE = 'glue/layer'
 LAYERS_MIME_TYPE = 'glue/layers'
 INSTANCE_MIME_TYPE = PyMimeData.MIME_TYPE
 
+
 class GlueMimeListWidget(GlueItemWidget, QtWidgets.QListWidget):
     SUPPORTED_MIME_TYPE = LAYERS_MIME_TYPE

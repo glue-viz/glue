@@ -88,7 +88,7 @@ from glue.utils import lookup_class
 literals = tuple([type(None), float, int, bytes, bool])
 
 if six.PY2:
-    literals += (long,)
+    literals += (long,)  # noqa
 
 
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
@@ -101,7 +101,7 @@ JSON_ENCODER = json.JSONEncoder()
 # classes/functions around in Glue, so we have a file that maps the old paths to
 # the new location, and we read this in to PATH_PATCHES.
 PATCH_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                             'state_path_patches.txt'))
+                                          'state_path_patches.txt'))
 
 # For Mac app, need to get file from source directory
 if not os.path.exists(PATCH_FILE) and 'site-packages.zip' in PATCH_FILE:
@@ -546,7 +546,7 @@ loader = GlueUnSerializer.unserializes
 @saver(dict)
 def _save_dict(state, context):
     return dict(contents=dict((context.id(key), context.id(value))
-                for key, value in state.items()))
+                              for key, value in state.items()))
 
 
 @loader(dict)
@@ -913,8 +913,10 @@ def _load_data_3(rec, context):
 @saver(Data, version=4)
 def _save_data_4(data, context):
     result = _save_data_2(data, context)
+
     def save_cid_tuple(cids):
         return tuple(context.id(cid) for cid in cids)
+
     result['_key_joins'] = [[context.id(k), save_cid_tuple(v0), save_cid_tuple(v1)]
                             for k, (v0, v1) in data._key_joins.items()]
     result['uuid'] = data.uuid
@@ -925,8 +927,10 @@ def _save_data_4(data, context):
 def _load_data_4(rec, context):
     result = _load_data_2(rec, context)
     yield result
+
     def load_cid_tuple(cids):
         return tuple(context.object(cid) for cid in cids)
+
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
     if 'uuid' in rec and rec['uuid'] is not None:
@@ -951,8 +955,10 @@ def _load_data_5(rec, context):
             cid = context.object(cid)
             cid.parent = result
     yield result
+
     def load_cid_tuple(cids):
         return tuple(context.object(cid) for cid in cids)
+
     result._key_joins = dict((context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
                              for k, v0, v1 in rec['_key_joins'])
     if 'uuid' in rec and rec['uuid'] is not None:
@@ -1034,6 +1040,7 @@ def _load_categorical_component(rec, context):
                                 categories=context.object(rec['categories']),
                                 jitter=context.object(rec['jitter_method']),
                                 units=rec['units'])
+
 
 @saver(DerivedComponent)
 def _save_derived_component(component, context):

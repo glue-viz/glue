@@ -1,1 +1,1 @@
-from .data_wizard_dialog import *
+from .data_wizard_dialog import *  # noqa

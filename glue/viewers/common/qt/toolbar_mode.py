@@ -28,7 +28,7 @@ from glue.config import viewer_tool
 from .mouse_mode import MouseMode
 
 
-__all__ = [ 'ToolbarModeBase', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
+__all__ = ['ToolbarModeBase', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
            'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
            'PolyMode', 'LassoMode', 'HRangeMode', 'VRangeMode', 'PickMode',
            'ContrastMode', 'ColormapMode']
@@ -38,6 +38,7 @@ class ToolbarModeBase(MouseMode, CheckableTool):
     """
     All ToolbarModes are both MouseModes and CheckableTools
     """
+
     def __init__(self, viewer, **kwargs):
         MouseMode.__init__(self, viewer, **kwargs)
         CheckableTool.__init__(self, viewer=viewer)

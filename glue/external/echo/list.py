@@ -106,7 +106,6 @@ class CallbackList(list):
             self.callback()
 
 
-
 class ListCallbackProperty(CallbackProperty):
     """
     A list property that calls callbacks when its contents are modified

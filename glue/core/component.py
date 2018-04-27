@@ -14,7 +14,7 @@ from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
-                        polygon_line_intersections, broadcast_to, datetime64_to_mpl)
+                        polygon_line_intersections, broadcast_to)
 
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',

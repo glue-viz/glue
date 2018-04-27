@@ -114,12 +114,12 @@ def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
                 else:
                     warnings.warn("HDF5: Ignoring vector column {0}".format(column_name))
         else:
-                if auto_merge and array.shape in data_by_shape:
-                    data = data_by_shape[datasets[key].shape]
-                else:
-                    data = Data(label=label)
-                    data_by_shape[array.shape] = data
-                    groups[label] = data
-                data.add_component(component=datasets[key], label=key[1:])
+            if auto_merge and array.shape in data_by_shape:
+                data = data_by_shape[datasets[key].shape]
+            else:
+                data = Data(label=label)
+                data_by_shape[array.shape] = data
+                groups[label] = data
+            data.add_component(component=datasets[key], label=key[1:])
 
     return [groups[idx] for idx in groups]

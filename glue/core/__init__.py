@@ -1,19 +1,19 @@
 from __future__ import absolute_import, division, print_function
 
-from .client import Client
-from .command import Command, CommandStack
-from .component import Component
-from .component_id import ComponentID
-from .component_link import ComponentLink
-from .coordinates import Coordinates
-from .data import Data
-from .data_collection import DataCollection
-from .hub import Hub, HubListener
-from .link_manager import LinkManager
-from .session import Session
-from .subset import Subset
-from .subset_group import SubsetGroup
-from .visual import VisualAttributes
+from .client import Client  # noqa
+from .command import Command, CommandStack  # noqa
+from .component import Component  # noqa
+from .component_id import ComponentID  # noqa
+from .component_link import ComponentLink  # noqa
+from .coordinates import Coordinates  # noqa  # noqa
+from .data import Data  # noqa
+from .data_collection import DataCollection  # noqa
+from .hub import Hub, HubListener  # noqa
+from .link_manager import LinkManager  # noqa
+from .session import Session  # noqa
+from .subset import Subset  # noqa
+from .subset_group import SubsetGroup  # noqa
+from .visual import VisualAttributes  # noqa
 
 # We import this last to avoid circular imports
-from .application_base import Application
+from .application_base import Application  # noqa

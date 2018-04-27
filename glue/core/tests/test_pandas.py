@@ -11,6 +11,7 @@ from ...external.six import PY3
 from ..component import Component, DerivedComponent, CategoricalComponent
 from ..data import Data
 
+
 class TestPandasConversion(object):
 
     def test_Component_conversion(self):

@@ -20,7 +20,7 @@ class MatplotlibBackendSetter(object):
 def set_mpl_backend():
 
     try:
-        from qtpy import PYQT5
+        from qtpy import PYQT5  # noqa
     except Exception:
         # If Qt isn't available, we don't have to worry about
         # setting the backend

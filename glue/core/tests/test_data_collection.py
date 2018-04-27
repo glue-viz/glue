@@ -15,8 +15,7 @@ from ..data_collection import DataCollection
 from ..hub import HubListener
 from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMessage,
                        DataCollectionDeleteMessage, DataAddComponentMessage,
-                       ComponentsChangedMessage, ExternallyDerivableComponentsChangedMessage,
-                       PixelAlignedDataChangedMessage)
+                       ComponentsChangedMessage, PixelAlignedDataChangedMessage)
 from ..exceptions import IncompatibleAttribute
 
 from .test_state import clone
@@ -90,13 +89,13 @@ class TestDataCollection(object):
     def test_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
-        assert not self.data in self.dc
+        assert self.data not in self.dc
 
     def test_ignore_multi_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
         self.dc.remove(self.data)
-        assert not self.data in self.dc
+        assert self.data not in self.dc
 
     def test_append_broadcast(self):
         """ Call to append generates a DataCollectionAddMessage """
