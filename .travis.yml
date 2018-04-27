@@ -22,7 +22,7 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density bottleneck"
-    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler"
+    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler flake8"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -75,7 +75,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=3.6
                CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
-               PIP_DEPENDENCIES="pytest-cov coveralls"
+               PIP_DEPENDENCIES="pytest-cov coveralls flake8"
                REMOVE_INSTALL_REQUIRES=1
 
         - os: linux
@@ -116,7 +116,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph"
+               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
     allow_failures:
@@ -220,6 +220,9 @@ script:
   - test ! -s font.log
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
+
+  # Do style checks
+  - flake8 --exclude=external --ignore=E501,E731,F841,E127,E741,E402 glue
 
   - pytest --cov glue --durations=20 -vs $PYTEST_ARGS glue
 
