@@ -6,10 +6,13 @@ from tempfile import mkdtemp
 
 import numpy as np
 
-from glue.core import Data
+from glue.app.qt.application import GlueApplication
+from glue.core import Data, DataCollection
 from glue.tests.helpers import requires_astropy
+from glue.viewers.scatter.qt import ScatterViewer
+from glue.viewers.histogram.qt import HistogramViewer
 
-from ..export_d3po import make_data_file
+from ..export_d3po import make_data_file, save_d3po
 
 
 @requires_astropy
@@ -32,3 +35,16 @@ def test_make_data_file():
         np.testing.assert_array_equal(t['selection_0'], [0, 1, 1])
     finally:
         rmtree(dir, ignore_errors=True)
+
+
+def test_save_d3po(tmpdir):
+
+    output = tmpdir.join('output.html').strpath
+
+    d = Data(x=[1, 2, 3], y=[2, 3, 4], label='data')
+    dc = DataCollection([d])
+    app = GlueApplication(dc)
+    app.new_data_viewer(ScatterViewer, data=d)
+    app.new_data_viewer(HistogramViewer, data=d)
+    save_d3po(app, output, launch=False)
+    app.close()
