@@ -30,6 +30,7 @@ class TestProfileViewerState:
         self.layer_state = ProfileLayerState(viewer_state=self.viewer_state,
                                              layer=self.data)
         self.viewer_state.layers.append(self.layer_state)
+        self.viewer_state.function = nanmean
 
     def test_basic(self):
         x, y = self.layer_state.profile

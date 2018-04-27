@@ -21,10 +21,10 @@ from glue.core.subset import SliceSubsetState
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(nanmean, 'Mean'),
-                         (nanmedian, 'Median'),
+FUNCTIONS = OrderedDict([(nanmax, 'Maximum'),
                          (nanmin, 'Minimum'),
-                         (nanmax, 'Maximum'),
+                         (nanmean, 'Mean'),
+                         (nanmedian, 'Median'),
                          (nansum, 'Sum')])
 
 
