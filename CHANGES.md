@@ -178,7 +178,7 @@ v0.13.0 (unreleased)
 * Fixed a bug that led to poor performance when slicing through data cubes.
   [#1554]
 
-v0.12.5 (unreleased)
+v0.12.5 (2018-03-10)
 --------------------
 
 * Fixed a bug which caused the current slices to be lost when adding a second
