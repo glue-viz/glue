@@ -732,10 +732,18 @@
         </spacer>
        </item>
        <item row="2" column="4">
-        <widget class="QComboBox" name="combosel_yerr_att"/>
+        <widget class="QComboBox" name="combosel_yerr_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
        <item row="1" column="4">
-        <widget class="QComboBox" name="combosel_xerr_att"/>
+        <widget class="QComboBox" name="combosel_xerr_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
        <item row="1" column="2">
         <widget class="QCheckBox" name="bool_xerr_visible">
@@ -823,7 +831,11 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QComboBox" name="combosel_vx_att"/>
+        <widget class="QComboBox" name="combosel_vx_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_3">
@@ -842,7 +854,11 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QComboBox" name="combosel_vy_att"/>
+        <widget class="QComboBox" name="combosel_vy_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_vector_x">

@@ -30,9 +30,9 @@ class ProfileViewerTool(Tool):
             proceed = info('Creating a profile viewer',
                            'Note: profiles are '
                            'computed from datasets and subsets collapsed along all but one '
-                           'dimension. To view the profile of part of the data, you can draw '
-                           'and update a subset in the current image viewer and the profile '
-                           'will update accordingly.', setting='show_info_profile_open')
+                           'dimension. To view the profile of part of the data, once you '
+                           'click OK you can draw and update a subset in the current '
+                           'image viewer and the profile will update accordingly.', setting='show_info_profile_open')
 
             if not proceed:
                 return

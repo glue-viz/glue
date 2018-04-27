@@ -4,6 +4,9 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Fixed a bug that caused vectors to not correctly be flipped when
+  flipping the x/y limits of the plot. [#1678]
+
 * Added a CSV and HDF5 data/subset exporter. [#1676]
 
 * Started adding helpful information dialogs that can be

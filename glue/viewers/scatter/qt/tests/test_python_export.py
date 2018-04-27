@@ -145,6 +145,13 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].cmap = plt.cm.BuGn
         self.test_vector_cartesian(tmpdir)
 
+    def test_vector_cartesian_xflip(self, tmpdir):
+        # Regression test for a bug that caused vectors to not be flipped
+        self.viewer.state.layers[0].vector_mode = 'Cartesian'
+        self.viewer.state.layers[0].vx_att = self.data.id['h']
+        self.viewer.state.flip_x()
+        self._vector_common(tmpdir)
+
     def test_subset(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)

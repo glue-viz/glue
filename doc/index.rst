@@ -53,7 +53,8 @@ Glue application to the more advanced ways of interacting with Glue from Python.
 
 .. note:: For any questions or help with using glue, you can always join the
           `user support mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_
-          or ask questions on our `Gitter channel <https://gitter.im/glue-viz/glue>`_!
+          or ask questions on `Slack <https://glueviz.slack.com>`_
+          (note that you will need to sign up for an account `here <https://glueviz-slack-invite.herokuapp.com>`_).
 
 Using the Glue application
 --------------------------
@@ -145,7 +146,7 @@ the following two references:
 * `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration
   <https://zenodo.org/record/293197>`_
 
-The first is a conference proceedings describing glue, while the second is a
+The first is a conference proceedings describing glue, while the second is the
 software itself.
 
 Publications

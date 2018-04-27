@@ -21,6 +21,11 @@ If instead you installed glue with pip, you can update with::
 
     pip install glueviz[all] --upgrade
 
+If you have any questions about any of the functionality described below or
+about glue in general, you can find information :ref:`here
+<help>` about contacting us and/or
+reporting issues.
+
 .. _whatsnew_013:
 
 What's new in glue v0.13?
@@ -56,13 +61,13 @@ linked by world coordinates instead of pixel coordinates:
 
 .. image:: images/v0.13/reprojection.jpg
    :align: center
-   :width: 400
+   :width: 500
 
-For astronomers reading this, this means being able to overplot images and
-cubes with different WCS transformations, provided that you have set up links
-between the world coordinates - and this includes being able to show 2D images
-and 3D spectral cubes at the same time (if you do this, note that the reference
-data needs to be the dataset you want to slice over).
+For astronomers: this means being able to overplot images and cubes with
+different WCS transformations, provided that you have set up links between the
+world coordinates - and this includes being able to show 2D images and 3D
+spectral cubes at the same time (if you do this, note that the reference data
+needs to be the dataset you want to slice over, i.e. the cube, not the 2D image).
 
 Arithmetic attribute editor
 ---------------------------
@@ -117,7 +122,7 @@ provides a more intuitive interface for exporting data and subsets:
    :align: center
    :width: 350
 
-This dialog is accessible via the 'Export Data/Subsets' button in the toolbar:
+This dialog is accessible via the **Export Data/Subsets** button in the toolbar:
 
 .. image:: images/v0.13/export_data_button.png
    :align: center

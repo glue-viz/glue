@@ -146,6 +146,7 @@ required = (
     Dependency('qtpy', 'Required', min_version='1.2'),
     Dependency('setuptools', 'Required', min_version='1.0'),
     Dependency('numpy', 'Required', min_version='1.9'),
+    Dependency('bottleneck', 'Required', min_version='1.2'),
     Dependency('matplotlib', 'Required for plotting', min_version='2.0'),
     Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='1.3'),

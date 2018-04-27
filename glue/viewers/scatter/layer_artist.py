@@ -275,7 +275,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
                                                   pivot=self.state.vector_origin,
                                                   headwidth=hw, headlength=hl,
-                                                  scale_units='width',
+                                                  scale_units='width', angles='xy',
                                                   scale=10 / self.state.vector_scaling * vmax)
             self.mpl_artists[self.vector_index] = self.vector_artist
 
