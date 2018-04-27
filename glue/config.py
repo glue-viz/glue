@@ -367,6 +367,10 @@ class ColormapRegistry(Registry):
         import matplotlib.cm as cm
         members = []
         members.append(['Gray', cm.gray])
+        members.append(['Viridis', cm.viridis])
+        members.append(['Plasma', cm.plasma])
+        members.append(['Inferno', cm.inferno])
+        members.append(['Magma', cm.magma])
         members.append(['Purple-Blue', cm.PuBu])
         members.append(['Yellow-Green-Blue', cm.YlGnBu])
         members.append(['Yellow-Orange-Red', cm.YlOrRd])

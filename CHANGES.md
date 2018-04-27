@@ -4,6 +4,8 @@ Full changelog
 v0.13.0 (unreleased)
 --------------------
 
+* Added new perceptually uniform Matplotlib colormaps. [#1679]
+
 * Fixed a bug that caused vectors to not correctly be flipped when
   flipping the x/y limits of the plot. [#1678]
 
@@ -150,9 +152,6 @@ v0.13.0 (unreleased)
 
 * Fixed a bug that caused Data.meta to not be saved/restored from session
   files. [#1668]
-
-v0.12.6 (unreleased)
---------------------
 
 * Fixed an issue that caused an IndexError when quitting glue in some
   cases. [#1657]
