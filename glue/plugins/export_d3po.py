@@ -65,12 +65,11 @@ def save_scatter(plot, index):
     :rtype: json-serializable dict
     """
     result = save_plot_base(plot, index)
-    props = plot.properties
     result['type'] = 'scatter'
-    result['xAxis'] = dict(columnName=props['xatt'].label,
-                           range=[props['xmin'], props['xmax']])
-    result['yAxis'] = dict(columnName=props['yatt'].label,
-                           range=[props['ymin'], props['ymax']])
+    result['xAxis'] = dict(columnName=plot.state.x_att.label,
+                           range=[plot.state.x_min, plot.state.x_max])
+    result['yAxis'] = dict(columnName=plot.state.y_att.label,
+                           range=[plot.state.y_min, plot.state.y_max])
     # XXX log scales
     return result
 
@@ -89,9 +88,9 @@ def save_histogram(plot, index):
     result = save_plot_base(plot, index)
     props = plot.properties
     result['type'] = 'histogram'
-    result['xAxis'] = dict(columnName=props['component'].label,
-                           bins=props['nbins'],
-                           range=[props['xmin'], props['xmax']])
+    result['xAxis'] = dict(columnName=plot.state.x_att.label,
+                           bins=plot.state.hist_n_bin,
+                           range=[plot.state.hist_x_min])
     # XXX normed, cumultive, log
     return result
 
@@ -167,7 +166,7 @@ def make_data_file(data, subsets, path):
     t.write(data_path, format='ascii', delimiter=',')
 
 
-def save_d3po(application, path):
+def save_d3po(application, path, launch=True):
     """Save a Glue session to a D3PO bundle.
 
     Currently, this has the following restrictions:
@@ -210,10 +209,11 @@ def save_d3po(application, path):
         outfile.write(HTML)
 
     # show the result
-    launch(path)
+    if launch:
+        launch_d3po(path)
 
 
-def launch(path):
+def launch_d3po(path):
     """Start a server to view an exported D3PO bundle, and open a browser.
 
     :param path: The TLD of the bundle
