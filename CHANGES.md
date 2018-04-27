@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.13.0 (unreleased)
+v0.13.0 (2018-04-27)
 --------------------
 
 * Added new perceptually uniform Matplotlib colormaps. [#1679]
