@@ -1056,6 +1056,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         ga = GlueApplication()
         ga.start(block=False)
 
+        # NOTE: we need to keep a reference to this new application object
+        # otherwise it will immediately garbage collect - this is a hack and
+        # we should find a better solution in future.
+        self._new_application = ga
+
         # We need to close this after we open the next application otherwise
         # Qt will quit since there are no actively open windows.
         self.close()
@@ -1214,6 +1219,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         with set_cursor_cm(Qt.WaitCursor):
             app = self.restore_session(path)
             app.setGeometry(self.geometry())
+
+            # NOTE: we need to keep a reference to this new application object
+            # otherwise it will immediately garbage collect - this is a hack and
+            # we should find a better solution in future.
+            self._new_application = app
+
             self.close()
 
     def closeEvent(self, event):

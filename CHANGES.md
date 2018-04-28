@@ -9,6 +9,8 @@ v0.14.0 (unreleased)
 v0.13.1 (unreleased)
 --------------------
 
+* Fixed resetting and opening of sessions which caused Glue to quit. [#1681]
+
 * Fixed serialization of Data.meta when non-serializable keys or values
   are present. [#1681]
 
