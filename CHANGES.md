@@ -6,6 +6,12 @@ v0.14.0 (unreleased)
 
 * No changes yet.
 
+v0.13.1 (unreleased)
+--------------------
+
+* Fixed serialization of Data.meta when non-serializable keys or values
+  are present. [#1681]
+
 v0.13.0 (2018-04-27)
 --------------------
 
