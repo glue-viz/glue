@@ -1,6 +1,14 @@
 Full changelog
 ==============
 
+v0.13.1 (unreleased)
+--------------------
+
+* Fixed resetting and opening of sessions which caused Glue to quit. [#1681]
+
+* Fixed serialization of Data.meta when non-serializable keys or values
+  are present. [#1681]
+
 v0.13.0 (2018-04-27)
 --------------------
 
