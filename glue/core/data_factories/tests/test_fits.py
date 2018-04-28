@@ -199,3 +199,12 @@ def test_fits_vector():
             break
     else:
         raise ValueError("Missing warning about dropping column")
+
+
+@requires_astropy
+def test_save_meta():
+    # Regression test for a bug that causes Data.meta to contain non-string
+    # items when FITS comments were present.
+    from glue.core.tests.test_state import clone
+    data = df.load_data(os.path.join(DATA, 'comment.fits'))
+    clone(data)

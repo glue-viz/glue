@@ -7,7 +7,7 @@ from collections import OrderedDict
 from glue.core.coordinates import coordinates_from_header, WCSCoordinates
 from glue.core.data import Component, Data
 from glue.config import data_factory, qglue_parser
-
+from glue.external.six import string_types
 
 __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 
@@ -87,7 +87,20 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
         )
         data = Data(label=label)
         data.coords = coords
-        data.meta.update(OrderedDict(hdu.header))
+
+        # We need to be careful here because some header values are special
+        # objects that we should convert to strings
+        for key, value in hdu.header.items():
+            if (key == 'COMMENT' or key == 'HISTORY'):
+                if key not in data.meta:
+                    data.meta[key] = [str(value)]
+                else:
+                    data.meta[key].append(str(value))
+            elif isinstance(value, string_types) or isinstance(value, (int, float, bool)):
+                data.meta[key] = value
+            else:
+                data.meta[key] = str(value)
+
         groups[hdu_name] = data
         extension_by_shape[shape] = hdu_name
         return data

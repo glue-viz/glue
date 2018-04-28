@@ -60,7 +60,7 @@ import types
 import logging
 from io import BytesIO
 from itertools import count
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from base64 import b64encode, b64decode
 from inspect import isgeneratorfunction
 
@@ -943,7 +943,17 @@ def _load_data_4(rec, context):
 def _save_data_5(data, context):
     result = _save_data_4(data, context)
     result['primary_owner'] = [context.id(cid) for cid in data.components if cid.parent is data]
-    result['meta'] = context.do(data.meta)
+    # Filter out keys/values that can't be serialized
+    meta_filtered = OrderedDict()
+    for key, value in data.meta.items():
+        try:
+            context.do(key)
+            context.do(value)
+        except GlueSerializeError:
+            continue
+        else:
+            meta_filtered[key] = value
+    result['meta'] = context.do(meta_filtered)
     return result
 
 
