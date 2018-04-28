@@ -775,9 +775,13 @@ def test_preserve_datetime():
 def test_clone_meta():
     # Regression test for a bug that caused metadata to not be preserved
     # when saving/loading sessions.
+    class CustomObject(object):
+        pass
     data1 = Data(x=[1, 2, 3])
     data1.meta['a'] = 1
     data1.meta['b'] = 'test'
+    data1.meta['c'] = CustomObject()
     data2 = clone(data1)
     assert data2.meta['a'] == 1
     assert data2.meta['b'] == 'test'
+    assert 'c' not in data2.meta
