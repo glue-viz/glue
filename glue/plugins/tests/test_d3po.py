@@ -6,11 +6,9 @@ from tempfile import mkdtemp
 
 import numpy as np
 
-from glue.app.qt.application import GlueApplication
 from glue.core import Data, DataCollection
 from glue.tests.helpers import requires_astropy
-from glue.viewers.scatter.qt import ScatterViewer
-from glue.viewers.histogram.qt import HistogramViewer
+from glue.tests.helpers import requires_qt
 
 from ..export_d3po import make_data_file, save_d3po
 
@@ -37,7 +35,12 @@ def test_make_data_file():
         rmtree(dir, ignore_errors=True)
 
 
+@requires_qt
 def test_save_d3po(tmpdir):
+
+    from glue.app.qt.application import GlueApplication
+    from glue.viewers.scatter.qt import ScatterViewer
+    from glue.viewers.histogram.qt import HistogramViewer
 
     output = tmpdir.join('output.html').strpath
 
