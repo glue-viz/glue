@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.13.1 (unreleased)
+v0.13.1 (2018-04-29)
 --------------------
 
 * Fixed resetting and opening of sessions which caused Glue to quit. [#1681]
