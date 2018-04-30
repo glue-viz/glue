@@ -143,8 +143,8 @@ the following two references:
 * `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
   Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
 
-* `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration
-  <https://zenodo.org/record/293197>`_
+* `Robitaille et al (2017) glueviz v0.13.1: multidimensional data exploration
+  <https://zenodo.org/record/1237692>`_
 
 The first is a conference proceedings describing glue, while the second is the
 software itself.
