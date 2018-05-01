@@ -292,7 +292,7 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
 
         :rtype: bool. True if user wishes to close. False otherwise
         """
-        if self._warn_close and (not os.environ.get('GLUE_TESTING')) and self.isVisible():
+        if self._warn_close and not os.environ.get('GLUE_TESTING'):
             buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
             dialog = QtWidgets.QMessageBox.warning(self, "Confirm Close",
                                                    "Do you want to close this window?",
