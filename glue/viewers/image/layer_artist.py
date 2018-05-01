@@ -315,6 +315,10 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
                 artist.set_visible(self.state.visible)
                 artist.set_alpha(self.state.alpha)
             else:
+                if self.state.visible:
+                    artist.set_visible(isinstance(self.state.layer.subset_state, PixelSubsetState))
+                else:
+                    artist.set_visible(False)
                 artist.set_color(self.state.color)
                 artist.set_alpha(self.state.alpha * 0.5)
             artist.set_zorder(self.state.zorder)

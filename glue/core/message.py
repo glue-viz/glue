@@ -57,9 +57,10 @@ class EditSubsetMessage(Message):
 
     """ Indicates that the subset currently being edited has changed """
 
-    def __init__(self, sender, subset, tag=None):
+    def __init__(self, sender, subset, mode, tag=None):
         Message.__init__(self, sender, tag=tag)
         self.subset = subset
+        self.mode = mode
 
 
 class SubsetMessage(Message):

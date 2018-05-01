@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 import sys
 
 import pytest
@@ -22,9 +21,6 @@ from glue.utils.qt import get_qapp
 
 
 from ..application import GlueApplication, GlueLogger
-
-
-os.environ['GLUE_TESTING'] = 'True'
 
 
 def tab_count(app):

@@ -6,9 +6,12 @@ from glue.core.edit_subset_mode import (NewMode, OrMode,
                                         ReplaceMode)
 from glue.app.qt.actions import action
 from glue.utils import nonpartial
+from glue.core.message import EditSubsetMessage
+from glue.core.hub import HubListener
+from glue.external.six import string_types
 
 
-class EditSubsetModeToolBar(QtWidgets.QToolBar):
+class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
 
     def __init__(self, title="Subset Update Mode", parent=None):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
@@ -35,6 +38,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
                              QtWidgets.QSizePolicy.Preferred)
 
         self.addWidget(spacer)
+
+        self.parent()._hub.subscribe(self, EditSubsetMessage, handler=self._update_mode)
 
     def _make_mode(self, name, tip, icon, mode):
 
@@ -64,15 +69,19 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar):
         self._make_mode("&Not Mode", "Remove from selection",
                         'glue_andnot', AndNotMode)
 
+    def _update_mode(self, message):
+        self.set_mode(message.mode)
+
     def set_mode(self, mode):
         """Temporarily set the edit mode to mode
         :param mode: Name of the mode (Or, Not, And, Xor, Replace)
         :type mode: str
         """
-        try:
-            mode = self._modes[mode]  # label to mode class
-        except KeyError:
-            raise KeyError("Unrecognized mode: %s" % mode)
+        if isinstance(mode, string_types):
+            try:
+                mode = self._modes[mode]  # label to mode class
+            except KeyError:
+                raise KeyError("Unrecognized mode: %s" % mode)
 
         self._backup_mode = self._backup_mode or self._edit_subset_mode.mode
         self._modes[mode].trigger()  # mode class to action
