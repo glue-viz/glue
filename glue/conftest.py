@@ -28,6 +28,8 @@ def pytest_runtest_teardown(item, nextitem):
 
 def pytest_configure(config):
 
+    os.environ['GLUE_TESTING'] = 'True'
+
     if config.getoption('no_optional_skip'):
         from glue.tests import helpers
         for attr in helpers.__dict__:
@@ -62,6 +64,8 @@ def pytest_report_header(config):
 
 
 def pytest_unconfigure(config):
+
+    os.environ.pop('GLUE_TESTING')
 
     # Reset configuration directory to original one
     from glue import config

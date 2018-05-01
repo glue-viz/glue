@@ -6,6 +6,21 @@ v0.14.0 (unreleased)
 
 * No changes yet.
 
+v0.13.2 (unreleased)
+--------------------
+
+* Fixed a bug that caused the EditSubsetMode toolbar to not change
+  when EditSubsetMode.mode was changed programatically. [#1684]
+
+* Fixed unintuitive behavior of single-pixel selection tool - now
+  moving the crosshairs requires clicking and dragging. [#1684]
+
+* Fixed bug that caused crosshairs to not be hidden when a layer was
+  set to not be visible [#1684]
+
+* Fixed a bug that caused viewers to be closed without warning when
+  pressing delete. [#1684]
+
 v0.13.1 (2018-04-29)
 --------------------
 

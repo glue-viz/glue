@@ -4,6 +4,7 @@ from glue.config import viewer_tool
 from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
 from glue.core.command import ApplySubsetState
 from glue.core.subset import SliceSubsetState
+from glue.core.edit_subset_mode import ReplaceMode
 
 __all__ = ['PixelSelectionTool']
 
@@ -23,24 +24,30 @@ class PixelSelectionTool(ToolbarModeBase):
     tool_id = 'image:point_selection'
     action_text = 'Pixel'
     tool_tip = 'Select a single pixel based on mouse location'
-    status_tip = ('Mouse over to select a point. Click on the image to enable or disable selection.')
+    status_tip = 'CLICK to select a point, CLICK and DRAG to update the selection in real time'
 
-    _on_move = False
+    _pressed = False
 
     def __init__(self, *args, **kwargs):
         super(PixelSelectionTool, self).__init__(*args, **kwargs)
         self._move_callback = self._select_pixel
         self._press_callback = self._on_press
+        self._release_callback = self._on_release
 
     def _on_press(self, mode):
-        self._on_move = not self._on_move
+        self._pressed = True
+        self.viewer.session.edit_subset_mode.mode = ReplaceMode
+        self._select_pixel(mode)
+
+    def _on_release(self, mode):
+        self._pressed = False
 
     def _select_pixel(self, mode):
         """
         Select a pixel
         """
 
-        if not self._on_move:
+        if not self._pressed:
             return
 
         x, y = self._event_xdata, self._event_ydata

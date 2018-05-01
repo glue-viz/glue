@@ -20,9 +20,19 @@ class EditSubsetMode(object):
     """
 
     def __init__(self):
-        self.mode = ReplaceMode
         self.data_collection = None
+        self._mode = ReplaceMode
         self._edit_subset = []
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value is not self._mode:
+            self._mode = value
+            self._broadcast()
 
     @property
     def edit_subset(self):
@@ -30,12 +40,16 @@ class EditSubsetMode(object):
 
     @edit_subset.setter
     def edit_subset(self, value):
-        if value is None:
+        if value is self._edit_subset:
+            return
+        elif value is None:
             value = []
         self._edit_subset = value
-        # Alert any listeners to the change in the active subset
+        self._broadcast()
+
+    def _broadcast(self):
         if self.data_collection is not None:
-            self.data_collection.hub.broadcast(EditSubsetMessage(self, value))
+            self.data_collection.hub.broadcast(EditSubsetMessage(self, self.edit_subset, self.mode))
 
     def _combine_data(self, new_state, use_current=False):
         """ Dispatches to the combine method of mode attribute.
@@ -52,7 +66,7 @@ class EditSubsetMode(object):
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
-            self._edit_subset = self.data_collection.new_subset_group()
+            self._edit_subset = [self.data_collection.new_subset_group()]
         subs = self._edit_subset
         for s in as_list(subs):
             self.mode(s, new_state)
