@@ -66,7 +66,7 @@ class EditSubsetMode(object):
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
-            self._edit_subset = self.data_collection.new_subset_group()
+            self._edit_subset = [self.data_collection.new_subset_group()]
         subs = self._edit_subset
         for s in as_list(subs):
             self.mode(s, new_state)

@@ -24,9 +24,6 @@ from glue.utils.qt import get_qapp
 from ..application import GlueApplication, GlueLogger
 
 
-os.environ['GLUE_TESTING'] = 'True'
-
-
 def tab_count(app):
     return app.tab_bar.count()
 
