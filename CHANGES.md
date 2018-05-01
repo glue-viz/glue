@@ -12,6 +12,9 @@ v0.13.2 (unreleased)
 * Fixed a bug that caused the EditSubsetMode toolbar to not change
   when EditSubsetMode.mode was changed programatically. [#1684]
 
+* Fixed unintuitive behavior of single-pixel selection tool - now
+  moving the crosshairs requires clicking and dragging. [#1684]
+
 v0.13.1 (2018-04-29)
 --------------------
 
