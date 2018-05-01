@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.13.2 (unreleased)
+v0.13.2 (2018-05-01)
 --------------------
 
 * Fixed a bug that caused the EditSubsetMode toolbar to not change
