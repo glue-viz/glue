@@ -311,8 +311,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
             return
 
         for artist in self.mpl_artists:
+            artist.set_visible(self.state.visible)
             if artist is self.image_artist:
-                artist.set_visible(self.state.visible)
                 artist.set_alpha(self.state.alpha)
             else:
                 artist.set_color(self.state.color)
