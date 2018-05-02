@@ -9,6 +9,9 @@ v0.14.0 (unreleased)
 v0.13.2 (unreleased)
 --------------------
 
+* Fixed a bug related to callback functions when restoring sessions.
+  [#1695]
+
 * Fixed a bug that caused the EditSubsetMode toolbar to not change
   when EditSubsetMode.mode was changed programatically. [#1684]
 
