@@ -536,7 +536,13 @@ class GlueUnSerializer(object):
             except Exception:
                 pass
             else:
-                self._callbacks.remove(callback)
+                # In some cases (unclear how to trigger this) callback is no
+                # longer in the list by the time we try and remove it, hence
+                # why we need this try...except.
+                try:
+                    self._callbacks.remove(callback)
+                except ValueError:
+                    pass
 
 
 saver = GlueSerializer.serializes
