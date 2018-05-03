@@ -22,11 +22,18 @@ rather than using the :ref:`anaconda_gui`, because errors are more visible on
 the command-line if you run into any issues during the installation. Once
 Anaconda (or Miniconda) is installed, open a terminal, and type::
 
-    conda install -c glueviz glueviz
+    conda install -c glueviz glueviz=0.13
 
 This will install the latest version of glue from the ``glueviz`` conda channel.
-If you run into any issues, see the `Troubleshooting`_ section below. To update
-glue in future, use the same command.
+If this command does not work for any reason, you may need to update the version
+of conda you are using -- you can do this with::
+
+    conda update -n root conda
+
+Once you do this, try installing the glueviz package as above. If this still
+doesn't work, see the `Troubleshooting`_ section below.
+
+To update glue in future, use the same install command as above.
 
 .. _anaconda_gui:
 
