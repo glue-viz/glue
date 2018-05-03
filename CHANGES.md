@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.13.3 (unreleased)
+--------------------
+
+* Fixed a bug related to callback functions when restoring sessions.
+  [#1695]
+
 v0.13.2 (2018-05-01)
 --------------------
 
