@@ -92,9 +92,8 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
 
     print("WIDGET", widget)
 
-    for child in widget.findChildren(QtWidgets.QWidget):
-        full_name = child.objectName()
-        print("  - CHILD", child)
+    for full_name in dir(widget):
+        print("  - FULL NAME", full_name)
         # FIXME: this is a temorary workaround to allow multiple widgets to be
         # connected to a state attribute.
         if full_name.endswith('_'):
@@ -109,4 +108,5 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
                 kwargs = {}
             if hasattr(instance, wname):
                 if wtype in HANDLERS:
+                    child = getattr(widget, full_name)
                     HANDLERS[wtype](instance, wname, child, **kwargs)
