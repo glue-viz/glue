@@ -19,11 +19,6 @@ from glue.utils.qt import get_qapp
 # registered Qt viewers.
 
 
-def setup_function(func):
-    import os
-    os.environ['GLUE_TESTING'] = 'True'
-
-
 class BaseTestDataViewer(object):
 
     ndim = 1
