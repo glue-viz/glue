@@ -91,6 +91,8 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
         return
 
     for original_name in dir(widget):
+        if original_name.startswith('_') or '_' not in original_name:
+            continue
         # FIXME: this is a temorary workaround to allow multiple widgets to be
         # connected to a state attribute.
         if original_name.endswith('_'):
