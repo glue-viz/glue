@@ -30,10 +30,6 @@ env:
     - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
     - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
 
-stages:
-    - name: Initial
-    - name: Full
-
 matrix:
 
     # Don't wait for allowed failures
@@ -42,53 +38,6 @@ matrix:
     include:
 
         - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=2.7
-
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=3.6
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=2.7
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=3.6
-
-        # Astropy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               ASTROPY_VERSION=dev
-
-        # Numpy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               NUMPY_VERSION=dev
-
-        # The following configuration tests that glue functions with minimal
-        # dependencies.
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
-               PIP_DEPENDENCIES="pytest-cov coveralls flake8"
-               REMOVE_INSTALL_REQUIRES=1
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               DOC_TRIGGER=1
-               PYTEST_ARGS="--no-optional-skip"
-               NO_CFG_FILES=true
-
-        # Test with older package versions:
-
-        - os: linux
-          stage: Full
           env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=2.0
                PANDAS_VERSION=0.18
@@ -96,44 +45,125 @@ matrix:
                IPYTHON_VERSION=4
                NUMPY_VERSION=1.11
 
-        # Test with PySide2
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-               QT_PKG=pyside2
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
         - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-               QT_PKG=pyside2
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
-        # Test without any Qt installation, which will also cause all qt
-        # sub-directories to be removed, to make sure that no non-Qt code has
-        # any dependence on Qt code.
         - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph flake8"
-               QT_PKG=False
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
-    allow_failures:
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
-      # For now PySide2 can give segfaults when the process terminates - see
-      # https://bugreports.qt.io/browse/PYSIDE-585
-      # We therefore need to mark these as allowed failures for now
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
-      - os: osx
-        env: PYTHON_VERSION=3.6
-             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-             QT_PKG=pyside2
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
-      - os: linux
-        env: PYTHON_VERSION=3.6
-             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-             QT_PKG=pyside2
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
+
+        - os: linux
+          env: PYTHON_VERSION=2.7
+               MATPLOTLIB_VERSION=2.0
+               PANDAS_VERSION=0.18
+               SETUPTOOLS=1.0
+               IPYTHON_VERSION=4
+               NUMPY_VERSION=1.11
 
 before_install:
 
