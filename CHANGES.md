@@ -7,6 +7,9 @@ v0.13.3 (unreleased)
 * Fixed a bug related to callback functions when restoring sessions.
   [#1695]
 
+* Fixed a Qt-related segmentation fault that occurred during the
+  testing process and may also affect users. [#1703]
+
 v0.13.2 (2018-05-01)
 --------------------
 
