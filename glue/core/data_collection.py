@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from contextlib import contextmanager
 
-from glue.core.util import disambiguate
 from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                ComponentsChangedMessage)

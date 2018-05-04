@@ -196,7 +196,6 @@ def common_prefix(strings, exclude_punctuation=True):
     return ''
 
 
-
 class Pointer(object):
 
     def __init__(self, key):
