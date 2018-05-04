@@ -90,8 +90,11 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     if not hasattr(widget, 'children'):
         return
 
+    print("WIDGET", widget)
+
     for child in widget.findChildren(QtWidgets.QWidget):
         full_name = child.objectName()
+        print("  - CHILD", child)
         # FIXME: this is a temorary workaround to allow multiple widgets to be
         # connected to a state attribute.
         if full_name.endswith('_'):
