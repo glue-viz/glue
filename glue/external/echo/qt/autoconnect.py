@@ -90,10 +90,7 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     if not hasattr(widget, 'children'):
         return
 
-    print("WIDGET", widget)
-
     for full_name in dir(widget):
-        print("  - FULL NAME", full_name)
         # FIXME: this is a temorary workaround to allow multiple widgets to be
         # connected to a state attribute.
         if full_name.endswith('_'):
