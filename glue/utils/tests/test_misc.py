@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-from ..misc import as_variable_name, file_format, DeferredMethod, nonpartial, lookup_class, as_list
+from ..misc import (as_variable_name, file_format, DeferredMethod, nonpartial,
+                    lookup_class, as_list, common_prefix)
 
 
 INPUT_EXPECTED = [('x', 'x'),
@@ -96,5 +97,13 @@ def test_as_list():
     as_list(1) == [1]
     as_list([2, 3]) == [2, 3]
 
+
+def test_common_prefix():
+    assert common_prefix(['abc', 'ab', 'abcd']) == 'ab'
+    assert common_prefix(['aaabbc', 'aabc', 'aaba']) == 'aa'
+    assert common_prefix(['aaabbc', 'baabbc', 'caabbc']) == ''
+    assert common_prefix(['abc1', 'abc2', 'abc3']) == 'abc'
+    assert common_prefix(['abc_1', 'abc_2', 'abc_3']) == 'abc'
+    assert common_prefix(['abc_1', 'abc_2', 'abc_3'], exclude_punctuation=False) == 'abc_'
 
 # TODO: add test for PropertySetMixin

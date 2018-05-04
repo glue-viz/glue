@@ -10,7 +10,7 @@ from glue.external.six.moves import reduce
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
            'as_list', 'file_format', 'CallbackMixin', 'PropertySetMixin',
-           'Pointer']
+           'Pointer', 'common_prefix']
 
 
 class DeferredMethod(object):
@@ -178,6 +178,23 @@ class PropertySetMixin(object):
             if k not in value:
                 continue
             setattr(self, k, value[k])
+
+
+def common_prefix(strings, exclude_punctuation=True):
+    """
+    Given a list of strings, find the longest prefix common to all of them
+    """
+    if len(strings) > 0:
+        for i in range(len(strings[0]), 0, -1):
+            if exclude_punctuation and strings[0][i - 1] in string.punctuation:
+                continue
+            for st in strings[1:]:
+                if st[:i] != strings[0][:i]:
+                    break
+            else:
+                return strings[0][:i]
+    return ''
+
 
 
 class Pointer(object):

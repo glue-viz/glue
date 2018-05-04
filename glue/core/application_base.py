@@ -312,10 +312,12 @@ class Application(HubListener):
             if not other or skip_merge:
                 continue
 
+            suggested_label = data_collection.suggest_merge_label(data, *other)
+
             if auto_merge:
-                merges, label = [data] + other, data.label
+                merges, label = [data] + other, suggested_label
             else:
-                merges, label = cls._choose_merge(data, other)
+                merges, label = cls._choose_merge(data, other, suggested_label)
 
             if merges:
                 data_collection.merge(*merges, label=label)
@@ -324,7 +326,7 @@ class Application(HubListener):
             suggested.extend(other)
 
     @staticmethod
-    def _choose_merge(data, other):
+    def _choose_merge(data, other, suggested_label):
         """
         Present an interface to the user for approving or rejecting
         a proposed data merger. Returns a list of datasets from other

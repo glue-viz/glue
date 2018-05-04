@@ -12,7 +12,7 @@ from glue.core.data import Data
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
 from glue.config import settings
-from glue.utils import as_list
+from glue.utils import as_list, common_prefix
 
 
 __all__ = ['DataCollection']
@@ -240,6 +240,31 @@ class DataCollection(HubListener):
         for s in subset_grp.subsets:
             s.delete()
         subset_grp.unregister(self.hub)
+
+    def suggest_merge_label(self, *data):
+        """
+        Determine what merge label to suggest given datasets
+        """
+
+        # Find longest common prefix for data
+        suggestion = common_prefix([d.label for d in data])
+
+        if len(suggestion) < 3:
+            suggestion = 'Merged data'
+
+        # Now check if the suggestion already exists, and if so add a suffix
+        labels = self.labels
+        if suggestion in labels:
+            suffix = 2
+            while "{0} [{1}]".format(suggestion, suffix) in labels:
+                suffix += 1
+            suggestion = "{0} [{1}]".format(suggestion, suffix)
+
+        return suggestion
+
+    @property
+    def labels(self):
+        return [d.label for d in self]
 
     def merge(self, *data, **kwargs):
         """
