@@ -242,7 +242,9 @@ def test_component_id_combo_helper_add():
 
 def test_manual_data_combo_helper():
 
+    callback = MagicMock()
     state = ExampleState()
+    state.add_callback('combo', callback)
 
     dc = DataCollection([])
 
@@ -252,23 +254,30 @@ def test_manual_data_combo_helper():
 
     dc.append(data1)
 
+    assert callback.call_count == 0
+
     assert selection_choices(state, 'combo') == ""
 
     helper.append_data(data1)
+    assert callback.call_count == 1
 
     assert selection_choices(state, 'combo') == "data1"
 
     data1.label = 'mydata1'
     assert selection_choices(state, 'combo') == "mydata1"
+    assert callback.call_count == 2
 
     dc.remove(data1)
 
     assert selection_choices(state, 'combo') == ""
+    assert callback.call_count == 3
 
 
 def test_data_collection_combo_helper():
 
+    callback = MagicMock()
     state = ExampleState()
+    state.add_callback('combo', callback)
 
     dc = DataCollection([])
 
@@ -276,14 +285,22 @@ def test_data_collection_combo_helper():
 
     data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
+    assert callback.call_count == 1
+
     dc.append(data1)
+
+    assert callback.call_count == 2
 
     assert selection_choices(state, 'combo') == "data1"
 
     data1.label = 'mydata1'
     assert selection_choices(state, 'combo') == "mydata1"
 
+    assert callback.call_count == 3
+
     dc.remove(data1)
+
+    assert callback.call_count == 4
 
     assert selection_choices(state, 'combo') == ""
 
