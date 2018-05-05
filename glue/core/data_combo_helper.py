@@ -117,6 +117,7 @@ class ComboHelper(HubListener):
         else:
             prop.force_next_sync(self.state)
 
+
 class ComponentIDComboHelper(ComboHelper):
     """
     The purpose of this class is to set up a combo (represented by a
