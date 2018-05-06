@@ -169,3 +169,11 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].cmap = plt.cm.BuGn
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)
+
+    def test_cmap_mode_change(self, tmpdir):
+        # Regression test for a bug that caused scatter markers to not change
+        # color when going from Linear to Fixed mode
+        self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_mode = 'Fixed'
+        self.assert_same(tmpdir)
