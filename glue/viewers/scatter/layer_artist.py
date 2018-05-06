@@ -346,6 +346,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                     if self.state.cmap_mode == 'Fixed':
                         if force or 'color' in changed or 'cmap_mode' in changed or 'fill' in changed:
+                            self.scatter_artist.set_array(None)
                             if self.state.fill:
                                 self.scatter_artist.set_facecolors(self.state.color)
                                 self.scatter_artist.set_edgecolors('none')
