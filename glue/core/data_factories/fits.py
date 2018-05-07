@@ -80,11 +80,11 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
             label_base = basename(hdulist_name)
 
     # Create a new image Data.
-    def new_data():
-        label = '{0}[{1}]'.format(
-            label_base,
-            hdu_name
-        )
+    def new_data(suffix=True):
+        if suffix:
+            label = '{0}[{1}]'.format(label_base, hdu_name)
+        else:
+            label = label_base
         data = Data(label=label)
         data.coords = coords
 
@@ -115,12 +115,12 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                 shape = hdu.data.shape
                 coords = coordinates_from_header(hdu.header)
                 if not auto_merge or has_wcs(coords):
-                    data = new_data()
+                    data = new_data(suffix=len(hdulist) > 1)
                 else:
                     try:
                         data = groups[extension_by_shape[shape]]
                     except KeyError:
-                        data = new_data()
+                        data = new_data(suffix=len(hdulist) > 1)
                 data.add_component(component=hdu.data,
                                    label=hdu_name)
             elif is_table_hdu(hdu):

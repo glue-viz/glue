@@ -1306,7 +1306,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self.tab_bar.setTabText(index, value)
 
     @staticmethod
-    def _choose_merge(data, others):
+    def _choose_merge(data, others, suggested_label):
 
         w = load_ui('merge.ui', None, directory=os.path.dirname(__file__))
         w.button_yes.clicked.connect(w.accept)
@@ -1328,8 +1328,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                     others[0], others[i] = others[i], others[0]
                     break
 
-        label = others[0].label
-        w.merged_label.setText(label)
+        w.merged_label.setText(suggested_label)
 
         entries = [QtWidgets.QListWidgetItem(other.label) for other in others]
         for e in entries:

@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from contextlib import contextmanager
 
-from glue.core.util import disambiguate
 from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                ComponentsChangedMessage)
@@ -12,7 +11,7 @@ from glue.core.data import Data
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
 from glue.config import settings
-from glue.utils import as_list
+from glue.utils import as_list, common_prefix
 
 
 __all__ = ['DataCollection']
@@ -241,6 +240,31 @@ class DataCollection(HubListener):
             s.delete()
         subset_grp.unregister(self.hub)
 
+    def suggest_merge_label(self, *data):
+        """
+        Determine what merge label to suggest given datasets
+        """
+
+        # Find longest common prefix for data
+        suggestion = common_prefix([d.label for d in data])
+
+        if len(suggestion) < 3:
+            suggestion = 'Merged data'
+
+        # Now check if the suggestion already exists, and if so add a suffix
+        labels = self.labels
+        if suggestion in labels:
+            suffix = 2
+            while "{0} [{1}]".format(suggestion, suffix) in labels:
+                suffix += 1
+            suggestion = "{0} [{1}]".format(suggestion, suffix)
+
+        return suggestion
+
+    @property
+    def labels(self):
+        return [d.label for d in self]
+
     def merge(self, *data, **kwargs):
         """
         Merge two or more datasets into a single dataset.
@@ -275,30 +299,24 @@ class DataCollection(HubListener):
                 master.coords = d.coords
                 break
 
+        # Find ambiguous components (ones which have labels in more than one
+        # dataset
+
+        from collections import Counter
+        clabel_count = Counter([c.label for d in data for c in d.visible_components])
+
         for d in data:
 
-            skip = d.pixel_component_ids + d.world_component_ids
-
             for c in d.components:
-
-                if c in skip:
-                    continue
 
                 if c in master.components:  # already present (via a link)
                     continue
 
-                taken = [_.label for _ in master.components]
                 lbl = c.label
 
-                # Special-case 'PRIMARY', rename to data label
-                if lbl == 'PRIMARY':
-                    lbl = d.label
+                if clabel_count[lbl] > 1:
+                    lbl = lbl + " [{0}]".format(d.label)
 
-                # First-pass disambiguation, try component_data
-                if lbl in taken:
-                    lbl = '%s_%s' % (lbl, d.label)
-
-                lbl = disambiguate(lbl, taken)
                 c._label = lbl
                 c.parent = master
                 master.add_component(d.get_component(c), c)

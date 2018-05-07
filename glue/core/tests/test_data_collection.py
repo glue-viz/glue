@@ -491,3 +491,38 @@ class TestDataCollection(object):
         assert len(messages) == 3
         assert messages[1].data is data1
         assert messages[2].data is data2
+
+    def test_merge_duplicate(self):
+
+        x = Data(x=[1, 2, 3], label='d1')
+        y = Data(x=[2, 3, 4], label='d2')
+        z = Data(y=[2, 3, 4], label='d3')
+        dc = DataCollection([x, y, z])
+
+        dc.merge(x, y, z)
+
+        assert dc[0].main_components[0].label == 'x [d1]'
+        assert dc[0].main_components[1].label == 'x [d2]'
+        assert dc[0].main_components[2].label == 'y'
+
+    def test_suggest_merge_label(self):
+
+        x = Data(x=[1, 2, 3], label='abc_1')
+        y = Data(x=[2, 3, 4], label='abc_2')
+        z = Data(y=[2, 3, 4], label='abc_3')
+        w = Data(y=[2, 3, 4], label='banana')
+        dc = DataCollection([x, y, z])
+
+        assert dc.suggest_merge_label(x, y) == 'abc'
+        assert dc.suggest_merge_label(x, y, z) == 'abc'
+        assert dc.suggest_merge_label(x, y, z, w) == 'Merged data'
+
+        u = Data(y=[2, 3, 4], label='abc')
+        dc.append(u)
+
+        assert dc.suggest_merge_label(x, y) == 'abc [2]'
+
+        v = Data(y=[2, 3, 4], label='Merged data')
+        dc.append(v)
+
+        assert dc.suggest_merge_label(x, w) == 'Merged data [2]'
