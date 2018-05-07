@@ -15,6 +15,8 @@ from ..component_id import ComponentID
 from ..component_link import ComponentLink, CoordinateComponentLink, BinaryComponentLink
 from ..coordinates import Coordinates
 from ..data import Data, pixel_label
+from ..link_helpers import LinkSame
+from ..data_collection import DataCollection
 from ..exceptions import IncompatibleAttribute
 from ..hub import Hub
 from ..registry import Registry
@@ -604,8 +606,6 @@ def test_foreign_pixel_components_not_in_visible():
     """Pixel components from other data should not be visible"""
 
     # currently, this is trivially satisfied since all coordinates are hidden
-    from ..link_helpers import LinkSame
-    from ..data_collection import DataCollection
 
     d1 = Data(x=[1], y=[2])
     d2 = Data(w=[3], v=[4])
@@ -793,11 +793,24 @@ def test_update_coords():
     # Make sure that when overriding coords, the world coordinate components
     # are updated.
 
-    data = Data(x=[1, 2, 3])
+    data1 = Data(x=[1, 2, 3])
 
-    assert len(data.components) == 3
+    assert len(data1.components) == 3
 
-    assert_equal(data[data.world_component_ids[0]], [0, 1, 2])
+    assert_equal(data1[data1.world_component_ids[0]], [0, 1, 2])
+
+    data2 = Data(x=[1, 2, 3])
+
+    assert len(data1.links) == 2
+    assert len(data2.links) == 2
+
+    data_collection = DataCollection([data1, data2])
+
+    assert len(data_collection.links) == 4
+
+    data_collection.add_link(LinkSame(data1.world_component_ids[0], data2.world_component_ids[0]))
+
+    assert len(data_collection.links) == 5
 
     class CustomCoordinates(Coordinates):
 
@@ -810,10 +823,13 @@ def test_update_coords():
         def pixel2world(self, *pixel):
             return tuple([2.5 * p for p in pixel])
 
-    data.coords = CustomCoordinates()
+    data1.coords = CustomCoordinates()
 
-    assert len(data.components) == 3
+    assert len(data1.components) == 3
 
-    assert_equal(data[data.world_component_ids[0]], [0, 2.5, 5])
+    assert_equal(data1[data1.world_component_ids[0]], [0, 2.5, 5])
 
-    assert sorted(cid.label for cid in data.world_component_ids) == ['Custom 0']
+    assert sorted(cid.label for cid in data1.world_component_ids) == ['Custom 0']
+
+    # The link between the two world coordinates should be remove
+    assert len(data_collection.links) == 4
