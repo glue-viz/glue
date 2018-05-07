@@ -240,7 +240,13 @@ def test_component_id_combo_helper_add():
     assert selection_choices(state, 'combo') == "x:y:z"
 
 
-def test_manual_data_combo_helper():
+@pytest.mark.parametrize('initialize_data_collection', [False, True])
+def test_manual_data_combo_helper(initialize_data_collection):
+
+    # The case with initialize_data_collection=False is a regression test for a
+    # bug which meant that when a ManualDataComboHelper was initialized without
+    # a data collection, it did not change when a data object added later has a
+    # label changed.
 
     callback = MagicMock()
     state = ExampleState()
@@ -248,7 +254,10 @@ def test_manual_data_combo_helper():
 
     dc = DataCollection([])
 
-    helper = ManualDataComboHelper(state, 'combo', dc)
+    if initialize_data_collection:
+        helper = ManualDataComboHelper(state, 'combo', dc)
+    else:
+        helper = ManualDataComboHelper(state, 'combo')
 
     data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
@@ -267,10 +276,12 @@ def test_manual_data_combo_helper():
     assert selection_choices(state, 'combo') == "mydata1"
     assert callback.call_count == 2
 
-    dc.remove(data1)
+    if initialize_data_collection:
 
-    assert selection_choices(state, 'combo') == ""
-    assert callback.call_count == 3
+        dc.remove(data1)
+
+        assert selection_choices(state, 'combo') == ""
+        assert callback.call_count == 3
 
 
 def test_data_collection_combo_helper():

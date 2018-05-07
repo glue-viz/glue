@@ -519,14 +519,17 @@ class ManualDataComboHelper(BaseDataComboHelper):
         except AttributeError:  # PY2
             self._datasets[:] = []
         for data in unique_data_iter(datasets):
-            self._datasets.append(data)
+            self.append_data(data, refresh=False)
         self.refresh()
 
-    def append_data(self, data):
+    def append_data(self, data, refresh=True):
         if data in self._datasets:
             return
+        if self.hub is None and data.hub is not None:
+            self.hub = data.hub
         self._datasets.append(data)
-        self.refresh()
+        if refresh:
+            self.refresh()
 
     def remove_data(self, data):
         if data not in self._datasets:
