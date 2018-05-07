@@ -15,6 +15,9 @@ v0.13.3 (unreleased)
 * Fixed a bug related to callback functions when restoring sessions.
   [#1695]
 
+* Fixed a bug that meant that setting Data.coords after adding
+  components didn't work as expected. [#1196]
+
 * Fixed a Qt-related segmentation fault that occurred during the
   testing process and may also affect users. [#1703]
 
