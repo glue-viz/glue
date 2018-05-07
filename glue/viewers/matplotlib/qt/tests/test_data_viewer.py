@@ -533,7 +533,7 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.draw_count == 0
         self.viewer.add_data(self.data)
         assert self.draw_count == 1
-        data = Data()
+        data = Data(label=self.data.label)
         for cid in self.data.visible_components:
             data.add_component(self.data[cid] * 2, cid.label)
         self.data.update_values_from_data(data)

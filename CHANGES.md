@@ -4,6 +4,9 @@ Full changelog
 v0.13.3 (unreleased)
 --------------------
 
+* Fixed a bug that caused combo boxes with Data objects to not update
+  when a data label was changed. [#1704]
+
 * Fixed a bug related to callback functions when restoring sessions.
   [#1695]
 
