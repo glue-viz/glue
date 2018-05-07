@@ -80,6 +80,10 @@ class ImageLayerArtist(BaseImageLayerArtist):
                            shape=self.get_image_shape)
         self.composite_image = self.axes._composite_image
 
+    @property
+    def label(self):
+        return "%s (%s)" % (self.layer.label, self.state.attribute.label)
+
     def get_layer_color(self):
         if self._viewer_state.color_mode == 'One color per layer':
             return self.state.color
