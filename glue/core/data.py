@@ -124,9 +124,10 @@ class Data(object):
 
     @coords.setter
     def coords(self, value):
-        self._coords = value
-        if len(self.components) > 0:
-            self._update_world_components(self.ndim)
+        if (hasattr(self, '_coords') and self._coords != value) or not hasattr(self, '_coords'):
+            self._coords = value
+            if len(self.components) > 0:
+                self._update_world_components(self.ndim)
 
     @property
     def subsets(self):
