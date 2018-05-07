@@ -102,6 +102,21 @@ class ComboHelper(HubListener):
         prop = getattr(type(self.state), self.selection_property)
         return prop.set_display_func(self.state, display)
 
+    def _on_rename(self, msg):
+        # If a component ID is renamed, we don't need to refresh because the
+        # list of actual component IDs is the same as before. However, we do
+        # need to trigger a refresh of any GUI combos that use this, so we
+        # make the property notify a change. However, if we are inside a
+        # delay_callback block, the property will not be enabled, and notify()
+        # won't have any effect, in which case we set the 'force_next_sync'
+        # option which means that when exiting from the delay_callback block,
+        # this property will show up as having changed
+        prop = getattr(type(self.state), self.selection_property)
+        if prop.enabled(self.state):
+            prop.notify(self.state, self.selection, self.selection)
+        else:
+            prop.force_next_sync(self.state)
+
 
 class ComponentIDComboHelper(ComboHelper):
     """
@@ -360,21 +375,6 @@ class ComponentIDComboHelper(ComboHelper):
 
         self.choices = choices
 
-    def _on_rename(self, msg):
-        # If a component ID is renamed, we don't need to refresh because the
-        # list of actual component IDs is the same as before. However, we do
-        # need to trigger a refresh of any GUI combos that use this, so we
-        # make the property notify a change. However, if we are inside a
-        # delay_callback block, the property will not be enabled, and notify()
-        # won't have any effect, in which case we set the 'force_next_sync'
-        # option which means that when exiting from the delay_callback block,
-        # this property will show up as having changed
-        prop = getattr(type(self.state), self.selection_property)
-        if prop.enabled(self.state):
-            prop.notify(self.state, self.selection, self.selection)
-        else:
-            prop.force_next_sync(self.state)
-
     def _filter_msg(self, msg):
         return msg.data in self._data or msg.sender in self._data_collection
 
@@ -469,6 +469,12 @@ class BaseDataComboHelper(ComboHelper):
     def register_to_hub(self, hub):
         pass
 
+    def _on_data_update(self, msg):
+        if msg.attribute == 'label':
+            self._on_rename(msg)
+        else:
+            self.refresh()
+
 
 class ManualDataComboHelper(BaseDataComboHelper):
     """
@@ -513,14 +519,17 @@ class ManualDataComboHelper(BaseDataComboHelper):
         except AttributeError:  # PY2
             self._datasets[:] = []
         for data in unique_data_iter(datasets):
-            self._datasets.append(data)
+            self.append_data(data, refresh=False)
         self.refresh()
 
-    def append_data(self, data):
+    def append_data(self, data, refresh=True):
         if data in self._datasets:
             return
+        if self.hub is None and data.hub is not None:
+            self.hub = data.hub
         self._datasets.append(data)
-        self.refresh()
+        if refresh:
+            self.refresh()
 
     def remove_data(self, data):
         if data not in self._datasets:
@@ -533,7 +542,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
         super(ManualDataComboHelper, self).register_to_hub(hub)
 
         hub.subscribe(self, DataUpdateMessage,
-                      handler=self.refresh,
+                      handler=self._on_data_update,
                       filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=lambda msg: self.remove_data(msg.data),
@@ -567,7 +576,7 @@ class DataCollectionComboHelper(BaseDataComboHelper):
     def register_to_hub(self, hub):
         super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self, DataUpdateMessage,
-                      handler=self.refresh,
+                      handler=self._on_data_update,
                       filter=lambda msg: msg.sender in self._datasets)
         hub.subscribe(self, DataCollectionAddMessage,
                       handler=self.refresh,

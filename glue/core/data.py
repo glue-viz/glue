@@ -143,8 +143,11 @@ class Data(object):
     def label(self, value):
         """ Set the label to value
         """
-        self._label = value
-        self.broadcast(attribute='label')
+        if getattr(self, '_label', None) != value:
+            self._label = value
+            self.broadcast(attribute='label')
+        elif value is None:
+            self._label = value
 
     @property
     def size(self):
