@@ -15,6 +15,8 @@ v0.13.3 (unreleased)
 * Fixed a Qt-related segmentation fault that occurred during the
   testing process and may also affect users. [#1703]
 
+* Show image layer attribute in list of layers. [#1706]
+
 * Fixed a bug that caused scatter plots to not revert to fixed color
   mode after being in linear color mode. [#1705]
 

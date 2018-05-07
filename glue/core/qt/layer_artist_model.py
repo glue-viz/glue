@@ -153,7 +153,10 @@ class LayerArtistModel(PythonListModel):
 
     def row_label(self, row):
         """ The textual label for the row"""
-        layer = self.artists[row].layer
+        artist = self.artists[row]
+        if hasattr(artist, 'label'):
+            return artist.label
+        layer = artist.layer
         if hasattr(layer, 'verbose_label'):
             return layer.verbose_label
         return layer.label
