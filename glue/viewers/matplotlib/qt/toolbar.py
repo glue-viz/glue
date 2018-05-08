@@ -86,7 +86,8 @@ class PanTool(MatplotlibCheckableTool):
         self.viewer._mpl_nav.pan()
 
     def deactivate(self):
-        self.viewer._mpl_nav.pan()
+        if hasattr(self.viewer, '_mpl_nav'):
+            self.viewer._mpl_nav.pan()
 
 
 @viewer_tool
@@ -102,4 +103,5 @@ class ZoomTool(MatplotlibCheckableTool):
         self.viewer._mpl_nav.zoom()
 
     def deactivate(self):
-        self.viewer._mpl_nav.zoom()
+        if hasattr(self.viewer, '_mpl_nav'):
+            self.viewer._mpl_nav.zoom()

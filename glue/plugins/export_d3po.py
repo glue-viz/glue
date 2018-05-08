@@ -67,9 +67,9 @@ def save_scatter(plot, index):
     result = save_plot_base(plot, index)
     result['type'] = 'scatter'
     result['xAxis'] = dict(columnName=plot.state.x_att.label,
-                           range=[plot.state.x_min, plot.state.x_max])
+                           range=[float(plot.state.x_min), float(plot.state.x_max)])
     result['yAxis'] = dict(columnName=plot.state.y_att.label,
-                           range=[plot.state.y_min, plot.state.y_max])
+                           range=[float(plot.state.y_min), float(plot.state.y_max)])
     # XXX log scales
     return result
 
@@ -89,8 +89,8 @@ def save_histogram(plot, index):
     props = plot.properties
     result['type'] = 'histogram'
     result['xAxis'] = dict(columnName=plot.state.x_att.label,
-                           bins=plot.state.hist_n_bin,
-                           range=[plot.state.hist_x_min, plot.state.hist_x_max])
+                           bins=int(plot.state.hist_n_bin),
+                           range=[float(plot.state.hist_x_min), float(plot.state.hist_x_max)])
     # XXX normed, cumultive, log
     return result
 
