@@ -238,6 +238,10 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
         self._state[self.data][derived_cid]['equation'] = equation
         derived_item.setText(0, name)
 
+        # Make sure we update the component list here since the equation may
+        # have changed and we need to update the preview
+        self._update_component_lists()
+
         return True
 
     def accept(self):
