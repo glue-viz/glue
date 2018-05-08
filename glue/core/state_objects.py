@@ -353,32 +353,39 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if data_values.dtype.kind != 'M':
                 data_values = data_values[np.isfinite(data_values)]
 
-            if percentile == 100:
+            if data_values.size > 0:
 
-                if data_values.dtype.kind == 'M':
-                    lower = data_values.min()
-                    upper = data_values.max()
+                if percentile == 100:
+
+                    if data_values.dtype.kind == 'M':
+                        lower = data_values.min()
+                        upper = data_values.max()
+                    else:
+                        lower = np.min(data_values)
+                        upper = np.max(data_values)
+
                 else:
-                    lower = np.min(data_values)
-                    upper = np.max(data_values)
+
+                    lower = np.percentile(data_values, exclude)
+                    upper = np.percentile(data_values, 100 - exclude)
+
+                if self.data_component.categorical:
+                    lower = np.floor(lower - 0.5) + 0.5
+                    upper = np.ceil(upper + 0.5) - 0.5
+
+                if log:
+                    value_range = np.log10(upper / lower)
+                    lower /= 10.**(value_range * self.margin)
+                    upper *= 10.**(value_range * self.margin)
+                else:
+                    value_range = upper - lower
+                    lower -= value_range * self.margin
+                    upper += value_range * self.margin
 
             else:
 
-                lower = np.percentile(data_values, exclude)
-                upper = np.percentile(data_values, 100 - exclude)
-
-            if self.data_component.categorical:
-                lower = np.floor(lower - 0.5) + 0.5
-                upper = np.ceil(upper + 0.5) - 0.5
-
-            if log:
-                value_range = np.log10(upper / lower)
-                lower /= 10.**(value_range * self.margin)
-                upper *= 10.**(value_range * self.margin)
-            else:
-                value_range = upper - lower
-                lower -= value_range * self.margin
-                upper += value_range * self.margin
+                lower = 0.
+                upper = 1.
 
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
@@ -482,12 +489,17 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
 
                 values = self.data_values
 
-                if comp.datetime:
+                # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
+                # they don't exclude inf/-inf
+                if values.dtype.kind != 'M':
+                    values = values[np.isfinite(values)]
+
+                if values.size > 0:
                     lower = values.min()
                     upper = values.max()
                 else:
-                    lower = nanmin(values)
-                    upper = nanmax(values)
+                    lower = 0.
+                    upper = 1.
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)
 
