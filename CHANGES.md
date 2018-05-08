@@ -9,6 +9,9 @@ v0.14.0 (unreleased)
 v0.13.3 (unreleased)
 --------------------
 
+* Fixed a bug that caused the expression for derived attributes to
+  not immediately be updated in the list of derived attributes. [#1708]
+
 * Fixed a bug that caused combo boxes with Data objects to not update
   when a data label was changed. [#1704]
 
