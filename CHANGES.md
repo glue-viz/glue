@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.13.3 (unreleased)
+v0.13.3 (2018-05-08)
 --------------------
 
 * Fixed a bug that caused the expression for derived attributes to

@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 
-__version__ = '0.13.2'
+__version__ = '0.13.3'
 
 try:
     from glue._githash import __githash__, __dev_value__  # noqa
