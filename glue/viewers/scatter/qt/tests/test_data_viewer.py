@@ -234,6 +234,13 @@ class TestScatterViewer(object):
         assert self.viewer.state.x_att is test
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:test:y:z:Coordinate components:Pixel Axis 0 [x]:World 0'
 
+    def test_nan_component(self):
+        # regression test for case when all values are NaN in a component
+        data = core.Data()
+        data.add_component([np.nan, np.nan, np.nan], label='c1')
+        self.data_collection.append(data)
+        self.viewer.add_data(data)
+
     def test_density_map(self):
 
         self.viewer.add_data(self.data)

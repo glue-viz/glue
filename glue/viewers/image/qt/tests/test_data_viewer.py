@@ -665,6 +665,14 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image1)
         assert self.viewer.state.slices == (1, 2, 3, 4)
 
+    def test_close(self):
+
+        # Regression test for a bug that caused an error related to the toolbar
+        # and _mpl_nav not being present when closing the viewer.
+
+        self.viewer.toolbar.active_tool = self.viewer.toolbar.tools['mpl:zoom']
+        self.viewer.close(warn=False)
+
 
 class TestSessions(object):
 

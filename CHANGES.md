@@ -4,7 +4,7 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Improved naming of components when merging datasets. [#1249]
 
 v0.13.3 (unreleased)
 --------------------
@@ -21,6 +21,12 @@ v0.13.3 (unreleased)
 * Fixed a bug that meant that setting Data.coords after adding
   components didn't work as expected. [#1196]
 
+* Fixed bugs related to components with only NaN or Inf values.
+  [#1712]
+
+* Fixed a bug that caused an error when the zoom or pan tools were
+  active and the viewer was closed. [#1712]
+
 * Fixed a Qt-related segmentation fault that occurred during the
   testing process and may also affect users. [#1703]
 
@@ -28,8 +34,6 @@ v0.13.3 (unreleased)
 
 * Fixed a bug that caused scatter plots to not revert to fixed color
   mode after being in linear color mode. [#1705]
-
-* Improved naming of components when merging datasets. [#1249]
 
 v0.13.2 (2018-05-01)
 --------------------

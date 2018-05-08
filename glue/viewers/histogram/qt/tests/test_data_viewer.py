@@ -168,6 +168,13 @@ class TestHistogramViewer(object):
         self.data_collection.append(data)
         self.viewer.add_data(data)
 
+    def test_nan_component(self):
+        # regression test for case when all values are NaN in a component
+        data = core.Data()
+        data.add_component([np.nan, np.nan, np.nan], label='c1')
+        self.data_collection.append(data)
+        self.viewer.add_data(data)
+
     def test_histogram_values(self):
 
         # Check the actual values of the histograms
