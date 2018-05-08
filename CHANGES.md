@@ -4,7 +4,7 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Improved naming of components when merging datasets. [#1249]
 
 v0.13.3 (unreleased)
 --------------------
@@ -31,8 +31,6 @@ v0.13.3 (unreleased)
 
 * Fixed a bug that caused scatter plots to not revert to fixed color
   mode after being in linear color mode. [#1705]
-
-* Improved naming of components when merging datasets. [#1249]
 
 v0.13.2 (2018-05-01)
 --------------------
