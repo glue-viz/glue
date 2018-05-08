@@ -5,7 +5,6 @@ from collections import defaultdict
 import numpy as np
 
 from glue.core import Subset
-from glue.utils import nanmin, nanmax
 from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
