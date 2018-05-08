@@ -18,6 +18,12 @@ v0.13.3 (unreleased)
 * Fixed a bug that meant that setting Data.coords after adding
   components didn't work as expected. [#1196]
 
+* Fixed bugs related to components with only NaN or Inf values.
+  [#1712]
+
+* Fixed a bug that caused an error when the zoom or pan tools were
+  active and the viewer was closed. [#1712]
+
 * Fixed a Qt-related segmentation fault that occurred during the
   testing process and may also affect users. [#1703]
 
