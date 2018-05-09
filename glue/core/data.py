@@ -16,7 +16,7 @@ from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
-from glue.core.subset import Subset, SubsetState
+from glue.core.subset import Subset, SubsetState, SliceSubsetState
 from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
@@ -24,6 +24,7 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
+from glue.utils import compute_statistic, unbroadcast
 
 
 # Note: leave all the following imports for component and component_id since
@@ -33,6 +34,8 @@ from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 __all__ = ['Data']
+
+N_CHUNK_MAX = 40000000
 
 
 class Data(object):
@@ -1152,6 +1155,90 @@ class Data(object):
 
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
+
+    # The following are methods for accessing the data in various ways that
+    # can be overriden by subclasses that want to improve performance.
+
+    def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
+                          finite=True, positive=False, percentile=None, view=None):
+        """
+        Compute a statistic for the data.
+
+        Parameters
+        ----------
+        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+            The statistic to compute
+        cid : `ComponentID` or str
+            The component ID to compute the statistic on - if given as a string
+            this will be assumed to be for the component belonging to the dataset
+            (not external links).
+        subset_state : `SubsetState`
+            If specified, the statistic will only include the values that are in
+            the subset specified by this subset state.
+        axis : None or int or tuple of int
+            If specified, the axis/axes to compute the statistic over.
+        finite : bool, optional
+            Whether to include only finite values in the statistic. This should
+            be `True` to ignore NaN/Inf values
+        positive : bool, optional
+            Whether to include only (strictly) positive values in the statistic.
+            This is used for example when computing statistics of data shown in
+            log space.
+        percentile : float, optional
+            If ``statistic`` is ``'percentile'``, the ``percentile`` argument
+            should be given and specify the percentile to calculate in the
+            range [0:100]
+        """
+
+        # TODO: generalize chunking to tuple axis (not just int)
+
+        if (view is None and isinstance(axis, int) and self.size > N_CHUNK_MAX and
+                not isinstance(subset_state, SliceSubsetState)):
+
+            # We operate in chunks here to avoid memory issues.
+
+            # TODO: there are cases where the code below is not optimized
+            # because the mask may be computable for a single slice and
+            # broadcastable to all slices - normally ROISubsetState takes care
+            # of that but if we call it once per view it won't. In the future we
+            # could ask a SubsetState whether it is broadcasted along
+            # axis_index.
+
+            result = np.zeros(self.shape[axis])
+
+            chunk_shape = list(self.shape)
+
+            # Deliberately leave n_chunks as float to not round twice
+            n_chunks = self.layer.size / N_CHUNK_MAX
+
+            chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
+
+            for view in iterate_chunks(self.layer.shape, chunk_shape=chunk_shape):
+                result[view[axis]] = self.compute_statistic(statistic, cid, subset_state=subset_state,
+                                                            axis=axis, finite=finite, positive=positive,
+                                                            percentile=percentile, view=view)
+
+            return result
+
+        if subset_state:
+            if isinstance(subset_state, SliceSubsetState):
+                data = subset_state.to_array(self, cid, view)
+                mask = None
+            else:
+                data = self[cid]
+                mask = subset_state.to_mask(self, view)
+        else:
+            data = self[cid, view]
+            mask = None
+
+        if axis is None and mask is None:
+            # Since we are just finding overall statistics, not along axes, we
+            # can remove any broadcasted dimension since these should not affect
+            # the statistics.
+            data = unbroadcast(data)
+
+        return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
+                                 positive=positive, percentile=percentile)
 
 
 @contract(i=int, ndim=int)

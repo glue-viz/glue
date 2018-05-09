@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from glue.core import Data, Subset, Coordinates
+from glue.core import Data, Coordinates
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -13,23 +13,19 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax, iterate_chunks
+from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.subset import SliceSubsetState
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(nanmax, 'Maximum'),
-                         (nanmin, 'Minimum'),
-                         (nanmean, 'Mean'),
-                         (nanmedian, 'Median'),
-                         (nansum, 'Sum')])
-
-# Maximum number of elements in a chunk size used to compute the profile - this
-# prevents the profile calculation from using up too much memory at a time.
-N_CHUNK_MAX = 50000000
+FUNCTIONS = OrderedDict([('maximum', 'Maximum'),
+                         ('minimum', 'Minimum'),
+                         ('mean', 'Mean'),
+                         ('median', 'Median'),
+                         ('sum', 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -216,51 +212,15 @@ class ProfileLayerState(MatplotlibLayerState):
         # smaller than the data to just average the relevant 'spaxels' in the
         # data rather than collapsing the whole cube.
 
-        # We operate in chunks here to avoid memory issues
-
-        axis_index = pix_cid.axis
-
-        profile_values = np.zeros(self.layer.shape[axis_index])
-
-        if isinstance(self.layer, Subset) and isinstance(self.layer.subset_state, SliceSubsetState):
-            chunk_shape = self.layer.shape
+        if isinstance(self.layer, Data):
+            data = self.layer
+            subset_state = None
         else:
-            chunk_shape = list(self.layer.shape)
-            if self.layer.size > N_CHUNK_MAX:
-                # Deliberately leave n_chunks as float to not round twice
-                n_chunks = self.layer.size / N_CHUNK_MAX
-                chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
+            data = self.layer.data
+            subset_state = self.layer.subset_state
 
-        # TODO: there are cases where the code below is not optimized because
-        # the mask may be computable for a single slice and broadcastable to all
-        # slices - normally ROISubsetState takes care of that but if we call it
-        # once per view it won't. In the future we could ask a SubsetState
-        # whether it is broadcasted along axis_index.
+        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
 
-        for view in iterate_chunks(self.layer.shape, chunk_shape=chunk_shape):
-
-            if isinstance(self.layer, Data):
-                data = self.layer
-                data_values = data[self.attribute, view]
-            else:
-                data = self.layer.data
-                if isinstance(self.layer.subset_state, SliceSubsetState):
-                    data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
-                else:
-                    # We need to force a copy *and* convert to float just in case
-                    data_values = np.array(data[self.attribute, view], dtype=float)
-                    mask = self.layer.to_mask(view=view)
-                    data_values[~mask] = np.nan
-
-            # Collapse along all dimensions except x_att
-            if self.layer.ndim > 1:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", category=RuntimeWarning)
-                    profile_values[view[axis_index]] = self.viewer_state.function(data_values, axis=axes)
-            else:
-                profile_values[view[axis_index]] = data_values
-
-        # Finally, we get the coordinate values for the requested axis
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
         else:

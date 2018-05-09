@@ -9,7 +9,6 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
-from glue.utils import unbroadcast
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
@@ -141,21 +140,11 @@ class StateAttributeCacheHelper(object):
 
     @property
     def data_values(self):
-        # For subsets in 'data' mode, we want to compute the limits based on
-        # the full dataset, not just the subset.
-        if isinstance(self.data, Subset):
-            return self.data.data[self.component_id]
-        else:
-            return self.data[self.component_id]
+        return self.data[self.component_id]
 
     @property
     def data_component(self):
-        # For subsets in 'data' mode, we want to compute the limits based on
-        # the full dataset, not just the subset.
-        if isinstance(self.data, Subset):
-            return self.data.data.get_component(self.component_id)
-        else:
-            return self.data.get_component(self.component_id)
+        return self.data.get_component(self.component_id)
 
     def invalidate_cache(self):
         self._cache.clear()
@@ -165,7 +154,12 @@ class StateAttributeCacheHelper(object):
         if self.attribute is None:
             return None
         else:
-            return self.attribute.parent
+            # For subsets in 'data' mode, we want to compute the limits based on
+            # the full dataset, not just the subset.
+            if isinstance(self.attribute.parent, Subset):
+                return self.attribute.parent.data
+            else:
+                return self.attribute.parent
 
     @property
     def component_id(self):
@@ -333,48 +327,48 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             exclude = (100 - percentile) / 2.
 
-            data_values = self.data_values
+            # data_values = self.data_values
+            data_component = self.data_component
 
-            # Since we are just finding overall statistics, not along axes, we
-            # can remove any broadcasted dimension since these should not affect
-            # the statistics.
-            data_values = unbroadcast(data_values)
+            # NOTE: specific to issues with local data
+            # if data_component.size > self.percentile_subset:
+            #     if self.subset_indices is None or self.subset_indices[0] != data_component.size:
+            #         self.subset_indices = (data_component.size,
+            #                                np.random.randint(0, data_component.size,
+            #                                                  self.percentile_subset))
+            #     data_values = data_values.ravel()[self.subset_indices[1]]
 
-            if data_values.size > self.percentile_subset:
-                if self.subset_indices is None or self.subset_indices[0] != data_values.size:
-                    self.subset_indices = (data_values.size,
-                                           np.random.randint(0, data_values.size,
-                                                             self.percentile_subset))
-                data_values = data_values.ravel()[self.subset_indices[1]]
-
-            if log:
-                data_values = data_values[data_values > 0]
-                if len(data_values) == 0:
-                    self.set(lower=0.1, upper=1, percentile=percentile, log=log)
-                    return
+            if log and not data_component.any_positive:
+                self.set(lower=0.1, upper=1, percentile=percentile, log=log)
+                return
 
             # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
             # they don't exclude inf/-inf
-            if data_values.dtype.kind != 'M':
-                data_values = data_values[np.isfinite(data_values)]
+            # if data_values.dtype.kind != 'M':
+            #     data_values = data_values[np.isfinite(data_values)]
 
-            if data_values.size > 0:
+            if percentile == 100:
 
-                if percentile == 100:
+                # if data_values.dtype.kind == 'M':
+                #     lower = data_values.min()
+                #     upper = data_values.max()
+                # else:
+                # TODO: have a way to ask for the min/max of positive values
+                lower = self.data.compute_statistic('min', cid=self.component_id, finite=True, positive=log)
+                upper = self.data.compute_statistic('max', cid=self.component_id, finite=True, positive=log)
 
-                    if data_values.dtype.kind == 'M':
-                        lower = data_values.min()
-                        upper = data_values.max()
-                    else:
-                        lower = np.min(data_values)
-                        upper = np.max(data_values)
+            else:
 
-                else:
+                lower = self.data.compute_statistic('percentile', cid=self.component_id, percentile=exclude, positive=log)
+                upper = self.data.compute_statistic('percentile', cid=self.component_id, percentile=100 - exclude, positive=log)
 
-                    lower = np.percentile(data_values, exclude)
-                    upper = np.percentile(data_values, 100 - exclude)
+            if np.isnan(lower) or np.isnan(upper):
 
-                if self.data_component.categorical:
+                lower, upper = 0, 1
+
+            else:
+
+                if data_component.categorical:
                     lower = np.floor(lower - 0.5) + 0.5
                     upper = np.ceil(upper + 0.5) - 0.5
 
@@ -386,11 +380,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     value_range = upper - lower
                     lower -= value_range * self.margin
                     upper += value_range * self.margin
-
-            else:
-
-                lower = 0.
-                upper = 1.
 
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
@@ -492,24 +481,18 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 else:
                     n_bin = self._common_n_bin
 
-                data_values = self.data_values
-
-                # Since we are just finding overall statistics, not along axes, we
-                # can remove any broadcasted dimension since these should not affect
-                # the statistics.
-                data_values = unbroadcast(data_values)
+                data_component = self.data_component
 
                 # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
                 # they don't exclude inf/-inf
-                if data_values.dtype.kind != 'M':
-                    data_values = data_values[np.isfinite(data_values)]
+                # if values.dtype.kind != 'M':
+                #     values = values[np.isfinite(values)]
 
-                if data_values.size > 0:
-                    lower = data_values.min()
-                    upper = data_values.max()
-                else:
-                    lower = 0.
-                    upper = 1.
+                lower = self.data.compute_statistic('min', cid=self.component_id, finite=True)
+                upper = self.data.compute_statistic('max', cid=self.component_id, finite=True)
+
+                if np.isnan(lower) or np.isnan(upper):
+                    lower, upper = 0, 1
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)
 
