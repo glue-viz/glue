@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
 
 import uuid
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -29,7 +31,7 @@ from glue.config import settings
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this
 # file)
-from glue.core.component import Component, CoordinateComponent, DerivedComponent
+from glue.core.component import BaseComponent, Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 __all__ = ['Data']
@@ -424,7 +426,7 @@ class Data(object):
         if isinstance(component, ComponentLink):
             return self.add_component_link(component, label=label)
 
-        if not isinstance(component, Component):
+        if not isinstance(component, BaseComponent):
             component = Component.autotyped(component)
 
         if isinstance(component, DerivedComponent):
@@ -959,7 +961,7 @@ class Data(object):
             if comp.categorical:
                 result = comp.codes
             else:
-                result = comp.data
+                result = comp[...]
 
         return result
 
@@ -1137,6 +1139,147 @@ class Data(object):
 
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
+
+    # The following are methods for accessing the data in various ways that
+    # can be overriden by subclasses that want to improve performance.
+
+    def compute_statistic(self, statistic, cid, axis=None, finite=True,
+                          positive=False, percentile=None, subset_state=None):
+        """
+        Compute a statistic for the dataself.
+
+        Parameters
+        ----------
+        statistic : {'min', 'max', 'mean', 'median', 'sum', 'percentile'}
+            The statistic to compute
+        cid : `ComponentID`
+            The component ID to compute the statistic on
+        axis : None or int or tuple, optional
+            The axis or axes to compute the statistic over. By default the
+            statistics are computed over the whole data.
+        finite : bool, optional
+            Whether to include only finite values in the statistic. This should
+            be `True` to ignore NaN/Inf values
+        positive : bool, optional
+            Whether to include only (strictly) positive values in the statistic.
+            This is used for example when computing statistics of data shown in
+            log space.
+        percentile : float, optional
+            If ``statistic`` is ``'percentile'``, the ``percentile`` argument
+            should be given and specify the percentile to calculate in the
+            range [0:100]
+        subset_state : `SubsetState`
+            If specified, the statistic will only include the values that are in
+            the subset specified by this subset state.
+        """
+
+        # TODO: move this outside the method
+
+        # TODO: ptimize case where axis is empty tuple => return array as-is
+
+        # TODO: optimize case where subset state is slicesubsetstate
+        # if isinstance(self.layer.subset_state, SliceSubsetState):
+        #     profile_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
+
+        from glue.utils.array import nanmin, nanmax, nanmean, nanmedian, nansum
+
+        PLAIN_FUNCTIONS = {'min': np.min, 'max': np.max, 'mean': np.mean,
+                           'median': np.median, 'sum': np.sum,
+                           'percentile': np.percentile}
+
+        NAN_FUNCTIONS = {'min': nanmin, 'max': nanmax, 'mean': nanmean,
+                         'median': nanmedian, 'sum': nansum,
+                         'percentile': np.nanpercentile}
+
+        if statistic not in PLAIN_FUNCTIONS:
+            raise ValueError("Unrecognized statistic: {0}".format(statistic))
+
+        data = self[cid]
+
+        if finite or positive or subset_state:
+
+            keep = np.ones(data.shape, dtype=bool)
+
+            if finite:
+                keep[~np.isfinite(data)] = False
+
+            if positive:
+                keep[data <= 0] = False
+
+            if subset_state:
+                keep[~subset_state.to_mask(self)] = False
+
+            if axis is None:
+                data = data[keep]
+            else:
+                data[keep] = np.nan
+
+            function = NAN_FUNCTIONS[statistic]
+
+        else:
+
+            function = PLAIN_FUNCTIONS[statistic]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            if statistic == 'percentile':
+                return function(data, percentile, axis=axis)
+            else:
+                return function(data, axis=axis)
+
+    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+        """
+        Compute an n-dimensional histogram with regularly spaced bins.
+
+        Parameters
+        ----------
+        cids : list of `ComponentID`
+            Component IDs to compute the histogram over
+        range : list of tuple
+            The ``(min, max)`` of the histogram range
+        bins : list of int
+            The number of bins
+        log : bool
+            Whether to compute the histogram in log space
+        subset_state : `SubsetState`, optional
+            If specified, the histogram will only take into account values in
+            the subset state.
+        """
+
+        if len(cids) > 1:
+            raise NotImplementedError()
+        else:
+            cid = cids[0]
+            range = range[0]
+            bins = bins[0]
+            log = log[0]
+
+        x = self[cid]
+
+        if subset_state is not None:
+            mask = subset_state.to_mask(self)
+            x = x[mask]
+
+        xmin, xmax = sorted(range)
+
+        keep = (x >= xmin) & (x <= xmax)
+
+        if x.dtype.kind != 'M':
+            keep &= ~np.isnan(x)
+
+        x = x[keep]
+
+        if len(x) == 0:
+            return np.zeros(bins)
+
+        if log:
+            range = None
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
+        else:
+            range = [xmin, xmax]
+            bins = self._viewer_state.hist_n_bin
+
+        return np.histogram(x, range=range, bins=bins)
 
 
 @contract(i=int, ndim=int)

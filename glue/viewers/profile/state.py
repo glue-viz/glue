@@ -21,11 +21,11 @@ from glue.core.subset import SliceSubsetState
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
 
-FUNCTIONS = OrderedDict([(nanmax, 'Maximum'),
-                         (nanmin, 'Minimum'),
-                         (nanmean, 'Mean'),
-                         (nanmedian, 'Median'),
-                         (nansum, 'Sum')])
+FUNCTIONS = OrderedDict([('max', 'Maximum'),
+                         ('min', 'Minimum'),
+                         ('mean', 'Mean'),
+                         ('median', 'Median'),
+                         ('sum', 'Sum')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -203,33 +203,18 @@ class ProfileLayerState(MatplotlibLayerState):
         # smaller than the data to just average the relevant 'spaxels' in the
         # data rather than collapsing the whole cube.
 
+        if isinstance(self.layer, Data):
+            data = self.layer
+            subset_state = None
+        else:
+            data = self.layer.data
+            subset_state = self.layer.subset_state
+
         try:
-            if isinstance(self.layer, Data):
-                data = self.layer
-                data_values = data[self.attribute]
-            else:
-                data = self.layer.data
-                if isinstance(self.layer.subset_state, SliceSubsetState):
-                    data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
-                else:
-                    # We need to force a copy *and* convert to float just in case
-                    data_values = np.array(data[self.attribute], dtype=float)
-                    mask = self.layer.to_mask()
-                    if np.sum(mask) == 0:
-                        self._profile = [], []
-                        return
-                    data_values[~mask] = np.nan
+            profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
         except IncompatibleAttribute:
             self._profile = None, None
             return
-
-        # Collapse along all dimensions except x_att
-        if self.layer.ndim > 1:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                profile_values = self.viewer_state.function(data_values, axis=axes)
-        else:
-            profile_values = data_values
 
         # Finally, we get the coordinate values for the requested axis
         axis_view = [0] * data.ndim

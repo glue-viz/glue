@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import abc
 import logging
 import warnings
 
@@ -15,13 +16,94 @@ from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
                         polygon_line_intersections, broadcast_to)
+from glue.external import six
 
-
-__all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
+__all__ = ['BaseComponent', 'Component', 'DerivedComponent', 'CategoricalComponent',
            'CoordinateComponent']
 
 
-class Component(object):
+@six.add_metaclass(abc.ABCMeta)
+class BaseComponent(object):
+    """
+    Base class for any glue data component which indicates which methods should
+    be provided at a minimum for any component.
+
+    For now, all components need to expose an interface that looks like a
+    regular n-dimensional dataset, although this doens't have to be the case for
+    the underlying data. This means exposing e.g. ``shape``, ``ndim`` as well as
+    __getitem__. Non- regular datasets should therefore have the concept of
+    'virtual' pixel coordinates and shouldn typically match the highest
+    resolution a user might want to access the data at in raster viewers.
+    """
+
+    @property
+    def units(self):
+        """
+        The units of the values in the component, as a string
+        """
+        return ''
+
+    @abc.abstractproperty
+    def shape(self):
+        """
+        The n-dimensional shape of the dataset, as a tuple.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def ndim(self):
+        """
+        The number of dimensions of the data, as an integer.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def size(self):
+        """
+        The size of the data, as an integer.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def __getitem__(self, view):
+        """
+        An slicing/indexing interface to the data that should support the same
+        inputs as Numpy's ndarray class.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def numeric(self):
+        """
+        Whether the component is numerical.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def categorical(self):
+        """
+        Whether the component is categorical.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def datetime(self):
+        """
+        Whether the component returns `~numpy.datetime64` values.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def ravel(self):
+        """
+        Return a 1D array of the data. The size of this doesn't have to match
+        Component.size, as this can return the underlying data when this isn't
+        actually defined on a grid.
+        """
+        raise NotImplementedError()
+
+
+class Component(BaseComponent):
 
     """ Stores the actual, numerical information for a particular quantity
 
@@ -74,13 +156,18 @@ class Component(object):
 
     @property
     def shape(self):
-        """ Tuple of array dimensions """
         return self._data.shape
+
+    def ravel(self):
+        return self.data.ravel()
 
     @property
     def ndim(self):
-        """ The number of dimensions """
         return len(self._data.shape)
+
+    @property
+    def size(self):
+        return self._data.size
 
     def __getitem__(self, key):
         logging.debug("Using %s to index data of shape %s", key, self.shape)
