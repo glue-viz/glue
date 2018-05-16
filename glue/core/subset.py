@@ -364,10 +364,10 @@ class Subset(object):
             pass
 
     def __setattr__(self, attribute, value):
-        if hasattr(self, attribute) and getattr(self, attribute) == value:
-            return
+        had_attribute = hasattr(self, attribute)
+        before = getattr(self, attribute, None)
         object.__setattr__(self, attribute, value)
-        if not attribute.startswith('_'):
+        if not attribute.startswith('_') and (not had_attribute or before != value):
             self.broadcast(attribute)
 
     def __getitem__(self, view):
