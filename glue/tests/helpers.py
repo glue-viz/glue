@@ -42,6 +42,8 @@ SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage',
 
 XLRD_INSTALLED, requires_xlrd = make_skipper('xlrd')
 
+PYAVM_INSTALLED, requires_pyavm = make_skipper('pyavm')
+
 PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
 
 IPYTHON_INSTALLED, requires_ipython = make_skipper('IPython')
