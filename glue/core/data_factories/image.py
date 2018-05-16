@@ -60,7 +60,7 @@ def img_data(file_name):
     # look for AVM coordinate metadata
     try:
         from pyavm import AVM
-        avm = AVM(str(file_name))  # avoid unicode
+        avm = AVM.from_image(str(file_name))  # avoid unicode
         wcs = avm.to_wcs()
     except Exception:
         pass
