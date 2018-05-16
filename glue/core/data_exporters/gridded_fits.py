@@ -9,9 +9,19 @@ from glue.config import data_exporter
 __all__ = []
 
 
-def make_component_header(component, data_header):
-    header = data_header
+def make_component_header(component, header):
+    """
+    Function that extracts information from components
+    and adds it to the data header. The input header is
+    expected to come from Data.coords.header by default.
+    :param component: glue Component
+    :param header: astropy.io.fits.header.Header
+    :return:
+    """
+
+    # Add units information
     header["BUNIT"] = component.units
+
     return header
 
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
