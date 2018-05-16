@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.13.4 (unreleased)
+--------------------
+
+* Improve performance when updating links and changing attributes
+  on subsets. [#1716]
+
 v0.13.3 (2018-05-08)
 --------------------
 
