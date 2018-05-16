@@ -364,6 +364,8 @@ class Subset(object):
             pass
 
     def __setattr__(self, attribute, value):
+        if hasattr(self, attribute) and getattr(self, attribute) == value:
+            return
         object.__setattr__(self, attribute, value)
         if not attribute.startswith('_'):
             self.broadcast(attribute)
