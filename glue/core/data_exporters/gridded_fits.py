@@ -24,6 +24,7 @@ def make_component_header(component, header):
 
     return header
 
+
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
 def fits_writer(filename, data, components=None):
     """
