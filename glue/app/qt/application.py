@@ -133,9 +133,13 @@ class GlueLogger(QtWidgets.QWidget):
 
     def _set_console_button(self, attention):
         if attention:
-            self.button_console.setStyleSheet('color: red; text-decoration: underline;')
+            style = 'color: red; text-decoration: underline;'
         else:
-            self.button_console.setStyleSheet(self.button_stylesheet)
+            style = self.button_stylesheet
+        try:
+            self.button_console.setStyleSheet(style)
+        except RuntimeError:  # Prevent RuntimeError: wrapped C/C++ object of type QToolButton has been deleted
+            pass
 
     def write(self, message):
         """
