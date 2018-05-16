@@ -478,9 +478,24 @@ class Data(object):
         values are DerivedComponent instances which can be used to get the
         data.
         """
+
         if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
+
             return
+
+        elif len(self._externally_derivable_components) == len(derivable_components):
+
+            for key in derivable_components:
+                if key in self._externally_derivable_components:
+                    if self._externally_derivable_components[key].link is not derivable_components[key].link:
+                        break
+                else:
+                    break
+            else:
+                return  # Unchanged!
+
         self._externally_derivable_components = derivable_components
+
         if self.hub:
             msg = ExternallyDerivableComponentsChangedMessage(self)
             self.hub.broadcast(msg)
