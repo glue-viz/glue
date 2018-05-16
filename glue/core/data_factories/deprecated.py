@@ -134,14 +134,16 @@ def gridded_data(filename, format='auto', **kwargs):
         from astropy.io import fits
         arrays = extract_data_fits(filename, **kwargs)
         header = fits.getheader(filename)
+        u = header["BUNIT"] if "BUNIT" in header else None
         result.coords = coordinates_from_header(header)
     elif is_hdf5(filename):
+        u = None
         arrays = extract_data_hdf5(filename, **kwargs)
     else:
         raise Exception("Unkonwn format: %s" % format)
 
     for component_name in arrays:
-        comp = Component.autotyped(arrays[component_name])
+        comp = Component.autotyped(arrays[component_name], units=u)
         result.add_component(comp, component_name)
 
     return result
