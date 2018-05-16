@@ -9,6 +9,11 @@ from glue.config import data_exporter
 __all__ = []
 
 
+def make_component_header(component, data_header):
+    header = data_header
+    header["BUNIT"] = component.units
+    return header
+
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
 def fits_writer(filename, data, components=None):
     """
@@ -27,6 +32,8 @@ def fits_writer(filename, data, components=None):
         data = data.data
     else:
         mask = None
+
+    data_header = data.coords.header if hasattr(data.coords, "header") else None
 
     from astropy.io import fits
 
@@ -50,7 +57,8 @@ def fits_writer(filename, data, components=None):
             values[~mask] = np.nan
 
         # TODO: special behavior for PRIMARY?
-        hdu = fits.ImageHDU(values, name=cid.label)
+        header = make_component_header(comp, data_header) if data_header else None
+        hdu = fits.ImageHDU(values, name=cid.label, header=header)
         hdus.append(hdu)
 
     try:
