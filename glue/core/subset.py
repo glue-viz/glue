@@ -367,7 +367,7 @@ class Subset(object):
         had_attribute = hasattr(self, attribute)
         before = getattr(self, attribute, None)
         object.__setattr__(self, attribute, value)
-        if not attribute.startswith('_') and (not had_attribute or before != value):
+        if not attribute.startswith('_') and (not had_attribute or np.any(before != value)):
             self.broadcast(attribute)
 
     def __getitem__(self, view):
