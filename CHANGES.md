@@ -6,6 +6,12 @@ v0.14.0 (unreleased)
 
 * Improved naming of components when merging datasets. [#1249]
 
+v0.13.4 (unreleased)
+--------------------
+
+* Improve performance when updating links and changing attributes
+  on subsets. [#1716]
+
 v0.13.3 (unreleased)
 --------------------
 
