@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core import Subset
 from glue.config import data_exporter
-
+from glue.core.coordinates import WCSCoordinates
 
 __all__ = []
 
@@ -14,9 +14,13 @@ def make_component_header(component, header):
     Function that extracts information from components
     and adds it to the data header. The input header is
     expected to come from Data.coords.header by default.
-    :param component: glue Component
-    :param header: astropy.io.fits.header.Header
-    :return:
+    Parameters
+    ----------
+    component: glue Component
+        Glue component to extract info from
+    header: astropy.io.fits.header.Header
+        Input header to be modified according to
+        the input component
     """
 
     # Add units information
@@ -44,7 +48,7 @@ def fits_writer(filename, data, components=None):
     else:
         mask = None
 
-    data_header = data.coords.header if hasattr(data.coords, "header") else None
+    data_header = data.coords.header if isinstance(data.coords, WCSCoordinates) else None
 
     from astropy.io import fits
 
