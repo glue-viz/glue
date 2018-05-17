@@ -207,7 +207,7 @@ def casalike_cube(filename, **kwargs):
         header = hdulist[0].header
     result.coords = coordinates_from_header(header)
     for i in range(array.shape[0]):
-        units = hdu.header.get('BUNIT') if "BUNIT" in header else None
+        units = header.get('BUNIT') if "BUNIT" in header else None
         component = Component.autotyped(array[[i]], units=units)
         result.add_component(component, label='STOKES %i' % i)
     return result
