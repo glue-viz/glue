@@ -114,7 +114,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
                 coords = coordinates_from_header(hdu.header)
-                units = hdu.header.get('BUNIT')if "BUNIT" in hdu.header else None
+                units = hdu.header.get('BUNIT')
                 if not auto_merge or has_wcs(coords):
                     data = new_data(suffix=len(hdulist) > 1)
                 else:
@@ -207,7 +207,7 @@ def casalike_cube(filename, **kwargs):
         header = hdulist[0].header
     result.coords = coordinates_from_header(header)
     for i in range(array.shape[0]):
-        units = header.get('BUNIT') if "BUNIT" in header else None
+        units = header.get('BUNIT')
         component = Component.autotyped(array[[i]], units=units)
         result.add_component(component, label='STOKES %i' % i)
     return result
