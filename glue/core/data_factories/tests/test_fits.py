@@ -27,6 +27,7 @@ def _assert_equal_expected(actual, expected):
         assert e.shape == d.shape
         assert e.ndim == d.ndim
 
+
 @requires_astropy
 def test_component_unit():
     from astropy import units as u

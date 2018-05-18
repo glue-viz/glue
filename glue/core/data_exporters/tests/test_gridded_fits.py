@@ -45,7 +45,7 @@ def test_component_unit_header(tmpdir):
     wcs = WCS()
     data.coords = WCSCoordinates(wcs=wcs)
 
-    unit1 = data.get_component("x").units = u.m/u.s
+    unit1 = data.get_component("x").units = u.m / u.s
     unit2 = data.get_component("y").units = u.Jy
     unit3 = data.get_component("z").units = ""
 
