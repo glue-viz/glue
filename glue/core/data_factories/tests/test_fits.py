@@ -27,6 +27,16 @@ def _assert_equal_expected(actual, expected):
         assert e.shape == d.shape
         assert e.ndim == d.ndim
 
+@requires_astropy
+def test_component_unit():
+    from astropy import units as u
+    d_set = fits_reader(os.path.join(DATA, 'bunit.fits'))
+
+    data = d_set[0]
+
+    unit = u.Unit(data.get_component("ONED").units)
+    assert unit == u.Jy
+
 
 @requires_astropy
 def test_container_fits():
