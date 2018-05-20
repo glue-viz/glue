@@ -6,7 +6,7 @@ from glue.core import Data
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.utils.qt.threading import Worker
 from glue.core.message import LayerArtistComputationMessage
 
@@ -48,10 +48,17 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _calculate_profile(self):
 
-        x, y = self.state.get_profile()
-
-        if x is None or y is None:
-            self.disable_invalid_attributes(self._viewer_state.x_att)
+        try:
+            x, y = self.state.get_profile()
+        except IncompatibleAttribute:
+            if isinstance(self.state.layer, Data):
+                self.disable_invalid_attributes(self.state.attribute)
+                return
+            else:
+                self.disable_incompatible_subset()
+                return
+        except IncompatibleDataException:
+            self.disable("Incompatible data")
             return
         else:
             self.enable()
@@ -155,14 +162,5 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
-        # try:
-        #     self.state._update_profile()
-        # except IncompatibleAttribute:
-        #     if isinstance(self.state.layer, Data):
-        #         self.disable_invalid_attributes(self.state.attribute)
-        #     else:
-        #         self.disable_incompatible_subset()
-        # else:
-        self.enable()
         self._update_profile(force=True)
         self.redraw()
