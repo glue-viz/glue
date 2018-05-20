@@ -226,7 +226,7 @@ class DataViewerWithState(DataViewer):
                       self._update_appearance_from_settings,
                       filter=self._is_appearance_settings)
 
-        hub.subscribe(self, msg.LayerArtistComputationMessage,
+        hub.subscribe(self, msg.ComputationMessage,
                       self._update_computation,
                       filter=self._has_layer_artist)
 

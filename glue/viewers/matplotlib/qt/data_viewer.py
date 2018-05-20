@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState

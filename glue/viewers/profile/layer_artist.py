@@ -8,7 +8,7 @@ from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.utils.qt.threading import Worker
-from glue.core.message import LayerArtistComputationMessage
+from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -30,20 +30,23 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.mpl_artists = [self.plot_artist]
 
         self._worker = Worker(self._calculate_profile)
-        self._worker.result.connect(self._signal_layer_computation)
+        self._worker.result.connect(self._broadcast_end_computation)
 
         self.reset_cache()
 
     @property
     def computing(self):
-        return self._worker.isRunning()
+        return self._worker.running
 
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
-    def _signal_layer_computation(self):
-        self.state.layer.hub.broadcast(LayerArtistComputationMessage(self))
+    def _broadcast_start_computation(self):
+        self.state.layer.hub.broadcast(ComputationStartedMessage(self))
+
+    def _broadcast_end_computation(self):
+        self.state.layer.hub.broadcast(ComputationEndedMessage(self))
 
     @defer_draw
     def _calculate_profile(self):
@@ -155,7 +158,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
             self._worker.exit()
             self._worker.start()
-            self._signal_layer_computation()
+            self._broadcast_start_computation()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()

@@ -258,7 +258,15 @@ class LayerArtistDisabledMessage(Message):
         self.layer_artist = self.sender
 
 
-class LayerArtistComputationMessage(Message):
+class ComputationMessage(Message):
     def __init__(self, sender, tag=None):
-        super(LayerArtistComputationMessage, self).__init__(sender, tag=tag)
+        super(ComputationMessage, self).__init__(sender, tag=tag)
         self.layer_artist = self.sender
+
+
+class ComputationStartedMessage(ComputationMessage):
+    pass
+
+
+class ComputationEndedMessage(ComputationMessage):
+    pass
