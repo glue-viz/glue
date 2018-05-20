@@ -15,7 +15,7 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.subset import SliceSubsetState
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
@@ -127,6 +127,9 @@ class ProfileLayerState(MatplotlibLayerState):
     percentile = DDSCProperty(docstring='The percentile value used to '
                                         'automatically calculate levels')
 
+    _viewer_callbacks_set = False
+    _profile_cache = None
+
     def __init__(self, layer=None, viewer_state=None, **kwargs):
 
         super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
@@ -145,8 +148,6 @@ class ProfileLayerState(MatplotlibLayerState):
         ProfileLayerState.percentile.set_display_func(self, percentile_display.get)
 
         self.add_callback('layer', self._update_attribute, priority=1000)
-        # self.add_callback('layer', self._update_profile, priority=1000)
-        # self.add_callback('attribute', self._update_profile, priority=1000)
 
         if layer is not None:
             self._update_attribute()
@@ -164,6 +165,9 @@ class ProfileLayerState(MatplotlibLayerState):
     def normalize_values(self, values):
         return (np.asarray(values) - self.v_min) / (self.v_max - self.v_min)
 
+    def reset_cache(self, *args):
+        self._profile_cache = None
+
     @property
     def viewer_state(self):
         return self._viewer_state
@@ -171,21 +175,27 @@ class ProfileLayerState(MatplotlibLayerState):
     @viewer_state.setter
     def viewer_state(self, viewer_state):
         self._viewer_state = viewer_state
-        # if viewer_state is not None:
-        #     self._viewer_state.add_callback('x_att', self._update_profile, priority=1000)
-        #     self._viewer_state.add_callback('function', self._update_profile, priority=1000)
-        #     self._update_profile()
 
     def get_profile(self, *event):
 
+        if self._profile_cache is not None:
+            return self._profile_cache
+
+        if not self._viewer_callbacks_set:
+            self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
+            if self.is_callback_property('attribute'):
+                self.add_callback('attribute', self.reset_cache, priority=100000)
+            self._viewer_callbacks_set = True
+
         if self.viewer_state is None or self.viewer_state.x_att is None or self.attribute is None:
-            return None, None
+            raise IncompatibleDataException()
 
         # Check what pixel axis in the current dataset x_att corresponds to
         pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
 
         if pix_cid is None:
-            return None, None
+            raise IncompatibleDataException()
 
         # If we get here, then x_att does correspond to a single pixel axis in
         # the cube, so we now prepare a list of axes to collapse over.
@@ -197,24 +207,21 @@ class ProfileLayerState(MatplotlibLayerState):
         # smaller than the data to just average the relevant 'spaxels' in the
         # data rather than collapsing the whole cube.
 
-        try:
-            if isinstance(self.layer, Data):
-                data = self.layer
-                data_values = data[self.attribute]
+        if isinstance(self.layer, Data):
+            data = self.layer
+            data_values = data[self.attribute]
+        else:
+            data = self.layer.data
+            if isinstance(self.layer.subset_state, SliceSubsetState):
+                data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
             else:
-                data = self.layer.data
-                if isinstance(self.layer.subset_state, SliceSubsetState):
-                    data_values = self.layer.subset_state.to_array(self.layer.data, self.attribute)
-                else:
-                    # We need to force a copy *and* convert to float just in case
-                    data_values = np.array(data[self.attribute], dtype=float)
-                    mask = self.layer.to_mask()
-                    if np.sum(mask) == 0:
-                        self._profile = [], []
-                        return
-                    data_values[~mask] = np.nan
-        except IncompatibleAttribute:
-            return None, None
+                # We need to force a copy *and* convert to float just in case
+                data_values = np.array(data[self.attribute], dtype=float)
+                mask = self.layer.to_mask()
+                if np.sum(mask) == 0:
+                    self._profile_cache = [], []
+                    return [], []
+                data_values[~mask] = np.nan
 
         # Collapse along all dimensions except x_att
         if self.layer.ndim > 1:
@@ -229,7 +236,10 @@ class ProfileLayerState(MatplotlibLayerState):
         axis_view[pix_cid.axis] = slice(None)
         axis_values = data[self.viewer_state.x_att, axis_view]
 
+        self._profile_cache = axis_values, profile_values
+
         with delay_callback(self, 'v_min', 'v_max'):
             self.v_min = nanmin(profile_values)
             self.v_max = nanmax(profile_values)
-            return axis_values, profile_values
+
+        return axis_values, profile_values
