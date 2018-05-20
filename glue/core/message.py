@@ -256,3 +256,9 @@ class LayerArtistDisabledMessage(Message):
     def __init__(self, sender, tag=None):
         super(LayerArtistDisabledMessage, self).__init__(sender, tag=tag)
         self.layer_artist = self.sender
+
+
+class LayerArtistComputationMessage(Message):
+    def __init__(self, sender, tag=None):
+        super(LayerArtistComputationMessage, self).__init__(sender, tag=tag)
+        self.layer_artist = self.sender

@@ -7,6 +7,8 @@ from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
+from glue.utils.qt.threading import Worker
+from glue.core.message import LayerArtistComputationMessage
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -27,16 +29,26 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_artists = [self.plot_artist]
 
+        self._worker = Worker(self._calculate_profile)
+        self._worker.result.connect(self._signal_layer_computation)
+
         self.reset_cache()
+
+    @property
+    def computing(self):
+        return self._worker.isRunning()
 
     def reset_cache(self):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
+    def _signal_layer_computation(self):
+        self.state.layer.hub.broadcast(LayerArtistComputationMessage(self))
+
     @defer_draw
     def _calculate_profile(self):
 
-        x, y = self.state.profile
+        x, y = self.state.get_profile()
 
         if x is None or y is None:
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -134,22 +146,23 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_layer_state.update(self.state.as_dict())
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
-            self._calculate_profile()
-            force = True  # make sure scaling and visual attributes are updated
+            self._worker.exit()
+            self._worker.start()
+            self._signal_layer_computation()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()
 
     @defer_draw
     def update(self):
-        try:
-            self.state._update_profile()
-        except IncompatibleAttribute:
-            if isinstance(self.state.layer, Data):
-                self.disable_invalid_attributes(self.state.attribute)
-            else:
-                self.disable_incompatible_subset()
-        else:
-            self.enable()
+        # try:
+        #     self.state._update_profile()
+        # except IncompatibleAttribute:
+        #     if isinstance(self.state.layer, Data):
+        #         self.disable_invalid_attributes(self.state.attribute)
+        #     else:
+        #         self.disable_incompatible_subset()
+        # else:
+        self.enable()
         self._update_profile(force=True)
         self.redraw()

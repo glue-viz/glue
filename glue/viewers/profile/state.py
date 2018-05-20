@@ -145,8 +145,8 @@ class ProfileLayerState(MatplotlibLayerState):
         ProfileLayerState.percentile.set_display_func(self, percentile_display.get)
 
         self.add_callback('layer', self._update_attribute, priority=1000)
-        self.add_callback('layer', self._update_profile, priority=1000)
-        self.add_callback('attribute', self._update_profile, priority=1000)
+        # self.add_callback('layer', self._update_profile, priority=1000)
+        # self.add_callback('attribute', self._update_profile, priority=1000)
 
         if layer is not None:
             self._update_attribute()
@@ -171,27 +171,21 @@ class ProfileLayerState(MatplotlibLayerState):
     @viewer_state.setter
     def viewer_state(self, viewer_state):
         self._viewer_state = viewer_state
-        if viewer_state is not None:
-            self._viewer_state.add_callback('x_att', self._update_profile, priority=1000)
-            self._viewer_state.add_callback('function', self._update_profile, priority=1000)
-            self._update_profile()
+        # if viewer_state is not None:
+        #     self._viewer_state.add_callback('x_att', self._update_profile, priority=1000)
+        #     self._viewer_state.add_callback('function', self._update_profile, priority=1000)
+        #     self._update_profile()
 
-    @property
-    def profile(self):
-        return self._profile
-
-    def _update_profile(self, *event):
+    def get_profile(self, *event):
 
         if self.viewer_state is None or self.viewer_state.x_att is None or self.attribute is None:
-            self._profile = None, None
-            return
+            return None, None
 
         # Check what pixel axis in the current dataset x_att corresponds to
         pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
 
         if pix_cid is None:
-            self._profile = None, None
-            return
+            return None, None
 
         # If we get here, then x_att does correspond to a single pixel axis in
         # the cube, so we now prepare a list of axes to collapse over.
@@ -220,8 +214,7 @@ class ProfileLayerState(MatplotlibLayerState):
                         return
                     data_values[~mask] = np.nan
         except IncompatibleAttribute:
-            self._profile = None, None
-            return
+            return None, None
 
         # Collapse along all dimensions except x_att
         if self.layer.ndim > 1:
@@ -237,6 +230,6 @@ class ProfileLayerState(MatplotlibLayerState):
         axis_values = data[self.viewer_state.x_att, axis_view]
 
         with delay_callback(self, 'v_min', 'v_max'):
-            self._profile = axis_values, profile_values
             self.v_min = nanmin(profile_values)
             self.v_max = nanmax(profile_values)
+            return axis_values, profile_values

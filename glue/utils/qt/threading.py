@@ -9,6 +9,7 @@ class Worker(QtCore.QThread):
 
     result = QtCore.Signal(object)
     error = QtCore.Signal(object)
+    running = False
 
     def __init__(self, func, *args, **kwargs):
         """
@@ -32,7 +33,9 @@ class Worker(QtCore.QThread):
         the result form sys.exc_infno()
         """
         try:
+            self.running = True
             result = self.func(*self.args, **self.kwargs)
+            self.running = False
             self.result.emit(result)
         except Exception:
             import sys
