@@ -124,6 +124,7 @@ class MatplotlibDataViewer(DataViewerWithState):
             if layer_artist.computing:
                 self.loading_rectangle.set_visible(True)
                 self.loading_text.set_visible(True)
+                self.redraw()
                 return
         self.loading_rectangle.set_visible(False)
         self.loading_text.set_visible(False)
