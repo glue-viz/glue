@@ -162,5 +162,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def update(self):
+        self.state.reset_cache()
         self._update_profile(force=True)
         self.redraw()
