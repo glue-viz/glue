@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy.QtCore import QTimer
+
 import numpy as np
 
 from glue.core import Data
@@ -32,6 +34,14 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._worker = Worker(self._calculate_profile)
         self._worker.result.connect(self._broadcast_end_computation)
 
+        self._notify_start = QTimer()
+        self._notify_start.setInterval(500)
+        self._notify_start.setSingleShot(True)
+        self._notify_start.timeout.connect(self._broadcast_start_computation)
+
+        self._notified_start = False
+        self._visible_data = None
+
         self.reset_cache()
 
     @property
@@ -44,29 +54,26 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _broadcast_start_computation(self):
         self.state.layer.hub.broadcast(ComputationStartedMessage(self))
+        self._notified_start = True
 
     def _broadcast_end_computation(self):
-        self.state.layer.hub.broadcast(ComputationEndedMessage(self))
+        # TODO: the following was copy/pasted from the histogram viewer, maybe
+        # we can find a way to avoid duplication?
 
-    @defer_draw
-    def _calculate_profile(self):
+        # We have to do the following to make sure that we reset the y_max as
+        # needed. We can't simply reset based on the maximum for this layer
+        # because other layers might have other values, and we also can't do:
+        #
+        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
+        #
+        # because this would never allow y_max to get smaller.
 
-        try:
-            x, y = self.state.get_profile()
-        except IncompatibleAttribute:
-            if isinstance(self.state.layer, Data):
-                self.disable_invalid_attributes(self.state.attribute)
-                return
-            else:
-                self.disable_incompatible_subset()
-                return
-        except IncompatibleDataException:
-            self.disable("Incompatible data")
+        if self._visible_data is None:
             return
-        else:
-            self.enable()
 
-        self._visible_data = x, y
+        x, y = self._visible_data
+
+        self.state.update_limits()
 
         # Update the data values.
         if len(x) > 0:
@@ -79,20 +86,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             # We need to do this otherwise we get issues on Windows when
             # passing an empty list to plot_artist
             self.plot_artist.set_visible(False)
-
-        if len(x) == 0:
-            return
-
-        # TODO: the following was copy/pasted from the histogram viewer, maybe
-        # we can find a way to avoid duplication?
-
-        # We have to do the following to make sure that we reset the y_max as
-        # needed. We can't simply reset based on the maximum for this layer
-        # because other layers might have other values, and we also can't do:
-        #
-        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
-        #
-        # because this would never allow y_max to get smaller.
 
         if not self._viewer_state.normalize:
 
@@ -107,7 +100,29 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             if smallest_y_min != self._viewer_state.y_min:
                 self._viewer_state.y_min = smallest_y_min
 
+        if self._notified_start:
+            self.state.layer.hub.broadcast(ComputationEndedMessage(self))
+            self._notified_start = False
+
         self.redraw()
+
+    @defer_draw
+    def _calculate_profile(self):
+
+        try:
+            self._visible_data = self.state.get_profile()
+        except IncompatibleAttribute:
+            if isinstance(self.state.layer, Data):
+                self.disable_invalid_attributes(self.state.attribute)
+                return
+            else:
+                self.disable_incompatible_subset()
+                return
+        except IncompatibleDataException:
+            self.disable("Incompatible data")
+            return
+        else:
+            self.enable()
 
     @defer_draw
     def _update_visual_attributes(self):
@@ -158,7 +173,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
             self._worker.exit()
             self._worker.start()
-            self._broadcast_start_computation()
+            self._notify_start.start()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()
