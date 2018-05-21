@@ -4,7 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
-* Compute profiles asynchronously to avoid holding up the UI. [#1736]
+* Compute profiles asynchronously to avoid holding up the UI,
+  and in chunks to avoid excessive memory usage. [#1736]
 
 * Improved naming of components when merging datasets. [#1249]
 
