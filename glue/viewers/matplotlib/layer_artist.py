@@ -1,11 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy.QtCore import QTimer
-
 from glue.external.echo import keep_in_sync
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
+from glue.tests.helpers import QT_INSTALLED
 
 # TODO: should use the built-in class for this, though we don't need
 #       the _sync_style method, so just re-define here for now.
@@ -39,10 +38,12 @@ class MatplotlibLayerArtist(LayerArtistBase):
         self._sync_zorder = keep_in_sync(self, 'zorder', self.state, 'zorder')
         self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
-        self._notify_start = QTimer()
-        self._notify_start.setInterval(500)
-        self._notify_start.setSingleShot(True)
-        self._notify_start.timeout.connect(self._notify_start_computation)
+        if QT_INSTALLED:
+            from qtpy.QtCore import QTimer
+            self._notify_start = QTimer()
+            self._notify_start.setInterval(500)
+            self._notify_start.setSingleShot(True)
+            self._notify_start.timeout.connect(self._notify_start_computation)
         self._notified_start = False
 
     def notify_start_computation(self, delay=500):
@@ -52,7 +53,10 @@ class MatplotlibLayerArtist(LayerArtistBase):
         operations). A message is only broadcast if the operation takes longer
         than 500ms.
         """
-        self._notify_start.start(delay)
+        if QT_INSTALLED:
+            self._notify_start.start(delay)
+        else:
+            self._notify_start_computation()
 
     def _notify_start_computation(self, *args):
         self.state.layer.hub.broadcast(ComputationStartedMessage(self))
@@ -64,7 +68,8 @@ class MatplotlibLayerArtist(LayerArtistBase):
         computation (typically used in conjunction with asynchronous
         operations). If the computation was never started, this does nothing.
         """
-        self._notify_start.stop()
+        if QT_INSTALLED:
+            self._notify_start.stop()
         if self._notified_start:
             self.state.layer.hub.broadcast(ComputationEndedMessage(self))
             self._notified_start = False

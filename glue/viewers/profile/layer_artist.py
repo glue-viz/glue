@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
 import numpy as np
 
 from glue.core import Data
@@ -7,7 +8,7 @@ from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
-from glue.utils.qt.threading import Worker
+from glue.tests.helpers import QT_INSTALLED
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -28,9 +29,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_artists = [self.plot_artist]
 
-        self._worker = Worker(self._calculate_profile_thread)
-        self._worker.result.connect(self._calculate_profile_postthread)
-        self._worker.error.connect(self._calculate_profile_error)
+        if QT_INSTALLED:
+            from glue.utils.qt.threading import Worker
+            self._worker = Worker(self._calculate_profile_thread)
+            self._worker.result.connect(self._calculate_profile_postthread)
+            self._worker.error.connect(self._calculate_profile_error)
 
         self.reset_cache()
 
@@ -56,9 +59,17 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def _calculate_profile(self):
-        self._worker.exit()
-        self.notify_start_computation()
-        self._worker.start()
+        if QT_INSTALLED:
+            self._worker.exit()
+            self.notify_start_computation()
+            self._worker.start()
+        else:
+            try:
+                self._calculate_profile_thread()
+            except Exception:
+                self._calculate_profile_error(sys.exc_info())
+            else:
+                self._calculate_profile_postthread()
 
     def _calculate_profile_thread(self):
         self.state.update_profile(update_limits=False)
