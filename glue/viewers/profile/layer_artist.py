@@ -8,7 +8,13 @@ from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
-from glue.tests.helpers import QT_INSTALLED
+
+try:
+    import qtpy  # noqa
+except Exception:
+    QT_INSTALLED = False
+else:
+    QT_INSTALLED = True
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -78,17 +84,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _calculate_profile_postthread(self):
 
-        # TODO: the following was copy/pasted from the histogram viewer, maybe
-        # we can find a way to avoid duplication?
-
-        # We have to do the following to make sure that we reset the y_max as
-        # needed. We can't simply reset based on the maximum for this layer
-        # because other layers might have other values, and we also can't do:
-        #
-        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
-        #
-        # because this would never allow y_max to get smaller.
-
         self.notify_end_computation()
 
         visible_data = self.state.profile
@@ -112,6 +107,17 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             # We need to do this otherwise we get issues on Windows when
             # passing an empty list to plot_artist
             self.plot_artist.set_visible(False)
+
+        # TODO: the following was copy/pasted from the histogram viewer, maybe
+        # we can find a way to avoid duplication?
+
+        # We have to do the following to make sure that we reset the y_max as
+        # needed. We can't simply reset based on the maximum for this layer
+        # because other layers might have other values, and we also can't do:
+        #
+        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
+        #
+        # because this would never allow y_max to get smaller.
 
         if not self._viewer_state.normalize and len(y) > 0:
 

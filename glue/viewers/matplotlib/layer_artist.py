@@ -4,7 +4,13 @@ from glue.external.echo import keep_in_sync
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
-from glue.tests.helpers import QT_INSTALLED
+
+try:
+    import qtpy  # noqa
+except Exception:
+    QT_INSTALLED = False
+else:
+    QT_INSTALLED = True
 
 # TODO: should use the built-in class for this, though we don't need
 #       the _sync_style method, so just re-define here for now.
