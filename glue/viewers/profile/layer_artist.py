@@ -44,6 +44,16 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.reset_cache()
 
+    def wait(self):
+        self._worker.wait()
+
+    def remove(self):
+        super(ProfileLayerArtist, self).remove()
+        self._notify_start = None
+        if self._worker is not None:
+            self._worker.exit()
+            self._worker = None
+
     @property
     def computing(self):
         return self._worker.running
@@ -73,10 +83,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         x, y = self._visible_data
 
-        self.state.update_limits()
-
         # Update the data values.
         if len(x) > 0:
+            self.state.update_limits()
             # Normalize profile values to the [0:1] range based on limits
             if self._viewer_state.normalize:
                 y = self.state.normalize_values(y)
@@ -87,7 +96,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             # passing an empty list to plot_artist
             self.plot_artist.set_visible(False)
 
-        if not self._viewer_state.normalize:
+        if not self._viewer_state.normalize and len(y) > 0:
 
             self.state._y_min = nanmin(y)
             self.state._y_max = nanmax(y) * 1.2
@@ -110,7 +119,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     def _calculate_profile(self):
 
         try:
-            self._visible_data = self.state.get_profile()
+            self.state.update_profile(update_limits=False)
+            self._visible_data = self.state.profile
         except IncompatibleAttribute:
             if isinstance(self.state.layer, Data):
                 self.disable_invalid_attributes(self.state.attribute)

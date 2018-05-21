@@ -176,13 +176,12 @@ class ProfileLayerState(MatplotlibLayerState):
     def viewer_state(self, viewer_state):
         self._viewer_state = viewer_state
 
-    def update_limits(self):
-        with delay_callback(self, 'v_min', 'v_max'):
-            profile_values = self.get_profile()
-            self.v_min = nanmin(profile_values)
-            self.v_max = nanmax(profile_values)
+    @property
+    def profile(self):
+        self.update_profile()
+        return self._profile_cache
 
-    def get_profile(self, *event):
+    def update_profile(self, update_limits=True):
 
         if self._profile_cache is not None:
             return self._profile_cache
@@ -244,4 +243,12 @@ class ProfileLayerState(MatplotlibLayerState):
 
         self._profile_cache = axis_values, profile_values
 
-        return axis_values, profile_values
+        if update_limits:
+            self.update_limits(update_profile=False)
+
+    def update_limits(self, update_profile=True):
+        with delay_callback(self, 'v_min', 'v_max'):
+            if update_profile:
+                self.update_profile(update_limits=False)
+            self.v_min = nanmin(self._profile_cache[1])
+            self.v_max = nanmax(self._profile_cache[1])

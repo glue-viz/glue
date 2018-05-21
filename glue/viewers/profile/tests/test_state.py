@@ -96,7 +96,8 @@ class TestProfileViewerState:
         subset.subset_state = self.data.id['x'] > 100
 
         # TODO: the fact we have to call this isn't ideal
-        self.layer_state._update_profile()
+        self.layer_state.reset_cache()
+
         x, y = self.layer_state.profile
         assert len(x) == 0
         assert len(y) == 0
