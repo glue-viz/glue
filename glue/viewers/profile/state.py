@@ -276,5 +276,6 @@ class ProfileLayerState(MatplotlibLayerState):
         with delay_callback(self, 'v_min', 'v_max'):
             if update_profile:
                 self.update_profile(update_limits=False)
-            self.v_min = nanmin(self._profile_cache[1])
-            self.v_max = nanmax(self._profile_cache[1])
+            if self._profile_cache is not None and len(self._profile_cache[1]) > 0:
+                self.v_min = nanmin(self._profile_cache[1])
+                self.v_max = nanmax(self._profile_cache[1])
