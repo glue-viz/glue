@@ -15,7 +15,7 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, nanmean, nanmedian, nansum, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
+from glue.core.exceptions import IncompatibleDataException
 from glue.core.subset import SliceSubsetState
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
