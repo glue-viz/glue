@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy.QtCore import QTimer
-
 import numpy as np
 
 from glue.core import Data
@@ -10,7 +8,6 @@ from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.utils.qt.threading import Worker
-from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -32,15 +29,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.mpl_artists = [self.plot_artist]
 
         self._worker = Worker(self._calculate_profile)
-        self._worker.result.connect(self._broadcast_end_computation)
+        self._worker.result.connect(self._finalize_computation)
         self._worker.error.connect(self._computation_error)
 
-        self._notify_start = QTimer()
-        self._notify_start.setInterval(500)
-        self._notify_start.setSingleShot(True)
-        self._notify_start.timeout.connect(self._broadcast_start_computation)
-
-        self._notified_start = False
         self._visible_data = None
 
         self.reset_cache()
@@ -53,7 +44,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def remove(self):
         super(ProfileLayerArtist, self).remove()
-        self._notify_start = None
         if self._worker is not None:
             self._worker.exit()
             self._worker = None
@@ -66,11 +56,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
-    def _broadcast_start_computation(self):
-        self.state.layer.hub.broadcast(ComputationStartedMessage(self))
-        self._notified_start = True
+    def _finalize_computation(self):
 
-    def _broadcast_end_computation(self):
         # TODO: the following was copy/pasted from the histogram viewer, maybe
         # we can find a way to avoid duplication?
 
@@ -115,9 +102,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             if smallest_y_min != self._viewer_state.y_min:
                 self._viewer_state.y_min = smallest_y_min
 
-        if self._notified_start:
-            self.state.layer.hub.broadcast(ComputationEndedMessage(self))
-            self._notified_start = False
+        self.notify_end_computation()
 
         self.redraw()
 
@@ -183,8 +168,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
             self._worker.exit()
+            self.notify_start_computation()
             self._worker.start()
-            self._notify_start.start()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()

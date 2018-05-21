@@ -1,8 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
+from qtpy.QtCore import QTimer
+
 from glue.external.echo import keep_in_sync
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
+from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 
 # TODO: should use the built-in class for this, though we don't need
 #       the _sync_style method, so just re-define here for now.
@@ -36,6 +39,36 @@ class MatplotlibLayerArtist(LayerArtistBase):
         self._sync_zorder = keep_in_sync(self, 'zorder', self.state, 'zorder')
         self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
+        self._notify_start = QTimer()
+        self._notify_start.setInterval(500)
+        self._notify_start.setSingleShot(True)
+        self._notify_start.timeout.connect(self._notify_start_computation)
+        self._notified_start = False
+
+    def notify_start_computation(self, delay=500):
+        """
+        Broadcast a message to indicate that this layer artist has started a
+        computation (typically used in conjunction with asynchronous
+        operations). A message is only broadcast if the operation takes longer
+        than 500ms.
+        """
+        self._notify_start.start(delay)
+
+    def _notify_start_computation(self, *args):
+        self.state.layer.hub.broadcast(ComputationStartedMessage(self))
+        self._notified_start = True
+
+    def notify_end_computation(self):
+        """
+        Broadcast a message to indicate that this layer artist has ended a
+        computation (typically used in conjunction with asynchronous
+        operations). If the computation was never started, this does nothing.
+        """
+        self._notify_start.stop()
+        if self._notified_start:
+            self.state.layer.hub.broadcast(ComputationEndedMessage(self))
+            self._notified_start = False
+
     def clear(self):
         for artist in self.mpl_artists:
             try:
@@ -54,6 +87,7 @@ class MatplotlibLayerArtist(LayerArtistBase):
             except AttributeError:  # can happen for Matplotlib 1.4
                 pass
         self.mpl_artists[:] = []
+        self._notify_start = None
 
     def get_layer_color(self):
         return self.state.color
