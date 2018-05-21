@@ -38,7 +38,10 @@ class Worker(QtCore.QThread):
         sys.exc_infno()
         """
         try:
+            self.running = True
             result = self.func(*self.args, **self.kwargs)
+            self.running = False
             self.result.emit(result)
         except Exception:
+            self.running = False
             self.error.emit(sys.exc_info())

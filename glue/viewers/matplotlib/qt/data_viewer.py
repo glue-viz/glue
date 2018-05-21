@@ -45,6 +45,8 @@ fig.savefig('glue_plot.png')
 plt.close(fig)
 """.strip()
 
+ZORDER_MAX = 100000
+
 
 class MatplotlibDataViewer(DataViewerWithState):
 
@@ -66,12 +68,15 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs)
 
+        for spine in self._axes.spines.values():
+            spine.set_zorder(ZORDER_MAX)
+
         self.loading_rectangle = Rectangle((0, 0), 1, 1, color='0.9', alpha=0.9,
-                                           zorder=100000, transform=self.axes.transAxes)
+                                           zorder=ZORDER_MAX - 1, transform=self.axes.transAxes)
         self.loading_rectangle.set_visible(False)
         self.axes.add_patch(self.loading_rectangle)
 
-        self.loading_text = self.axes.text(0.5, 0.5, 'Loading...', color='k',
+        self.loading_text = self.axes.text(0.5, 0.5, 'Computing...', color='k',
                                            zorder=self.loading_rectangle.get_zorder() + 1,
                                            ha='center', va='center',
                                            transform=self.axes.transAxes)
@@ -120,7 +125,7 @@ class MatplotlibDataViewer(DataViewerWithState):
     @defer_draw
     def _update_computation(self, *args):
         for layer_artist in self.layers:
-            if layer_artist.computing:
+            if layer_artist.is_computing:
                 self.loading_rectangle.set_visible(True)
                 self.loading_text.set_visible(True)
                 self.redraw()

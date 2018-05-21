@@ -38,20 +38,22 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.reset_cache()
 
     def wait(self):
-        self._worker.wait()
-        from glue.utils.qt import get_qapp
-        app = get_qapp()
-        app.processEvents()
+        if QT_INSTALLED:
+            self._worker.wait()
+            from glue.utils.qt import get_qapp
+            app = get_qapp()
+            app.processEvents()
 
     def remove(self):
         super(ProfileLayerArtist, self).remove()
-        if self._worker is not None:
+        if QT_INSTALLED and self._worker is not None:
             self._worker.exit()
             self._worker = None
 
     @property
-    def computing(self):
-        return self._worker.isRunning()
+    def is_computing(self):
+        if QT_INSTALLED:
+            return self._worker.running
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -113,8 +115,12 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         if not self._viewer_state.normalize and len(y) > 0:
 
-            self.state._y_min = nanmin(y)
-            self.state._y_max = nanmax(y) * 1.2
+            y_min = nanmin(y)
+            y_max = nanmax(y)
+            y_range = y_max - y_min
+
+            self.state._y_min = y_min - y_range * 0.1
+            self.state._y_max = y_max + y_range * 0.1
 
             largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
             if largest_y_max != self._viewer_state.y_max:
