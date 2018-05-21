@@ -4,6 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Compute profiles asynchronously to avoid holding up the UI. [#1736]
+
 * Improved naming of components when merging datasets. [#1249]
 
 v0.13.4 (unreleased)
