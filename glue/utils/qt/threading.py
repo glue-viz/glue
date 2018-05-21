@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 from qtpy import QtCore
 
 __all__ = ['Worker']
@@ -9,7 +11,6 @@ class Worker(QtCore.QThread):
 
     result = QtCore.Signal(object)
     error = QtCore.Signal(object)
-    running = False
 
     def __init__(self, func, *args, **kwargs):
         """
@@ -33,10 +34,7 @@ class Worker(QtCore.QThread):
         the result form sys.exc_infno()
         """
         try:
-            self.running = True
             result = self.func(*self.args, **self.kwargs)
-            self.running = False
             self.result.emit(result)
         except Exception:
-            import sys
             self.error.emit(sys.exc_info())

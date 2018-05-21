@@ -33,6 +33,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self._worker = Worker(self._calculate_profile)
         self._worker.result.connect(self._broadcast_end_computation)
+        self._worker.error.connect(self._computation_error)
 
         self._notify_start = QTimer()
         self._notify_start.setInterval(500)
@@ -46,6 +47,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def wait(self):
         self._worker.wait()
+        from glue.utils.qt import get_qapp
+        app = get_qapp()
+        app.processEvents()
 
     def remove(self):
         super(ProfileLayerArtist, self).remove()
@@ -56,7 +60,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @property
     def computing(self):
-        return self._worker.running
+        return self._worker.isRunning()
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -80,6 +84,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         if self._visible_data is None:
             return
+
+        self.enable()
 
         x, y = self._visible_data
 
@@ -117,22 +123,17 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def _calculate_profile(self):
+        self.state.update_profile(update_limits=False)
+        self._visible_data = self.state.profile
 
-        try:
-            self.state.update_profile(update_limits=False)
-            self._visible_data = self.state.profile
-        except IncompatibleAttribute:
+    def _computation_error(self, exc):
+        if issubclass(exc[0], IncompatibleAttribute):
             if isinstance(self.state.layer, Data):
                 self.disable_invalid_attributes(self.state.attribute)
-                return
             else:
                 self.disable_incompatible_subset()
-                return
-        except IncompatibleDataException:
+        elif issubclass(exc[0], IncompatibleDataException):
             self.disable("Incompatible data")
-            return
-        else:
-            self.enable()
 
     @defer_draw
     def _update_visual_attributes(self):

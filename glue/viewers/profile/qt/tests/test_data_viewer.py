@@ -74,6 +74,8 @@ class TestProfileViewer(object):
         data2 = Data(y=np.random.random((3, 4, 2)))
         self.data_collection.append(data2)
         self.viewer.add_data(data2)
+        for layer in self.viewer.layers:
+            layer.wait()
         assert len(self.viewer.layers) == 2
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
@@ -108,10 +110,16 @@ class TestProfileViewer(object):
         self.viewer.add_data(self.data)
         self.viewer.add_data(data2)
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
 
         self.data_collection.add_link(ComponentLink([data2.world_component_ids[1]], self.data.world_component_ids[0], using=lambda x: 2 * x))
+
+        for layer in self.viewer.layers:
+            layer.wait()
 
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled
