@@ -28,11 +28,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_artists = [self.plot_artist]
 
-        self._worker = Worker(self._calculate_profile)
-        self._worker.result.connect(self._finalize_computation)
-        self._worker.error.connect(self._computation_error)
-
-        self._visible_data = None
+        self._worker = Worker(self._calculate_profile_thread)
+        self._worker.result.connect(self._calculate_profile_postthread)
+        self._worker.error.connect(self._calculate_profile_error)
 
         self.reset_cache()
 
@@ -56,7 +54,16 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
-    def _finalize_computation(self):
+    @defer_draw
+    def _calculate_profile(self):
+        self._worker.exit()
+        self.notify_start_computation()
+        self._worker.start()
+
+    def _calculate_profile_thread(self):
+        self.state.update_profile(update_limits=False)
+
+    def _calculate_profile_postthread(self):
 
         # TODO: the following was copy/pasted from the histogram viewer, maybe
         # we can find a way to avoid duplication?
@@ -69,12 +76,16 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         #
         # because this would never allow y_max to get smaller.
 
-        if self._visible_data is None:
+        self.notify_end_computation()
+
+        visible_data = self.state.profile
+
+        if visible_data is None:
             return
 
         self.enable()
 
-        x, y = self._visible_data
+        x, y = visible_data
 
         # Update the data values.
         if len(x) > 0:
@@ -102,16 +113,10 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             if smallest_y_min != self._viewer_state.y_min:
                 self._viewer_state.y_min = smallest_y_min
 
-        self.notify_end_computation()
-
         self.redraw()
 
-    @defer_draw
-    def _calculate_profile(self):
-        self.state.update_profile(update_limits=False)
-        self._visible_data = self.state.profile
-
-    def _computation_error(self, exc):
+    def _calculate_profile_error(self, exc):
+        self.notify_end_computation()
         if issubclass(exc[0], IncompatibleAttribute):
             if isinstance(self.state.layer, Data):
                 self.disable_invalid_attributes(self.state.attribute)
@@ -167,9 +172,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_layer_state.update(self.state.as_dict())
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
-            self._worker.exit()
-            self.notify_start_computation()
-            self._worker.start()
+            self._calculate_profile()
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()
