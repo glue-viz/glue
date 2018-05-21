@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 from qtpy import QtCore
 
 __all__ = ['Worker']
@@ -12,28 +14,34 @@ class Worker(QtCore.QThread):
 
     def __init__(self, func, *args, **kwargs):
         """
-        Execute a function call on a different QThread
+        Execute a function call on a different thread.
 
-        :param func: The function object to call
-        :param args: arguments to pass to the function
-        :param kwargs: kwargs to pass to the function
+        Parameters
+        ----------
+        func : callable
+            The function object to call
+        args
+            Positional arguments to pass to the function
+        kwargs
+            Keyword arguments to pass to the function
         """
         super(Worker, self).__init__()
         self.func = func
-        self.args = args
-        self.kwargs = kwargs
+        self.args = args or ()
+        self.kwargs = kwargs or {}
 
     def run(self):
         """
-        Invoke the function
-        Upon successful completion, the result signal will be fired
-        with the output of the function
-        If an exception occurs, the error signal will be fired with
-        the result form sys.exc_infno()
+        Invoke the function. Upon successful completion, the result signal
+        will be fired with the output of the function If an exception
+        occurs, the error signal will be fired with the result form
+        sys.exc_info()
         """
         try:
+            self.running = True
             result = self.func(*self.args, **self.kwargs)
+            self.running = False
             self.result.emit(result)
         except Exception:
-            import sys
+            self.running = False
             self.error.emit(sys.exc_info())

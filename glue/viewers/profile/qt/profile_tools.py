@@ -247,13 +247,12 @@ class ProfileTools(QtWidgets.QWidget):
         results = {}
         for layer in self.viewer.layers:
             if layer.enabled and layer.visible:
-                if hasattr(layer, '_visible_data'):
-                    x, y = layer._visible_data
-                    x = np.asarray(x)
-                    y = np.asarray(y)
-                    keep = (x >= min(xlim)) & (x <= max(xlim))
-                    if len(x) > 0:
-                        results[layer] = fitter.build_and_fit(x[keep], y[keep])
+                x, y = layer.state.profile
+                x = np.asarray(x)
+                y = np.asarray(y)
+                keep = (x >= min(xlim)) & (x <= max(xlim))
+                if len(x) > 0:
+                    results[layer] = fitter.build_and_fit(x[keep], y[keep])
 
         return results, x, y
 

@@ -65,14 +65,17 @@ class TestProfileViewer(object):
         self.viewer.state.function = nanmean
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
-        assert_allclose(layer_artist._visible_data[0], [0, 2, 4])
-        assert_allclose(layer_artist._visible_data[1], [3.5, 11.5, 19.5])
+        layer_artist.wait()
+        assert_allclose(layer_artist.state.profile[0], [0, 2, 4])
+        assert_allclose(layer_artist.state.profile[1], [3.5, 11.5, 19.5])
 
     def test_incompatible(self):
         self.viewer.add_data(self.data)
         data2 = Data(y=np.random.random((3, 4, 2)))
         self.data_collection.append(data2)
         self.viewer.add_data(data2)
+        for layer in self.viewer.layers:
+            layer.wait()
         assert len(self.viewer.layers) == 2
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
@@ -107,10 +110,16 @@ class TestProfileViewer(object):
         self.viewer.add_data(self.data)
         self.viewer.add_data(data2)
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
 
         self.data_collection.add_link(ComponentLink([data2.world_component_ids[1]], self.data.world_component_ids[0], using=lambda x: 2 * x))
+
+        for layer in self.viewer.layers:
+            layer.wait()
 
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled

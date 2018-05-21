@@ -9,6 +9,7 @@ from glue.external.echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
+from glue.utils import unbroadcast
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
@@ -334,6 +335,11 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             data_values = self.data_values
 
+            # Since we are just finding overall statistics, not along axes, we
+            # can remove any broadcasted dimension since these should not affect
+            # the statistics.
+            data_values = unbroadcast(data_values)
+
             if data_values.size > self.percentile_subset:
                 if self.subset_indices is None or self.subset_indices[0] != data_values.size:
                     self.subset_indices = (data_values.size,
@@ -486,16 +492,21 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 else:
                     n_bin = self._common_n_bin
 
-                values = self.data_values
+                data_values = self.data_values
+
+                # Since we are just finding overall statistics, not along axes, we
+                # can remove any broadcasted dimension since these should not affect
+                # the statistics.
+                data_values = unbroadcast(data_values)
 
                 # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
                 # they don't exclude inf/-inf
-                if values.dtype.kind != 'M':
-                    values = values[np.isfinite(values)]
+                if data_values.dtype.kind != 'M':
+                    data_values = data_values[np.isfinite(data_values)]
 
-                if values.size > 0:
-                    lower = values.min()
-                    upper = values.max()
+                if data_values.size > 0:
+                    lower = data_values.min()
+                    upper = data_values.max()
                 else:
                     lower = 0.
                     upper = 1.

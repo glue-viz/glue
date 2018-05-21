@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+from matplotlib.patches import Rectangle
+
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
@@ -43,6 +45,8 @@ fig.savefig('glue_plot.png')
 plt.close(fig)
 """.strip()
 
+ZORDER_MAX = 100000
+
 
 class MatplotlibDataViewer(DataViewerWithState):
 
@@ -63,6 +67,20 @@ class MatplotlibDataViewer(DataViewerWithState):
         self.central_widget = self.mpl_widget
 
         self.figure, self._axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs)
+
+        for spine in self._axes.spines.values():
+            spine.set_zorder(ZORDER_MAX)
+
+        self.loading_rectangle = Rectangle((0, 0), 1, 1, color='0.9', alpha=0.9,
+                                           zorder=ZORDER_MAX - 1, transform=self.axes.transAxes)
+        self.loading_rectangle.set_visible(False)
+        self.axes.add_patch(self.loading_rectangle)
+
+        self.loading_text = self.axes.text(0.5, 0.5, 'Computing...', color='k',
+                                           zorder=self.loading_rectangle.get_zorder() + 1,
+                                           ha='center', va='center',
+                                           transform=self.axes.transAxes)
+        self.loading_text.set_visible(False)
 
         self.state.add_callback('aspect', self.update_aspect)
 
@@ -103,6 +121,18 @@ class MatplotlibDataViewer(DataViewerWithState):
 
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
+
+    @defer_draw
+    def _update_computation(self, *args):
+        for layer_artist in self.layers:
+            if layer_artist.is_computing:
+                self.loading_rectangle.set_visible(True)
+                self.loading_text.set_visible(True)
+                self.redraw()
+                return
+        self.loading_rectangle.set_visible(False)
+        self.loading_text.set_visible(False)
+        self.redraw()
 
     @defer_draw
     def update_x_axislabel(self, *event):
