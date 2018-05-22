@@ -344,7 +344,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                                                     percentile=100 - exclude, positive=log,
                                                     random_subset=self.random_subset)
 
-            if np.isnan(lower) or np.isnan(upper):
+            if not isinstance(lower, np.datetime64) and np.isnan(lower):
                 lower, upper = 0, 1
             else:
 
@@ -464,7 +464,7 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 lower = self.data.compute_statistic('minimum', cid=self.component_id, finite=True)
                 upper = self.data.compute_statistic('maximum', cid=self.component_id, finite=True)
 
-                if np.isnan(lower) or np.isnan(upper):
+                if not isinstance(lower, np.datetime64) and np.isnan(lower):
                     lower, upper = 0, 1
 
             self.set(lower=lower, upper=upper, n_bin=n_bin)

@@ -443,11 +443,11 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
     if statistic not in PLAIN_FUNCTIONS:
         raise ValueError("Unrecognized statistic: {0}".format(statistic))
 
-    if finite or positive or mask is not None:
+    if (finite or positive or mask is not None) and data.dtype.kind != 'M':
 
         keep = np.ones(data.shape, dtype=bool)
 
-        if data.dtype.kind != 'M' and finite:
+        if finite:
             keep &= np.isfinite(data)
 
         if positive:
