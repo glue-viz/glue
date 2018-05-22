@@ -4,6 +4,10 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Add a new method ``Data.compute_statistic`` which can be used
+  to find scalar and array statistics on the data, and use for
+  the profile viewer and the state limits helpers. [#1737]
+
 * Compute profiles asynchronously to avoid holding up the UI,
   and in chunks to avoid excessive memory usage. [#1736]
 

@@ -54,6 +54,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         super(ProfileLayerArtist, self).remove()
         if QT_INSTALLED and self._worker is not None:
             self._worker.exit()
+            # Need to wait otherwise the thread will be destroyed while still
+            # running, causing a segmentation fault
+            self._worker.wait()
             self._worker = None
 
     @property
