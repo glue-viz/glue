@@ -1160,7 +1160,8 @@ class Data(object):
     # can be overriden by subclasses that want to improve performance.
 
     def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
-                          finite=True, positive=False, percentile=None, view=None):
+                          finite=True, positive=False, percentile=None, view=None,
+                          random_subset=None):
         """
         Compute a statistic for the data.
 
@@ -1188,6 +1189,9 @@ class Data(object):
             If ``statistic`` is ``'percentile'``, the ``percentile`` argument
             should be given and specify the percentile to calculate in the
             range [0:100]
+        random_subset : int, optional
+            If specified, this should be an integer giving the number of values
+            to use for the statistic. This can only be used if ``axis`` is `None`
         """
 
         # TODO: generalize chunking to tuple axis (not just int)
@@ -1236,6 +1240,13 @@ class Data(object):
             # can remove any broadcasted dimension since these should not affect
             # the statistics.
             data = unbroadcast(data)
+
+        if random_subset and data.size > random_subset:
+            if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
+                self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
+            data = data.ravel()[self._random_subset_indices[1]]
+            if mask is not None:
+                mask = mask.ravel()[self._random_subset_indices[1]]
 
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)

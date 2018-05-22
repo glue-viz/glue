@@ -247,7 +247,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     attribute : str
         The attribute name - this will be populated once a dataset is assigned
         to the helper.
-    percentile_subset : int
+    random_subset : int
         How many points to use at most for the percentile calculation (using all
         values is highly inefficient and not needed)
     margin : float
@@ -279,12 +279,12 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper')
     modifiers_names = ('log', 'percentile')
 
-    def __init__(self, state, attribute, percentile_subset=10000, margin=0, cache=None, **kwargs):
+    def __init__(self, state, attribute, random_subset=10000, margin=0, cache=None, **kwargs):
 
         super(StateAttributeLimitsHelper, self).__init__(state, attribute, cache=cache, **kwargs)
 
         self.margin = margin
-        self.percentile_subset = percentile_subset
+        self.random_subset = random_subset
         self.subset_indices = None
 
         if self.attribute is not None:
@@ -327,40 +327,26 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             exclude = (100 - percentile) / 2.
 
-            # data_values = self.data_values
             data_component = self.data_component
-
-            # NOTE: specific to issues with local data
-            # if data_component.size > self.percentile_subset:
-            #     if self.subset_indices is None or self.subset_indices[0] != data_component.size:
-            #         self.subset_indices = (data_component.size,
-            #                                np.random.randint(0, data_component.size,
-            #                                                  self.percentile_subset))
-            #     data_values = data_values.ravel()[self.subset_indices[1]]
 
             if log and not data_component.any_positive:
                 self.set(lower=0.1, upper=1, percentile=percentile, log=log)
                 return
 
-            # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
-            # they don't exclude inf/-inf
-            # if data_values.dtype.kind != 'M':
-            #     data_values = data_values[np.isfinite(data_values)]
-
             if percentile == 100:
-
-                # if data_values.dtype.kind == 'M':
-                #     lower = data_values.min()
-                #     upper = data_values.max()
-                # else:
-                # TODO: have a way to ask for the min/max of positive values
-                lower = self.data.compute_statistic('min', cid=self.component_id, finite=True, positive=log)
-                upper = self.data.compute_statistic('max', cid=self.component_id, finite=True, positive=log)
-
+                lower = self.data.compute_statistic('min', cid=self.component_id,
+                                                    finite=True, positive=log,
+                                                    random_subset=self.random_subset)
+                upper = self.data.compute_statistic('max', cid=self.component_id,
+                                                    finite=True, positive=log,
+                                                    random_subset=self.random_subset)
             else:
-
-                lower = self.data.compute_statistic('percentile', cid=self.component_id, percentile=exclude, positive=log)
-                upper = self.data.compute_statistic('percentile', cid=self.component_id, percentile=100 - exclude, positive=log)
+                lower = self.data.compute_statistic('percentile', cid=self.component_id,
+                                                    percentile=exclude, positive=log,
+                                                    random_subset=self.random_subset)
+                upper = self.data.compute_statistic('percentile', cid=self.component_id,
+                                                    percentile=100 - exclude, positive=log,
+                                                    random_subset=self.random_subset)
 
             if np.isnan(lower) or np.isnan(upper):
 

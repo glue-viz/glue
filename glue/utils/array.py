@@ -448,7 +448,7 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
 
         keep = np.ones(data.shape, dtype=bool)
 
-        if finite:
+        if data.dtype.kind != 'M' and finite:
             keep &= np.isfinite(data)
 
         if positive:
