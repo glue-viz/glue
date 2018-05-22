@@ -1261,9 +1261,11 @@ class Data(object):
         """
         Compute an n-dimensional histogram with regularly spaced bins.
 
+        Currently this only implements 1-D histograms.
+
         Parameters
         ----------
-        cids : str or ComponentID or list of str or `ComponentID`
+        cids : list of str or `ComponentID`
             Component IDs to compute the histogram over
         weights : str or ComponentID
             Component IDs to use for the histogram weights
@@ -1271,7 +1273,7 @@ class Data(object):
             The ``(min, max)`` of the histogram range
         bins : list of int
             The number of bins
-        log : bool or list of bool
+        log : list of bool
             Whether to compute the histogram in log space
         subset_state : `SubsetState`, optional
             If specified, the histogram will only take into account values in
