@@ -1231,8 +1231,8 @@ class Data(object):
             return result
 
         if subset_state:
-            if isinstance(subset_state, SliceSubsetState):
-                data = subset_state.to_array(self, cid, view)
+            if isinstance(subset_state, SliceSubsetState) and view is None:
+                data = subset_state.to_array(self, cid)
                 mask = None
             else:
                 data = self[cid]

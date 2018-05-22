@@ -16,7 +16,6 @@ from glue.app.qt import GlueApplication
 from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
-from glue.utils import nanmean
 from glue.core.tests.test_state import clone
 
 from ..data_viewer import ProfileViewer

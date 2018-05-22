@@ -6,7 +6,6 @@ from numpy.testing import assert_allclose
 
 from glue.core import Data, Coordinates
 from glue.core.tests.test_state import clone
-from glue.utils import nanmean, nanmedian, nansum, nanmin, nanmax
 
 from ..state import ProfileViewerState, ProfileLayerState
 
