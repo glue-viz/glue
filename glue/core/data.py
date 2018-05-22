@@ -1257,6 +1257,60 @@ class Data(object):
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)
 
+    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+        """
+        Compute an n-dimensional histogram with regularly spaced bins.
+
+        Parameters
+        ----------
+        cids : list of `ComponentID`
+            Component IDs to compute the histogram over
+        range : list of tuple
+            The ``(min, max)`` of the histogram range
+        bins : list of int
+            The number of bins
+        log : bool
+            Whether to compute the histogram in log space
+        subset_state : `SubsetState`, optional
+            If specified, the histogram will only take into account values in
+            the subset state.
+        """
+
+        if len(cids) > 1:
+            raise NotImplementedError()
+        else:
+            cid = cids[0]
+            range = range[0]
+            bins = bins[0]
+            log = log[0]
+
+        x = self[cid]
+
+        if subset_state is not None:
+            mask = subset_state.to_mask(self)
+            x = x[mask]
+
+        xmin, xmax = sorted(range)
+
+        keep = (x >= xmin) & (x <= xmax)
+
+        if x.dtype.kind != 'M':
+            keep &= ~np.isnan(x)
+
+        x = x[keep]
+
+        if len(x) == 0:
+            return np.zeros(bins)
+
+        if log:
+            range = None
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
+        else:
+            range = [xmin, xmax]
+            bins = self._viewer_state.hist_n_bin
+
+        return np.histogram(x, range=range, bins=bins)
+
 
 @contract(i=int, ndim=int)
 def pixel_label(i, ndim):
