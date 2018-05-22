@@ -62,7 +62,7 @@ class TestProfileViewer(object):
 
     def test_functions(self):
         self.viewer.add_data(self.data)
-        self.viewer.state.function = nanmean
+        self.viewer.state.function = 'mean'
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
         layer_artist.wait()

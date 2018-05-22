@@ -24,7 +24,7 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
-from glue.utils import compute_statistic, unbroadcast
+from glue.utils import compute_statistic, unbroadcast, iterate_chunks
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1194,9 +1194,12 @@ class Data(object):
             to use for the statistic. This can only be used if ``axis`` is `None`
         """
 
-        # TODO: generalize chunking to tuple axis (not just int)
+        # TODO: generalize chunking to more types of axis
 
-        if (view is None and isinstance(axis, int) and self.size > N_CHUNK_MAX and
+        if (view is None and
+                isinstance(axis, tuple) and
+                len(axis) == self.ndim - 1 and
+                self.size > N_CHUNK_MAX and
                 not isinstance(subset_state, SliceSubsetState)):
 
             # We operate in chunks here to avoid memory issues.
@@ -1208,19 +1211,22 @@ class Data(object):
             # could ask a SubsetState whether it is broadcasted along
             # axis_index.
 
-            result = np.zeros(self.shape[axis])
+            axis_index = [a for a in range(self.ndim) if a not in axis][0]
+
+            result = np.zeros(self.shape[axis_index])
 
             chunk_shape = list(self.shape)
 
             # Deliberately leave n_chunks as float to not round twice
-            n_chunks = self.layer.size / N_CHUNK_MAX
+            n_chunks = self.size / N_CHUNK_MAX
 
             chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
 
-            for view in iterate_chunks(self.layer.shape, chunk_shape=chunk_shape):
-                result[view[axis]] = self.compute_statistic(statistic, cid, subset_state=subset_state,
-                                                            axis=axis, finite=finite, positive=positive,
-                                                            percentile=percentile, view=view)
+            for chunk_view in iterate_chunks(self.shape, chunk_shape=chunk_shape):
+                values = self.compute_statistic(statistic, cid, subset_state=subset_state,
+                                                axis=axis, finite=finite, positive=positive,
+                                                percentile=percentile, view=chunk_view)
+                result[chunk_view[axis_index]] = values
 
             return result
 

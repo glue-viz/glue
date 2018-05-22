@@ -329,15 +329,11 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             data_component = self.data_component
 
-            if log and not data_component.any_positive:
-                self.set(lower=0.1, upper=1, percentile=percentile, log=log)
-                return
-
             if percentile == 100:
-                lower = self.data.compute_statistic('min', cid=self.component_id,
+                lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
                                                     random_subset=self.random_subset)
-                upper = self.data.compute_statistic('max', cid=self.component_id,
+                upper = self.data.compute_statistic('maximum', cid=self.component_id,
                                                     finite=True, positive=log,
                                                     random_subset=self.random_subset)
             else:
@@ -349,9 +345,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                                                     random_subset=self.random_subset)
 
             if np.isnan(lower) or np.isnan(upper):
-
                 lower, upper = 0, 1
-
             else:
 
                 if data_component.categorical:
@@ -467,15 +461,8 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 else:
                     n_bin = self._common_n_bin
 
-                data_component = self.data_component
-
-                # NOTE: we can't use np.nanmin/np.nanmax or nanpercentile below as
-                # they don't exclude inf/-inf
-                # if values.dtype.kind != 'M':
-                #     values = values[np.isfinite(values)]
-
-                lower = self.data.compute_statistic('min', cid=self.component_id, finite=True)
-                upper = self.data.compute_statistic('max', cid=self.component_id, finite=True)
+                lower = self.data.compute_statistic('minimum', cid=self.component_id, finite=True)
+                upper = self.data.compute_statistic('maximum', cid=self.component_id, finite=True)
 
                 if np.isnan(lower) or np.isnan(upper):
                     lower, upper = 0, 1

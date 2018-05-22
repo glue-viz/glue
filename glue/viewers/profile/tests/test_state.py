@@ -30,7 +30,7 @@ class TestProfileViewerState:
         self.layer_state = ProfileLayerState(viewer_state=self.viewer_state,
                                              layer=self.data)
         self.viewer_state.layers.append(self.layer_state)
-        self.viewer_state.function = nanmean
+        self.viewer_state.function = 'mean'
 
     def test_basic(self):
         x, y = self.layer_state.profile
@@ -62,23 +62,23 @@ class TestProfileViewerState:
 
     def test_function(self):
 
-        self.viewer_state.function = nanmean
+        self.viewer_state.function = 'mean'
         x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
-        self.viewer_state.function = nanmin
+        self.viewer_state.function = 'minimum'
         x, y = self.layer_state.profile
         assert_allclose(y, [0, 8, 16])
 
-        self.viewer_state.function = nanmax
+        self.viewer_state.function = 'maximum'
         x, y = self.layer_state.profile
         assert_allclose(y, [7, 15, 23])
 
-        self.viewer_state.function = nansum
+        self.viewer_state.function = 'sum'
         x, y = self.layer_state.profile
         assert_allclose(y, [28, 92, 156])
 
-        self.viewer_state.function = nanmedian
+        self.viewer_state.function = 'median'
         x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
@@ -105,7 +105,7 @@ class TestProfileViewerState:
     def test_clone(self):
 
         self.viewer_state.x_att = self.data.pixel_component_ids[1]
-        self.viewer_state.function = nanmedian
+        self.viewer_state.function = 'median'
 
         self.layer_state.attribute = self.data.id['x']
         self.layer_state.linewidth = 3
@@ -113,7 +113,7 @@ class TestProfileViewerState:
         viewer_state_new = clone(self.viewer_state)
 
         assert viewer_state_new.x_att.label == 'Pixel Axis 1 [y]'
-        assert viewer_state_new.function is nanmedian
+        assert viewer_state_new.function == 'median'
 
         assert self.layer_state.attribute.label == 'x'
         assert self.layer_state.linewidth == 3

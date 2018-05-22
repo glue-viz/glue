@@ -163,7 +163,7 @@ Profile viewer
 
 Glue now features a new profile viewer that can be used to show data collapsed
 along all but one dimension using a variety of functions (mean, median, maximum,
-minimim, and so on). This new viewer replaces the previous 'spectrum' tool
+minimum, and so on). This new viewer replaces the previous 'spectrum' tool
 (which was restricted to 3 dimensions and mostly designed to work with
 astronomical data) and includes the same functionality to fit models to profiles
 or collapse data in an image viewer based on an interval selected in the profile

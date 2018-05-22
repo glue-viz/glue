@@ -15,7 +15,7 @@ from glue.external.six.moves import range
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax', 'format_minimal']
+           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic']
 
 
 def unbroadcast(array):
@@ -394,7 +394,6 @@ def format_minimal(values):
     return fmt, strings
 
 
-
 PLAIN_FUNCTIONS = {'minimum': np.min,
                    'maximum': np.max,
                    'mean': np.mean,
@@ -417,7 +416,7 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
 
     Parameters
     ----------
-    statistic : {'count', 'min', 'max', 'mean', 'median', 'sum', 'percentile'}
+    statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
         The statistic to compute
     data : `numpy.ndarray`
         The data to compute the statistic for.
@@ -444,7 +443,7 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
     if statistic not in PLAIN_FUNCTIONS:
         raise ValueError("Unrecognized statistic: {0}".format(statistic))
 
-    if finite or positive or mask:
+    if finite or positive or mask is not None:
 
         keep = np.ones(data.shape, dtype=bool)
 
@@ -454,13 +453,16 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
         if positive:
             keep &= data > 0
 
-        if mask:
+        if mask is not None:
             keep &= mask
 
         if axis is None:
             data = data[keep]
         else:
-            data[keep] = np.nan
+            # We need to force a copy since we are editing the values and we
+            # might as well convert to float just in case
+            data = np.array(data, dtype=float)
+            data[~keep] = np.nan
 
         function = NAN_FUNCTIONS[statistic]
 
