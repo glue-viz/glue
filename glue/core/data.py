@@ -1289,11 +1289,13 @@ class Data(object):
         x = self[cid]
         if weights is not None:
             w = self[weights]
+        else:
+            w = None
 
         if subset_state is not None:
             mask = subset_state.to_mask(self)
             x = x[mask]
-            if weights is not None:
+            if w is not None:
                 w = w[mask]
 
         xmin, xmax = sorted(range)
@@ -1304,7 +1306,7 @@ class Data(object):
             keep &= ~np.isnan(x)
 
         x = x[keep]
-        if weights is not None:
+        if w is not None:
             w = w[keep]
 
         if len(x) == 0:
@@ -1312,12 +1314,9 @@ class Data(object):
 
         if log:
             range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
-        else:
-            range = [xmin, xmax]
-            bins = self._viewer_state.hist_n_bin
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), bins + 1)
 
-        return np.histogram(x, range=range, bins=bins, weights=w)
+        return np.histogram(x, range=range, bins=bins, weights=w)[0]
 
 
 @contract(i=int, ndim=int)
