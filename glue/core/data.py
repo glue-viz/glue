@@ -1257,19 +1257,21 @@ class Data(object):
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)
 
-    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+    def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
         Compute an n-dimensional histogram with regularly spaced bins.
 
         Parameters
         ----------
-        cids : list of `ComponentID`
+        cids : str or ComponentID or list of str or `ComponentID`
             Component IDs to compute the histogram over
+        weights : str or ComponentID
+            Component IDs to use for the histogram weights
         range : list of tuple
             The ``(min, max)`` of the histogram range
         bins : list of int
             The number of bins
-        log : bool
+        log : bool or list of bool
             Whether to compute the histogram in log space
         subset_state : `SubsetState`, optional
             If specified, the histogram will only take into account values in
@@ -1285,10 +1287,14 @@ class Data(object):
             log = log[0]
 
         x = self[cid]
+        if weights is not None:
+            w = self[weights]
 
         if subset_state is not None:
             mask = subset_state.to_mask(self)
             x = x[mask]
+            if weights is not None:
+                w = w[mask]
 
         xmin, xmax = sorted(range)
 
@@ -1298,6 +1304,8 @@ class Data(object):
             keep &= ~np.isnan(x)
 
         x = x[keep]
+        if weights is not None:
+            w = w[keep]
 
         if len(x) == 0:
             return np.zeros(bins)
@@ -1309,7 +1317,7 @@ class Data(object):
             range = [xmin, xmax]
             bins = self._viewer_state.hist_n_bin
 
-        return np.histogram(x, range=range, bins=bins)
+        return np.histogram(x, range=range, bins=bins, weights=w)
 
 
 @contract(i=int, ndim=int)
