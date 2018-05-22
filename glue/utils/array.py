@@ -470,6 +470,9 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
 
         function = PLAIN_FUNCTIONS[statistic]
 
+    if data.size == 0:
+        return np.nan
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
         if statistic == 'percentile':
