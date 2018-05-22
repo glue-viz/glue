@@ -16,7 +16,6 @@ from glue.app.qt import GlueApplication
 from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
-from glue.utils import nanmean
 from glue.core.tests.test_state import clone
 
 from ..data_viewer import ProfileViewer
@@ -62,7 +61,7 @@ class TestProfileViewer(object):
 
     def test_functions(self):
         self.viewer.add_data(self.data)
-        self.viewer.state.function = nanmean
+        self.viewer.state.function = 'mean'
         assert len(self.viewer.layers) == 1
         layer_artist = self.viewer.layers[0]
         layer_artist.wait()

@@ -33,7 +33,7 @@ class TestProfileTools(object):
         self.data_collection.append(self.data)
 
         self.viewer = self.app.new_data_viewer(ProfileViewer)
-        self.viewer.state.function = nanmean
+        self.viewer.state.function = 'mean'
 
         self.viewer.toolbar.active_tool = 'profile-analysis'
 

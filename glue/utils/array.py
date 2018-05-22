@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
+
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
@@ -13,7 +15,7 @@ from glue.external.six.moves import range
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax', 'format_minimal']
+           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic']
 
 
 def unbroadcast(array):
@@ -390,3 +392,90 @@ def format_minimal(values):
         if len(strings) == len(set(strings)):
             break
     return fmt, strings
+
+
+PLAIN_FUNCTIONS = {'minimum': np.min,
+                   'maximum': np.max,
+                   'mean': np.mean,
+                   'median': np.median,
+                   'sum': np.sum,
+                   'percentile': np.percentile}
+
+NAN_FUNCTIONS = {'minimum': nanmin,
+                 'maximum': nanmax,
+                 'mean': nanmean,
+                 'median': nanmedian,
+                 'sum': nansum,
+                 'percentile': np.nanpercentile}
+
+
+def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
+                      positive=False, percentile=None):
+    """
+    Compute a statistic for the data.
+
+    Parameters
+    ----------
+    statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+        The statistic to compute
+    data : `numpy.ndarray`
+        The data to compute the statistic for.
+    mask : `numpy.ndarray`
+        The mask to apply when computing the statistic.
+    axis : None or int or tuple of int
+        If specified, the axis/axes to compute the statistic over.
+    finite : bool, optional
+        Whether to include only finite values in the statistic. This should
+        be `True` to ignore NaN/Inf values
+    positive : bool, optional
+        Whether to include only (strictly) positive values in the statistic.
+        This is used for example when computing statistics of data shown in
+        log space.
+    percentile : float, optional
+        If ``statistic`` is ``'percentile'``, the ``percentile`` argument
+        should be given and specify the percentile to calculate in the
+        range [0:100]
+    """
+
+    # NOTE: this function should not ever have to use glue-specific objects.
+    # The aim is to eventually use a fast C implementation of this function.
+
+    if statistic not in PLAIN_FUNCTIONS:
+        raise ValueError("Unrecognized statistic: {0}".format(statistic))
+
+    if (finite or positive or mask is not None) and data.dtype.kind != 'M':
+
+        keep = np.ones(data.shape, dtype=bool)
+
+        if finite:
+            keep &= np.isfinite(data)
+
+        if positive:
+            keep &= data > 0
+
+        if mask is not None:
+            keep &= mask
+
+        if axis is None:
+            data = data[keep]
+        else:
+            # We need to force a copy since we are editing the values and we
+            # might as well convert to float just in case
+            data = np.array(data, dtype=float)
+            data[~keep] = np.nan
+
+        function = NAN_FUNCTIONS[statistic]
+
+    else:
+
+        function = PLAIN_FUNCTIONS[statistic]
+
+    if data.size == 0:
+        return np.nan
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        if statistic == 'percentile':
+            return function(data, percentile, axis=axis)
+        else:
+            return function(data, axis=axis)
