@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from glue.core import Subset
-from glue.utils import defer_draw
+from glue.utils import defer_draw, datetime64_to_mpl
 
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
@@ -66,6 +66,9 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
                                              bins=[self._viewer_state.hist_n_bin],
                                              log=[self._viewer_state.x_log],
                                              subset_state=subset_state)
+
+        if isinstance(range[0], np.datetime64):
+            range = [datetime64_to_mpl(range[0]), datetime64_to_mpl(range[1])]
 
         if self._viewer_state.x_log:
             hist_edges = np.logspace(np.log10(range[0]), np.log10(range[1]), self._viewer_state.hist_n_bin + 1)

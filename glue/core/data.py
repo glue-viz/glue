@@ -24,7 +24,7 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
-from glue.utils import compute_statistic, unbroadcast, iterate_chunks
+from glue.utils import compute_statistic, unbroadcast, iterate_chunks, datetime64_to_mpl
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1302,7 +1302,11 @@ class Data(object):
 
         keep = (x >= xmin) & (x <= xmax)
 
-        if x.dtype.kind != 'M':
+        if x.dtype.kind == 'M':
+            x = datetime64_to_mpl(x)
+            xmin = datetime64_to_mpl(xmin)
+            xmax = datetime64_to_mpl(xmax)
+        else:
             keep &= ~np.isnan(x)
 
         x = x[keep]
@@ -1315,6 +1319,8 @@ class Data(object):
         if log:
             range = None
             bins = np.logspace(np.log10(xmin), np.log10(xmax), bins + 1)
+        else:
+            range = (xmin, xmax)
 
         return np.histogram(x, range=range, bins=bins, weights=w)[0]
 

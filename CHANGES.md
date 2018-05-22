@@ -9,6 +9,8 @@ v0.14.0 (unreleased)
 
 * Improved naming of components when merging datasets. [#1249]
 
+* Moved calculation of histograms to Data.compute_histogram. [#1739]
+
 v0.13.4 (unreleased)
 --------------------
 
