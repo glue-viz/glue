@@ -187,7 +187,7 @@ def export_histogram(viewer):
         if not artist.visible:
             continue
         layer = artist.layer
-        x, y = _sanitize(artist.mpl_bins[:-1], artist.mpl_hist)
+        x, y = _sanitize(artist.mpl_hist_edges[:-1], artist.mpl_hist)
         trace = dict(
             name=layer.label,
             type='bar',

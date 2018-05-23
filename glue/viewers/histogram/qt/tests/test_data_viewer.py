@@ -192,37 +192,37 @@ class TestHistogramViewer(object):
         assert_allclose(self.viewer.state.y_max, 2.4)
 
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
 
         cid = self.data.visible_components[0]
         self.data_collection.new_subset_group('subset 1', cid < 2)
 
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 1, 0])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.normalize = True
 
         assert_allclose(self.viewer.state.y_max, 0.24)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.1, 0.2, 0.1])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.2, 0.2, 0])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.cumulative = True
 
         assert_allclose(self.viewer.state.y_max, 1.2)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.25, 0.75, 1.0])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.5, 1.0, 1.0])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.normalize = False
 
         assert_allclose(self.viewer.state.y_max, 4.8)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 3, 4])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 2])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.cumulative = False
 
@@ -236,33 +236,33 @@ class TestHistogramViewer(object):
 
         assert_allclose(self.viewer.state.y_max, 2.4)
         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.normalize = True
 
         assert_allclose(self.viewer.state.y_max, 0.6)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.25, 0.25])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0, 0.5])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.cumulative = True
 
         assert_allclose(self.viewer.state.y_max, 1.2)
         assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.75, 1])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0.5, 1])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.normalize = False
 
         assert_allclose(self.viewer.state.y_max, 4.8)
         assert_allclose(self.viewer.layers[0].mpl_hist, [2, 3, 4])
-        assert_allclose(self.viewer.layers[0].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
         assert_allclose(self.viewer.layers[1].mpl_hist, [1, 1, 2])
-        assert_allclose(self.viewer.layers[1].mpl_bins, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
 
         # TODO: add tests for log
 

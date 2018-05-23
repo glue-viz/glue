@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.utils import defer_draw
+from glue.core import Subset
+from glue.utils import defer_draw, datetime64_to_mpl
 
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
@@ -30,8 +31,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     def remove(self):
         super(HistogramLayerArtist, self).remove()
         self.mpl_hist_unscaled = np.array([])
-        self.mpl_hist = np.array([])
-        self.mpl_bins = np.array([])
+        self.mpl_hist_edges = np.array([])
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -42,8 +42,15 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         self.remove()
 
+        if isinstance(self.layer, Subset):
+            data = self.layer.data
+            subset_state = self.layer.subset_state
+        else:
+            data = self.layer
+            subset_state = None
+
         try:
-            x = self.layer[self._viewer_state.x_att]
+            x_comp = data.get_component(self._viewer_state.x_att)
         except AttributeError:
             return
         except (IncompatibleAttribute, IndexError):
@@ -52,36 +59,35 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
-        keep = (x >= self._viewer_state.hist_x_min) & (x <= self._viewer_state.hist_x_max)
+        range = sorted((self._viewer_state.hist_x_min, self._viewer_state.hist_x_max))
 
-        if x.dtype.kind != 'M':
-            keep &= ~np.isnan(x)
+        hist_values = data.compute_histogram([self._viewer_state.x_att],
+                                             range=[range],
+                                             bins=[self._viewer_state.hist_n_bin],
+                                             log=[self._viewer_state.x_log],
+                                             subset_state=subset_state)
 
-        x = x[keep]
+        if isinstance(range[0], np.datetime64):
+            range = [datetime64_to_mpl(range[0]), datetime64_to_mpl(range[1])]
 
-        if len(x) == 0:
-            self.redraw()
-            return
-
-        # For histogram
-        xmin, xmax = sorted([self._viewer_state.hist_x_min, self._viewer_state.hist_x_max])
         if self._viewer_state.x_log:
-            range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), self._viewer_state.hist_n_bin)
+            hist_edges = np.logspace(np.log10(range[0]), np.log10(range[1]), self._viewer_state.hist_n_bin + 1)
         else:
-            range = [xmin, xmax]
-            bins = self._viewer_state.hist_n_bin
+            hist_edges = np.linspace(range[0], range[1], self._viewer_state.hist_n_bin + 1)
 
-        self.mpl_hist_unscaled, self.mpl_bins, self.mpl_artists = self.axes.hist(x, range=range, bins=bins)
+        self.mpl_artists = self.axes.bar(hist_edges[:-1], hist_values, align='edge', width=np.diff(hist_edges)).get_children()
+
+        self.mpl_hist_unscaled = hist_values
+        self.mpl_hist_edges = hist_edges
 
     @defer_draw
     def _scale_histogram(self):
 
-        if self.mpl_bins.size == 0 or self.mpl_hist_unscaled.sum() == 0:
+        if self.mpl_hist_edges.size == 0 or self.mpl_hist_unscaled.sum() == 0:
             return
 
         self.mpl_hist = self.mpl_hist_unscaled.astype(np.float)
-        dx = self.mpl_bins[1] - self.mpl_bins[0]
+        dx = self.mpl_hist_edges[1] - self.mpl_hist_edges[0]
 
         if self._viewer_state.cumulative:
             self.mpl_hist = self.mpl_hist.cumsum()

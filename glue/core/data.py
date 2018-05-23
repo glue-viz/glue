@@ -24,7 +24,7 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
-from glue.utils import compute_statistic, unbroadcast, iterate_chunks
+from glue.utils import compute_statistic, unbroadcast, iterate_chunks, datetime64_to_mpl
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1256,6 +1256,75 @@ class Data(object):
 
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)
+
+    def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
+        """
+        Compute an n-dimensional histogram with regularly spaced bins.
+
+        Currently this only implements 1-D histograms.
+
+        Parameters
+        ----------
+        cids : list of str or `ComponentID`
+            Component IDs to compute the histogram over
+        weights : str or ComponentID
+            Component IDs to use for the histogram weights
+        range : list of tuple
+            The ``(min, max)`` of the histogram range
+        bins : list of int
+            The number of bins
+        log : list of bool
+            Whether to compute the histogram in log space
+        subset_state : `SubsetState`, optional
+            If specified, the histogram will only take into account values in
+            the subset state.
+        """
+
+        if len(cids) > 1:
+            raise NotImplementedError()
+        else:
+            cid = cids[0]
+            range = range[0]
+            bins = bins[0]
+            log = log[0]
+
+        x = self[cid]
+        if weights is not None:
+            w = self[weights]
+        else:
+            w = None
+
+        if subset_state is not None:
+            mask = subset_state.to_mask(self)
+            x = x[mask]
+            if w is not None:
+                w = w[mask]
+
+        xmin, xmax = sorted(range)
+
+        keep = (x >= xmin) & (x <= xmax)
+
+        if x.dtype.kind == 'M':
+            x = datetime64_to_mpl(x)
+            xmin = datetime64_to_mpl(xmin)
+            xmax = datetime64_to_mpl(xmax)
+        else:
+            keep &= ~np.isnan(x)
+
+        x = x[keep]
+        if w is not None:
+            w = w[keep]
+
+        if len(x) == 0:
+            return np.zeros(bins)
+
+        if log:
+            range = None
+            bins = np.logspace(np.log10(xmin), np.log10(xmax), bins + 1)
+        else:
+            range = (xmin, xmax)
+
+        return np.histogram(x, range=range, bins=bins, weights=w)[0]
 
 
 @contract(i=int, ndim=int)
