@@ -97,7 +97,6 @@ Advanced customization
 
    customizing_guide/state_based_qt_viewer.rst
    customizing_guide/matplotlib_qt_viewer.rst
-   customizing_guide/full_custom_qt_viewer.rst
    customizing_guide/toolbar.rst
 
 Getting help

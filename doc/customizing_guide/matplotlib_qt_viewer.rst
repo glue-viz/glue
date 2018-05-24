@@ -65,3 +65,24 @@ class:
   :class:`~glue.viewers.matplotlib.state.MatplotlibDataViewerState`
 * It adds tools for saving, zooming, panning, and resetting the view
 * It recognizes the global glue preferences for foreground/background color
+
+Functional example
+------------------
+
+Let's now take the take full example from :ref:`state-qt-viewer` and
+update/improve it to use the infrastructure described above:
+
+.. literalinclude:: mpl_viewer/config.py
+
+While the code is not much shorter, there is additional functionality available.
+In particular, the viewer now has standard Matplotlib buttons in the toolbar:
+
+.. image:: mpl_viewer/tutorial_viewer.png
+   :width: 600px
+   :align: center
+
+In addition, the layer artist has been improved to take into account the color
+and transparency given by the layer state (via the ``_on_visual_change``
+method), and the axis labels are now set in the viewer state class.
+
+Since the state classes expose many more options than are currently exposed in
