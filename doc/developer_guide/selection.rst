@@ -74,16 +74,13 @@ because if another dataset defines a link between one of its components and the
 ``x`` component of ``data``, then the inequality can be used for that other
 component too.
 
-While the above syntax is convenient for using Glue via the command-line, in
-the case of data viewers, we actually want to translate ROIs into subset
-states. To do this, the :class:`~glue.core.component.Component` class includes
-a :meth:`~glue.core.component.Component.subset_from_roi` method that takes a
-ROI and returns a subset state. At the moment this method works for 1- and 2-d
-ROIs. In the case of 2-d ROIs, the method should be given a reference to the
-second :class:`~glue.core.component.Component`. In more complex cases, you can
-also define your own logic for converting ROIs into subset states. See the
-documentation of :meth:`~glue.core.component.Component.subset_from_roi` for
-more details.
+While the above syntax is convenient for using Glue via the command-line, in the
+case of data viewers, we actually want to translate ROIs into subset states. To
+do this, we can use the :func:`~glue.core.subset.roi_to_subset_state` function
+that takes a ROI and returns a subset state. At the moment this method works for
+1- and 2-d ROIs. In more complex cases, you can also define your own logic for
+converting ROIs into subset states. See the documentation of
+:func:`~glue.core.subset.roi_to_subset_state` for more details.
 
 Subset states can be combined using logical operations:
 
@@ -143,5 +140,3 @@ This creates a :class:`~glue.core.subset_group.SubsetGroup` which represents a g
     >>> subset = subset_group.subsets[0]
     >>> subset
     Subset: x > 1.5 (data: )
-
-

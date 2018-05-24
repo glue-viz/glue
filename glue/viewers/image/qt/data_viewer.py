@@ -6,6 +6,8 @@ from astropy.wcs import WCS
 
 from qtpy.QtWidgets import QMessageBox
 
+from glue.core.subset import roi_to_subset_state
+
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -190,10 +192,9 @@ class ImageViewer(MatplotlibDataViewer):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi,
-                                      other_comp=y_comp,
-                                      other_att=self.state.y_att,
-                                      coord='x')
+        return roi_to_subset_state(roi,
+                                   x_att=self.state.x_att, x_comp=x_comp,
+                                   y_att=self.state.y_att, y_comp=y_comp)
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:

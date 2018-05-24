@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
+from glue.core.subset import roi_to_subset_state
 from glue.utils import mpl_to_datetime64
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
@@ -77,7 +78,7 @@ class HistogramViewer(MatplotlibDataViewer):
 
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi_new, coord='x')
+        return roi_to_subset_state(roi_new, x_att=self.state.x_att, x_comp=x_comp)
 
     @staticmethod
     def update_viewer_state(rec, context):

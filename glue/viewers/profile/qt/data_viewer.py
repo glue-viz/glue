@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core.subset import roi_to_subset_state
+
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
@@ -46,4 +48,4 @@ class ProfileViewer(MatplotlibDataViewer):
 
     def _roi_to_subset_state(self, roi):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        return x_comp.subset_from_roi(self.state.x_att, roi, coord='x')
+        return roi_to_subset_state(roi, x_att=self.state.x_att, x_comp=x_comp)

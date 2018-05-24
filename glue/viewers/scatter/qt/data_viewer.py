@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
 
 from glue.utils import mpl_to_datetime64
@@ -72,10 +73,9 @@ class ScatterViewer(MatplotlibDataViewer):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi,
-                                      other_comp=y_comp,
-                                      other_att=self.state.y_att,
-                                      coord='x')
+        return roi_to_subset_state(roi,
+                                   x_att=self.state.x_att, x_comp=x_comp,
+                                   y_att=self.state.y_att, y_comp=y_comp)
 
     @staticmethod
     def update_viewer_state(rec, context):
