@@ -1,9 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import (CallbackProperty, ListCallbackProperty,
-                                SelectionCallbackProperty, keep_in_sync)
+from glue.external.echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync
 
-from glue.core.state_objects import State
 from glue.core.message import LayerArtistUpdatedMessage
 
 from glue.viewers.common.state import ViewerState, LayerState

@@ -11,7 +11,6 @@ from glue.external.echo import delay_callback
 from glue.utils import defer_draw, mpl_to_datetime64
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
-from glue.core.command import ApplySubsetState
 
 # The following import is required to register the viewer tools
 from glue.viewers.matplotlib.qt import toolbar  # noqa

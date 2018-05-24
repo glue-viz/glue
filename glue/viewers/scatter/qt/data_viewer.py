@@ -61,6 +61,9 @@ class ScatterViewer(MatplotlibDataViewer):
 
     def apply_roi(self, roi, use_current=False):
 
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
+
         x_date = any(comp.datetime for comp in self.state._get_x_components())
         y_date = any(comp.datetime for comp in self.state._get_y_components())
 
@@ -76,8 +79,6 @@ class ScatterViewer(MatplotlibDataViewer):
                                            y_att=self.state.y_att, y_comp=y_comp)
 
         self.apply_subset_state(subset_state, use_current=use_current)
-
-
 
     @staticmethod
     def update_viewer_state(rec, context):

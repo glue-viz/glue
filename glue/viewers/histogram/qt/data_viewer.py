@@ -55,7 +55,8 @@ class HistogramViewer(MatplotlibDataViewer):
 
     def apply_roi(self, roi, use_current=False):
 
-        # TODO Does subset get applied to all data or just visible data?
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
 
         x_date = any(comp.datetime for comp in self.state._get_x_components())
 

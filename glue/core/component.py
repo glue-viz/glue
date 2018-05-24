@@ -6,15 +6,10 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from glue.core.subset import (RoiSubsetState, RangeSubsetState,
-                              CategoricalROISubsetState, AndState,
-                              CategoricalMultiRangeSubsetState,
-                              CategoricalROISubsetState2D)
-from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI)
+
 from glue.core.util import row_lookup
 from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
-                        polygon_line_intersections, broadcast_to)
+                        broadcast_to)
 
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',

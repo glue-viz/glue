@@ -181,6 +181,9 @@ class ImageViewer(MatplotlibDataViewer):
 
     def apply_roi(self, roi, use_current=False):
 
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
+
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
