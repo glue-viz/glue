@@ -1441,8 +1441,6 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
                     if len(segments) > 0:
                         selection[label] = segments
 
-                print(selection)
-
                 return CategoricalMultiRangeSubsetState(selection, cat_att=cat_att, num_att=num_att)
 
     else:
