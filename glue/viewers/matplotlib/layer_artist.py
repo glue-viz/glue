@@ -1,9 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import keep_in_sync
-from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
+from glue.viewers.common.layer_artist import LayerArtistWithState
 
 __all__ = ['MatplotlibLayerArtist']
 
@@ -14,37 +13,19 @@ except Exception:
 else:
     QT_INSTALLED = True
 
-# TODO: should use the built-in class for this, though we don't need
-#       the _sync_style method, so just re-define here for now.
 
-
-class MatplotlibLayerArtist(LayerArtistBase):
+class MatplotlibLayerArtist(LayerArtistWithState):
 
     zorder = DeferredDrawCallbackProperty()
     visible = DeferredDrawCallbackProperty()
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
-        super(MatplotlibLayerArtist, self).__init__(layer)
+        super(MatplotlibLayerArtist, self).__init__(viewer_state, layer_state=layer_state, layer=layer)
 
-        # Keep a reference to the layer (data or subset) and axes
         self.axes = axes
-        self._viewer_state = viewer_state
-
-        # Set up a state object for the layer artist
-        self.layer = layer or layer_state.layer
-        self.state = layer_state or self._layer_state_cls(viewer_state=viewer_state,
-                                                          layer=self.layer)
-        if self.state not in self._viewer_state.layers:
-            self._viewer_state.layers.append(self.state)
 
         self.mpl_artists = []
-
-        self.zorder = self.state.zorder
-        self.visible = self.state.visible
-
-        self._sync_zorder = keep_in_sync(self, 'zorder', self.state, 'zorder')
-        self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
 
         if QT_INSTALLED:
             from qtpy.QtCore import QTimer
@@ -52,6 +33,7 @@ class MatplotlibLayerArtist(LayerArtistBase):
             self._notify_start.setInterval(500)
             self._notify_start.setSingleShot(True)
             self._notify_start.timeout.connect(self._notify_start_computation)
+
         self._notified_start = False
 
     def notify_start_computation(self, delay=500):
@@ -107,6 +89,3 @@ class MatplotlibLayerArtist(LayerArtistBase):
 
     def redraw(self):
         self.axes.figure.canvas.draw()
-
-    def __gluestate__(self, context):
-        return dict(state=context.id(self.state))

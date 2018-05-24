@@ -246,8 +246,9 @@ class LayerArtistBase(PropertySetMixin):
     __repr__ = __str__
 
 
-class MatplotlibLayerArtist(LayerArtistBase):
+# DEPRECATED: The following class can be removed once the custom viewer has been rewritten
 
+class MatplotlibLayerArtist(LayerArtistBase):
     """
     MPL-specific layer artist base class, that uses an Axes object
     """
