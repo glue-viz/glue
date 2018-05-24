@@ -59,9 +59,7 @@ class ScatterViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    # TODO: move some of the ROI stuff to state class?
-
-    def _roi_to_subset_state(self, roi):
+    def apply_roi(self, roi, use_current=False):
 
         x_date = any(comp.datetime for comp in self.state._get_x_components())
         y_date = any(comp.datetime for comp in self.state._get_y_components())
@@ -73,9 +71,13 @@ class ScatterViewer(MatplotlibDataViewer):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return roi_to_subset_state(roi,
-                                   x_att=self.state.x_att, x_comp=x_comp,
-                                   y_att=self.state.y_att, y_comp=y_comp)
+        subset_state = roi_to_subset_state(roi,
+                                           x_att=self.state.x_att, x_comp=x_comp,
+                                           y_att=self.state.y_att, y_comp=y_comp)
+
+        self.apply_subset_state(subset_state, use_current=use_current)
+
+
 
     @staticmethod
     def update_viewer_state(rec, context):

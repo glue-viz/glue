@@ -179,22 +179,19 @@ class ImageViewer(MatplotlibDataViewer):
 
         self._wcs_set = True
 
-    def _roi_to_subset_state(self, roi):
-        """ This method must be implemented in order for apply_roi from the
-        parent class to work.
-        """
+    def apply_roi(self, roi, use_current=False):
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
-        # TODO Does subset get applied to all data or just visible data?
-
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return roi_to_subset_state(roi,
-                                   x_att=self.state.x_att, x_comp=x_comp,
-                                   y_att=self.state.y_att, y_comp=y_comp)
+        subset_state = roi_to_subset_state(roi,
+                                           x_att=self.state.x_att, x_comp=x_comp,
+                                           y_att=self.state.y_att, y_comp=y_comp)
+
+        self.apply_subset_state(subset_state)
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:

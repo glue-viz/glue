@@ -13,6 +13,7 @@ from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
 from glue.utils import PropertySetMixin
+from glue.core.command import ApplySubsetState
 
 
 __all__ = ['Application', 'ViewerBase']
@@ -448,6 +449,12 @@ class ViewerBase(HubListener, PropertySetMixin):
     @property
     def session(self):
         return self._session
+
+    def apply_subset_state(self, subset_state, use_current=False):
+        cmd = ApplySubsetState(data_collection=self._data,
+                               subset_state=subset_state,
+                               use_current=use_current)
+        self._session.command_stack.do(cmd)
 
     def layer_view(self):
         raise NotImplementedError()

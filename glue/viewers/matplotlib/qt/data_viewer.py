@@ -234,25 +234,9 @@ class MatplotlibDataViewer(DataViewerWithState):
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self.axes, self.state, layer=layer, layer_state=layer_state)
 
-    def _roi_to_subset_state(self, roi):
+    def apply_roi(self, roi, use_current=False):
         """ This method must be implemented by subclasses """
         raise NotImplementedError
-
-    # TODO: move some of the ROI stuff to state class?
-
-    def apply_roi(self, roi, use_current=False):
-        """ This method relies on _roi_to_subset_state to be implemented by
-        subclasses.
-        """
-        if len(self.layers) > 0:
-            subset_state = self._roi_to_subset_state(roi)
-            cmd = ApplySubsetState(data_collection=self._data,
-                                   subset_state=subset_state,
-                                   use_current=use_current)
-            self._session.command_stack.do(cmd)
-        else:
-            # Make sure we force a redraw to get rid of the ROI
-            self.axes.figure.canvas.draw()
 
     def _script_header(self):
         state_dict = self.state.as_dict()

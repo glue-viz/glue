@@ -46,6 +46,7 @@ class ProfileViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    def _roi_to_subset_state(self, roi):
+    def apply_roi(self, roi, use_current=False):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        return roi_to_subset_state(roi, x_att=self.state.x_att, x_comp=x_comp)
+        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att, x_comp=x_comp)
+        self.apply_subset_state(subset_state, use_current=use_current)
