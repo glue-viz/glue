@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from matplotlib.colors import ColorConverter
 
 from glue.config import settings
-from glue.external.echo import callback_property
+from glue.external.echo import callback_property, HasCallbackProperties
 from glue.external import six
 
 # Define acceptable line styles
@@ -12,7 +12,7 @@ VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
 __all__ = ['VisualAttributes']
 
 
-class VisualAttributes(object):
+class VisualAttributes(HasCallbackProperties):
 
     '''
     This class is used to define visual attributes for any kind of objects
@@ -29,6 +29,8 @@ class VisualAttributes(object):
     '''
 
     def __init__(self, parent=None, washout=False, color=None, alpha=None):
+
+        super(VisualAttributes, self).__init__()
 
         # We have to set the defaults here, otherwise the settings are fixed
         # once the class is defined.
