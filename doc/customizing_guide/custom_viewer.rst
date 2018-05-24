@@ -1,23 +1,25 @@
-Building Custom Data Viewers
-============================
+Writing a simple custom data viewer
+===================================
 
 .. figure:: images/bball_3.png
    :align: center
 
-Glue's standard data viewers (scatter plots, images, histograms) are
-useful in a wide variety of data exploration settings. However, they
-represent a *tiny* fraction of the ways to view a particular
-dataset. For this reason, Glue provides a simple mechanism
-for creating custom visualizations using matplotlib.
+Glue's standard data viewers (scatter plots, images, histograms) are useful in a
+wide variety of data exploration settings. However, they represent a *tiny*
+fraction of the ways to view a particular dataset. For this reason, Glue
+provides a way to create more deta viewers that me better suited to what you
+need.
 
-Creating a :func:`custom data viewer <glue.custom_viewer>` requires writing a little bit of Matplotlib
-code but involves little to no GUI programming. The next several
-sections illustrate how to build a custom data viewer by example.
-
+There are several ways to do this - the tutorial on this page shows the easiest
+way for users to develop a new custom visualization, provided that it can be
+made using Matplotlib and tht you don't want do have to do any GUI programming.
+If you are interested in building more advanced custom viewers, see
+:ref:`state-qt-viewer`.
 
 The Goal: Basketball Shot Charts
 --------------------------------
-In Basketball, Shot Charts show the spatial distribution of shots
+
+In basketball, Shot Charts show the spatial distribution of shots
 for a particiular player, team, or game. The `New York Times <http://www.nytimes.com/interactive/2012/06/11/sports/basketball/nba-shot-analysis.html?_r=0>`_ has a nice example.
 
 There are three basic features that we might want to incorporate into

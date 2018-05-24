@@ -1,20 +1,26 @@
+.. _state-qt-viewer:
+
 Writing a custom viewer for glue
 ================================
 
 Motivation
 ----------
 
-The :func:`~glue.custom_viewer` function and the
-:class:`~glue.viewers.custom.qt.custom_viewer.CustomViewer` class described in
-:doc:`custom_viewer` are well-suited to developing new custom viewers that
-include simple Matplotlib plots. But in some cases, you may want to write a data
-viewer with more customized functionality, or that doesn't depend on Matplotlib
-and may use an existing third-party widget.
+The simple way of defining new custom viewers described in :doc:`custom_viewer`
+are well-suited to developing new custom viewers that include simple Matplotlib
+plots. But in some cases, you may want to write a data viewer with more
+customized functionality, or that doesn't depend on Matplotlib and may use an
+existing third-party widget.
 
 In this tutorial, we will take a look at the pieces needed to build a data
 viewer. Some of the sections here are relevant regardless of whether you are
 building a data viewer for e.g. Qt or Jupyter, and some of the later sections
 will show an example of building an actual Qt viewer.
+
+Note that if you are interested in building a Matplotlib-based viewer, you can
+make use of the ``glue.viewers.matplotlib`` sub-package to simplify things
+as described in :ref:`matplotlib-qt-viewer` - but first be sure to read this
+page as the Matplotlib viewer tutorial will build on this on.
 
 Terminology
 -----------
