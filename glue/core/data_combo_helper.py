@@ -17,7 +17,7 @@ from glue.external.echo import delay_callback, ChoiceSeparator
 from glue.external.six import string_types
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
-           'DataCollectionComboHelper']
+           'DataCollectionComboHelper', 'ComboHelper', 'BaseDataComboHelper']
 
 
 def unique_data_iter(datasets):
@@ -47,7 +47,7 @@ class ComboHelper(HubListener):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
     """
 
@@ -130,13 +130,13 @@ class ComponentIDComboHelper(ComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
-    data_collection : :class:`~glue.core.DataCollection`, optional
+    data_collection : :class:`~glue.core.data_collection.DataCollection`, optional
         The data collection to which the datasets belong - if specified,
         this is used to remove datasets from the combo when they are removed
         from the data collection.
-    data : :class:`~glue.core.Data`, optional
+    data : :class:`~glue.core.data.Data`, optional
         If specified, set up the combo for this dataset only and don't allow
         datasets to be added/removed
     numeric : bool, optional
@@ -408,9 +408,9 @@ class BaseDataComboHelper(ComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
-    data_collection : :class:`~glue.core.DataCollection`
+    data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection to which the datasets belong - this is needed
         because if a dataset is removed from the data collection, we want to
         remove it here.
@@ -489,9 +489,9 @@ class ManualDataComboHelper(BaseDataComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
-    data_collection : :class:`~glue.core.DataCollection`
+    data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection to which the datasets belong - this is needed
         because if a dataset is removed from the data collection, we want to
         remove it here.
@@ -552,15 +552,15 @@ class ManualDataComboHelper(BaseDataComboHelper):
 class DataCollectionComboHelper(BaseDataComboHelper):
     """
     This is a helper for combo boxes that need to show a list of data objects
-    that is always in sync with a :class:`~glue.core.DataCollection`.
+    that is always in sync with a :class:`~glue.core.data_collection.DataCollection`.
 
     Parameters
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.core.SelectionCallbackProperty`
+    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
-    data_collection : :class:`~glue.core.DataCollection`
+    data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection with which to stay in sync
     """
 

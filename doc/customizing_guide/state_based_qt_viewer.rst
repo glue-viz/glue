@@ -46,10 +46,10 @@ Viewer state
 ^^^^^^^^^^^^
 
 To create a viewer, we import the base
-:class:`~glue.viewer.common.state.ViewerState` class, as well as the
+:class:`~glue.viewers.common.state.ViewerState` class, as well as the
 :class:`~glue.external.echo.CallbackProperty` class::
 
-    from glue.viewer.common.state import ViewerState
+    from glue.viewers.common.state import ViewerState
     from glue.external.echo import CallbackProperty
 
 The latter is used to define properties on the state class and we can attach
@@ -91,9 +91,9 @@ The idea is to implement as much of the logic as possible here rather than
 relying on e.g. Qt events, so that your class can be re-used for e.g. both a Qt
 and Jupyter data viewer.
 
-Note that the :class:`~glue.viewer.common.state.ViewerState` defines one
+Note that the :class:`~glue.viewers.common.state.ViewerState` defines one
 property by default, which is ``layers`` - a container that is used to store
-:class:`~glue.viewer.common.state.LayerState` objects (see `Layer state`_).
+:class:`~glue.viewers.common.state.LayerState` objects (see `Layer state`_).
 You shouldn't need to add/remove layers from this manually, but you can attach
 callback functions to ``layers`` in case any of the layers change.
 
@@ -101,11 +101,11 @@ Layer state
 ^^^^^^^^^^^
 
 Similarly to the viewer state, you need to also define a state class for
-layers in the visualization using :class:`~glue.viewer.common.state.LayerState`::
+layers in the visualization using :class:`~glue.viewers.common.state.LayerState`::
 
-    from glue.viewer.common.state import LayerState
+    from glue.viewers.common.state import LayerState
 
-The :class:`~glue.viewer.common.state.LayerState` class defines the following
+The :class:`~glue.viewers.common.state.LayerState` class defines the following
 properties by default:
 
 * ``layer``: the :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
@@ -297,10 +297,10 @@ options widget by doing::
              connect_checkbable_button(self.layer_state, 'fill', self.checkbox)
 
 In the above example, you can see that we use the
-:func:`~glue.external.echo.qt.connect_checkbable_button` function to link the
+:func:`~glue.external.echo.qt.connect_checkable_button` function to link the
 ``fill`` property from the layer state with the checkbox. For a full list of
 available functions, see `here
-<http://echo.readthedocs.io/en/latest/api.html>`_.
+<http://echo.readthedocs.io/en/latest/api.html>`__.
 
 For more complex cases, you may want to use Qt Designer to create a ui file with
 your layout (such as :download:`viewer_state.ui <state_viewer/viewer_state.ui>`), then load it
@@ -329,7 +329,7 @@ this to create a widget to control the viewer state::
 For :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` to work, you need
 to follow certain naming conventions for the UI elements in the ``.ui`` file. You
 can read up more about this convention `here
-<http://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`_.
+<http://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`__.
 
 Data viewer
 -----------
@@ -386,23 +386,27 @@ directory from where you are starting glue, but in `File layout in glue`_
 we discuss how these classes are split into different files in glue.
 
 Note that if you are interested in building a Matplotlib-based viewer, you can
-make use of the :mod:`glue.viewers.matplotlib` sub-package to simplify things
-as described in :doc:`matplotlib_qt_viewer.rst`.
+make use of the ``glue.viewers.matplotlib`` sub-package to simplify things
+as described in :ref:`matplotlib-qt-viewer`.
 
 .. literalinclude:: state_viewer/config.py
 
 File layout in glue
 -------------------
 
-In glue, we split up the classes using the following layout::
+In glue, we split up the classes using the following layout:
 
-    state.py: state clases for the viewer and layer
-    layer_artist.py: layer artist class
-    qt/options_widget.ui: Qt ui file for the viewer state widget
-    qt/options_widget.py: Qt viewer state widget
-    qt/layer_style_editor.ui: Qt ui file for the layer state widget
-    qt/layer_style_editor.py: Qt layer state widget
-    qt/data_viewer.py: Qt data viewer
+============================ ========================================
+Filename                     Description
+============================ ========================================
+``state.py``                 State clases for the viewer and layer
+``layer_artist.py``          Layer artist class
+``qt/options_widget.ui``     Qt ui file for the viewer state widget
+``qt/options_widget.py``     Qt viewer state widget
+``qt/layer_style_editor.ui`` Qt ui file for the layer state widget
+``qt/layer_style_editor.py`` Qt layer state widget
+``qt/data_viewer.py``        Qt data viewer
+============================ ========================================
 
 You are of course free to organize the files how you wish, but this should help
 understand the existing viewers in glue if needed.

@@ -6,6 +6,8 @@ from glue.core.command import CommandStack
 from glue.core.data_collection import DataCollection
 from glue.core.edit_subset_mode import EditSubsetMode
 
+__all__ = ['Session']
+
 
 class Session(object):
 

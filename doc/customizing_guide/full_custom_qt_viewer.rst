@@ -5,10 +5,10 @@ Motivation
 ----------
 
 This tutorial is intended for people who want to develop a fully custom Qt-based
-viewer for glue that does not use Matplotlib. If you don't already have an
-existing widget, but want to make sure it will work outside glue, start off by
-developing the widget outside of glue, then use the instructions below to make
-it usable inside glue.
+viewer for glue that does not use Matplotlib and does not use the state class
+infrastructure. If you don't already have an existing widget, but want to make
+sure it will work outside glue, start off by developing the widget outside of
+glue, then use the instructions below to make it usable inside glue.
 
 Displaying the widget in glue
 -----------------------------

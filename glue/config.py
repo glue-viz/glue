@@ -202,7 +202,7 @@ class QGlueParserRegistry(Registry):
     with ``data_class``, ``parser`` and ``priority`` attributes, where ``class``
     defines the class for which to use the parser, and ``parser`` is a function
     that takes the input data and returns a list of glue
-    :class:`~glue.core.Data` objects. The ``parser`` functions should take two
+    :class:`~glue.core.data.Data` objects. The ``parser`` functions should take two
     arguments: the variable containing the data being parsed, and a label. In
     addition, the priority (defaulting to 0) can be specified in case one wants
     to make sure sub-classes get tested before more general classes. The

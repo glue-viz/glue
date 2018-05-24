@@ -526,7 +526,7 @@ def ignore_callback(instance, *props):
     Temporarily ignore any callbacks from one or more callback properties
 
     This is a context manager. Within the context block, no callbacks will be
-    issued. In contrast with :func:`~echo.delay_callback`, no callbakcs will be
+    issued. In contrast with `delay_callback`, no callbacks will be
     called on exiting the context manager
 
     Parameters
