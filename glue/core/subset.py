@@ -8,7 +8,8 @@ import numpy as np
 
 from glue.external import six
 from glue.external.six import PY3
-from glue.core.roi import CategoricalROI
+from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
+                           YRangeROI, RectangularROI)
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -17,7 +18,7 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to, floodfill, combine_slices
+from glue.utils import view_shape, broadcast_to, floodfill, combine_slices, polygon_line_intersections
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -25,7 +26,7 @@ __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
            'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
            'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D',
-           'SliceSubsetState']
+           'SliceSubsetState', 'roi_to_subset_state']
 
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
@@ -1332,3 +1333,125 @@ def combine_multiple(subsets, operator):
         for subset in subsets[1:]:
             combined = operator(combined, subset)
         return combined
+
+
+def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
+    """
+    Given a 2D ROI and attributes on the x and y axis, determine the
+    corresponding subset state.
+    """
+
+    if isinstance(roi, RangeROI):
+
+        if roi.ori == 'x':
+            att = x_att
+            comp = x_comp
+        else:
+            att = y_att
+            comp = y_comp
+
+        if comp.categorical:
+            return CategoricalROISubsetState.from_range(comp, att, roi.min, roi.max)
+        else:
+            return RangeSubsetState(roi.min, roi.max, att)
+
+    elif x_comp.categorical or y_comp.categorical:
+
+        if isinstance(roi, RectangularROI):
+
+            # In this specific case, we can decompose the rectangular ROI into
+            # two RangeROIs that are combined with an 'and' logical operation.
+
+            range1 = XRangeROI(roi.xmin, roi.xmax)
+            range2 = YRangeROI(roi.ymin, roi.ymax)
+
+            subset1 = roi_to_subset_state(range1, x_att=x_att, x_comp=x_comp)
+            subset2 = roi_to_subset_state(range2, y_att=y_att, y_comp=y_comp)
+
+            return AndState(subset1, subset2)
+
+        elif isinstance(roi, CategoricalROI):
+
+            # The selection is categorical itself. We assume this is along the x axis
+
+            return CategoricalROISubsetState(roi=roi, att=x_att)
+
+        else:
+
+            # The selection is polygon-like, which requires special care.
+
+            if x_comp.categorical and y_comp.categorical:
+
+                # For each category, we check which categories along the other
+                # axis fall inside the polygon:
+
+                selection = {}
+
+                for code, label in enumerate(x_comp.categories):
+
+                    # Determine the coordinates of the points to check
+                    n_other = len(y_comp.categories)
+                    y = np.arange(n_other)
+                    x = np.repeat(code, n_other)
+
+                    # Determine which points are in the polygon, and which
+                    # categories these correspond to
+                    in_poly = roi.contains(x, y)
+                    categories = y_comp.categories[in_poly]
+
+                    if len(categories) > 0:
+                        selection[label] = set(categories)
+
+                return CategoricalROISubsetState2D(selection, x_att, y_att)
+
+            else:
+
+                # If one of the components is not categorical, we treat this as
+                # if each categorical component was mapped to a numerical value,
+                # and at each value, we keep track of the polygon intersection
+                # with the component. This will result in zero, one, or multiple
+                # separate numerical ranges for each categorical value.
+
+                # TODO: if we ever allow the category order to be changed, we
+                # need to figure out how to update this!
+
+                # We loop over each category and for each one we find the
+                # numerical ranges
+
+                selection = {}
+
+                if x_comp.categorical:
+                    cat_comp = x_comp
+                    cat_att = x_att
+                    num_att = y_att
+                    x, y = roi.to_polygon()
+                else:
+                    cat_comp = y_comp
+                    cat_att = y_att
+                    num_att = x_att
+                    y, x = roi.to_polygon()
+
+                for code, label in enumerate(cat_comp.categories):
+
+                    # We determine all the numerical segments that represent the
+                    # ensemble of points in y that fall in the polygon
+                    # TODO: profile the following function
+                    segments = polygon_line_intersections(x, y, xval=code)
+
+                    if len(segments) > 0:
+                        selection[label] = segments
+
+                print(selection)
+
+                return CategoricalMultiRangeSubsetState(selection, cat_att=cat_att, num_att=num_att)
+
+    else:
+
+        # The selection is polygon-like and components are numerical
+
+        subset_state = RoiSubsetState()
+        subset_state.xatt = x_att
+        subset_state.yatt = y_att
+        subset_state.roi = PolygonalROI(*roi.to_polygon())
+
+        return subset_state
