@@ -50,6 +50,9 @@ Core Data
 .. automodapi:: glue.core.exceptions
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.session
+   :no-inheritance-diagram:
+
 User Interface
 ==============
 
@@ -59,11 +62,22 @@ User Interface
 .. automodapi:: glue.viewers.matplotlib.state
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.matplotlib.layer_artist
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.viewers.matplotlib.qt.data_viewer
    :no-inheritance-diagram:
 
 .. automodapi:: glue.core.layer_artist
    :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.common.state
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.common.layer_artist
+   :no-inheritance-diagram:
+   :inherited-members:
 
 .. automodapi:: glue.viewers.common.viz_client
    :no-inheritance-diagram:
@@ -139,6 +153,9 @@ Utilities
 .. automodapi:: glue.core.client
    :no-inheritance-diagram:
 
+.. automodapi:: glue.core.data_combo_helper
+  :no-inheritance-diagram:
+
 .. automodapi:: glue.core.message
    :no-inheritance-diagram:
 
@@ -165,3 +182,12 @@ Utilities
 
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:
+
+Bundled third-party packages
+============================
+
+.. automodapi:: glue.external.echo
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.external.echo.qt
+  :no-inheritance-diagram:

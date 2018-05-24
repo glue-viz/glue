@@ -45,7 +45,7 @@ class MouseMode(object):
                  release_callback=None,
                  key_callback=None):
 
-        self._axes = viewer.axes
+        self._axes = getattr(viewer, 'axes', None)
         self._canvas = viewer.central_widget.canvas
         self._press_callback = press_callback
         self._move_callback = move_callback

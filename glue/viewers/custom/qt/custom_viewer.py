@@ -892,6 +892,10 @@ class CustomWidgetBase(DataViewer):
         self._update_artists = []
         self.settings_changed()
 
+    @property
+    def axes(self):
+        return self.client.axes
+
     def options_widget(self):
         return self.option_widget
 

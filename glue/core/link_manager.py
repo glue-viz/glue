@@ -305,7 +305,7 @@ def is_equivalent_cid(data, cid1, cid2):
 
     Parameters
     ----------
-    data : `~glue.core.Data`
+    data : `~glue.core.data.Data`
         The data object in which to check for the component IDs
     cid1, cid2 : `~glue.core.ComponentID`
         The two component IDs to compare
@@ -327,7 +327,7 @@ def is_convertible_to_single_pixel_cid(data, cid):
 
     Parameters
     ----------
-    data : `~glue.core.Data`
+    data : `~glue.core.data.Data`
         The data in which to check for pixel components IDs
     cid : `~glue.core.ComponentID`
         The component ID to search for

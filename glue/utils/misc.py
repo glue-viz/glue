@@ -62,7 +62,7 @@ def nonpartial(func, *args, **kwargs):
 
 def lookup_class(ref):
     """
-    Look up an object via its module string (e.g., 'glue.core.Data')
+    Look up an object via its module string (e.g., 'glue.core.data.Data')
 
     Parameters
     ----------
