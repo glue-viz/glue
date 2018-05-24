@@ -274,17 +274,17 @@ The only requirement for these widgets is that the widget for the viewer options
 should take an argument which is the viewer state (as well as a ``session``
 keyword argument which is a :class:`~glue.core.session.Session` object that
 contains a reference to the data collection and hub), and the widget for the
-layer settings should take an argument which is the layer state, but beyond
-this, you can implement the widgets any way you like. Let's take the simple
-layer state example above with the ``fill`` option. You could implement a layer
-options widget by doing::
+layer settings should take an argument which is the layer artist (in future this
+will likely be changed to the layer state), but beyond this, you can implement
+the widgets any way you like. Let's take the simple layer state example above
+with the ``fill`` option. You could implement a layer options widget by doing::
 
     from glue.external.echo.qt import connect_checkbable_button
     from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 
     class TutorialLayerStateWidget(QWidget):
 
-         def __init__(self, layer_state):
+         def __init__(self, layer_artist):
 
              super(LayerEditWidget, self).__init__()
 
@@ -293,7 +293,7 @@ options widget by doing::
              layout.addWidget(self.checkbox)
              self.setLayout(layout)
 
-             self.layer_state = layer_state
+             self.layer_state = layer_artist.state
              connect_checkbable_button(self.layer_state, 'fill', self.checkbox)
 
 In the above example, you can see that we use the
@@ -390,6 +390,13 @@ make use of the ``glue.viewers.matplotlib`` sub-package to simplify things
 as described in :ref:`matplotlib-qt-viewer`.
 
 .. literalinclude:: state_viewer/config.py
+
+Try opening a tabular dataset in glue, drag it onto the canvas area, and select
+**Tutorial viewer** - you should now get something that looks like:
+
+.. image:: state_viewer/tutorial_viewer.png
+   :width: 600px
+   :align: center
 
 File layout in glue
 -------------------
