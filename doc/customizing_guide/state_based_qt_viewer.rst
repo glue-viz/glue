@@ -388,8 +388,9 @@ Functional example
 
 Let's now take all these pieces and construct a functional example. To try this
 out you can simply copy the code below into a ``config.py`` file in the
-directory from where you are starting glue, but in `File layout in glue`_
-we discuss how these classes are split into different files in glue.
+directory from where you are starting glue. In addition you will also need the
+:download:`viewer_state.ui <state_viewer/viewer_state.ui>` file. In `File layout
+in glue`_ we discuss how this code are split into different files in glue.
 
 Note that if you are interested in building a Matplotlib-based viewer, you can
 make use of the ``glue.viewers.matplotlib`` sub-package to simplify things

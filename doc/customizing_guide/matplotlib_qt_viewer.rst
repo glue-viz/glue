@@ -70,7 +70,11 @@ Functional example
 ------------------
 
 Let's now take the take full example from :ref:`state-qt-viewer` and
-update/improve it to use the infrastructure described above:
+update/improve it to use the infrastructure described above. As before if you
+want to try this out, you can copy the code below into a file called
+``config.py`` in the directory from where you are starting glue. In addition you
+will also need the :download:`viewer_state.ui <mpl_viewer/viewer_state.ui>`
+file.
 
 .. literalinclude:: mpl_viewer/config.py
 
