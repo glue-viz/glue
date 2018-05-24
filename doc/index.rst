@@ -88,6 +88,13 @@ Customizing/Hacking Glue
    python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
+
+Advanced customization
+----------------------
+
+.. toctree::
+   :maxdepth: 1
+
    customizing_guide/state_based_qt_viewer.rst
    customizing_guide/matplotlib_qt_viewer.rst
    customizing_guide/full_custom_qt_viewer.rst
