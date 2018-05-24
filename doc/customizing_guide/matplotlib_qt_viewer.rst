@@ -84,5 +84,3 @@ In particular, the viewer now has standard Matplotlib buttons in the toolbar:
 In addition, the layer artist has been improved to take into account the color
 and transparency given by the layer state (via the ``_on_visual_change``
 method), and the axis labels are now set in the viewer state class.
-
-Since the state classes expose many more options than are currently exposed in

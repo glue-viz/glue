@@ -62,6 +62,9 @@ User Interface
 .. automodapi:: glue.viewers.matplotlib.state
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.matplotlib.layer_artist
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.viewers.matplotlib.qt.data_viewer
    :no-inheritance-diagram:
 

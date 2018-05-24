@@ -5,6 +5,8 @@ from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 
+__all__ = ['MatplotlibLayerArtist']
+
 try:
     import qtpy  # noqa
 except Exception:
