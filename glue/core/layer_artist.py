@@ -23,7 +23,7 @@ from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
 from glue.core.message import LayerArtistEnabledMessage, LayerArtistDisabledMessage
 
-__all__ = ['LayerArtistBase', 'MatplotlibLayerArtist', 'LayerArtistContainer']
+__all__ = ['LayerArtistBase', 'LayerArtistContainer']
 
 
 DISABLED_LAYER_WARNING = """
@@ -246,72 +246,6 @@ class LayerArtistBase(PropertySetMixin):
     __repr__ = __str__
 
 
-# DEPRECATED: The following class can be removed once the custom viewer has been rewritten
-
-class MatplotlibLayerArtist(LayerArtistBase):
-    """
-    MPL-specific layer artist base class, that uses an Axes object
-    """
-
-    def __init__(self, layer, axes):
-        super(MatplotlibLayerArtist, self).__init__(layer)
-        self._axes = axes
-        self.artists = []
-
-    def redraw(self):
-        self._axes.figure.canvas.draw()
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        self._visible = value
-        for a in self.artists:
-            a.set_visible(value)
-
-    def _sync_style(self):
-        style = self.layer.style
-        for artist in self.artists:
-            edgecolor = style.color
-            # due to a bug in MPL 1.4.1, we can't disable the edge
-            # without making the whole point disappear. So we make the
-            # edge very thin instead
-            mew = 3 if style.marker == '+' else 0.01
-            artist.set_markeredgecolor(edgecolor)
-            artist.set_markeredgewidth(mew)
-            artist.set_markerfacecolor(style.color)
-            artist.set_marker(style.marker)
-            artist.set_markersize(style.markersize)
-            artist.set_linestyle('None')
-            artist.set_alpha(style.alpha)
-            artist.set_zorder(self.zorder)
-            artist.set_visible(self.visible and self.enabled)
-
-    @property
-    def zorder(self):
-        return self._zorder
-
-    @zorder.setter
-    def zorder(self, value):
-        for artist in self.artists:
-            artist.set_zorder(value)
-        self._zorder = value
-
-    @property
-    def enabled(self):
-        return len(self.artists) > 0
-
-    def clear(self):
-        for artist in self.artists:
-            try:
-                artist.remove()
-            except ValueError:  # already removed
-                pass
-        self.artists = []
-
-
 class LayerArtistContainer(object):
 
     """A collection of LayerArtists"""
@@ -352,7 +286,7 @@ class LayerArtistContainer(object):
         """Remove a LayerArtist from this collection
 
         :param artist: The artist to remove
-        :type artist: :class:`MatplotlibLayerArtist`
+        :type artist: :class:`LayerArtistBase`
         """
         if artist in self.artists:
             self.artists.remove(artist)
@@ -420,8 +354,6 @@ class LayerArtistContainer(object):
         return iter(sorted(self.artists, key=lambda x: x.zorder))
 
     def __contains__(self, item):
-        if isinstance(item, MatplotlibLayerArtist):
-            return item in self.artists
         return any(item is a.layer for a in self.artists)
 
     def __getitem__(self, layer):
