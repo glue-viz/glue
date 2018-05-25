@@ -343,6 +343,9 @@ class HasCallbackProperties(object):
             if self.is_callback_property(name):
                 yield name, getattr(type(self), name)
 
+    def callback_properties(self):
+        return [name for name in dir(self) if self.is_callback_property(name)]
+
 
 def add_callback(instance, prop, callback, echo_old=False, priority=0):
     """
