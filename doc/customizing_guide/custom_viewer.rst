@@ -229,10 +229,6 @@ Other Guidelines
    of newly-created artists. This might be more efficient if your
    plot is very complicated.
 
- - By default, ``plot_data`` and ``plot_subset`` are called whenever
-   UI settings change. To disable this behavior, set
-   ``viewer.redraw_on_settings_change=False``.
-
  - By default, Glue sets the margins of figures so that the space between axes
    and the edge of figures is constant in absolute terms. If the default values
    are not adequate for your viewer, you can set the margins in the ``setup``

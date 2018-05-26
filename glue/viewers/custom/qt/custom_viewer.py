@@ -87,35 +87,29 @@ from glue.config import qt_client
 from glue.core import Data
 from glue.utils import as_list, all_artists, new_artists, remove_artists
 
-# __all__ = ["AttributeInfo", "ViewerUserState", "UserDefinedFunction",
-#            "CustomViewer", "SettingsOracleInterface", "SettingsOracle",
-#            "CustomViewerMeta", "CustomSubsetState", "FrozenSettings",
-#            "CustomViewer", "CustomArtist", "CustomClient", "CustomMatplotlibDataViewer",
-#            "FormDescriptor", "FormElement", "NumberElement", "LabeledSlider",
-#            "BoolElement", "FixedComponent", "ComponenentElement",
-#            "ChoiceElement"]
+__all__ = ["ViewerUserState", "UserDefinedFunction",
+           "CustomViewer", "CustomViewerMeta", "CustomSubsetState",
+           "CustomViewer", "CustomLayerArtist", "CustomMatplotlibDataViewer"]
 
-# class ViewerUserState(object):
-#
-#     """
-#     Empty object for users to store data inside
-#     """
-#     pass
-#
-#     def __gluestate__(self, context):
-#         return dict(data=[(k, context.id(v)) for k, v in self.__dict__.items()])
-#
-#     @classmethod
-#     def __setgluestate__(cls, rec, context):
-#         result = cls()
-#         rec = rec['data']
-#         for k in rec:
-#             setattr(result, k, context.object(rec[k]))
-#         return result
+
+class ViewerUserState(object):
+    """
+    Empty object for users to store data inside.
+    """
+
+    def __gluestate__(self, context):
+        return dict(data=[(k, context.id(v)) for k, v in self.__dict__.items()])
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        result = cls()
+        rec = rec['data']
+        for k in rec:
+            setattr(result, k, context.object(rec[k]))
+        return result
 
 
 class UserDefinedFunction(object):
-
     """
     Descriptor to specify a UserDefinedFunction.
 
@@ -137,10 +131,10 @@ class UserDefinedFunction(object):
     When accessed at the instance level, it becomes a dispatch function
     that calls `plot_data_implementation` with the proper arguments
 
-    Alternatively, plot_data_implementation can be specified by
-    explicitly overriding plot_data in a subclass. A metaclass
-    takes care of registering the UDF in that case, so you
-    can define plot_data as a normal (non-decorator, non-descriptor) method.
+    Alternatively, plot_data_implementation can be specified by explicitly
+    overriding plot_data in a subclass. A metaclass takes care of registering
+    the UDF in that case, so you can define plot_data as a normal
+    (non-decorator, non-descriptor) method.
     """
 
     def __init__(self, name):
@@ -157,7 +151,7 @@ class UserDefinedFunction(object):
         return partial(instance._call_udf, self.name)
 
 
-def introspect_and_call(func, state, extra):
+def introspect_and_call(func, state, override):
     """
     Introspect a function for its arguments, extract values for those
     arguments from a state class, and call the function
@@ -165,9 +159,11 @@ def introspect_and_call(func, state, extra):
     Parameters
     ----------
     func : function
-       A function to call. It should not define any keywords
+        A function to call. It should not define any keywords
     state : State
-       A state class containing the values to pass
+        A state class containing the values to pass
+    override : dict
+        A dictionary containing values that should override the state
 
     Returns
     -------
@@ -181,22 +177,20 @@ def introspect_and_call(func, state, extra):
     introspect_and_call(a, state) will return
 
     a(state.x, state.y)
+
+    Attributes will be used from ``override`` before ``state``.
     """
 
     a, k = getfullargspec(func)[:2]
 
     args = []
     for item in a:
-        if hasattr(state, item):
-            value = getattr(state, item)
-            if isinstance(value, six.string_types) and value.startswith('att('):
-                component_name = value.split('(')[-1][:-1]
-                value = extra['layer'][component_name]
-            args.append(value)
-        elif item in extra:
-            args.append(extra[item])
+        if item in override:
+            args.append(override[item])
+        elif hasattr(state, item):
+            args.append(getattr(state, item))
         else:
-            setting_list = "\n -".join(state.callback_properties() + list(extra))
+            setting_list = "\n -".join(state.callback_properties() + list(override))
             raise MissingSettingError("This custom viewer is trying to use an "
                                       "unrecognized variable named %s\n. Valid "
                                       "variable names are\n -%s" %
@@ -212,7 +206,6 @@ class MissingSettingError(KeyError):
 
 
 class CustomViewerMeta(type):
-
     """
     Metaclass to construct CustomViewer and subclasses
 
@@ -233,19 +226,19 @@ class CustomViewerMeta(type):
         if name == 'CustomViewer':
             return type.__new__(cls, name, bases, attrs)
 
-        # Build UI Form
+        # Find ui elements
         ui = {}
         for key, value in list(attrs.items()):
             if key.startswith('_') or key in CustomViewer.__dict__:
                 continue
-
             if not isinstance(value, (MethodType, FunctionType)):
                 ui[key] = attrs.pop(key)
 
         attrs['ui'] = ui
         attrs.setdefault('name', name)
 
-        # collect the UDFs
+        # collect the user defined functions
+
         udfs = {}
 
         for nm, value in list(attrs.items()):
@@ -259,13 +252,13 @@ class CustomViewerMeta(type):
         result = type.__new__(cls, name, bases, attrs)
         result._custom_functions = {}
 
-        # now wrap the custom UDFs using the descriptors
+        # now wrap the custom user defined functions using the descriptors
         for k, v in udfs.items():
             # register UDF by mimicing the decorator syntax
             udf_decorator = getattr(result, k)
             udf_decorator(v)
 
-        result._build_widget_subclass()
+        result._build_data_viewer()
 
         return result
 
@@ -288,6 +281,9 @@ class CustomSubsetState(SubsetState):
 
 
 class BaseCustomOptionsWidget(QWidget):
+    """
+    Base class for the Qt widget which will be used to show the options.
+    """
 
     _widgets = None
 
@@ -378,11 +374,10 @@ class CustomViewer(object):
     The order of arguments can be listed in any order.
     """
 
-    redraw_on_settings_change = True  #: redraw all layers when UI state changes?
-    remove_artists = True             #: auto-delete artists?
-    name = ''                         #: Label to give this widget in the GUI
+    # Label to give this widget in the GUI
+    name = ''
 
-    # hold user descriptions of desired FormElements to create
+    # Container to hold user descriptions of desired FormElements to create
     ui = {}
 
     # map, e.g., 'plot_data' -> user defined function - we also make sure we
@@ -391,8 +386,8 @@ class CustomViewer(object):
 
     def __init__(self, viewer):
         self.viewer = viewer
+        self.state = ViewerUserState()
         self.setup()
-        # self.state = ViewerUserState()
 
     @property
     def selections_enabled(self):
@@ -420,9 +415,9 @@ class CustomViewer(object):
         return CustomViewerMeta(name, (CustomViewer,), kwargs)
 
     @classmethod
-    def _build_widget_subclass(cls):
+    def _build_data_viewer(cls):
         """
-        Build the DataViewer subclass for this viewer
+        Build the DataViewer subclass for this viewer.
         """
 
         # At this point, the metaclass has put all the user options in a dict
@@ -478,20 +473,13 @@ class CustomViewer(object):
         """
         cls._custom_functions[name] = func
 
-    def create_axes(self, figure):
-        """
-        Build a new axes object
-        Override for custom axes
-        """
-        return figure.add_subplot(1, 1, 1)
-
     def _build_subset_state(self, roi):
 
         if 'make_selector' in self._custom_functions:
             return self.make_selector(roi=roi)
 
         if 'select' in self._custom_functions:
-            return CustomSubsetState(self, self.viewer.state, roi)
+            return CustomSubsetState(self, roi)
 
         raise RuntimeError("Selection not supported for this viewer.")
 
@@ -541,10 +529,6 @@ class CustomViewer(object):
     argument to this function
     """
 
-    """
-    End of UDF list.
-    """
-
     def _call_udf(self, method_name, **kwargs):
         """
         Call a user-defined function stored in the _custom_functions dict
@@ -575,33 +559,28 @@ class CustomViewer(object):
         except KeyError:
             return []
 
-        # clear any MPL artists created on last call
-        # if self.remove_artists:
-        #     layer = kwargs.get('layer', None)
-        #     key = (layer, method_name)
-        #     old = self._created_artists.get(key, set())
-        #     remove_artists(old)
-        #     current = all_artists(self.axes.figure)
+        override = kwargs.copy()
 
         if 'layer' in kwargs:
-            kwargs.setdefault('style', kwargs['layer'].style)
+
+            override.setdefault('style', kwargs['layer'].style)
+
+            # Dereference attributes
+            for name, property in self.viewer.state.iter_callback_properties():
+                value = getattr(self.viewer.state, name)
+                if isinstance(value, six.string_types) and value.startswith('att('):
+                    component_name = value.split('(')[-1][:-1]
+                    override[name] = kwargs['layer'][component_name]
 
         # add some extra information that the user might want
-        kwargs.setdefault('_self', self)
-        kwargs.setdefault('self', self)
-        kwargs.setdefault('axes', self.viewer.axes)
-        kwargs.setdefault('figure', self.viewer.axes.figure)
-        # kwargs.setdefault('state', self.state)
+        override.setdefault('self', self)
+        override.setdefault('axes', self.viewer.axes)
+        override.setdefault('figure', self.viewer.axes.figure)
+        override.setdefault('state', self.state)
 
         # call method, keep track of newly-added artists
-        result = introspect_and_call(func, self.viewer.state, kwargs)
+        result = introspect_and_call(func, self.viewer.state, override)
 
-        # if self.remove_artists:
-        #     new = new_artists(self.axes.figure, current)
-        #     self._created_artists[key] = new
-        #     if new:
-        #         self.axes.figure.canvas.draw()
-        # else:
         self.viewer.redraw()
 
         return result
@@ -627,8 +606,7 @@ class CustomLayerArtist(MatplotlibLayerArtist):
 
         self.clear()
 
-        if self._coordinator.remove_artists:
-            old = all_artists(self.axes.figure)
+        old = all_artists(self.axes.figure)
 
         if isinstance(self.state.layer, Data):
             a = self._coordinator.plot_data(layer=self.state.layer)
@@ -638,10 +616,7 @@ class CustomLayerArtist(MatplotlibLayerArtist):
         # if user explicitly returns the newly-created artists,
         # then use them. Otherwise, introspect to find the new artists
         if a is None:
-            if self._coordinator.remove_artists:
-                self.mpl_artists = list(new_artists(self.axes.figure, old))
-            else:
-                self.mpl_artists = []
+            self.mpl_artists = list(new_artists(self.axes.figure, old))
         else:
             self.mpl_artists = as_list(a)
 
