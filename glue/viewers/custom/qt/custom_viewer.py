@@ -654,15 +654,15 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
 
     def __init__(self, session, parent=None, **kwargs):
         super(CustomMatplotlibDataViewer, self).__init__(session, parent, **kwargs)
-        self.coordinator = self._coordinator_cls(self)
+        self._coordinator = self._coordinator_cls(self)
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
-        return cls(self.coordinator, self.axes, self.state, layer=layer, layer_state=layer_state)
+        return cls(self._coordinator, self.axes, self.state, layer=layer, layer_state=layer_state)
 
     def apply_roi(self, roi):
         if len(self.layers) == 0:
             return
-        subset_state = self.coordinator._build_subset_state(roi=roi)
+        subset_state = self._coordinator._build_subset_state(roi=roi)
         self.apply_subset_state(subset_state)
 
 
