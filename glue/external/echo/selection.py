@@ -14,15 +14,19 @@ class ChoiceSeparator(str):
 
 class SelectionCallbackProperty(CallbackProperty):
 
-    def __init__(self, default_index=0, **kwargs):
+    def __init__(self, default_index=0, choices=None, display_func=None, **kwargs):
+        if choices is not None and 'default' not in kwargs:
+            kwargs['default'] = choices[default_index]
         super(SelectionCallbackProperty, self).__init__(**kwargs)
         self.default_index = default_index
+        self.default_choices = choices
+        self._default_display_func = display_func
         self._choices = WeakKeyDictionary()
         self._display = WeakKeyDictionary()
         self._force_next_sync = WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        if value is not None and value not in self._choices.get(instance, ()):
+        if value is not None and value not in self.get_choices(instance):
             raise ValueError('value {0} is not in valid choices'.format(value))
         super(SelectionCallbackProperty, self).__set__(instance, value)
 
@@ -39,7 +43,7 @@ class SelectionCallbackProperty(CallbackProperty):
             return self.__get__(instance), self.get_choices(instance), self.get_choice_labels(instance)
 
     def get_display_func(self, instance):
-        return self._display.get(instance, None)
+        return self._display.get(instance, self._default_display_func)
 
     def set_display_func(self, instance, display):
         self._display[instance] = display
@@ -47,7 +51,7 @@ class SelectionCallbackProperty(CallbackProperty):
         # self.notify(instance, selection, selection)
 
     def get_choices(self, instance):
-        return self._choices.get(instance, ())
+        return self._choices.get(instance, self.default_choices)
 
     def get_choice_labels(self, instance):
         display = self._display.get(instance, str)

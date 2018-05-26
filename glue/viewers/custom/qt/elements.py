@@ -236,11 +236,14 @@ class ChoiceElement(FormElement):
 
     def ui_and_state(self):
         if isinstance(self.params, list):
-            choices = dict((p, p) for p in self.params)
-        else:
             choices = self.params
-        property = SelectionCallbackProperty()
-        # property = SelectionCallbackProperty(choices=choices)
+            display_func = None
+        else:
+            params_inv = dict((value, key) for key, value in self.params.items())
+            choices = list(params_inv.keys())
+            display_func = params_inv.get
+        property = SelectionCallbackProperty(default_index=0, choices=choices,
+                                             display_func=display_func)
         return 'combosel_', QComboBox, property
 
 
