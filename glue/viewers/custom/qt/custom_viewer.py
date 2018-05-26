@@ -73,19 +73,27 @@ except ImportError:  # Python 2.7
 
 from types import FunctionType, MethodType
 
+from qtpy.QtWidgets import QWidget, QGridLayout, QLabel
+
 from glue.external import six
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
-from glue.core.subset import SubsetState
 
-from .elements import FormElement
+from glue.config import qt_client
+
+from glue.core import Data
+from glue.core.subset import SubsetState
+from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.core.component_id import ComponentID
+
+from glue.utils import as_list, all_artists, new_artists
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState, MatplotlibLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
-from glue.config import qt_client
-from glue.core import Data
-from glue.utils import as_list, all_artists, new_artists, remove_artists
+
+from glue.viewers.custom.qt.elements import (FormElement,
+                                             DynamicComponentIDProperty,
+                                             FixedComponentIDProperty)
 
 __all__ = ["ViewerUserState", "UserDefinedFunction",
            "CustomViewer", "CustomViewerMeta", "CustomSubsetState",
@@ -442,7 +450,7 @@ class CustomViewer(object):
         options_cls = type(cls.__name__ + 'OptionsWidget',
                            (BaseCustomOptionsWidget,), {'_widgets': widgets})
 
-        state_cls = type(cls.__name__ + 'ViewerState', (MatplotlibDataViewerState,), properties)
+        state_cls = type(cls.__name__ + 'ViewerState', (CustomMatplotlibViewerState,), properties)
 
         widget_dict = {'LABEL': cls.name,
                        'ui': cls.ui,
@@ -570,9 +578,8 @@ class CustomViewer(object):
             # Dereference attributes
             for name, property in self.viewer.state.iter_callback_properties():
                 value = getattr(self.viewer.state, name)
-                if isinstance(value, six.string_types) and value.startswith('att('):
-                    component_name = value.split('(')[-1][:-1]
-                    override[name] = kwargs['layer'][component_name]
+                if isinstance(value, ComponentID) or isinstance(property, FixedComponentIDProperty):
+                    override[name] = kwargs['layer'][value]
 
         # add some extra information that the user might want
         override.setdefault('self', self)
@@ -654,3 +661,18 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
             return
         subset_state = self.coordinator._build_subset_state(roi=roi)
         self.apply_subset_state(subset_state)
+
+
+class CustomMatplotlibViewerState(MatplotlibDataViewerState):
+
+    def __init__(self, *args, **kwargs):
+        super(CustomMatplotlibViewerState, self).__init__(*args, **kwargs)
+        self._cid_helpers = []
+        for name, property in self.iter_callback_properties():
+            if isinstance(property, DynamicComponentIDProperty):
+                self._cid_helpers.append(ComponentIDComboHelper(self, name))
+        self.add_callback('layers', self._on_layer_change)
+
+    def _on_layer_change(self, *args):
+        for helper in self._cid_helpers:
+            helper.set_multiple_data(self.layers_data)

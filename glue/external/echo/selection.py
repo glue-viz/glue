@@ -19,7 +19,7 @@ class SelectionCallbackProperty(CallbackProperty):
             kwargs['default'] = choices[default_index]
         super(SelectionCallbackProperty, self).__init__(**kwargs)
         self.default_index = default_index
-        self.default_choices = choices
+        self.default_choices = choices or []
         self._default_display_func = display_func
         self._choices = WeakKeyDictionary()
         self._display = WeakKeyDictionary()

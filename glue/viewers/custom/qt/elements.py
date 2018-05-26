@@ -3,11 +3,13 @@ from __future__ import print_function, division
 from glue.external import six
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 
-from qtpy.QtWidgets import QSlider, QLineEdit, QComboBox, QWidget, QLabel, QHBoxLayout, QCheckBox
+from qtpy.QtWidgets import (QSlider, QLineEdit, QComboBox, QWidget,
+                            QLabel, QHBoxLayout, QCheckBox)
 from qtpy.QtCore import Qt
 
-__all__ = ["FormElement", "NumberElement", "QLabeledSlider",
-           "BoolElement", "ChoiceElement", "FixedComponent"]
+__all__ = ["FormElement", "NumberElement", "TextBoxElement", "FloatElement",
+           "BoolElement", "ChoiceElement", "FixedComponentIDProperty",
+           "FixedComponentElement", "ComponenentElement", "DynamicComponentIDProperty"]
 
 
 class QLabeledSlider(QWidget):
@@ -130,7 +132,10 @@ class NumberElement(FormElement):
 
     def ui_and_state(self):
 
-        default = self.params[2] if len(self.params) == 3 else 0.5 * (self.params[0] + self.params[1])
+        if len(self.params) == 3:
+            default = self.params[2]
+        else:
+            default = 0.5 * (self.params[0] + self.params[1])
 
         # We can't initialize QLabeledSlider yet because this could get called
         # before the Qt application has been initialized. So for now we just make
@@ -238,7 +243,11 @@ class ChoiceElement(FormElement):
         return 'combosel_', QComboBox, property
 
 
-class FixedComponent(FormElement):
+class FixedComponentIDProperty(CallbackProperty):
+    pass
+
+
+class FixedComponentElement(FormElement):
 
     """
     An element for a Data Component. Does not have a widget
@@ -256,80 +265,27 @@ class FixedComponent(FormElement):
             return False
 
     def ui_and_state(self):
-        return None, None, CallbackProperty(self.params)
-#
-#
-# class ComponenentElement(FormElement, core.hub.HubListener):
-#
-#     """
-#     A dropdown selector to choose a component
-#
-#     The shorthand notation is 'att'::
-#
-#         e = FormElement.auto('att')
-#     """
-#     _component = CurrentComboProperty('ui')
-#
-#     @property
-#     def state(self):
-#         return self._component
-#
-#     @state.setter
-#     def state(self, value):
-#         self._update_components()
-#         if value is None:
-#             return
-#         self._component = value
-#
-#     @classmethod
-#     def recognizes(cls, params):
-#         return params == 'att'
-#
-#     def _build_ui(self):
-#         result = QComboBox()
-#         result.currentIndexChanged.connect(nonpartial(self.changed))
-#         return result
-#
-#     def value(self, layer=None, view=None):
-#         cid = self._component
-#         if layer is None or cid is None:
-#             return AttributeInfo.make(cid, [], None)
-#         return AttributeInfo.from_layer(layer, cid, view)
-#
-#     def _list_components(self):
-#         """
-#         Determine which components to list.
-#
-#         This can be overridden by subclassing to limit which components are
-#         visible to the user.
-#
-#         """
-#         comps = list(set([c for l in self.container.layers
-#                           for c in (l.data.main_components + l.data.derived_components)]))
-#         comps = sorted(comps, key=lambda x: x.label)
-#         return comps
-#
-#     def _update_components(self):
-#         combo = self.ui
-#         old = self._component
-#
-#         combo.blockSignals(True)
-#         combo.clear()
-#
-#         comps = self._list_components()
-#         for c in comps:
-#             combo.addItem(c.label, userData=UserDataWrapper(c))
-#
-#         try:
-#             combo.setCurrentIndex(comps.index(old))
-#         except ValueError:
-#             combo.setCurrentIndex(0)
-#
-#         combo.blockSignals(False)
-#
-#     def register_to_hub(self, hub):
-#         hub.subscribe(self, core.message.ComponentsChangedMessage,
-#                       nonpartial(self._update_components))
-#
-#     def add_data(self, data):
-#         self._update_components()
+        component_name = self.params.split('(')[-1][:-1]
+        return None, None, FixedComponentIDProperty(component_name)
+
+
+class DynamicComponentIDProperty(SelectionCallbackProperty):
+    pass
+
+
+class ComponenentElement(FormElement):
+
+    """
+    A dropdown selector to choose a component
+
+    The shorthand notation is 'att'::
+
+        e = FormElement.auto('att')
+    """
+
+    @classmethod
+    def recognizes(cls, params):
+        return params == 'att'
+
+    def ui_and_state(self):
+        return 'combosel_', QComboBox, DynamicComponentIDProperty()
