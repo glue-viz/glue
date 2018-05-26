@@ -75,7 +75,7 @@ from types import FunctionType, MethodType
 
 from glue.external import six
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from qtpy.QtWidgets import QWidget, QVBoxLayout
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
 from glue.core.subset import SubsetState
 
 from .elements import FormElement
@@ -291,11 +291,13 @@ class BaseCustomOptionsWidget(QWidget):
 
         super(BaseCustomOptionsWidget, self).__init__()
 
-        layout = QVBoxLayout()
-        for name, widget_cls in self._widgets.items():
+        layout = QGridLayout()
+        for row, (name, (prefix, widget_cls)) in enumerate(self._widgets.items()):
             widget = widget_cls()
-            setattr(self, name, widget)
-            layout.addWidget(widget)
+            setattr(self, prefix + name, widget)
+            layout.addWidget(QLabel(name.capitalize()), row, 0)
+            layout.addWidget(widget, row, 1)
+        layout.setRowStretch(row + 1, 10)
         self.setLayout(layout)
 
         self.viewer_state = viewer_state
@@ -433,7 +435,7 @@ class CustomViewer(object):
             prefix, widget, property = FormElement.auto(value).ui_and_state()
 
             if widget is not None:
-                widgets[prefix + name] = widget
+                widgets[name] = prefix, widget
 
             properties[name] = property
 
