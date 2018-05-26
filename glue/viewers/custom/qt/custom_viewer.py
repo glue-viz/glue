@@ -64,6 +64,7 @@ The end user typically interacts with this code via :func:`glue.custom_viewer`
 
 from __future__ import print_function, division
 
+from inspect import getmodule
 from functools import partial
 
 try:
@@ -467,11 +468,13 @@ class CustomViewer(object):
 
         # add new classes to module namespace
         # needed for proper state saving/restoring
-        # for c in [widget_cls, cls]:
-        #     w = getattr(getmodule(ViewerUserState), c.__name__, None)
-        #     if w is not None:
-        #         raise RuntimeError("Duplicate custom viewer detected %s" % c)
-        #     setattr(getmodule(ViewerUserState), c.__name__, c)
+        for c in [widget_cls, cls]:
+            mod = getmodule(ViewerUserState)
+            w = getattr(mod, c.__name__, None)
+            if w is not None:
+                raise RuntimeError("Duplicate custom viewer detected %s" % c)
+            setattr(mod, c.__name__, c)
+            c.__module__ = mod.__name__
 
     @classmethod
     def _register_override_method(cls, name, func):
@@ -649,8 +652,8 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
 
     _coordinator_cls = None
 
-    def __init__(self, session, parent=None):
-        super(CustomMatplotlibDataViewer, self).__init__(session, parent)
+    def __init__(self, session, parent=None, **kwargs):
+        super(CustomMatplotlibDataViewer, self).__init__(session, parent, **kwargs)
         self.coordinator = self._coordinator_cls(self)
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
@@ -666,12 +669,13 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
 class CustomMatplotlibViewerState(MatplotlibDataViewerState):
 
     def __init__(self, *args, **kwargs):
-        super(CustomMatplotlibViewerState, self).__init__(*args, **kwargs)
+        super(CustomMatplotlibViewerState, self).__init__(*args)
         self._cid_helpers = []
         for name, property in self.iter_callback_properties():
             if isinstance(property, DynamicComponentIDProperty):
                 self._cid_helpers.append(ComponentIDComboHelper(self, name))
         self.add_callback('layers', self._on_layer_change)
+        self.update_from_dict(kwargs)
 
     def _on_layer_change(self, *args):
         for helper in self._cid_helpers:

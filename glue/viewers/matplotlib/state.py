@@ -83,6 +83,16 @@ class MatplotlibDataViewerState(ViewerState):
     def _notify_global(self, *args, **kwargs):
         super(MatplotlibDataViewerState, self)._notify_global(*args, **kwargs)
 
+    def _update_priority(self, name):
+        if name == 'layers':
+            return 2
+        elif name.endswith('_log'):
+            return 0.5
+        elif name.endswith(('_min', '_max')):
+            return 0
+        else:
+            return 1
+
 
 class MatplotlibLayerState(LayerState):
     """

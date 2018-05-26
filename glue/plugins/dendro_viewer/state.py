@@ -76,14 +76,6 @@ class DendrogramViewerState(MatplotlibDataViewerState):
             x, y = dendrogram_layout(parent, height, order)
             self._layout = Layout(x, y)
 
-    def _update_priority(self, name):
-        if name == 'layers':
-            return 2
-        elif name.endswith('_log'):
-            return 0.5
-        else:
-            return 1
-
     def _layers_changed(self, *args):
 
         layers_data = self.layers_data
