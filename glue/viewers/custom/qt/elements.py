@@ -6,79 +6,62 @@ from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 from qtpy.QtWidgets import QSlider, QLineEdit, QComboBox, QWidget, QLabel, QHBoxLayout, QCheckBox
 from qtpy.QtCore import Qt
 
-__all__ = ["FormElement", "NumberElement", "LabeledSlider",
+__all__ = ["FormElement", "NumberElement", "QLabeledSlider",
            "BoolElement", "ChoiceElement", "FixedComponent"]
 
 
-class LabeledSlider(QWidget):
-
+class QLabeledSlider(QWidget):
     """
-    A labeled slider widget, that handles floats and integers
+    A labeled slider widget
     """
 
-    def __init__(self, min, max, default=None, parent=None):
-        """
-        :param min: Minimum slider value
-        :param max: Maximum slider value
-        :param default: Initial value
-        :param parent: Widget parent
-        """
-        super(LabeledSlider, self).__init__(parent)
+    range = None
+    integer = None
+
+    def __init__(self, parent=None):
+
+        super(QLabeledSlider, self).__init__(parent)
+
+        self._range = range
+
         self._slider = QSlider()
         self._slider.setMinimum(0)
         self._slider.setMaximum(100)
         self._slider.setOrientation(Qt.Horizontal)
 
-        self._min = min
-        self._ptp = (max - min)
-        self._isint = (isinstance(min, int) and
-                       isinstance(max, int) and
-                       isinstance(default, (int, type(None))))
+        self._label = QLabel('')
+        self._layout = QHBoxLayout()
+        self._layout.setContentsMargins(2, 2, 2, 2)
+        self._layout.addWidget(self._slider)
+        self._layout.addWidget(self._label)
 
-        if default is None:
-            default = (min + max) / 2
+        self._slider.valueChanged.connect(self._update_label)
 
-        self.set_value(default)
+        self.setLayout(self._layout)
 
-        # setup layout
-        self._lbl = QLabel(str(self.value()))
-        self._l = QHBoxLayout()
-        self._l.setContentsMargins(2, 2, 2, 2)
-        self._l.addWidget(self._slider)
-        self._l.addWidget(self._lbl)
-        self.setLayout(self._l)
-
-        # connect signals
-        self._slider.valueChanged.connect(lambda x: self._lbl.setText(str(self.value())))
+    def _update_label(self, *args):
+        self._label.setText(str(self.value()))
 
     @property
     def valueChanged(self):
-        """
-        Pointer to valueChanged signal.
-
-        .. warning:: the value emitted by this signal is unscaled,
-                     and shouldn't be used directly. Use .value() instead
-        """
         return self._slider.valueChanged
 
     def value(self, layer=None, view=None):
-        """
-        Return the numerical value of the slider
-        """
-        v = self._slider.value() / 100. * self._ptp + self._min
-        if self._isint:
-            v = int(v)
-        return v
+        value = self._slider.value() / 100. * (self.range[1] - self.range[0]) + self.range[0]
+        if self.integer:
+            return int(value)
+        else:
+            return(value)
 
-    def set_value(self, val):
-        """
-        Set the numerical value of the slider
-        """
-        v = (1. * (val - self._min)) / self._ptp * 100
-        v = min(max(int(v), 0), 100)
-        self._slider.setValue(v)
+    _in_set_value = False
 
-    setValue = set_value
+    def setValue(self, value):
+        if self._in_set_value:
+            return
+        self._in_set_value = True
+        value = int(100 * (value - self.range[0]) / (self.range[1] - self.range[0]))
+        self._slider.setValue(value)
+        self._in_set_value = False
 
 
 class FormElement(object):
@@ -146,9 +129,17 @@ class NumberElement(FormElement):
             return False
 
     def ui_and_state(self):
-        # widget = LabeledSlider(*self.params[:2])
-        default = self.params[2] if len(self.params) == 3 else self.params[0]
-        return 'value_', QSlider, CallbackProperty(default)
+
+        default = self.params[2] if len(self.params) == 3 else 0.5 * (self.params[0] + self.params[1])
+
+        # We can't initialize QLabeledSlider yet because this could get called
+        # before the Qt application has been initialized. So for now we just make
+        # a subclass of QLabeledSlider with the range we need
+        class CustomSlider(QLabeledSlider):
+            range = self.params[:2]
+            integer = isinstance(self.params[0], int) and isinstance(self.params[1], int)
+
+        return 'value_', CustomSlider, CallbackProperty(default)
 
 
 class TextBoxElement(FormElement):
