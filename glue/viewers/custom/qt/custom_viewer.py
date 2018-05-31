@@ -379,7 +379,8 @@ class BaseCustomOptionsWidget(QWidget):
             setattr(self, prefix + name, widget)
             layout.addWidget(QLabel(name.capitalize()), row, 0)
             layout.addWidget(widget, row, 1)
-        layout.setRowStretch(row + 1, 10)
+        if len(self._widgets) > 0:
+            layout.setRowStretch(row + 1, 10)
         self.setLayout(layout)
 
         self.viewer_state = viewer_state
