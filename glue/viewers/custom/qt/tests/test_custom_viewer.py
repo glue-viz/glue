@@ -2,10 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
-import pytest
 import numpy as np
 from matplotlib.axes import Axes
-from mock import MagicMock, patch
+from mock import MagicMock
 from numpy.testing import assert_array_equal
 
 from glue.core.tests.test_state import clone
@@ -16,7 +15,7 @@ from glue import custom_viewer
 
 from glue.app.qt import GlueApplication
 from glue.app.qt.tests.test_application import check_clone_app
-from ..custom_viewer import CustomViewer, CustomSubsetState, MissingSettingError
+from ..custom_viewer import CustomViewer, CustomSubsetState
 
 
 def _make_widget(viewer):

@@ -538,7 +538,6 @@ class GlueUnSerializer(object):
             if isinstance(obj_id, six.string_types) and obj_id in self._working:
                 self._working.remove(obj_id)
 
-
         self._try_callbacks()
 
         return obj
