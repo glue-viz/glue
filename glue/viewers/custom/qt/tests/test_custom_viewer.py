@@ -21,7 +21,7 @@ from ..custom_viewer import CustomViewer, CustomSubsetState, MissingSettingError
 
 def _make_widget(viewer):
     s = simple_session()
-    return viewer._widget_cls(s)
+    return viewer._viewer_cls(s)
 
 
 viewer = custom_viewer('Testing Custom Viewer',
@@ -129,7 +129,7 @@ class TestCustomViewer(object):
             self.w.unregister(self.session.hub)
 
     def build(self):
-        w = self.viewer._widget_cls(self.session)
+        w = self.viewer._viewer_cls(self.session)
         w.register_to_hub(self.session.hub)
         self.w = w
         return w
@@ -174,6 +174,7 @@ class TestCustomViewer(object):
 
     def test_make_selector(self):
         w = self.build()
+        w.add_data(self.data)
         roi = MagicMock()
         w.apply_roi(roi)
 
@@ -185,32 +186,19 @@ class TestCustomViewer(object):
     def test_settings_change(self):
         w = self.build()
         ct = settings_changed.call_count
-        w._coordinator._settings['d'].ui.setChecked(False)
+        w.options_widget().bool_d.setChecked(False)
         assert settings_changed.call_count == ct + 1
         a, k = settings_changed.call_args
         assert 'state' in k
-
-    def test_register(self):
-        with patch('glue.viewers.custom.qt.FormElement.register_to_hub') as r:
-            self.build()
-        assert r.call_count > 0
-
-    def test_component(self):
-
-        w = self.build()
-        w.add_data(self.data)
-
-        assert_array_equal(w._coordinator.value('b', layer=self.data).values,
-                           [1, 2, 3])
 
     def test_component_autoupdate(self):
 
         w = self.build()
         w.add_data(self.data)
 
-        assert w._coordinator._settings['b'].ui.count() == 2
+        assert w.options_widget().combosel_b.count() == 2
         self.data.add_component([10, 20, 30], label='c')
-        assert w._coordinator._settings['b'].ui.count() == 3
+        assert w.options_widget().combosel_b.count() == 3
 
     def test_settings_changed_called_on_init(self):
         self.build()
@@ -225,7 +213,7 @@ class TestCustomViewer(object):
 
 def test_state_save():
     app = GlueApplication()
-    w = app.new_data_viewer(viewer._widget_cls)  # noqa
+    w = app.new_data_viewer(viewer._viewer_cls)  # noqa
     check_clone_app(app)
 
 
@@ -234,7 +222,7 @@ def test_state_save_with_data_layers():
     dc = app.data_collection
     d = Data(x=[1, 2, 3], label='test')
     dc.append(d)
-    w = app.new_data_viewer(viewer._widget_cls)
+    w = app.new_data_viewer(viewer._viewer_cls)
     w.add_data(d)
     check_clone_app(app)
 
@@ -258,21 +246,20 @@ class TestCustomSelectMethod(object):
         self.dc.append(self.data)
 
     def build(self):
-        return self.viewer._widget_cls(self.session)
+        return self.viewer._viewer_cls(self.session)
 
-    def test_state(self):
+    def test_subset_state(self):
         w = self.build()
         v = w._coordinator
         roi = MagicMock()
-        s = CustomSubsetState(type(v), roi, v.settings())
+        s = CustomSubsetState(v, roi)
         assert_array_equal(s.to_mask(self.data), [False, True, True])
 
-    def test_state_view(self):
+    def test_subset_state_view(self):
         w = self.build()
         v = w._coordinator
         roi = MagicMock()
-        s = CustomSubsetState(type(v), roi, v.settings())
-
+        s = CustomSubsetState(v, roi)
         assert_array_equal(s.to_mask(self.data, view=slice(None, None, 2)),
                            [False, True])
 
@@ -280,18 +267,19 @@ class TestCustomSelectMethod(object):
         w = self.build()
         v = w._coordinator
         roi = MagicMock()
-        s = CustomSubsetState(type(v), roi, v.settings())
+        s = CustomSubsetState(v, roi)
         w.flip = True
         assert_array_equal(s.to_mask(self.data), [False, True, True])
 
     def test_save_load(self):
-        w = self.build()
+        app = GlueApplication(session=self.session)
+        w = app.new_data_viewer(self.viewer._viewer_cls)
         v = w._coordinator
         roi = None
-        s = CustomSubsetState(type(v), roi, v.settings())
-
-        s2 = clone(s)
-
+        s = CustomSubsetState(v, roi)
+        app.data_collection.new_subset_group(subset_state=s, label='test')
+        app2 = clone(app)
+        s2 = app2.data_collection[0].subsets[0].subset_state
         assert_array_equal(s2.to_mask(self.data), [False, True, True])
 
 
@@ -322,5 +310,5 @@ def test_two_custom_viewer_classes():
     dc = app.data_collection
     d = Data(x=[1, 2, 3], label='test')
     dc.append(d)
-    app.new_data_viewer(MyWidget1._widget_cls)
-    app.new_data_viewer(MyWidget2._widget_cls)
+    app.new_data_viewer(MyWidget1._viewer_cls)
+    app.new_data_viewer(MyWidget2._viewer_cls)

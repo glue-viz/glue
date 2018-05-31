@@ -74,6 +74,8 @@ except ImportError:  # Python 2.7
 
 from types import FunctionType, MethodType
 
+import numpy as np
+
 from qtpy.QtWidgets import QWidget, QGridLayout, QLabel
 
 from glue.external import six
@@ -96,9 +98,58 @@ from glue.viewers.custom.qt.elements import (FormElement,
                                              DynamicComponentIDProperty,
                                              FixedComponentIDProperty)
 
-__all__ = ["ViewerUserState", "UserDefinedFunction",
+__all__ = ["AttributeWithInfo", "ViewerUserState", "UserDefinedFunction",
            "CustomViewer", "CustomViewerMeta", "CustomSubsetState",
            "CustomViewer", "CustomLayerArtist", "CustomMatplotlibDataViewer"]
+
+
+class AttributeWithInfo(np.ndarray):
+
+    """
+    An array subclass wrapping a Component of a dataset
+    It is an array with the following additional attributes:
+    * ``id``  contains the ComponentID or string name of the Component
+    * ``categories`` is an array or None. For categorical Components,
+      contains the distinct categories which are integer-encoded
+      in the AttributeInfo
+    """
+
+    @classmethod
+    def make(cls, id, values, comp, categories=None):
+        values = np.asarray(values)
+        result = values.view(AttributeWithInfo)
+        result.id = id
+        result.values = values
+        result.categories = categories
+        result._component = comp
+        return result
+
+    @classmethod
+    def from_layer(cls, layer, cid, view=None):
+        """
+        Build an AttributeInfo out of a subset or dataset
+        Parameters
+        ----------
+        layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+            The data to use
+        cid : ComponentID
+            The ComponentID to use
+        view : numpy-style view (optional)
+            What slice into the data to use
+        """
+        values = layer[cid, view]
+        comp = layer.data.get_component(cid)
+        categories = None
+        if comp.categorical:
+            categories = comp.categories
+        return cls.make(cid, values, comp, categories)
+
+    def __gluestate__(self, context):
+        return dict(cid=context.id(self.id))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls.make(context.object(rec['cid']), [], None)
 
 
 class ViewerUserState(object):
@@ -283,10 +334,32 @@ class CustomSubsetState(SubsetState):
         self._roi = roi
 
     def to_mask(self, data, view=None):
-        return self._coordinator.select(layer=data, roi=self._roi)
+        return self._coordinator.select(layer=data, roi=self._roi, view=view)
 
     def copy(self):
         return CustomSubsetState(self._coordinator, self._roi)
+
+    def __gluestate__(self, context):
+        result = {}
+        result['viewer'] = context.id(self._coordinator.viewer)
+        result['roi'] = context.id(self._roi)
+        return result
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        roi = context.object(rec['roi'])
+        subset_state = cls(None, roi)
+        subset_state._viewer_rec = rec['viewer']
+        return subset_state
+
+    def __setgluestate_callback__(self, context):
+        # When __setgluestate__ is created, the viewers might not yet be
+        # deserialized, and these depend on the Data and Subsets existing so
+        # we need to deserialize the viewer in a callback so it can be called
+        # later on.
+        viewer = context.object(self._viewer_rec)
+        self._coordinator = viewer._coordinator
+        self._viewer_rec = None
 
 
 class BaseCustomOptionsWidget(QWidget):
@@ -301,8 +374,8 @@ class BaseCustomOptionsWidget(QWidget):
         super(BaseCustomOptionsWidget, self).__init__()
 
         layout = QGridLayout()
-        for row, (name, (prefix, widget_cls)) in enumerate(self._widgets.items()):
-            widget = widget_cls()
+        for row, (name, (prefix, viewer_cls)) in enumerate(self._widgets.items()):
+            widget = viewer_cls()
             setattr(self, prefix + name, widget)
             layout.addWidget(QLabel(name.capitalize()), row, 0)
             layout.addWidget(widget, row, 1)
@@ -459,16 +532,16 @@ class CustomViewer(object):
                        '_state_cls': state_cls,
                        '_coordinator_cls': cls}
 
-        widget_cls = type(cls.__name__ + 'DataViewer',
+        viewer_cls = type(cls.__name__ + 'DataViewer',
                           (CustomMatplotlibDataViewer,),
                           widget_dict)
 
-        cls._widget_cls = widget_cls
-        qt_client.add(widget_cls)
+        cls._viewer_cls = viewer_cls
+        qt_client.add(viewer_cls)
 
         # add new classes to module namespace
         # needed for proper state saving/restoring
-        for c in [widget_cls, cls]:
+        for c in [viewer_cls, cls]:
             mod = getmodule(ViewerUserState)
             w = getattr(mod, c.__name__, None)
             if w is not None:
@@ -549,7 +622,10 @@ class CustomViewer(object):
         Parameters
         ----------
         method_name : str
-           The name of the user-defined method to setup a dispatch for
+            The name of the user-defined method to setup a dispatch for
+        use_cid : bool, optional
+            Whether to pass component IDs to the user function instead of the
+            data itself.
         **kwargs : dict
            Custom settings to pass to the UDF if they are requested by name
            as input arguments
@@ -563,7 +639,7 @@ class CustomViewer(object):
         This function builds the necessary arguments to the
         user-defined function. It also attempts to monitor
         the state of the matplotlib plot, removing stale
-        artists and re-rendering the cavnas as needed.
+        artists and re-rendering the canvas as needed.
         """
 
         # get the custom function
@@ -574,15 +650,18 @@ class CustomViewer(object):
 
         override = kwargs.copy()
 
-        if 'layer' in kwargs:
+        if 'layer' not in override and len(self.viewer.state.layers) > 0:
+            override['layer'] = self.viewer.state.layers[0].layer
 
-            override.setdefault('style', kwargs['layer'].style)
+        if 'layer' in override:
+
+            override.setdefault('style', override['layer'].style)
 
             # Dereference attributes
             for name, property in self.viewer.state.iter_callback_properties():
                 value = getattr(self.viewer.state, name)
                 if isinstance(value, ComponentID) or isinstance(property, FixedComponentIDProperty):
-                    override[name] = kwargs['layer'][value]
+                    override[name] = AttributeWithInfo.from_layer(override['layer'], value, view=override.get('view', None))
 
         # add some extra information that the user might want
         override.setdefault('self', self)
@@ -646,7 +725,7 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
 
     _state_cls = None
     _options_cls = None
-    _layer_style_widget_cls = None
+    _layer_style_viewer_cls = None
     _data_artist_cls = CustomLayerArtist
     _subset_artist_cls = CustomLayerArtist
 
@@ -655,6 +734,11 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
     def __init__(self, session, parent=None, **kwargs):
         super(CustomMatplotlibDataViewer, self).__init__(session, parent, **kwargs)
         self._coordinator = self._coordinator_cls(self)
+        self.state.add_global_callback(self._on_state_change)
+        self._on_state_change()
+
+    def _on_state_change(self, *args, **kwargs):
+        self._coordinator.settings_changed()
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self._coordinator, self.axes, self.state, layer=layer, layer_state=layer_state)
