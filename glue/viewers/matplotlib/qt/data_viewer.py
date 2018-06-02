@@ -8,9 +8,11 @@ from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
-from glue.utils import defer_draw, mpl_to_datetime64
+from glue.utils import defer_draw, mpl_to_datetime64, DeferDrawMeta
 from glue.utils.decorators import avoid_circular
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
+from glue.external import six
+from glue.utils.noconflict import classmaker
 
 # The following import is required to register the viewer tools
 from glue.viewers.matplotlib.qt import toolbar  # noqa
@@ -47,6 +49,7 @@ plt.close(fig)
 ZORDER_MAX = 100000
 
 
+@six.add_metaclass(classmaker(left_metas=(DeferDrawMeta,)))
 class MatplotlibDataViewer(DataViewerWithState):
 
     _state_cls = MatplotlibDataViewerState
@@ -56,7 +59,7 @@ class MatplotlibDataViewer(DataViewerWithState):
 
     def __init__(self, session, parent=None, wcs=None, state=None):
 
-        super(MatplotlibDataViewer, self).__init__(session, parent, state=state)
+        super(MatplotlibDataViewer, self).__init__(session, parent=parent, state=state)
 
         # Use MplWidget to set up a Matplotlib canvas inside the Qt window
         self.mpl_widget = MplWidget()

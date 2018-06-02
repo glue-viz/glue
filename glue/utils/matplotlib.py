@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import types
+import inspect
 import logging
 import warnings
 from functools import wraps
@@ -185,6 +186,11 @@ class DeferDrawMeta(type):
         for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = defer_draw(attr_value)
+
+        for base in bases:
+            for attr_name, attr_value in inspect.getmembers(base):
+                if isinstance(attr_value, types.FunctionType):
+                    setattr(base, attr_name, defer_draw(attr_value))
 
         return super(DeferDrawMeta, cls).__new__(cls, name, bases, attrs)
 

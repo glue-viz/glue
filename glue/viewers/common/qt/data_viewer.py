@@ -1,21 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-import os
-
 from qtpy.QtCore import Qt
-from qtpy import QtCore, QtWidgets
-from glue.core import Data
-from glue.core.application_base import ViewerBase
+from qtpy import QtWidgets
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
-from glue.utils.qt import get_qapp
-from glue.core.qt.mime import LAYERS_MIME_TYPE, LAYER_MIME_TYPE
 from glue.utils.qt import set_cursor
 from glue.external import six
 from glue.utils.noconflict import classmaker
-from glue.core.state import save
 from glue.config import viewer_tool
+from glue.viewers.common.qt.base_widget import BaseQtViewerWidget
 from glue.viewers.common.qt.tool import SimpleToolMenu
 from glue.viewers.common.qt.toolbar import BasicToolbar
+from glue.viewers.common.viewer import Viewer
 
 __all__ = ['DataViewer']
 
@@ -35,32 +30,6 @@ class ToolbarInitializer(object):
         return obj
 
 
-TEMPLATE_SCRIPT = """
-# This script was produced by glue and can be used to further customize a
-# particular plot.
-
-### Package imports
-
-{imports}
-
-### Set up data
-
-data_collection = load('{data}')
-
-### Set up viewer
-
-{header}
-
-### Set up layers
-
-{layers}
-
-### Finalize viewer
-
-{footer}
-""".strip()
-
-
 @viewer_tool
 class SaveTool(SimpleToolMenu):
     """
@@ -77,57 +46,59 @@ class SaveTool(SimpleToolMenu):
 
 # Note: we need to use classmaker here because otherwise we run into issues when
 # trying to use the meta-class with the Qt class.
-
 @six.add_metaclass(classmaker(left_metas=(ToolbarInitializer,)))
-class DataViewer(ViewerBase, QtWidgets.QMainWindow):
+class DataViewer(Viewer, BaseQtViewerWidget):
     """
     Base class for all Qt DataViewer widgets.
 
-    This defines a minimal interface, and implemlements the following::
+    This defines a minimal interface, and implements the following::
 
        * An automatic call to unregister on window close
        * Drag and drop support for adding data
     """
 
-    window_closed = QtCore.Signal()
-    toolbar_added = QtCore.Signal()
-
     _layer_artist_container_cls = QtLayerArtistContainer
     _layer_style_widget_cls = None
 
-    LABEL = 'Override this'
-
     _toolbar_cls = BasicToolbar
+
     # This defines the mouse mode to be used when no toolbar modes are active
     _default_mouse_mode_cls = None
+
     _inherit_tools = True
     tools = ['save']
     subtools = {'save': []}
 
     _close_on_last_layer_removed = True
 
-    _closed = False
+    _options_cls = None
 
-    def __init__(self, session, parent=None):
+    large_data_size = None
+
+    def __init__(self, session, state=None, parent=None):
         """
         :type session: :class:`~glue.core.Session`
         """
-        QtWidgets.QMainWindow.__init__(self, parent)
-        ViewerBase.__init__(self, session)
-        self.setWindowIcon(get_qapp().windowIcon())
+
+        BaseQtViewerWidget.__init__(self, parent)
+        Viewer.__init__(self, session, state=state)
+
         self._view = LayerArtistWidget(layer_style_widget_cls=self._layer_style_widget_cls,
                                        hub=session.hub)
         self._view.layer_list.setModel(self._layer_artist_container.model)
+
+        # Set up the options widget, which will include options that control the
+        # viewer state
+        if self._options_cls is None:
+            self.options = QtWidgets.QWidget()
+        else:
+            self.options = self._options_cls(viewer_state=self.state,
+                                             session=session)
+
         self._tb_vis = {}  # store whether toolbars are enabled
-        self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setAcceptDrops(True)
-        self.setAnimated(False)
         self.toolbar = None
         self._toolbars = []
         self._warn_close = True
-        self.setContentsMargins(2, 2, 2, 2)
-        self._mdi_wrapper = None  # GlueMdiSubWindow that self is embedded in
-        self.statusBar().setStyleSheet("QStatusBar{font-size:10px}")
 
         # close window when last plot layer deleted
         if self._close_on_last_layer_removed:
@@ -138,174 +109,23 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
     def selected_layer(self):
         return self._view.layer_list.current_artist()
 
-    def remove_layer(self, layer):
-        self._layer_artist_container.pop(layer)
-
-    def dragEnterEvent(self, event):
-        """ Accept the event if it has data layers"""
-        if event.mimeData().hasFormat(LAYER_MIME_TYPE):
-            event.accept()
-        elif event.mimeData().hasFormat(LAYERS_MIME_TYPE):
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        """ Add layers to the viewer if contained in mime data """
-        if event.mimeData().hasFormat(LAYER_MIME_TYPE):
-            self.request_add_layer(event.mimeData().data(LAYER_MIME_TYPE))
-
-        assert event.mimeData().hasFormat(LAYERS_MIME_TYPE)
-
-        for layer in event.mimeData().data(LAYERS_MIME_TYPE):
-            self.request_add_layer(layer)
-
-        event.accept()
-
-    def mousePressEvent(self, event):
-        """ Consume mouse press events, and prevent them from propagating
-            down to the MDI area """
-        event.accept()
-
-    apply_roi = set_cursor(Qt.WaitCursor)(ViewerBase.apply_roi)
+    @set_cursor(Qt.WaitCursor)
+    def apply_roi(self, roi):
+        pass
 
     def close(self, warn=True):
 
-        if self._closed:
-            return
+        BaseQtViewerWidget.close(self, warn=warn)
 
-        if warn and not self._confirm_close():
-            return
-
-        self._warn_close = False
-
-        if getattr(self, '_mdi_wrapper', None) is not None:
-            self._mdi_wrapper.close()
-            self._mdi_wrapper = None
-        else:
-            try:
-                QtWidgets.QMainWindow.close(self)
-            except RuntimeError:
-                # In some cases the above can raise a "wrapped C/C++ object of
-                # type ... has been deleted" error, in which case we can just
-                # ignore and carry on.
-                pass
-            ViewerBase.close(self)
+        Viewer.close(self)
 
         # We tell the toolbar to do cleanup to make sure we get rid of any
         # circular references
         if self.toolbar:
             self.toolbar.cleanup()
 
-        self._warn_close = True
-
-        self._closed = True
-
-    def mdi_wrap(self):
-        """Wrap this object in a GlueMdiSubWindow"""
-        from glue.app.qt.mdi_area import GlueMdiSubWindow
-        sub = GlueMdiSubWindow()
-        sub.setWidget(self)
-        self.destroyed.connect(sub.close)
-        sub.resize(self.size())
-        self._mdi_wrapper = sub
-
-        return sub
-
-    @property
-    def position(self):
-        target = self._mdi_wrapper or self
-        pos = target.pos()
-        return pos.x(), pos.y()
-
-    @position.setter
-    def position(self, xy):
-        x, y = xy
-        self.move(x, y)
-
-    def move(self, x=None, y=None):
-        """
-        Move the viewer to a new XY pixel location
-
-        You can also set the position attribute to a new tuple directly.
-
-        Parameters
-        ----------
-        x : int (optional)
-           New x position
-        y : int (optional)
-           New y position
-        """
-        x0, y0 = self.position
-        if x is None:
-            x = x0
-        if y is None:
-            y = y0
-        if self._mdi_wrapper is not None:
-            self._mdi_wrapper.move(x, y)
-        else:
-            QtWidgets.QMainWindow.move(self, x, y)
-
-    @property
-    def viewer_size(self):
-        if self._mdi_wrapper is not None:
-            sz = self._mdi_wrapper.size()
-        else:
-            sz = self.size()
-        return sz.width(), sz.height()
-
-    @viewer_size.setter
-    def viewer_size(self, value):
-        width, height = value
-        self.resize(width, height)
-        if self._mdi_wrapper is not None:
-            self._mdi_wrapper.resize(width, height)
-
-    def closeEvent(self, event):
-        """ Call unregister on window close """
-
-        if not self._confirm_close():
-            event.ignore()
-            return
-
-        if self._hub is not None:
-            self.unregister(self._hub)
-
-        self._layer_artist_container.clear_callbacks()
-        self._layer_artist_container.clear()
-
-        super(DataViewer, self).closeEvent(event)
-        event.accept()
-
-        self.window_closed.emit()
-
-    def isVisible(self):
-        # Override this so as to catch RuntimeError: wrapped C/C++ object of
-        # type ... has been deleted
-        try:
-            return self.isVisible()
-        except RuntimeError:
-            return False
-
-    def _confirm_close(self):
-        """Ask for close confirmation
-
-        :rtype: bool. True if user wishes to close. False otherwise
-        """
-        if self._warn_close and not os.environ.get('GLUE_TESTING'):
-            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
-            dialog = QtWidgets.QMessageBox.warning(self, "Confirm Close",
-                                                   "Do you want to close this window?",
-                                                   buttons=buttons,
-                                                   defaultButton=QtWidgets.QMessageBox.Cancel)
-            return dialog == QtWidgets.QMessageBox.Ok
-        return True
-
     def layer_view(self):
         return self._view
-
-    def options_widget(self):
-        return QtWidgets.QWidget()
 
     def addToolBar(self, tb):
         super(DataViewer, self).addToolBar(tb)
@@ -356,7 +176,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
         self.toolbar_added.emit()
 
     def show_toolbars(self):
-        """Re-enable any toolbars that were hidden with `hide_toolbars()`
+        """
+        Re-enable any toolbars that were hidden with `hide_toolbars()`
 
         Does not re-enable toolbars that were hidden by other means
         """
@@ -365,7 +186,8 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
                 tb.setEnabled(True)
 
     def hide_toolbars(self):
-        """ Disable all the toolbars in the viewer.
+        """
+        Disable all the toolbars in the viewer.
 
         This action can be reversed by calling `show_toolbars()`
         """
@@ -374,93 +196,32 @@ class DataViewer(ViewerBase, QtWidgets.QMainWindow):
             tb.setEnabled(False)
 
     def set_focus(self, state):
+        super(DataViewer, self).set_focus(state)
         if state:
-            css = """
-            DataViewer
-            {
-            border: 2px solid;
-            border-color: rgb(56, 117, 215);
-            }
-            """
-            self.setStyleSheet(css)
             self.show_toolbars()
         else:
-            css = """
-            DataViewer
-            {
-            border: none;
-            }
-            """
-            self.setStyleSheet(css)
             self.hide_toolbars()
 
-    def __str__(self):
-        return self.LABEL
+    def __gluestate__(self, context):
+        state = Viewer.__gluestate__(self, context)
+        state['size'] = self.viewer_size
+        state['pos'] = self.position
+        state['_protocol'] = 1
+        return state
 
-    def unregister(self, hub):
-        """
-        Override to perform cleanup operations when disconnecting from hub
-        """
+    def update_viewer_state(rec, context):
         pass
 
-    @property
-    def window_title(self):
-        return str(self)
+    @classmethod
+    def __setgluestate__(cls, rec, context):
 
-    def update_window_title(self):
-        self.setWindowTitle(self.window_title)
+        if rec.get('_protocol', 0) < 1:
+            cls.update_viewer_state(rec, context)
 
-    def set_status(self, message):
-        sb = self.statusBar()
-        sb.showMessage(message)
+        viewer = super(DataViewer, cls).__setgluestate__(rec, context)
 
-    def export_as_script(self, filename):
+        viewer.viewer_size = rec['size']
+        x, y = rec['pos']
+        viewer.move(x=x, y=y)
 
-        data_filename = os.path.relpath(filename) + '.data'
-
-        save(data_filename, self.session.data_collection)
-
-        imports = ['from glue.core.state import load']
-
-        imports_header, header = self._script_header()
-        imports.extend(imports_header)
-
-        layers = ""
-        for ilayer, layer in enumerate(self.layers):
-            if layer.layer.label:
-                layers += '## Layer {0}: {1}\n\n'.format(ilayer + 1, layer.layer.label)
-            else:
-                layers += '## Layer {0}\n\n'.format(ilayer + 1)
-            if layer.visible and layer.enabled:
-                if isinstance(layer.layer, Data):
-                    index = self.session.data_collection.index(layer.layer)
-                    layers += "layer_data = data_collection[{0}]\n\n".format(index)
-                else:
-                    dindex = self.session.data_collection.index(layer.layer.data)
-                    sindex = layer.layer.data.subsets.index(layer.layer)
-                    layers += "layer_data = data_collection[{0}].subsets[{1}]\n\n".format(dindex, sindex)
-            imports_layer, layer_script = layer._python_exporter(layer)
-            if layer_script is None:
-                continue
-            imports.extend(imports_layer)
-            layers += layer_script.strip() + "\n"
-
-        imports_footer, footer = self._script_footer()
-        imports.extend(imports_footer)
-
-        imports = os.linesep.join(sorted(set(imports)))
-
-        script = TEMPLATE_SCRIPT.format(data=data_filename,
-                                        imports=imports.strip(),
-                                        header=header.strip(),
-                                        layers=layers.strip(),
-                                        footer=footer.strip())
-
-        with open(filename, 'w') as f:
-            f.write(script)
-
-    def _script_header(self):
-        raise NotImplementedError()
-
-    def _script_footer(self):
-        raise NotImplementedError()
+        return viewer

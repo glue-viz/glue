@@ -7,12 +7,13 @@ from ..elements import (FormElement, NumberElement, ChoiceElement,
                         FloatElement, TextBoxElement)
 
 
-class TemporaryState(State):
-    a = property
-
-
 def get_value(element):
+
     prefix, widget_cls, property = element.ui_and_state()
+
+    class TemporaryState(State):
+        a = property
+
     temp = TemporaryState()
     return temp.a
 
