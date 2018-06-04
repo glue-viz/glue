@@ -254,7 +254,7 @@ class TableViewer(DataViewer):
     @messagebox_on_error("Failed to add data")
     def add_data(self, data):
         with self._layer_artist_container.ignore_empty():
-            self.state.layers.clear()
+            self.state.layers[:] = []
             return super(TableViewer, self).add_data(data)
 
     def closeEvent(self, event):
