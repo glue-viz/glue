@@ -12,7 +12,7 @@ from qtpy import QtCore
 from glue.core.data import Data
 from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
-from glue.core.tests.test_state import Cloner, containers_equal, doubler, clone
+from glue.core.tests.test_state import Cloner, doubler, clone
 from glue.tests.helpers import requires_ipython, PYSIDE2_INSTALLED  # noqa
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer

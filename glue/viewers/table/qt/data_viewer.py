@@ -19,6 +19,7 @@ from glue.core.subset import ElementSubsetState
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
+from glue.viewers.table.compat import update_table_viewer_state
 
 __all__ = ['TableViewer', 'TableLayerArtist']
 
@@ -272,3 +273,7 @@ class TableViewer(DataViewer):
 
     def layer_view(self):
         return QtWidgets.QWidget()
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_table_viewer_state(rec, context)

@@ -86,7 +86,6 @@ def save_histogram(plot, index):
     :rtype: json-serializable dict
     """
     result = save_plot_base(plot, index)
-    props = plot.properties
     result['type'] = 'histogram'
     result['xAxis'] = dict(columnName=plot.state.x_att.label,
                            bins=int(plot.state.hist_n_bin),
@@ -130,7 +129,6 @@ def can_save_d3po(application):
 
     if len(dc) != 1:
         raise ValueError("D3PO Export only supports a single dataset")
-    data = dc[0]
 
     for tab in application.viewers:
         for viewer in tab:
