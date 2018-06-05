@@ -1198,6 +1198,7 @@ class Data(object):
 
         if (view is None and
                 isinstance(axis, tuple) and
+                len(axis) > 0 and
                 len(axis) == self.ndim - 1 and
                 self.size > N_CHUNK_MAX and
                 not isinstance(subset_state, SliceSubsetState)):
