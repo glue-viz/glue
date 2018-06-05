@@ -14,7 +14,7 @@ from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.qt.tool import CheckableTool
-from glue.viewers.common.layer_artist import LayerArtistWithState
+from glue.viewers.common.layer_artist import LayerArtist
 from glue.core.subset import ElementSubsetState
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
@@ -126,7 +126,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class TableLayerArtist(LayerArtistWithState):
+class TableLayerArtist(LayerArtist):
 
     def __init__(self, table_viewer, viewer_state, layer_state=None, layer=None):
         self._table_viewer = table_viewer

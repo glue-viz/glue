@@ -13,7 +13,7 @@ from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 from glue.external.echo.qt import (connect_checkable_button,
                                    autoconnect_callbacks_to_qt)
 
-from glue.viewers.common.layer_artist import LayerArtistWithState
+from glue.viewers.common.layer_artist import LayerArtist
 from glue.viewers.common.state import ViewerState, LayerState
 from glue.viewers.common.qt.data_viewer import DataViewer
 
@@ -42,7 +42,7 @@ class TutorialLayerState(LayerState):
     fill = CallbackProperty(False, docstring='Whether to show the markers as filled or not')
 
 
-class TutorialLayerArtist(LayerArtistWithState):
+class TutorialLayerArtist(LayerArtist):
 
     _layer_state_cls = TutorialLayerState
 
