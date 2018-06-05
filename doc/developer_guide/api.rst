@@ -59,6 +59,12 @@ User Interface
 .. automodapi:: glue.viewers.common.qt.data_viewer
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.common.qt.base_widget
+   :no-inheritance-diagram:
+
+.. automodapi:: glue.viewers.common.viewer
+   :no-inheritance-diagram:
+
 .. automodapi:: glue.viewers.matplotlib.state
    :no-inheritance-diagram:
 
@@ -148,9 +154,6 @@ Utilities
    :no-inheritance-diagram:
 
 .. automodapi:: glue.core.simpleforms
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.core.client
    :no-inheritance-diagram:
 
 .. automodapi:: glue.core.data_combo_helper

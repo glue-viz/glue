@@ -104,14 +104,12 @@ __all__ = ["AttributeWithInfo", "ViewerUserState", "UserDefinedFunction",
 
 
 class AttributeWithInfo(np.ndarray):
-
     """
-    An array subclass wrapping a Component of a dataset
-    It is an array with the following additional attributes:
-    * ``id``  contains the ComponentID or string name of the Component
-    * ``categories`` is an array or None. For categorical Components,
-      contains the distinct categories which are integer-encoded
-      in the AttributeInfo
+    An array subclass wrapping a Component of a dataset It is an array with the
+    following additional attributes: ``id``  contains the ComponentID or string
+    name of the Component, and ``categories`` is an array or `None`. For
+    categorical Components, it contains the distinct categories which are
+    integer-encoded in the AttributeWithInfo
     """
 
     @classmethod
@@ -127,7 +125,8 @@ class AttributeWithInfo(np.ndarray):
     @classmethod
     def from_layer(cls, layer, cid, view=None):
         """
-        Build an AttributeInfo out of a subset or dataset
+        Build an AttributeWithInfo out of a subset or dataset.
+
         Parameters
         ----------
         layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
