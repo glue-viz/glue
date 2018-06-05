@@ -64,16 +64,6 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self._reset_x_limits()
         self._reset_y_limits()
 
-    def _update_priority(self, name):
-        if name == 'layers':
-            return 2
-        elif name.endswith('_log'):
-            return 0.5
-        elif name.endswith(('_min', '_max')):
-            return 0
-        else:
-            return 1
-
     def flip_x(self):
         """
         Flip the x_min/x_max limits.

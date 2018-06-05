@@ -196,9 +196,9 @@ visualization.
 
 The minimal layer artist class looks like the following::
 
-    from glue.viewers.common.layer_artist import LayerArtistWithState
+    from glue.viewers.common.layer_artist import LayerArtist
 
-    class TutorialLayerArtist(LayerArtistWithState):
+    class TutorialLayerArtist(LayerArtist):
 
         def clear(self):
             pass
@@ -213,30 +213,30 @@ The minimal layer artist class looks like the following::
             pass
 
 Each layer artist class has to define the four methods shown above. The
-:meth:`~glue.viewers.common.layer_artist.LayerArtistWithState.clear` method
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.clear` method
 should remove the layer from the visualization, bearing in mind
 that the layer might be added back (this can happen for example when toggling
 the visibility of the layer property), the
-:meth:`~glue.viewers.common.layer_artist.LayerArtistWithState.remove` method
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.remove` method
 should permanently remove the layer from the visualization, the
-:meth:`~glue.viewers.common.layer_artist.LayerArtistWithState.redraw` method
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.redraw` method
 should force the layer to be redrawn, and
-:meth:`~glue.viewers.common.layer_artist.LayerArtistWithState.update` should
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.update` should
 update the apparance of the layer as necessary before redrawing -- note that
-:meth:`~glue.viewers.common.layer_artist.LayerArtistWithState.update` is called
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.update` is called
 for example when a subset has changed.
 
 By default, layer artists inheriting from
-:class:`~glue.viewers.common.layer_artist.LayerArtistWithState` will be
+:class:`~glue.viewers.common.layer_artist.LayerArtist` will be
 initialized with a reference to the layer state (accessible as ``state``) and
 the viewer state (accessible as ``_viewer_state``).
 
 This means that we can then do the following, asssuming a layer state
 with the ``fill`` property defined previously::
 
-  from glue.viewers.common.layer_artist import LayerArtistWithState
+  from glue.viewers.common.layer_artist import LayerArtist
 
-  class TutorialLayerArtist(LayerArtistWithState):
+  class TutorialLayerArtist(LayerArtist):
 
       def __init__(self, *args, **kwargs):
           super(MyLayerArtist, self).__init__(*args, **kwargs)
@@ -345,9 +345,9 @@ layer artists, and widgets to control the viewer and layer options. The final
 piece of the puzzle is the data viewer class itself, which brings everything
 together. The simplest definition of the data viewer class is::
 
-    from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+    from glue.viewers.common.qt.data_viewer import DataViewer
 
-    class TutorialDataViewer(DataViewerWithState):
+    class TutorialDataViewer(DataViewer):
 
         LABEL = 'Tutorial viewer'
         _state_cls = TutorialViewerState

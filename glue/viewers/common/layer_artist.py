@@ -2,20 +2,21 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import keep_in_sync, CallbackProperty
 from glue.core.layer_artist import LayerArtistBase
+from glue.viewers.common.state import LayerState
 
-__all__ = ['LayerArtistWithState']
+__all__ = ['LayerArtist']
 
 
-class LayerArtistWithState(LayerArtistBase):
+class LayerArtist(LayerArtistBase):
 
     zorder = CallbackProperty()
     visible = CallbackProperty()
 
-    _layer_state_cls = None
+    _layer_state_cls = LayerState
 
     def __init__(self, viewer_state, layer_state=None, layer=None):
 
-        super(LayerArtistWithState, self).__init__(layer)
+        super(LayerArtist, self).__init__(layer)
 
         self._viewer_state = viewer_state
 

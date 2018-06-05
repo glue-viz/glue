@@ -120,8 +120,4 @@ This is used in Glue to produce the following communication workflow:
  * The clients react to the message however they see fit.
 
 Here, we use the term client in the generic sense of a class that interacts
-with the hub. However, Glue does include a base
-:class:`~glue.core.client.Client` class that pre-defines a number of useful
-connections for data viewers. Some of the data viewers make use of this class,
-although there is no obligation to do so in principle, provided the class
-subscribing to messages is a subclass of :class:`~glue.core.hub.HubListener`.
+with the hub.

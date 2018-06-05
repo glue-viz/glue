@@ -6,6 +6,8 @@ from astropy.wcs import WCS
 
 from qtpy.QtWidgets import QMessageBox
 
+from glue.core.subset import roi_to_subset_state
+
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -16,7 +18,7 @@ from glue.viewers.image.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image.qt.mouse_mode import RoiClickAndDragMode
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
-from glue.utils import defer_draw
+from glue.utils import defer_draw, decorate_all_methods
 
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
@@ -48,6 +50,7 @@ ax.coords[{y_att_axis}].set_ticklabel(size={y_ticklabel_size})
 """.strip()
 
 
+@decorate_all_methods(defer_draw)
 class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
@@ -83,7 +86,6 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
-    @defer_draw
     def update_x_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
         if self._wcs_set and self.state.x_att is not None:
@@ -93,7 +95,6 @@ class ImageViewer(MatplotlibDataViewer):
         self.axes.coords[axis].set_ticklabel(size=self.state.x_ticklabel_size)
         self.redraw()
 
-    @defer_draw
     def update_y_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
         if self._wcs_set and self.state.y_att is not None:
@@ -109,7 +110,6 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes._composite_image.remove()
             self.axes._composite_image = None
 
-    @defer_draw
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:
@@ -177,23 +177,22 @@ class ImageViewer(MatplotlibDataViewer):
 
         self._wcs_set = True
 
-    def _roi_to_subset_state(self, roi):
-        """ This method must be implemented in order for apply_roi from the
-        parent class to work.
-        """
+    def apply_roi(self, roi, use_current=False):
+
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
-        # TODO Does subset get applied to all data or just visible data?
-
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi,
-                                      other_comp=y_comp,
-                                      other_att=self.state.y_att,
-                                      coord='x')
+        subset_state = roi_to_subset_state(roi,
+                                           x_att=self.state.x_att, x_comp=x_comp,
+                                           y_att=self.state.y_att, y_comp=y_comp)
+
+        self.apply_subset_state(subset_state)
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:
@@ -251,7 +250,7 @@ class ImageViewer(MatplotlibDataViewer):
 
         imports = []
         imports.append('import matplotlib.pyplot as plt')
-        imports.append('from glue.viewers.common.viz_client import init_mpl')
+        imports.append('from glue.viewers.matplotlib.mpl_axes import init_mpl')
         imports.append('from glue.viewers.image.composite_array import CompositeArray')
         imports.append('from glue.external.modest_image import imshow')
 

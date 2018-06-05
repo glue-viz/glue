@@ -32,3 +32,7 @@ class LayerState(State):
                                            '(larger zorder values are on top of '
                                            'other layers)')
     visible = CallbackProperty(True, docstring='Whether the layer is currently visible')
+
+    def __init__(self, viewer_state=None, **kwargs):
+        super(LayerState, self).__init__(**kwargs)
+        self.viewer_state = viewer_state

@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core.subset import roi_to_subset_state
+from glue.utils import defer_draw, decorate_all_methods
+
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
 from glue.viewers.profile.layer_artist import ProfileLayerArtist
@@ -12,6 +15,7 @@ from glue.viewers.profile.qt.profile_tools import ProfileAnalysisTool  # noqa
 __all__ = ['ProfileViewer']
 
 
+@decorate_all_methods(defer_draw)
 class ProfileViewer(MatplotlibDataViewer):
 
     LABEL = '1D Profile'
@@ -44,6 +48,9 @@ class ProfileViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    def _roi_to_subset_state(self, roi):
+    def apply_roi(self, roi, use_current=False):
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        return x_comp.subset_from_roi(self.state.x_att, roi, coord='x')
+        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att, x_comp=x_comp)
+        self.apply_subset_state(subset_state, use_current=use_current)

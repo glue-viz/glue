@@ -82,14 +82,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.y_min = -0.1
             self.y_max = +1.1
 
-    def _update_priority(self, name):
-        if name == 'layers':
-            return 2
-        elif name.endswith(('_min', '_max')):
-            return 0
-        else:
-            return 1
-
     def flip_x(self):
         """
         Flip the x_min/x_max limits.

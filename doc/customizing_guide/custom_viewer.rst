@@ -152,7 +152,7 @@ setting of each widget is available to the plotting functions:
  * ``bins`` is set to an integer
  * ``hitrate`` is set to a boolean
  * ``color`` is set to ``'Reds'`` or ``'Purples'``
- * ``x``, ``y``, and ``hit`` are passed as :class:`~glue.viewers.custom.qt.custom_viewer.AttributeInfo` objects (which are just numpy arrays with a special ``id`` attribute, useful when performing selection below).
+ * ``x``, ``y``, and ``hit`` are passed as :class:`~glue.viewers.custom.qt.custom_viewer.AttributeWithInfo` objects (which are just numpy arrays with a special ``id`` attribute, useful when performing selection below).
 
 The plotting functions can use these variables to draw the appropriate
 plots -- in particular, the ``show_hexbin`` function chooses
@@ -228,10 +228,6 @@ Other Guidelines
    ``plot_data`` and ``plot_subset`` can explicitly return a list
    of newly-created artists. This might be more efficient if your
    plot is very complicated.
-
- - By default, ``plot_data`` and ``plot_subset`` are called whenever
-   UI settings change. To disable this behavior, set
-   ``viewer.redraw_on_settings_change=False``.
 
  - By default, Glue sets the margins of figures so that the space between axes
    and the edge of figures is constant in absolute terms. If the default values

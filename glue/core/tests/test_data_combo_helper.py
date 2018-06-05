@@ -296,22 +296,22 @@ def test_data_collection_combo_helper():
 
     data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='data1')
 
-    assert callback.call_count == 1
+    assert callback.call_count == 0
 
     dc.append(data1)
 
-    assert callback.call_count == 2
+    assert callback.call_count == 1
 
     assert selection_choices(state, 'combo') == "data1"
 
     data1.label = 'mydata1'
     assert selection_choices(state, 'combo') == "mydata1"
 
-    assert callback.call_count == 3
+    assert callback.call_count == 2
 
     dc.remove(data1)
 
-    assert callback.call_count == 4
+    assert callback.call_count == 3
 
     assert selection_choices(state, 'combo') == ""
 

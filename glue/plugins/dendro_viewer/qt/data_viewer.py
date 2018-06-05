@@ -88,7 +88,7 @@ class DendrogramViewer(MatplotlibDataViewer):
 
     # TODO: move some of the ROI stuff to state class?
 
-    def _roi_to_subset_state(self, roi):
+    def apply_roi(self, roi, use_current=False):
 
         # TODO Does subset get applied to all data or just visible data?
 
@@ -97,6 +97,9 @@ class DendrogramViewer(MatplotlibDataViewer):
 
         if not roi.defined():
             return
+
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
 
         if isinstance(roi, PointROI):
 
@@ -119,7 +122,9 @@ class DendrogramViewer(MatplotlibDataViewer):
             else:
                 select = np.array([], dtype=np.int)
 
-            return CategorySubsetState(self.state.reference_data.pixel_component_ids[0], select)
+            subset_state = CategorySubsetState(self.state.reference_data.pixel_component_ids[0], select)
+
+            self.apply_subset_state(subset_state)
 
         else:
 

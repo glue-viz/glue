@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
 
-from glue.utils import mpl_to_datetime64
+from glue.utils import mpl_to_datetime64, defer_draw, decorate_all_methods
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -13,6 +14,7 @@ from glue.viewers.scatter.compat import update_scatter_viewer_state
 __all__ = ['ScatterViewer']
 
 
+@decorate_all_methods(defer_draw)
 class ScatterViewer(MatplotlibDataViewer):
 
     LABEL = '2D Scatter'
@@ -58,9 +60,10 @@ class ScatterViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    # TODO: move some of the ROI stuff to state class?
+    def apply_roi(self, roi, use_current=False):
 
-    def _roi_to_subset_state(self, roi):
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
 
         x_date = any(comp.datetime for comp in self.state._get_x_components())
         y_date = any(comp.datetime for comp in self.state._get_y_components())
@@ -72,10 +75,11 @@ class ScatterViewer(MatplotlibDataViewer):
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
         y_comp = self.state.y_att.parent.get_component(self.state.y_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi,
-                                      other_comp=y_comp,
-                                      other_att=self.state.y_att,
-                                      coord='x')
+        subset_state = roi_to_subset_state(roi,
+                                           x_att=self.state.x_att, x_comp=x_comp,
+                                           y_att=self.state.y_att, y_comp=y_comp)
+
+        self.apply_subset_state(subset_state, use_current=use_current)
 
     @staticmethod
     def update_viewer_state(rec, context):

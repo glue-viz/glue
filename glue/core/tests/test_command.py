@@ -125,14 +125,13 @@ class TestCommandStack(object):
         dc.append(x)
 
         r = MagicMock(roi.Roi)
-        client = MagicMock(core.client.Client)
-        client.data = dc
+        apply_roi = MagicMock()
 
         cmd = c.ApplyROI(data_collection=dc, roi=r,
-                         apply_func=client.apply_roi)
+                         apply_func=apply_roi)
 
         self.stack.do(cmd)
-        client.apply_roi.assert_called_once_with(r)
+        apply_roi.assert_called_once_with(r)
 
         old_state = s.subset_state
         s.subset_state = MagicMock(spec_set=core.subset.SubsetState)

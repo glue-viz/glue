@@ -483,7 +483,9 @@ class GlueUnSerializer(object):
 
     @core.registry.disable
     def object(self, obj_id):
+
         if isinstance(obj_id, six.string_types):
+
             if obj_id.startswith('st__'):  # a string literal
                 return obj_id[4:]
 
@@ -494,8 +496,7 @@ class GlueUnSerializer(object):
                 raise GlueSerializeError("Unrecognized object %s" % obj_id)
 
             if obj_id in self._working:
-                raise GlueSerializeError(
-                    "Circular Reference detected: %s" % obj_id)
+                raise GlueSerializeError("Circular Reference detected: %s" % obj_id)
 
             self._working.add(obj_id)
             rec = self._rec[obj_id]
@@ -506,24 +507,36 @@ class GlueUnSerializer(object):
             rec = obj_id
 
         func = self._dispatch(rec)
-        obj = func(rec, self)
 
-        if hasattr(obj, '__setgluestate_callback__'):
-            self._callbacks.append(obj.__setgluestate_callback__)
+        try:
 
-        # loader functions might yield the constructed value,
-        # and then futher populate it. This deals with circular
-        # dependencies.
-        if isgeneratorfunction(func):
-            gen, obj = obj, next(obj)  # get the partially-constructed value...
+            obj = func(rec, self)
 
-        if isinstance(obj_id, six.string_types):  # ... add it to the registry ...
-            self._objs[obj_id] = obj
-            self._working.remove(obj_id)
+            if hasattr(obj, '__setgluestate_callback__'):
+                self._callbacks.append(obj.__setgluestate_callback__)
 
-        if isgeneratorfunction(func):
-            for _ in gen:  # ... and finish constructing it
-                pass
+            # loader functions might yield the constructed value,
+            # and then futher populate it. This deals with circular
+            # dependencies.
+            if isgeneratorfunction(func):
+                gen, obj = obj, next(obj)  # get the partially-constructed value...
+
+            if isinstance(obj_id, six.string_types):  # ... add it to the registry ...
+                self._objs[obj_id] = obj
+                self._working.remove(obj_id)
+
+            if isgeneratorfunction(func):
+                for _ in gen:  # ... and finish constructing it
+                    pass
+
+        finally:
+
+            # If anything in the try: block above fails, we need to remove the
+            # obj_id from te list of IDs we are currently working on, as we
+            # may want to try again (this happens when using the callbacks below)
+
+            if isinstance(obj_id, six.string_types) and obj_id in self._working:
+                self._working.remove(obj_id)
 
         self._try_callbacks()
 

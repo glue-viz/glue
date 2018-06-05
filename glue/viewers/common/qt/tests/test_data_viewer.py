@@ -9,7 +9,6 @@ from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 
 from glue.core.tests.util import simple_session
-from ..data_viewer import DataViewer
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
@@ -29,7 +28,7 @@ class BaseTestDataViewer(object):
 
         w = self.widget_cls(session)
         w.register_to_hub(hub)
-        with patch.object(DataViewer, 'unregister') as unregister:
+        with patch.object(w, 'unregister') as unregister:
             w.close()
         unregister.assert_called_once_with(hub)
 

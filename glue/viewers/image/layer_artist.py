@@ -103,7 +103,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     def get_image_shape(self):
 
-        if self._viewer_state.x_att is None or self._viewer_state.y_att is None:
+        if self._viewer_state.reference_data is None or self._viewer_state.x_att is None or self._viewer_state.y_att is None:
             return None
 
         x_axis = self._viewer_state.x_att.axis

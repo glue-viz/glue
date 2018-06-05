@@ -14,3 +14,4 @@ from .misc import *  # noqa
 from .geometry import *  # noqa
 from .colors import *  # noqa
 from .wcs import *  # noqa
+from .decorators import *  # noqa

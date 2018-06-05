@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
-from glue.utils import mpl_to_datetime64
+from glue.core.subset import roi_to_subset_state
+from glue.utils import mpl_to_datetime64, defer_draw, decorate_all_methods
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -14,6 +15,7 @@ from glue.viewers.histogram.compat import update_histogram_viewer_state
 __all__ = ['HistogramViewer']
 
 
+@decorate_all_methods(defer_draw)
 class HistogramViewer(MatplotlibDataViewer):
 
     LABEL = '1D Histogram'
@@ -52,11 +54,10 @@ class HistogramViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    # TODO: move some of the ROI stuff to state class?
+    def apply_roi(self, roi, use_current=False):
 
-    def _roi_to_subset_state(self, roi):
-
-        # TODO Does subset get applied to all data or just visible data?
+        if len(self.layers) == 0:  # Force redraw to get rid of ROI
+            return self.redraw()
 
         x_date = any(comp.datetime for comp in self.state._get_x_components())
 
@@ -77,7 +78,9 @@ class HistogramViewer(MatplotlibDataViewer):
 
         x_comp = self.state.x_att.parent.get_component(self.state.x_att)
 
-        return x_comp.subset_from_roi(self.state.x_att, roi_new, coord='x')
+        subset_state = roi_to_subset_state(roi_new, x_att=self.state.x_att, x_comp=x_comp)
+
+        self.apply_subset_state(subset_state, use_current=use_current)
 
     @staticmethod
     def update_viewer_state(rec, context):

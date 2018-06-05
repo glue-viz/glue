@@ -6,7 +6,6 @@ from glue.utils import defer_draw
 
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
-# from glue.core.layer_artist import MatplotlibLayerArtist, ChangedTrigger
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.plugins.dendro_viewer.state import DendrogramLayerState
 

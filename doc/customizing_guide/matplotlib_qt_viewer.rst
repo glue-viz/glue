@@ -56,7 +56,7 @@ Data viewer
 
 The :class:`~glue.viewers.matplotlib.qt.data_viewer.MatplotlibDataViewer` class
 adds functionality on top of the base
-:class:`~glue.viewers.common.qt.data_viewer_with_state.DataViewerWithState`
+:class:`~glue.viewers.common.qt.data_viewer.DataViewer`
 class:
 
 * It automatically sets up the Matplotlib axes

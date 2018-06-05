@@ -11,6 +11,8 @@ from glue.viewers.image.composite_array import CompositeArray
 from glue.external.modest_image import imshow
 from glue.utils import defer_draw
 
+from glue.viewers.matplotlib.mpl_axes import init_mpl
+
 # Import the mouse mode to make sure it gets registered
 from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
 
@@ -50,7 +52,6 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
             self.set_image(image=image, wcs=wcs, **kwargs)
 
     def _setup_axes(self):
-        from glue.viewers.common.viz_client import init_mpl
         _, self._axes = init_mpl(self.central_widget.canvas.fig, axes=None, wcs=True)
         self._axes.set_aspect('equal', adjustable='datalim')
 

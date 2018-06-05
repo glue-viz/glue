@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from .client import Client  # noqa
 from .command import Command, CommandStack  # noqa
 from .component import Component  # noqa
 from .component_id import ComponentID  # noqa

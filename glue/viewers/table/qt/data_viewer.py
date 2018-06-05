@@ -9,18 +9,17 @@ from matplotlib.colors import ColorConverter
 
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
-from glue.core.layer_artist import LayerArtistBase
-from glue.core import message as msg
 from glue.core import Data
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.layer_artist import LayerArtist
 from glue.core.subset import ElementSubsetState
-from glue.core.state import lookup_class_with_patches
 from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
+from glue.viewers.table.compat import update_table_viewer_state
 
 __all__ = ['TableViewer', 'TableLayerArtist']
 
@@ -127,20 +126,25 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
 
-class TableLayerArtist(LayerArtistBase):
+class TableLayerArtist(LayerArtist):
 
-    def __init__(self, layer, table_viewer):
+    def __init__(self, table_viewer, viewer_state, layer_state=None, layer=None):
         self._table_viewer = table_viewer
-        super(TableLayerArtist, self).__init__(layer)
+        super(TableLayerArtist, self).__init__(viewer_state,
+                                               layer_state=layer_state,
+                                               layer=layer)
 
-    def redraw(self):
+    def _refresh(self):
         self._table_viewer.model.data_changed()
 
+    def redraw(self):
+        self._refresh()
+
     def update(self):
-        pass
+        self._refresh()
 
     def clear(self):
-        pass
+        self._refresh()
 
 
 @viewer_tool
@@ -183,11 +187,15 @@ class TableViewer(DataViewer):
     LABEL = "Table Viewer"
 
     _toolbar_cls = BasicToolbar
+    _data_artist_cls = TableLayerArtist
+    _subset_artist_cls = TableLayerArtist
+
+    _inherit_tools = True
     tools = ['table:rowselect']
 
-    def __init__(self, session, parent=None, widget=None):
+    def __init__(self, session, state=None, parent=None, widget=None):
 
-        super(TableViewer, self).__init__(session, parent)
+        super(TableViewer, self).__init__(session, state=state, parent=parent)
 
         self.ui = load_ui('data_viewer.ui',
                           directory=os.path.dirname(__file__))
@@ -203,6 +211,9 @@ class TableViewer(DataViewer):
         self.model = None
 
         self.ui.table.selection_changed.connect(self.selection_changed)
+
+        self.state.add_callback('layers', self._on_layers_changed)
+        self._on_layers_changed()
 
     def selection_changed(self):
         app = get_qapp()
@@ -228,70 +239,23 @@ class TableViewer(DataViewer):
             self.ui.table.clearSelection()
             self.ui.table.blockSignals(False)
 
-    def register_to_hub(self, hub):
-
-        super(TableViewer, self).register_to_hub(hub)
-
-        def dfilter(x):
-            return x.sender.data is self.data
-
-        hub.subscribe(self, msg.SubsetCreateMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.SubsetUpdateMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.SubsetDeleteMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.DataUpdateMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.ComponentsChangedMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-        hub.subscribe(self, msg.NumericalDataChangedMessage,
-                      handler=self._refresh,
-                      filter=dfilter)
-
-    def unregister(self, hub):
-        super(TableViewer, self).unregister(hub)
-        hub.unsubscribe_all(self)
-
-    def _refresh(self, msg=None):
-        self._sync_layers()
-        self.model.data_changed()
-
-    def _sync_layers(self):
-
-        for layer_artist in self.layers:
-            if layer_artist.layer is not self.data and layer_artist.layer not in self.data.subsets:
-                self._layer_artist_container.remove(layer_artist)
-
-        if self.data not in self._layer_artist_container:
-            self._layer_artist_container.append(TableLayerArtist(self.data, self))
-
-        for subset in self.data.subsets:
-            if subset not in self._layer_artist_container:
-                self._layer_artist_container.append(TableLayerArtist(subset, self))
-
-    @messagebox_on_error("Failed to add data")
-    def add_data(self, data):
-        self.data = data
+    def _on_layers_changed(self, *args):
+        for layer_state in self.state.layers:
+            if isinstance(layer_state.layer, Data):
+                break
+        else:
+            return
+        self.data = layer_state.layer
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
         self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
-        self._sync_layers()
-        return True
 
-    def add_subset(self, subset):
-        return True
+    @messagebox_on_error("Failed to add data")
+    def add_data(self, data):
+        with self._layer_artist_container.ignore_empty():
+            self.state.layers[:] = []
+            return super(TableViewer, self).add_data(data)
 
     def closeEvent(self, event):
         """
@@ -304,17 +268,12 @@ class TableViewer(DataViewer):
         self.ui.table.setModel(DataTableModel(d))
         event.accept()
 
-    def restore_layers(self, rec, context):
-        # For now this is a bit of a hack, we assume that all subsets saved
-        # for this viewer are from dataset, so we just get Data object
-        # then just sync the layers.
-        for layer in rec:
-            c = lookup_class_with_patches(layer.pop('_type'))  # noqa
-            props = dict((k, context.object(v)) for k, v in layer.items())
-            layer = props['layer']
-            if isinstance(layer, Data):
-                self.add_data(layer)
-            else:
-                self.add_data(layer.data)
-            break
-        self._sync_layers()
+    def get_layer_artist(self, cls, layer=None, layer_state=None):
+        return cls(self, self.state, layer=layer, layer_state=layer_state)
+
+    def layer_view(self):
+        return QtWidgets.QWidget()
+
+    @staticmethod
+    def update_viewer_state(rec, context):
+        return update_table_viewer_state(rec, context)
