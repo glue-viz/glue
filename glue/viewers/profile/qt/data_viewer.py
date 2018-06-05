@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core.subset import roi_to_subset_state
+from glue.utils import defer_draw, decorate_all_methods
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.profile.qt.layer_style_editor import ProfileLayerStyleEditor
@@ -14,6 +15,7 @@ from glue.viewers.profile.qt.profile_tools import ProfileAnalysisTool  # noqa
 __all__ = ['ProfileViewer']
 
 
+@decorate_all_methods(defer_draw)
 class ProfileViewer(MatplotlibDataViewer):
 
     LABEL = '1D Profile'

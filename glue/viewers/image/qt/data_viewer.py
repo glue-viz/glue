@@ -18,7 +18,7 @@ from glue.viewers.image.qt.options_widget import ImageOptionsWidget
 from glue.viewers.image.qt.mouse_mode import RoiClickAndDragMode
 from glue.viewers.image.state import ImageViewerState
 from glue.viewers.image.compat import update_image_viewer_state
-from glue.utils import defer_draw
+from glue.utils import defer_draw, decorate_all_methods
 
 from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
@@ -50,6 +50,7 @@ ax.coords[{y_att_axis}].set_ticklabel(size={y_ticklabel_size})
 """.strip()
 
 
+@decorate_all_methods(defer_draw)
 class ImageViewer(MatplotlibDataViewer):
 
     LABEL = '2D Image'
@@ -85,7 +86,6 @@ class ImageViewer(MatplotlibDataViewer):
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
-    @defer_draw
     def update_x_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
         if self._wcs_set and self.state.x_att is not None:
@@ -95,7 +95,6 @@ class ImageViewer(MatplotlibDataViewer):
         self.axes.coords[axis].set_ticklabel(size=self.state.x_ticklabel_size)
         self.redraw()
 
-    @defer_draw
     def update_y_ticklabel(self, *event):
         # We need to overload this here for WCSAxes
         if self._wcs_set and self.state.y_att is not None:
@@ -111,7 +110,6 @@ class ImageViewer(MatplotlibDataViewer):
             self.axes._composite_image.remove()
             self.axes._composite_image = None
 
-    @defer_draw
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
 
-from glue.utils import mpl_to_datetime64
+from glue.utils import mpl_to_datetime64, defer_draw, decorate_all_methods
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
@@ -14,6 +14,7 @@ from glue.viewers.scatter.compat import update_scatter_viewer_state
 __all__ = ['ScatterViewer']
 
 
+@decorate_all_methods(defer_draw)
 class ScatterViewer(MatplotlibDataViewer):
 
     LABEL = '2D Scatter'

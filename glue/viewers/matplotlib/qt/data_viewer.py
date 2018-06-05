@@ -8,11 +8,8 @@ from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
-from glue.utils import defer_draw, mpl_to_datetime64, DeferDrawMeta
-from glue.utils.decorators import avoid_circular
+from glue.utils import defer_draw, mpl_to_datetime64, avoid_circular, decorate_all_methods
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
-from glue.external import six
-from glue.utils.noconflict import classmaker
 
 # The following import is required to register the viewer tools
 from glue.viewers.matplotlib.qt import toolbar  # noqa
@@ -49,7 +46,7 @@ plt.close(fig)
 ZORDER_MAX = 100000
 
 
-@six.add_metaclass(classmaker(left_metas=(DeferDrawMeta,)))
+@decorate_all_methods(defer_draw)
 class MatplotlibDataViewer(DataViewerWithState):
 
     _state_cls = MatplotlibDataViewerState
@@ -124,7 +121,6 @@ class MatplotlibDataViewer(DataViewerWithState):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
 
-    @defer_draw
     def _update_computation(self, *args):
         for layer_artist in self.layers:
             if layer_artist.is_computing:
@@ -136,26 +132,28 @@ class MatplotlibDataViewer(DataViewerWithState):
         self.loading_text.set_visible(False)
         self.redraw()
 
-    @defer_draw
+    def add_data(self, *args, **kwargs):
+        return super(MatplotlibDataViewer, self).add_data(*args, **kwargs)
+
+    def add_subset(self, *args, **kwargs):
+        return super(MatplotlibDataViewer, self).add_subset(*args, **kwargs)
+
     def update_x_axislabel(self, *event):
         self.axes.set_xlabel(self.state.x_axislabel,
                              weight=self.state.x_axislabel_weight,
                              size=self.state.x_axislabel_size)
         self.redraw()
 
-    @defer_draw
     def update_y_axislabel(self, *event):
         self.axes.set_ylabel(self.state.y_axislabel,
                              weight=self.state.y_axislabel_weight,
                              size=self.state.y_axislabel_size)
         self.redraw()
 
-    @defer_draw
     def update_x_ticklabel(self, *event):
         self.axes.tick_params(axis='x', labelsize=self.state.x_ticklabel_size)
         self.redraw()
 
-    @defer_draw
     def update_y_ticklabel(self, *event):
         self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
         self.redraw()
@@ -163,12 +161,10 @@ class MatplotlibDataViewer(DataViewerWithState):
     def redraw(self):
         self.figure.canvas.draw()
 
-    @defer_draw
     def update_x_log(self, *args):
         self.axes.set_xscale('log' if self.state.x_log else 'linear')
         self.redraw()
 
-    @defer_draw
     def update_y_log(self, *args):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
         self.redraw()

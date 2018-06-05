@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.core.util import update_ticks
 from glue.core.roi import RangeROI
 from glue.core.subset import roi_to_subset_state
-from glue.utils import mpl_to_datetime64
+from glue.utils import mpl_to_datetime64, defer_draw, decorate_all_methods
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
@@ -15,6 +15,7 @@ from glue.viewers.histogram.compat import update_histogram_viewer_state
 __all__ = ['HistogramViewer']
 
 
+@decorate_all_methods(defer_draw)
 class HistogramViewer(MatplotlibDataViewer):
 
     LABEL = '1D Histogram'
