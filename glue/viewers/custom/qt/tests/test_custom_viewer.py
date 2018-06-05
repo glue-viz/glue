@@ -321,6 +321,7 @@ class TestAttributeWithInfo(object):
         comp = self.s.data.get_component(self.d.id['x'])
         assert v._component == comp
 
+
 def test_two_custom_viewer_classes():
 
     class MyWidget1(CustomViewer):
