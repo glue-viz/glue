@@ -15,7 +15,7 @@ from glue.external.echo.qt import (connect_checkable_button,
 
 from glue.viewers.common.layer_artist import LayerArtistWithState
 from glue.viewers.common.state import ViewerState, LayerState
-from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+from glue.viewers.common.qt.data_viewer import DataViewer
 
 from glue.utils.qt import load_ui
 
@@ -133,7 +133,7 @@ class TutorialLayerStateWidget(QWidget):
         connect_checkable_button(self.layer_state, 'fill', self.checkbox)
 
 
-class TutorialDataViewer(DataViewerWithState):
+class TutorialDataViewer(DataViewer):
 
     LABEL = 'Tutorial viewer'
     _state_cls = TutorialViewerState

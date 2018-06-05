@@ -79,7 +79,7 @@ User Interface
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.viz_client
+.. automodapi:: glue.viewers.matplotlib.mpl_axes
    :no-inheritance-diagram:
 
 .. automodapi:: glue.viewers.common.qt.tool

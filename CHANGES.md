@@ -4,6 +4,18 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Refactored the viewer class base classes:
+
+  - ``glue.core.application_base.ViewerBase`` has been removed in favor of
+    ``glue.viewers.common.viewer.BaseViewer`` and
+    ``glue.viewers.common.viewer.Viewer``.
+
+  - ``glue.viewers.common.viewer.Viewer`` is now where the base logic is defined
+    for using state classes in viewers (instead of
+    ``glue.viewers.common.qt.DataViewerWithState``).
+
+  - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
+
 * Add a new method ``Data.compute_statistic`` which can be used
   to find scalar and array statistics on the data, and use for
   the profile viewer and the state limits helpers. [#1737]

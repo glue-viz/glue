@@ -345,9 +345,9 @@ layer artists, and widgets to control the viewer and layer options. The final
 piece of the puzzle is the data viewer class itself, which brings everything
 together. The simplest definition of the data viewer class is::
 
-    from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+    from glue.viewers.common.qt.data_viewer import DataViewer
 
-    class TutorialDataViewer(DataViewerWithState):
+    class TutorialDataViewer(DataViewer):
 
         LABEL = 'Tutorial viewer'
         _state_cls = TutorialViewerState

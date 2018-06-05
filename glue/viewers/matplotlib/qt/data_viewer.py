@@ -4,7 +4,7 @@ import numpy as np
 
 from matplotlib.patches import Rectangle
 
-from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
+from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.matplotlib.mpl_axes import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
@@ -47,7 +47,7 @@ ZORDER_MAX = 100000
 
 
 @decorate_all_methods(defer_draw)
-class MatplotlibDataViewer(DataViewerWithState):
+class MatplotlibDataViewer(DataViewer):
 
     _state_cls = MatplotlibDataViewerState
 
