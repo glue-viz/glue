@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle
 
 from glue.viewers.common.qt.data_viewer_with_state import DataViewerWithState
 from glue.viewers.matplotlib.qt.widget import MplWidget
-from glue.viewers.common.viz_client import init_mpl, update_appearance_from_settings
+from glue.viewers.matplotlib.mpl_axes import init_mpl, update_appearance_from_settings
 from glue.external.echo import delay_callback
 from glue.utils import defer_draw, mpl_to_datetime64, avoid_circular, decorate_all_methods
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState

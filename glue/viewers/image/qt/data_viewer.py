@@ -250,7 +250,7 @@ class ImageViewer(MatplotlibDataViewer):
 
         imports = []
         imports.append('import matplotlib.pyplot as plt')
-        imports.append('from glue.viewers.common.viz_client import init_mpl')
+        imports.append('from glue.viewers.matplotlib.mpl_axes import init_mpl')
         imports.append('from glue.viewers.image.composite_array import CompositeArray')
         imports.append('from glue.external.modest_image import imshow')
 
