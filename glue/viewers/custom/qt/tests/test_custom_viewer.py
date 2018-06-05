@@ -15,7 +15,7 @@ from glue import custom_viewer
 
 from glue.app.qt import GlueApplication
 from glue.app.qt.tests.test_application import check_clone_app
-from ..custom_viewer import CustomViewer, CustomSubsetState
+from ..custom_viewer import CustomViewer, CustomSubsetState, AttributeWithInfo
 
 
 def _make_widget(viewer):
@@ -287,6 +287,39 @@ class TestCustomViewerSubclassForm(TestCustomViewer):
     def setup_class(self):
         self.viewer = ViewerSubclass
 
+
+class TestAttributeWithInfo(object):
+
+    def setup_method(self, method):
+        d = Data(x=[1, 2, 3, 4, 5], c=['a', 'b', 'a', 'a', 'b'], label='test')
+        s = d.new_subset()
+        s.subset_state = d.id['x'] > 2
+        self.d = d
+        self.s = s
+
+    def test_numerical(self):
+        v = AttributeWithInfo.from_layer(self.d, self.d.id['x'])
+        assert_array_equal(v, [1, 2, 3, 4, 5])
+        assert v.id == self.d.id['x']
+        assert v.categories is None
+
+    def test_categorical(self):
+        v = AttributeWithInfo.from_layer(self.d, self.d.id['c'])
+        assert_array_equal(v, [0, 1, 0, 0, 1])
+        assert v.id == self.d.id['c']
+        assert_array_equal(v.categories, ['a', 'b'])
+
+    def test_subset(self):
+        v = AttributeWithInfo.from_layer(self.s, self.d.id['x'])
+        assert_array_equal(v, [3, 4, 5])
+        assert v.id == self.d.id['x']
+        assert v.categories is None
+
+    def test_has_component(self):
+
+        v = AttributeWithInfo.from_layer(self.s, self.d.id['x'])
+        comp = self.s.data.get_component(self.d.id['x'])
+        assert v._component == comp
 
 def test_two_custom_viewer_classes():
 
