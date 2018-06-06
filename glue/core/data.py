@@ -35,8 +35,6 @@ from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentI
 
 __all__ = ['Data']
 
-N_CHUNK_MAX = 40000000
-
 
 class Data(object):
 
@@ -1161,7 +1159,7 @@ class Data(object):
 
     def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
                           finite=True, positive=False, percentile=None, view=None,
-                          random_subset=None):
+                          random_subset=None, n_chunk_max=40000000):
         """
         Compute a statistic for the data.
 
@@ -1192,6 +1190,9 @@ class Data(object):
         random_subset : int, optional
             If specified, this should be an integer giving the number of values
             to use for the statistic. This can only be used if ``axis`` is `None`
+        n_chunk_max : int, optional
+            If there are more elements in the array than this value, operate in
+            chunks with at most this size.
         """
 
         # TODO: generalize chunking to more types of axis
@@ -1200,7 +1201,7 @@ class Data(object):
                 isinstance(axis, tuple) and
                 len(axis) > 0 and
                 len(axis) == self.ndim - 1 and
-                self.size > N_CHUNK_MAX and
+                self.size > n_chunk_max and
                 not isinstance(subset_state, SliceSubsetState)):
 
             # We operate in chunks here to avoid memory issues.
@@ -1219,7 +1220,7 @@ class Data(object):
             chunk_shape = list(self.shape)
 
             # Deliberately leave n_chunks as float to not round twice
-            n_chunks = self.size / N_CHUNK_MAX
+            n_chunks = self.size / n_chunk_max
 
             chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
 
