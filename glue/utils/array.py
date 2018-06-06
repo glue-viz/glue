@@ -437,6 +437,10 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
         range [0:100]
     """
 
+    data = np.asanyarray(data)
+    if mask is not None:
+        mask = np.asanyarray(mask, dtype=bool)
+
     # NOTE: this function should not ever have to use glue-specific objects.
     # The aim is to eventually use a fast C implementation of this function.
 

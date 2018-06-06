@@ -12,7 +12,7 @@ from glue.external.six import string_types, PY2  # noqa
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
                      iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
-                     nanmin, nanmax, format_minimal)
+                     nanmin, nanmax, format_minimal, compute_statistic)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -258,3 +258,40 @@ def test_format_minimal():
     fmt, strings = format_minimal([-3, 0., 0.993e-8, 5])
     assert fmt == "{:.1e}"
     assert strings == ['-3.0e+00', '0.0e+00', '9.9e-09', '5.0e+00']
+
+
+CASES = [('mean', [-3, 1, 6], dict(), 4 / 3),
+         ('mean', [-3, 1, 6], dict(mask=[1, 0, 1]), 1.5),
+         ('mean', [-3, 1, 6], dict(positive=True), 3.5),
+         ('mean', [-3, 1, np.nan], dict(finite=True), -1),
+         ('mean', [-3, 1, np.nan], dict(finite=False), np.nan),
+         ('median', [-3, 1, 6], dict(), 1),
+         ('median', [-3, 1, 6, 7], dict(mask=[1, 1, 0, 1]), 1),
+         ('median', [-3, 1, 6, 7], dict(positive=True), 6),
+         ('median', [-3, 1, np.nan, 6], dict(finite=True), 1),
+         ('median', [-3, 1, np.nan, 6], dict(finite=False), np.nan),
+         ('maximum', [-3, 1, 6], dict(), 6),
+         ('minimum', [-3, 1, 6], dict(), -3),
+         ('sum', [-3, 1, 6], dict(), 4),
+         ('percentile', [-3, 1, 6], dict(percentile=0), -3),
+         ('percentile', [-3, 1, 6], dict(percentile=50), 1),
+         ('percentile', [-3, 1, 6], dict(percentile=100), 6),
+         ('mean', [-3, 1, 6], dict(axis=()), [-3, 1, 6]),
+         ('maximum', [-3, 1, 6], dict(axis=()), [-3, 1, 6]),
+         ('mean', [-3, 1, 6], dict(axis=0), 4 / 3),
+         ('mean', [-3, 1, 6], dict(axis=(0,)), 4 / 3),
+         ('mean', [[-1, 2], [3, 4]], dict(), 2),
+         ('mean', [[-1, 2], [3, 4]], dict(axis=(0, 1)), 2),
+         ('mean', [[-1, 2], [3, 4]], dict(axis=0), [1, 3]),
+         ('mean', [[-1, 2], [3, 4]], dict(axis=1), [0.5, 3.5]),
+         ('mean', [[-1, 2], [3, 4]], dict(axis=1, positive=True), [2, 3.5]),
+         ('mean', [[np.nan, 2], [3, 4]], dict(axis=1, finite=True), [2, 3.5]),
+         ('mean', [[np.nan, 2], [3, 4]], dict(axis=1, finite=False), [np.nan, 3.5]),
+         ('mean', [], dict(), np.nan),
+         ('mean', [-3, 1, 6], dict(mask=[0, 0, 0]), np.nan),
+         ]
+
+
+@pytest.mark.parametrize(('statistic', 'data', 'kwargs', 'result'), CASES)
+def test_compute_statistic(statistic, data, kwargs, result):
+    assert_allclose(compute_statistic(statistic, data, **kwargs), result)
