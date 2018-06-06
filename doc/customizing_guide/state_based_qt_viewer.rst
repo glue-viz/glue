@@ -285,7 +285,7 @@ will likely be changed to the layer state), but beyond this, you can implement
 the widgets any way you like. Let's take the simple layer state example above
 with the ``fill`` option. You could implement a layer options widget by doing::
 
-    from glue.external.echo.qt import connect_checkbable_button
+    from glue.external.echo.qt import connect_checkable_button
     from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 
     class TutorialLayerStateWidget(QWidget):
@@ -300,7 +300,7 @@ with the ``fill`` option. You could implement a layer options widget by doing::
              self.setLayout(layout)
 
              self.layer_state = layer_artist.state
-             connect_checkbable_button(self.layer_state, 'fill', self.checkbox)
+             connect_checkable_button(self.layer_state, 'fill', self.checkbox)
 
 In the above example, you can see that we use the
 :func:`~glue.external.echo.qt.connect_checkable_button` function to link the
