@@ -1,13 +1,13 @@
 .. _matplotlib-qt-viewer:
 
-Writing a custom viewer for glue (using Matplotlib)
-===================================================
+Writing a custom viewer for glue with Qt and Matplotlib
+=======================================================
 
 If you are a user trying to build a very simple viewer using Matplotlib, you may
 want to check out :doc:`custom_viewer` -- the present tutorial is intended for
 people who wish to write and distribute a viewer using Matplotlib with full
 control over layout and beahvior. This tutorial assumes that you have already
-gone over the :ref:`state-qt-viewer` tutorial.
+gone over the :ref:`state-viewer` and :ref:`state-qt-viewer` tutorials.
 
 Glue provides a set of base classes for the state classes, layer artist, and
 data viewer which already take care of a number of aspects common to all
@@ -88,3 +88,9 @@ In particular, the viewer now has standard Matplotlib buttons in the toolbar:
 In addition, the layer artist has been improved to take into account the color
 and transparency given by the layer state (via the ``_on_visual_change``
 method), and the axis labels are now set in the viewer state class.
+
+Further reading
+---------------
+
+To find out how to add tools to your custom viewer, see the
+:ref:`custom-toolbars` tutorial.

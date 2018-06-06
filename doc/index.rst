@@ -95,7 +95,8 @@ Advanced customization
 .. toctree::
    :maxdepth: 1
 
-   customizing_guide/state_based_qt_viewer.rst
+   customizing_guide/viewer.rst
+   customizing_guide/qt_viewer.rst
    customizing_guide/matplotlib_qt_viewer.rst
    customizing_guide/toolbar.rst
 

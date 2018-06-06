@@ -163,7 +163,7 @@ can therefore simply do e.g.:
 Including toolbars in custom viewers
 ------------------------------------
 
-When defining a data viewer (as described in :doc:`full_custom_qt_viewer`), it
+When defining a data viewer (as described in :ref:`state-qt-viewer`), it
 is straightforward to add a toolbar that can then be used to add tools. To do
 this, when defining your
 :class:`~glue.viewers.common.qt.data_viewer.DataViewer` subclass,
