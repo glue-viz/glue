@@ -4,8 +4,9 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 from mock import MagicMock
+from astropy.utils import NumpyRNGContext
 
 from glue.external import six
 from glue import core
@@ -21,8 +22,8 @@ from ..exceptions import IncompatibleAttribute
 from ..hub import Hub
 from ..registry import Registry
 from ..subset import (Subset, CategoricalROISubsetState, SubsetState,
-                      RoiSubsetState, RangeSubsetState,
-                      CategoricalMultiRangeSubsetState,
+                      RoiSubsetState, RangeSubsetState, SliceSubsetState,
+                      CategoricalMultiRangeSubsetState, MaskSubsetState,
                       CategoricalROISubsetState2D, AndState, roi_to_subset_state)
 from ..roi import PolygonalROI, CategoricalROI, RangeROI, RectangularROI
 
@@ -836,3 +837,41 @@ def test_update_coords():
 
     # The link between the two world coordinates should be remove
     assert len(data_collection.links) == 4
+
+
+def test_compute_statistic_subset():
+
+    data = Data(x=list(range(10)))
+    result = data.compute_statistic('mean', data.id['x'], subset_state=data.id['x'] > 5)
+    assert_allclose(result, 7.5)
+
+    subset_state = SliceSubsetState(data, [slice(5)])
+    result = data.compute_statistic('mean', data.id['x'], subset_state=subset_state)
+    assert_allclose(result, 2.0)
+
+
+@pytest.mark.parametrize('shape', (100, (30, 10), (500, 1, 30)))
+def test_compute_statistic_chunks(shape):
+
+    # Make sure that when using chunks, the result is the same as without.
+
+    data = Data(x=np.random.random(shape))
+
+    axis = tuple(range(data.ndim - 1))
+    assert_allclose(data.compute_statistic('mean', data.id['x'], axis=axis),
+                    data.compute_statistic('mean', data.id['x'], axis=axis, n_chunk_max=10))
+
+
+def test_compute_statistic_random_subset():
+
+    data = Data(x=list(range(10)))
+
+    with NumpyRNGContext(12345):
+
+        result = data.compute_statistic('mean', data.id['x'], random_subset=5)
+        assert_allclose(result, 4.2)
+
+        result = data.compute_statistic('mean', data.id['x'], random_subset=5,
+                                        subset_state=MaskSubsetState([0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+                                                                     data.pixel_component_ids))
+        assert_allclose(result, 4.75)
