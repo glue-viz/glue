@@ -4,9 +4,29 @@ import numpy as np
 
 from glue.core import Subset
 from glue.config import data_exporter
-
+from glue.core.coordinates import WCSCoordinates
 
 __all__ = []
+
+
+def make_component_header(component, header):
+    """
+    Function that extracts information from components
+    and adds it to the data header. The input header is
+    expected to come from Data.coords.header by default.
+    Parameters
+    ----------
+    component: glue Component
+        Glue component to extract info from
+    header: astropy.io.fits.header.Header
+        Input header to be modified according to
+        the input component
+    """
+
+    # Add units information
+    header["BUNIT"] = component.units
+
+    return header
 
 
 @data_exporter(label='FITS (1 component/HDU)', extension=['fits', 'fit'])
@@ -27,6 +47,8 @@ def fits_writer(filename, data, components=None):
         data = data.data
     else:
         mask = None
+
+    data_header = data.coords.header if isinstance(data.coords, WCSCoordinates) else None
 
     from astropy.io import fits
 
@@ -50,7 +72,8 @@ def fits_writer(filename, data, components=None):
             values[~mask] = np.nan
 
         # TODO: special behavior for PRIMARY?
-        hdu = fits.ImageHDU(values, name=cid.label)
+        header = make_component_header(comp, data_header) if data_header else None
+        hdu = fits.ImageHDU(values, name=cid.label, header=header)
         hdus.append(hdu)
 
     try:
