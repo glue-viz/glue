@@ -1,4 +1,4 @@
-.. _state-qt-viewer:
+.. _state-viewer:
 
 Writing a custom viewer for glue
 ================================
@@ -8,25 +8,23 @@ Motivation
 
 The simple way of defining new custom viewers described in :doc:`custom_viewer`
 are well-suited to developing new custom viewers that include simple Matplotlib
-plots. But in some cases, you may want to write a data viewer with more
-customized functionality, or that doesn't depend on Matplotlib and may use an
-existing third-party widget.
+plots, and for now is limited to Qt-based viewers. But in some cases, you may
+want to write a data viewer with more customized functionality, or that doesn't
+depend on Matplotlib or Qt and may use an existing third-party widget.
 
 In this tutorial, we will take a look at the pieces needed to build a data
-viewer. Some of the sections here are relevant regardless of whether you are
-building a data viewer for e.g. Qt or Jupyter, and some of the later sections
-will show an example of building an actual Qt viewer.
-
-Note that if you are interested in building a Matplotlib-based viewer, you can
-make use of the ``glue.viewers.matplotlib`` sub-package to simplify things
-as described in :ref:`matplotlib-qt-viewer` - but first be sure to read this
-page as the Matplotlib viewer tutorial will build on this on.
+viewer. The sections here are relevant regardless of whether you are building a
+data viewer for e.g. Qt or Jupyter. If you are interested in building a Qt-based
+viewer, you can then proceed to :ref:`state-qt-viewer`. If you are interested in
+building a Matplotlib-based Qt viewer, you can then also make use of the
+``glue.viewers.matplotlib`` sub-package to simplify things as described in
+:ref:`matplotlib-qt-viewer`.
 
 Terminology
 -----------
 
 When we talk about a *data viewer*, we mean specifically one of the
-visualization (e.g. scatter plot, histogram, network diagram, etc.). Inside each
+visualizations in glue (e.g. scatter plot, histogram, network diagram, etc.). Inside each
 visualization, there may be multiple datasets or subsets shown. For example, a
 dataset might be shown as markers of a certain color, while a subset might be
 shown in a different color. We refer to these as *layers* in the visualization,
@@ -154,8 +152,8 @@ which should be used as follows::
             MyExampleState.linestyle.set_choices(['solid', 'dashed', 'dotted'])
 
 This then makes it so that the ``linestyle`` property knows about what valid
-values are, and this will come in useful in `Options widgets`_ to automatically
-populate combo/selection boxes for example.
+values are, and this will come in useful when developing for example Qt widgets
+so that they can automatically  populate combo/selection boxes for example.
 
 For the specific case of selecting attributes from the data, we also provide a
 class :class:`~glue.core.data_combo_helper.ComponentIDComboHelper` that can
@@ -256,107 +254,24 @@ Matplotlib, and are then developing a Qt and Jupyter version of the viewer,
 you could write the layer artist in such a way that it only cares about the
 Matplotlib API and works for either the Qt or Jupyter viewers.
 
-Options widgets
----------------
-
-We mentioned in `State classes`_ that there are state classes that contain
-a conceptual representation of the overall viewer options and the settings
-pertaining to each layer in the visualization. What is then needed are widgets
-that will allow users to easily change this state, and also reflect changes
-to the state that are made programmatically.
-
-In the Qt version of glue, viewers typically define a widget to control the
-viewer state, which is usually shown is the area indicated as **C** in
-the following diagram:
-
-.. image:: ../getting_started/images/main_window.png
-   :width: 600px
-   :align: center
-
-and a widget to control the layer state, which is usually shown is the area
-indicated as **B** in the above diagram (in addition to the layer list).
-
-The only requirement for these widgets is that the widget for the viewer options
-should take an argument which is the viewer state (as well as a ``session``
-keyword argument which is a :class:`~glue.core.session.Session` object that
-contains a reference to the data collection and hub), and the widget for the
-layer settings should take an argument which is the layer artist (in future this
-will likely be changed to the layer state), but beyond this, you can implement
-the widgets any way you like. Let's take the simple layer state example above
-with the ``fill`` option. You could implement a layer options widget by doing::
-
-    from glue.external.echo.qt import connect_checkable_button
-    from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
-
-    class TutorialLayerStateWidget(QWidget):
-
-         def __init__(self, layer_artist):
-
-             super(LayerEditWidget, self).__init__()
-
-             self.checkbox = QCheckBox('Fill markers')
-             layout = QVBoxLayout()
-             layout.addWidget(self.checkbox)
-             self.setLayout(layout)
-
-             self.layer_state = layer_artist.state
-             connect_checkable_button(self.layer_state, 'fill', self.checkbox)
-
-In the above example, you can see that we use the
-:func:`~glue.external.echo.qt.connect_checkable_button` function to link the
-``fill`` property from the layer state with the checkbox. For a full list of
-available functions, see `here
-<http://echo.readthedocs.io/en/latest/api.html>`__.
-
-For more complex cases, you may want to use Qt Designer to create a ui file with
-your layout (such as :download:`viewer_state.ui <state_viewer/viewer_state.ui>`), then load it
-into the options widget - you can then also automatically connect UI elements to
-state properties using the
-:func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` function. Let's use
-this to create a widget to control the viewer state::
-
-    from glue.external.echo.qt import autoconnect_callbacks_to_qt
-    from qtpy.QtWidgets import QWidget
-    from glue.utils.qt import load_ui
-
-    class TutorialViewerStateWidget(QWidget):
-
-         def __init__(self, viewer_state, session=None):
-
-             super(TutorialViewerStateWidget, self).__init__()
-
-             # The dirname= is used to indicate that the .ui file is in the same
-             # directory as the present file.
-             self.ui = load_ui('options_widget.ui', dirname=os.path.dirname(__file__))
-
-             self.viewer_state = viewer_state
-             autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
-
-For :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` to work, you need
-to follow certain naming conventions for the UI elements in the ``.ui`` file. You
-can read up more about this convention `here
-<http://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`__.
-
 Data viewer
 -----------
 
-We have now seen how to define state classes for the viewer and layer,
-layer artists, and widgets to control the viewer and layer options. The final
-piece of the puzzle is the data viewer class itself, which brings everything
-together. The simplest definition of the data viewer class is::
+We have now seen how to define state classes for the viewer and layer, and layer
+artists. The final piece of the puzzle is the data viewer class itself, which
+brings everything together. The simplest definition of the data viewer class
+is::
 
-    from glue.viewers.common.qt.data_viewer import DataViewer
+    from glue.viewers.common.viewer import Viewer
 
-    class TutorialDataViewer(DataViewer):
+    class TutorialDataViewer(Viewer):
 
         LABEL = 'Tutorial viewer'
         _state_cls = TutorialViewerState
-        _options_cls = TutorialViewerStateWidget
-        _layer_style_widget_cls = TutorialLayerStateWidget
         _data_artist_cls = TutorialLayerArtist
         _subset_artist_cls = TutorialLayerArtist
 
-In practice, this isn't quite enough, since we need to actually set up the main
+In practice, this isn't enough, since we need to actually set up the main
 visualization and pass references to it to the layer artists. This can be
 done in the initializer of the ``TutorialDataViewer`` class. For example,
 if you were building a Matplotlib-based viewer, assuming you imported Matplotlib
@@ -369,7 +284,6 @@ you could do::
     def __init__(self, *args, **kwargs):
         super(TutorialDataViewer, self).__init__(*args, **kwargs)
         self.axes = plt.subplot(1, 1, 1)
-        self.setCentralWidget(self.axes.figure.canvas)
 
 Note however that you need a way to pass the axes to the layer artist. The way
 to do this is to add ``axes`` as a positional argument for the
@@ -383,44 +297,20 @@ This method defines how the layer artists should be instantiated, and you can
 see that we added a ``self.axes`` positional argument, so that the layer artist
 classes should now have access to the axes.
 
-Functional example
-------------------
+With this in place, what will happen now is that when a data viewer is created,
+and when a new dataset or subset is added to it, the ``layers`` attribute of
+the viewer state class will automatically be updated to include a new
+:class:`~glue.viewers.common.state.LayerState` object. At the same time,
+a :class:`~glue.viewers.common.layer_artist.LayerArtist` object will be
+instantiated. The main task is therefore to implement the methods for the
+:class:`~glue.viewers.common.layer_artist.LayerArtist` (in particular
+:meth:`~glue.viewers.common.layer_artist.LayerArtist.update`). You can then add
+any required logic in the state classes if needed.
 
-Let's now take all these pieces and construct a functional example. To try this
-out you can simply copy the code below into a ``config.py`` file in the
-directory from where you are starting glue. In addition you will also need the
-:download:`viewer_state.ui <state_viewer/viewer_state.ui>` file. In `File layout
-in glue`_ we discuss how this code are split into different files in glue.
+Further reading
+---------------
 
-Note that if you are interested in building a Matplotlib-based viewer, you can
-make use of the ``glue.viewers.matplotlib`` sub-package to simplify things
-as described in :ref:`matplotlib-qt-viewer`.
-
-.. literalinclude:: state_viewer/config.py
-
-Try opening a tabular dataset in glue, drag it onto the canvas area, and select
-**Tutorial viewer** - you should now get something that looks like:
-
-.. image:: state_viewer/tutorial_viewer.png
-   :width: 600px
-   :align: center
-
-File layout in glue
--------------------
-
-In glue, we split up the classes using the following layout:
-
-============================ ========================================
-Filename                     Description
-============================ ========================================
-``state.py``                 State clases for the viewer and layer
-``layer_artist.py``          Layer artist class
-``qt/options_widget.ui``     Qt ui file for the viewer state widget
-``qt/options_widget.py``     Qt viewer state widget
-``qt/layer_style_editor.ui`` Qt ui file for the layer state widget
-``qt/layer_style_editor.py`` Qt layer state widget
-``qt/data_viewer.py``        Qt data viewer
-============================ ========================================
-
-You are of course free to organize the files how you wish, but this should help
-understand the existing viewers in glue if needed.
+If you are interested in building a viewer for the Qt front-end of glue, you can
+find out more about this and see a complete example in :ref:`state-qt-viewer`.
+Even if you want to develop a viewer for a different front-end, you may find
+the Qt example useful.
