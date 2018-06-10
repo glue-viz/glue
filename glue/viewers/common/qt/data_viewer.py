@@ -5,6 +5,7 @@ from qtpy import QtWidgets
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import set_cursor
 from glue.external import six
+from glue.core.qt.dialogs import warn
 from glue.utils.noconflict import classmaker
 from glue.config import viewer_tool
 from glue.viewers.common.qt.base_widget import BaseQtViewerWidget
@@ -112,6 +113,9 @@ class DataViewer(Viewer, BaseQtViewerWidget):
     @set_cursor(Qt.WaitCursor)
     def apply_roi(self, roi):
         pass
+
+    def warn(self, message, *args, **kwargs):
+        return warn(message, *args, **kwargs)
 
     def close(self, warn=True):
 

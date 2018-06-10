@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import warnings
 
 from glue.core.hub import HubListener
 from glue.core import Data, Subset
@@ -154,6 +155,10 @@ class Viewer(BaseViewer):
         for layer_artist in self._layer_artist_container:
             if layer_artist.layer not in layer_states:
                 self._layer_artist_container.remove(layer_artist)
+
+    def warn(self, message, *args, **kwargs):
+        warnings.warn(message)
+        return True
 
     def add_data(self, data):
 
