@@ -1237,7 +1237,7 @@ class Data(object):
                 data = subset_state.to_array(self, cid)
                 mask = None
             else:
-                data = self[cid]
+                data = self[cid, view]
                 mask = subset_state.to_mask(self, view)
         else:
             data = self[cid, view]
