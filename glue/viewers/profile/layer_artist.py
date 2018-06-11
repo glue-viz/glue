@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import time
-import queue
+from glue.external.six.moves import queue
 
 import numpy as np
 
@@ -121,11 +121,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self._worker.compute_start.emit()
                 self._calculate_profile_thread(reset=reset)
             except Exception:
-                self._worker.running = False
                 self._worker.compute_error.emit(sys.exc_info())
-            else:
                 self._worker.running = False
+            else:
                 self._worker.compute_end.emit()
+                self._worker.running = False
 
     @defer_draw
     def _calculate_profile(self, reset=False):

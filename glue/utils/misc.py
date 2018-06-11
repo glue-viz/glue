@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-import queue
+from glue.external.six.moves import queue
 import string
 from functools import partial
 

@@ -335,12 +335,6 @@ This example then looks this the following once glue is loaded:
 .. image:: images/preferences.png
    :align: center
 
-Custom data viewer
-------------------
-
-For information on registering a custom data viewer, see
-:doc:`full_custom_qt_viewer`.
-
 .. _custom_fixed_layout:
 
 Custom fixed layout tab

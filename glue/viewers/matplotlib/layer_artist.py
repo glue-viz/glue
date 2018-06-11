@@ -44,7 +44,8 @@ class MatplotlibLayerArtist(LayerArtist):
         than 500ms.
         """
         if QT_INSTALLED:
-            self._notify_start.start(delay)
+            if self._notify_start is not None:
+                self._notify_start.start(delay)
         else:
             self._notify_start_computation()
 
@@ -59,7 +60,8 @@ class MatplotlibLayerArtist(LayerArtist):
         operations). If the computation was never started, this does nothing.
         """
         if QT_INSTALLED:
-            self._notify_start.stop()
+            if self._notify_start is not None:
+                self._notify_start.stop()
         if self._notified_start:
             self.state.layer.hub.broadcast(ComputationEndedMessage(self))
             self._notified_start = False
