@@ -105,6 +105,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _thread_loop(self):
 
+        error = None
+
         while True:
 
             time.sleep(1 / 25)
@@ -118,6 +120,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 # to avoid stopping and starting in quick succession.
                 if self._worker.running:
                     self._worker.running = False
+                    if error is None:
+                        self._worker.compute_end.emit()
+                    else:
+                        self._worker.compute_error.emit(error)
+                        error = None
                 continue
 
             # If any resets were requested, honor this
@@ -128,9 +135,9 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self._worker.compute_start.emit()
                 self._calculate_profile_thread(reset=reset)
             except Exception:
-                self._worker.compute_error.emit(sys.exc_info())
+                error = sys.exc_info()
             else:
-                self._worker.compute_end.emit()
+                error = None
 
     @defer_draw
     def _calculate_profile(self, reset=False):
@@ -206,8 +213,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.redraw()
 
+    @defer_draw
     def _calculate_profile_error(self, exc):
+        self.plot_artist.set_visible(False)
         self.notify_end_computation()
+        self.redraw()
         if issubclass(exc[0], IncompatibleAttribute):
             if isinstance(self.state.layer, Data):
                 self.disable_invalid_attributes(self.state.attribute)
