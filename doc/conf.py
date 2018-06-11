@@ -61,7 +61,7 @@ if ON_RTD:
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
     'sphinx': ('http://www.sphinx-doc.org/en/latest/', None),
-    'python': ('https://docs.python.org/2.7', None),
+    'python': ('https://docs.python.org/3.6', None),
     'matplotlib': ('http://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),

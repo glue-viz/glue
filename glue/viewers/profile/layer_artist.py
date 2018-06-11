@@ -1,10 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+import time
+from glue.external.six.moves import queue
+
 import numpy as np
 
 from glue.core import Data
-from glue.utils import defer_draw, nanmin, nanmax
+from glue.utils import defer_draw, nanmin, nanmax, queue_to_list
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
@@ -15,6 +18,29 @@ except Exception:
     QT_INSTALLED = False
 else:
     QT_INSTALLED = True
+
+if QT_INSTALLED:
+
+    # When using Qt, we make use of a thread that continuously listens for
+    # requests to update the profile and we run these as needed. In future,
+    # we should add the ability to interrupt compute jobs if a newer compute
+    # job is requested.
+
+    from qtpy.QtCore import Signal, QThread
+
+    class ComputeWorker(QThread):
+
+        compute_start = Signal()
+        compute_end = Signal()
+        compute_error = Signal(object)
+
+        def __init__(self, function):
+            super(ComputeWorker, self).__init__()
+            self.function = function
+            self.running = False
+
+        def run(self):
+            self.function()
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
@@ -35,17 +61,17 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_artists = [self.plot_artist]
 
-        if QT_INSTALLED:
-            from glue.utils.qt.threading import Worker
-            self._worker = Worker(self._calculate_profile_thread)
-            self._worker.result.connect(self._calculate_profile_postthread)
-            self._worker.error.connect(self._calculate_profile_error)
-
         self.reset_cache()
+
+        if QT_INSTALLED:
+            self.setup_thread()
 
     def wait(self):
         if QT_INSTALLED:
-            self._worker.wait()
+            # Wait 0.5 seconds to make sure that the computation has properly started
+            time.sleep(0.5)
+            while self._worker.running:
+                time.sleep(1 / 25)
             from glue.utils.qt import get_qapp
             app = get_qapp()
             app.processEvents()
@@ -53,6 +79,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     def remove(self):
         super(ProfileLayerArtist, self).remove()
         if QT_INSTALLED and self._worker is not None:
+            self._work_queue.put('stop')
             self._worker.exit()
             # Need to wait otherwise the thread will be destroyed while still
             # running, causing a segmentation fault
@@ -68,21 +95,59 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
+    def setup_thread(self):
+        self._worker = ComputeWorker(self._thread_loop)
+        self._worker.compute_end.connect(self._calculate_profile_postthread)
+        self._worker.compute_error.connect(self._calculate_profile_error)
+        self._worker.compute_start.connect(self.notify_start_computation)
+        self._work_queue = queue.Queue()
+        self._worker.start()
+
+    def _thread_loop(self):
+
+        while True:
+
+            time.sleep(1 / 25)
+
+            msgs = queue_to_list(self._work_queue)
+
+            if 'stop' in msgs:
+                return
+            elif len(msgs) == 0:
+                # We change this here rather than in the try...except below
+                # to avoid stopping and starting in quick succession.
+                if self._worker.running:
+                    self._worker.running = False
+                continue
+
+            # If any resets were requested, honor this
+            reset = any(msgs)
+
+            try:
+                self._worker.running = True
+                self._worker.compute_start.emit()
+                self._calculate_profile_thread(reset=reset)
+            except Exception:
+                self._worker.compute_error.emit(sys.exc_info())
+            else:
+                self._worker.compute_end.emit()
+
     @defer_draw
-    def _calculate_profile(self):
+    def _calculate_profile(self, reset=False):
         if QT_INSTALLED:
-            self._worker.exit()
-            self.notify_start_computation()
-            self._worker.start()
+            self._work_queue.put(reset)
         else:
             try:
-                self._calculate_profile_thread()
+                self.notify_start_computation()
+                self._calculate_profile_thread(reset=reset)
             except Exception:
                 self._calculate_profile_error(sys.exc_info())
             else:
                 self._calculate_profile_postthread()
 
-    def _calculate_profile_thread(self):
+    def _calculate_profile_thread(self, reset=False):
+        if reset:
+            self.state.reset_cache()
         self.state.update_profile(update_limits=False)
 
     def _calculate_profile_postthread(self):
@@ -198,7 +263,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_layer_state.update(self.state.as_dict())
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
-            self._calculate_profile()
+            self._calculate_profile(reset=force)
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()
