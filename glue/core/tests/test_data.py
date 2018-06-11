@@ -10,6 +10,7 @@ from astropy.utils import NumpyRNGContext
 
 from glue.external import six
 from glue import core
+from glue.utils import broadcast_to
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
@@ -875,3 +876,23 @@ def test_compute_statistic_random_subset():
                                         subset_state=MaskSubsetState([0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
                                                                      data.pixel_component_ids))
         assert_allclose(result, 4.75)
+
+
+def test_compute_statistic_empty_subset():
+
+    data = Data(x=np.empty((30, 20, 40)))
+
+    # A default subset state should be empty
+    subset_state = SubsetState()
+
+    result = data.compute_statistic('mean', data.id['x'], subset_state=subset_state)
+    assert_equal(result, np.nan)
+
+    result = data.compute_statistic('maximum', data.id['x'], subset_state=subset_state, axis=1)
+    assert_equal(result, broadcast_to(np.nan, (30, 40)))
+
+    result = data.compute_statistic('median', data.id['x'], subset_state=subset_state, axis=(1, 2))
+    assert_equal(result, broadcast_to(np.nan, (30)))
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, axis=(0, 1, 2))
+    assert_equal(result, np.nan)

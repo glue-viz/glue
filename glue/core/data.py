@@ -24,7 +24,8 @@ from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
-from glue.utils import compute_statistic, unbroadcast, iterate_chunks, datetime64_to_mpl
+from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
+                        datetime64_to_mpl, broadcast_to)
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1234,11 +1235,20 @@ class Data(object):
 
         if subset_state:
             if isinstance(subset_state, SliceSubsetState) and view is None:
-                data = subset_state.to_array(self, cid)
                 mask = None
+                data = subset_state.to_array(self, cid)
             else:
-                data = self[cid, view]
                 mask = subset_state.to_mask(self, view)
+                if np.any(unbroadcast(mask)):
+                    data = self[cid, view]
+                else:
+                    if axis is None:
+                        return np.nan
+                    else:
+                        if isinstance(axis, int):
+                            axis = [axis]
+                        final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
+                        return broadcast_to(np.nan, final_shape)
         else:
             data = self[cid, view]
             mask = None
