@@ -509,7 +509,7 @@ class SubsetState(object):
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
         shp = view_shape(data.shape, view)
-        return np.zeros(shp, dtype=bool)
+        return broadcast_to(False, shp)
 
     @contract(returns='isinstance(SubsetState)')
     def copy(self):
