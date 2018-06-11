@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import queue
 import string
 from functools import partial
 
@@ -10,7 +11,7 @@ from glue.external.six.moves import reduce
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
            'as_list', 'file_format', 'CallbackMixin', 'PropertySetMixin',
-           'Pointer', 'common_prefix']
+           'Pointer', 'common_prefix', 'queue_to_list']
 
 
 class DeferredMethod(object):
@@ -211,3 +212,15 @@ class Pointer(object):
         v = self.key.split('.')
         attr = reduce(getattr, [instance] + v[:-1])
         setattr(attr, v[-1], value)
+
+
+def queue_to_list(q):
+    """
+    Get all the values in a :class:`queue.Queue` object and return a list.
+    """
+    l = []
+    while True:
+        try:
+            l.append(q.get_nowait())
+        except queue.Empty:
+            return l
