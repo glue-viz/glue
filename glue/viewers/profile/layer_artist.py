@@ -68,7 +68,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def wait(self):
         if QT_INSTALLED:
-            self._worker.wait()
+            while self._worker.running:
+                time.sleep(1 / 25)
             from glue.utils.qt import get_qapp
             app = get_qapp()
             app.processEvents()
@@ -119,10 +120,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self._worker.running = True
                 self._worker.compute_start.emit()
                 self._calculate_profile_thread(reset=reset)
-                self._worker.running = False
             except Exception:
+                self._worker.running = False
                 self._worker.compute_error.emit(sys.exc_info())
             else:
+                self._worker.running = False
                 self._worker.compute_end.emit()
 
     @defer_draw
