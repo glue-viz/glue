@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
+
 import numpy as np
 
 from glue.core import Data
@@ -36,10 +37,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.mpl_artists = [self.plot_artist]
 
         if QT_INSTALLED:
-            from glue.utils.qt.threading import Worker
-            self._worker = Worker(self._calculate_profile_thread)
-            self._worker.result.connect(self._calculate_profile_postthread)
-            self._worker.error.connect(self._calculate_profile_error)
+            self.setup_thread()
 
         self.reset_cache()
 
@@ -68,21 +66,30 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_viewer_state = {}
         self._last_layer_state = {}
 
+    def setup_thread(self):
+        from glue.utils.qt.threading import Worker
+        self._worker = Worker(self._calculate_profile_thread)
+        self._worker.result.connect(self._calculate_profile_postthread)
+        self._worker.error.connect(self._calculate_profile_error)
+
     @defer_draw
-    def _calculate_profile(self):
+    def _calculate_profile(self, reset=False):
         if QT_INSTALLED:
             self._worker.exit()
             self.notify_start_computation()
+            self._worker.kwargs = {'reset': reset}
             self._worker.start()
         else:
             try:
-                self._calculate_profile_thread()
+                self._calculate_profile_thread(reset=reset)
             except Exception:
                 self._calculate_profile_error(sys.exc_info())
             else:
                 self._calculate_profile_postthread()
 
-    def _calculate_profile_thread(self):
+    def _calculate_profile_thread(self, reset=False):
+        if reset:
+            self.state.reset_cache()
         self.state.update_profile(update_limits=False)
 
     def _calculate_profile_postthread(self):
@@ -198,7 +205,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._last_layer_state.update(self.state.as_dict())
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
-            self._calculate_profile()
+            self._calculate_profile(reset=force)
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
             self._update_visual_attributes()
