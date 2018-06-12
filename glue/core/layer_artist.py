@@ -18,6 +18,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
+from glue.external.echo.callback_container import CallbackContainer
 from glue.external import six
 from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
@@ -252,8 +253,8 @@ class LayerArtistContainer(object):
 
     def __init__(self):
         self.artists = []
-        self.empty_callbacks = []
-        self.change_callbacks = []
+        self.empty_callbacks = CallbackContainer()
+        self.change_callbacks = CallbackContainer()
         self._ignore_callbacks = False
 
     def on_empty(self, func):
@@ -308,12 +309,8 @@ class LayerArtistContainer(object):
         """
         Remove all callbacks
         """
-        if six.PY2:
-            self.empty_callbacks[:] = []
-            self.change_callbacks[:] = []
-        else:
-            self.empty_callbacks.clear()
-            self.change_callbacks.clear()
+        self.empty_callbacks.clear()
+        self.change_callbacks.clear()
 
     def _notify(self):
         if self._ignore_callbacks:

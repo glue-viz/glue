@@ -17,6 +17,9 @@ class CallbackContainer(object):
     def __init__(self):
         self.callbacks = []
 
+    def clear(self):
+        self.callbacks[:] = []
+
     def _wrap(self, value, priority=0):
         """
         Given a function/method, this will automatically wrap a method using
