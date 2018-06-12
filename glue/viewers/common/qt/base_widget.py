@@ -234,7 +234,10 @@ class BaseQtViewerWidget(QtWidgets.QMainWindow):
         return str(self)
 
     def update_window_title(self):
-        self.setWindowTitle(self.window_title)
+        try:
+            self.setWindowTitle(self.window_title)
+        except RuntimeError:  # Avoid C/C++ errors when closing viewer
+            pass
 
     def set_status(self, message):
         sb = self.statusBar()

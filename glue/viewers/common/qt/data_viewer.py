@@ -103,7 +103,7 @@ class DataViewer(Viewer, BaseQtViewerWidget):
 
         # close window when last plot layer deleted
         if self._close_on_last_layer_removed:
-            self._layer_artist_container.on_empty(lambda: self.close(warn=False))
+            self._layer_artist_container.on_empty(self._close_nowarn)
         self._layer_artist_container.on_changed(self.update_window_title)
 
     @property
@@ -116,6 +116,9 @@ class DataViewer(Viewer, BaseQtViewerWidget):
 
     def warn(self, message, *args, **kwargs):
         return warn(message, *args, **kwargs)
+
+    def _close_nowarn(self):
+        return self.close(warn=False)
 
     def close(self, warn=True):
 
