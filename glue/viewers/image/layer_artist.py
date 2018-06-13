@@ -9,7 +9,7 @@ from glue.utils import defer_draw, broadcast_to
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
-from glue.viewers.image.pixel_selection_mode import PixelSubsetState
+from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
