@@ -9,10 +9,11 @@ from matplotlib.patches import Rectangle
 
 from glue.utils import defer_draw
 
+from glue.core import Data
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 
 try:
     import qtpy  # noqa
@@ -113,7 +114,12 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.notify_end_computation()
         self.redraw()
         if issubclass(exc[0], (IncompatibleAttribute, IndexError)):
-            self.disable_invalid_attributes(self._viewer_state.x_att)
+            if isinstance(self.state.layer, Data):
+                self.disable_invalid_attributes(self._viewer_state.x_att)
+            else:
+                self.disable_incompatible_subset()
+        elif issubclass(exc[0], IncompatibleDataException):
+            self.disable("Incompatible data")
 
     @defer_draw
     def _update_artists(self):

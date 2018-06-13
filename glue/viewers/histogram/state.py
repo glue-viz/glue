@@ -11,7 +11,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import (StateAttributeLimitsHelper,
                                      StateAttributeHistogramHelper)
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.utils import defer_draw, datetime64_to_mpl
 from glue.utils.decorators import avoid_circular
@@ -209,8 +209,10 @@ class HistogramLayerState(MatplotlibLayerState):
             self.viewer_state.add_callback('hist_n_bin', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
 
-        # if self.viewer_state is None or self.viewer_state.x_att is None:
-        #     raise IncompatibleDataException()
+        if (self.viewer_state is None or self.viewer_state.x_att is None or
+            self.viewer_state.hist_x_min is None or self.viewer_state.hist_x_max is None or
+                self.viewer_state.hist_n_bin is None or self.viewer_state.x_log is None):
+            raise IncompatibleDataException()
 
         if isinstance(self.layer, Subset):
             data = self.layer.data
