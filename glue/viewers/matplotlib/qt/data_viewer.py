@@ -178,10 +178,12 @@ class MatplotlibDataViewer(DataViewer):
 
     def update_x_ticklabel(self, *event):
         self.axes.tick_params(axis='x', labelsize=self.state.x_ticklabel_size)
+        self.axes.xaxis.get_offset_text().set_fontsize(self.state.x_ticklabel_size)
         self.redraw()
 
     def update_y_ticklabel(self, *event):
         self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
+        self.axes.yaxis.get_offset_text().set_fontsize(self.state.y_ticklabel_size)
         self.redraw()
 
     def redraw(self):
