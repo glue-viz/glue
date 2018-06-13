@@ -14,7 +14,7 @@ from glue.utils import defer_draw
 from glue.viewers.matplotlib.mpl_axes import init_mpl
 
 # Import the mouse mode to make sure it gets registered
-from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
+from glue.viewers.image.qt.contrast_mouse_mode import ContrastBiasMode  # noqa
 
 __all__ = ['StandaloneImageViewer']
 

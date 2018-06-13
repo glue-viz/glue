@@ -1,17 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.config import viewer_tool
-from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+
 from glue.core.command import ApplySubsetState
-from glue.core.subset import SliceSubsetState
 from glue.core.edit_subset_mode import ReplaceMode
 
+from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
+
 __all__ = ['PixelSelectionTool']
-
-
-class PixelSubsetState(SliceSubsetState):
-    def copy(self):
-        return PixelSubsetState(self.reference_data, self.slices)
 
 
 @viewer_tool

@@ -24,9 +24,9 @@ from glue.external.modest_image import imshow
 from glue.viewers.image.composite_array import CompositeArray
 
 # Import the mouse mode to make sure it gets registered
-from glue.viewers.image.contrast_mouse_mode import ContrastBiasMode  # noqa
+from glue.viewers.image.qt.contrast_mouse_mode import ContrastBiasMode  # noqa
 from glue.viewers.image.qt.profile_viewer_tool import ProfileViewerTool  # noqa
-from glue.viewers.image.pixel_selection_mode import PixelSelectionTool  # noqa
+from glue.viewers.image.qt.pixel_selection_mode import PixelSelectionTool  # noqa
 
 __all__ = ['ImageViewer']
 
