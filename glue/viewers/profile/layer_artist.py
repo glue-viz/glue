@@ -2,10 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 import time
-from glue.external.six.moves import queue
+import warnings
 
 import numpy as np
 
+from glue.external.six.moves import queue
 from glue.core import Data
 from glue.utils import defer_draw, nanmin, nanmax, queue_to_list
 from glue.viewers.profile.state import ProfileLayerState
@@ -153,9 +154,15 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self._calculate_profile_postthread()
 
     def _calculate_profile_thread(self, reset=False):
-        if reset:
-            self.state.reset_cache()
-        self.state.update_profile(update_limits=False)
+        # We need to ignore any warnings that happen inside the thread
+        # otherwise the thread tries to send these to the glue logger (which
+        # uses Qt), which then results in this kind of error:
+        # QObject::connect: Cannot queue arguments of type 'QTextCursor'
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if reset:
+                self.state.reset_cache()
+            self.state.update_profile(update_limits=False)
 
     def _calculate_profile_postthread(self):
 

@@ -219,10 +219,24 @@ class MatplotlibDataViewer(DataViewer):
 
     @avoid_circular
     def limits_to_mpl(self, *args):
+
         if self.state.x_min is not None and self.state.x_max is not None:
-            self.axes.set_xlim(self.state.x_min, self.state.x_max)
+            x_min, x_max = self.state.x_min, self.state.x_max
+            if self.state.x_log:
+                if self.state.x_max <= 0:
+                    x_min, x_max = 0.1, 1
+                elif self.state.x_min <= 0:
+                    x_min = x_max / 10
+            self.axes.set_xlim(x_min, x_max)
+
         if self.state.y_min is not None and self.state.y_max is not None:
-            self.axes.set_ylim(self.state.y_min, self.state.y_max)
+            y_min, y_max = self.state.y_min, self.state.y_max
+            if self.state.y_log:
+                if self.state.y_max <= 0:
+                    y_min, y_max = 0.1, 1
+                elif self.state.y_min <= 0:
+                    y_min = y_max / 10
+            self.axes.set_ylim(y_min, y_max)
 
         if self.state.aspect == 'equal':
 

@@ -210,7 +210,11 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.state._y_max *= 1.2
 
         if self._viewer_state.y_log:
-            self.state._y_min = mpl_hist[mpl_hist > 0].min() / 10
+            keep = mpl_hist > 0
+            if np.any(keep):
+                self.state._y_min = mpl_hist[mpl_hist > 0].min() / 10
+            else:
+                self.state._y_min = 0
         else:
             self.state._y_min = 0
 
