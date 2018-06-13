@@ -1,9 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from qtpy.QtCore import QTimer
 
 from matplotlib.patches import Rectangle
 
+from glue.core.message import ComputationStartedMessage
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.matplotlib.qt.widget import MplWidget
 from glue.viewers.matplotlib.mpl_axes import init_mpl, update_appearance_from_settings
@@ -75,9 +77,9 @@ class MatplotlibDataViewer(DataViewer):
         self.loading_rectangle.set_visible(False)
         self.axes.add_patch(self.loading_rectangle)
 
-        self.loading_text = self.axes.text(0.5, 0.5, 'Computing...', color='k',
+        self.loading_text = self.axes.text(0.4, 0.5, 'Computing', color='k',
                                            zorder=self.loading_rectangle.get_zorder() + 1,
-                                           ha='center', va='center',
+                                           ha='left', va='center',
                                            transform=self.axes.transAxes)
         self.loading_text.set_visible(False)
 
@@ -121,16 +123,40 @@ class MatplotlibDataViewer(DataViewer):
         self.central_widget.resize(600, 400)
         self.resize(self.central_widget.size())
 
-    def _update_computation(self, *args):
+        self._monitor_computation = QTimer()
+        self._monitor_computation.setInterval(500)
+        self._monitor_computation.timeout.connect(self._update_computation)
+
+    def _update_computation(self, message=None):
+
+        # If we get a ComputationStartedMessage and the timer isn't currently
+        # active, then we start the timer but we then return straight away.
+        # This is to avoid showing the 'Computing' message straight away in the
+        # case of reasonably fast operations.
+        if (isinstance(message, ComputationStartedMessage) and
+                not self._monitor_computation.isActive()):
+            self._monitor_computation.start()
+            return
+
         for layer_artist in self.layers:
             if layer_artist.is_computing:
                 self.loading_rectangle.set_visible(True)
+                text = self.loading_text.get_text()
+                if text.count('.') > 2:
+                    text = 'Computing'
+                else:
+                    text += '.'
+                self.loading_text.set_text(text)
                 self.loading_text.set_visible(True)
                 self.redraw()
                 return
+
         self.loading_rectangle.set_visible(False)
         self.loading_text.set_visible(False)
         self.redraw()
+
+        # If we get here, the computation has stopped so we can stop the timer
+        self._monitor_computation.stop()
 
     def add_data(self, *args, **kwargs):
         return super(MatplotlibDataViewer, self).add_data(*args, **kwargs)
