@@ -6,13 +6,6 @@ from glue.viewers.common.layer_artist import LayerArtist
 
 __all__ = ['MatplotlibLayerArtist']
 
-try:
-    import qtpy  # noqa
-except Exception:
-    QT_INSTALLED = False
-else:
-    QT_INSTALLED = True
-
 
 class MatplotlibLayerArtist(LayerArtist):
 
@@ -21,20 +14,11 @@ class MatplotlibLayerArtist(LayerArtist):
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
-        super(MatplotlibLayerArtist, self).__init__(viewer_state, layer_state=layer_state, layer=layer)
-
+        super(MatplotlibLayerArtist, self).__init__(viewer_state,
+                                                    layer_state=layer_state,
+                                                    layer=layer)
         self.axes = axes
-
         self.mpl_artists = []
-
-        if QT_INSTALLED:
-            from qtpy.QtCore import QTimer
-            self._notify_start = QTimer()
-            self._notify_start.setInterval(500)
-            self._notify_start.setSingleShot(True)
-            self._notify_start.timeout.connect(self._notify_start_computation)
-
-        self._notified_start = False
 
     def notify_start_computation(self, delay=500):
         """
@@ -43,15 +27,7 @@ class MatplotlibLayerArtist(LayerArtist):
         operations). A message is only broadcast if the operation takes longer
         than 500ms.
         """
-        if QT_INSTALLED:
-            if self._notify_start is not None:
-                self._notify_start.start(delay)
-        else:
-            self._notify_start_computation()
-
-    def _notify_start_computation(self, *args):
         self.state.layer.hub.broadcast(ComputationStartedMessage(self))
-        self._notified_start = True
 
     def notify_end_computation(self):
         """
@@ -59,12 +35,7 @@ class MatplotlibLayerArtist(LayerArtist):
         computation (typically used in conjunction with asynchronous
         operations). If the computation was never started, this does nothing.
         """
-        if QT_INSTALLED:
-            if self._notify_start is not None:
-                self._notify_start.stop()
-        if self._notified_start:
-            self.state.layer.hub.broadcast(ComputationEndedMessage(self))
-            self._notified_start = False
+        self.state.layer.hub.broadcast(ComputationEndedMessage(self))
 
     def clear(self):
         for artist in self.mpl_artists:

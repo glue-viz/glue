@@ -314,7 +314,7 @@ class Viewer(BaseViewer):
     def _has_layer_artist(self, message):
         return message.layer_artist in self.layers
 
-    def _update_computation(self, *args):
+    def _update_computation(self, message=None):
         pass
 
     def _update_appearance_from_settings(self, message=None):
