@@ -115,6 +115,9 @@ class TestPlotly(object):
         viewer.state.hist_x_max = 10
         viewer.state.hist_n_bin = 20
 
+        for layer in viewer.layers:
+            layer.wait()
+
         args, kwargs = build_plotly_call(self.app)
 
         expected = dict(
