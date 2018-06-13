@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import Data
+from glue.core import Data, Subset
 
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -13,7 +13,7 @@ from glue.core.state_objects import (StateAttributeLimitsHelper,
                                      StateAttributeHistogramHelper)
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.data_combo_helper import ComponentIDComboHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, datetime64_to_mpl
 from glue.utils.decorators import avoid_circular
 
 __all__ = ['HistogramViewerState', 'HistogramLayerState']
@@ -167,3 +167,79 @@ class HistogramLayerState(MatplotlibLayerState):
     """
     A state class that includes all the attributes for layers in a histogram plot.
     """
+
+    _viewer_callbacks_set = False
+    _histogram_cache = None
+
+    def reset_cache(self, *args):
+        print("RESET CACHE")
+        self._histogram_cache = None
+
+    @property
+    def viewer_state(self):
+        return self._viewer_state
+
+    @viewer_state.setter
+    def viewer_state(self, viewer_state):
+        self._viewer_state = viewer_state
+
+    @property
+    def histogram(self):
+        print('cache', self._histogram_cache)
+        self.update_histogram()
+        edges, unscaled = self._histogram_cache
+        scaled = unscaled.astype(np.float)
+        dx = edges[1] - edges[0]
+        if self.viewer_state.cumulative:
+            scaled = scaled.cumsum()
+            if self.viewer_state.normalize:
+                scaled /= scaled.max()
+        elif self.viewer_state.normalize:
+            scaled /= (scaled.sum() * dx)
+        return edges, scaled
+
+    def update_histogram(self, update_limits=True):
+
+        if self._histogram_cache is not None:
+            return self._histogram_cache
+
+        if not self._viewer_callbacks_set:
+            self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('x_log', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('hist_x_min', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('hist_x_max', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('hist_n_bin', self.reset_cache, priority=100000)
+            self._viewer_callbacks_set = True
+
+        # if self.viewer_state is None or self.viewer_state.x_att is None:
+        #     raise IncompatibleDataException()
+
+        if isinstance(self.layer, Subset):
+            data = self.layer.data
+            subset_state = self.layer.subset_state
+        else:
+            data = self.layer
+            subset_state = None
+
+        range = sorted((self.viewer_state.hist_x_min, self.viewer_state.hist_x_max))
+
+        hist_values = data.compute_histogram([self._viewer_state.x_att],
+                                             range=[range],
+                                             bins=[self._viewer_state.hist_n_bin],
+                                             log=[self._viewer_state.x_log],
+                                             subset_state=subset_state)
+
+        # TODO: determine whether this belongs here or in the layer artist
+        if isinstance(range[0], np.datetime64):
+            range = [datetime64_to_mpl(range[0]), datetime64_to_mpl(range[1])]
+
+        if self._viewer_state.x_log:
+            hist_edges = np.logspace(np.log10(range[0]), np.log10(range[1]),
+                                     self._viewer_state.hist_n_bin + 1)
+        else:
+            hist_edges = np.linspace(range[0], range[1],
+                                     self._viewer_state.hist_n_bin + 1)
+
+        self._histogram_cache = hist_edges, hist_values
+
+        print("CACHE", self._histogram_cache)
