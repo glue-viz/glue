@@ -61,6 +61,8 @@ class TestHistogramViewer(object):
         # Check defaults when we add data
         self.viewer.add_data(self.data)
 
+        self.viewer.layers[0].wait()
+
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:x:y:Coordinate components:Pixel Axis 0 [x]:World 0'
 
         assert viewer_state.x_att is self.data.id['x']
@@ -84,6 +86,8 @@ class TestHistogramViewer(object):
         # Change to categorical component and check new values
 
         viewer_state.x_att = self.data.id['y']
+
+        self.viewer.layers[0].wait()
 
         assert viewer_state.x_min == -0.5
         assert viewer_state.x_max == 2.5
@@ -189,40 +193,53 @@ class TestHistogramViewer(object):
         viewer_state.hist_x_max = 5
         viewer_state.hist_n_bin = 4
 
+        self.viewer.layers[0].wait()
+
         assert_allclose(self.viewer.state.y_max, 2.4)
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
         cid = self.data.visible_components[0]
         self.data_collection.new_subset_group('subset 1', cid < 2)
 
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 1, 0])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
+        self.viewer.layers[1].wait()
+
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 1, 1, 0])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.normalize = True
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 0.24)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.1, 0.2, 0.1])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.2, 0.2, 0])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0.1, 0.2, 0.1])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 0.2, 0.2, 0])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.cumulative = True
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 1.2)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0.25, 0.75, 1.0])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 0.5, 1.0, 1.0])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0.25, 0.75, 1.0])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 0.5, 1.0, 1.0])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.normalize = False
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 4.8)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 3, 4])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 2])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 1, 3, 4])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 1, 2, 2])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
         viewer_state.cumulative = False
 
@@ -230,39 +247,51 @@ class TestHistogramViewer(object):
 
         viewer_state.x_att = self.data.id['y']
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         formatter = self.viewer.axes.xaxis.get_major_formatter()
         xlabels = [formatter.format_data(pos) for pos in range(3)]
         assert xlabels == ['a', 'b', 'c']
 
         assert_allclose(self.viewer.state.y_max, 2.4)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 0, 1])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [2, 1, 1])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [1, 0, 1])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.normalize = True
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 0.6)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.25, 0.25])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0, 0.5])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0.5, 0.25, 0.25])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0.5, 0, 0.5])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.cumulative = True
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 1.2)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0.5, 0.75, 1])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0.5, 0.5, 1])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0.5, 0.75, 1])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0.5, 0.5, 1])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
 
         viewer_state.normalize = False
 
+        self.viewer.layers[0].wait()
+        self.viewer.layers[1].wait()
+
         assert_allclose(self.viewer.state.y_max, 4.8)
-        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 3, 4])
-        assert_allclose(self.viewer.layers[0].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [1, 1, 2])
-        assert_allclose(self.viewer.layers[1].mpl_hist_edges, [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [2, 3, 4])
+        assert_allclose(self.viewer.layers[0].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [1, 1, 2])
+        assert_allclose(self.viewer.layers[1].state.histogram[0], [-0.5, 0.5, 1.5, 2.5])
 
         # TODO: add tests for log
 
@@ -285,10 +314,13 @@ class TestHistogramViewer(object):
 
         self.viewer.apply_roi(roi)
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert len(self.viewer.layers) == 2
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 1, 2, 1])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [0, 1, 2, 0])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 1, 2, 1])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 1, 2, 0])
 
         assert_allclose(self.data.subsets[0].to_mask(), [0, 1, 1, 1])
 
@@ -317,10 +349,13 @@ class TestHistogramViewer(object):
 
         self.viewer.apply_roi(roi)
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert len(self.viewer.layers) == 2
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [2, 1, 1])
-        assert_allclose(self.viewer.layers[1].mpl_hist, [2, 1, 0])
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [2, 1, 1])
+        assert_allclose(self.viewer.layers[1].state.histogram[1], [2, 1, 0])
 
         assert_allclose(self.data.subsets[0].to_mask(), [1, 1, 0, 1])
 
@@ -388,15 +423,24 @@ class TestHistogramViewer(object):
         cid = self.data.visible_components[0]
         self.data_collection.new_subset_group('subset 3', cid < 3)
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert_allclose(self.viewer.state.y_min, 0)
         assert_allclose(self.viewer.state.y_max, 1.2)
 
         viewer_state.x_att = self.data.id['z']
 
+        for layer in self.viewer.layers:
+            layer.wait()
+
         assert_allclose(self.viewer.state.y_min, 0)
         assert_allclose(self.viewer.state.y_max, 2.4)
 
         viewer_state.normalize = True
+
+        for layer in self.viewer.layers:
+            layer.wait()
 
         assert_allclose(self.viewer.state.y_min, 0)
         assert_allclose(self.viewer.state.y_max, 0.5325443786982249)
@@ -416,22 +460,34 @@ class TestHistogramViewer(object):
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+        for layer in self.viewer.layers:
+            layer.wait()
+
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0, 3, 1, 0])
 
         viewer_state.x_att = self.data.id['x']
         viewer_state.hist_x_min = -10
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+        for layer in self.viewer.layers:
+            layer.wait()
+
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0, 2, 2, 0])
 
         viewer_state.x_att = self.data.id['y']
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 3, 1, 0])
+        for layer in self.viewer.layers:
+            layer.wait()
+
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0, 3, 1, 0])
 
         viewer_state.x_att = self.data.id['x']
 
-        assert_allclose(self.viewer.layers[0].mpl_hist, [0, 0, 2, 2, 0])
+        for layer in self.viewer.layers:
+            layer.wait()
+
+        assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0, 2, 2, 0])
 
     def test_component_replaced(self):
 

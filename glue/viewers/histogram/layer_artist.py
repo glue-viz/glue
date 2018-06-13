@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
-import queue
+import time
 import warnings
 
 import numpy as np
@@ -42,6 +42,16 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         if QT_INSTALLED:
             self.setup_thread()
+
+    def wait(self):
+        if QT_INSTALLED:
+            # Wait 0.5 seconds to make sure that the computation has properly started
+            time.sleep(0.5)
+            while self._worker.running:
+                time.sleep(1 / 25)
+            from glue.utils.qt import get_qapp
+            app = get_qapp()
+            app.processEvents()
 
     def remove(self):
         super(HistogramLayerArtist, self).remove()
