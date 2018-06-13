@@ -1,14 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
-import time
 import queue
 import warnings
 
 import numpy as np
 from matplotlib.patches import Rectangle
 
-from glue.utils import defer_draw, queue_to_list
+from glue.utils import defer_draw
 
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
@@ -21,29 +20,7 @@ except Exception:
     QT_INSTALLED = False
 else:
     QT_INSTALLED = True
-
-if QT_INSTALLED:
-
-    # When using Qt, we make use of a thread that continuously listens for
-    # requests to update the histogram and we run these as needed. In future,
-    # we should add the ability to interrupt compute jobs if a newer compute
-    # job is requested.
-
-    from qtpy.QtCore import Signal, QThread
-
-    class ComputeWorker(QThread):
-
-        compute_start = Signal()
-        compute_end = Signal()
-        compute_error = Signal(object)
-
-        def __init__(self, function):
-            super(ComputeWorker, self).__init__()
-            self.function = function
-            self.running = False
-
-        def run(self):
-            self.function()
+    from glue.viewers.matplotlib.qt.compute_worker import ComputeWorker
 
 
 class HistogramLayerArtist(MatplotlibLayerArtist):
@@ -69,7 +46,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     def remove(self):
         super(HistogramLayerArtist, self).remove()
         if QT_INSTALLED and self._worker is not None:
-            self._work_queue.put('stop')
+            self._worker.work_queue.put('stop')
             self._worker.exit()
             # Need to wait otherwise the thread will be destroyed while still
             # running, causing a segmentation fault
@@ -86,53 +63,16 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self._last_layer_state = {}
 
     def setup_thread(self):
-        self._worker = ComputeWorker(self._thread_loop)
+        self._worker = ComputeWorker(self._calculate_histogram_thread)
         self._worker.compute_end.connect(self._calculate_histogram_postthread)
         self._worker.compute_error.connect(self._calculate_histogram_error)
         self._worker.compute_start.connect(self.notify_start_computation)
-        self._work_queue = queue.Queue()
         self._worker.start()
-
-    def _thread_loop(self):
-
-        error = None
-
-        while True:
-
-            time.sleep(1 / 25)
-
-            msgs = queue_to_list(self._work_queue)
-
-            if 'stop' in msgs:
-                return
-            elif len(msgs) == 0:
-                # We change this here rather than in the try...except below
-                # to avoid stopping and starting in quick succession.
-                if self._worker.running:
-                    self._worker.running = False
-                    if error is None:
-                        self._worker.compute_end.emit()
-                    else:
-                        self._worker.compute_error.emit(error)
-                        error = None
-                continue
-
-            # If any resets were requested, honor this
-            reset = any(msgs)
-
-            try:
-                self._worker.running = True
-                self._worker.compute_start.emit()
-                self._calculate_histogram_thread(reset=reset)
-            except Exception:
-                error = sys.exc_info()
-            else:
-                error = None
 
     @defer_draw
     def _calculate_histogram(self, reset=False):
         if QT_INSTALLED:
-            self._work_queue.put(reset)
+            self._worker.work_queue.put(reset)
         else:
             try:
                 self.notify_start_computation()
