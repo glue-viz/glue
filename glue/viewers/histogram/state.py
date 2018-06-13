@@ -172,7 +172,6 @@ class HistogramLayerState(MatplotlibLayerState):
     _histogram_cache = None
 
     def reset_cache(self, *args):
-        print("RESET CACHE")
         self._histogram_cache = None
 
     @property
@@ -185,7 +184,6 @@ class HistogramLayerState(MatplotlibLayerState):
 
     @property
     def histogram(self):
-        print('cache', self._histogram_cache)
         self.update_histogram()
         edges, unscaled = self._histogram_cache
         scaled = unscaled.astype(np.float)
@@ -241,5 +239,3 @@ class HistogramLayerState(MatplotlibLayerState):
                                      self._viewer_state.hist_n_bin + 1)
 
         self._histogram_cache = hist_edges, hist_values
-
-        print("CACHE", self._histogram_cache)

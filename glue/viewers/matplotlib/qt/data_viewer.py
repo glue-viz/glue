@@ -133,9 +133,9 @@ class MatplotlibDataViewer(DataViewer):
         # active, then we start the timer but we then return straight away.
         # This is to avoid showing the 'Computing' message straight away in the
         # case of reasonably fast operations.
-        if (isinstance(message, ComputationStartedMessage) and
-                not self._monitor_computation.isActive()):
-            self._monitor_computation.start()
+        if isinstance(message, ComputationStartedMessage):
+            if not self._monitor_computation.isActive():
+                self._monitor_computation.start()
             return
 
         for layer_artist in self.layers:

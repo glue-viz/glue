@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import sys
 import time
 import queue
+import warnings
+
 import numpy as np
 from matplotlib.patches import Rectangle
 
@@ -130,7 +132,6 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _calculate_histogram(self, reset=False):
         if QT_INSTALLED:
-            print("HERE")
             self._work_queue.put(reset)
         else:
             try:
@@ -142,13 +143,19 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
                 self._calculate_histogram_postthread()
 
     def _calculate_histogram_thread(self, reset=False):
-        if reset:
-            self.state.reset_cache()
-        self.state.update_histogram()
+        # We need to ignore any warnings that happen inside the thread
+        # otherwise the thread tries to send these to the glue logger (which
+        # uses Qt), which then results in this kind of error:
+        # QObject::connect: Cannot queue arguments of type 'QTextCursor'
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if reset:
+                self.state.reset_cache()
+            self.state.update_histogram()
 
     def _calculate_histogram_postthread(self):
         self.notify_end_computation()
-        self._scale_histogram()
+        self._update_artists()
         self._update_visual_attributes()
 
     @defer_draw
@@ -159,11 +166,9 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.disable_invalid_attributes(self._viewer_state.x_att)
 
     @defer_draw
-    def _scale_histogram(self):
+    def _update_artists(self):
 
-        print("HERE1")
         mpl_hist_edges, mpl_hist = self.state.histogram
-        print("HERE2")
 
         if mpl_hist_edges.size == 0 or mpl_hist.sum() == 0:
             return
