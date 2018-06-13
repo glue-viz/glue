@@ -680,6 +680,8 @@ class TestHistogramViewer(object):
         viewer = ga.viewers[0][0]
         options = viewer.options_widget().ui
 
+        wait_for_layers(viewer)
+
         assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
 
         assert options.valuetext_x_min.text() == '1970-04-14'
