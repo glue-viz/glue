@@ -570,20 +570,21 @@ class RoiSubsetState(SubsetState):
             # Note that we can only do this if the view (if present) preserved
             # the dimensionality, which is why we checked that x.ndim == data.ndim
 
-            subset = []
+            final_shape = []
             for i in range(data.ndim):
                 if i == self.xatt.axis or i == self.yatt.axis:
-                    subset.append(slice(None))
+                    final_shape.append(data.shape[i])
                 else:
-                    subset.append(slice(0, 1))
-
-            x_slice = x[subset]
-            y_slice = y[subset]
+                    final_shape.append(1)
 
             if self.roi.defined():
-                result = self.roi.contains(x_slice, y_slice)
+                slice_shape = data.shape[self.yatt.axis], data.shape[self.xatt.axis]
+                result = self.roi.mask(slice_shape)
+                if self.xatt.axis < self.yatt.axis:
+                    result = result.T
+                result = result.reshape(final_shape)
             else:
-                result = np.zeros(x_slice.shape, dtype=bool)
+                result = False
 
             result = broadcast_to(result, x.shape)
 
