@@ -449,10 +449,10 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
 
     if (finite or positive or mask is not None) and data.dtype.kind != 'M':
 
-        keep = np.ones(data.shape, dtype=bool)
-
         if finite:
-            keep &= np.isfinite(data)
+            keep = np.isfinite(data)
+        else:
+            keep = np.ones(data.shape, dtype=bool)
 
         if positive:
             keep &= data > 0
