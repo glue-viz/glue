@@ -279,9 +279,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper')
     modifiers_names = ('log', 'percentile')
 
-    def __init__(self, state, attribute, random_subset=10000, margin=0, cache=None, **kwargs):
+    def __init__(self, state, attribute, random_subset=10000, margin=0, **kwargs):
 
-        super(StateAttributeLimitsHelper, self).__init__(state, attribute, cache=cache, **kwargs)
+        super(StateAttributeLimitsHelper, self).__init__(state, attribute, **kwargs)
 
         self.margin = margin
         self.random_subset = random_subset
@@ -398,14 +398,17 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
     values_names = ('lower', 'upper', 'n_bin')
     modifiers_names = ()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, state, attribute, random_subset=10000, max_n_bin=30,
+                 default_n_bin=15, common_n_bin=None, **kwargs):
 
-        self._max_n_bin = kwargs.pop('max_n_bin', 30)
-        self._default_n_bin = kwargs.pop('default_n_bin', 15)
+        self._max_n_bin = max_n_bin
+        self._default_n_bin = default_n_bin
 
-        common_n_bin_att = kwargs.pop('common_n_bin', None)
+        common_n_bin_att = common_n_bin
 
-        super(StateAttributeHistogramHelper, self).__init__(*args, **kwargs)
+        super(StateAttributeHistogramHelper, self).__init__(state, attribute, **kwargs)
+
+        self.random_subset = random_subset
 
         if common_n_bin_att is not None:
             if getattr(self._state, common_n_bin_att):
@@ -461,8 +464,10 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                 else:
                     n_bin = self._common_n_bin
 
-                lower = self.data.compute_statistic('minimum', cid=self.component_id, finite=True)
-                upper = self.data.compute_statistic('maximum', cid=self.component_id, finite=True)
+                lower = self.data.compute_statistic('minimum', cid=self.component_id,
+                                                    finite=True, random_subset=self.random_subset)
+                upper = self.data.compute_statistic('maximum', cid=self.component_id,
+                                                    finite=True, random_subset=self.random_subset)
 
                 if not isinstance(lower, np.datetime64) and np.isnan(lower):
                     lower, upper = 0, 1
