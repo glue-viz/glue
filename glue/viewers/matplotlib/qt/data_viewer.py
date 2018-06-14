@@ -133,9 +133,9 @@ class MatplotlibDataViewer(DataViewer):
         # active, then we start the timer but we then return straight away.
         # This is to avoid showing the 'Computing' message straight away in the
         # case of reasonably fast operations.
-        if (isinstance(message, ComputationStartedMessage) and
-                not self._monitor_computation.isActive()):
-            self._monitor_computation.start()
+        if isinstance(message, ComputationStartedMessage):
+            if not self._monitor_computation.isActive():
+                self._monitor_computation.start()
             return
 
         for layer_artist in self.layers:
@@ -178,10 +178,12 @@ class MatplotlibDataViewer(DataViewer):
 
     def update_x_ticklabel(self, *event):
         self.axes.tick_params(axis='x', labelsize=self.state.x_ticklabel_size)
+        self.axes.xaxis.get_offset_text().set_fontsize(self.state.x_ticklabel_size)
         self.redraw()
 
     def update_y_ticklabel(self, *event):
         self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
+        self.axes.yaxis.get_offset_text().set_fontsize(self.state.y_ticklabel_size)
         self.redraw()
 
     def redraw(self):
@@ -219,10 +221,24 @@ class MatplotlibDataViewer(DataViewer):
 
     @avoid_circular
     def limits_to_mpl(self, *args):
+
         if self.state.x_min is not None and self.state.x_max is not None:
-            self.axes.set_xlim(self.state.x_min, self.state.x_max)
+            x_min, x_max = self.state.x_min, self.state.x_max
+            if self.state.x_log:
+                if self.state.x_max <= 0:
+                    x_min, x_max = 0.1, 1
+                elif self.state.x_min <= 0:
+                    x_min = x_max / 10
+            self.axes.set_xlim(x_min, x_max)
+
         if self.state.y_min is not None and self.state.y_max is not None:
-            self.axes.set_ylim(self.state.y_min, self.state.y_max)
+            y_min, y_max = self.state.y_min, self.state.y_max
+            if self.state.y_log:
+                if self.state.y_max <= 0:
+                    y_min, y_max = 0.1, 1
+                elif self.state.y_min <= 0:
+                    y_min = y_max / 10
+            self.axes.set_ylim(y_min, y_max)
 
         if self.state.aspect == 'equal':
 

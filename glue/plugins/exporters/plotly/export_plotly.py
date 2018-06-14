@@ -186,8 +186,10 @@ def export_histogram(viewer):
     for artist in viewer.layers:
         if not artist.visible:
             continue
+        artist.wait()
         layer = artist.layer
-        x, y = _sanitize(artist.mpl_hist_edges[:-1], artist.mpl_hist)
+        edges, hist = artist.state.histogram
+        x, y = _sanitize(edges[:-1], hist)
         trace = dict(
             name=layer.label,
             type='bar',
@@ -195,7 +197,7 @@ def export_histogram(viewer):
             x=x,
             y=y)
         traces.append(trace)
-        ymax = max(ymax, artist.mpl_hist.max())
+        ymax = max(ymax, hist.max())
 
     xlabel = att.label
     xmin, xmax = viewer.state.x_min, viewer.state.x_max
