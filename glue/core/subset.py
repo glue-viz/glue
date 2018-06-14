@@ -268,8 +268,7 @@ class Subset(object):
 
         """
         try:
-            mask = self.subset_state.to_mask(self.data, view)
-            return mask
+            return self.data.get_mask(self.subset_state, view=view)
         except IncompatibleAttribute as exc:
             return self._to_mask_join(view)
 

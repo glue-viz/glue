@@ -45,10 +45,11 @@ class BaseCartesianData(object, metaclass=abc.ABCMeta):
 
     The underlying data can be any kind of data (structured or unstructured) but
     it needs to expose an interface that looks like a regular n-dimensional
-    cartesian dataset. This means exposing e.g. ``shape``, ``ndim`` as well as
-    __getitem__. Non-regular datasets should therefore have the concept of
-    'virtual' pixel coordinates and should typically match the highest
-    resolution a user might want to access the data at.
+    cartesian dataset. This means exposing e.g. ``shape`` and ``ndim``, and
+    means that get_data can expect ndarray slices. Non-regular datasets should
+    therefore have the concept of 'virtual' pixel coordinates and should
+    typically match the highest resolution a user might want to access the data
+    at.
     """
 
     @property
@@ -76,6 +77,36 @@ class BaseCartesianData(object, metaclass=abc.ABCMeta):
     def size(self):
         """
         The size of the data (the product of the shape dimensions), as an integer.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_data(self, cid, view=None):
+        """
+        Get the data values for a given component
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data for
+        view
+            The 'view' on the data - anything that is considered a valid
+            Numpy slice/index.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_mask(self, subset_state, view=None):
+        """
+        Get a boolean mask for a given subset state.
+
+        Parameters
+        ----------
+        subset_state : `SubsetState`
+            The subset state to use to compute the mask
+        view
+            The 'view' on the mask - anything that is considered a valid
+            Numpy slice/index.
         """
         raise NotImplementedError()
 
@@ -170,6 +201,50 @@ class BaseCartesianData(object, metaclass=abc.ABCMeta):
             the subset state.
         """
         raise NotImplementedError()
+
+    def __getitem__(self, key):
+        """
+        Shortcut syntax to access the numerical data in a component.
+        Equivalent to::
+
+            component = data.get_data(component_id)
+
+        The key can be either just a component name, component ID, or a
+        component name/ID and a view.
+        """
+
+        # Note: this method is generic and shouldn't need to be overriden by
+        # subclasses.
+
+        key, view = split_component_view(key)
+        if isinstance(key, six.string_types):
+            _k = key
+            key = self.find_component_id(key)
+            if key is None:
+                raise IncompatibleAttribute(_k)
+
+        return self.get_data(key, view=view)
+
+    def find_component_id(self, label):
+        """
+        Find a component ID by name.
+
+        This returns the associated ComponentID if label is found and unique,
+        and `None` otherwise.
+        """
+
+        # This is a simple implementation that relies on .components and should
+        # not need to be overriden
+
+        if isinstance(label, ComponentID):
+            return label
+
+        matches = [cid for cid in self.components if cid.label == label]
+
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            return None
 
 
 class Data(BaseCartesianData):
@@ -316,7 +391,7 @@ class Data(BaseCartesianData):
 
         # grab a small piece of data
         ind = tuple([slice(0, 1)] * self.ndim)
-        arr = self[cid, ind]
+        arr = self.get_data(cid, view=ind)
         return arr.dtype
 
     @contract(component_id=ComponentID)
@@ -1062,36 +1137,17 @@ class Data(BaseCartesianData):
                                  "to a different hub")
         object.__setattr__(self, name, value)
 
-    def __getitem__(self, key):
-        """ Shortcut syntax to access the numerical data in a component.
-        Equivalent to:
+    def get_data(self, cid, view=None):
 
-        ``component = data.get_component(component_id).data``
+        if isinstance(cid, ComponentLink):
+            return cid.compute(self, view)
 
-        :param key:
-          The component to fetch data from
-
-        :type key: :class:`~glue.core.component_id.ComponentID`
-
-        :returns: :class:`~numpy.ndarray`
-        """
-
-        key, view = split_component_view(key)
-        if isinstance(key, six.string_types):
-            _k = key
-            key = self.find_component_id(key)
-            if key is None:
-                raise IncompatibleAttribute(_k)
-
-        if isinstance(key, ComponentLink):
-            return key.compute(self, view)
-
-        if key in self._components:
-            comp = self._components[key]
-        elif key in self._externally_derivable_components:
-            comp = self._externally_derivable_components[key]
+        if cid in self._components:
+            comp = self._components[cid]
+        elif cid in self._externally_derivable_components:
+            comp = self._externally_derivable_components[cid]
         else:
-            raise IncompatibleAttribute(key)
+            raise IncompatibleAttribute(cid)
 
         if view is not None:
             result = comp[view]
@@ -1102,6 +1158,9 @@ class Data(BaseCartesianData):
                 result = comp.data
 
         return result
+
+    def get_mask(self, subset_state, view=None):
+        return subset_state.to_mask(self, view=view)
 
     def __setitem__(self, key, value):
         """
@@ -1363,7 +1422,7 @@ class Data(BaseCartesianData):
             else:
                 mask = subset_state.to_mask(self, view)
                 if np.any(unbroadcast(mask)):
-                    data = self[cid, view]
+                    data = self.get_data(cid, view)
                 else:
                     if axis is None:
                         return np.nan
@@ -1373,7 +1432,7 @@ class Data(BaseCartesianData):
                         final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
                         return broadcast_to(np.nan, final_shape)
         else:
-            data = self[cid, view]
+            data = self.get_data(cid, view=view)
             mask = None
 
         if axis is None and mask is None:
@@ -1423,9 +1482,9 @@ class Data(BaseCartesianData):
             bins = bins[0]
             log = log[0]
 
-        x = self[cid]
+        x = self.get_data(cid)
         if weights is not None:
-            w = self[weights]
+            w = self.get_data(weights)
         else:
             w = None
 
