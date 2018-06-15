@@ -108,7 +108,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # If the worker has started running again, we should stop at this point
         # since this function will get called again.
-        if self._worker.running:
+        if QT_INSTALLED and self._worker.running:
             return
 
         self.notify_end_computation()
