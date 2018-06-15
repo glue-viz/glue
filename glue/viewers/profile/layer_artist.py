@@ -131,7 +131,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             if self._viewer_state.normalize:
                 y = self.state.normalize_values(y)
             self.plot_artist.set_data(x, y)
-            self.plot_artist.set_visible(True)
+            self.plot_artist.set_visible(self.state.visible)
         else:
             # We need to do this otherwise we get issues on Windows when
             # passing an empty list to plot_artist
