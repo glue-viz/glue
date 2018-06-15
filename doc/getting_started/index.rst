@@ -6,7 +6,7 @@ Getting started
 This page walks through Glue's basic GUI features, using data from the W5 star
 forming region as an example. You can download the data files for this tutorial here:
 
-* :download:`w5.tgz` (Linux and MacOS X)
+* :download:`w5.tgz` (Linux and macOS)
 * :download:`w5.zip` (Windows)
 
 After :ref:`installing <installation>` Glue, you can launch it by typing::
@@ -34,7 +34,7 @@ There are multiple ways to open data:
 
 * By clicking on the red folder icon in the top left
 * By selecting the **Open Data Set** item under the **File** menu or using the
-  equivalent shortcut (e.g. **Ctrl+O** on Linux, **Cmd+O** on Mac).
+  equivalent shortcut (e.g. **Ctrl+O** on Linux, **Cmd+O** on macOS).
 * By dragging and dropping data files onto the main window
 
   Find and open the file ``w5.fits`` which should be in the ``w5.tgz`` or
@@ -55,7 +55,7 @@ After opening ``w5.fits``, a new entry will appear in the data manager:
 
 To visualize a dataset, click and drag the entry from the data manager to the
 visualization dashboard. A popup window asks about what kind of plot to make.
-Since this is an image, select **2D Image Viewer**.
+Since this is an image, select **2D Image** from the Data Viewer dropdown menu.
 
 Defining Subsets
 ================
@@ -119,7 +119,7 @@ for the subset in red (the label **PRIMARY** comes from the FITS header)
 Perhaps we wish to remove faint pixels from our selection. To do this, we pick
 the last mode (**Remove From Selection**) from the selection mode toolbar:
 
- .. figure:: images/modes.png
+ .. figure:: images/selection_modes.png
     :align: center
     :width: 300
 
@@ -261,7 +261,7 @@ session file, you can select 'Glue Session including data' when saving:
 
 Static images of individual visualizations can be saved by clicking the floppy
 disk icon on a given visualization window. There are also exporters available
-under the **File** menu - built-in exporters include one to export plots to the
+under the **File** menu (File -> Advanced Exporters) - built-in exporters include one to export plots to the
 `plotly <https://plot.ly>`_ service, and one to export plots using
 `D3PO <https://github.com/adrn/d3po>`_.
 
