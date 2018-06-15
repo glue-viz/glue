@@ -27,6 +27,10 @@ v0.14.0 (unreleased)
 
 * Moved calculation of histograms to Data.compute_histogram. [#1739]
 
+* Fixed an issue that caused residual references to viewers
+  after they were closed if they were accessed through the
+  IPython console. [#1770]
+
 v0.13.4 (unreleased)
 --------------------
 

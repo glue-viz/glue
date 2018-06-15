@@ -120,12 +120,9 @@ class DataViewer(Viewer, BaseQtViewerWidget):
     def _close_nowarn(self):
         return self.close(warn=False)
 
-    def close(self, warn=True):
-
-        BaseQtViewerWidget.close(self, warn=warn)
-
-        Viewer.close(self)
-
+    def closeEvent(self, event):
+        super(DataViewer, self).closeEvent(event)
+        Viewer.cleanup(self)
         # We tell the toolbar to do cleanup to make sure we get rid of any
         # circular references
         if self.toolbar:
