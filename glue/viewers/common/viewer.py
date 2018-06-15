@@ -361,9 +361,10 @@ class Viewer(BaseViewer):
         # list() here to force an explicit copy since we are modifying the
         # dictionary in-place
         shell = get_ipython()
-        for key in list(shell.user_ns):
-            if shell.user_ns[key] is self:
-                shell.user_ns.pop(key)
+        if shell is not None:
+            for key in list(shell.user_ns):
+                if shell.user_ns[key] is self:
+                    shell.user_ns.pop(key)
 
     def remove_layer(self, layer):
         self._layer_artist_container.pop(layer)
