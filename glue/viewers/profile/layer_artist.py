@@ -110,12 +110,20 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         # If the worker has started running again, we should stop at this point
         # since this function will get called again.
-        if self._worker.running:
+        if QT_INSTALLED and self._worker.running:
             return
 
         self.notify_end_computation()
 
-        visible_data = self.state.profile
+        # It's possible for this method to get called but for the state to have
+        # been updated in the mean time to have a histogram that raises an
+        # exception (for example an IncompatibleAttribute). If any errors happen
+        # here, we simply ignore them since _calculate_histogram_error will get
+        # called directly.
+        try:
+            visible_data = self.state.profile
+        except Exception:
+            return
 
         if visible_data is None:
             return
@@ -131,7 +139,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             if self._viewer_state.normalize:
                 y = self.state.normalize_values(y)
             self.plot_artist.set_data(x, y)
-            self.plot_artist.set_visible(True)
+            self.plot_artist.set_visible(self.state.visible)
         else:
             # We need to do this otherwise we get issues on Windows when
             # passing an empty list to plot_artist

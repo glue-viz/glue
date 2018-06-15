@@ -108,7 +108,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         # If the worker has started running again, we should stop at this point
         # since this function will get called again.
-        if self._worker.running:
+        if QT_INSTALLED and self._worker.running:
             return
 
         self.notify_end_computation()
@@ -130,7 +130,15 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _update_artists(self):
 
-        mpl_hist_edges, mpl_hist = self.state.histogram
+        # It's possible for this method to get called but for the state to have
+        # been updated in the mean time to have a histogram that raises an
+        # exception (for example an IncompatibleAttribute). If any errors happen
+        # here, we simply ignore them since _calculate_histogram_error will get
+        # called directly.
+        try:
+            mpl_hist_edges, mpl_hist = self.state.histogram
+        except Exception:
+            return
 
         if mpl_hist_edges.size == 0 or mpl_hist.sum() == 0:
             return
