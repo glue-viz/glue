@@ -105,6 +105,12 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.state.update_histogram()
 
     def _calculate_histogram_postthread(self):
+
+        # If the worker has started running again, we should stop at this point
+        # since this function will get called again.
+        if self._worker.running:
+            return
+
         self.notify_end_computation()
         self._update_artists()
         self._update_visual_attributes()
