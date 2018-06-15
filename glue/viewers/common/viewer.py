@@ -347,7 +347,7 @@ class Viewer(BaseViewer):
 
         return viewer
 
-    def close(self):
+    def cleanup(self):
         if self._hub is not None:
             self.unregister(self._hub)
         self._layer_artist_container.clear_callbacks()
