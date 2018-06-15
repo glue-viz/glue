@@ -115,7 +115,15 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.notify_end_computation()
 
-        visible_data = self.state.profile
+        # It's possible for this method to get called but for the state to have
+        # been updated in the mean time to have a histogram that raises an
+        # exception (for example an IncompatibleAttribute). If any errors happen
+        # here, we simply ignore them since _calculate_histogram_error will get
+        # called directly.
+        try:
+            visible_data = self.state.profile
+        except Exception:
+            return
 
         if visible_data is None:
             return

@@ -196,7 +196,7 @@ class HistogramLayerState(MatplotlibLayerState):
             scaled /= (scaled.sum() * dx)
         return edges, scaled
 
-    def update_histogram(self, update_limits=True):
+    def update_histogram(self):
 
         if self._histogram_cache is not None:
             return self._histogram_cache
