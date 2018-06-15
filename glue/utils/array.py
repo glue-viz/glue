@@ -380,6 +380,8 @@ def format_minimal(values):
     ~30ms for a 1000 element array and 200ms for a 10000 element array. One
     could probably make a more efficient implementation but this is good enough
     for now for what we use it for.
+
+    Returns the optimal format as well as an array of formatted values.
     """
     values = np.asarray(values)
     if np.max(np.abs(values)) > 1e5 or np.min(np.diff(values)) < 1e-5:
