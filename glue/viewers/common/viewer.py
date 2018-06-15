@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import warnings
 
+from IPython import get_ipython
+
 from glue.core.hub import HubListener
 from glue.core import Data, Subset
 from glue.core import command
@@ -348,10 +350,20 @@ class Viewer(BaseViewer):
         return viewer
 
     def cleanup(self):
+
         if self._hub is not None:
             self.unregister(self._hub)
+
         self._layer_artist_container.clear_callbacks()
         self._layer_artist_container.clear()
+
+        # Remove any references to the viewer in the IPython namespace. We use
+        # list() here to force an explicit copy since we are modifying the
+        # dictionary in-place
+        shell = get_ipython()
+        for key in list(shell.user_ns):
+            if shell.user_ns[key] is self:
+                shell.user_ns.pop(key)
 
     def remove_layer(self, layer):
         self._layer_artist_container.pop(layer)

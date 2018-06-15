@@ -19,6 +19,8 @@ from qtpy import QtWidgets
 
 from IPython import get_ipython
 
+from IPython.core.interactiveshell import InteractiveShell
+
 from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
 from ipykernel.connect import get_connection_file
 
@@ -29,6 +31,16 @@ from qtconsole.client import QtKernelClient
 from glue.app.qt.mdi_area import GlueMdiSubWindow
 from glue.utils import as_variable_name
 from glue.utils.qt import get_qapp
+
+# We need to do the following to make sure that the outputs in the IPython
+# terminal don't get cached. This is because if a user does e.g.
+#
+# In  [1]: viewer
+# Out [1]: <HistogramViewer...>
+#
+# then there will be a remaining reference to the viewer in the IPython
+# namespace.
+InteractiveShell.cache_size.default_value = 0
 
 kernel_manager = None
 kernel_client = None
