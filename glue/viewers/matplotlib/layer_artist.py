@@ -20,22 +20,23 @@ class MatplotlibLayerArtist(LayerArtist):
         self.axes = axes
         self.mpl_artists = []
 
-    def notify_start_computation(self, delay=500):
+    def notify_start_computation(self):
         """
         Broadcast a message to indicate that this layer artist has started a
         computation (typically used in conjunction with asynchronous
-        operations). A message is only broadcast if the operation takes longer
-        than 500ms.
+        operations).
         """
-        self.state.layer.hub.broadcast(ComputationStartedMessage(self))
+        if self.state.layer is not None and self.state.layer.hub is not None:
+            self.state.layer.hub.broadcast(ComputationStartedMessage(self))
 
     def notify_end_computation(self):
         """
         Broadcast a message to indicate that this layer artist has ended a
         computation (typically used in conjunction with asynchronous
-        operations). If the computation was never started, this does nothing.
+        operations).
         """
-        self.state.layer.hub.broadcast(ComputationEndedMessage(self))
+        if self.state.layer is not None and self.state.layer.hub is not None:
+            self.state.layer.hub.broadcast(ComputationEndedMessage(self))
 
     def clear(self):
         for artist in self.mpl_artists:
