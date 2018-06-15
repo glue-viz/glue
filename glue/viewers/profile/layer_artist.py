@@ -108,6 +108,11 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _calculate_profile_postthread(self):
 
+        # If the worker has started running again, we should stop at this point
+        # since this function will get called again.
+        if self._worker.running:
+            return
+
         self.notify_end_computation()
 
         visible_data = self.state.profile
