@@ -171,6 +171,10 @@ class SubsetGroup(HubListener):
             s.broadcast(item)
 
     def __setattr__(self, attr, value):
+        # We terminate early here if the value is not None but hasn't changed
+        # to avoid broadcasting a message after.
+        if value is not None and value == getattr(self, attr, None):
+            return
         object.__setattr__(self, attr, value)
         if attr in ['subset_state', 'label', 'style']:
             self.broadcast(attr)
