@@ -52,11 +52,11 @@ class GlueMdiArea(QtWidgets.QMdiArea):
             application = self._application()
             if application is None:
                 return
-            if isinstance(layer, core.data.Data):
-                application.choose_new_data_viewer(layer)
-            else:
-                assert isinstance(layer, core.subset.Subset)
+            if isinstance(layer, core.subset.Subset):
                 application.choose_new_data_viewer(layer.data)
+            else:
+                assert isinstance(layer, core.data.BaseCartesianData)
+                application.choose_new_data_viewer(layer)
 
         if md.hasFormat(LAYER_MIME_TYPE):
             new_layer(md.data(LAYER_MIME_TYPE))

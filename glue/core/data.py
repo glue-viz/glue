@@ -53,6 +53,19 @@ class BaseCartesianData(object):
     at.
     """
 
+    def __init__(self):
+
+        # Metadata
+        self.meta = OrderedDict()
+
+        # Subsets of the data
+        self._subsets = []
+
+        # Hub that the data is attached to
+        self.hub = None
+
+        self.style = VisualAttributes(parent=self)
+
     @property
     def label(self):
         """
@@ -278,6 +291,92 @@ class BaseCartesianData(object):
     def data(self):
         return self
 
+    @contract(subset='isinstance(Subset)|None',
+              color='color|None',
+              label='string|None',
+              returns=Subset)
+    def new_subset(self, subset=None, color=None, label=None, **kwargs):
+        """
+        Create a new subset, and attach to self.
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+
+        :param subset: optional, reference subset or subset state.
+                       If provided, the new subset will copy the logic of
+                       this subset.
+
+        :returns: The new subset object
+        """
+        nsub = len(self.subsets)
+        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
+        label = label or "%s.%i" % (self.label, nsub + 1)
+        new_subset = Subset(self, color=color, label=label, **kwargs)
+        if subset is not None:
+            new_subset.subset_state = subset.subset_state.copy()
+
+        self.add_subset(new_subset)
+        return new_subset
+
+    @contract(subset='inst($Subset, $SubsetState)')
+    def add_subset(self, subset):
+        """Assign a pre-existing subset to this data object.
+
+        :param subset: A :class:`~glue.core.subset.Subset` or
+                       :class:`~glue.core.subset.SubsetState` object
+
+        If input is a :class:`~glue.core.subset.SubsetState`,
+        it will be wrapped in a new Subset automatically
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+        """
+
+        if subset in self.subsets:
+            return  # prevents infinite recursion
+        if isinstance(subset, SubsetState):
+            # auto-wrap state in subset
+            state = subset
+            subset = Subset(None)
+            subset.subset_state = state
+
+        self._subsets.append(subset)
+
+        if subset.data is not self:
+            subset.do_broadcast(False)
+            subset.data = self
+            subset.label = subset.label  # hacky. disambiguates name if needed
+
+        if self.hub is not None:
+            msg = SubsetCreateMessage(subset)
+            self.hub.broadcast(msg)
+
+        subset.do_broadcast(True)
+
+    @contract(attribute='string')
+    def broadcast(self, attribute):
+        """
+        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
+
+        :param attribute: Name of an attribute that has changed (or None)
+        :type attribute: str
+        """
+        if not self.hub:
+            return
+        msg = DataUpdateMessage(self, attribute=attribute)
+        self.hub.broadcast(msg)
+
+    @property
+    def subsets(self):
+        """
+        Tuple of subsets attached to this dataset
+        """
+        return tuple(self._subsets)
+
 
 class Data(BaseCartesianData):
     """
@@ -317,7 +416,9 @@ class Data(BaseCartesianData):
 
     def __init__(self, label="", coords=None, **kwargs):
 
-        super(Data, self).__init__()
+        super(Data, self).__init__(label=label)
+
+        self.label = label
 
         self._shape = ()
 
@@ -333,20 +434,7 @@ class Data(BaseCartesianData):
 
         self.id = ComponentIDDict(self)
 
-        # Metadata
-        self.meta = OrderedDict()
-
-        # Subsets of the data
-        self._subsets = []
-
-        # Hub that the data is attached to
-        self.hub = None
-
-        self.style = VisualAttributes(parent=self)
-
         self._coordinate_links = []
-
-        self.label = label
 
         self.edit_subset = None
 
@@ -373,13 +461,6 @@ class Data(BaseCartesianData):
             self._coords = value
             if len(self.components) > 0:
                 self._update_world_components(self.ndim)
-
-    @property
-    def subsets(self):
-        """
-        Tuple of subsets attached to this dataset
-        """
-        return tuple(self._subsets)
 
     @property
     def ndim(self):
@@ -989,85 +1070,6 @@ class Data(BaseCartesianData):
         Equivalent to :attr:`Data.components`
         """
         return ComponentIDList(self._components.keys())
-
-    @contract(subset='isinstance(Subset)|None',
-              color='color|None',
-              label='string|None',
-              returns=Subset)
-    def new_subset(self, subset=None, color=None, label=None, **kwargs):
-        """
-        Create a new subset, and attach to self.
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-
-        :param subset: optional, reference subset or subset state.
-                       If provided, the new subset will copy the logic of
-                       this subset.
-
-        :returns: The new subset object
-        """
-        nsub = len(self.subsets)
-        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
-        label = label or "%s.%i" % (self.label, nsub + 1)
-        new_subset = Subset(self, color=color, label=label, **kwargs)
-        if subset is not None:
-            new_subset.subset_state = subset.subset_state.copy()
-
-        self.add_subset(new_subset)
-        return new_subset
-
-    @contract(subset='inst($Subset, $SubsetState)')
-    def add_subset(self, subset):
-        """Assign a pre-existing subset to this data object.
-
-        :param subset: A :class:`~glue.core.subset.Subset` or
-                       :class:`~glue.core.subset.SubsetState` object
-
-        If input is a :class:`~glue.core.subset.SubsetState`,
-        it will be wrapped in a new Subset automatically
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-        """
-
-        if subset in self.subsets:
-            return  # prevents infinite recursion
-        if isinstance(subset, SubsetState):
-            # auto-wrap state in subset
-            state = subset
-            subset = Subset(None)
-            subset.subset_state = state
-
-        self._subsets.append(subset)
-
-        if subset.data is not self:
-            subset.do_broadcast(False)
-            subset.data = self
-            subset.label = subset.label  # hacky. disambiguates name if needed
-
-        if self.hub is not None:
-            msg = SubsetCreateMessage(subset)
-            self.hub.broadcast(msg)
-
-        subset.do_broadcast(True)
-
-    @contract(attribute='string')
-    def broadcast(self, attribute):
-        """
-        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
-
-        :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: str
-        """
-        if not self.hub:
-            return
-        msg = DataUpdateMessage(self, attribute=attribute)
-        self.hub.broadcast(msg)
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
