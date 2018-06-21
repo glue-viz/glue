@@ -36,7 +36,7 @@ from .test_state import clone
 class TestSubset(object):
 
     def setup_method(self, method):
-        self.data = MagicMock(spec=Data)
+        self.data = Data()
         self.data.hub = MagicMock()
         self.data.label = "data"
         Registry().clear()
@@ -48,7 +48,7 @@ class TestSubset(object):
         assert state.to_mask.call_count == 0
         s.subset_state = state
         s.to_mask()
-        state.to_mask.assert_called_once_with(self.data, None)
+        state.to_mask.assert_called_once_with(self.data, view=None)
 
     def test_subset_index_wraps_state(self):
         s = Subset(self.data)
@@ -94,11 +94,13 @@ class TestSubset(object):
         assert s._broadcasting
 
     def test_register_adds_subset_to_data(self):
+        self.data = MagicMock()
         s = Subset(self.data)
         s.register()
         s.data.add_subset.assert_called_once_with(s)
 
     def test_delete_without_hub(self):
+        self.data = MagicMock()
         self.data.hub = None
         s = Subset(self.data)
         s.register()
@@ -116,6 +118,7 @@ class TestSubset(object):
         """delete() broadcasts a SubsetDelteMessage"""
         s = Subset(self.data)
         s.register()
+        s.data.hub.broadcast.reset_mock()
         s.delete()
         assert s.data.hub.broadcast.call_count == 1
         args = s.data.hub.broadcast.call_args[0]
@@ -148,6 +151,7 @@ class TestSubset(object):
     def test_broadcast_ignore(self):
         """subset doesn't broadcast until do_broadcast(True)"""
         s = Subset(self.data)
+        s.data.hub.broadcast.reset_mock()
         s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 0
 
@@ -155,6 +159,7 @@ class TestSubset(object):
         """subset broadcasts after do_broadcast(True)"""
         s = Subset(self.data)
         s.do_broadcast(True)
+        s.data.hub.broadcast.reset_mock()
         s.broadcast('style')
         assert s.data.hub.broadcast.call_count == 1
 
@@ -163,6 +168,7 @@ class TestSubset(object):
         s.__del__()
 
     def test_getitem_empty(self):
+        self.data = MagicMock()
         s = Subset(self.data)
         s.to_index_list = MagicMock()
         s.to_index_list.return_value = []
@@ -314,8 +320,8 @@ class TestElementSubsetState(object):
 class TestSubsetIo(object):
 
     def setup_method(self, method):
-        self.data = MagicMock(spec=Data)
-        self.data.shape = (4, 4)
+        self.data = Data()
+        self.data['a'] = np.arange(16).reshape((4, 4))
         self.data.uuid = 'abcde'
         self.subset = Subset(self.data)
         inds = np.array([1, 2, 3])
