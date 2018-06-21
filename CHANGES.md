@@ -16,16 +16,22 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
+* Defined a new abstract base class for datasets, ``BaseCartesianData``,
+  which can be used to implement interfaces to datasets that may be
+  remote or may not be stored as regular cartesian data. [#1768]
+
 * Add a new method ``Data.compute_statistic`` which can be used
   to find scalar and array statistics on the data, and use for
   the profile viewer and the state limits helpers. [#1737]
+
+* Add a new method ``Data.compute_histogram`` which can be used
+  to find histograms of specific components, with or without
+  subsets applied. [#1739]
 
 * Compute profiles asynchronously to avoid holding up the UI,
   and in chunks to avoid excessive memory usage. [#1736]
 
 * Improved naming of components when merging datasets. [#1249]
-
-* Moved calculation of histograms to Data.compute_histogram. [#1739]
 
 * Fixed an issue that caused residual references to viewers
   after they were closed if they were accessed through the

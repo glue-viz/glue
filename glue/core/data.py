@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
+import abc
 import uuid
 import numpy as np
 import pandas as pd
@@ -34,12 +35,222 @@ from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
-__all__ = ['Data']
+__all__ = ['Data', 'BaseCartesianData']
 
 
-class Data(object):
+@six.add_metaclass(abc.ABCMeta)
+class BaseCartesianData(object):
+    """
+    Base class for any glue data object which indicates which methods should be
+    provided at a minimum.
 
-    """The basic data container in Glue.
+    The underlying data can be any kind of data (structured or unstructured) but
+    it needs to expose an interface that looks like a regular n-dimensional
+    cartesian dataset. This means exposing e.g. ``shape`` and ``ndim``, and
+    means that get_data can expect ndarray slices. Non-regular datasets should
+    therefore have the concept of 'virtual' pixel coordinates and should
+    typically match the highest resolution a user might want to access the data
+    at.
+    """
+
+    @property
+    def label(self):
+        """
+        The name of the dataset
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def shape(self):
+        """
+        The n-dimensional shape of the dataset, as a tuple.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def ndim(self):
+        """
+        The number of dimensions of the data, as an integer.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def size(self):
+        """
+        The size of the data (the product of the shape dimensions), as an integer.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_data(self, cid, view=None):
+        """
+        Get the data values for a given component
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data for
+        view
+            The 'view' on the data - anything that is considered a valid
+            Numpy slice/index.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_mask(self, subset_state, view=None):
+        """
+        Get a boolean mask for a given subset state.
+
+        Parameters
+        ----------
+        subset_state : `SubsetState`
+            The subset state to use to compute the mask
+        view
+            The 'view' on the mask - anything that is considered a valid
+            Numpy slice/index.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        available components in the data
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def coordinate_components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        coordinate components in the data
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def pixel_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        pixel coordinate components in the data
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def world_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        world coordinate components in the data
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
+                          finite=True, positive=False, percentile=None, view=None,
+                          random_subset=None):
+        """
+        Compute a statistic for the data.
+
+        Parameters
+        ----------
+        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+            The statistic to compute
+        cid : `ComponentID` or str
+            The component ID to compute the statistic on - if given as a string
+            this will be assumed to be for the component belonging to the dataset
+            (not external links).
+        subset_state : `SubsetState`
+            If specified, the statistic will only include the values that are in
+            the subset specified by this subset state.
+        axis : None or int or tuple of int
+            If specified, the axis/axes to compute the statistic over.
+        finite : bool, optional
+            Whether to include only finite values in the statistic. This should
+            be `True` to ignore NaN/Inf values
+        positive : bool, optional
+            Whether to include only (strictly) positive values in the statistic.
+            This is used for example when computing statistics of data shown in
+            log space.
+        percentile : float, optional
+            If ``statistic`` is ``'percentile'``, the ``percentile`` argument
+            should be given and specify the percentile to calculate in the
+            range [0:100]
+        random_subset : int, optional
+            If specified, this should be an integer giving the number of values
+            to use for the statistic. This can only be used if ``axis`` is `None`
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+        """
+        Compute an n-dimensional histogram with regularly spaced bins.
+
+        Parameters
+        ----------
+        cids : list of str or `ComponentID`
+            Component IDs to compute the histogram over
+        weights : str or ComponentID
+            Component IDs to use for the histogram weights
+        range : list of tuple
+            The ``(min, max)`` of the histogram range
+        bins : list of int
+            The number of bins
+        log : list of bool
+            Whether to compute the histogram in log space
+        subset_state : `SubsetState`, optional
+            If specified, the histogram will only take into account values in
+            the subset state.
+        """
+        raise NotImplementedError()
+
+    def __getitem__(self, key):
+        """
+        Shortcut syntax to access the numerical data in a component.
+        Equivalent to::
+
+            component = data.get_data(component_id)
+
+        The key can be either just a component name, component ID, or a
+        component name/ID and a view.
+        """
+
+        # Note: this method is generic and shouldn't need to be overriden by
+        # subclasses.
+
+        key, view = split_component_view(key)
+        if isinstance(key, six.string_types):
+            _k = key
+            key = self.find_component_id(key)
+            if key is None:
+                raise IncompatibleAttribute(_k)
+
+        return self.get_data(key, view=view)
+
+    def find_component_id(self, label):
+        """
+        Find a component ID by name.
+
+        This returns the associated ComponentID if label is found and unique,
+        and `None` otherwise.
+        """
+
+        # This is a simple implementation that relies on .components and should
+        # not need to be overriden
+
+        if isinstance(label, ComponentID):
+            return label
+
+        matches = [cid for cid in self.components if cid.label == label]
+
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            return None
+
+
+class Data(BaseCartesianData):
+    """
+    The basic data container in Glue.
 
     The data object stores data as a collection of
     :class:`~glue.core.component.Component` objects.  Each component stored in a
@@ -64,16 +275,16 @@ class Data(object):
         data[xid, [True, False, True]]
 
     See also: :ref:`data_tutorial`
+
+    Parameters
+    ----------
+    label : str
+        The name of the dataset
+    coords : :class:`~glue.core.coordinates.Coordinates`
+        The coordinates object to use to define world coordinates
     """
 
     def __init__(self, label="", coords=None, **kwargs):
-        """
-
-        :param label: label for data
-        :type label: str
-
-        Extra array-like keywords are extracted into components
-        """
 
         self._shape = ()
 
@@ -140,27 +351,18 @@ class Data(object):
 
     @property
     def ndim(self):
-        """
-        Dimensionality of the dataset
-        """
         return len(self.shape)
 
     @property
     def shape(self):
-        """
-        Tuple of array dimensions, like :attr:`numpy.ndarray.shape`
-        """
         return self._shape
 
     @property
     def label(self):
-        """ Convenience access to data set's label """
         return self._label
 
     @label.setter
     def label(self, value):
-        """ Set the label to value
-        """
         if getattr(self, '_label', None) != value:
             self._label = value
             self.broadcast(attribute='label')
@@ -169,9 +371,6 @@ class Data(object):
 
     @property
     def size(self):
-        """
-        Total number of elements in the dataset.
-        """
         return np.product(self.shape)
 
     @contract(component=Component)
@@ -193,7 +392,7 @@ class Data(object):
 
         # grab a small piece of data
         ind = tuple([slice(0, 1)] * self.ndim)
-        arr = self[cid, ind]
+        arr = self.get_data(cid, view=ind)
         return arr.dtype
 
     @contract(component_id=ComponentID)
@@ -939,36 +1138,17 @@ class Data(object):
                                  "to a different hub")
         object.__setattr__(self, name, value)
 
-    def __getitem__(self, key):
-        """ Shortcut syntax to access the numerical data in a component.
-        Equivalent to:
+    def get_data(self, cid, view=None):
 
-        ``component = data.get_component(component_id).data``
+        if isinstance(cid, ComponentLink):
+            return cid.compute(self, view)
 
-        :param key:
-          The component to fetch data from
-
-        :type key: :class:`~glue.core.component_id.ComponentID`
-
-        :returns: :class:`~numpy.ndarray`
-        """
-
-        key, view = split_component_view(key)
-        if isinstance(key, six.string_types):
-            _k = key
-            key = self.find_component_id(key)
-            if key is None:
-                raise IncompatibleAttribute(_k)
-
-        if isinstance(key, ComponentLink):
-            return key.compute(self, view)
-
-        if key in self._components:
-            comp = self._components[key]
-        elif key in self._externally_derivable_components:
-            comp = self._externally_derivable_components[key]
+        if cid in self._components:
+            comp = self._components[cid]
+        elif cid in self._externally_derivable_components:
+            comp = self._externally_derivable_components[cid]
         else:
-            raise IncompatibleAttribute(key)
+            raise IncompatibleAttribute(cid)
 
         if view is not None:
             result = comp[view]
@@ -979,6 +1159,9 @@ class Data(object):
                 result = comp.data
 
         return result
+
+    def get_mask(self, subset_state, view=None):
+        return subset_state.to_mask(self, view=view)
 
     def __setitem__(self, key, value):
         """
@@ -1240,7 +1423,7 @@ class Data(object):
             else:
                 mask = subset_state.to_mask(self, view)
                 if np.any(unbroadcast(mask)):
-                    data = self[cid, view]
+                    data = self.get_data(cid, view)
                 else:
                     if axis is None:
                         return np.nan
@@ -1250,7 +1433,7 @@ class Data(object):
                         final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
                         return broadcast_to(np.nan, final_shape)
         else:
-            data = self[cid, view]
+            data = self.get_data(cid, view=view)
             mask = None
 
         if axis is None and mask is None:
@@ -1300,9 +1483,9 @@ class Data(object):
             bins = bins[0]
             log = log[0]
 
-        x = self[cid]
+        x = self.get_data(cid)
         if weights is not None:
-            w = self[weights]
+            w = self.get_data(weights)
         else:
             w = None
 
