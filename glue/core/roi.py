@@ -1336,7 +1336,7 @@ class CategoricalROI(Roi):
 
         try:
             if indata.categorical:
-                return indata._categorical_data
+                return indata.data
             else:
                 return indata[:]
         except AttributeError:

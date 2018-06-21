@@ -96,6 +96,22 @@ class BaseCartesianData(object):
         """
         raise NotImplementedError()
 
+    def get_kind(self, cid):
+        """
+        Get the kind of data for a given component.
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data kind for
+
+        Returns
+        -------
+        kind : {'numerical', 'categorical', 'datetime'}
+            The kind of data for the given component ID.
+        """
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def get_mask(self, subset_state, view=None):
         """
@@ -1153,12 +1169,22 @@ class Data(BaseCartesianData):
         if view is not None:
             result = comp[view]
         else:
-            if comp.categorical:
-                result = comp.codes
-            else:
-                result = comp.data
+            result = comp.data
 
         return result
+
+    def get_kind(self, cid):
+
+        comp = self.get_component(cid)
+
+        if comp.numerical:
+            return 'numerical'
+        elif comp.categorical:
+            return 'categorical'
+        elif comp.datetime:
+            return 'datetime'
+        else:
+            raise TypeError("Unknown data kind")
 
     def get_mask(self, subset_state, view=None):
         return subset_state.to_mask(self, view=view)

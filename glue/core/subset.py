@@ -18,7 +18,8 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to, floodfill, combine_slices, polygon_line_intersections
+from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
+                        polygon_line_intersections, categorical_ndarray)
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -620,7 +621,7 @@ class CategoricalROISubsetState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        x = data.get_component(self.att)._categorical_data[view]
+        x = data.get_component(self.att).labels[view]
         result = self.roi.contains(x, None)
         assert x.shape == result.shape
         return result.ravel()
@@ -1053,6 +1054,8 @@ class CategorySubsetState(SubsetState):
     @memoize
     def to_mask(self, data, view=None):
         vals = data[self._attribute, view]
+        if isinstance(vals, categorical_ndarray):
+            vals = vals.codes
         result = np.in1d(vals.ravel(), self._values)
         return result.reshape(vals.shape)
 

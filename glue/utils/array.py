@@ -15,7 +15,8 @@ from glue.external.six.moves import range
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic']
+           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
+           'categorical_ndarray']
 
 
 def unbroadcast(array):
@@ -488,3 +489,32 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
             return function(data, percentile, axis=axis)
         else:
             return function(data, axis=axis)
+
+
+class categorical_ndarray(np.ndarray):
+    """
+    A Numpy array subclass that includes properties to find the categories and
+    unique integer codes for array values.
+    """
+
+    def __new__(cls, value, dtype=None, copy=True, order=None, subok=False,
+                ndmin=0):
+        return np.array(value, dtype=dtype, copy=copy, order=order,
+                        subok=True, ndmin=ndmin).view(categorical_ndarray)
+
+    def _update_categories_and_codes(self):
+        self._categories, self._codes = np.unique(self, return_inverse=True)
+        self._categories.setflags(write=False)
+        self._codes.setflags(write=False)
+
+    @property
+    def categories(self):
+        if not hasattr(self, '_categories'):
+            self._update_categories_and_codes()
+        return self._categories
+
+    @property
+    def codes(self):
+        if not hasattr(self, '_codes'):
+            self._update_categories_and_codes()
+        return self._codes

@@ -6,10 +6,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-
-from glue.core.util import row_lookup
-from glue.utils import (unique, shape_to_string, coerce_numeric, check_sorted,
-                        broadcast_to)
+from glue.utils import (shape_to_string, coerce_numeric,
+                        broadcast_to, categorical_ndarray)
 
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
@@ -367,48 +365,47 @@ class CategoricalComponent(Component):
         :jitter: Strategy for jittering the data
         """
 
+        # TOOD: deal with custom categories
+
         super(CategoricalComponent, self).__init__(None, units)
 
-        self._categorical_data = np.asarray(categorical_data)
-        if self._categorical_data.ndim > 1:
+        if isinstance(categorical_data, np.ndarray) and categorical_data.dtype.kind in 'SU':
+            self._data = categorical_ndarray(categorical_data, copy=False)
+        else:
+            self._data = categorical_ndarray(categorical_data, dtype=str)
+
+        if self._data.ndim > 1:
             raise ValueError("Categorical Data must be 1-dimensional")
 
-        self._categories = categories
+        self._data.setflags(write=False)
+
         self._jitter_method = jitter
         self._is_jittered = False
-        self._data = None
-        if self._categories is None:
-            self._update_categories()
-        else:
-            self._update_data()
 
     @property
     def codes(self):
         """
         The index of the category for each value in the array.
         """
-        return self._data
+        return self._data.codes
 
     @property
     def labels(self):
         """
         The original categorical data.
         """
-        return self._categorical_data
+        return self._data.view(np.ndarray)
 
     @property
     def categories(self):
         """
         The categories.
         """
-        return self._categories
+        return self._data.categories
 
     @property
     def data(self):
-        warnings.warn("The 'data' attribute is deprecated. Use 'codes' "
-                      "instead to access the underlying index of the "
-                      "categories")
-        return self.codes
+        return self._data
 
     @property
     def numeric(self):
@@ -418,67 +415,9 @@ class CategoricalComponent(Component):
     def categorical(self):
         return True
 
-    def _update_categories(self, categories=None):
-        """
-        :param categories: A sorted array of categories to find in the dataset.
-        If None the categories are the unique items in the data.
-        :return: None
-        """
-        if categories is None:
-            categories, inv = unique(self._categorical_data)
-            self._categories = categories
-            self._data = inv.astype(np.float)
-            self._data.setflags(write=False)
-            self.jitter(method=self._jitter_method)
-        else:
-            if check_sorted(categories):
-                self._categories = categories
-                self._update_data()
-            else:
-                raise ValueError("Provided categories must be Sorted")
-
-    def _update_data(self):
-        """
-        Converts the categorical data into the numeric representations given
-        self._categories
-        """
-        self._is_jittered = False
-
-        self._data = row_lookup(self._categorical_data, self._categories)
-        self.jitter(method=self._jitter_method)
-        self._data.setflags(write=False)
-
-    def jitter(self, method=None):
-        """
-        Jitter the data so the density of points can be easily seen in a
-        scatter plot.
-
-        :param method: None | 'uniform':
-
-        * None: No jittering is done (or any jittering is undone).
-        * uniform: A unformly distributed random variable (-0.5, 0.5)
-            is applied to each point.
-
-        :return: None
-        """
-
-        if method not in set(['uniform', None]):
-            raise ValueError('%s jitter not supported' % method)
-        self._jitter_method = method
-        seed = 1234567890
-        rand_state = np.random.RandomState(seed)
-
-        if (self._jitter_method is None) and self._is_jittered:
-            self._update_data()
-        elif (self._jitter_method is 'uniform') and not self._is_jittered:
-            iswrite = self._data.flags['WRITEABLE']
-            self._data.setflags(write=True)
-            self._data += rand_state.uniform(-0.5, 0.5, size=self._data.shape)
-            self._is_jittered = True
-            self._data.setflags(write=iswrite)
-
     def to_series(self, **kwargs):
-        """ Convert into a pandas.Series object.
+        """
+        Convert into a pandas.Series object.
 
         This will be converted as a dtype=np.object!
 
@@ -486,8 +425,7 @@ class CategoricalComponent(Component):
         :return: pandas.Series
         """
 
-        return pd.Series(self._categorical_data.ravel(),
-                         dtype=np.object, **kwargs)
+        return pd.Series(self.labels, dtype=np.object, **kwargs)
 
 
 class DateTimeComponent(Component):

@@ -55,7 +55,7 @@ def test_hdf5_loader_fromfile():
     assert datasets[0].label == 'data[/a/tab]'
     assert_array_equal(datasets[0]['e'], [3, 2, 1])
     assert_array_equal(datasets[0]['f'], [1.5, 2.5, 1.0])
-    assert_array_equal(datasets[0].get_component('g').labels, [b'a', b'b', b'c'])
+    assert_array_equal(datasets[0]['g'].categories, [b'a', b'b', b'c'])
 
     assert datasets[1].label == 'data[/x]'
     assert_array_equal(datasets[1]['x'], [1, 2, 3])

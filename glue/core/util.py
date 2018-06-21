@@ -270,7 +270,7 @@ def row_lookup(data, categories):
     Returns
     -------
     array
-      If result[i] is finite, then data[i] = categoreis[result[i]]
+      If result[i] is finite, then data[i] = categories[result[i]]
       Otherwise, data[i] is not in the categories list
     """
 
