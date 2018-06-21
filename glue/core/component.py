@@ -374,7 +374,7 @@ class CategoricalComponent(Component):
         else:
             self._data = categorical_ndarray(categorical_data, dtype=str)
 
-        if self._data.ndim > 1:
+        if self._data.ndim != 1:
             raise ValueError("Categorical Data must be 1-dimensional")
 
         self._data.setflags(write=False)

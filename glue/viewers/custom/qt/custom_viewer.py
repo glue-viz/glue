@@ -138,6 +138,7 @@ class AttributeWithInfo(np.ndarray):
         values = layer[cid, view]
         if isinstance(values, categorical_ndarray):
             categories = values.categories
+            values = values.codes
         else:
             categories = None
         return cls.make(cid, values, categories)

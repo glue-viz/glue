@@ -347,7 +347,7 @@ class ComponentIDComboHelper(ComboHelper):
             cids = [ChoiceSeparator('Main components')]
             for cid in data.primary_components:
                 if cid not in data.coordinate_components:
-                    if ((data.get_kind(cid) == 'numeric' and self.numeric) or
+                    if ((data.get_kind(cid) in ('numerical', 'datetime') and self.numeric) or
                             (data.get_kind(cid) == 'categorical' and self.categorical)):
                         cids.append(cid)
             if len(cids) > 1:
