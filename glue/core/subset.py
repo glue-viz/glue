@@ -633,11 +633,10 @@ class CategoricalROISubsetState(SubsetState):
         return result
 
     @staticmethod
-    def from_range(component, att, lo, hi):
+    def from_range(categories, att, lo, hi):
 
-        roi = CategoricalROI.from_range(component, lo, hi)
-        subset = CategoricalROISubsetState(roi=roi,
-                                           att=att)
+        roi = CategoricalROI.from_range(categories, lo, hi)
+        subset = CategoricalROISubsetState(roi=roi, att=att)
         return subset
 
     def __gluestate__(self, context):
@@ -1331,7 +1330,7 @@ def combine_multiple(subsets, operator):
         return combined
 
 
-def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
+def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_categories=None):
     """
     Given a 2D ROI and attributes on the x and y axis, determine the
     corresponding subset state.
@@ -1341,17 +1340,17 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
         if roi.ori == 'x':
             att = x_att
-            comp = x_comp
+            categories = x_categories
         else:
             att = y_att
-            comp = y_comp
+            categories = y_categories
 
-        if comp.categorical:
-            return CategoricalROISubsetState.from_range(comp, att, roi.min, roi.max)
+        if categories is not None:
+            return CategoricalROISubsetState.from_range(categories, att, roi.min, roi.max)
         else:
             return RangeSubsetState(roi.min, roi.max, att)
 
-    elif x_comp.categorical or y_comp.categorical:
+    elif x_categories is not None or y_categories is not None:
 
         if isinstance(roi, RectangularROI):
 
@@ -1361,8 +1360,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
             range1 = XRangeROI(roi.xmin, roi.xmax)
             range2 = YRangeROI(roi.ymin, roi.ymax)
 
-            subset1 = roi_to_subset_state(range1, x_att=x_att, x_comp=x_comp)
-            subset2 = roi_to_subset_state(range2, y_att=y_att, y_comp=y_comp)
+            subset1 = roi_to_subset_state(range1, x_att=x_att, x_categories=x_categories)
+            subset2 = roi_to_subset_state(range2, y_att=y_att, y_categories=y_categories)
 
             return AndState(subset1, subset2)
 
@@ -1376,24 +1375,24 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
             # The selection is polygon-like, which requires special care.
 
-            if x_comp.categorical and y_comp.categorical:
+            if x_categories is not None and y_categories is not None:
 
                 # For each category, we check which categories along the other
                 # axis fall inside the polygon:
 
                 selection = {}
 
-                for code, label in enumerate(x_comp.categories):
+                for code, label in enumerate(x_categories):
 
                     # Determine the coordinates of the points to check
-                    n_other = len(y_comp.categories)
+                    n_other = len(y_categories)
                     y = np.arange(n_other)
                     x = np.repeat(code, n_other)
 
                     # Determine which points are in the polygon, and which
                     # categories these correspond to
                     in_poly = roi.contains(x, y)
-                    categories = y_comp.categories[in_poly]
+                    categories = y_categories[in_poly]
 
                     if len(categories) > 0:
                         selection[label] = set(categories)
@@ -1416,18 +1415,18 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
                 selection = {}
 
-                if x_comp.categorical:
-                    cat_comp = x_comp
+                if x_categories is not None:
+                    categories = x_categories
                     cat_att = x_att
                     num_att = y_att
                     x, y = roi.to_polygon()
                 else:
-                    cat_comp = y_comp
+                    categories = y_categories
                     cat_att = y_att
                     num_att = x_att
                     y, x = roi.to_polygon()
 
-                for code, label in enumerate(cat_comp.categories):
+                for code, label in enumerate(categories):
 
                     # We determine all the numerical segments that represent the
                     # ensemble of points in y that fall in the polygon

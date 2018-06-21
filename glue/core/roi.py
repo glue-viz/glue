@@ -1377,7 +1377,7 @@ class CategoricalROI(Roi):
         self.categories = None
 
     @staticmethod
-    def from_range(cat_comp, lo, hi):
+    def from_range(categories, lo, hi):
         """
         Utility function to help construct the Roi from a range.
 
@@ -1398,8 +1398,7 @@ class CategoricalROI(Roi):
         hi = np.intp(np.ceil(hi) if hi > 0 else 0)
 
         roi = CategoricalROI()
-        cat_data = cat_comp.categories
-        roi.update_categories(cat_data[lo:hi])
+        roi.update_categories(categories[lo:hi])
 
         return roi
 

@@ -76,9 +76,8 @@ class HistogramViewer(MatplotlibDataViewer):
 
         roi_new = RangeROI(min=lo, max=hi, orientation='x')
 
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-
-        subset_state = roi_to_subset_state(roi_new, x_att=self.state.x_att, x_comp=x_comp)
+        subset_state = roi_to_subset_state(roi_new, x_att=self.state.x_att,
+                                           x_categories=self.state.x_categories)
 
         self.apply_subset_state(subset_state, use_current=use_current)
 

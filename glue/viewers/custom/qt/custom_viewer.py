@@ -88,7 +88,7 @@ from glue.core.subset import SubsetState
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.core.component_id import ComponentID
 
-from glue.utils import as_list, all_artists, new_artists
+from glue.utils import as_list, all_artists, new_artists, categorical_ndarray
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState, MatplotlibLayerState
@@ -113,13 +113,12 @@ class AttributeWithInfo(np.ndarray):
     """
 
     @classmethod
-    def make(cls, id, values, comp, categories=None):
+    def make(cls, id, values, categories=None):
         values = np.asarray(values)
         result = values.view(AttributeWithInfo)
         result.id = id
         result.values = values
         result.categories = categories
-        result._component = comp
         return result
 
     @classmethod
@@ -137,11 +136,11 @@ class AttributeWithInfo(np.ndarray):
             What slice into the data to use
         """
         values = layer[cid, view]
-        comp = layer.data.get_component(cid)
-        categories = None
-        if comp.categorical:
-            categories = comp.categories
-        return cls.make(cid, values, comp, categories)
+        if isinstance(values, categorical_ndarray):
+            categories = values.categories
+        else:
+            categories = None
+        return cls.make(cid, values, categories)
 
     def __gluestate__(self, context):
         return dict(cid=context.id(self.id))

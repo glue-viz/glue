@@ -185,12 +185,9 @@ class ImageViewer(MatplotlibDataViewer):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        y_comp = self.state.y_att.parent.get_component(self.state.y_att)
-
         subset_state = roi_to_subset_state(roi,
-                                           x_att=self.state.x_att, x_comp=x_comp,
-                                           y_att=self.state.y_att, y_comp=y_comp)
+                                           x_att=self.state.x_att,
+                                           y_att=self.state.y_att)
 
         self.apply_subset_state(subset_state)
 

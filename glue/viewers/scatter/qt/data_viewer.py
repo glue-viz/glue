@@ -72,12 +72,9 @@ class ScatterViewer(MatplotlibDataViewer):
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
                                   yfunc=mpl_to_datetime64 if y_date else None)
 
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        y_comp = self.state.y_att.parent.get_component(self.state.y_att)
-
         subset_state = roi_to_subset_state(roi,
-                                           x_att=self.state.x_att, x_comp=x_comp,
-                                           y_att=self.state.y_att, y_comp=y_comp)
+                                           x_att=self.state.x_att, x_categories=self.state.x_categories,
+                                           y_att=self.state.y_att, y_categories=self.state.y_categories)
 
         self.apply_subset_state(subset_state, use_current=use_current)
 
