@@ -24,7 +24,7 @@ def _data(layer, component):
     """
     result = layer[component]
     if layer.data.get_kind(component) == 'categorical':
-        result = comp.categories[result.astype(np.int)]
+        result = layer[component].categories[result.astype(np.int)]
     return result
 
 
