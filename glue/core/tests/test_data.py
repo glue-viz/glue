@@ -285,10 +285,10 @@ class TestData(object):
 
     def test_coordinate_links(self):
         links = self.data.coordinate_links
-        w0 = self.data[self.data.get_world_component_id(0)]
-        w1 = self.data[self.data.get_world_component_id(1)]
-        p0 = self.data[self.data.get_pixel_component_id(0)]
-        p1 = self.data[self.data.get_pixel_component_id(1)]
+        w0 = self.data[self.data.world_component_ids[0]]
+        w1 = self.data[self.data.world_component_ids[1]]
+        p0 = self.data[self.data.pixel_component_ids[0]]
+        p1 = self.data[self.data.pixel_component_ids[1]]
 
         w0prime = links[0].compute(self.data)
         p0prime = links[1].compute(self.data)
@@ -616,11 +616,11 @@ def test_foreign_pixel_components_not_in_visible():
     dc = DataCollection([d1, d2])
     dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
 
-    dc.add_link(LinkSame(d1.get_world_component_id(0),
-                         d2.get_world_component_id(0)))
+    dc.add_link(LinkSame(d1.world_component_ids[0],
+                         d2.world_component_ids[0]))
 
-    assert d2.get_pixel_component_id(0) not in d1.visible_components
-    np.testing.assert_array_equal(d1[d2.get_pixel_component_id(0)], [0])
+    assert d2.pixel_component_ids[0] not in d1.visible_components
+    np.testing.assert_array_equal(d1[d2.pixel_component_ids[0]], [0])
 
 
 def test_add_binary_component():

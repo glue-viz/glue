@@ -16,11 +16,11 @@ def test_1d_world_link():
     d2 = Data(label='d2', y=y)
     dc = DataCollection([d1, d2])
 
-    dc.add_link(LinkSame(d2.get_world_component_id(0), d1.id['x']))
+    dc.add_link(LinkSame(d2.world_component_ids[0], d1.id['x']))
 
-    assert d2.get_world_component_id(0) in d1.externally_derivable_components
-    np.testing.assert_array_equal(d1[d2.get_world_component_id(0)], x)
-    np.testing.assert_array_equal(d1[d2.get_pixel_component_id(0)], x)
+    assert d2.world_component_ids[0] in d1.externally_derivable_components
+    np.testing.assert_array_equal(d1[d2.world_component_ids[0]], x)
+    np.testing.assert_array_equal(d1[d2.pixel_component_ids[0]], x)
 
 
 def test_3d_world_link():
@@ -31,13 +31,13 @@ def test_3d_world_link():
 
     dc = DataCollection([cat, im])
 
-    dc.add_link(LinkSame(im.get_world_component_id(2), cat.id['x']))
-    dc.add_link(LinkSame(im.get_world_component_id(1), cat.id['y']))
-    dc.add_link(LinkSame(im.get_world_component_id(0), cat.id['z']))
+    dc.add_link(LinkSame(im.world_component_ids[2], cat.id['x']))
+    dc.add_link(LinkSame(im.world_component_ids[1], cat.id['y']))
+    dc.add_link(LinkSame(im.world_component_ids[0], cat.id['z']))
 
-    np.testing.assert_array_equal(cat[im.get_pixel_component_id(2)], x)
-    np.testing.assert_array_equal(cat[im.get_pixel_component_id(1)], y)
-    np.testing.assert_array_equal(cat[im.get_pixel_component_id(0)], z)
+    np.testing.assert_array_equal(cat[im.pixel_component_ids[2]], x)
+    np.testing.assert_array_equal(cat[im.pixel_component_ids[1]], y)
+    np.testing.assert_array_equal(cat[im.pixel_component_ids[0]], z)
 
 
 def test_2d_world_link():
@@ -49,8 +49,8 @@ def test_2d_world_link():
 
     dc = DataCollection([cat, im])
 
-    dc.add_link(LinkSame(im.get_world_component_id(0), cat.id['x']))
-    dc.add_link(LinkSame(im.get_world_component_id(1), cat.id['y']))
+    dc.add_link(LinkSame(im.world_component_ids[0], cat.id['x']))
+    dc.add_link(LinkSame(im.world_component_ids[1], cat.id['y']))
 
-    np.testing.assert_array_equal(cat[im.get_pixel_component_id(0)], x)
-    np.testing.assert_array_equal(cat[im.get_pixel_component_id(1)], y)
+    np.testing.assert_array_equal(cat[im.pixel_component_ids[0]], x)
+    np.testing.assert_array_equal(cat[im.pixel_component_ids[1]], y)

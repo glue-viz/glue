@@ -53,6 +53,9 @@ class BaseCartesianData(object):
     at.
     """
 
+    def __init__(self):
+        self.style = VisualAttributes(parent=self)
+
     @property
     def label(self):
         """
@@ -263,6 +266,21 @@ class BaseCartesianData(object):
         elif len(matches) > 1:
             return None
 
+    @contract(hub=Hub)
+    def register_to_hub(self, hub):
+        """ Connect to a hub.
+
+        This method usually doesn't have to be called directly, as
+        DataCollections manage the registration of data objects
+        """
+        if not isinstance(hub, Hub):
+            raise TypeError("input is not a Hub object: %s" % type(hub))
+        self.hub = hub
+
+    @property
+    def data(self):
+        return self
+
 
 class Data(BaseCartesianData):
     """
@@ -301,6 +319,8 @@ class Data(BaseCartesianData):
     """
 
     def __init__(self, label="", coords=None, **kwargs):
+
+        super(Data, self).__init__()
 
         self._shape = ()
 
@@ -967,18 +987,6 @@ class Data(BaseCartesianData):
         """
         return [self.get_component(cid).link for cid in self.derived_components]
 
-    @contract(axis=int, returns=ComponentID)
-    def get_pixel_component_id(self, axis):
-        """Return the pixel :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._pixel_component_ids[axis]
-
-    @contract(axis=int, returns=ComponentID)
-    def get_world_component_id(self, axis):
-        """Return the world :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._world_component_ids[axis]
-
     @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
@@ -1051,17 +1059,6 @@ class Data(BaseCartesianData):
             self.hub.broadcast(msg)
 
         subset.do_broadcast(True)
-
-    @contract(hub=Hub)
-    def register_to_hub(self, hub):
-        """ Connect to a hub.
-
-        This method usually doesn't have to be called directly, as
-        DataCollections manage the registration of data objects
-        """
-        if not isinstance(hub, Hub):
-            raise TypeError("input is not a Hub object: %s" % type(hub))
-        self.hub = hub
 
     @contract(attribute='string')
     def broadcast(self, attribute):

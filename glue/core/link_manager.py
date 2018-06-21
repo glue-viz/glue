@@ -234,6 +234,8 @@ class LinkManager(HubListener):
             data_collection = self.data_collection
 
         for data in data_collection:
+            if not isinstance(data, Data):
+                continue
             links = discover_links(data, self._links | self._inverse_links)
             comps = {}
             for cid, link in six.iteritems(links):
@@ -243,6 +245,8 @@ class LinkManager(HubListener):
 
         # Now update information about pixel-aligned data
         for data1 in data_collection:
+            if not isinstance(data, Data):
+                continue
             equivalent = {}
             for data2 in data_collection:
                 if data1 is not data2:
@@ -256,7 +260,7 @@ class LinkManager(HubListener):
         if self.data_collection is None:
             data_links = set()
         else:
-            data_links = set(link for data in self.data_collection for link in data.links)
+            data_links = set(link for data in self.data_collection for link in getattr(data, 'links', []))
         return data_links | self._external_links
 
     @property

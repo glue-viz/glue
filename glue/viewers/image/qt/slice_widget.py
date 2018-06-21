@@ -98,7 +98,7 @@ class MultiSliceWidgetHelper(object):
                     world_unit = None
                     world_warning = False
 
-                slider = SliceWidget(self.data.get_world_component_id(i).label,
+                slider = SliceWidget(self.data.world_component_ids[i].label,
                                      hi=self.data.shape[i] - 1, world=world,
                                      world_unit=world_unit, world_warning=world_warning)
 
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     data = Data(x=np.random.random((3, 50, 20, 5, 3)))
 
     viewer_state.reference_data = data
-    viewer_state.x_att = data.get_pixel_component_id(0)
-    viewer_state.y_att = data.get_pixel_component_id(3)
+    viewer_state.x_att = data.pixel_component_ids[0]
+    viewer_state.y_att = data.pixel_component_ids[3]
     viewer_state.slices = [0] * 5
 
     widget = MultiSliceWidgetHelper(viewer_state)
