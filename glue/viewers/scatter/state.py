@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
+
 from glue.core import Data
 
 from glue.config import colormaps
@@ -76,17 +78,17 @@ class ScatterViewerState(MatplotlibDataViewerState):
         """
         self.y_lim_helper.flip_limits()
 
-    def _get_x_components(self):
-        return self._get_components(self.x_att)
+    @property
+    def x_categories(self):
+        return self._categories(self.x_att)
 
-    def _get_y_components(self):
-        return self._get_components(self.y_att)
+    @property
+    def y_categories(self):
+        return self._categories(self.y_att)
 
-    def _get_components(self, cid):
+    def _categories(self, cid):
 
-        # Construct list of components over all layers
-
-        components = []
+        categories = []
 
         for layer_state in self.layers:
 
@@ -96,11 +98,43 @@ class ScatterViewerState(MatplotlibDataViewerState):
                 layer = layer_state.layer.data
 
             try:
-                components.append(layer.data.get_component(cid))
+                if layer.data.get_kind(cid) == 'categorical':
+                    categories.append(layer.data.get_data(cid).categories)
             except IncompatibleAttribute:
                 pass
 
-        return components
+        if len(categories) == 0:
+            return None
+        else:
+            return np.unique(np.hstack(categories))
+
+    @property
+    def x_kinds(self):
+        return self._component_kinds(self.x_att)
+
+    @property
+    def y_kinds(self):
+        return self._component_kinds(self.y_att)
+
+    def _component_kinds(self, cid):
+
+        # Construct list of component kinds over all layers
+
+        kinds = set()
+
+        for layer_state in self.layers:
+
+            if isinstance(layer_state.layer, Data):
+                layer = layer_state.layer
+            else:
+                layer = layer_state.layer.data
+
+            try:
+                kinds.add(layer.data.get_kind(cid))
+            except IncompatibleAttribute:
+                pass
+
+        return kinds
 
     def _layers_changed(self, *args):
 

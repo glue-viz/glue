@@ -24,11 +24,7 @@ def data_to_astropy_table(data, components=None):
         if components is not None and cid not in components:
             continue
 
-        comp = data.get_component(cid)
-        if comp.categorical:
-            values = comp.labels
-        else:
-            values = comp.data
+        values = data[cid]
 
         if mask is not None:
             values = values[mask]

@@ -79,11 +79,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
             c = self.columns[index.column()]
             idx = self.order[index.row()]
-            comp = self._data.get_component(c)
-            if comp.categorical:
-                comp = comp.labels
-            else:
-                comp = comp.data
+            comp = self._data[c]
             if isinstance(comp[idx], bytes):
                 return comp[idx].decode('ascii')
             else:
@@ -117,10 +113,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
     def sort(self, column, ascending):
         c = self.columns[column]
         comp = self._data.get_component(c)
-        if comp.categorical:
-            self.order = np.argsort(comp.labels)
-        else:
-            self.order = np.argsort(comp.data)
+        self.order = np.argsort(comp.data)
         if ascending == Qt.DescendingOrder:
             self.order = self.order[::-1]
         self.layoutChanged.emit()

@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
+from glue.core.component import CategoricalComponent
 from glue.core.exceptions import UndefinedROI
 from glue.utils import points_inside_poly, iterate_chunks
 
@@ -1335,7 +1336,7 @@ class CategoricalROI(Roi):
         """
 
         try:
-            if indata.categorical:
+            if isinstance(indata, CategoricalComponent):
                 return indata.data
             else:
                 return indata[:]

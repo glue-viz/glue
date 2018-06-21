@@ -23,8 +23,7 @@ def _data(layer, component):
     the remapped integers
     """
     result = layer[component]
-    comp = layer.data.get_component(component)
-    if comp.categorical:
+    if layer.data.get_kind(component) == 'categorical':
         result = comp.categories[result.astype(np.int)]
     return result
 
@@ -154,8 +153,8 @@ def export_scatter(viewer):
         if not layer.visible:
             continue
         l = layer.layer
-        xcat |= l.data.get_component(xatt).categorical
-        ycat |= l.data.get_component(yatt).categorical
+        xcat |= l.data.get_kind(xatt) == 'categorical'
+        ycat |= l.data.get_kind(yatt) == 'categorical'
 
         marker = dict(symbol=SYM.get(l.style.marker, 'circle'),
                       color=_color(l.style),

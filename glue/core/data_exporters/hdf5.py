@@ -39,14 +39,14 @@ def hdf5_writer(filename, data, components=None):
         if components is not None and cid not in components:
             continue
 
-        comp = data.get_component(cid)
-        if comp.categorical:
-            if comp.labels.dtype.kind == 'U':
-                values = np.char.encode(comp.labels, encoding='ascii', errors='replace')
+        if data.get_kind(cid) == 'categorical':
+            values = data[cid]
+            if values.dtype.kind == 'U':
+                values = np.char.encode(values, encoding='ascii', errors='replace')
             else:
-                values = comp.labels.copy()
+                values = values.copy()
         else:
-            values = comp.data.copy()
+            values = data[cid].copy()
 
         if mask is not None:
             if values.ndim == 1:

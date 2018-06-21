@@ -1174,10 +1174,7 @@ class InequalitySubsetState(SubsetState):
             except IncompatibleAttribute:
                 left = data[self._left, view]
             else:
-                if comp.categorical:
-                    left = comp.labels[view]
-                else:
-                    left = comp.data[view]
+                left = comp.data[view]
 
         if isinstance(self._right, (numbers.Number, six.string_types)):
             right = self._right
@@ -1187,10 +1184,7 @@ class InequalitySubsetState(SubsetState):
             except IncompatibleAttribute:
                 right = data[self._right, view]
             else:
-                if comp.categorical:
-                    right = comp.labels[view]
-                else:
-                    right = comp.data[view]
+                right = comp.data[view]
 
         return self._operator(left, right)
 

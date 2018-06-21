@@ -41,7 +41,7 @@ class ScatterViewer(MatplotlibDataViewer):
         if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'x', self.state._get_x_components(), self.state.x_log)
+            update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log, self.state.x_categories)
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
@@ -51,7 +51,7 @@ class ScatterViewer(MatplotlibDataViewer):
         if self.state.y_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'y', self.state._get_y_components(), self.state.y_log)
+            update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log, self.state.y_categories)
 
             if self.state.y_log:
                 self.state.y_axislabel = 'Log ' + self.state.y_att.label
@@ -65,8 +65,8 @@ class ScatterViewer(MatplotlibDataViewer):
         if len(self.layers) == 0:  # Force redraw to get rid of ROI
             return self.redraw()
 
-        x_date = any(comp.datetime for comp in self.state._get_x_components())
-        y_date = any(comp.datetime for comp in self.state._get_y_components())
+        x_date = 'datetime' in self.state.x_kinds
+        y_date = 'datetime' in self.state.y_kinds
 
         if x_date or y_date:
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,

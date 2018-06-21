@@ -364,7 +364,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, components, is_log):
+def update_ticks(axes, coord, kinds, is_log, categories):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.
@@ -390,8 +390,8 @@ def update_ticks(axes, coord, components, is_log):
     else:
         raise TypeError("coord must be one of x,y")
 
-    is_cat = any(comp.categorical for comp in components)
-    is_date = any(comp.datetime for comp in components)
+    is_cat = 'categorical' in kinds
+    is_date = 'datetime' in kinds
 
     if is_date:
         loc = AutoDateLocator()
@@ -402,17 +402,12 @@ def update_ticks(axes, coord, components, is_log):
         axis.set_major_locator(LogLocator())
         axis.set_major_formatter(LogFormatterMathtext())
     elif is_cat:
-        all_categories = np.empty((0,), dtype=np.object)
-        for comp in components:
-            all_categories = np.union1d(comp.categories, all_categories)
         locator = MaxNLocator(10, integer=True)
-        locator.view_limits(0, all_categories.shape[0])
-        format_func = partial(tick_linker, all_categories)
+        locator.view_limits(0, categories.shape[0])
+        format_func = partial(tick_linker, categories)
         formatter = FuncFormatter(format_func)
-
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
-        return all_categories.shape[0]
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())

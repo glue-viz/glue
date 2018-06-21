@@ -26,7 +26,7 @@ from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to)
+                        datetime64_to_mpl, broadcast_to, categorical_ndarray)
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1177,12 +1177,12 @@ class Data(BaseCartesianData):
 
         comp = self.get_component(cid)
 
-        if comp.numerical:
+        if comp.datetime:
+            return 'datetime'
+        elif comp.numeric:
             return 'numerical'
         elif comp.categorical:
             return 'categorical'
-        elif comp.datetime:
-            return 'datetime'
         else:
             raise TypeError("Unknown data kind")
 
@@ -1462,6 +1462,9 @@ class Data(BaseCartesianData):
             data = self.get_data(cid, view=view)
             mask = None
 
+        if isinstance(data, categorical_ndarray):
+            data = data.codes
+
         if axis is None and mask is None:
             # Since we are just finding overall statistics, not along axes, we
             # can remove any broadcasted dimension since these should not affect
@@ -1510,8 +1513,13 @@ class Data(BaseCartesianData):
             log = log[0]
 
         x = self.get_data(cid)
+        if isinstance(x, categorical_ndarray):
+            x = x.codes
+
         if weights is not None:
             w = self.get_data(weights)
+            if isinstance(w, categorical_ndarray):
+                w = w.codes
         else:
             w = None
 
