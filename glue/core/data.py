@@ -38,7 +38,8 @@ from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentI
 __all__ = ['Data', 'BaseCartesianData']
 
 
-class BaseCartesianData(object, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class BaseCartesianData(object):
     """
     Base class for any glue data object which indicates which methods should be
     provided at a minimum.
