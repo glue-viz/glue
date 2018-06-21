@@ -621,7 +621,7 @@ class CategoricalROISubsetState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        x = data.get_component(self.att).labels[view]
+        x = data[self.att, view]
         result = self.roi.contains(x, None)
         assert x.shape == result.shape
         return result.ravel()
@@ -731,12 +731,8 @@ class CategoricalROISubsetState2D(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels1 = data.get_component(self.att1).labels
-        labels2 = data.get_component(self.att2).labels
-
-        if view is not None:
-            labels1 = labels1[view]
-            labels2 = labels2[view]
+        labels1 = data[self.att1, view]
+        labels2 = data[self.att2, view]
 
         # Initialize empty mask
         mask = np.zeros(labels1.shape, dtype=bool)
@@ -800,7 +796,7 @@ class CategoricalMultiRangeSubsetState(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels = data.get_component(self.cat_att).labels
+        labels = data[self.cat_att]
         values = data[self.num_att]
 
         if view is not None:
@@ -1168,22 +1164,12 @@ class InequalitySubsetState(SubsetState):
         if isinstance(self._left, (numbers.Number, six.string_types)):
             left = self._left
         else:
-            try:
-                comp = data.get_component(self._left)
-            except IncompatibleAttribute:
-                left = data[self._left, view]
-            else:
-                left = comp.data[view]
+            left = data[self._left, view]
 
         if isinstance(self._right, (numbers.Number, six.string_types)):
             right = self._right
         else:
-            try:
-                comp = data.get_component(self._right)
-            except IncompatibleAttribute:
-                right = data[self._right, view]
-            else:
-                right = comp.data[view]
+            right = data[self._right, view]
 
         return self._operator(left, right)
 
