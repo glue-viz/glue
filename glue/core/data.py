@@ -53,9 +53,6 @@ class BaseCartesianData(object):
     at.
     """
 
-    def __init__(self):
-        self.style = VisualAttributes(parent=self)
-
     @property
     def label(self):
         """
@@ -349,7 +346,6 @@ class Data(BaseCartesianData):
 
         self._coordinate_links = []
 
-        self.data = self
         self.label = label
 
         self.edit_subset = None
