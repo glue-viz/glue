@@ -5,7 +5,7 @@ from .component import Component  # noqa
 from .component_id import ComponentID  # noqa
 from .component_link import ComponentLink  # noqa
 from .coordinates import Coordinates  # noqa  # noqa
-from .data import Data  # noqa
+from .data import BaseData, BaseCartesianData, Data  # noqa
 from .data_collection import DataCollection  # noqa
 from .hub import Hub, HubListener  # noqa
 from .link_manager import LinkManager  # noqa

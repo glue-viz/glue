@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 
 from glue.external.six.moves import queue
-from glue.core import Data
+from glue.core import BaseData
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -181,7 +181,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.notify_end_computation()
         self.redraw()
         if issubclass(exc[0], IncompatibleAttribute):
-            if isinstance(self.state.layer, Data):
+            if isinstance(self.state.layer, BaseData):
                 self.disable_invalid_attributes(self.state.attribute)
             else:
                 self.disable_incompatible_subset()

@@ -948,8 +948,8 @@ class SliceSubsetState(SubsetState):
         self._pad_slices()
 
     def _pad_slices(self):
-        from glue.core.data import Data
-        if isinstance(self.reference_data, Data) and len(self.slices) < self.reference_data.ndim:
+        from glue.core.data import BaseCartesianData
+        if isinstance(self.reference_data, BaseCartesianData) and len(self.slices) < self.reference_data.ndim:
             self.slices = self.slices + [slice(None)] * (self.reference_data.ndim - len(self.slices))
 
     def copy(self):

@@ -9,7 +9,7 @@ from matplotlib.patches import Rectangle
 
 from glue.utils import defer_draw
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -120,7 +120,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.notify_end_computation()
         self.redraw()
         if issubclass(exc[0], (IncompatibleAttribute, IndexError)):
-            if isinstance(self.state.layer, Data):
+            if isinstance(self.state.layer, BaseData):
                 self.disable_invalid_attributes(self._viewer_state.x_att)
             else:
                 self.disable_incompatible_subset()

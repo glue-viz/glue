@@ -7,7 +7,7 @@ from functools import wraps
 from glue.external.six import string_types
 from glue.core.session import Session
 from glue.core.hub import HubListener
-from glue.core import Data
+from glue.core import BaseData
 from glue.core.data_factories import load_data
 from glue.core.data_collection import DataCollection
 from glue.config import settings
@@ -33,7 +33,7 @@ def catch_error(msg):
 
 def as_flat_data_list(data):
     datasets = []
-    if isinstance(data, Data):
+    if isinstance(data, BaseData):
         datasets.append(data)
     else:
         for d in data:
@@ -198,7 +198,7 @@ class Application(HubListener):
         datasets = []
         for path in paths:
             result = load_data(path)
-            if isinstance(result, Data):
+            if isinstance(result, BaseData):
                 datasets.append(result)
             else:
                 datasets.extend(result)

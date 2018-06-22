@@ -16,7 +16,8 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
-* Defined a new abstract base class for datasets, ``BaseCartesianData``,
+* Defined a new abstract base class for all datasets, ``BaseData``,
+  and a base class ``BaseCartesianData``,
   which can be used to implement interfaces to datasets that may be
   remote or may not be stored as regular cartesian data. [#1768]
 

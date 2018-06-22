@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -124,7 +124,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
         for layer_state in self.layers:
 
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer = layer_state.layer
             else:
                 layer = layer_state.layer.data
@@ -152,7 +152,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
         for layer_state in self.layers:
 
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer = layer_state.layer
             else:
                 layer = layer_state.layer.data

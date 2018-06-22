@@ -13,7 +13,7 @@ from qtpy.QtCore import Qt
 
 from glue.core.application_base import Application
 from glue.core.message import ApplicationClosedMessage, DataCollectionMessage
-from glue.core import command, Data
+from glue.core import command, BaseData
 from glue.core.coordinates import WCSCoordinates
 from glue import env
 from glue.main import load_plugins
@@ -790,7 +790,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                 raise TypeError("Data loader should return list of "
                                 "Data objects")
             for item in data:
-                if not isinstance(item, Data):
+                if not isinstance(item, BaseData):
                     raise TypeError("Data loader should return list of "
                                     "Data objects")
             self.add_datasets(self.data_collection, data)

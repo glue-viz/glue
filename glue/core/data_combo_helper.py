@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import weakref
 
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 from glue.core.hub import HubListener
 from glue.core.message import (DataReorderComponentMessage,
                                ComponentsChangedMessage,
@@ -27,7 +27,7 @@ def unique_data_iter(datasets):
     """
     datasets_new = []
     for dataset in datasets:
-        if isinstance(dataset, Data):
+        if isinstance(dataset, BaseData):
             if dataset not in datasets_new:
                 datasets_new.append(dataset)
         else:

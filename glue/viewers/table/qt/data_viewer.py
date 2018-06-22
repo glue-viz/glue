@@ -9,7 +9,7 @@ from matplotlib.colors import ColorConverter
 
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
-from glue.core import Data
+from glue.core import BaseData, Data
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
@@ -92,7 +92,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
             # Find all subsets that this index is part of
             colors = []
             for layer_artist in self._table_viewer.layers[::-1]:
-                if isinstance(layer_artist.layer, Data):
+                if isinstance(layer_artist.layer, BaseData):
                     continue
                 if layer_artist.visible:
                     subset = layer_artist.layer
@@ -234,7 +234,7 @@ class TableViewer(DataViewer):
 
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 break
         else:
             return

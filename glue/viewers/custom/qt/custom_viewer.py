@@ -83,7 +83,7 @@ from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
 from glue.config import qt_client
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.core.subset import SubsetState
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.core.component_id import ComponentID
@@ -699,7 +699,7 @@ class CustomLayerArtist(MatplotlibLayerArtist):
 
         old = all_artists(self.axes.figure)
 
-        if isinstance(self.state.layer, Data):
+        if isinstance(self.state.layer, BaseData):
             a = self._coordinator.plot_data(layer=self.state.layer)
         else:
             a = self._coordinator.plot_subset(layer=self.state.layer, subset=self.state.layer)

@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -156,7 +156,7 @@ class ImageViewerState(MatplotlibDataViewerState):
         layer_state_by_data = defaultdict(list)
 
         for layer_state in self.layers:
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer_state_by_data[layer_state.layer].append(layer_state)
 
         for data, layer_states in layer_state_by_data.items():
@@ -235,7 +235,7 @@ class ImageViewerState(MatplotlibDataViewerState):
     def _set_reference_data(self):
         if self.reference_data is None:
             for layer in self.layers:
-                if isinstance(layer.layer, Data):
+                if isinstance(layer.layer, BaseData):
                     self.reference_data = layer.layer
                     return
 

@@ -6,7 +6,7 @@ import warnings
 from IPython import get_ipython
 
 from glue.core.hub import HubListener
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 from glue.core import command
 from glue.core.command import ApplySubsetState
 
@@ -46,7 +46,7 @@ class BaseViewer(HubListener):
         self._session.command_stack.do(cmd)
 
     def add_layer(self, layer):
-        if isinstance(layer, Data):
+        if isinstance(layer, BaseData):
             self.add_data(layer)
         elif isinstance(layer, Subset):
             self.add_subset(layer)
@@ -196,7 +196,7 @@ class Viewer(BaseViewer):
     def remove_data(self, data):
         with delay_callback(self.state, 'layers'):
             for layer_state in self.state.layers[::-1]:
-                if isinstance(layer_state.layer, Data):
+                if isinstance(layer_state.layer, BaseData):
                     if layer_state.layer is data:
                         self.state.layers.remove(layer_state)
                 else:
@@ -401,7 +401,7 @@ class Viewer(BaseViewer):
             else:
                 layers += '## Layer {0}\n\n'.format(ilayer + 1)
             if layer.visible and layer.enabled:
-                if isinstance(layer.layer, Data):
+                if isinstance(layer.layer, BaseData):
                     index = self.session.data_collection.index(layer.layer)
                     layers += "layer_data = data_collection[{0}]\n\n".format(index)
                 else:

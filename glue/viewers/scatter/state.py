@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import Data
+from glue.core import BaseData
 
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -92,7 +92,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         for layer_state in self.layers:
 
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer = layer_state.layer
             else:
                 layer = layer_state.layer.data
@@ -124,7 +124,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         for layer_state in self.layers:
 
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer = layer_state.layer
             else:
                 layer = layer_state.layer.data
