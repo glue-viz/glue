@@ -98,7 +98,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
-            if type(self.reference_data.coords) == Coordinates:
+            if (getattr(self.reference_data, 'coords', None) is None or
+                    type(self.reference_data.coords) == Coordinates):
                 self.x_att = self.reference_data.pixel_component_ids[0]
             else:
                 self.x_att = self.reference_data.world_component_ids[0]
