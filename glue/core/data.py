@@ -116,7 +116,6 @@ class BaseData(object):
         """
         raise NotImplementedError()
 
-
     def find_component_id(self, label):
         """
         Find a component ID by name.

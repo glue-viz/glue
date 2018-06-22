@@ -5,7 +5,6 @@ from collections import defaultdict
 import numpy as np
 
 from glue.core import BaseData, Coordinates
-from glue.core.component_id import PixelComponentID
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
