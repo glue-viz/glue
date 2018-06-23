@@ -234,7 +234,7 @@ class LinkManager(HubListener):
             data_collection = self.data_collection
 
         # Only keep actual Data instances since only they support links for now
-        data_collection = [data for data in data_collection if isinstance(data, Data)]
+        data_collection = [d for d in data_collection if isinstance(d, Data)]
 
         for data in data_collection:
             links = discover_links(data, self._links | self._inverse_links)
