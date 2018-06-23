@@ -68,6 +68,7 @@ class BaseData(object):
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     def get_kind(self, cid):
         """
         Get the kind of data for a given component.
@@ -85,36 +86,57 @@ class BaseData(object):
         raise NotImplementedError()
 
     @abc.abstractproperty
+    def main_components(self):
+        raise NotImplementedError()
+
+    @property
     def components(self):
         """
         A list of :class:`~glue.core.component_id.ComponentID` giving all
         available components in the data
         """
-        raise NotImplementedError()
+        return self.pixel_component_ids + self.world_component_ids + self.main_components
 
-    @abc.abstractproperty
+    @property
     def coordinate_components(self):
         """
         A list of :class:`~glue.core.component_id.ComponentID` giving all
         coordinate components in the data
         """
-        raise NotImplementedError()
+        return self.pixel_component_ids + self.world_component_ids
 
-    @abc.abstractproperty
+    @property
     def pixel_component_ids(self):
         """
         A list of :class:`~glue.core.component_id.ComponentID` giving all
         pixel coordinate components in the data
         """
-        raise NotImplementedError()
+        if not hasattr(self, '_pixel_component_ids'):
+            self._pixel_component_ids = []
+            for i in range(self.ndim):
+                pid = PixelComponentID(i, 'Pixel Axis {0}'.format(i), parent=self)
+                self._pixel_component_ids.append(pid)
+        return self._pixel_component_ids
 
-    @abc.abstractproperty
+    @property
     def world_component_ids(self):
         """
         A list of :class:`~glue.core.component_id.ComponentID` giving all
         world coordinate components in the data
         """
-        raise NotImplementedError()
+        return []
+
+    @property
+    def derived_components(self):
+        return []
+
+    @property
+    def primary_components(self):
+        return [cid for cid in self.components if cid not in self.derived_components]
+
+    @property
+    def visible_components(self):
+        return self.main_components
 
     def find_component_id(self, label):
         """
@@ -264,21 +286,20 @@ class BaseCartesianData(BaseData):
         """
         raise NotImplementedError()
 
-    @abc.abstractproperty
+    @property
     def ndim(self):
         """
         The number of dimensions of the data, as an integer.
         """
-        raise NotImplementedError()
+        return len(self.shape)
 
-    @abc.abstractproperty
+    @property
     def size(self):
         """
         The size of the data (the product of the shape dimensions), as an integer.
         """
-        raise NotImplementedError()
+        return np.product(self.shape)
 
-    @abc.abstractmethod
     def get_data(self, cid, view=None):
         """
         Get the data values for a given component
@@ -291,7 +312,12 @@ class BaseCartesianData(BaseData):
             The 'view' on the data - anything that is considered a valid
             Numpy slice/index.
         """
-        raise NotImplementedError()
+        if cid in self.pixel_component_ids:
+            shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
+            pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
+            return broadcast_to(pix, self.shape)[view]
+        else:
+            raise IncompatibleAttribute(cid)
 
     @abc.abstractmethod
     def get_mask(self, subset_state, view=None):
