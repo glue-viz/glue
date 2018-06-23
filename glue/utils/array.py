@@ -16,7 +16,7 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
            'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
-           'categorical_ndarray']
+           'categorical_ndarray', 'index_lookup']
 
 
 def unbroadcast(array):
@@ -498,13 +498,17 @@ class categorical_ndarray(np.ndarray):
     """
 
     def __new__(cls, value, dtype=None, copy=True, order=None, subok=False,
-                ndmin=0):
-        return np.array(value, dtype=dtype, copy=copy, order=order,
-                        subok=True, ndmin=ndmin).view(categorical_ndarray)
+                ndmin=0, categories=None):
+        result = np.array(value, dtype=dtype, copy=copy, order=order,
+                          subok=True, ndmin=ndmin).view(categorical_ndarray)
+        if categories is not None:
+            result.categories = categories
+        return result
 
     def _update_categories_and_codes(self):
         self._categories, self._codes = np.unique(self, return_inverse=True)
         self._categories.setflags(write=False)
+        self._codes = self._codes.astype(float)
         self._codes.setflags(write=False)
 
     @property
@@ -513,8 +517,44 @@ class categorical_ndarray(np.ndarray):
             self._update_categories_and_codes()
         return self._categories
 
+    @categories.setter
+    def categories(self, value):
+        self._categories = value
+        self._codes = index_lookup(self, value)
+
     @property
     def codes(self):
         if not hasattr(self, '_codes'):
             self._update_categories_and_codes()
         return self._codes
+
+
+def index_lookup(data, items):
+    """
+    Lookup which index in items each data value is equal to
+
+    Parameters
+    ----------
+    data
+        An array-like object
+    items
+        Array-like of unique values
+
+    Returns
+    -------
+    array
+        If result[i] is finite, then data[i] = categories[result[i]]
+        Otherwise, data[i] is not in the categories list
+    """
+
+    # np.searchsorted doesn't work on mixed types in Python3
+
+    ndata, ncat = len(data), len(items)
+    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
+    cats = pd.DataFrame({'items': items,
+                         'cat_row': np.arange(ncat)})
+
+    m = pd.merge(data, cats, left_on='data', right_on='items')
+    result = np.zeros(ndata, dtype=float) * np.nan
+    result[np.array(m.row)] = m.cat_row
+    return result

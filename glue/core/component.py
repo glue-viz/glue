@@ -369,9 +369,9 @@ class CategoricalComponent(Component):
         super(CategoricalComponent, self).__init__(None, units)
 
         if isinstance(categorical_data, np.ndarray) and categorical_data.dtype.kind in 'SU':
-            self._data = categorical_ndarray(categorical_data, copy=False)
+            self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
         else:
-            self._data = categorical_ndarray(categorical_data, dtype=str)
+            self._data = categorical_ndarray(categorical_data, dtype=str, categories=categories)
 
         if self._data.ndim != 1:
             raise ValueError("Categorical Data must be 1-dimensional")

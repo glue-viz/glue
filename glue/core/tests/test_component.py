@@ -134,18 +134,18 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.array_data)
         np.testing.assert_equal(cat_comp.categories, np.asarray(['a', 'b']))
         np.testing.assert_equal(cat_comp.codes, np.array([0, 0, 1, 1]))
-        assert cat_comp.codes.dtype == np.int64
+        assert cat_comp.codes.dtype == np.float
 
-    # def test_accepts_provided_grouping(self):
-    #     ncategories = ['b', 'c']
-    #     cat_data = list('aaabbbcccddd')
-    #     cat_comp = CategoricalComponent(cat_data, categories=ncategories)
-    #
-    #     assert cat_comp.categories == ncategories
-    #     assert np.all(np.isnan(cat_comp.codes[:3]))
-    #     assert np.all(cat_comp.codes[3:6] == 0)
-    #     assert np.all(cat_comp.codes[6:9] == 1)
-    #     assert np.all(np.isnan(cat_comp.codes[9:]))
+    def test_accepts_provided_grouping(self):
+        ncategories = ['b', 'c']
+        cat_data = list('aaabbbcccddd')
+        cat_comp = CategoricalComponent(cat_data, categories=ncategories)
+
+        assert cat_comp.categories == ncategories
+        assert np.all(np.isnan(cat_comp.codes[:3]))
+        assert np.all(cat_comp.codes[3:6] == 0)
+        assert np.all(cat_comp.codes[6:9] == 1)
+        assert np.all(np.isnan(cat_comp.codes[9:]))
 
 
 class TestCoordinateComponent(object):

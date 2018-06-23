@@ -17,7 +17,7 @@ from glue.utils import nanmin, nanmax
 
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
-           "row_lookup", 'small_view', 'small_view_array', 'visible_limits',
+           'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
 
 
@@ -254,37 +254,6 @@ def disambiguate(label, taken):
         candidate = label + (suffix % i)
         if candidate not in taken:
             return candidate
-
-
-def row_lookup(data, categories):
-    """
-    Lookup which row in categories each data item is equal to
-
-    Parameters
-    ----------
-    data
-        An array-like object
-    categories
-        Array-like of unique values
-
-    Returns
-    -------
-    array
-      If result[i] is finite, then data[i] = categories[result[i]]
-      Otherwise, data[i] is not in the categories list
-    """
-
-    # np.searchsorted doesn't work on mixed types in Python3
-
-    ndata, ncat = len(data), len(categories)
-    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
-    cats = pd.DataFrame({'categories': categories,
-                         'cat_row': np.arange(ncat)})
-
-    m = pd.merge(data, cats, left_on='data', right_on='categories')
-    result = np.zeros(ndata, dtype=float) * np.nan
-    result[np.array(m.row)] = m.cat_row
-    return result
 
 
 def small_view(data, attribute):
