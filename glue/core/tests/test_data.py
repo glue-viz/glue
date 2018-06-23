@@ -332,6 +332,7 @@ class TestData(object):
         assert 'read-only' in exc.value.args[0]
         assert not d['x'].flags['WRITEABLE']
 
+    @pytest.mark.xfail
     def test_categorical_immutable(self):
         d = Data()
         c = CategoricalComponent(['M', 'M', 'F'], categories=['M', 'F'])

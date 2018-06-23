@@ -497,6 +497,8 @@ class categorical_ndarray(np.ndarray):
     unique integer codes for array values.
     """
 
+    _jitter = None
+
     def __new__(cls, value, dtype=None, copy=True, order=None, subok=False,
                 ndmin=0, categories=None):
         result = np.array(value, dtype=dtype, copy=copy, order=order,
@@ -506,7 +508,7 @@ class categorical_ndarray(np.ndarray):
         return result
 
     def _update_categories_and_codes(self):
-        self._categories, self._codes = np.unique(self, return_inverse=True)
+        self._categories, self._codes = unique(self)
         self._categories.setflags(write=False)
         self._codes = self._codes.astype(float)
         self._codes.setflags(write=False)
@@ -526,7 +528,29 @@ class categorical_ndarray(np.ndarray):
     def codes(self):
         if not hasattr(self, '_codes'):
             self._update_categories_and_codes()
-        return self._codes
+        if self._jitter is None:
+            return self._codes
+        else:
+            return self._codes + self._jitter
+
+    def jitter(self, method=None):
+        """
+        Jitter the codes.
+
+        Parameters
+        ----------
+        method : {None, 'uniform'}
+            If `None`, not jittering is done (or any jittering is undone).
+            If ``'uniform'``, the codes are randomized by a uniformly
+            distributed random variable.
+        """
+        if method is None:
+            self._jitter = None
+        elif method == 'uniform':
+            self._jitter = np.random.random(self.shape)
+            self._jitter -= 0.5
+        else:
+            raise ValueError("method should be None or 'uniform'")
 
 
 def index_lookup(data, items):

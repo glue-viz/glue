@@ -111,7 +111,7 @@ def test_csv_pandas_factory():
         d = df.load_data(fname, factory=df.pandas_read_table)
     assert d['a'].dtype == np.int64
     assert d['b'].dtype == np.float
-    assert d['c'].dtype.kind in 'SU'
+    assert d['c'].dtype == np.object
     cat_comp = d.find_component_id('c')
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
     correct_cats = np.unique(np.asarray(['some', 'categorical',

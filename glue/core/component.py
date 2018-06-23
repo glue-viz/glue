@@ -368,18 +368,12 @@ class CategoricalComponent(Component):
 
         super(CategoricalComponent, self).__init__(None, units)
 
-        if isinstance(categorical_data, np.ndarray) and categorical_data.dtype.kind in 'SU':
-            self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
-        else:
-            self._data = categorical_ndarray(categorical_data, dtype=str, categories=categories)
+        self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
 
         if self._data.ndim != 1:
             raise ValueError("Categorical Data must be 1-dimensional")
 
-        self._data.setflags(write=False)
-
-        self._jitter_method = jitter
-        self._is_jittered = False
+        self.jitter(method=jitter)
 
     @property
     def codes(self):
@@ -413,6 +407,21 @@ class CategoricalComponent(Component):
     @property
     def categorical(self):
         return True
+
+    def jitter(self, method=None):
+        """
+        Jitter the codes so the density of points can be easily seen in a
+        scatter plot for example.
+
+        Parameters
+        ----------
+        method : {None, 'uniform'}
+            If `None`, not jittering is done (or any jittering is undone).
+            If ``'uniform'``, the codes are randomized by a uniformly
+            distributed random variable.
+        """
+        self._data.jitter(method=method)
+        self.jitter_method = method
 
     def to_series(self, **kwargs):
         """

@@ -147,6 +147,44 @@ class TestCategoricalComponent(object):
         assert np.all(cat_comp.codes[6:9] == 1)
         assert np.all(np.isnan(cat_comp.codes[9:]))
 
+    def test_uniform_jitter(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
+        cat_comp.jitter(method='uniform')
+        assert np.all(cat_comp.codes != second_comp.codes), "Didn't jitter data!"
+
+    def test_unjitter_data(self):
+        cat_comp = CategoricalComponent(self.array_data)
+        second_comp = CategoricalComponent(self.array_data)
+
+        cat_comp.jitter(method='uniform')
+        delta = np.abs(cat_comp.codes - second_comp.codes).sum()
+        assert delta > 0
+
+        cat_comp.jitter(method=None)
+        np.testing.assert_equal(cat_comp.codes,
+                                second_comp.codes,
+                                "Didn't un-jitter data!")
+
+    def test_jitter_on_init(self):
+        cat_comp = CategoricalComponent(self.array_data, jitter='uniform')
+        second_comp = CategoricalComponent(self.array_data)
+        assert np.all(cat_comp.codes != second_comp.codes)
+
+    def test_object_dtype(self):
+        d = np.array([1, 3, 3, 1, 'a', 'b', 'a'], dtype=object)
+        c = CategoricalComponent(d)
+
+        np.testing.assert_array_equal(c.categories,
+                                      np.array([1, 3, 'a', 'b'], dtype=object))
+        np.testing.assert_array_equal(c.codes, [0, 1, 1, 0, 2, 3, 2])
+
+    def test_valueerror_on_bad_jitter(self):
+
+        with pytest.raises(ValueError):
+            cat_comp = CategoricalComponent(self.array_data)
+            cat_comp.jitter(method='this will never be a jitter method')
+
 
 class TestCoordinateComponent(object):
 

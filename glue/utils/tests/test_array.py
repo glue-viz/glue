@@ -315,3 +315,11 @@ def test_categorical_ndarray():
     assert_equal(array, ['a', 'b', 'c', 'b', 'b', 'a'])
     assert_equal(array.codes, [1, 0, np.nan, 0, 0, 1])
     assert_equal(array.categories, ['b', 'a'])
+
+    np.random.seed(12345)
+    array.jitter(method='uniform')
+    assert_allclose(array.codes, [1.42961609, -0.18362445, np.nan,
+                                  -0.29543972, 0.06772503, 1.0955447])
+
+    array.jitter(method=None)
+    assert_equal(array.codes, [1, 0, np.nan, 0, 0, 1])
