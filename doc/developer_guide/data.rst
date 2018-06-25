@@ -1,5 +1,3 @@
-:orphan:
-
 Defining your own data objects
 ==============================
 
@@ -166,5 +164,3 @@ on-the-fly, and does not take subset states into account. A glue session is then
 created with one of these data objects:
 
 .. literalinclude:: random_data.py
-
-Assuming that the above is in a file called
