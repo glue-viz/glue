@@ -65,7 +65,7 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.register_to_hub(self.hub)
 
     def init_subset(self):
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 1', cid > 0)
 
     @property
@@ -191,7 +191,7 @@ class BaseTestMatplotlibDataViewer(object):
         count_before = self.draw_count
 
         # Change the subset
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data.subsets[0].subset_state = cid > 1
 
         # Make sure the figure has been redrawn
@@ -535,7 +535,7 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.draw_count == 1
         data = Data(label=self.data.label)
         data.coords = self.data.coords
-        for cid in self.data.visible_components:
+        for cid in self.data.main_components:
             if self.data.get_kind(cid) == 'numerical':
                 data.add_component(self.data[cid] * 2, cid.label)
             else:

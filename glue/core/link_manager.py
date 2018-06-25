@@ -67,7 +67,7 @@ def discover_links(data, links):
     # TODO: try to add shortest paths first -- should
     # prevent lots of repeated checking
 
-    cids = set(data.main_components) + set(self.coordinate_components)
+    cids = set(data.main_components + data.coordinate_components)
     cid_links = {}
     depth = {}
     for cid in cids:

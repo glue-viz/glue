@@ -100,7 +100,7 @@ class ComponentSelector(QtWidgets.QWidget):
                 c_list.addItem(item)
                 c_list.set_data(item, c)
 
-        if len(set(data.derived_components) & set(data.visible_components)) > 0:
+        if len(data.derived_components) > 0:
             item = QtWidgets.QListWidgetItem('Derived components')
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)

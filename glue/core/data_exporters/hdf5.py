@@ -34,7 +34,7 @@ def hdf5_writer(filename, data, components=None):
 
     f = File(filename, 'w')
 
-    for cid in data.visible_components:
+    for cid in data.main_components + data.derived_components:
 
         if components is not None and cid not in components:
             continue
