@@ -490,6 +490,11 @@ class Subset(object):
 
 
 class SubsetState(object):
+    """
+    The base class for all subset states.
+
+    This defaults to an empty subset.
+    """
 
     def __init__(self):
         pass
@@ -536,6 +541,23 @@ class SubsetState(object):
 
 
 class RoiSubsetState(SubsetState):
+    """
+    A subset defined as the set of points in two dimensions that lie inside
+    a region of interest (ROI).
+
+    The two dimensions are defined as two numerical data attributes. The
+    parameters listed below can be accessed as attributes on instances of this
+    class.
+
+    Parameters
+    ----------
+    xatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the x axis.
+    yatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the y axis.
+    roi : :class:`~glue.core.roi.Roi`
+        The region of interest.
+    """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
     def __init__(self, xatt=None, yatt=None, roi=None):
@@ -608,6 +630,20 @@ class RoiSubsetState(SubsetState):
 
 
 class CategoricalROISubsetState(SubsetState):
+    """
+    A subset defined as the set of values for a categorical data attribute that
+    fall inside a categorical region of interest (ROI).
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    att : :class:`~glue.core.component_id.ComponentID`
+        The categorical data attribute used for the subset
+    roi : :class:`~glue.core.roi.CategoricalROI`
+        The categorical region of interest.
+    """
 
     def __init__(self, att=None, roi=None):
         super(CategoricalROISubsetState, self).__init__()
@@ -649,6 +685,22 @@ class CategoricalROISubsetState(SubsetState):
 
 
 class RangeSubsetState(SubsetState):
+    """
+    A subset defined as the set of values inside a range.
+
+    The range is defined as being inclusive (that is, values equal to the lower
+    or upper bounds are considered to be inside the subset). The parameters
+    listed below can be accessed as attributes on instances of this class.
+
+    Parameters
+    ----------
+    lo : `float`
+        The lower limit of the range
+    hi : `float`
+        The upper limit of the range
+    att : :class:`~glue.core.component_id.ComponentID`
+        The attribute being used for the subset
+    """
 
     def __init__(self, lo, hi, att=None):
         super(RangeSubsetState, self).__init__()
@@ -674,10 +726,17 @@ class MultiRangeSubsetState(SubsetState):
     """
     A subset state defined by multiple discontinuous ranges
 
+    The ranges are defined as being inclusive (that is, values equal to the
+    lower or upper bounds are considered to be inside the subset). The
+    parameters listed below can be accessed as attributes on instances of this
+    class.
+
     Parameters
     ----------
     pairs : list
         A list of (lo, hi) tuples
+    att : :class:`~glue.core.component_id.ComponentID`
+        The attribute being used for the subset
     """
 
     def __init__(self, pairs, att=None):
@@ -703,7 +762,11 @@ class MultiRangeSubsetState(SubsetState):
 
 class CategoricalROISubsetState2D(SubsetState):
     """
-    A 2D subset state where both attributes are categorical.
+    A subset defined as the set of values for two categorical data attributes
+    that fall inside a categorical region of interest (ROI).
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
 
     Parameters
     ----------
@@ -767,9 +830,12 @@ class CategoricalROISubsetState2D(SubsetState):
 
 class CategoricalMultiRangeSubsetState(SubsetState):
     """
-    A 2D subset state where one attribute is categorical and the other is
-    numerical, and where for each category, there are multiple possible subset
-    ranges.
+    A subset state defined by two attributes where one attribute is categorical
+    and the other is numerical, and where for each category, there are multiple
+    possible subset ranges.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
 
     Parameters
     ----------
@@ -839,6 +905,10 @@ class CategoricalMultiRangeSubsetState(SubsetState):
 
 
 class CompositeSubsetState(SubsetState):
+    """
+    The base class for combinations of subset states.
+    """
+
     op = None
 
     def __init__(self, state1, state2=None):
@@ -870,18 +940,43 @@ class CompositeSubsetState(SubsetState):
 
 
 class OrState(CompositeSubsetState):
+    """
+    An 'or' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.or_
 
 
 class AndState(CompositeSubsetState):
+    """
+    An 'and' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.and_
 
 
 class XorState(CompositeSubsetState):
+    """
+    An 'exclusive or' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.xor
 
 
 class InvertState(CompositeSubsetState):
+    """
+    A inverted subset state.
+
+    Values inside the original subset are now considered outside, and
+    vice-versa. The original subset state can be accessed using the attribute
+    ``state1``.
+    """
 
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
@@ -893,16 +988,21 @@ class InvertState(CompositeSubsetState):
 
 
 class MaskSubsetState(SubsetState):
-
     """
-    A subset defined by boolean pixel mask
+    A subset defined by a boolean mask.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    mask : `~numpy.ndarray`
+        The boolean mask to apply to the data
+    cids : iterable of :class:`~glue.core.component_id.ComponentID`
+        The component IDs along which the mask applies.
     """
 
     def __init__(self, mask, cids):
-        """
-        :param cids: List of ComponentIDs, defining the pixel coordinate space of the mask
-        :param mask: Boolean ndarray
-        """
         self.cids = cids
         self.mask = np.asarray(mask, dtype=bool)
 
@@ -939,7 +1039,17 @@ class MaskSubsetState(SubsetState):
 
 class SliceSubsetState(SubsetState):
     """
-    A subset defined by a slice in an array
+    A subset defined by a set of array slices.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    reference_data : :class:`~glue.core.data.Data`
+        The data in whose space the slices are defined
+    slices : iterable of `slice`
+        An iterable containing `slice` objects to apply to the data.
     """
 
     def __init__(self, reference_data, slices):
@@ -1040,6 +1150,21 @@ class SliceSubsetState(SubsetState):
 
 
 class CategorySubsetState(SubsetState):
+    """
+    A subset defined by the set of categorical values that are equal to
+    a set of cateogories.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    att : :class:`~glue.core.component_id.ComponentID`
+        The categorical data attribute used for the subset
+    categories : iterable
+        The categories that the attribute should be equal to. These should be
+        given as the integer codes, not the categorical labels.
+    """
 
     def __init__(self, attribute, values):
         super(CategorySubsetState, self).__init__()
@@ -1068,7 +1193,19 @@ class CategorySubsetState(SubsetState):
 
 
 class ElementSubsetState(SubsetState):
+    """
+    A subset defined by a set of indices to apply to the data.
 
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    indices
+        Any valid object that can be used to index a Numpy array
+    data
+        The data in whose space the indices are defined
+    """
     def __init__(self, indices=None, data=None):
         super(ElementSubsetState, self).__init__()
         self._indices = indices
@@ -1116,6 +1253,22 @@ class ElementSubsetState(SubsetState):
 
 
 class InequalitySubsetState(SubsetState):
+    """
+    A subset defined by a mathematical comparison of a attribute values to
+    a reference value or attribute values.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    left : float or `~glue.core.component_id.ComponentID` or str
+        The value or component on the left hand side of the comparison.
+    right : float or `~glue.core.component_id.ComponentID` or str
+        The value or component on the right hand side of the comparison.
+    op : operator
+        The comparison operator (from the :mod:`operator` module)
+    """
 
     def __init__(self, left, right, op):
         from glue.core.component_link import ComponentLink
@@ -1186,8 +1339,24 @@ class InequalitySubsetState(SubsetState):
 
 class FloodFillSubsetState(MaskSubsetState):
     """
-    A subset state representing a flood-fill operation, which is computed
-    on-the-fly.
+    A subset representing a flood-fill operation, which is computed on-the-fly.
+
+    The parameters listed below can be accessed as attributes on instances of
+    this class.
+
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
+        The data on which the flood fill is computed.
+    attribute : :class:`glue.core.component_id.ComponentID`
+        The attribute defining the values to use for the flood fill.
+    start_coords : tuple
+        The pixel coordinates of the starting point.
+    threshold : float
+        A value greater or equal to 1 describing the extend of the flood
+        filling. The range of values selected by the flood fill is ``start_value
+        * (2 -threshold)`` to ``start_value * threshold`` where ``start_value``
+        is the value of the data at ``start_coords``.
     """
 
     # TODO: we need to recompute the mask if the numerical values of the
@@ -1242,7 +1411,24 @@ class FloodFillSubsetState(MaskSubsetState):
 
 
 class RoiSubsetState3d(SubsetState):
-    """Subset state for a roi that implements .contains3d
+    """
+    A subset defined as the set of points in three dimensions that lie inside
+    a 3-d region of interest (ROI).
+
+    The three dimensions are defined as three numerical data attributes. The
+    parameters listed below can be accessed as attributes on instances of this
+    class.
+
+    Parameters
+    ----------
+    xatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the x axis.
+    yatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the y axis.
+    zatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the z axis.
+    roi : :class:`~glue.core.roi.Roi`
+        The region of interest (which should implement ``contains3d``)
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')
