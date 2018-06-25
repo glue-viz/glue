@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
@@ -89,7 +89,7 @@ class DendrogramViewerState(MatplotlibDataViewerState):
         self.order_att_helper.set_multiple_data(layers_data)
 
         for layer in layers_data:
-            if isinstance(layer, Data):
+            if isinstance(layer, BaseData):
                 self.reference_data = layer
                 break
 

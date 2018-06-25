@@ -26,7 +26,7 @@ from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to)
+                        datetime64_to_mpl, broadcast_to, categorical_ndarray)
 
 
 # Note: leave all the following imports for component and component_id since
@@ -35,11 +35,234 @@ from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
-__all__ = ['Data', 'BaseCartesianData']
+__all__ = ['Data', 'BaseCartesianData', 'BaseData']
 
 
 @six.add_metaclass(abc.ABCMeta)
-class BaseCartesianData(object):
+class BaseData(object):
+    """
+    Base class for any glue data object which indicates which methods should be
+    provided at a minimum.
+
+    For now, subclasses of BaseData are not guaranteed to work in glue, and you
+    should instead subclass BaseCartesianData.
+    """
+
+    def __init__(self):
+
+        # Metadata
+        self.meta = OrderedDict()
+
+        # Subsets of the data
+        self._subsets = []
+
+        # Hub that the data is attached to
+        self.hub = None
+
+        self.style = VisualAttributes(parent=self)
+
+    @property
+    def label(self):
+        """
+        The name of the dataset
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_kind(self, cid):
+        """
+        Get the kind of data for a given component.
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data kind for
+
+        Returns
+        -------
+        kind : {'numerical', 'categorical', 'datetime'}
+            The kind of data for the given component ID.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def main_components(self):
+        raise NotImplementedError()
+
+    @property
+    def components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        available components in the data
+        """
+        return self.pixel_component_ids + self.world_component_ids + self.main_components
+
+    @property
+    def coordinate_components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        coordinate components in the data
+        """
+        return self.pixel_component_ids + self.world_component_ids
+
+    @property
+    def pixel_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        pixel coordinate components in the data
+        """
+        if not hasattr(self, '_pixel_component_ids'):
+            self._pixel_component_ids = []
+            for i in range(self.ndim):
+                pid = PixelComponentID(i, 'Pixel Axis {0}'.format(i), parent=self)
+                self._pixel_component_ids.append(pid)
+        return self._pixel_component_ids
+
+    @property
+    def world_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        world coordinate components in the data
+        """
+        return []
+
+    @property
+    def derived_components(self):
+        return []
+
+    @property
+    def primary_components(self):
+        return [cid for cid in self.components if cid not in self.derived_components]
+
+    @property
+    def visible_components(self):
+        return self.main_components
+
+    def find_component_id(self, label):
+        """
+        Find a component ID by name.
+
+        This returns the associated ComponentID if label is found and unique,
+        and `None` otherwise.
+        """
+
+        # This is a simple implementation that relies on .components and should
+        # not need to be overriden
+
+        if isinstance(label, ComponentID):
+            return label
+
+        matches = [cid for cid in self.components if cid.label == label]
+
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            return None
+
+    @contract(hub=Hub)
+    def register_to_hub(self, hub):
+        """ Connect to a hub.
+
+        This method usually doesn't have to be called directly, as
+        DataCollections manage the registration of data objects
+        """
+        if not isinstance(hub, Hub):
+            raise TypeError("input is not a Hub object: %s" % type(hub))
+        self.hub = hub
+
+    @property
+    def data(self):
+        return self
+
+    @contract(subset='isinstance(Subset)|None',
+              color='color|None',
+              label='string|None',
+              returns=Subset)
+    def new_subset(self, subset=None, color=None, label=None, **kwargs):
+        """
+        Create a new subset, and attach to self.
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+
+        :param subset: optional, reference subset or subset state.
+                       If provided, the new subset will copy the logic of
+                       this subset.
+
+        :returns: The new subset object
+        """
+        nsub = len(self.subsets)
+        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
+        label = label or "%s.%i" % (self.label, nsub + 1)
+        new_subset = Subset(self, color=color, label=label, **kwargs)
+        if subset is not None:
+            new_subset.subset_state = subset.subset_state.copy()
+
+        self.add_subset(new_subset)
+        return new_subset
+
+    @contract(subset='inst($Subset, $SubsetState)')
+    def add_subset(self, subset):
+        """Assign a pre-existing subset to this data object.
+
+        :param subset: A :class:`~glue.core.subset.Subset` or
+                       :class:`~glue.core.subset.SubsetState` object
+
+        If input is a :class:`~glue.core.subset.SubsetState`,
+        it will be wrapped in a new Subset automatically
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+        """
+
+        if subset in self.subsets:
+            return  # prevents infinite recursion
+        if isinstance(subset, SubsetState):
+            # auto-wrap state in subset
+            state = subset
+            subset = Subset(None)
+            subset.subset_state = state
+
+        self._subsets.append(subset)
+
+        if subset.data is not self:
+            subset.do_broadcast(False)
+            subset.data = self
+            subset.label = subset.label  # hacky. disambiguates name if needed
+
+        if self.hub is not None:
+            msg = SubsetCreateMessage(subset)
+            self.hub.broadcast(msg)
+
+        subset.do_broadcast(True)
+
+    @contract(attribute='string')
+    def broadcast(self, attribute):
+        """
+        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
+
+        :param attribute: Name of an attribute that has changed (or None)
+        :type attribute: str
+        """
+        if not self.hub:
+            return
+        msg = DataUpdateMessage(self, attribute=attribute)
+        self.hub.broadcast(msg)
+
+    @property
+    def subsets(self):
+        """
+        Tuple of subsets attached to this dataset
+        """
+        return tuple(self._subsets)
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseCartesianData(BaseData):
     """
     Base class for any glue data object which indicates which methods should be
     provided at a minimum.
@@ -53,12 +276,8 @@ class BaseCartesianData(object):
     at.
     """
 
-    @property
-    def label(self):
-        """
-        The name of the dataset
-        """
-        raise NotImplementedError()
+    def __init__(self):
+        super(BaseCartesianData, self).__init__()
 
     @abc.abstractproperty
     def shape(self):
@@ -67,21 +286,20 @@ class BaseCartesianData(object):
         """
         raise NotImplementedError()
 
-    @abc.abstractproperty
+    @property
     def ndim(self):
         """
         The number of dimensions of the data, as an integer.
         """
-        raise NotImplementedError()
+        return len(self.shape)
 
-    @abc.abstractproperty
+    @property
     def size(self):
         """
         The size of the data (the product of the shape dimensions), as an integer.
         """
-        raise NotImplementedError()
+        return np.product(self.shape)
 
-    @abc.abstractmethod
     def get_data(self, cid, view=None):
         """
         Get the data values for a given component
@@ -94,7 +312,12 @@ class BaseCartesianData(object):
             The 'view' on the data - anything that is considered a valid
             Numpy slice/index.
         """
-        raise NotImplementedError()
+        if cid in self.pixel_component_ids:
+            shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
+            pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
+            return broadcast_to(pix, self.shape)[view]
+        else:
+            raise IncompatibleAttribute(cid)
 
     @abc.abstractmethod
     def get_mask(self, subset_state, view=None):
@@ -108,38 +331,6 @@ class BaseCartesianData(object):
         view
             The 'view' on the mask - anything that is considered a valid
             Numpy slice/index.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractproperty
-    def components(self):
-        """
-        A list of :class:`~glue.core.component_id.ComponentID` giving all
-        available components in the data
-        """
-        raise NotImplementedError()
-
-    @abc.abstractproperty
-    def coordinate_components(self):
-        """
-        A list of :class:`~glue.core.component_id.ComponentID` giving all
-        coordinate components in the data
-        """
-        raise NotImplementedError()
-
-    @abc.abstractproperty
-    def pixel_component_ids(self):
-        """
-        A list of :class:`~glue.core.component_id.ComponentID` giving all
-        pixel coordinate components in the data
-        """
-        raise NotImplementedError()
-
-    @abc.abstractproperty
-    def world_component_ids(self):
-        """
-        A list of :class:`~glue.core.component_id.ComponentID` giving all
-        world coordinate components in the data
         """
         raise NotImplementedError()
 
@@ -226,27 +417,6 @@ class BaseCartesianData(object):
 
         return self.get_data(key, view=view)
 
-    def find_component_id(self, label):
-        """
-        Find a component ID by name.
-
-        This returns the associated ComponentID if label is found and unique,
-        and `None` otherwise.
-        """
-
-        # This is a simple implementation that relies on .components and should
-        # not need to be overriden
-
-        if isinstance(label, ComponentID):
-            return label
-
-        matches = [cid for cid in self.components if cid.label == label]
-
-        if len(matches) == 1:
-            return matches[0]
-        elif len(matches) > 1:
-            return None
-
 
 class Data(BaseCartesianData):
     """
@@ -286,6 +456,10 @@ class Data(BaseCartesianData):
 
     def __init__(self, label="", coords=None, **kwargs):
 
+        super(Data, self).__init__()
+
+        self.label = label
+
         self._shape = ()
 
         # Components
@@ -300,21 +474,7 @@ class Data(BaseCartesianData):
 
         self.id = ComponentIDDict(self)
 
-        # Metadata
-        self.meta = OrderedDict()
-
-        # Subsets of the data
-        self._subsets = []
-
-        # Hub that the data is attached to
-        self.hub = None
-
-        self.style = VisualAttributes(parent=self)
-
         self._coordinate_links = []
-
-        self.data = self
-        self.label = label
 
         self.edit_subset = None
 
@@ -341,13 +501,6 @@ class Data(BaseCartesianData):
             self._coords = value
             if len(self.components) > 0:
                 self._update_world_components(self.ndim)
-
-    @property
-    def subsets(self):
-        """
-        Tuple of subsets attached to this dataset
-        """
-        return tuple(self._subsets)
 
     @property
     def ndim(self):
@@ -951,114 +1104,12 @@ class Data(BaseCartesianData):
         """
         return [self.get_component(cid).link for cid in self.derived_components]
 
-    @contract(axis=int, returns=ComponentID)
-    def get_pixel_component_id(self, axis):
-        """Return the pixel :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._pixel_component_ids[axis]
-
-    @contract(axis=int, returns=ComponentID)
-    def get_world_component_id(self, axis):
-        """Return the world :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._world_component_ids[axis]
-
     @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
         Equivalent to :attr:`Data.components`
         """
         return ComponentIDList(self._components.keys())
-
-    @contract(subset='isinstance(Subset)|None',
-              color='color|None',
-              label='string|None',
-              returns=Subset)
-    def new_subset(self, subset=None, color=None, label=None, **kwargs):
-        """
-        Create a new subset, and attach to self.
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-
-        :param subset: optional, reference subset or subset state.
-                       If provided, the new subset will copy the logic of
-                       this subset.
-
-        :returns: The new subset object
-        """
-        nsub = len(self.subsets)
-        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
-        label = label or "%s.%i" % (self.label, nsub + 1)
-        new_subset = Subset(self, color=color, label=label, **kwargs)
-        if subset is not None:
-            new_subset.subset_state = subset.subset_state.copy()
-
-        self.add_subset(new_subset)
-        return new_subset
-
-    @contract(subset='inst($Subset, $SubsetState)')
-    def add_subset(self, subset):
-        """Assign a pre-existing subset to this data object.
-
-        :param subset: A :class:`~glue.core.subset.Subset` or
-                       :class:`~glue.core.subset.SubsetState` object
-
-        If input is a :class:`~glue.core.subset.SubsetState`,
-        it will be wrapped in a new Subset automatically
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-        """
-
-        if subset in self.subsets:
-            return  # prevents infinite recursion
-        if isinstance(subset, SubsetState):
-            # auto-wrap state in subset
-            state = subset
-            subset = Subset(None)
-            subset.subset_state = state
-
-        self._subsets.append(subset)
-
-        if subset.data is not self:
-            subset.do_broadcast(False)
-            subset.data = self
-            subset.label = subset.label  # hacky. disambiguates name if needed
-
-        if self.hub is not None:
-            msg = SubsetCreateMessage(subset)
-            self.hub.broadcast(msg)
-
-        subset.do_broadcast(True)
-
-    @contract(hub=Hub)
-    def register_to_hub(self, hub):
-        """ Connect to a hub.
-
-        This method usually doesn't have to be called directly, as
-        DataCollections manage the registration of data objects
-        """
-        if not isinstance(hub, Hub):
-            raise TypeError("input is not a Hub object: %s" % type(hub))
-        self.hub = hub
-
-    @contract(attribute='string')
-    def broadcast(self, attribute):
-        """
-        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
-
-        :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: str
-        """
-        if not self.hub:
-            return
-        msg = DataUpdateMessage(self, attribute=attribute)
-        self.hub.broadcast(msg)
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
@@ -1153,12 +1204,22 @@ class Data(BaseCartesianData):
         if view is not None:
             result = comp[view]
         else:
-            if comp.categorical:
-                result = comp.codes
-            else:
-                result = comp.data
+            result = comp.data
 
         return result
+
+    def get_kind(self, cid):
+
+        comp = self.get_component(cid)
+
+        if comp.datetime:
+            return 'datetime'
+        elif comp.numeric:
+            return 'numerical'
+        elif comp.categorical:
+            return 'categorical'
+        else:
+            raise TypeError("Unknown data kind")
 
     def get_mask(self, subset_state, view=None):
         return subset_state.to_mask(self, view=view)
@@ -1436,6 +1497,9 @@ class Data(BaseCartesianData):
             data = self.get_data(cid, view=view)
             mask = None
 
+        if isinstance(data, categorical_ndarray):
+            data = data.codes
+
         if axis is None and mask is None:
             # Since we are just finding overall statistics, not along axes, we
             # can remove any broadcasted dimension since these should not affect
@@ -1484,8 +1548,13 @@ class Data(BaseCartesianData):
             log = log[0]
 
         x = self.get_data(cid)
+        if isinstance(x, categorical_ndarray):
+            x = x.codes
+
         if weights is not None:
             w = self.get_data(weights)
+            if isinstance(w, categorical_ndarray):
+                w = w.codes
         else:
             w = None
 

@@ -30,15 +30,15 @@ def test_wcs_3d_to_2d():
     d2.add_component(np.zeros((3, 2, 1)), label='test2')
 
     dc = DataCollection([d, d2])
-    dc.add_link(LinkSame(d.get_world_component_id(1),
-                         d2.get_world_component_id(1)))
-    dc.add_link(LinkSame(d.get_world_component_id(2),
-                         d2.get_world_component_id(2)))
+    dc.add_link(LinkSame(d.world_component_ids[1],
+                         d2.world_component_ids[1]))
+    dc.add_link(LinkSame(d.world_component_ids[2],
+                         d2.world_component_ids[2]))
 
-    py = d.get_pixel_component_id(1)
-    px = d.get_pixel_component_id(2)
-    py2 = d2.get_pixel_component_id(1)
-    px2 = d2.get_pixel_component_id(2)
+    py = d.pixel_component_ids[1]
+    px = d.pixel_component_ids[2]
+    py2 = d2.pixel_component_ids[1]
+    px2 = d2.pixel_component_ids[2]
 
     np.testing.assert_array_almost_equal(d2[px], d2[px2])
     np.testing.assert_array_almost_equal(d2[py], d2[py2])
@@ -59,11 +59,11 @@ def test_link_velocity():
     d2.add_component(np.zeros((3, 2, 1)), label='test2')
 
     dc = DataCollection([d, d2])
-    dc.add_link(LinkSame(d.get_world_component_id(0),
-                         d2.get_world_component_id(0)))
+    dc.add_link(LinkSame(d.world_component_ids[0],
+                         d2.world_component_ids[0]))
 
-    pz = d.get_pixel_component_id(0)
-    pz2 = d2.get_pixel_component_id(0)
+    pz = d.pixel_component_ids[0]
+    pz2 = d2.pixel_component_ids[0]
 
     np.testing.assert_array_almost_equal(d2[pz], d2[pz2])
 

@@ -7,6 +7,7 @@ from astropy.wcs import WCS
 from qtpy.QtWidgets import QMessageBox
 
 from glue.core.subset import roi_to_subset_state
+from glue.core.coordinates import Coordinates
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
@@ -137,7 +138,7 @@ class ImageViewer(MatplotlibDataViewer):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
-        ref_coords = self.state.reference_data.coords
+        ref_coords = getattr(self.state.reference_data, 'coords', None)
 
         if hasattr(ref_coords, 'wcs'):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords.wcs)
@@ -161,19 +162,22 @@ class ImageViewer(MatplotlibDataViewer):
             self.state.reset_limits()
 
         # Determine whether changing slices requires changing the WCS
-        ix = self.state.x_att.axis
-        iy = self.state.y_att.axis
-        x_dep = list(ref_coords.dependent_axes(ix))
-        y_dep = list(ref_coords.dependent_axes(iy))
-        if ix in x_dep:
-            x_dep.remove(ix)
-        if iy in x_dep:
-            x_dep.remove(iy)
-        if ix in y_dep:
-            y_dep.remove(ix)
-        if iy in y_dep:
-            y_dep.remove(iy)
-        self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
+        if ref_coords is None or type(ref_coords) == Coordinates:
+            self._changing_slice_requires_wcs_update = False
+        else:
+            ix = self.state.x_att.axis
+            iy = self.state.y_att.axis
+            x_dep = list(ref_coords.dependent_axes(ix))
+            y_dep = list(ref_coords.dependent_axes(iy))
+            if ix in x_dep:
+                x_dep.remove(ix)
+            if iy in x_dep:
+                x_dep.remove(iy)
+            if ix in y_dep:
+                y_dep.remove(ix)
+            if iy in y_dep:
+                y_dep.remove(iy)
+            self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
 
         self._wcs_set = True
 
@@ -185,12 +189,9 @@ class ImageViewer(MatplotlibDataViewer):
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
             return
 
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        y_comp = self.state.y_att.parent.get_component(self.state.y_att)
-
         subset_state = roi_to_subset_state(roi,
-                                           x_att=self.state.x_att, x_comp=x_comp,
-                                           y_att=self.state.y_att, y_comp=y_comp)
+                                           x_att=self.state.x_att,
+                                           y_att=self.state.y_att)
 
         self.apply_subset_state(subset_state)
 

@@ -142,10 +142,6 @@ class StateAttributeCacheHelper(object):
     def data_values(self):
         return self.data[self.component_id]
 
-    @property
-    def data_component(self):
-        return self.data.get_component(self.component_id)
-
     def invalidate_cache(self):
         self._cache.clear()
 
@@ -327,8 +323,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
             exclude = (100 - percentile) / 2.
 
-            data_component = self.data_component
-
             if percentile == 100:
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
@@ -348,7 +342,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 lower, upper = 0, 1
             else:
 
-                if data_component.categorical:
+                if self.data.get_kind(self.component_id) == 'categorical':
                     lower = np.floor(lower - 0.5) + 0.5
                     upper = np.ceil(upper + 0.5) - 0.5
 
@@ -389,7 +383,7 @@ class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
             if self.mode == 'values':
                 arg = self.data_values
             else:
-                arg = self.data_component
+                arg = self.data.get_component(self.component_id)
             self.set(value=self._function(arg))
 
 
@@ -421,13 +415,12 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
 
     def _apply_common_n_bin(self):
         for att in self._cache:
-            cmp = self.data.get_component(att)
-            if not cmp.categorical:
+            if not self.data.get_kind(att) == 'categorical':
                 self._cache[att]['n_bin'] = self._common_n_bin
 
     def _update_common_n_bin(self, common_n_bin):
         if common_n_bin:
-            if self.data_component.categorical:
+            if self.data.get_kind(self.component_id) == 'categorical':
                 self._common_n_bin = self._default_n_bin
             else:
                 self._common_n_bin = self.n_bin
@@ -441,21 +434,23 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
             self.set()
             return
 
-        comp = self.data_component
+        categorical = self.data.get_kind(self.component_id) == 'categorical'
 
         if 'n_bin' in properties:
             self.set()
-            if self._common_n_bin is not None and not comp.categorical:
+            if self._common_n_bin is not None and not categorical:
                 self._common_n_bin = properties['n_bin']
                 self._apply_common_n_bin()
 
         if 'attribute' in properties or force:
 
-            if comp.categorical:
+            if categorical:
 
-                n_bin = max(1, min(comp.categories.size, self._max_n_bin))
+                n_categories = self.data_values.categories.size
+
+                n_bin = max(1, min(n_categories, self._max_n_bin))
                 lower = -0.5
-                upper = lower + comp.categories.size
+                upper = lower + n_categories
 
             else:
 

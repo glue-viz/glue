@@ -1056,7 +1056,7 @@ def _save_categorical_component(component, context):
 
     return dict(categorical_data=context.do(component.labels),
                 categories=context.do(component.categories),
-                jitter_method=context.do(component._jitter_method),
+                jitter_method=context.do(component.jitter_method),
                 units=component.units)
 
 

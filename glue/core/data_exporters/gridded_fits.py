@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import Subset
+from glue.core import Subset, Data
 from glue.config import data_exporter
 from glue.core.coordinates import WCSCoordinates
 
@@ -59,20 +59,23 @@ def fits_writer(filename, data, components=None):
         if components is not None and cid not in components:
             continue
 
-        comp = data.get_component(cid)
-        if comp.categorical:
+        if data.get_kind(cid) == 'categorical':
             # TODO: emit warning
             continue
         else:
             # We need to cast to float otherwise we can't set the masked
             # values to NaN.
-            values = comp.data.astype(float, copy=True)
+            values = data[cid].astype(float, copy=True)
 
         if mask is not None:
             values[~mask] = np.nan
 
         # TODO: special behavior for PRIMARY?
-        header = make_component_header(comp, data_header) if data_header else None
+        if isinstance(data, Data):
+            comp = data.get_component(cid)
+            header = make_component_header(comp, data_header) if data_header else None
+        else:
+            header = None
         hdu = fits.ImageHDU(values, name=cid.label, header=header)
         hdus.append(hdu)
 

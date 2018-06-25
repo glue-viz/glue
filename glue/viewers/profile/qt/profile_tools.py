@@ -19,7 +19,7 @@ from glue.utils.qt import Worker
 from glue.viewers.common.qt.tool import Tool
 from glue.viewers.image.state import AggregateSlice
 from glue.core.aggregate import mom1, mom2
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 from glue.viewers.image.qt import ImageViewer
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.external.echo import SelectionCallbackProperty
@@ -279,7 +279,7 @@ class ProfileTools(QtWidgets.QWidget):
         datasets = set()
         for layer_artist in self.viewer.layers:
             if layer_artist.enabled and layer_artist.visible:
-                if isinstance(layer_artist.state.layer, Data):
+                if isinstance(layer_artist.state.layer, BaseData):
                     datasets.add(layer_artist.state.layer)
                 elif isinstance(layer_artist.state.layer, Subset):
                     datasets.add(layer_artist.state.layer.data)

@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import weakref
 
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 from glue.core.hub import HubListener
 from glue.core.message import (DataReorderComponentMessage,
                                ComponentsChangedMessage,
@@ -27,7 +27,7 @@ def unique_data_iter(datasets):
     """
     datasets_new = []
     for dataset in datasets:
-        if isinstance(dataset, Data):
+        if isinstance(dataset, BaseData):
             if dataset not in datasets_new:
                 datasets_new.append(dataset)
         else:
@@ -347,9 +347,8 @@ class ComponentIDComboHelper(ComboHelper):
             cids = [ChoiceSeparator('Main components')]
             for cid in data.primary_components:
                 if cid not in data.coordinate_components:
-                    comp = data.get_component(cid)
-                    if ((comp.numeric and self.numeric) or
-                            (comp.categorical and self.categorical)):
+                    if ((data.get_kind(cid) in ('numerical', 'datetime') and self.numeric) or
+                            (data.get_kind(cid) == 'categorical' and self.categorical)):
                         cids.append(cid)
             if len(cids) > 1:
                 if self.pixel_coord or self.world_coord or (self.derived and len(derived_components) > 0):

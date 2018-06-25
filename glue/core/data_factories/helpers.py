@@ -28,7 +28,7 @@ import os
 import warnings
 
 from glue.core.contracts import contract
-from glue.core.data import Component, Data
+from glue.core.data import Component, BaseData, Data
 from glue.config import auto_refresh, data_factory
 from glue.backends import get_timer
 from glue.utils import as_list
@@ -235,7 +235,7 @@ def load_data(path, factory=None, **kwargs):
         # pack other container types like astropy tables
         # into glue data objects
         for d in ds:
-            if isinstance(d, Data):
+            if isinstance(d, BaseData):
                 yield d
                 continue
             for item in parse_data(d, lbl):

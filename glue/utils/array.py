@@ -15,7 +15,8 @@ from glue.external.six.moves import range
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic']
+           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
+           'categorical_ndarray', 'index_lookup']
 
 
 def unbroadcast(array):
@@ -488,3 +489,96 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
             return function(data, percentile, axis=axis)
         else:
             return function(data, axis=axis)
+
+
+class categorical_ndarray(np.ndarray):
+    """
+    A Numpy array subclass that includes properties to find the categories and
+    unique integer codes for array values.
+    """
+
+    _jitter = None
+
+    def __new__(cls, value, dtype=None, copy=True, order=None, subok=False,
+                ndmin=0, categories=None):
+        result = np.array(value, dtype=dtype, copy=copy, order=order,
+                          subok=True, ndmin=ndmin).view(categorical_ndarray)
+        if categories is not None:
+            result.categories = categories
+        return result
+
+    def _update_categories_and_codes(self):
+        self._categories, self._codes = unique(self)
+        self._categories.setflags(write=False)
+        self._codes = self._codes.astype(float)
+        self._codes.setflags(write=False)
+
+    @property
+    def categories(self):
+        if not hasattr(self, '_categories'):
+            self._update_categories_and_codes()
+        return self._categories
+
+    @categories.setter
+    def categories(self, value):
+        self._categories = value
+        self._codes = index_lookup(self, value)
+
+    @property
+    def codes(self):
+        if not hasattr(self, '_codes'):
+            self._update_categories_and_codes()
+        if self._jitter is None:
+            return self._codes
+        else:
+            return self._codes + self._jitter
+
+    def jitter(self, method=None):
+        """
+        Jitter the codes.
+
+        Parameters
+        ----------
+        method : {None, 'uniform'}
+            If `None`, not jittering is done (or any jittering is undone).
+            If ``'uniform'``, the codes are randomized by a uniformly
+            distributed random variable.
+        """
+        if method is None:
+            self._jitter = None
+        elif method == 'uniform':
+            self._jitter = np.random.random(self.shape)
+            self._jitter -= 0.5
+        else:
+            raise ValueError("method should be None or 'uniform'")
+
+
+def index_lookup(data, items):
+    """
+    Lookup which index in items each data value is equal to
+
+    Parameters
+    ----------
+    data
+        An array-like object
+    items
+        Array-like of unique values
+
+    Returns
+    -------
+    array
+        If result[i] is finite, then data[i] = categories[result[i]]
+        Otherwise, data[i] is not in the categories list
+    """
+
+    # np.searchsorted doesn't work on mixed types in Python3
+
+    ndata, ncat = len(data), len(items)
+    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
+    cats = pd.DataFrame({'items': items,
+                         'cat_row': np.arange(ncat)})
+
+    m = pd.merge(data, cats, left_on='data', right_on='items')
+    result = np.zeros(ndata, dtype=float) * np.nan
+    result[np.array(m.row)] = m.cat_row
+    return result

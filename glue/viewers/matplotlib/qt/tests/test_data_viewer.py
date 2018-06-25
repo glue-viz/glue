@@ -536,6 +536,9 @@ class BaseTestMatplotlibDataViewer(object):
         data = Data(label=self.data.label)
         data.coords = self.data.coords
         for cid in self.data.visible_components:
-            data.add_component(self.data[cid] * 2, cid.label)
+            if self.data.get_kind(cid) == 'numerical':
+                data.add_component(self.data[cid] * 2, cid.label)
+            else:
+                data.add_component(self.data[cid], cid.label)
         self.data.update_values_from_data(data)
         assert self.draw_count == 2

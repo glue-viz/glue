@@ -285,10 +285,10 @@ class TestData(object):
 
     def test_coordinate_links(self):
         links = self.data.coordinate_links
-        w0 = self.data[self.data.get_world_component_id(0)]
-        w1 = self.data[self.data.get_world_component_id(1)]
-        p0 = self.data[self.data.get_pixel_component_id(0)]
-        p1 = self.data[self.data.get_pixel_component_id(1)]
+        w0 = self.data[self.data.world_component_ids[0]]
+        w1 = self.data[self.data.world_component_ids[1]]
+        p0 = self.data[self.data.pixel_component_ids[0]]
+        p1 = self.data[self.data.pixel_component_ids[1]]
 
         w0prime = links[0].compute(self.data)
         p0prime = links[1].compute(self.data)
@@ -332,6 +332,7 @@ class TestData(object):
         assert 'read-only' in exc.value.args[0]
         assert not d['x'].flags['WRITEABLE']
 
+    @pytest.mark.xfail
     def test_categorical_immutable(self):
         d = Data()
         c = CategoricalComponent(['M', 'M', 'F'], categories=['M', 'F'])
@@ -435,14 +436,15 @@ class TestROICreation(object):
         d = Data(xdata=[1, 2, 3], ydata=[1, 2, 3])
         comp = d.get_component(d.id['xdata'])
         roi = RangeROI('x', min=2, max=3)
-        s = roi_to_subset_state(roi, x_att='xdata', x_comp=comp)
+        s = roi_to_subset_state(roi, x_att='xdata')
         assert isinstance(s, RangeSubsetState)
         np.testing.assert_array_equal((s.lo, s.hi),
                                       [2, 3])
 
         roi = RangeROI('y', min=2, max=3)
-        s = roi_to_subset_state(roi, x_att='xdata', x_comp=comp,
-                                y_att='ydata', y_comp=d.get_component(d.id['ydata']))
+        s = roi_to_subset_state(roi,
+                                x_att='xdata',
+                                y_att='ydata')
         assert isinstance(s, RangeSubsetState)
         assert s.att == 'ydata'
 
@@ -451,13 +453,13 @@ class TestROICreation(object):
         d = Data(x=['a', 'b', 'c'], y=[1, 2, 3])
         comp = d.get_component(d.id['x'])
         roi = CategoricalROI(['b', 'c'])
-        s = roi_to_subset_state(roi, x_att=d.id['x'], x_comp=comp)
+        s = roi_to_subset_state(roi, x_att=d.id['x'], x_categories=comp.categories)
         assert isinstance(s, CategoricalROISubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
                                       [False, True, True])
 
         roi = RangeROI('x', min=1, max=3)
-        s = roi_to_subset_state(roi, x_att='x', x_comp=comp)
+        s = roi_to_subset_state(roi, x_att='x', x_categories=comp.categories)
         assert isinstance(s, CategoricalROISubsetState)
         np.testing.assert_array_equal((s.roi.contains(['a', 'b', 'c'], None)),
                                       [False, True, True])
@@ -465,22 +467,17 @@ class TestROICreation(object):
     def test_polygon_roi(self):
 
         d = Data(x=[1, 1.3, 3, 10], y=[1, 1.5, 3, 10])
-        x_comp = d.get_component(d.id['x'])
-        y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
-        s = roi_to_subset_state(roi,
-                                  x_att=d.id['x'], x_comp=x_comp,
-                                  y_att=d.id['y'], y_comp=y_comp)
+        s = roi_to_subset_state(roi, x_att=d.id['x'], y_att=d.id['y'])
         assert isinstance(s, RoiSubsetState)
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 
     def test_polygon_categorical_rectangular(self):
 
         d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
-        x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 0, 2, 2], [0, 2, 2, 0])
-        s = roi_to_subset_state(roi, x_att='x', x_comp=x_comp, y_att='y', y_comp=y_comp)
+        s = roi_to_subset_state(roi, x_att='x', y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, CategoricalMultiRangeSubsetState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
@@ -488,10 +485,9 @@ class TestROICreation(object):
     def test_polygon_categorical_arbitrary(self):
 
         d = Data(x=[1, 1.3, 3, 10], y=['a', 'b', 'c', 'd'])
-        x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0, 4, 4, 1, 0], [-0.5, 3.5, 0, -1, -0.5])
-        s = roi_to_subset_state(roi, x_att='x', x_comp=x_comp, y_att='y', y_comp=y_comp)
+        s = roi_to_subset_state(roi, x_att='x', y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, CategoricalMultiRangeSubsetState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, False, True, False])
@@ -503,12 +499,12 @@ class TestROICreation(object):
         y_comp = d.get_component(d.id['y'])
         roi = RectangularROI(xmin=-0.1, xmax=2.1, ymin=-0.1, ymax=2.1)
 
-        s = roi_to_subset_state(roi, x_att='x', x_comp=x_comp, y_att='y', y_comp=y_comp)
+        s = roi_to_subset_state(roi, x_att='x', y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, AndState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
 
-        s = roi_to_subset_state(roi, x_att='y', x_comp=y_comp, y_att='x', y_comp=x_comp)
+        s = roi_to_subset_state(roi, x_att='x', y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, AndState)
 
         np.testing.assert_array_equal(s.to_mask(d), [True, True, False, False])
@@ -519,7 +515,9 @@ class TestROICreation(object):
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0.5, 1.5, 2.5, 1, 0.5], [0.5, 0.5, 2.5, 3.5, 0.5])
-        s = roi_to_subset_state(roi, x_att='x', x_comp=x_comp, y_att='y', y_comp=y_comp)
+        s = roi_to_subset_state(roi,
+                                x_att='x', x_categories=x_comp.categories,
+                                y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, CategoricalROISubsetState2D)
 
         np.testing.assert_array_equal(s.to_mask(d), [False, True, True, False, True, False])
@@ -530,7 +528,9 @@ class TestROICreation(object):
         x_comp = d.get_component(d.id['x'])
         y_comp = d.get_component(d.id['y'])
         roi = PolygonalROI([0.5, 0.6, 0.6, 0.5], [0.5, 0.5, 0.6, 0.5])
-        s = roi_to_subset_state(roi, x_att='x', x_comp=x_comp, y_att='y', y_comp=y_comp)
+        s = roi_to_subset_state(roi,
+                                x_att='x', x_categories=x_comp.categories,
+                                y_att='y', y_categories=y_comp.categories)
         assert isinstance(s, CategoricalROISubsetState2D)
 
         np.testing.assert_array_equal(s.to_mask(d), [False, False, False, False, False, False])
@@ -617,11 +617,11 @@ def test_foreign_pixel_components_not_in_visible():
     dc = DataCollection([d1, d2])
     dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
 
-    dc.add_link(LinkSame(d1.get_world_component_id(0),
-                         d2.get_world_component_id(0)))
+    dc.add_link(LinkSame(d1.world_component_ids[0],
+                         d2.world_component_ids[0]))
 
-    assert d2.get_pixel_component_id(0) not in d1.visible_components
-    np.testing.assert_array_equal(d1[d2.get_pixel_component_id(0)], [0])
+    assert d2.pixel_component_ids[0] not in d1.visible_components
+    np.testing.assert_array_equal(d1[d2.pixel_component_ids[0]], [0])
 
 
 def test_add_binary_component():

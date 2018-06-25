@@ -38,7 +38,7 @@ class ChangeListener(HubListener):
         self.added = []
         self.renamed = []
         self.reordered = []
-        self.numerical = False
+        self.numeric = False
 
         self.register_to_hub(data.hub)
 
@@ -80,14 +80,14 @@ class ChangeListener(HubListener):
         self.reordered = message.component_ids
 
     def _numerical_changed(self, message):
-        self.numerical = True
+        self.numeric = True
 
     def assert_exact_changes(self, added=[], removed=[], renamed=[], reordered=[], numerical=False):
         assert set(added) == set(self.added)
         assert set(removed) == set(self.removed)
         assert set(renamed) == set(self.renamed)
         assert reordered == self.reordered
-        assert numerical is self.numerical
+        assert numerical is self.numeric
 
 
 class TestArithmeticEditorWidget:

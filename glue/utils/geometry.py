@@ -21,6 +21,10 @@ def points_inside_poly(x, y, vx, vy):
 
     x = unbroadcast(x)
     y = unbroadcast(y)
+
+    x = x.astype(float)
+    y = y.astype(float)
+
     x, y = np.broadcast_arrays(x, y)
 
     reduced_shape = x.shape

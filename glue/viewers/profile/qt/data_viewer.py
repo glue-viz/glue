@@ -51,6 +51,5 @@ class ProfileViewer(MatplotlibDataViewer):
     def apply_roi(self, roi, use_current=False):
         if len(self.layers) == 0:  # Force redraw to get rid of ROI
             return self.redraw()
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
-        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att, x_comp=x_comp)
+        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
         self.apply_subset_state(subset_state, use_current=use_current)

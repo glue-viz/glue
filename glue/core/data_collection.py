@@ -7,7 +7,7 @@ from glue.core.message import (DataCollectionAddMessage,
                                ComponentsChangedMessage)
 from glue.core.registry import Registry
 from glue.core.link_manager import LinkManager
-from glue.core.data import Data
+from glue.core.data import Data, BaseCartesianData
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
 from glue.config import settings
@@ -61,15 +61,21 @@ class DataCollection(HubListener):
         It also updates the list of DerivedComponents that each
         data set can work with.
 
-        :param data: :class:`~glue.core.data.Data` object to add
+        :param data: :class:`~glue.core.data.BaseCartesianData` object to add
         """
 
         if isinstance(data, list):
             self.extend(data)
             return
+
         if data in self:
             return
+
+        if not isinstance(data, BaseCartesianData):
+            raise TypeError("Only BaseCartesianData subclasses can be used at this time")
+
         self._data.append(data)
+
         if self.hub:
             data.register_to_hub(self.hub)
             for s in data.subsets:

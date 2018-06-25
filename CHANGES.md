@@ -16,7 +16,8 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
-* Defined a new abstract base class for datasets, ``BaseCartesianData``,
+* Defined a new abstract base class for all datasets, ``BaseData``,
+  and a base class ``BaseCartesianData``,
   which can be used to implement interfaces to datasets that may be
   remote or may not be stored as regular cartesian data. [#1768]
 
@@ -27,6 +28,15 @@ v0.14.0 (unreleased)
 * Add a new method ``Data.compute_histogram`` which can be used
   to find histograms of specific components, with or without
   subsets applied. [#1739]
+
+* Removed ``Data.get_pixel_component_ids`` and ``Data.get_world_component_ids``
+  in favor of ``Data.pixel_component_ids`` and ``Data.world_component_ids``.
+  [#1784]
+
+* In the case of categorical attributes, ``Data[name]`` now returns a
+  ``categorical_ndarray`` object rather than the indices of the categories. You
+  can access the indices with ``Data[name].codes`` and the unique categories
+  with ``Data[name].categories``.  [#1784]
 
 * Compute profiles asynchronously to avoid holding up the UI,
   and in chunks to avoid excessive memory usage. [#1736]

@@ -121,8 +121,8 @@ class DataMessage(Message):
     """
 
     def __init__(self, sender, tag=None):
-        from glue.core.data import Data
-        if (not isinstance(sender, Data)):
+        from glue.core.data import BaseData
+        if (not isinstance(sender, BaseData)):
             raise TypeError("Sender must be a data instance: %s"
                             % type(sender))
         Message.__init__(self, sender, tag=tag)

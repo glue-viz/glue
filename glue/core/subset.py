@@ -18,7 +18,8 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to, floodfill, combine_slices, polygon_line_intersections
+from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
+                        polygon_line_intersections, categorical_ndarray)
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -620,7 +621,7 @@ class CategoricalROISubsetState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        x = data.get_component(self.att)._categorical_data[view]
+        x = data[self.att, view]
         result = self.roi.contains(x, None)
         assert x.shape == result.shape
         return result.ravel()
@@ -632,11 +633,10 @@ class CategoricalROISubsetState(SubsetState):
         return result
 
     @staticmethod
-    def from_range(component, att, lo, hi):
+    def from_range(categories, att, lo, hi):
 
-        roi = CategoricalROI.from_range(component, lo, hi)
-        subset = CategoricalROISubsetState(roi=roi,
-                                           att=att)
+        roi = CategoricalROI.from_range(categories, lo, hi)
+        subset = CategoricalROISubsetState(roi=roi, att=att)
         return subset
 
     def __gluestate__(self, context):
@@ -731,12 +731,8 @@ class CategoricalROISubsetState2D(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels1 = data.get_component(self.att1).labels
-        labels2 = data.get_component(self.att2).labels
-
-        if view is not None:
-            labels1 = labels1[view]
-            labels2 = labels2[view]
+        labels1 = data[self.att1, view]
+        labels2 = data[self.att2, view]
 
         # Initialize empty mask
         mask = np.zeros(labels1.shape, dtype=bool)
@@ -800,7 +796,7 @@ class CategoricalMultiRangeSubsetState(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels = data.get_component(self.cat_att).labels
+        labels = data[self.cat_att]
         values = data[self.num_att]
 
         if view is not None:
@@ -952,8 +948,8 @@ class SliceSubsetState(SubsetState):
         self._pad_slices()
 
     def _pad_slices(self):
-        from glue.core.data import Data
-        if isinstance(self.reference_data, Data) and len(self.slices) < self.reference_data.ndim:
+        from glue.core.data import BaseCartesianData
+        if isinstance(self.reference_data, BaseCartesianData) and len(self.slices) < self.reference_data.ndim:
             self.slices = self.slices + [slice(None)] * (self.reference_data.ndim - len(self.slices))
 
     def copy(self):
@@ -1053,6 +1049,8 @@ class CategorySubsetState(SubsetState):
     @memoize
     def to_mask(self, data, view=None):
         vals = data[self._attribute, view]
+        if isinstance(vals, categorical_ndarray):
+            vals = vals.codes
         result = np.in1d(vals.ravel(), self._values)
         return result.reshape(vals.shape)
 
@@ -1166,28 +1164,12 @@ class InequalitySubsetState(SubsetState):
         if isinstance(self._left, (numbers.Number, six.string_types)):
             left = self._left
         else:
-            try:
-                comp = data.get_component(self._left)
-            except IncompatibleAttribute:
-                left = data[self._left, view]
-            else:
-                if comp.categorical:
-                    left = comp.labels[view]
-                else:
-                    left = comp.data[view]
+            left = data[self._left, view]
 
         if isinstance(self._right, (numbers.Number, six.string_types)):
             right = self._right
         else:
-            try:
-                comp = data.get_component(self._right)
-            except IncompatibleAttribute:
-                right = data[self._right, view]
-            else:
-                if comp.categorical:
-                    right = comp.labels[view]
-                else:
-                    right = comp.data[view]
+            right = data[self._right, view]
 
         return self._operator(left, right)
 
@@ -1334,7 +1316,7 @@ def combine_multiple(subsets, operator):
         return combined
 
 
-def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
+def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_categories=None):
     """
     Given a 2D ROI and attributes on the x and y axis, determine the
     corresponding subset state.
@@ -1344,17 +1326,17 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
         if roi.ori == 'x':
             att = x_att
-            comp = x_comp
+            categories = x_categories
         else:
             att = y_att
-            comp = y_comp
+            categories = y_categories
 
-        if comp.categorical:
-            return CategoricalROISubsetState.from_range(comp, att, roi.min, roi.max)
+        if categories is not None:
+            return CategoricalROISubsetState.from_range(categories, att, roi.min, roi.max)
         else:
             return RangeSubsetState(roi.min, roi.max, att)
 
-    elif x_comp.categorical or y_comp.categorical:
+    elif x_categories is not None or y_categories is not None:
 
         if isinstance(roi, RectangularROI):
 
@@ -1364,8 +1346,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
             range1 = XRangeROI(roi.xmin, roi.xmax)
             range2 = YRangeROI(roi.ymin, roi.ymax)
 
-            subset1 = roi_to_subset_state(range1, x_att=x_att, x_comp=x_comp)
-            subset2 = roi_to_subset_state(range2, y_att=y_att, y_comp=y_comp)
+            subset1 = roi_to_subset_state(range1, x_att=x_att, x_categories=x_categories)
+            subset2 = roi_to_subset_state(range2, y_att=y_att, y_categories=y_categories)
 
             return AndState(subset1, subset2)
 
@@ -1379,24 +1361,24 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
             # The selection is polygon-like, which requires special care.
 
-            if x_comp.categorical and y_comp.categorical:
+            if x_categories is not None and y_categories is not None:
 
                 # For each category, we check which categories along the other
                 # axis fall inside the polygon:
 
                 selection = {}
 
-                for code, label in enumerate(x_comp.categories):
+                for code, label in enumerate(x_categories):
 
                     # Determine the coordinates of the points to check
-                    n_other = len(y_comp.categories)
+                    n_other = len(y_categories)
                     y = np.arange(n_other)
                     x = np.repeat(code, n_other)
 
                     # Determine which points are in the polygon, and which
                     # categories these correspond to
                     in_poly = roi.contains(x, y)
-                    categories = y_comp.categories[in_poly]
+                    categories = y_categories[in_poly]
 
                     if len(categories) > 0:
                         selection[label] = set(categories)
@@ -1419,18 +1401,18 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
                 selection = {}
 
-                if x_comp.categorical:
-                    cat_comp = x_comp
+                if x_categories is not None:
+                    categories = x_categories
                     cat_att = x_att
                     num_att = y_att
                     x, y = roi.to_polygon()
                 else:
-                    cat_comp = y_comp
+                    categories = y_categories
                     cat_att = y_att
                     num_att = x_att
                     y, x = roi.to_polygon()
 
-                for code, label in enumerate(cat_comp.categories):
+                for code, label in enumerate(categories):
 
                     # We determine all the numerical segments that represent the
                     # ensemble of points in y that fall in the polygon

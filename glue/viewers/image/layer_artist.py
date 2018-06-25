@@ -13,7 +13,7 @@ from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
-from glue.core import Data, HubListener
+from glue.core import BaseData, HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
@@ -47,7 +47,7 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
                                  filter=self._is_data_object)
 
     def _is_data_object(self, message):
-        if isinstance(self.layer, Data):
+        if isinstance(self.layer, BaseData):
             return message.sender is self.layer
         else:
             return message.sender is self.layer.data

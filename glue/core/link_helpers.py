@@ -163,5 +163,5 @@ class LinkAligned(LinkCollection):
             if d.shape != shape:
                 raise TypeError("Input data do not have the same shape")
             for j in range(ndim):
-                self.extend(LinkSame(data[0].get_pixel_component_id(j),
-                                     data[i + 1].get_pixel_component_id(j)))
+                self.extend(LinkSame(data[0].pixel_component_ids[j],
+                                     data[i + 1].pixel_component_ids[j]))

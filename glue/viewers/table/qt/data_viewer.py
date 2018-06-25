@@ -9,7 +9,7 @@ from matplotlib.colors import ColorConverter
 
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
-from glue.core import Data
+from glue.core import BaseData, Data
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
@@ -79,11 +79,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
             c = self.columns[index.column()]
             idx = self.order[index.row()]
-            comp = self._data.get_component(c)
-            if comp.categorical:
-                comp = comp.labels
-            else:
-                comp = comp.data
+            comp = self._data[c]
             if isinstance(comp[idx], bytes):
                 return comp[idx].decode('ascii')
             else:
@@ -96,7 +92,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
             # Find all subsets that this index is part of
             colors = []
             for layer_artist in self._table_viewer.layers[::-1]:
-                if isinstance(layer_artist.layer, Data):
+                if isinstance(layer_artist.layer, BaseData):
                     continue
                 if layer_artist.visible:
                     subset = layer_artist.layer
@@ -117,10 +113,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
     def sort(self, column, ascending):
         c = self.columns[column]
         comp = self._data.get_component(c)
-        if comp.categorical:
-            self.order = np.argsort(comp.labels)
-        else:
-            self.order = np.argsort(comp.data)
+        self.order = np.argsort(comp.data)
         if ascending == Qt.DescendingOrder:
             self.order = self.order[::-1]
         self.layoutChanged.emit()
@@ -241,7 +234,7 @@ class TableViewer(DataViewer):
 
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 break
         else:
             return
