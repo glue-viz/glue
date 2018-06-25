@@ -84,7 +84,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def _calculate_profile(self, reset=False):
-        if QT_INSTALLED:
+        if self.state.layer is not None and self.state.layer.size > 1e7 and QT_INSTALLED:
             self._worker.work_queue.put(reset)
         else:
             try:

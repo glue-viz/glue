@@ -38,8 +38,9 @@ v0.14.0 (unreleased)
   can access the indices with ``Data[name].codes`` and the unique categories
   with ``Data[name].categories``.  [#1784]
 
-* Compute profiles asynchronously to avoid holding up the UI,
-  and in chunks to avoid excessive memory usage. [#1736]
+* Compute profiles and histograms asynchronously when dataset is large
+  to avoid holding up the UI, and compute profiles in chunks to avoid
+  excessive memory usage. [#1736, #1764]
 
 * Improved naming of components when merging datasets. [#1249]
 
