@@ -1,5 +1,3 @@
-:orphan:
-
 Defining your own data objects
 ==============================
 
