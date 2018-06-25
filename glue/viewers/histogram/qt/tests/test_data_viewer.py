@@ -61,7 +61,6 @@ class TestHistogramViewer(object):
         # Check defaults when we add data
         self.viewer.add_data(self.data)
 
-
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:x:y:Coordinate components:Pixel Axis 0 [x]:World 0'
 
         assert viewer_state.x_att is self.data.id['x']
@@ -85,7 +84,6 @@ class TestHistogramViewer(object):
         # Change to categorical component and check new values
 
         viewer_state.x_att = self.data.id['y']
-
 
         assert viewer_state.x_min == -0.5
         assert viewer_state.x_max == 2.5
@@ -603,7 +601,6 @@ class TestHistogramViewer(object):
         # Apply an ROI selection in plotting coordinates
         roi = XRangeROI(719313, 719513)
         self.viewer.apply_roi(roi)
-
 
         # Check that the two middle elements are selected
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 1, 0])
