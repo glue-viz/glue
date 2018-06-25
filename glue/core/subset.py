@@ -501,6 +501,9 @@ class SubsetState(object):
 
     @property
     def attributes(self):
+        """
+        The attributes that the subset state depends on.
+        """
         return tuple()
 
     @property
@@ -513,11 +516,24 @@ class SubsetState(object):
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
+        """
+        Compute the mask for this subset state.
+
+        Parameters
+        ----------
+        data : :class:`~glue.core.data.Data`
+            The dataset to compute the mask for.
+        view
+            Any object that returns a valid view for a Numpy array.
+        """
         shp = view_shape(data.shape, view)
         return broadcast_to(False, shp)
 
     @contract(returns='isinstance(SubsetState)')
     def copy(self):
+        """
+        Return a copy of the subset state.
+        """
         return SubsetState()
 
     @contract(other_state='isinstance(SubsetState)',
@@ -1189,6 +1205,10 @@ class MaskSubsetState(SubsetState):
     def cids(self, value):
         self._cids = value
 
+    @property
+    def attributes(self):
+        return self._cids
+
     def copy(self):
         return MaskSubsetState(self.mask, self.cids)
 
@@ -1263,6 +1283,10 @@ class SliceSubsetState(SubsetState):
         from glue.core.data import BaseCartesianData
         if isinstance(self.reference_data, BaseCartesianData) and len(self.slices) < self.reference_data.ndim:
             self.slices = self.slices + [slice(None)] * (self.reference_data.ndim - len(self.slices))
+
+    @property
+    def attributes(self):
+        return self._reference_data.pixel_component_ids
 
     def copy(self):
         return SliceSubsetState(self.reference_data, self.slices)
@@ -1393,6 +1417,10 @@ class CategorySubsetState(SubsetState):
     def categories(self, value):
         self._categories = value
 
+    @property
+    def attributes(self):
+        return self._att,
+
     @memoize
     def to_mask(self, data, view=None):
         vals = data[self._att, view]
@@ -1474,6 +1502,10 @@ class ElementSubsetState(SubsetState):
             return result
         else:
             raise IncompatibleAttribute()
+
+    @property
+    def attributes(self):
+        return self._data.pixel_component_ids
 
     def copy(self):
         state = ElementSubsetState(indices=self._indices)
@@ -1607,7 +1639,7 @@ class FloodFillSubsetState(MaskSubsetState):
     ----------
     data : :class:`~glue.core.data.Data`
         The data on which the flood fill is computed.
-    attribute : :class:`glue.core.component_id.ComponentID`
+    att : :class:`glue.core.component_id.ComponentID`
         The attribute defining the values to use for the flood fill.
     start_coords : tuple
         The pixel coordinates of the starting point.
@@ -1621,13 +1653,13 @@ class FloodFillSubsetState(MaskSubsetState):
     # TODO: we need to recompute the mask if the numerical values of the
     # data changes.
 
-    def __init__(self, data, attribute, start_coords, threshold):
+    def __init__(self, data, att, start_coords, threshold):
 
         if len(start_coords) != data.ndim:
             raise ValueError("start_coords should have as many values as data "
                              "has dimensions.")
 
-        self._attribute = attribute
+        self._att = att
         self._data = data
         self._start_coords = tuple(start_coords)
         self._threshold = float(threshold)
@@ -1647,15 +1679,15 @@ class FloodFillSubsetState(MaskSubsetState):
         self._data = value
 
     @property
-    def attribute(self):
+    def att(self):
         """
         The attribute defining the values to use for the flood fill.
         """
-        return self._attribute
+        return self._att
 
-    @attribute.setter
-    def attribute(self, value):
-        self._attribute = value
+    @att.setter
+    def att(self, value):
+        self._att = value
 
     @property
     def start_coords(self):
@@ -1683,13 +1715,13 @@ class FloodFillSubsetState(MaskSubsetState):
         self._threshold = value
 
     def _compute_mask(self):
-        mask = floodfill(self.data[self.attribute],
+        mask = floodfill(self.data[self.att],
                          self.start_coords, self.threshold)
         self._mask_cache = (self._hash, mask)
 
     @property
     def _hash(self):
-        return self.data, self.attribute, self.start_coords, self.threshold, self.cids
+        return self.data, self.att, self.start_coords, self.threshold, self.cids
 
     @property
     def mask(self):
@@ -1697,21 +1729,25 @@ class FloodFillSubsetState(MaskSubsetState):
             self._compute_mask()
         return self._mask_cache[1]
 
+    @property
+    def attributes(self):
+        return list(self._data.pixel_component_ids) + [self.att]
+
     def copy(self):
-        return FloodFillSubsetState(self.data, self.attribute, self.start_coords,
+        return FloodFillSubsetState(self.data, self.att, self.start_coords,
                                     self.threshold)
 
     def __gluestate__(self, context):
         # We don't store the data since this would cause a circular reference.
         # However we can recover the data from the attribute ComponentID.
-        return dict(attribute=context.id(self.attribute),
+        return dict(attribute=context.id(self.att),
                     start_coords=self.start_coords,
                     threshold=self.threshold)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        attribute = context.object(rec['attribute'])
-        return cls(attribute.parent, attribute,
+        att = context.object(rec['attribute'])
+        return cls(att.parent, att,
                    context.object(rec['start_coords']),
                    context.object(rec['threshold']))
 
