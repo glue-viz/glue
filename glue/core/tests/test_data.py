@@ -165,19 +165,16 @@ class TestData(object):
         assert exc.value.args[0] == ("Data has already been assigned "
                                      "to a different hub")
 
-    def test_primary_components(self):
+    def test_main_components(self):
         compid = ComponentID('virtual')
         link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
 
-        pricomps = self.data.primary_components
-        print(self.comp_id, compid, pricomps)
-        print(self.comp_id in pricomps)
-        print(compid not in pricomps)
-        assert self.comp_id in pricomps
-        assert compid not in pricomps
+        main_comps = self.data.main_components
+        assert self.comp_id in main_comps
+        assert compid not in main_comps
 
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))

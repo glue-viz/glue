@@ -131,10 +131,6 @@ class BaseData(object):
         return []
 
     @property
-    def primary_components(self):
-        return [cid for cid in self.components if cid not in self.derived_components]
-
-    @property
     def visible_components(self):
         return self.main_components
 
@@ -1019,10 +1015,12 @@ class Data(BaseCartesianData):
 
     @property
     def primary_components(self):
-        """The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
-
-        :rtype: list
         """
+        The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
+
+        This property is deprecated.
+        """
+        warnings.warn('primary_components is deprecated', UserWarning)
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], DerivedComponent)]
 
@@ -1064,7 +1062,7 @@ class Data(BaseCartesianData):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
+        for cid_set in (self.main_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
