@@ -274,7 +274,7 @@ class MatplotlibDataViewer(DataViewer):
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self.axes, self.state, layer=layer, layer_state=layer_state)
 
-    def apply_roi(self, roi, use_current=False):
+    def apply_roi(self, roi, override_mode=None):
         """ This method must be implemented by subclasses """
         raise NotImplementedError
 

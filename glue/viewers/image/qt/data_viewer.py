@@ -181,7 +181,7 @@ class ImageViewer(MatplotlibDataViewer):
 
         self._wcs_set = True
 
-    def apply_roi(self, roi, use_current=False):
+    def apply_roi(self, roi, override_mode=None):
 
         if len(self.layers) == 0:  # Force redraw to get rid of ROI
             return self.redraw()
@@ -193,7 +193,7 @@ class ImageViewer(MatplotlibDataViewer):
                                            x_att=self.state.x_att,
                                            y_att=self.state.y_att)
 
-        self.apply_subset_state(subset_state)
+        self.apply_subset_state(subset_state, override_mode=override_mode)
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:

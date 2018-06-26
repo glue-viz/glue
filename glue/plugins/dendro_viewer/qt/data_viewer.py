@@ -88,7 +88,7 @@ class DendrogramViewer(MatplotlibDataViewer):
 
     # TODO: move some of the ROI stuff to state class?
 
-    def apply_roi(self, roi, use_current=False):
+    def apply_roi(self, roi, override_mode=None):
 
         # TODO Does subset get applied to all data or just visible data?
 

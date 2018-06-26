@@ -285,10 +285,10 @@ class ApplySubsetState(Command):
         DataCollection to operate on
     subset_state: :class:`~glue.core.subset_state.SubsetState`
         Subset state to apply
-    use_current: bool
+    override_mode: bool
         Flag indicating whether to update current subset or create a new one
     """
-    kwargs = ['data_collection', 'subset_state', 'use_current']
+    kwargs = ['data_collection', 'subset_state', 'override_mode']
     label = 'apply subset'
 
     def do(self, session):
@@ -299,7 +299,7 @@ class ApplySubsetState(Command):
                 self.old_states[subset] = subset.subset_state
 
         mode = session.edit_subset_mode
-        mode.update(self.data_collection, self.subset_state, use_current=self.use_current)
+        mode.update(self.data_collection, self.subset_state, override_mode=self.override_mode)
 
     def undo(self, session):
         for data in self.data_collection:
