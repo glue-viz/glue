@@ -60,7 +60,7 @@ class ScatterViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    def apply_roi(self, roi, use_current=False):
+    def apply_roi(self, roi, override_mode=None):
 
         if len(self.layers) == 0:  # Force redraw to get rid of ROI
             return self.redraw()
@@ -76,7 +76,7 @@ class ScatterViewer(MatplotlibDataViewer):
                                            x_att=self.state.x_att, x_categories=self.state.x_categories,
                                            y_att=self.state.y_att, y_categories=self.state.y_categories)
 
-        self.apply_subset_state(subset_state, use_current=use_current)
+        self.apply_subset_state(subset_state, override_mode=override_mode)
 
     @staticmethod
     def update_viewer_state(rec, context):

@@ -71,10 +71,10 @@ class BaseViewer(HubListener):
         session = context.object(rec['session'])
         return cls(session)
 
-    def apply_subset_state(self, subset_state, use_current=False):
+    def apply_subset_state(self, subset_state, override_mode=None):
         cmd = ApplySubsetState(data_collection=self._data,
                                subset_state=subset_state,
-                               use_current=use_current)
+                               override_mode=override_mode)
         self._session.command_stack.do(cmd)
 
 
