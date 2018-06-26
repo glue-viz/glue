@@ -507,11 +507,18 @@ class categorical_ndarray(np.ndarray):
             result.categories = categories
         return result
 
+    def __array_finalize__(self, obj):
+        if isinstance(obj, categorical_ndarray):
+            self.categories = obj.categories
+
     def _update_categories_and_codes(self):
-        self._categories, self._codes = unique(self)
-        self._categories.setflags(write=False)
-        self._codes = self._codes.astype(float)
-        self._codes.setflags(write=False)
+        if hasattr(self, '_categories'):
+            self._codes = index_lookup(self, self._categories)
+        else:
+            self._categories, self._codes = unique(self)
+            self._categories.setflags(write=False)
+            self._codes = self._codes.astype(float)
+            self._codes.setflags(write=False)
 
     @property
     def categories(self):
@@ -522,7 +529,6 @@ class categorical_ndarray(np.ndarray):
     @categories.setter
     def categories(self, value):
         self._categories = value
-        self._codes = index_lookup(self, value)
 
     @property
     def codes(self):
