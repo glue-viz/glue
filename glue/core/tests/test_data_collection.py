@@ -277,8 +277,10 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4])
         dc = DataCollection([x, y])
         dc.merge(x, y)
+        merged = dc[0]
 
-        assert y.pixel_component_ids[0] not in x.components
+        assert len(merged.coordinate_components) == 2
+        assert y.pixel_component_ids[0] not in merged.components
 
     def test_merge_forbids_single_argument(self):
         x = Data(x=[1, 2, 3])

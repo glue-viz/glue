@@ -318,6 +318,12 @@ class DataCollection(HubListener):
                 if c in master.components:  # already present (via a link)
                     continue
 
+                # Don't include coordinate components here as they will be
+                # recomputed separately once the first non-coordinate component
+                # is added.
+                if c in d.coordinate_components:
+                    continue
+
                 lbl = c.label
 
                 if clabel_count[lbl] > 1:
