@@ -16,6 +16,13 @@ def get_qapp(icon_path=None):
 
     if qapp is None:
 
+        # Some Qt modules are picky in terms of being imported before the
+        # application is set up, so we import them here.
+        try:
+            from qtpy import QtWebEngineWidgets  # noqa
+        except ImportError:  # Not all PyQt installations have this module
+            pass
+
         qapp = QtWidgets.QApplication([''])
         qapp.setQuitOnLastWindowClosed(True)
 
