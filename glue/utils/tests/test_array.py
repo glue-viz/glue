@@ -323,3 +323,16 @@ def test_categorical_ndarray():
 
     array.jitter(method=None)
     assert_equal(array.codes, [1, 0, np.nan, 0, 0, 1])
+
+
+def test_categorical_ndarray_slicing():
+
+    array = categorical_ndarray(['a', 'b', 'c', 'b', 'b', 'a'])
+    assert_equal(array, ['a', 'b', 'c', 'b', 'b', 'a'])
+    assert_equal(array.codes, [0, 1, 2, 1, 1, 0])
+    assert_equal(array.categories, ['a', 'b', 'c'])
+
+    subset = array[1:5]
+    assert_equal(subset, ['b', 'c', 'b', 'b'])
+    assert_equal(subset.codes, [1, 2, 1, 1])
+    assert_equal(subset.categories, ['a', 'b', 'c'])
