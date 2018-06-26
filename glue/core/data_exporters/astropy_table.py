@@ -19,7 +19,7 @@ def data_to_astropy_table(data, components=None):
     from astropy.table import Table
 
     table = Table()
-    for cid in data.visible_components:
+    for cid in data.main_components + data.derived_components:
 
         if components is not None and cid not in components:
             continue

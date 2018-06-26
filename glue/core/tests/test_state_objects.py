@@ -74,8 +74,8 @@ class TestStateAttributeLimitsHelper():
         self.state.data = self.data
         self.state.comp = self.data.id['x']
 
-        self.x_id = self.data.visible_components[0]
-        self.y_id = self.data.visible_components[1]
+        self.x_id = self.data.main_components[0]
+        self.y_id = self.data.main_components[1]
 
     def test_minmax(self):
         assert self.helper.lower == -100
@@ -178,8 +178,8 @@ class TestStateAttributeSingleValueHelper():
 
         self.state.comp = self.data.id['x']
 
-        self.x_id = self.data.visible_components[0]
-        self.y_id = self.data.visible_components[1]
+        self.x_id = self.data.main_components[0]
+        self.y_id = self.data.main_components[1]
 
     def test_value(self):
         assert self.helper.value == -35.

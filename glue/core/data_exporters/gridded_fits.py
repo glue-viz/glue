@@ -54,7 +54,7 @@ def fits_writer(filename, data, components=None):
 
     hdus = fits.HDUList()
 
-    for cid in data.visible_components:
+    for cid in data.main_components + data.derived_components:
 
         if components is not None and cid not in components:
             continue

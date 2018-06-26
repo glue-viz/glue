@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 import abc
 import uuid
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -129,14 +131,6 @@ class BaseData(object):
     @property
     def derived_components(self):
         return []
-
-    @property
-    def primary_components(self):
-        return [cid for cid in self.components if cid not in self.derived_components]
-
-    @property
-    def visible_components(self):
-        return self.main_components
 
     def find_component_id(self, label):
         """
@@ -995,15 +989,6 @@ class Data(BaseCartesianData):
         return list(self._externally_derivable_components.keys())
 
     @property
-    def visible_components(self):
-        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinate.
-
-        :rtype: list
-        """
-        return [cid for cid, comp in self._components.items()
-                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
-
-    @property
     def coordinate_components(self):
         """The ComponentIDs associated with a :class:`~glue.core.component.CoordinateComponent`
 
@@ -1016,15 +1001,6 @@ class Data(BaseCartesianData):
     def main_components(self):
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], (DerivedComponent, CoordinateComponent))]
-
-    @property
-    def primary_components(self):
-        """The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
-
-        :rtype: list
-        """
-        return [c for c in self.component_ids() if
-                not isinstance(self._components[c], DerivedComponent)]
 
     @property
     def derived_components(self):
@@ -1064,7 +1040,7 @@ class Data(BaseCartesianData):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
+        for cid_set in (self.main_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
@@ -1589,6 +1565,29 @@ class Data(BaseCartesianData):
             range = (xmin, xmax)
 
         return np.histogram(x, range=range, bins=bins, weights=w)[0]
+
+    # DEPRECATED
+
+    @property
+    def primary_components(self):
+        """
+        The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
+
+        This property is deprecated.
+        """
+        warnings.warn('Data.primary_components is deprecated', UserWarning)
+        return [c for c in self.component_ids() if
+                not isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def visible_components(self):
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinates.
+
+        This property is deprecated.
+        """
+        warnings.warn('Data.visible_components is deprecated', UserWarning)
+        return [cid for cid, comp in self._components.items()
+                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
 
 
 @contract(i=int, ndim=int)

@@ -34,7 +34,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
             raise ValueError("Can only use Table widget for 1D data")
         self._table_viewer = table_viewer
         self._data = table_viewer.data
-        self.show_hidden = False
+        self.show_coords = False
         self.order = np.arange(self._data.shape[0])
 
     def data_changed(self):
@@ -45,10 +45,10 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
     @property
     def columns(self):
-        if self.show_hidden:
+        if self.show_coords:
             return self._data.components
         else:
-            return self._data.visible_components
+            return self._data.main_components + self._data.derived_components
 
     def columnCount(self, index=None):
         return len(self.columns)

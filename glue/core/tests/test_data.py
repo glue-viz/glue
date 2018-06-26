@@ -142,7 +142,7 @@ class TestData(object):
         labels = 'asldfkjaAREGWoibasiwnsldkgajsldkgslkg'
         for label in labels:
             data.add_component(comp, label)
-        ids = data.visible_components
+        ids = data.main_components
         assert [cid.label for cid in ids] == list(labels)
 
     def test_broadcast(self):
@@ -165,19 +165,16 @@ class TestData(object):
         assert exc.value.args[0] == ("Data has already been assigned "
                                      "to a different hub")
 
-    def test_primary_components(self):
+    def test_main_components(self):
         compid = ComponentID('virtual')
         link = MagicMock(spec_set=ComponentLink)
         comp = DerivedComponent(self.data, link)
 
         self.data.add_component(comp, compid)
 
-        pricomps = self.data.primary_components
-        print(self.comp_id, compid, pricomps)
-        print(self.comp_id in pricomps)
-        print(compid not in pricomps)
-        assert self.comp_id in pricomps
-        assert compid not in pricomps
+        main_comps = self.data.main_components
+        assert self.comp_id in main_comps
+        assert compid not in main_comps
 
     def test_add_component_invalid_component(self):
         comp = Component(np.array([1]))
@@ -620,7 +617,7 @@ def test_foreign_pixel_components_not_in_visible():
     dc.add_link(LinkSame(d1.world_component_ids[0],
                          d2.world_component_ids[0]))
 
-    assert d2.pixel_component_ids[0] not in d1.visible_components
+    assert d2.pixel_component_ids[0] not in d1.main_components
     np.testing.assert_array_equal(d1[d2.pixel_component_ids[0]], [0])
 
 
@@ -685,7 +682,7 @@ def test_update_values_from_data():
     assert d1b in d1.components
     assert d2b not in d1.components
     assert d2c not in d1.components
-    assert [cid.label for cid in d1.visible_components] == ['b', 'c']
+    assert [cid.label for cid in d1.main_components] == ['b', 'c']
     assert d1.shape == (4,)
 
 
@@ -726,7 +723,7 @@ def test_update_values_from_data_order():
 
     d2.update_values_from_data(d1)
 
-    assert [cid.label for cid in d2.visible_components] == ['j', 'a', 'c', 'b', 'f']
+    assert [cid.label for cid in d2.main_components] == ['j', 'a', 'c', 'b', 'f']
 
 
 def test_find_component_id_with_cid():

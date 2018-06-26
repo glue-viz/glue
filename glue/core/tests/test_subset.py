@@ -680,9 +680,8 @@ def test_inherited_properties():
 
     assert sub.component_ids() == d.component_ids()
     assert sub.components == d.components
+    assert sub.main_components == d.main_components
     assert sub.derived_components == d.derived_components
-    assert sub.primary_components == d.primary_components
-    assert sub.visible_components == d.visible_components
     assert sub.pixel_component_ids == d.pixel_component_ids
     assert sub.world_component_ids == d.world_component_ids
 

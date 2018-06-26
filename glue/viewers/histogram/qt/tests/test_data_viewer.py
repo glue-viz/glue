@@ -194,7 +194,7 @@ class TestHistogramViewer(object):
         assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 1, 2, 1])
         assert_allclose(self.viewer.layers[0].state.histogram[0], [-5, -2.5, 0, 2.5, 5])
 
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 1', cid < 2)
 
         assert_allclose(self.viewer.layers[1].state.histogram[1], [0, 1, 1, 0])
@@ -379,13 +379,13 @@ class TestHistogramViewer(object):
 
         viewer_state.x_att = self.data.id['x']
 
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 1', cid < 1)
 
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 2', cid < 2)
 
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 3', cid < 3)
 
         assert_allclose(self.viewer.state.y_min, 0)

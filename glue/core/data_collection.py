@@ -309,7 +309,7 @@ class DataCollection(HubListener):
         # dataset
 
         from collections import Counter
-        clabel_count = Counter([c.label for d in data for c in d.visible_components])
+        clabel_count = Counter([c.label for d in data for c in d.main_components + d.derived_components])
 
         for d in data:
 

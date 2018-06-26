@@ -681,7 +681,7 @@ class ImageLayerState(BaseImageLayerState):
     def _update_attribute(self, *args):
         if self.layer is not None:
             self.attribute_att_helper.set_multiple_data([self.layer])
-            self.attribute = self.layer.visible_components[0]
+            self.attribute = self.layer.main_components[0]
 
     def _update_priority(self, name):
         if name == 'layer':

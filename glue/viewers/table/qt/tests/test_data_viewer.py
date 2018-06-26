@@ -26,11 +26,11 @@ class TestDataTableModel():
         assert self.model.columnCount() == 2
 
     def test_column_count_hidden(self):
-        self.model.show_hidden = True
+        self.model.show_coords = True
         assert self.model.columnCount() == 4
 
     def test_header_data(self):
-        for i, c in enumerate(self.data.visible_components):
+        for i, c in enumerate(self.data.main_components):
             result = self.model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
             assert result == c.label
 
@@ -42,7 +42,7 @@ class TestDataTableModel():
         assert self.model.rowCount() == 4
 
     def test_data(self):
-        for i, c in enumerate(self.data.visible_components):
+        for i, c in enumerate(self.data.main_components):
             for j in range(self.data.size):
                 idx = self.model.index(j, i)
                 result = self.model.data(idx, Qt.DisplayRole)
@@ -52,7 +52,7 @@ class TestDataTableModel():
     def test_data_2d(self):
         self.data = Data(x=[[1, 2], [3, 4]], y=[[2, 3], [4, 5]])
         self.model = DataTableModel(self.data)
-        for i, c in enumerate(self.data.visible_components):
+        for i, c in enumerate(self.data.main_components):
             for j in range(self.data.size):
                 idx = self.model.index(j, i)
                 result = self.model.data(idx, Qt.DisplayRole)

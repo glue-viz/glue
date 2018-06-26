@@ -457,12 +457,8 @@ class Subset(object):
         return self.data.derived_components
 
     @property
-    def primary_components(self):
-        return self.data.primary_components
-
-    @property
-    def visible_components(self):
-        return self.data.visible_components
+    def main_components(self):
+        return self.data.main_components
 
     @property
     def pixel_component_ids(self):
@@ -487,6 +483,16 @@ class Subset(object):
     @property
     def hub(self):
         return self.data.hub
+
+    # DEPRECATED (warnings raised in Data)
+
+    @property
+    def primary_components(self):
+        return self.data.primary_components
+
+    @property
+    def visible_components(self):
+        return self.data.visible_components
 
 
 class SubsetState(object):

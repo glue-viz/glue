@@ -345,11 +345,10 @@ class ComponentIDComboHelper(ComboHelper):
                     choices.append(ChoiceSeparator(data.label))
 
             cids = [ChoiceSeparator('Main components')]
-            for cid in data.primary_components:
-                if cid not in data.coordinate_components:
-                    if ((data.get_kind(cid) in ('numerical', 'datetime') and self.numeric) or
-                            (data.get_kind(cid) == 'categorical' and self.categorical)):
-                        cids.append(cid)
+            for cid in data.main_components:
+                if ((data.get_kind(cid) in ('numerical', 'datetime') and self.numeric) or
+                        (data.get_kind(cid) == 'categorical' and self.categorical)):
+                    cids.append(cid)
             if len(cids) > 1:
                 if self.pixel_coord or self.world_coord or (self.derived and len(derived_components) > 0):
                     choices += cids
