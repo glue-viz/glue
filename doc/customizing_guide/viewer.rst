@@ -198,6 +198,8 @@ The minimal layer artist class looks like the following::
 
     class TutorialLayerArtist(LayerArtist):
 
+        _layer_artist_cls = TutorialLayerState
+
         def clear(self):
             pass
 
@@ -235,6 +237,8 @@ with the ``fill`` property defined previously::
   from glue.viewers.common.layer_artist import LayerArtist
 
   class TutorialLayerArtist(LayerArtist):
+
+      _layer_artist_cls = TutorialLayerState
 
       def __init__(self, *args, **kwargs):
           super(MyLayerArtist, self).__init__(*args, **kwargs)
