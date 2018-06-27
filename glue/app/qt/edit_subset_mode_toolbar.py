@@ -43,8 +43,6 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
                              QtWidgets.QSizePolicy.Preferred)
 
-        self.addWidget(spacer)
-
         self.parent()._hub.subscribe(self, EditSubsetMessage, handler=self._update_mode)
         self.parent()._hub.subscribe(self, SubsetMessage, handler=self._update_subset_combo)
 
@@ -118,8 +116,14 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
             index = 0
         else:
             self._update_subset_combo()
+            # In some cases, this can be called from _update_subset_combo before
+            # EditSubsetMode has been updated, so the edit subset may still be
+            # the old one and not exist in the list of subset groups.
             if edit_subset:
-                index = self._data_collection.subset_groups.index(edit_subset[0])
+                if edit_subset[0] in self._data_collection.subset_groups:
+                    index = self._data_collection.subset_groups.index(edit_subset[0])
+                else:
+                    index = -1
             elif len(edit_subset) == 0:
                 index = self.subset_combo.count() - 1
 
