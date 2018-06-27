@@ -541,6 +541,9 @@ class ManualDataComboHelper(BaseDataComboHelper):
     def _filter_msg(self, msg):
         return msg.sender in self._datasets
 
+    def _filter_msg_dc(self, msg):
+        return msg.sender is self._data_collection
+
     def register_to_hub(self, hub):
 
         super(ManualDataComboHelper, self).register_to_hub(hub)
@@ -550,7 +553,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
                       filter=self._filter_msg)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=self._remove_data_msg,
-                      filter=self._filter_msg)
+                      filter=self._filter_msg_dc)
 
 
 class DataCollectionComboHelper(BaseDataComboHelper):
@@ -577,17 +580,20 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
         self.refresh()
 
-    def _filter_msg(self, msg):
+    def _filter_msg_in(self, msg):
         return msg.sender in self._datasets
+
+    def _filter_msg_is(self, msg):
+        return msg.sender is self._datasets
 
     def register_to_hub(self, hub):
         super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self, DataUpdateMessage,
                       handler=self._on_data_update,
-                      filter=self._filter_msg)
+                      filter=self._filter_msg_in)
         hub.subscribe(self, DataCollectionAddMessage,
                       handler=self.refresh,
-                      filter=self._filter_msg)
+                      filter=self._filter_msg_is)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=self.refresh,
-                      filter=self._filter_msg)
+                      filter=self._filter_msg_is)
