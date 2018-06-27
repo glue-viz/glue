@@ -363,7 +363,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_link_data.setIcon(get_icon('glue_link'))
         self._button_link_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_link_data.clicked.connect(self._set_up_links)
-        self._on_data_collection_change()
 
         self._data_toolbar.addWidget(self._button_link_data)
 
@@ -409,6 +408,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self.addToolBar(self._data_toolbar)
 
+        self._on_data_collection_change()
+
         # Selection mode toolbar
 
         tbar = EditSubsetModeToolBar(parent=self)
@@ -452,7 +453,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._hub.subscribe(self, DataCollectionMessage, handler=self._on_data_collection_change)
 
     def _on_data_collection_change(self, *event):
+        self._button_save_data.setEnabled(len(self.data_collection) > 0)
         self._button_link_data.setEnabled(len(self.data_collection) > 1)
+        self._button_edit_components.setEnabled(len(self.data_collection) > 0)
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
