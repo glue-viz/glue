@@ -342,8 +342,23 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.setIconSize(QtCore.QSize(16, 16))
 
+        self._button_open_session = QtWidgets.QToolButton()
+        self._button_open_session.setText("Open Session")
+        self._button_open_session.setIcon(get_icon('glue_open'))
+        self._button_open_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_open_session.clicked.connect(self._restore_session)
+
+        self._data_toolbar.addWidget(self._button_open_session)
+
+        self._button_save_session = QtWidgets.QToolButton()
+        self._button_save_session.setText("Export Session")
+        self._button_save_session.setIcon(get_icon('glue_filesave'))
+        self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_save_session.clicked.connect(self._choose_save_session)
+
+        self._data_toolbar.addWidget(self._button_save_session)
         self._button_open_data = QtWidgets.QToolButton()
-        self._button_open_data.setText("Open Data")
+        self._button_open_data.setText("Import Data")
         self._button_open_data.setIcon(get_icon('glue_open'))
         self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_open_data.clicked.connect(self._choose_load_data_wizard)
@@ -366,45 +381,13 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_link_data)
 
-        self._button_ipython = QtWidgets.QToolButton()
-        self._button_ipython.setCheckable(True)
-        self._button_ipython.setText("IPython Terminal")
-        self._button_ipython.setIcon(get_icon('IPythonConsole'))
-        self._button_ipython.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_ipython.clicked.connect(self._toggle_terminal)
-
-        self._data_toolbar.addWidget(self._button_ipython)
-
-        self._button_open_session = QtWidgets.QToolButton()
-        self._button_open_session.setText("Open Session")
-        self._button_open_session.setIcon(get_icon('glue_open'))
-        self._button_open_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_session.clicked.connect(self._restore_session)
-
-        self._data_toolbar.addWidget(self._button_open_session)
-
-        self._button_save_session = QtWidgets.QToolButton()
-        self._button_save_session.setText("Export Session")
-        self._button_save_session.setIcon(get_icon('glue_filesave'))
-        self._button_save_session.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_save_session.clicked.connect(self._choose_save_session)
-
-        self._data_toolbar.addWidget(self._button_save_session)
-
         self._button_edit_components = QtWidgets.QToolButton()
-        self._button_edit_components.setText("Add/edit arithmetic attributes")
-        self._button_edit_components.setIcon(get_icon('pencil'))
+        self._button_edit_components.setText("Arithmetic attributes")
+        self._button_edit_components.setIcon(get_icon('arithmetic'))
         self._button_edit_components.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self._button_edit_components.clicked.connect(nonpartial(self._layer_widget._create_component))
 
         self._data_toolbar.addWidget(self._button_edit_components)
-
-        spacer = QtWidgets.QWidget()
-        spacer.setMinimumSize(20, 10)
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
-                             QtWidgets.QSizePolicy.Preferred)
-
-        self._data_toolbar.addWidget(spacer)
 
         self.addToolBar(self._data_toolbar)
 
@@ -421,13 +404,22 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._console_toolbar = QtWidgets.QToolBar()
 
-        self._console_toolbar.setIconSize(QtCore.QSize(16, 16))
+        self._console_toolbar.setIconSize(QtCore.QSize(14, 14))
 
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                              QtWidgets.QSizePolicy.Preferred)
 
         self._console_toolbar.addWidget(spacer)
+
+        self._button_ipython = QtWidgets.QToolButton()
+        self._button_ipython.setCheckable(True)
+        self._button_ipython.setText("Terminal")
+        self._button_ipython.setIcon(get_icon('IPythonConsole'))
+        self._button_ipython.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_ipython.clicked.connect(self._toggle_terminal)
+
+        self._console_toolbar.addWidget(self._button_ipython)
 
         self._button_preferences = QtWidgets.QToolButton()
         self._button_preferences.setText("Preferences")
@@ -438,7 +430,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._console_toolbar.addWidget(self._button_preferences)
 
         self._button_console = QtWidgets.QToolButton()
-        self._button_console.setText("View Error Console")
+        self._button_console.setText("Error Console")
         self._button_console.setToolButtonStyle(Qt.ToolButtonTextOnly)
 
         self._console_toolbar.addWidget(self._button_console)
