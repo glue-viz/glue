@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import os
-
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue.utils.qt import set_cursor_cm
@@ -47,7 +45,7 @@ def data_wizard():
 class GlueDataDialog(object):
 
     def __init__(self, parent=None):
-        self._fd = QtWidgets.QFileDialog(parent, directory=os.curdir)
+        self._fd = QtWidgets.QFileDialog(parent)
         from glue.config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]

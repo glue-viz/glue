@@ -53,6 +53,8 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Always returned to last used folder when opening/saving files. [#1794]
+
 * Improve performance when updating links and changing attributes
   on subsets. [#1716]
 
