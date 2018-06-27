@@ -374,18 +374,18 @@ class ComponentIDComboHelper(ComboHelper):
         self.choices = choices
 
     def _filter_msg(self, msg):
-        return msg.data in self._data or msg.sender in self._data_collection
+        return msg.sender in self._data
 
     def register_to_hub(self, hub):
         hub.subscribe(self, DataRenameComponentMessage,
                       handler=self._on_rename,
-                      filter=lambda msg: msg.sender in self._data)
+                      filter=self._filter_msg)
         hub.subscribe(self, DataReorderComponentMessage,
                       handler=self.refresh,
-                      filter=lambda msg: msg.sender in self._data)
+                      filter=self._filter_msg)
         hub.subscribe(self, ComponentsChangedMessage,
                       handler=self.refresh,
-                      filter=lambda msg: msg.sender in self._data)
+                      filter=self._filter_msg)
         if self._data_collection is not None:
             hub.subscribe(self, DataCollectionDeleteMessage,
                           handler=self._remove_data)
@@ -535,16 +535,22 @@ class ManualDataComboHelper(BaseDataComboHelper):
         self._datasets.remove(data)
         self.refresh()
 
+    def _remove_data_msg(self, msg):
+        self.remove_data(msg.data)
+
+    def _filter_msg(self, msg):
+        return msg.sender in self._datasets
+
     def register_to_hub(self, hub):
 
         super(ManualDataComboHelper, self).register_to_hub(hub)
 
         hub.subscribe(self, DataUpdateMessage,
                       handler=self._on_data_update,
-                      filter=lambda msg: msg.sender in self._datasets)
+                      filter=self._filter_msg)
         hub.subscribe(self, DataCollectionDeleteMessage,
-                      handler=lambda msg: self.remove_data(msg.data),
-                      filter=lambda msg: msg.sender is self._data_collection)
+                      handler=self._remove_data_msg,
+                      filter=self._filter_msg)
 
 
 class DataCollectionComboHelper(BaseDataComboHelper):
@@ -571,14 +577,17 @@ class DataCollectionComboHelper(BaseDataComboHelper):
 
         self.refresh()
 
+    def _filter_msg(self, msg):
+        return msg.sender in self._datasets
+
     def register_to_hub(self, hub):
         super(DataCollectionComboHelper, self).register_to_hub(hub)
         hub.subscribe(self, DataUpdateMessage,
                       handler=self._on_data_update,
-                      filter=lambda msg: msg.sender in self._datasets)
+                      filter=self._filter_msg)
         hub.subscribe(self, DataCollectionAddMessage,
                       handler=self.refresh,
-                      filter=lambda msg: msg.sender is self._datasets)
+                      filter=self._filter_msg)
         hub.subscribe(self, DataCollectionDeleteMessage,
                       handler=self.refresh,
-                      filter=lambda msg: msg.sender is self._datasets)
+                      filter=self._filter_msg)
