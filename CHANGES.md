@@ -56,6 +56,11 @@ v0.13.4 (unreleased)
 * Improve performance when updating links and changing attributes
   on subsets. [#1716]
 
+* Fix errors that happened when clicking on the 'Export Data' and
+  'Define arithmetic attributes' buttons when no data was present,
+  and fixed Qt errors that happened if the data collection changed
+  after the 'Export Data' dialog was opened. [#1795]
+
 * Fixed parsing of AVM meta-data from images. [#1732]
 
 v0.13.3 (unreleased)
