@@ -6,19 +6,20 @@ from collections import defaultdict, Counter
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
-from glue.external.echo import SelectionCallbackProperty
+from glue.external.echo import SelectionCallbackProperty, HasCallbackProperties
 from glue.external.echo.qt import connect_combo_selection
 from glue.core import ComponentID
 from glue.core.parse import ParsedComponentLink, ParsedCommand
 from glue.utils.qt import load_ui
 from glue.core.message import NumericalDataChangedMessage
+from glue.core.data_combo_helper import DataCollectionComboHelper
 
 from glue.dialogs.component_arithmetic.qt.equation_editor import EquationEditorDialog
 
 __all__ = ['ArithmeticEditorWidget']
 
 
-class ArithmeticEditorWidget(QtWidgets.QDialog):
+class ArithmeticEditorWidget(QtWidgets.QDialog, HasCallbackProperties):
 
     data = SelectionCallbackProperty()
 
@@ -63,8 +64,8 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
                     self._components_other[data].append(cid)
 
         # Populate data combo
-        ArithmeticEditorWidget.data.set_choices(self, list(self.data_collection))
-        ArithmeticEditorWidget.data.set_display_func(self, lambda x: x.label)
+        self._data_helper = DataCollectionComboHelper(self, 'data', data_collection,
+                                                      none='Select dataset')
         connect_combo_selection(self, 'data', self.ui.combosel_data)
 
         self.ui.combosel_data.setCurrentIndex(0)
@@ -98,11 +99,16 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
 
         self.list.blockSignals(True)
 
+        self.list.clear()
+
+        if self.data is None:
+            return
+
         mapping = {}
         for cid in self.data.components:
             mapping[cid] = cid.label
 
-        self.list.clear()
+
         for cid in self._components_derived[self.data]:
             label = self._state[self.data][cid]['label']
             if self._state[self.data][cid]['equation'] is None:
