@@ -19,6 +19,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
 
         self.subset_combo = QtWidgets.QComboBox()
+        self.subset_combo.setMinimumContentsLength(8)
 
         spacer = QtWidgets.QWidget()
         spacer.setMinimumSize(10, 10)
@@ -29,8 +30,9 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         self.addWidget(QtWidgets.QLabel("Active Subset:"))
         self.addWidget(self.subset_combo)
 
-        self.addWidget(QtWidgets.QLabel("Subset Mode:"))
-        self.setIconSize(QtCore.QSize(20, 20))
+        self._label_subset_mode = QtWidgets.QLabel("Mode:")
+        self.addWidget(self._label_subset_mode)
+        self.setIconSize(QtCore.QSize(16, 16))
         self._group = QtWidgets.QActionGroup(self)
         self._modes = {}
         self._add_actions()
@@ -50,6 +52,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         self._update_subset_combo()
         self.subset_combo.currentIndexChanged.connect(self._on_subset_combo_change)
 
+        self._update_mode_visibility()
+
     def _update_subset_combo(self, msg=None):
         """
         Set up the combo listing the subsets.
@@ -58,7 +62,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         # Prepare contents of combo box - we include a 'Create subset' item as
         # the last item
         labeldata = [(subset.label, subset) for subset in self._data_collection.subset_groups]
-        labeldata.append(('Create subset', None))
+        labeldata.append(('None', None))
 
         # We now update the combo box, but we block the signals as we don't want
         # this to cause the current subset being edited to be modified.
@@ -72,11 +76,17 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         for index, subset in enumerate(self._data_collection.subset_groups):
             self.subset_combo.setItemIcon(index, layer_icon(subset))
 
-        # We now pretend that the EditSubsetMode has change to force the current
-        # combo selection to be in sync.
-        self._on_edit_subset_mode_change()
-
         self.subset_combo.blockSignals(False)
+
+    def _update_mode_visibility(self):
+        visible_modes = not self.subset_combo.currentIndex() == self.subset_combo.count() - 1
+        if visible_modes:
+            self._label_subset_mode.setText("Mode:")
+        else:
+            self._label_subset_mode.setText("(selections will create subset)")
+        for mode in self._modes.values():
+            if isinstance(mode, QtWidgets.QAction):
+                mode.setVisible(visible_modes)
 
     @avoid_circular
     def _on_subset_combo_change(self, event=None):
@@ -90,6 +100,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
             self._edit_subset_mode.edit_subset = []
         else:
             self._edit_subset_mode.edit_subset = [self.subset_combo.currentData()]
+
+        self._update_mode_visibility()
 
         # We now force the combo to be refreshed in case it included the
         # temporary 'Multiple subsets' entry which needs to be removed.
@@ -123,12 +135,14 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
                 if edit_subset[0] in self._data_collection.subset_groups:
                     index = self._data_collection.subset_groups.index(edit_subset[0])
                 else:
-                    index = -1
+                    index = self.subset_combo.count() - 1
             elif len(edit_subset) == 0:
                 index = self.subset_combo.count() - 1
 
         self.subset_combo.setCurrentIndex(index)
         self.subset_combo.blockSignals(False)
+
+        self._update_mode_visibility()
 
     def _make_mode(self, name, tip, icon, mode):
 
