@@ -19,7 +19,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
 
         self.subset_combo = QtWidgets.QComboBox()
-        self.subset_combo.setMinimumContentsLength(8)
+        self.subset_combo.setMinimumContentsLength(10)
 
         spacer = QtWidgets.QWidget()
         spacer.setMinimumSize(10, 10)
@@ -83,7 +83,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         if visible_modes:
             self._label_subset_mode.setText("Mode:")
         else:
-            self._label_subset_mode.setText("(selections will create subset)")
+            self._label_subset_mode.setText("(the next selection will create a subset)")
         for mode in self._modes.values():
             if isinstance(mode, QtWidgets.QAction):
                 mode.setVisible(visible_modes)
