@@ -15,7 +15,7 @@ from glue.icons.qt import layer_icon
 
 class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
 
-    def __init__(self, title="Subset Update Mode", parent=None):
+    def __init__(self, title="Subset mode toolbar", parent=None):
         super(EditSubsetModeToolBar, self).__init__(title, parent)
 
         self.subset_combo = QtWidgets.QComboBox()

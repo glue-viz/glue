@@ -338,7 +338,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Data toolbar
 
-        self._data_toolbar = QtWidgets.QToolBar()
+        self._data_toolbar = QtWidgets.QToolBar("Session and Data toolbar")
 
         self._data_toolbar.setIconSize(QtCore.QSize(16, 16))
 
@@ -402,7 +402,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Error console toolbar
 
-        self._console_toolbar = QtWidgets.QToolBar()
+        self._console_toolbar = QtWidgets.QToolBar('Advanced toolbar')
 
         self._console_toolbar.setIconSize(QtCore.QSize(14, 14))
 
