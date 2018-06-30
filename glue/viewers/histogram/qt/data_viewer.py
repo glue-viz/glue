@@ -54,10 +54,18 @@ class HistogramViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
+    @defer_draw
     def apply_roi(self, roi, override_mode=None):
 
-        if len(self.layers) == 0:  # Force redraw to get rid of ROI
-            return self.redraw()
+        # Force redraw to get rid of ROI. We do this because applying the
+        # subset state below might end up not having an effect on the viewer,
+        # for example there may not be any layers, or the active subset may not
+        # be one of the layers. So we just explicitly redraw here to make sure
+        # a redraw will happen after this method is called.
+        self.redraw()
+
+        if len(self.layers) == 0:
+            return
 
         x_date = 'datetime' in self.state.x_kinds
 

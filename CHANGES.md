@@ -53,6 +53,9 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Fixed a bug that caused ROIs to not be erased after selection if the
+  active subset was not in the list of layers for the viewer. [#1801]
+
 * Always returned to last used folder when opening/saving files. [#1794]
 
 * Improve performance when updating links and changing attributes

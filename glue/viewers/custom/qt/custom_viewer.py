@@ -88,7 +88,7 @@ from glue.core.subset import SubsetState
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.core.component_id import ComponentID
 
-from glue.utils import as_list, all_artists, new_artists, categorical_ndarray
+from glue.utils import as_list, all_artists, new_artists, categorical_ndarray, defer_draw
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState, MatplotlibLayerState
@@ -743,9 +743,19 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self._coordinator, self.axes, self.state, layer=layer, layer_state=layer_state)
 
+    @defer_draw
     def apply_roi(self, roi):
+
+        # Force redraw to get rid of ROI. We do this because applying the
+        # subset state below might end up not having an effect on the viewer,
+        # for example there may not be any layers, or the active subset may not
+        # be one of the layers. So we just explicitly redraw here to make sure
+        # a redraw will happen after this method is called.
+        self.redraw()
+
         if len(self.layers) == 0:
             return
+
         subset_state = self._coordinator._build_subset_state(roi=roi)
         self.apply_subset_state(subset_state)
 
