@@ -62,8 +62,6 @@ def hdf5_writer(filename, data, components=None):
                     warnings.warn("Unknown data type in HDF5 export: {0}".format(values.dtype))
                     continue
 
-        print(values)
-
         f.create_dataset(cid.label, data=values)
 
     f.close()

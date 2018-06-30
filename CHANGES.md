@@ -66,6 +66,9 @@ v0.13.4 (unreleased)
   and fixed Qt errors that happened if the data collection changed
   after the 'Export Data' dialog was opened. [#1795]
 
+* Better preserve data types when exporting data/subsets to FITS
+  and HDF5 formats. [#1800]
+
 * Fixed parsing of AVM meta-data from images. [#1732]
 
 v0.13.3 (unreleased)
