@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from qtpy import QtCore, QtWidgets
-from glue.core.edit_subset_mode import (OrMode,
+from glue.core.edit_subset_mode import (NewMode, OrMode,
                                         AndNotMode, AndMode, XorMode,
                                         ReplaceMode)
 from glue.app.qt.actions import action
@@ -100,7 +100,8 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
             self._edit_subset_mode.edit_subset = []
         else:
             self._edit_subset_mode.edit_subset = [self.subset_combo.currentData()]
-
+            if self._edit_subset_mode.mode is NewMode:
+                self._edit_subset_mode.mode = ReplaceMode
         self._update_mode_visibility()
 
         # We now force the combo to be refreshed in case it included the
@@ -121,7 +122,9 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
 
         edit_subset = self._edit_subset_mode.edit_subset
 
-        if len(edit_subset) > 1:
+        if self._edit_subset_mode.mode is NewMode:
+            index = self.subset_combo.count() - 1
+        elif len(edit_subset) > 1:
             # We temporarily add an item - we remove this if the combo changes
             # again.
             self.subset_combo.insertItem(0, 'Multiple subsets')
@@ -179,7 +182,14 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         :param mode: Name of the mode (Or, Not, And, Xor, Replace)
         :type mode: str
         """
-        if isinstance(mode, string_types):
+        if mode == 'new' or mode is NewMode:
+            if self._edit_subset_mode.mode is not NewMode:
+                self._edit_subset_mode.mode = NewMode
+            for act in self._modes.values():
+                if isinstance(act, QtWidgets.QAction):
+                    act.setChecked(False)
+            return
+        elif isinstance(mode, string_types):
             try:
                 mode = self._modes[mode]  # label to mode class
             except KeyError:

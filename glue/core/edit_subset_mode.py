@@ -63,7 +63,7 @@ class EditSubsetMode(object):
         :param override_mode: Mode to use instead of EditSubsetMode.mode
         """
         mode = override_mode or self.mode
-        if not self._edit_subset:
+        if not self._edit_subset or mode is NewMode:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
@@ -100,6 +100,12 @@ class EditSubsetMode(object):
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))
+
+
+def NewMode(edit_subset, new_state):
+    """ Replaces edit_subset.subset_state with new_state """
+    logging.getLogger(__name__).debug("New %s", edit_subset)
+    edit_subset.subset_state = new_state.copy()
 
 
 def ReplaceMode(edit_subset, new_state):
