@@ -94,7 +94,7 @@ def cmap2pixmap(cmap, steps=50, size=(100, 100)):
     return pm
 
 
-def tint_pixmap(bm, color):
+def tint_pixmap(bm, color, background_color=None):
     """
     Re-color a monochrome pixmap object using `color`
 
@@ -104,18 +104,24 @@ def tint_pixmap(bm, color):
         The Pixmap object
     color : ``QColor``
         The Qt color
+    background_color : ``QColor``
+        The background color to use
 
     Returns
     -------
     pixmap : ``QPixmap``
         The new pixmap
     """
+
     if bm.depth() != 1:
         raise TypeError("Input pixmap must have a depth of 1: %i" % bm.depth())
 
+    if background_color is None:
+        background_color = QtGui.QColor(0, 0, 0, 0)
+
     image = bm.toImage()
     image.setColor(1, color.rgba())
-    image.setColor(0, QtGui.QColor(0, 0, 0, 0).rgba())
+    image.setColor(0, background_color.rgba())
 
     result = QtGui.QPixmap.fromImage(image)
     return result
