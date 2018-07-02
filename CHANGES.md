@@ -40,6 +40,9 @@ v0.14.0 (unreleased)
 
 * Deprecated ``Data.visible_components`` and ``Data.primary_components``. [#1788]
 
+* Speed up histogram calculations by using the fast-histogram package instead of
+  np.histogram. [#1806]
+
 * In the case of categorical attributes, ``Data[name]`` now returns a
   ``categorical_ndarray`` object rather than the indices of the categories. You
   can access the indices with ``Data[name].codes`` and the unique categories
