@@ -80,7 +80,6 @@ class SubsetMessage(Message):
 
 
 class SubsetCreateMessage(SubsetMessage):
-
     """
     A message that a subset issues when its state changes
     """

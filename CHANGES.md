@@ -4,6 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Show the active subset in the toolbar. [#1797]
+
 * Refactored the viewer class base classes:
 
   - ``glue.core.application_base.ViewerBase`` has been removed in favor of

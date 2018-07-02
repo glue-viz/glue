@@ -13,7 +13,7 @@ __all__ = ['update_combobox', 'GlueTabBar', 'load_ui', 'process_dialog',
            'combo_as_string', 'qurl_to_path']
 
 
-def update_combobox(combo, labeldata, default_index=0):
+def update_combobox(combo, labeldata, default_index=0, block_signals=True):
     """
     Redefine the items in a QComboBox
 
@@ -42,7 +42,8 @@ def update_combobox(combo, labeldata, default_index=0):
     The QComboBox is modified inplace
     """
 
-    combo.blockSignals(True)
+    if block_signals:
+        combo.blockSignals(True)
     idx = combo.currentIndex()
     if idx >= 0:
         current = combo.itemData(idx)
@@ -63,7 +64,8 @@ def update_combobox(combo, labeldata, default_index=0):
         index = min(default_index, combo.count() - 1)
     combo.setCurrentIndex(index)
 
-    combo.blockSignals(False)
+    if block_signals:
+        combo.blockSignals(False)
 
     # We need to force emit this, otherwise if the index happens to be the
     # same as before, even if the data is different, callbacks won't be

@@ -62,9 +62,7 @@ class EditSubsetMode(object):
         :param new_state: The new SubsetState
         :param override_mode: Mode to use instead of EditSubsetMode.mode
         """
-
         mode = override_mode or self.mode
-
         if not self._edit_subset or mode is NewMode:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
