@@ -994,10 +994,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # include file filter twice, so it shows up in Dialog
         outfile, file_filter = compat.getsavefilename(
             parent=self, basedir=getattr(self, '_last_session_name', 'session.glu'),
-            filters=("Glue Session with absolute paths to data(*.glu);; "
-                     "Glue Session with relative paths to data(*.glu);; "
+            filters=("Glue Session with absolute paths to data (*.glu);; "
+                     "Glue Session with relative paths to data (*.glu);; "
                      "Glue Session including data (*.glu)"),
-            selectedfilter=getattr(self, '_last_session_filter', ''))
+            selectedfilter=getattr(self, '_last_session_filter',
+                                   'Glue Session with relative paths to data (*.glu)'))
 
         # This indicates that the user cancelled
         if not outfile:

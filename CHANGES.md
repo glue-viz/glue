@@ -4,6 +4,9 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Change 'Export Session' dialog to offer to save with relative paths to data
+  by default instead of absolute paths. [#1803]
+
 * Show the active subset in the toolbar. [#1797]
 
 * Refactored the viewer class base classes:
@@ -34,7 +37,7 @@ v0.14.0 (unreleased)
 * Removed ``Data.get_pixel_component_ids`` and ``Data.get_world_component_ids``
   in favor of ``Data.pixel_component_ids`` and ``Data.world_component_ids``.
   [#1784]
-  
+
 * Deprecated ``Data.visible_components`` and ``Data.primary_components``. [#1788]
 
 * In the case of categorical attributes, ``Data[name]`` now returns a
