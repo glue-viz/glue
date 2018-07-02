@@ -17,7 +17,7 @@ class ComponentManagerWidget(QtWidgets.QDialog):
 
     data = SelectionCallbackProperty()
 
-    def __init__(self, data_collection=None, parent=None):
+    def __init__(self, data_collection=None, initial_data=None, parent=None):
 
         super(ComponentManagerWidget, self).__init__(parent=parent)
 
@@ -55,7 +55,11 @@ class ComponentManagerWidget(QtWidgets.QDialog):
         ComponentManagerWidget.data.set_display_func(self, lambda x: x.label)
         connect_combo_selection(self, 'data', self.ui.combosel_data)
 
-        self.ui.combosel_data.setCurrentIndex(0)
+        if initial_data is None:
+            self.ui.combosel_data.setCurrentIndex(0)
+        else:
+            self.data = initial_data
+
         self.ui.combosel_data.currentIndexChanged.connect(self._update_component_lists)
         self._update_component_lists()
 
