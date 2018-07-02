@@ -23,7 +23,10 @@ from glue.core.qt.mime import LAYERS_MIME_TYPE
 from glue.utils import nonpartial
 from glue.utils.qt import PythonListModel, PyMimeData
 from glue.core.hub import HubListener
-from glue.core.message import LayerArtistEnabledMessage, LayerArtistUpdatedMessage, LayerArtistDisabledMessage
+from glue.core.message import (LayerArtistEnabledMessage,
+                               LayerArtistUpdatedMessage,
+                               LayerArtistDisabledMessage,
+                               LayerArtistVisibilityMessage)
 
 
 class LayerArtistModel(PythonListModel):
@@ -211,6 +214,7 @@ class LayerArtistView(QtWidgets.QListView, HubListener):
         self.hub.subscribe(self, LayerArtistUpdatedMessage, self._update_viewport)
         self.hub.subscribe(self, LayerArtistEnabledMessage, self._layer_enabled_or_disabled)
         self.hub.subscribe(self, LayerArtistDisabledMessage, self._layer_enabled_or_disabled)
+        self.hub.subscribe(self, LayerArtistVisibilityMessage, self._layer_enabled_or_disabled)
 
     def _update_viewport(self, *args):
         # This forces the widget containing the list view to update/redraw,
@@ -339,7 +343,6 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
         self.disabled_warning = QtWidgets.QLabel()
         self.disabled_warning.setWordWrap(True)
-        self.disabled_warning.setAlignment(Qt.AlignJustify)
         self.padded_warning = QtWidgets.QWidget()
         warning_layout = QtWidgets.QVBoxLayout()
         warning_layout.setContentsMargins(20, 20, 20, 20)
@@ -370,10 +373,19 @@ class LayerArtistWidget(QtWidgets.QWidget):
 
         if layer_artist in self.layout_style_widgets:
             if layer_artist.enabled:
-                self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
-                self.disabled_warning.setText('')
+                if layer_artist.visible:
+                    self.disabled_warning.setText('')
+                    self.layer_options_layout.setCurrentWidget(self.layout_style_widgets[layer_artist])
+                else:
+                    self.disabled_warning.setText('Layer is not currently visible. '
+                                                  'Click on the checkbox for this '
+                                                  'layer to make it visible')
+                    self.disabled_warning.setAlignment(Qt.AlignLeft)
+                    self.layer_options_layout.setCurrentWidget(self.padded_warning)
+
             else:
                 self.disabled_warning.setText(layer_artist.disabled_message)
+                self.disabled_warning.setAlignment(Qt.AlignJustify)
                 self.layer_options_layout.setCurrentWidget(self.padded_warning)
         else:
             self.layer_options_layout.setCurrentWidget(self.empty)
