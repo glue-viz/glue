@@ -23,8 +23,6 @@ def test_edit_subset_mode_toolbar():
     assert combo_labels(subset_combo) == ('None', ['None'])
     assert mode_label.text() == '(the next selection will create a subset)'
 
-    print("NEW SUBSET GROUP")
-
     sg1 = dc.new_subset_group(subset_state=dc[0].id['x'] > 1, label='Subset 1')
 
     assert combo_labels(subset_combo) == ('Subset 1', ['Subset 1', 'None'])
