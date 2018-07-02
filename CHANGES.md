@@ -55,6 +55,8 @@ v0.14.0 (unreleased)
   after they were closed if they were accessed through the
   IPython console. [#1770]
 
+* Don't show layer edit options if layer is not visible. [#1805]
+
 v0.13.4 (unreleased)
 --------------------
 

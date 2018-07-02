@@ -13,7 +13,7 @@ __all__ = ['Message', 'ErrorMessage', 'SubsetMessage', 'SubsetCreateMessage',
            'DataCollectionDeleteMessage', 'ApplicationClosedMessage',
            'DataRemoveComponentMessage', 'LayerArtistEnabledMessage',
            'LayerArtistDisabledMessage', 'DataRenameComponentMessage',
-           'DataReorderComponentMessage']
+           'DataReorderComponentMessage', 'LayerArtistVisibilityMessage']
 
 
 class Message(object):
@@ -248,6 +248,12 @@ class LayerArtistEnabledMessage(Message):
 class LayerArtistUpdatedMessage(Message):
     def __init__(self, sender, tag=None):
         super(LayerArtistUpdatedMessage, self).__init__(sender, tag=tag)
+        self.layer_artist = self.sender
+
+
+class LayerArtistVisibilityMessage(Message):
+    def __init__(self, sender, tag=None):
+        super(LayerArtistVisibilityMessage, self).__init__(sender, tag=tag)
         self.layer_artist = self.sender
 
 
