@@ -60,6 +60,9 @@ v0.13.4 (unreleased)
 
 * Always returned to last used folder when opening/saving files. [#1794]
 
+* Show correct dataset when using control-click to select to add
+  arithmetic attributes or rename/reorder components. [#1802]
+
 * Improve performance when updating links and changing attributes
   on subsets. [#1716]
 

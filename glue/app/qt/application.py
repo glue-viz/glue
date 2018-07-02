@@ -22,6 +22,7 @@ from glue.utils.qt import get_qapp
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.dialogs.link_editor.qt import LinkEditor
+from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea
 from glue.app.qt.layer_tree_widget import PlotAction, LayerTreeWidget
@@ -385,7 +386,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_edit_components.setText("Arithmetic attributes")
         self._button_edit_components.setIcon(get_icon('arithmetic'))
         self._button_edit_components.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_edit_components.clicked.connect(nonpartial(self._layer_widget._create_component))
+        self._button_edit_components.clicked.connect(self._artihmetic_dialog)
 
         self._data_toolbar.addWidget(self._button_edit_components)
 
@@ -443,6 +444,10 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.hide()
 
         self._hub.subscribe(self, DataCollectionMessage, handler=self._on_data_collection_change)
+
+    def _artihmetic_dialog(self, *event):
+        dialog = ArithmeticEditorWidget(self.data_collection)
+        dialog.exec_()
 
     def _on_data_collection_change(self, *event):
         self._button_save_data.setEnabled(len(self.data_collection) > 0)

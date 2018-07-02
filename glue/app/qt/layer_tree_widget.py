@@ -16,7 +16,6 @@ from glue.config import layer_action
 from glue import core
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
-from glue.app.qt.actions import action
 from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.dialogs.component_manager.qt import ComponentManagerWidget
 from glue.dialogs.subset_facet.qt import SubsetFacet
@@ -256,6 +255,40 @@ class ExportDataAction(LayerAction):
         data = self.selected_layers()[0]
         from glue.core.data_exporters.qt.dialog import export_data
         export_data(data)
+
+
+class ArithmeticAction(LayerAction):
+
+    _title = "Add/edit arithmetic attributes"
+    _tooltip = "Add/edit attributes derived from existing ones"
+
+    def _can_trigger(self):
+        return self.single_selection_data()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        print(data.label)
+        dialog = ArithmeticEditorWidget(self._layer_tree.data_collection,
+                                        initial_data=data)
+        dialog.exec_()
+
+
+class ManageComponentsAction(LayerAction):
+
+    _title = "Reorder/rename data attributes"
+    _tooltip = "Reorder/rename data attributes"
+
+    def _can_trigger(self):
+        return self.single_selection_data()
+
+    def _do_action(self):
+        assert self._can_trigger()
+        data = self.selected_layers()[0]
+        print(data.label)
+        dialog = ComponentManagerWidget(self._layer_tree.data_collection,
+                                        initial_data=data)
+        dialog.exec_()
 
 
 class ExportSubsetAction(ExportDataAction):
@@ -549,14 +582,6 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         mode = self.session.edit_subset_mode
         mode.edit_subset = [s for s in self.selected_layers() if isinstance(s, core.SubsetGroup)]
 
-    def _create_component(self):
-        dialog = ArithmeticEditorWidget(self.data_collection)
-        dialog.exec_()
-
-    def _manage_components(self):
-        dialog = ComponentManagerWidget(self.data_collection)
-        dialog.exec_()
-
     def _create_actions(self):
         tree = self.ui.layerTree
 
@@ -582,22 +607,8 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         self._actions['merge'] = MergeAction(self)
         self._actions['maskify'] = MaskifySubsetAction(self)
         self._actions['link'] = LinkAction(self)
-
-        sep = QtWidgets.QAction("", tree)
-        sep.setSeparator(True)
-        tree.addAction(sep)
-
-        a = action("Add/edit arithmetic attributes", self,
-                   tip="Add/edit attributes derived from existing ones")
-        tree.addAction(a)
-        a.triggered.connect(nonpartial(self._create_component))
-        self._actions['new_component'] = a
-
-        a = action("Reorder/rename data attributes", self,
-                   tip="Reorder/rename data attributes")
-        tree.addAction(a)
-        a.triggered.connect(nonpartial(self._manage_components))
-        self._actions['manage_components'] = a
+        self._actions['new_component'] = ArithmeticAction(self)
+        self._actions['manage_components'] = ManageComponentsAction(self)
 
         # Add user-defined layer actions. Note that _asdict is actually a public
         # method, but just has an underscore to prevent conflict with
