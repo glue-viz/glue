@@ -9,6 +9,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from fast_histogram import histogram1d
+
 from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
@@ -1559,12 +1561,17 @@ class Data(BaseCartesianData):
             return np.zeros(bins)
 
         if log:
-            range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), bins + 1)
-        else:
-            range = (xmin, xmax)
+            xmin = np.log10(xmin)
+            xmax = np.log10(xmax)
+            x = np.log10(x)
 
-        return np.histogram(x, range=range, bins=bins, weights=w)[0]
+        # By default fast-histogram drops values that are exactly xmax, so we
+        # increase xmax very slightly to make sure that this doesn't happen
+        xmax += 10 * np.spacing(xmax)
+
+        range = (xmin, xmax)
+
+        return histogram1d(x, range=range, bins=bins, weights=w)
 
     # DEPRECATED
 
