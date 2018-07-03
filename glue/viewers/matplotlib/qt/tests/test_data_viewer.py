@@ -123,21 +123,6 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.viewer.state.layers[0].layer is self.data
         assert self.viewer.state.layers[1].layer is self.data.subsets[0]
 
-    def test_adding_subset_adds_data(self):
-
-        # TODO: in future consider whether we want to deprecate this behavior
-
-        self.init_subset()
-        self.viewer.add_subset(self.data.subsets[0])
-
-        assert len(self.viewer.layers) == 2
-        assert self.viewer.layers[0].layer is self.data
-        assert self.viewer.layers[1].layer is self.data.subsets[0]
-
-        assert len(self.viewer.state.layers) == 2
-        assert self.viewer.state.layers[0].layer is self.data
-        assert self.viewer.state.layers[1].layer is self.data.subsets[0]
-
     def test_add_data_then_subset(self):
 
         # Make sure that if a subset is created in a dataset that has already
