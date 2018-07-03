@@ -52,9 +52,7 @@ class GlueMdiArea(QtWidgets.QMdiArea):
             application = self._application()
             if application is None:
                 return
-            if isinstance(layer, core.subset.Subset):
-                application.choose_new_data_viewer(layer.data)
-            elif isinstance(layer, core.data.BaseData):
+            if isinstance(layer, (core.data.BaseData, core.subset.Subset)):
                 application.choose_new_data_viewer(layer)
             else:
                 raise TypeError("Expected a Data or Subset, got {0}".format(type(layer)))
