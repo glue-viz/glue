@@ -412,14 +412,14 @@ class TestHistogramViewer(object):
         self.viewer.add_data(self.data)
 
         viewer_state.x_att = self.data.id['y']
-        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_min = -10.1
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
         assert_allclose(self.viewer.layers[0].state.histogram[1], [0, 0, 3, 1, 0])
 
         viewer_state.x_att = self.data.id['x']
-        viewer_state.hist_x_min = -10
+        viewer_state.hist_x_min = -10.1
         viewer_state.hist_x_max = +10
         viewer_state.hist_n_bin = 5
 
