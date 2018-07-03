@@ -21,6 +21,10 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
+* Make it so that adding a subset to a viewer no longer adds the
+  associated data, since in some cases the viewer can handle the
+  subset size, but not the full data. [#1807]
+
 * Defined a new abstract base class for all datasets, ``BaseData``,
   and a base class ``BaseCartesianData``,
   which can be used to implement interfaces to datasets that may be
