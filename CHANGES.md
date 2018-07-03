@@ -7,6 +7,9 @@ v0.14.0 (unreleased)
 * Change 'Export Session' dialog to offer to save with relative paths to data
   by default instead of absolute paths. [#1803]
 
+* Added a new method ``screenshot`` on ``GlueApplication`` to save a
+  screenshot of the current view. [#1808]
+
 * Show the active subset in the toolbar. [#1797]
 
 * Refactored the viewer class base classes:

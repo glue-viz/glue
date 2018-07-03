@@ -1353,6 +1353,17 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         return None, None
 
+    def screenshot(self, filename):
+        """
+        Save a screenshot of the current application window to a file.
+        """
+        image = QtGui.QImage(self.size(), QtGui.QImage.Format_RGB32)
+        painter = QtGui.QPainter(image)
+        flags = self.IgnoreMask | self.DrawWindowBackground | self.DrawChildren
+        self.render(painter, QtCore.QPoint(), QtGui.QRegion(), flags)
+        image.save(filename)
+        painter.end()
+
     def __gluestate__(self, context):
         state = super(GlueApplication, self).__gluestate__(context)
         state['tab_names'] = self.tab_names

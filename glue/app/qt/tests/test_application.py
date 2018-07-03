@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 
 import pytest
@@ -459,6 +460,12 @@ class TestApplicationSession(object):
         assert v2.toolbar.active_tool is None
 
         app.close()
+
+    def test_screenshot(self, tmpdir):
+        filename = tmpdir.join('screenshot.png').strpath
+        app = GlueApplication()
+        app.screenshot(filename)
+        assert os.path.exists(filename)
 
 
 def test_logger_close():
