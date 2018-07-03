@@ -4,6 +4,7 @@ import os
 import traceback
 from functools import wraps
 
+from glue.core.data import Data, Subset
 from glue.external.six import string_types
 from glue.core.session import Session
 from glue.core.hub import HubListener
@@ -80,9 +81,14 @@ class Application(HubListener):
         c = viewer_class(self._session)
         c.register_to_hub(self._session.hub)
 
-        if data and not c.add_data(data):
-            c.close(warn=False)
-            return
+        if data is not None:
+            if isinstance(data, Data):
+                result = c.add_data(data)
+            elif isinstance(data, Subset):
+                result = c.add_subset(data)
+            if not result:
+                c.close(warn=False)
+                return
 
         self.add_widget(c)
         c.show()

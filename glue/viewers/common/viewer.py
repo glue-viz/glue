@@ -218,12 +218,6 @@ class Viewer(BaseViewer):
         if not self.allow_duplicate_subset and subset in self._layer_artist_container:
             return True
 
-        # Make sure we add the data first if it doesn't already exist in viewer.
-        # This will then auto add the subsets so can just return.
-        if subset.data not in self._layer_artist_container:
-            self.add_data(subset.data)
-            return
-
         # Create scatter layer artist and add to container
         layer = self.get_subset_layer_artist(subset)
         self._layer_artist_container.append(layer)

@@ -158,12 +158,6 @@ class MatplotlibDataViewer(DataViewer):
         # If we get here, the computation has stopped so we can stop the timer
         self._monitor_computation.stop()
 
-    def add_data(self, *args, **kwargs):
-        return super(MatplotlibDataViewer, self).add_data(*args, **kwargs)
-
-    def add_subset(self, *args, **kwargs):
-        return super(MatplotlibDataViewer, self).add_subset(*args, **kwargs)
-
     def update_x_axislabel(self, *event):
         self.axes.set_xlabel(self.state.x_axislabel,
                              weight=self.state.x_axislabel_weight,
