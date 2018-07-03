@@ -21,6 +21,8 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
+* Make it possible to unglue multiple links in one go. [#1809]
+
 * Make it so that adding a subset to a viewer no longer adds the
   associated data, since in some cases the viewer can handle the
   subset size, but not the full data. [#1807]
