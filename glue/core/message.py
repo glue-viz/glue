@@ -28,15 +28,23 @@ class Message(object):
     The message class family is hierarchical, and a client subscribing
     to a message class implicitly subscribes to all of its subclasses.
 
-    :attr sender: The object which sent the message
-    :attr tag: An optional string describing the message
+    Attributes
+    ----------
+    sender : 
+        The object which sent the message
+    tag: str
+        An optional string describing the message
     """
 
     def __init__(self, sender, tag=None):
         """Create a new message
 
-        :param sender: The object sending the message
-        :param tag: An optional string describing the message
+        Parameters
+        ----------
+        sender : 
+            The object sending the message.
+        tag : str
+            An optional string describing the message.
         """
         self.sender = sender
         self.tag = tag

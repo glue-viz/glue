@@ -60,8 +60,11 @@ class Command(object):
         """
         Execute the command
 
-        :param session: An object used to store and fetch resources
-                        needed by a Command.
+        Parameters
+        ----------
+        session : 
+            An object used to store and fetch resources
+            needed by a Command.
         """
         pass
 
@@ -119,7 +122,9 @@ class CommandStack(CallbackMixin):
         """
         Execute and log a new command
 
-        :rtype: The return value of cmd.do()
+        Returns:
+
+            The return value of cmd.do()
         """
         logging.getLogger(__name__).debug("Do %s", cmd)
         self._command_stack.append(cmd)
@@ -133,7 +138,10 @@ class CommandStack(CallbackMixin):
         """
         Undo the previous command
 
-        :raises: IndexError, if there are no objects to undo
+        Raises
+        ------
+        IndexError
+            if there are no objects to undo
         """
         try:
             c = self._command_stack.pop()
@@ -148,7 +156,10 @@ class CommandStack(CallbackMixin):
         """
         Redo the previously-undone command
 
-        :raises: IndexError, if there are no undone actions
+        Raises
+        ------
+        IndexError
+            if there are no undone actions
         """
         try:
             c = self._undo_stack.pop()
@@ -164,7 +175,10 @@ class CommandStack(CallbackMixin):
         """
         Return whether undo and redo options are possible
 
-        :rtype: (bool, bool) - Whether undo and redo are possible, respectively
+        Returns
+        -------
+        (bool, bool)
+            Whether undo and redo are possible, respectively
         """
         return len(self._command_stack) > 0, len(self._undo_stack) > 0
 
@@ -205,9 +219,12 @@ class RemoveData(Command):
 class NewDataViewer(Command):
     """Add a new data viewer to the application
 
-    :param viewer: The class of viewer to create
-    :param data: The data object to initialize the viewer with, or None
-    :type date: :class:`~glue.core.data.Data` or None
+    Parameters
+    ----------
+    viewer: 
+        The class of viewer to create
+    data: :class:`~glue.core.data.Data` or None
+        The data object to initialize the viewer with, or None.
     """
     kwargs = ['viewer', 'data']
     label = 'new data viewer'
@@ -226,6 +243,13 @@ class NewDataViewer(Command):
 
 class AddLayer(Command):
     """Add a new layer to a viewer
+
+    Parameters
+    ----------
+    layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+        The layer to add
+    viewer: 
+        The viewer to add the layer to
 
     :param layer: The layer to add
     :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
