@@ -18,7 +18,8 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import view_shape, broadcast_to, floodfill, combine_slices, polygon_line_intersections
+from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
+                        polygon_line_intersections, categorical_ndarray)
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -268,8 +269,7 @@ class Subset(object):
 
         """
         try:
-            mask = self.subset_state.to_mask(self.data, view)
-            return mask
+            return self.data.get_mask(self.subset_state, view=view)
         except IncompatibleAttribute as exc:
             return self._to_mask_join(view)
 
@@ -457,12 +457,8 @@ class Subset(object):
         return self.data.derived_components
 
     @property
-    def primary_components(self):
-        return self.data.primary_components
-
-    @property
-    def visible_components(self):
-        return self.data.visible_components
+    def main_components(self):
+        return self.data.main_components
 
     @property
     def pixel_component_ids(self):
@@ -488,14 +484,32 @@ class Subset(object):
     def hub(self):
         return self.data.hub
 
+    # DEPRECATED (warnings raised in Data)
+
+    @property
+    def primary_components(self):
+        return self.data.primary_components
+
+    @property
+    def visible_components(self):
+        return self.data.visible_components
+
 
 class SubsetState(object):
+    """
+    The base class for all subset states.
+
+    This defaults to an empty subset.
+    """
 
     def __init__(self):
         pass
 
     @property
     def attributes(self):
+        """
+        The attributes that the subset state depends on.
+        """
         return tuple()
 
     @property
@@ -508,11 +522,24 @@ class SubsetState(object):
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
+        """
+        Compute the mask for this subset state.
+
+        Parameters
+        ----------
+        data : :class:`~glue.core.data.Data`
+            The dataset to compute the mask for.
+        view
+            Any object that returns a valid view for a Numpy array.
+        """
         shp = view_shape(data.shape, view)
         return broadcast_to(False, shp)
 
     @contract(returns='isinstance(SubsetState)')
     def copy(self):
+        """
+        Return a copy of the subset state.
+        """
         return SubsetState()
 
     @contract(other_state='isinstance(SubsetState)',
@@ -536,13 +563,61 @@ class SubsetState(object):
 
 
 class RoiSubsetState(SubsetState):
+    """
+    A subset defined as the set of points in two dimensions that lie inside
+    a region of interest (ROI).
+
+    The two dimensions are defined as two numerical data attributes.
+
+    Parameters
+    ----------
+    xatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the x axis.
+    yatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the y axis.
+    roi : :class:`~glue.core.roi.Roi`
+        The region of interest.
+    """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
     def __init__(self, xatt=None, yatt=None, roi=None):
         super(RoiSubsetState, self).__init__()
-        self.xatt = xatt
-        self.yatt = yatt
-        self.roi = roi
+        self._xatt = xatt
+        self._yatt = yatt
+        self._roi = roi
+
+    @property
+    def xatt(self):
+        """
+        The data attribute on the x axis.
+        """
+        return self._xatt
+
+    @xatt.setter
+    def xatt(self, value):
+        self._xatt = value
+
+    @property
+    def yatt(self):
+        """
+        The data attribute on the y axis.
+        """
+        return self._yatt
+
+    @yatt.setter
+    def yatt(self, value):
+        self._yatt = value
+
+    @property
+    def roi(self):
+        """
+        The region of interest.
+        """
+        return self._roi
+
+    @roi.setter
+    def roi(self, value):
+        self._roi = value
 
     @property
     def attributes(self):
@@ -608,11 +683,44 @@ class RoiSubsetState(SubsetState):
 
 
 class CategoricalROISubsetState(SubsetState):
+    """
+    A subset defined as the set of values for a categorical data attribute that
+    fall inside a categorical region of interest (ROI).
+
+    Parameters
+    ----------
+    att : :class:`~glue.core.component_id.ComponentID`
+        The categorical data attribute used for the subset.
+    roi : :class:`~glue.core.roi.CategoricalROI`
+        The categorical region of interest.
+    """
 
     def __init__(self, att=None, roi=None):
         super(CategoricalROISubsetState, self).__init__()
-        self.att = att
-        self.roi = roi
+        self._att = att
+        self._roi = roi
+
+    @property
+    def att(self):
+        """
+        The categorical data attribute used for the subset.
+        """
+        return self._att
+
+    @att.setter
+    def att(self, value):
+        self._att = value
+
+    @property
+    def roi(self):
+        """
+        The categorical region of interest.
+        """
+        return self._roi
+
+    @roi.setter
+    def roi(self, value):
+        self._roi = value
 
     @property
     def attributes(self):
@@ -621,7 +729,7 @@ class CategoricalROISubsetState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        x = data.get_component(self.att)._categorical_data[view]
+        x = data[self.att, view]
         result = self.roi.contains(x, None)
         assert x.shape == result.shape
         return result.ravel()
@@ -633,11 +741,10 @@ class CategoricalROISubsetState(SubsetState):
         return result
 
     @staticmethod
-    def from_range(component, att, lo, hi):
+    def from_range(categories, att, lo, hi):
 
-        roi = CategoricalROI.from_range(component, lo, hi)
-        subset = CategoricalROISubsetState(roi=roi,
-                                           att=att)
+        roi = CategoricalROI.from_range(categories, lo, hi)
+        subset = CategoricalROISubsetState(roi=roi, att=att)
         return subset
 
     def __gluestate__(self, context):
@@ -650,12 +757,60 @@ class CategoricalROISubsetState(SubsetState):
 
 
 class RangeSubsetState(SubsetState):
+    """
+    A subset defined as the set of values inside a range.
+
+    The range is defined as being inclusive (that is, values equal to the lower
+    or upper bounds are considered to be inside the subset).
+
+    Parameters
+    ----------
+    lo : `float`
+        The lower limit of the range.
+    hi : `float`
+        The upper limit of the range.
+    att : :class:`~glue.core.component_id.ComponentID`
+        The attribute being used for the subset.
+    """
 
     def __init__(self, lo, hi, att=None):
         super(RangeSubsetState, self).__init__()
-        self.lo = lo
-        self.hi = hi
-        self.att = att
+        self._lo = lo
+        self._hi = hi
+        self._att = att
+
+    @property
+    def lo(self):
+        """
+        The lower limit of the range.
+        """
+        return self._lo
+
+    @lo.setter
+    def lo(self, value):
+        self._lo = value
+
+    @property
+    def hi(self):
+        """
+        The upper limit of the range.
+        """
+        return self._hi
+
+    @hi.setter
+    def hi(self, value):
+        self._hi = value
+
+    @property
+    def att(self):
+        """
+        The attribute being used for the subset.
+        """
+        return self._att
+
+    @att.setter
+    def att(self, value):
+        self._att = value
 
     @property
     def attributes(self):
@@ -675,16 +830,43 @@ class MultiRangeSubsetState(SubsetState):
     """
     A subset state defined by multiple discontinuous ranges
 
+    The ranges are defined as being inclusive (that is, values equal to the
+    lower or upper bounds are considered to be inside the subset).
+
     Parameters
     ----------
     pairs : list
-        A list of (lo, hi) tuples
+        A list of (lo, hi) tuples.
+    att : :class:`~glue.core.component_id.ComponentID`
+        The attribute being used for the subset.
     """
 
     def __init__(self, pairs, att=None):
         super(MultiRangeSubsetState, self).__init__()
-        self.pairs = pairs
-        self.att = att
+        self._pairs = pairs
+        self._att = att
+
+    @property
+    def pairs(self):
+        """
+        A list of (lo, hi) tuples.
+        """
+        return self._pairs
+
+    @pairs.setter
+    def pairs(self, value):
+        self._pairs = value
+
+    @property
+    def att(self):
+        """
+        The attribute being used for the subset.
+        """
+        return self._att
+
+    @att.setter
+    def att(self, value):
+        self._att = value
 
     @property
     def attributes(self):
@@ -704,7 +886,8 @@ class MultiRangeSubsetState(SubsetState):
 
 class CategoricalROISubsetState2D(SubsetState):
     """
-    A 2D subset state where both attributes are categorical.
+    A subset defined as the set of values for two categorical data attributes
+    that fall inside a categorical region of interest (ROI).
 
     Parameters
     ----------
@@ -719,9 +902,43 @@ class CategoricalROISubsetState2D(SubsetState):
     """
 
     def __init__(self, categories, att1, att2):
-        self.categories = categories
-        self.att1 = att1
-        self.att2 = att2
+        self._categories = categories
+        self._att1 = att1
+        self._att2 = att2
+
+    @property
+    def categories(self):
+        """
+        A dictionary containing for each label of one categorical component an
+        interable of labels for the other categorical component.
+        """
+        return self._categories
+
+    @categories.setter
+    def categories(self, value):
+        self._categories = value
+
+    @property
+    def att1(self):
+        """
+        The component ID matching the keys of the ``categories`` dictionary
+        """
+        return self._att1
+
+    @att1.setter
+    def att1(self, value):
+        self._att1 = value
+
+    @property
+    def att2(self):
+        """
+        The component ID matching the values of the ``categories`` dictionary
+        """
+        return self._att2
+
+    @att2.setter
+    def att2(self, value):
+        self._att2 = value
 
     @property
     def attributes(self):
@@ -732,12 +949,8 @@ class CategoricalROISubsetState2D(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels1 = data.get_component(self.att1).labels
-        labels2 = data.get_component(self.att2).labels
-
-        if view is not None:
-            labels1 = labels1[view]
-            labels2 = labels2[view]
+        labels1 = data[self.att1, view]
+        labels2 = data[self.att2, view]
 
         # Initialize empty mask
         mask = np.zeros(labels1.shape, dtype=bool)
@@ -772,9 +985,9 @@ class CategoricalROISubsetState2D(SubsetState):
 
 class CategoricalMultiRangeSubsetState(SubsetState):
     """
-    A 2D subset state where one attribute is categorical and the other is
-    numerical, and where for each category, there are multiple possible subset
-    ranges.
+    A subset state defined by two attributes where one attribute is categorical
+    and the other is numerical, and where for each category, there are multiple
+    possible subset ranges.
 
     Parameters
     ----------
@@ -782,15 +995,49 @@ class CategoricalMultiRangeSubsetState(SubsetState):
         A dictionary containing for each category (key), a list of tuples
         giving the ranges of values for the numerical attribute.
     cat_att : :class:`~glue.core.component_id.ComponentID`
-        The component ID for the categorical attribute
+        The component ID for the categorical attribute.
     num_att : :class:`~glue.core.component_id.ComponentID`
-        The component ID for the numerical attribute
+        The component ID for the numerical attribute.
     """
 
     def __init__(self, ranges, cat_att, num_att):
         self.ranges = ranges
         self.cat_att = cat_att
         self.num_att = num_att
+
+    @property
+    def ranges(self):
+        """
+        A dictionary containing for each category (key), a list of tuples
+        giving the ranges of values for the numerical attribute.
+        """
+        return self._ranges
+
+    @ranges.setter
+    def ranges(self, value):
+        self._ranges = value
+
+    @property
+    def cat_att(self):
+        """
+        The component ID for the categorical attribute.
+        """
+        return self._cat_att
+
+    @cat_att.setter
+    def cat_att(self, value):
+        self._cat_att = value
+
+    @property
+    def num_att(self):
+        """
+        The component ID for the numerical attribute.
+        """
+        return self._num_att
+
+    @num_att.setter
+    def num_att(self, value):
+        self._num_att = value
 
     @property
     def attributes(self):
@@ -801,7 +1048,7 @@ class CategoricalMultiRangeSubsetState(SubsetState):
     def to_mask(self, data, view=None):
 
         # Extract categories and numerical values
-        labels = data.get_component(self.cat_att).labels
+        labels = data[self.cat_att]
         values = data[self.num_att]
 
         if view is not None:
@@ -844,6 +1091,10 @@ class CategoricalMultiRangeSubsetState(SubsetState):
 
 
 class CompositeSubsetState(SubsetState):
+    """
+    The base class for combinations of subset states.
+    """
+
     op = None
 
     def __init__(self, state1, state2=None):
@@ -875,18 +1126,43 @@ class CompositeSubsetState(SubsetState):
 
 
 class OrState(CompositeSubsetState):
+    """
+    An 'or' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.or_
 
 
 class AndState(CompositeSubsetState):
+    """
+    An 'and' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.and_
 
 
 class XorState(CompositeSubsetState):
+    """
+    An 'exclusive or' logical combination of subset states.
+
+    The two states can be accessed using the attributes ``state1`` and
+    ``state2``.
+    """
     op = operator.xor
 
 
 class InvertState(CompositeSubsetState):
+    """
+    A inverted subset state.
+
+    Values inside the original subset are now considered outside, and
+    vice-versa. The original subset state can be accessed using the attribute
+    ``state1``.
+    """
 
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
@@ -898,18 +1174,46 @@ class InvertState(CompositeSubsetState):
 
 
 class MaskSubsetState(SubsetState):
-
     """
-    A subset defined by boolean pixel mask
+    A subset defined by a boolean mask.
+
+    Parameters
+    ----------
+    mask : `~numpy.ndarray`
+        The boolean mask to apply to the data.
+    cids : iterable of :class:`~glue.core.component_id.ComponentID`
+        The component IDs along which the mask applies.
     """
 
     def __init__(self, mask, cids):
+        self._cids = cids
+        self._mask = np.asarray(mask, dtype=bool)
+
+    @property
+    def mask(self):
         """
-        :param cids: List of ComponentIDs, defining the pixel coordinate space of the mask
-        :param mask: Boolean ndarray
+        The boolean mask to apply to the data.
         """
-        self.cids = cids
-        self.mask = np.asarray(mask, dtype=bool)
+        return self._mask
+
+    @mask.setter
+    def mask(self, value):
+        self._mask = value
+
+    @property
+    def cids(self):
+        """
+        The component IDs along which the mask applies.
+        """
+        return self._cids
+
+    @cids.setter
+    def cids(self, value):
+        self._cids = value
+
+    @property
+    def attributes(self):
+        return self._cids
 
     def copy(self):
         return MaskSubsetState(self.mask, self.cids)
@@ -944,18 +1248,51 @@ class MaskSubsetState(SubsetState):
 
 class SliceSubsetState(SubsetState):
     """
-    A subset defined by a slice in an array
+    A subset defined by a set of array slices.
+
+    Parameters
+    ----------
+    reference_data : :class:`~glue.core.data.Data`
+        The data in whose space the slices are defined.
+    slices : iterable of :class:`slice`
+        An iterable containing :class:`slice` objects to apply to the data.
     """
 
     def __init__(self, reference_data, slices):
-        self.reference_data = reference_data
-        self.slices = slices
+        self._reference_data = reference_data
+        self._slices = slices
         self._pad_slices()
 
+    @property
+    def reference_data(self):
+        """
+        The data in whose space the slices are defined.
+        """
+        return self._reference_data
+
+    @reference_data.setter
+    def reference_data(self, value):
+        self._reference_data = value
+
+    @property
+    def slices(self):
+        """
+        An iterable containing :class:`slice` objects to apply to the data.
+        """
+        return self._slices
+
+    @slices.setter
+    def slices(self, value):
+        self._slices = value
+
     def _pad_slices(self):
-        from glue.core.data import Data
-        if isinstance(self.reference_data, Data) and len(self.slices) < self.reference_data.ndim:
+        from glue.core.data import BaseCartesianData
+        if isinstance(self.reference_data, BaseCartesianData) and len(self.slices) < self.reference_data.ndim:
             self.slices = self.slices + [slice(None)] * (self.reference_data.ndim - len(self.slices))
+
+    @property
+    def attributes(self):
+        return self._reference_data.pixel_component_ids
 
     def copy(self):
         return SliceSubsetState(self.reference_data, self.slices)
@@ -1045,24 +1382,65 @@ class SliceSubsetState(SubsetState):
 
 
 class CategorySubsetState(SubsetState):
+    """
+    A subset defined by the set of categorical values that are equal to
+    a set of cateogories.
 
-    def __init__(self, attribute, values):
+    Parameters
+    ----------
+    att : :class:`~glue.core.component_id.ComponentID`
+        The categorical data attribute used for the subset
+    categories : iterable
+        The categories that the attribute should be equal to. These should be
+        given as the integer codes, not the categorical labels.
+    """
+
+    def __init__(self, att, categories):
         super(CategorySubsetState, self).__init__()
-        self._attribute = attribute
-        self._values = np.asarray(values).ravel()
+        self._att = att
+        self._categories = np.asarray(categories).ravel()
+
+    @property
+    def att(self):
+        """
+        The categorical data attribute used for the subset
+        """
+        return self._att
+
+    @att.setter
+    def att(self, value):
+        self._att = value
+
+    @property
+    def categories(self):
+        """
+        The categories that the attribute should be equal to. These should be
+        given as the integer codes, not the categorical labels.
+        """
+        return self._categories
+
+    @categories.setter
+    def categories(self, value):
+        self._categories = value
+
+    @property
+    def attributes(self):
+        return self._att,
 
     @memoize
     def to_mask(self, data, view=None):
-        vals = data[self._attribute, view]
-        result = np.in1d(vals.ravel(), self._values)
+        vals = data[self._att, view]
+        if isinstance(vals, categorical_ndarray):
+            vals = vals.codes
+        result = np.in1d(vals.ravel(), self._categories)
         return result.reshape(vals.shape)
 
     def copy(self):
-        return CategorySubsetState(self._attribute, self._values.copy())
+        return CategorySubsetState(self._att, self._categories.copy())
 
     def __gluestate__(self, context):
-        return dict(att=context.id(self._attribute),
-                    vals=context.do(self._values))
+        return dict(att=context.id(self._att),
+                    vals=context.do(self._categories))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -1071,6 +1449,16 @@ class CategorySubsetState(SubsetState):
 
 
 class ElementSubsetState(SubsetState):
+    """
+    A subset defined by a set of indices to apply to the data.
+
+    Parameters
+    ----------
+    indices
+        Any valid object that can be used to index a Numpy array.
+    data : :class:`~glue.core.data.Data`
+        The data in whose space the indices are defined.
+    """
 
     def __init__(self, indices=None, data=None):
         super(ElementSubsetState, self).__init__()
@@ -1079,6 +1467,28 @@ class ElementSubsetState(SubsetState):
             self._data_uuid = None
         else:
             self._data_uuid = data.uuid
+
+    @property
+    def indices(self):
+        """
+        The indices which when applied to the data give the subset.
+        """
+        return self._indices
+
+    @indices.setter
+    def indices(self, value):
+        self._indices = value
+
+    @property
+    def data(self):
+        """
+        The UUID of the data in whose space the indices are defined.
+        """
+        return self._data_uuid
+
+    @data.setter
+    def data(self, value):
+        self._data = value
 
     @memoize
     def to_mask(self, data, view=None):
@@ -1099,6 +1509,10 @@ class ElementSubsetState(SubsetState):
         else:
             raise IncompatibleAttribute()
 
+    @property
+    def attributes(self):
+        return self._data.pixel_component_ids
+
     def copy(self):
         state = ElementSubsetState(indices=self._indices)
         state._data_uuid = self._data_uuid
@@ -1118,18 +1532,33 @@ class ElementSubsetState(SubsetState):
         return state
 
 
-class InequalitySubsetState(SubsetState):
+VALID_INEQUALTIY_OPS = [operator.gt, operator.ge,
+                        operator.lt, operator.le,
+                        operator.eq, operator.ne]
 
-    def __init__(self, left, right, op):
+
+class InequalitySubsetState(SubsetState):
+    """
+    A subset defined by a mathematical comparison of a attribute values to
+    a reference value or attribute values.
+
+    Parameters
+    ----------
+    left : float or `~glue.core.component_id.ComponentID` or str
+        The value or component on the left hand side of the comparison.
+    right : float or `~glue.core.component_id.ComponentID` or str
+        The value or component on the right hand side of the comparison.
+    operator : operator
+        The comparison operator (from the :mod:`operator` module)
+    """
+
+    def __init__(self, left, right, operator):
         from glue.core.component_link import ComponentLink
 
         super(InequalitySubsetState, self).__init__()
         from glue.core.data import ComponentID
-        valid_ops = [operator.gt, operator.ge,
-                     operator.lt, operator.le,
-                     operator.eq, operator.ne]
-        if op not in valid_ops:
-            raise TypeError("Invalid boolean operator: %s" % op)
+        if operator not in VALID_INEQUALTIY_OPS:
+            raise TypeError("Invalid boolean operator: %s" % operator)
         if not isinstance(left, (ComponentID, numbers.Number,
                                  ComponentLink, six.string_types)):
             raise TypeError("Input must be ComponentID or NumberType or string: %s"
@@ -1141,19 +1570,40 @@ class InequalitySubsetState(SubsetState):
                             % type(right))
         self._left = left
         self._right = right
-        self._operator = op
+        self._operator = operator
 
     @property
     def left(self):
+        """
+        The value or component on the left hand side of the comparison.
+        """
         return self._left
+
+    @left.setter
+    def left(self, value):
+        self._left = value
 
     @property
     def right(self):
+        """
+        The value or component on the right hand side of the comparison.
+        """
         return self._right
+
+    @right.setter
+    def right(self, value):
+        self._right = value
 
     @property
     def operator(self):
+        """
+        The comparison operator (from the :mod:`operator` module)
+        """
         return self._operator
+
+    @operator.setter
+    def operator(self, value):
+        self._operator = value
 
     @memoize
     def to_mask(self, data, view=None):
@@ -1167,28 +1617,12 @@ class InequalitySubsetState(SubsetState):
         if isinstance(self._left, (numbers.Number, six.string_types)):
             left = self._left
         else:
-            try:
-                comp = data.get_component(self._left)
-            except IncompatibleAttribute:
-                left = data[self._left, view]
-            else:
-                if comp.categorical:
-                    left = comp.labels[view]
-                else:
-                    left = comp.data[view]
+            left = data[self._left, view]
 
         if isinstance(self._right, (numbers.Number, six.string_types)):
             right = self._right
         else:
-            try:
-                comp = data.get_component(self._right)
-            except IncompatibleAttribute:
-                right = data[self._right, view]
-            else:
-                if comp.categorical:
-                    right = comp.labels[view]
-                else:
-                    right = comp.data[view]
+            right = data[self._right, view]
 
         return self._operator(left, right)
 
@@ -1205,35 +1639,95 @@ class InequalitySubsetState(SubsetState):
 
 class FloodFillSubsetState(MaskSubsetState):
     """
-    A subset state representing a flood-fill operation, which is computed
-    on-the-fly.
+    A subset representing a flood-fill operation, which is computed on-the-fly.
+
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
+        The data on which the flood fill is computed.
+    att : :class:`glue.core.component_id.ComponentID`
+        The attribute defining the values to use for the flood fill.
+    start_coords : tuple
+        The pixel coordinates of the starting point.
+    threshold : float
+        A value greater or equal to 1 describing the extend of the flood
+        filling. The range of values selected by the flood fill is ``start_value
+        * (2 -threshold)`` to ``start_value * threshold`` where ``start_value``
+        is the value of the data at ``start_coords``.
     """
 
     # TODO: we need to recompute the mask if the numerical values of the
     # data changes.
 
-    def __init__(self, data, attribute, start_coords, threshold):
+    def __init__(self, data, att, start_coords, threshold):
 
         if len(start_coords) != data.ndim:
             raise ValueError("start_coords should have as many values as data "
                              "has dimensions.")
 
-        self.attribute = attribute
-        self.data = data
-        self.start_coords = tuple(start_coords)
-        self.threshold = float(threshold)
-        self.cids = self.data.pixel_component_ids
+        self._att = att
+        self._data = data
+        self._start_coords = tuple(start_coords)
+        self._threshold = float(threshold)
+        self._cids = self.data.pixel_component_ids
 
         self._compute_mask()
 
+    @property
+    def data(self):
+        """
+        The data on which the flood fill is computed.
+        """
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def att(self):
+        """
+        The attribute defining the values to use for the flood fill.
+        """
+        return self._att
+
+    @att.setter
+    def att(self, value):
+        self._att = value
+
+    @property
+    def start_coords(self):
+        """
+        The pixel coordinates of the starting point.
+        """
+        return self._start_coords
+
+    @start_coords.setter
+    def start_coords(self, value):
+        self._start_coords = value
+
+    @property
+    def threshold(self):
+        """
+        A value greater or equal to 1 describing the extend of the flood
+        filling. The range of values selected by the flood fill is ``start_value
+        * (2 -threshold)`` to ``start_value * threshold`` where ``start_value``
+        is the value of the data at ``start_coords``.
+        """
+        return self._threshold
+
+    @threshold.setter
+    def threshold(self, value):
+        self._threshold = value
+
     def _compute_mask(self):
-        mask = floodfill(self.data[self.attribute],
+        mask = floodfill(self.data[self.att],
                          self.start_coords, self.threshold)
         self._mask_cache = (self._hash, mask)
 
     @property
     def _hash(self):
-        return self.data, self.attribute, self.start_coords, self.threshold, self.cids
+        return self.data, self.att, self.start_coords, self.threshold, self.cids
 
     @property
     def mask(self):
@@ -1241,36 +1735,99 @@ class FloodFillSubsetState(MaskSubsetState):
             self._compute_mask()
         return self._mask_cache[1]
 
+    @property
+    def attributes(self):
+        return list(self._data.pixel_component_ids) + [self.att]
+
     def copy(self):
-        return FloodFillSubsetState(self.data, self.attribute, self.start_coords,
+        return FloodFillSubsetState(self.data, self.att, self.start_coords,
                                     self.threshold)
 
     def __gluestate__(self, context):
         # We don't store the data since this would cause a circular reference.
         # However we can recover the data from the attribute ComponentID.
-        return dict(attribute=context.id(self.attribute),
+        return dict(attribute=context.id(self.att),
                     start_coords=self.start_coords,
                     threshold=self.threshold)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        attribute = context.object(rec['attribute'])
-        return cls(attribute.parent, attribute,
+        att = context.object(rec['attribute'])
+        return cls(att.parent, att,
                    context.object(rec['start_coords']),
                    context.object(rec['threshold']))
 
 
 class RoiSubsetState3d(SubsetState):
-    """Subset state for a roi that implements .contains3d
+    """
+    A subset defined as the set of points in three dimensions that lie inside
+    a 3-d region of interest (ROI).
+
+    The three dimensions are defined as three numerical data attributes.
+
+    Parameters
+    ----------
+    xatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the x axis.
+    yatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the y axis.
+    zatt : :class:`~glue.core.component_id.ComponentID`
+        The data attribute on the z axis.
+    roi : :class:`~glue.core.roi.Roi`
+        The region of interest (which should implement ``contains3d``)
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')
     def __init__(self, xatt=None, yatt=None, zatt=None, roi=None):
         super(RoiSubsetState3d, self).__init__()
-        self.xatt = xatt
-        self.yatt = yatt
-        self.zatt = zatt
-        self.roi = roi
+        self._xatt = xatt
+        self._yatt = yatt
+        self._zatt = zatt
+        self._roi = roi
+
+    @property
+    def xatt(self):
+        """
+        The data attribute on the x axis.
+        """
+        return self._xatt
+
+    @xatt.setter
+    def xatt(self, value):
+        self._xatt = value
+
+    @property
+    def yatt(self):
+        """
+        The data attribute on the y axis.
+        """
+        return self._yatt
+
+    @yatt.setter
+    def yatt(self, value):
+        self._yatt = value
+
+    @property
+    def zatt(self):
+        """
+        The data attribute on the z axis.
+        """
+        return self._zatt
+
+    @zatt.setter
+    def zatt(self, value):
+        self._zatt = value
+
+    @property
+    def roi(self):
+        """
+        The region of interest.
+        """
+        return self._roi
+
+    @roi.setter
+    def roi(self, value):
+        self._roi = value
 
     @property
     def attributes(self):
@@ -1335,7 +1892,7 @@ def combine_multiple(subsets, operator):
         return combined
 
 
-def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
+def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_categories=None):
     """
     Given a 2D ROI and attributes on the x and y axis, determine the
     corresponding subset state.
@@ -1345,17 +1902,17 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
         if roi.ori == 'x':
             att = x_att
-            comp = x_comp
+            categories = x_categories
         else:
             att = y_att
-            comp = y_comp
+            categories = y_categories
 
-        if comp.categorical:
-            return CategoricalROISubsetState.from_range(comp, att, roi.min, roi.max)
+        if categories is not None:
+            return CategoricalROISubsetState.from_range(categories, att, roi.min, roi.max)
         else:
             return RangeSubsetState(roi.min, roi.max, att)
 
-    elif x_comp.categorical or y_comp.categorical:
+    elif x_categories is not None or y_categories is not None:
 
         if isinstance(roi, RectangularROI):
 
@@ -1365,8 +1922,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
             range1 = XRangeROI(roi.xmin, roi.xmax)
             range2 = YRangeROI(roi.ymin, roi.ymax)
 
-            subset1 = roi_to_subset_state(range1, x_att=x_att, x_comp=x_comp)
-            subset2 = roi_to_subset_state(range2, y_att=y_att, y_comp=y_comp)
+            subset1 = roi_to_subset_state(range1, x_att=x_att, x_categories=x_categories)
+            subset2 = roi_to_subset_state(range2, y_att=y_att, y_categories=y_categories)
 
             return AndState(subset1, subset2)
 
@@ -1380,24 +1937,24 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
             # The selection is polygon-like, which requires special care.
 
-            if x_comp.categorical and y_comp.categorical:
+            if x_categories is not None and y_categories is not None:
 
                 # For each category, we check which categories along the other
                 # axis fall inside the polygon:
 
                 selection = {}
 
-                for code, label in enumerate(x_comp.categories):
+                for code, label in enumerate(x_categories):
 
                     # Determine the coordinates of the points to check
-                    n_other = len(y_comp.categories)
+                    n_other = len(y_categories)
                     y = np.arange(n_other)
                     x = np.repeat(code, n_other)
 
                     # Determine which points are in the polygon, and which
                     # categories these correspond to
                     in_poly = roi.contains(x, y)
-                    categories = y_comp.categories[in_poly]
+                    categories = y_categories[in_poly]
 
                     if len(categories) > 0:
                         selection[label] = set(categories)
@@ -1420,18 +1977,18 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_comp=None, y_comp=None):
 
                 selection = {}
 
-                if x_comp.categorical:
-                    cat_comp = x_comp
+                if x_categories is not None:
+                    categories = x_categories
                     cat_att = x_att
                     num_att = y_att
                     x, y = roi.to_polygon()
                 else:
-                    cat_comp = y_comp
+                    categories = y_categories
                     cat_att = y_att
                     num_att = x_att
                     y, x = roi.to_polygon()
 
-                for code, label in enumerate(cat_comp.categories):
+                for code, label in enumerate(categories):
 
                     # We determine all the numerical segments that represent the
                     # ensemble of points in y that fall in the polygon

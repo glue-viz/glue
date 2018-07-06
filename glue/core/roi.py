@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
+from glue.core.component import CategoricalComponent
 from glue.core.exceptions import UndefinedROI
 from glue.utils import points_inside_poly, iterate_chunks
 
@@ -1335,8 +1336,8 @@ class CategoricalROI(Roi):
         """
 
         try:
-            if indata.categorical:
-                return indata._categorical_data
+            if isinstance(indata, CategoricalComponent):
+                return indata.data
             else:
                 return indata[:]
         except AttributeError:
@@ -1376,7 +1377,7 @@ class CategoricalROI(Roi):
         self.categories = None
 
     @staticmethod
-    def from_range(cat_comp, lo, hi):
+    def from_range(categories, lo, hi):
         """
         Utility function to help construct the Roi from a range.
 
@@ -1397,8 +1398,7 @@ class CategoricalROI(Roi):
         hi = np.intp(np.ceil(hi) if hi > 0 else 0)
 
         roi = CategoricalROI()
-        cat_data = cat_comp.categories
-        roi.update_categories(cat_data[lo:hi])
+        roi.update_categories(categories[lo:hi])
 
         return roi
 

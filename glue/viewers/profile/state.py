@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-from glue.core import Data, Coordinates
+from glue.core import Subset, Coordinates
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -98,7 +98,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_att_helper.set_multiple_data([])
         else:
             self.x_att_helper.set_multiple_data([self.reference_data])
-            if type(self.reference_data.coords) == Coordinates:
+            if (getattr(self.reference_data, 'coords', None) is None or
+                    type(self.reference_data.coords) == Coordinates):
                 self.x_att = self.reference_data.pixel_component_ids[0]
             else:
                 self.x_att = self.reference_data.world_component_ids[0]
@@ -202,12 +203,12 @@ class ProfileLayerState(MatplotlibLayerState):
         # smaller than the data to just average the relevant 'spaxels' in the
         # data rather than collapsing the whole cube.
 
-        if isinstance(self.layer, Data):
-            data = self.layer
-            subset_state = None
-        else:
+        if isinstance(self.layer, Subset):
             data = self.layer.data
             subset_state = self.layer.subset_state
+        else:
+            data = self.layer
+            subset_state = None
 
         profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
 

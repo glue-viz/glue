@@ -31,12 +31,12 @@ def test_excel_multiple():
     datasets = df.load_data(os.path.join(DATA, 'simple_data.xlsx'))
 
     assert_array_equal(datasets[0]['a'], [1, 2, 3, 4, 5])
-    assert_array_equal(datasets[0].get_component('b')._categorical_data, ['a', 'c', 'd', 'e', 'f'])
+    assert_array_equal(datasets[0]['b'], ['a', 'c', 'd', 'e', 'f'])
 
     assert datasets[0].label == 'simple_data:Data1'
 
     assert_array_equal(datasets[1]['1'], [2, 3, 4, 5])
-    assert_array_equal(datasets[1].get_component('a')._categorical_data, ['b', 'c', 'd', 'e'])
+    assert_array_equal(datasets[1]['a'], ['b', 'c', 'd', 'e'])
 
     assert datasets[1].label == 'simple_data:Data2'
 
@@ -49,6 +49,6 @@ def test_excel_single():
     d = panda_read_excel(os.path.join(DATA, 'simple_data.xlsx'), sheet='Data2')[0]
 
     assert_array_equal(d['1'], [2, 3, 4, 5])
-    assert_array_equal(d.get_component('a')._categorical_data, ['b', 'c', 'd', 'e'])
+    assert_array_equal(d['a'], ['b', 'c', 'd', 'e'])
 
     assert d.label == 'simple_data:Data2'

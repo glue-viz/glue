@@ -6,7 +6,6 @@ from functools import partial
 
 
 import numpy as np
-import pandas as pd
 
 from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
@@ -17,7 +16,7 @@ from glue.utils import nanmin, nanmax
 
 __all__ = ["relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
-           "row_lookup", 'small_view', 'small_view_array', 'visible_limits',
+           'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
 
 
@@ -256,37 +255,6 @@ def disambiguate(label, taken):
             return candidate
 
 
-def row_lookup(data, categories):
-    """
-    Lookup which row in categories each data item is equal to
-
-    Parameters
-    ----------
-    data
-        An array-like object
-    categories
-        Array-like of unique values
-
-    Returns
-    -------
-    array
-      If result[i] is finite, then data[i] = categoreis[result[i]]
-      Otherwise, data[i] is not in the categories list
-    """
-
-    # np.searchsorted doesn't work on mixed types in Python3
-
-    ndata, ncat = len(data), len(categories)
-    data = pd.DataFrame({'data': data, 'row': np.arange(ndata)})
-    cats = pd.DataFrame({'categories': categories,
-                         'cat_row': np.arange(ncat)})
-
-    m = pd.merge(data, cats, left_on='data', right_on='categories')
-    result = np.zeros(ndata, dtype=float) * np.nan
-    result[np.array(m.row)] = m.cat_row
-    return result
-
-
 def small_view(data, attribute):
     """
     Extract a downsampled view from a dataset, for quick statistical summaries
@@ -364,7 +332,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, components, is_log):
+def update_ticks(axes, coord, kinds, is_log, categories):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.
@@ -390,8 +358,8 @@ def update_ticks(axes, coord, components, is_log):
     else:
         raise TypeError("coord must be one of x,y")
 
-    is_cat = any(comp.categorical for comp in components)
-    is_date = any(comp.datetime for comp in components)
+    is_cat = 'categorical' in kinds
+    is_date = 'datetime' in kinds
 
     if is_date:
         loc = AutoDateLocator()
@@ -402,17 +370,12 @@ def update_ticks(axes, coord, components, is_log):
         axis.set_major_locator(LogLocator())
         axis.set_major_formatter(LogFormatterMathtext())
     elif is_cat:
-        all_categories = np.empty((0,), dtype=np.object)
-        for comp in components:
-            all_categories = np.union1d(comp.categories, all_categories)
         locator = MaxNLocator(10, integer=True)
-        locator.view_limits(0, all_categories.shape[0])
-        format_func = partial(tick_linker, all_categories)
+        locator.view_limits(0, categories.shape[0])
+        format_func = partial(tick_linker, categories)
         formatter = FuncFormatter(format_func)
-
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
-        return all_categories.shape[0]
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())

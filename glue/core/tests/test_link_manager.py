@@ -204,15 +204,15 @@ class TestLinkManager(object):
 
         # link world coordinates...
         dc.add_link(LinkSame(
-            d1.get_world_component_id(0), d2.get_world_component_id(0)))
+            d1.world_component_ids[0], d2.world_component_ids[0]))
         dc.add_link(LinkSame(
-            d1.get_world_component_id(1), d2.get_world_component_id(1)))
+            d1.world_component_ids[1], d2.world_component_ids[1]))
 
         # and then retrieve pixel coordinates
         np.testing.assert_array_equal(
-            d2[d1.get_pixel_component_id(0)], [[0, 0], [1, 1]])
+            d2[d1.pixel_component_ids[0]], [[0, 0], [1, 1]])
         np.testing.assert_array_equal(
-            d1[d2.get_pixel_component_id(1)], [[0, 1], [0, 1]])
+            d1[d2.pixel_component_ids[1]], [[0, 1], [0, 1]])
 
     def test_binary_links_correct_with_mergers(self):
         """Regression test. BinaryComponentLinks should work after mergers"""

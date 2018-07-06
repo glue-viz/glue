@@ -111,14 +111,13 @@ def test_csv_pandas_factory():
         d = df.load_data(fname, factory=df.pandas_read_table)
     assert d['a'].dtype == np.int64
     assert d['b'].dtype == np.float
-    assert d['c'].dtype == np.float
+    assert d['c'].dtype == np.object
     cat_comp = d.find_component_id('c')
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
     correct_cats = np.unique(np.asarray(['some', 'categorical',
                                          'data', 'here',
                                          '', '', '']))
-    np.testing.assert_equal(d.get_component(cat_comp).categories,
-                            correct_cats)
+    np.testing.assert_equal(d[cat_comp].categories, correct_cats)
     cat_comp = d.find_component_id('d')
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
 
@@ -137,11 +136,11 @@ def test_dtype_float():
     assert d['a'].dtype == np.float
 
 
-def test_dtype_float_on_categorical():
+def test_dtype_str_on_categorical():
     data = b'# a, b\nf, 1 \nr, 2 \nk, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
-    assert d['a'].dtype == np.float
+    assert d['a'].dtype.kind in 'SU'
 
 
 def test_dtype_badtext():

@@ -266,4 +266,4 @@ def _slice_label(data, slc):
                 was defined
     """
     idx = _slice_index(data, slc)
-    return data.get_world_component_id(idx).label
+    return data.world_component_ids[idx].label

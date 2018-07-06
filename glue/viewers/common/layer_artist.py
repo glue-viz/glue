@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from glue.external.echo import keep_in_sync, CallbackProperty
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.common.state import LayerState
+from glue.core.message import LayerArtistVisibilityMessage
 
 __all__ = ['LayerArtist']
 
@@ -32,6 +33,12 @@ class LayerArtist(LayerArtistBase):
 
         self._sync_zorder = keep_in_sync(self, 'zorder', self.state, 'zorder')
         self._sync_visible = keep_in_sync(self, 'visible', self.state, 'visible')
+
+        self.state.add_callback('visible', self._on_visibility_change)
+
+    def _on_visibility_change(self, *args):
+        if self.state.layer is not None and self.state.layer.hub is not None:
+            self.state.layer.hub.broadcast(LayerArtistVisibilityMessage(self))
 
     def __gluestate__(self, context):
         return dict(state=context.id(self.state))

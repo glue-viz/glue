@@ -117,7 +117,7 @@ def test_link_aligned(ndata, ndim):
     dc.add_link(links)
 
     for i in range(ndim):
-        id0 = ds[0].get_pixel_component_id(i)
+        id0 = ds[0].pixel_component_ids[i]
         for j in range(1, ndata):
-            id1 = ds[j].get_pixel_component_id(i)
+            id1 = ds[j].pixel_component_ids[i]
             np.testing.assert_array_equal(ds[j][id0], ds[j][id1])

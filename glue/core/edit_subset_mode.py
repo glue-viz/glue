@@ -51,7 +51,7 @@ class EditSubsetMode(object):
         if self.data_collection is not None:
             self.data_collection.hub.broadcast(EditSubsetMessage(self, self.edit_subset, self.mode))
 
-    def _combine_data(self, new_state, use_current=False):
+    def _combine_data(self, new_state, override_mode=None):
         """ Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
@@ -60,21 +60,22 @@ class EditSubsetMode(object):
 
         :param edit_subset: The current edit_subset
         :param new_state: The new SubsetState
-        :param use_current: Do not create a new subset even if using NewMode
+        :param override_mode: Mode to use instead of EditSubsetMode.mode
         """
-        if not self._edit_subset or (self.mode is NewMode and not use_current):
+        mode = override_mode or self.mode
+        if not self._edit_subset or mode is NewMode:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
                                    "calling update")
             self._edit_subset = [self.data_collection.new_subset_group()]
         subs = self._edit_subset
         for s in as_list(subs):
-            self.mode(s, new_state)
+            mode(s, new_state)
 
     @contract(d='inst($DataCollection, $Data)',
               new_state='isinstance(SubsetState)',
               focus_data='inst($Data)|None')
-    def update(self, d, new_state, focus_data=None, use_current=False):
+    def update(self, d, new_state, focus_data=None, override_mode=None):
         """ Apply a new subset state to editable subsets within a
         :class:`~glue.core.data.Data` or
         :class:`~glue.core.data_collection.DataCollection` instance
@@ -89,13 +90,13 @@ class EditSubsetMode(object):
         if relevant. If a data set is in focus and has no subsets,
         a new one will be created using new_state.
 
-        :param use_current: Do not create a new subset even if using NewMode
-        :type use_current: bool
+        :param override_mode: Mode to use instead of EditSubsetMode.mode
+        :type override_mode: bool
         """
         logging.getLogger(__name__).debug("Update subset for %s", d)
 
         if isinstance(d, (Data, DataCollection)):
-            self._combine_data(new_state, use_current=use_current)
+            self._combine_data(new_state, override_mode=override_mode)
         else:
             raise TypeError("input must be a Data or DataCollection: %s" %
                             type(d))

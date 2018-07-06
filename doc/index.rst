@@ -99,6 +99,7 @@ Advanced customization
    customizing_guide/qt_viewer.rst
    customizing_guide/matplotlib_qt_viewer.rst
    customizing_guide/toolbar.rst
+   developer_guide/data.rst
 
 Getting help
 ------------

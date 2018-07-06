@@ -67,7 +67,7 @@ def discover_links(data, links):
     # TODO: try to add shortest paths first -- should
     # prevent lots of repeated checking
 
-    cids = set(data.primary_components)
+    cids = set(data.main_components + data.coordinate_components)
     cid_links = {}
     depth = {}
     for cid in cids:
@@ -233,6 +233,9 @@ class LinkManager(HubListener):
         else:
             data_collection = self.data_collection
 
+        # Only keep actual Data instances since only they support links for now
+        data_collection = [d for d in data_collection if isinstance(d, Data)]
+
         for data in data_collection:
             links = discover_links(data, self._links | self._inverse_links)
             comps = {}
@@ -256,7 +259,7 @@ class LinkManager(HubListener):
         if self.data_collection is None:
             data_links = set()
         else:
-            data_links = set(link for data in self.data_collection for link in data.links)
+            data_links = set(link for data in self.data_collection for link in getattr(data, 'links', []))
         return data_links | self._external_links
 
     @property

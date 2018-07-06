@@ -42,7 +42,7 @@ class TestPandasConversion(object):
 
         d = Data(x=[1, 2, 3])
         series = pd.Series(np.array([0, 1, 2]))
-        comp = d.get_component(d.get_pixel_component_id(0))
+        comp = d.get_component(d.pixel_component_ids[0])
         assert_series_equal(series, comp.to_series())
 
     def test_Data_conversion(self):

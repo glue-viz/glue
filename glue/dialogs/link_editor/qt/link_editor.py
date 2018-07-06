@@ -127,14 +127,11 @@ class LinkEditor(QtWidgets.QDialog):
         return self._links
 
     def _remove_link(self):
-
-        current = self._ui.current_links.currentItem()
-        if current is None:
+        if self._ui.current_links.currentItem() is None:
             return
-        link = current.data(0, Qt.UserRole)
-
-        self._links.remove(link)
-
+        for item in self._ui.current_links.selectedItems():
+            link = item.data(0, Qt.UserRole)
+            self._links.remove(link)
         self._ui.graph_widget.set_links(self._links)
         self._update_links_list()
 

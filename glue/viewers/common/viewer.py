@@ -3,8 +3,10 @@ from __future__ import absolute_import, division, print_function
 import os
 import warnings
 
+from IPython import get_ipython
+
 from glue.core.hub import HubListener
-from glue.core import Data, Subset
+from glue.core import BaseData, Subset
 from glue.core import command
 from glue.core.command import ApplySubsetState
 
@@ -44,7 +46,7 @@ class BaseViewer(HubListener):
         self._session.command_stack.do(cmd)
 
     def add_layer(self, layer):
-        if isinstance(layer, Data):
+        if isinstance(layer, BaseData):
             self.add_data(layer)
         elif isinstance(layer, Subset):
             self.add_subset(layer)
@@ -69,10 +71,10 @@ class BaseViewer(HubListener):
         session = context.object(rec['session'])
         return cls(session)
 
-    def apply_subset_state(self, subset_state, use_current=False):
+    def apply_subset_state(self, subset_state, override_mode=None):
         cmd = ApplySubsetState(data_collection=self._data,
                                subset_state=subset_state,
-                               use_current=use_current)
+                               override_mode=override_mode)
         self._session.command_stack.do(cmd)
 
 
@@ -194,7 +196,7 @@ class Viewer(BaseViewer):
     def remove_data(self, data):
         with delay_callback(self.state, 'layers'):
             for layer_state in self.state.layers[::-1]:
-                if isinstance(layer_state.layer, Data):
+                if isinstance(layer_state.layer, BaseData):
                     if layer_state.layer is data:
                         self.state.layers.remove(layer_state)
                 else:
@@ -215,12 +217,6 @@ class Viewer(BaseViewer):
         # Check if subset already exists in viewer
         if not self.allow_duplicate_subset and subset in self._layer_artist_container:
             return True
-
-        # Make sure we add the data first if it doesn't already exist in viewer.
-        # This will then auto add the subsets so can just return.
-        if subset.data not in self._layer_artist_container:
-            self.add_data(subset.data)
-            return
 
         # Create scatter layer artist and add to container
         layer = self.get_subset_layer_artist(subset)
@@ -347,11 +343,22 @@ class Viewer(BaseViewer):
 
         return viewer
 
-    def close(self):
+    def cleanup(self):
+
         if self._hub is not None:
             self.unregister(self._hub)
+
         self._layer_artist_container.clear_callbacks()
         self._layer_artist_container.clear()
+
+        # Remove any references to the viewer in the IPython namespace. We use
+        # list() here to force an explicit copy since we are modifying the
+        # dictionary in-place
+        shell = get_ipython()
+        if shell is not None:
+            for key in list(shell.user_ns):
+                if shell.user_ns[key] is self:
+                    shell.user_ns.pop(key)
 
     def remove_layer(self, layer):
         self._layer_artist_container.pop(layer)
@@ -388,7 +395,7 @@ class Viewer(BaseViewer):
             else:
                 layers += '## Layer {0}\n\n'.format(ilayer + 1)
             if layer.visible and layer.enabled:
-                if isinstance(layer.layer, Data):
+                if isinstance(layer.layer, BaseData):
                     index = self.session.data_collection.index(layer.layer)
                     layers += "layer_data = data_collection[{0}]\n\n".format(index)
                 else:

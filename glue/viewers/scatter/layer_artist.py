@@ -10,7 +10,7 @@ from mpl_scatter_density import ScatterDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.utils import defer_draw, broadcast_to, nanmax
+from glue.utils import defer_draw, broadcast_to, nanmax, categorical_ndarray
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -56,6 +56,13 @@ class DensityMapLimits(object):
 
     def max(self, array):
         return 10. ** (np.log10(nanmax(array)) * self.contrast)
+
+
+def ensure_numerical(values):
+    if isinstance(values, categorical_ndarray):
+        return values.codes
+    else:
+        return values
 
 
 def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):
@@ -177,7 +184,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return
 
         try:
-            x = self.layer[self._viewer_state.x_att].ravel()
+            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -186,7 +193,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         try:
-            y = self.layer[self._viewer_state.y_att].ravel()
+            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
@@ -245,8 +252,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.vx_att is not None and self.state.vy_att is not None:
 
-                vx = self.layer[self.state.vx_att].ravel()
-                vy = self.layer[self.state.vy_att].ravel()
+                vx = ensure_numerical(self.layer[self.state.vx_att].ravel())
+                vy = ensure_numerical(self.layer[self.state.vy_att].ravel())
 
                 if self.state.vector_mode == 'Polar':
                     ang = vx
@@ -278,12 +285,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         if self.state.xerr_visible or self.state.yerr_visible:
 
             if self.state.xerr_visible and self.state.xerr_att is not None:
-                xerr = self.layer[self.state.xerr_att].ravel()
+                xerr = ensure_numerical(self.layer[self.state.xerr_att].ravel())
             else:
                 xerr = None
 
             if self.state.yerr_visible and self.state.yerr_att is not None:
-                yerr = self.layer[self.state.yerr_att].ravel()
+                yerr = ensure_numerical(self.layer[self.state.yerr_att].ravel())
             else:
                 yerr = None
 
@@ -308,7 +315,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         self.density_artist.set_clim(self.density_auto_limits.min,
                                                      self.density_auto_limits.max)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
-                    c = self.layer[self.state.cmap_att].ravel()
+                    c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
 
                 if force or 'stretch' in changed:
@@ -356,7 +363,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     elif force or any(prop in changed for prop in CMAP_PROPERTIES) or 'fill' in changed:
                         self.scatter_artist.set_edgecolors(None)
                         self.scatter_artist.set_facecolors(None)
-                        c = self.layer[self.state.cmap_att].ravel()
+                        c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                         set_mpl_artist_cmap(self.scatter_artist, c, self.state)
                         if self.state.fill:
                             self.scatter_artist.set_edgecolors('none')
@@ -371,7 +378,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                             s = self.state.size * self.state.size_scaling
                             s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
                         else:
-                            s = self.layer[self.state.size_att].ravel()
+                            s = ensure_numerical(self.layer[self.state.size_att].ravel())
                             s = ((s - self.state.size_vmin) /
                                  (self.state.size_vmax - self.state.size_vmin))
                             # The following ensures that the sizes are in the
@@ -394,7 +401,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 # Higher up we oversampled the points in the line so that
                 # half a segment on either side of each point has the right
                 # color, so we need to also oversample the color here.
-                c = self.layer[self.state.cmap_att].ravel()
+                c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                 self.line_collection.set_linearcolor(data=c, state=self.state)
 
             if force or 'linewidth' in changed:
@@ -410,7 +417,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     self.vector_artist.set_array(None)
                     self.vector_artist.set_color(self.state.color)
             elif force or any(prop in changed for prop in CMAP_PROPERTIES):
-                c = self.layer[self.state.cmap_att].ravel()
+                c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                 set_mpl_artist_cmap(self.vector_artist, c, self.state)
 
         if self.state.xerr_visible or self.state.yerr_visible:
@@ -421,7 +428,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     if force or 'color' in changed or 'cmap_mode' in changed:
                         eartist.set_color(self.state.color)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
-                    c = self.layer[self.state.cmap_att].ravel()
+                    c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                     set_mpl_artist_cmap(eartist, c, self.state)
 
                 if force or 'alpha' in changed:

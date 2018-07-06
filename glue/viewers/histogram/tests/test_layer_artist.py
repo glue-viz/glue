@@ -44,8 +44,6 @@ class TestHistogramLayerArtist(object):
         self.layer_state = self.artist.state
         self.viewer_state.layers.append(self.layer_state)
 
-        self.artist.wait()
-
         self.call_counter = CallCounter()
         sys.setprofile(self.call_counter)
 
@@ -59,31 +57,26 @@ class TestHistogramLayerArtist(object):
 
         # attribute
         self.viewer_state.x_att = self.data.id['y']
-        self.artist.wait()
         assert self.call_counter['_calculate_histogram'] == 1
         assert self.call_counter['_update_artists'] == 1
 
         # lo
         self.viewer_state.hist_x_min = -1
-        self.artist.wait()
         assert self.call_counter['_calculate_histogram'] == 2
         assert self.call_counter['_update_artists'] == 2
 
         # hi
         self.viewer_state.hist_x_max = 5
-        self.artist.wait()
         assert self.call_counter['_calculate_histogram'] == 3
         assert self.call_counter['_update_artists'] == 3
 
         # nbins
         self.viewer_state.hist_n_bin += 1
-        self.artist.wait()
         assert self.call_counter['_calculate_histogram'] == 4
         assert self.call_counter['_update_artists'] == 4
 
         # xlog
         self.viewer_state.x_log ^= True
-        self.artist.wait()
         assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 5
 
@@ -93,24 +86,20 @@ class TestHistogramLayerArtist(object):
 
         # ylog -- no call
         self.viewer_state.y_log ^= True
-        self.artist.wait()
         # assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 6
 
         # cumulative -- no call
         self.viewer_state.cumulative ^= True
-        self.artist.wait()
         # assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 7
 
         # normed -- no call
         self.viewer_state.normalize ^= True
-        self.artist.wait()
         # assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 8
 
         # subset style -- no call
         self.subset.style.color = '#00ff00'
-        self.artist.wait()
         # assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 8

@@ -63,5 +63,5 @@ class PixelSelectionTool(ToolbarModeBase):
 
         cmd = ApplySubsetState(data_collection=self.viewer._data,
                                subset_state=subset_state,
-                               use_current=False)
+                               override_mode=None)
         self.viewer._session.command_stack.do(cmd)

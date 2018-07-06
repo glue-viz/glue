@@ -9,7 +9,7 @@ from matplotlib.patches import Rectangle
 
 from glue.utils import defer_draw
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.viewers.histogram.state import HistogramLayerState
 from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -82,7 +82,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
     @defer_draw
     def _calculate_histogram(self, reset=False):
-        if QT_INSTALLED:
+        if self.state.layer is not None and self.state.layer.size > 1e7 and QT_INSTALLED:
             self._worker.work_queue.put(reset)
         else:
             try:
@@ -105,6 +105,12 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.state.update_histogram()
 
     def _calculate_histogram_postthread(self):
+
+        # If the worker has started running again, we should stop at this point
+        # since this function will get called again.
+        if QT_INSTALLED and self._worker.running:
+            return
+
         self.notify_end_computation()
         self._update_artists()
         self._update_visual_attributes()
@@ -114,7 +120,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self.notify_end_computation()
         self.redraw()
         if issubclass(exc[0], (IncompatibleAttribute, IndexError)):
-            if isinstance(self.state.layer, Data):
+            if isinstance(self.state.layer, BaseData):
                 self.disable_invalid_attributes(self._viewer_state.x_att)
             else:
                 self.disable_incompatible_subset()
@@ -124,7 +130,15 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
     @defer_draw
     def _update_artists(self):
 
-        mpl_hist_edges, mpl_hist = self.state.histogram
+        # It's possible for this method to get called but for the state to have
+        # been updated in the mean time to have a histogram that raises an
+        # exception (for example an IncompatibleAttribute). If any errors happen
+        # here, we simply ignore them since _calculate_histogram_error will get
+        # called directly.
+        try:
+            mpl_hist_edges, mpl_hist = self.state.histogram
+        except Exception:
+            return
 
         if mpl_hist_edges.size == 0 or mpl_hist.sum() == 0:
             return

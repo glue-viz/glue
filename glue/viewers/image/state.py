@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from glue.core import Data
+from glue.core import BaseData, Coordinates
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -79,12 +79,10 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
         self.xw_att_helper = ComponentIDComboHelper(self, 'x_att_world',
-                                                    numeric=False, categorical=False,
-                                                    world_coord=True)
+                                                    numeric=False, categorical=False)
 
         self.yw_att_helper = ComponentIDComboHelper(self, 'y_att_world',
-                                                    numeric=False, categorical=False,
-                                                    world_coord=True)
+                                                    numeric=False, categorical=False)
 
         self.add_callback('reference_data', self._reference_data_changed, priority=1000)
         self.add_callback('layers', self._layers_changed, priority=1000)
@@ -120,6 +118,10 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.y_min = -0.5
             self.y_max = ny - 0.5
 
+    @property
+    def _display_world(self):
+        return isinstance(getattr(self.reference_data, 'coords', None), Coordinates)
+
     def _reference_data_changed(self, *args):
         # This signal can get emitted if just the choices but not the actual
         # reference data change, so we check here that the reference data has
@@ -127,6 +129,16 @@ class ImageViewerState(MatplotlibDataViewerState):
         if self.reference_data is not getattr(self, '_last_reference_data', None):
             self._last_reference_data = self.reference_data
             with delay_callback(self, 'x_att_world', 'y_att_world', 'slices'):
+                if self._display_world:
+                    self.xw_att_helper.pixel_coord = False
+                    self.yw_att_helper.pixel_coord = False
+                    self.xw_att_helper.world_coord = True
+                    self.yw_att_helper.world_coord = True
+                else:
+                    self.xw_att_helper.pixel_coord = True
+                    self.yw_att_helper.pixel_coord = True
+                    self.xw_att_helper.world_coord = False
+                    self.yw_att_helper.world_coord = False
                 self._update_combo_att()
                 self._set_default_slices()
 
@@ -156,7 +168,7 @@ class ImageViewerState(MatplotlibDataViewerState):
         layer_state_by_data = defaultdict(list)
 
         for layer_state in self.layers:
-            if isinstance(layer_state.layer, Data):
+            if isinstance(layer_state.layer, BaseData):
                 layer_state_by_data[layer_state.layer].append(layer_state)
 
         for data, layer_states in layer_state_by_data.items():
@@ -196,22 +208,34 @@ class ImageViewerState(MatplotlibDataViewerState):
         # slicing with two pixel components that are the same.
         with delay_callback(self, 'x_att', 'y_att'):
             if self.x_att_world is not None:
-                index = self.reference_data.world_component_ids.index(self.x_att_world)
-                self.x_att = self.reference_data.pixel_component_ids[index]
+                if self._display_world:
+                    index = self.reference_data.world_component_ids.index(self.x_att_world)
+                    self.x_att = self.reference_data.pixel_component_ids[index]
+                else:
+                    self.x_att = self.x_att_world
             if self.y_att_world is not None:
-                index = self.reference_data.world_component_ids.index(self.y_att_world)
-                self.y_att = self.reference_data.pixel_component_ids[index]
+                if self._display_world:
+                    index = self.reference_data.world_component_ids.index(self.y_att_world)
+                    self.y_att = self.reference_data.pixel_component_ids[index]
+                else:
+                    self.y_att = self.y_att_world
 
     @defer_draw
     def _on_xatt_change(self, *args):
         if self.x_att is not None:
-            self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
+            if self._display_world:
+                self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
+            else:
+                self.x_att_world = self.x_att
         self.reset_limits()
 
     @defer_draw
     def _on_yatt_change(self, *args):
         if self.y_att is not None:
-            self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
+            if self._display_world:
+                self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
+            else:
+                self.y_att_world = self.y_att
         self.reset_limits()
 
     @defer_draw
@@ -235,7 +259,7 @@ class ImageViewerState(MatplotlibDataViewerState):
     def _set_reference_data(self):
         if self.reference_data is None:
             for layer in self.layers:
-                if isinstance(layer.layer, Data):
+                if isinstance(layer.layer, BaseData):
                     self.reference_data = layer.layer
                     return
 
@@ -657,7 +681,7 @@ class ImageLayerState(BaseImageLayerState):
     def _update_attribute(self, *args):
         if self.layer is not None:
             self.attribute_att_helper.set_multiple_data([self.layer])
-            self.attribute = self.layer.visible_components[0]
+            self.attribute = self.layer.main_components[0]
 
     def _update_priority(self, name):
         if name == 'layer':

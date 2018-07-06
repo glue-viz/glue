@@ -40,7 +40,7 @@ class HistogramViewer(MatplotlibDataViewer):
         if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'x', self.state._get_x_components(), self.state.x_log)
+            update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log, self.state.x_categories)
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
@@ -54,12 +54,20 @@ class HistogramViewer(MatplotlibDataViewer):
 
         self.axes.figure.canvas.draw()
 
-    def apply_roi(self, roi, use_current=False):
+    @defer_draw
+    def apply_roi(self, roi, override_mode=None):
 
-        if len(self.layers) == 0:  # Force redraw to get rid of ROI
-            return self.redraw()
+        # Force redraw to get rid of ROI. We do this because applying the
+        # subset state below might end up not having an effect on the viewer,
+        # for example there may not be any layers, or the active subset may not
+        # be one of the layers. So we just explicitly redraw here to make sure
+        # a redraw will happen after this method is called.
+        self.redraw()
 
-        x_date = any(comp.datetime for comp in self.state._get_x_components())
+        if len(self.layers) == 0:
+            return
+
+        x_date = 'datetime' in self.state.x_kinds
 
         if x_date:
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None)
@@ -76,11 +84,10 @@ class HistogramViewer(MatplotlibDataViewer):
 
         roi_new = RangeROI(min=lo, max=hi, orientation='x')
 
-        x_comp = self.state.x_att.parent.get_component(self.state.x_att)
+        subset_state = roi_to_subset_state(roi_new, x_att=self.state.x_att,
+                                           x_categories=self.state.x_categories)
 
-        subset_state = roi_to_subset_state(roi_new, x_att=self.state.x_att, x_comp=x_comp)
-
-        self.apply_subset_state(subset_state, use_current=use_current)
+        self.apply_subset_state(subset_state, override_mode=override_mode)
 
     @staticmethod
     def update_viewer_state(rec, context):

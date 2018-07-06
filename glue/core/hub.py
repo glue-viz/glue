@@ -46,12 +46,12 @@ class Hub(object):
 
         self._ignore = Counter()
 
-        from glue.core.data import Data
+        from glue.core.data import BaseData
         from glue.core.subset import Subset
         from glue.core.data_collection import DataCollection
 
         listeners = set(filter(lambda x: isinstance(x, HubListener), args))
-        data = set(filter(lambda x: isinstance(x, Data), args))
+        data = set(filter(lambda x: isinstance(x, BaseData), args))
         subsets = set(filter(lambda x: isinstance(x, Subset), args))
         dcs = set(filter(lambda x: isinstance(x, DataCollection), args))
         listeners -= (data | subsets | dcs)

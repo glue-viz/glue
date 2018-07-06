@@ -5,6 +5,7 @@ from qtpy.QtWidgets import QMenu, QAction
 
 from glue.core.subset import RoiSubsetState
 from glue.core.qt.roi import QtPolygonalROI
+from glue.core.edit_subset_mode import ReplaceMode
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
 
@@ -92,6 +93,6 @@ class RoiClickAndDragMode(MouseMode):
 
     def release(self, event):
         if self._roi:
-            self._viewer.apply_roi(self._roi.roi(), use_current=True)
+            self._viewer.apply_roi(self._roi.roi(), override_mode=ReplaceMode)
             self._roi.finalize_selection(event)
             self._selected = False

@@ -5,6 +5,7 @@ import numpy as np
 from glue.core.roi import PointROI
 from glue.core.subset import CategorySubsetState
 from glue.core.exceptions import IncompatibleDataException
+from glue.utils import defer_draw
 from glue.utils.qt import messagebox_on_error
 
 from glue.plugins.dendro_viewer.dendro_helpers import _substructures
@@ -88,7 +89,15 @@ class DendrogramViewer(MatplotlibDataViewer):
 
     # TODO: move some of the ROI stuff to state class?
 
-    def apply_roi(self, roi, use_current=False):
+    @defer_draw
+    def apply_roi(self, roi, override_mode=None):
+
+        # Force redraw to get rid of ROI. We do this because applying the
+        # subset state below might end up not having an effect on the viewer,
+        # for example there may not be any layers, or the active subset may not
+        # be one of the layers. So we just explicitly redraw here to make sure
+        # a redraw will happen after this method is called.
+        self.redraw()
 
         # TODO Does subset get applied to all data or just visible data?
 
@@ -98,8 +107,8 @@ class DendrogramViewer(MatplotlibDataViewer):
         if not roi.defined():
             return
 
-        if len(self.layers) == 0:  # Force redraw to get rid of ROI
-            return self.redraw()
+        if len(self.layers) == 0:
+            return
 
         if isinstance(roi, PointROI):
 

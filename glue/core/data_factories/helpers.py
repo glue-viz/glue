@@ -28,7 +28,7 @@ import os
 import warnings
 
 from glue.core.contracts import contract
-from glue.core.data import Component, Data
+from glue.core.data import Component, BaseData, Data
 from glue.config import auto_refresh, data_factory
 from glue.backends import get_timer
 from glue.utils import as_list
@@ -235,7 +235,7 @@ def load_data(path, factory=None, **kwargs):
         # pack other container types like astropy tables
         # into glue data objects
         for d in ds:
-            if isinstance(d, Data):
+            if isinstance(d, BaseData):
                 yield d
                 continue
             for item in parse_data(d, lbl):
@@ -260,17 +260,18 @@ def load_data(path, factory=None, **kwargs):
             # We just follow the order in which the components are now loaded,
             # which is coordinate components first, followed by all other
             # components
-            for cid in item.primary_components:
+            for cid in item.coordinate_components + item.main_components:
                 log.log(item.get_component(cid))
         else:
             # In this case the first component was the first one that is not a
             # coordinate component, followed by the coordinate components,
             # followed by the remaining components.
-            cid = item.primary_components[item.ndim * 2]
+            cid = item.main_components[0]
             log.log(item.get_component(cid))
-            for icid, cid in enumerate(item.primary_components):
-                if icid != item.ndim * 2:
-                    log.log(item.get_component(cid))
+            for icid, cid in enumerate(item.coordinate_components):
+                log.log(item.get_component(cid))
+            for icid, cid in enumerate(item.main_components[1:]):
+                log.log(item.get_component(cid))
 
     if len(d) == 1:
         # unpack single-length lists for user convenience

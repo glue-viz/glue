@@ -125,7 +125,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
             self.references = references
         elif data is not None:
             self.references = OrderedDict()
-            for cid in data.primary_components:
+            for cid in data.coordinate_components + data.main_components:
                 self.references[cid.label] = cid
 
         example = sorted(self.references, key=len)[0]

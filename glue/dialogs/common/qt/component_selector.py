@@ -91,17 +91,16 @@ class ComponentSelector(QtWidgets.QWidget):
                 c_list.addItem(item)
                 c_list.set_data(item, c)
 
-        if len(set(data.primary_components) - set(data.coordinate_components)) > 0:
+        if len(data.main_components) > 0:
             item = QtWidgets.QListWidgetItem('Main components')
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)
-            for c in data.primary_components:
-                if c not in data.coordinate_components:
-                    item = QtWidgets.QListWidgetItem(c.label)
-                    c_list.addItem(item)
-                    c_list.set_data(item, c)
+            for c in data.main_components:
+                item = QtWidgets.QListWidgetItem(c.label)
+                c_list.addItem(item)
+                c_list.set_data(item, c)
 
-        if len(set(data.derived_components) & set(data.visible_components)) > 0:
+        if len(data.derived_components) > 0:
             item = QtWidgets.QListWidgetItem('Derived components')
             item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
             c_list.addItem(item)

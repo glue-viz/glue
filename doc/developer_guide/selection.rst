@@ -103,7 +103,7 @@ A subset is what we normally think of as sub-part of a dataset. Subsets are
 typically created by making `Subset states`_ first. There are then different
 ways of applying this subset state to a :class:`~glue.core.data.Data` object to actually create a subset. The
 easiest way of doing this is to simply call the
-:meth:`~glue.core.data.Data.new_subset` method with the
+:meth:`~glue.core.data.BaseData.new_subset` method with the
 :class:`~glue.core.subset.SubsetState` and optionally a label describing that
 subset::
 
@@ -129,7 +129,7 @@ Finally, you can also get the mask from a subset::
 One of the benefits of subset states is that they can be applied to multiple
 data objects, and if the different data objects have linked components (as described in :doc:`linking`), this
 may produce several valid subsets in different datasets. We can apply a :class:`~glue.core.subset.SubsetState` to all datasets in a data collection by using the  :meth:`~glue.core.data_collection.DataCollection.new_subset_group` method with
-the :class:`~glue.core.subset.SubsetState` and a label describing that subset, similarly to :meth:`~glue.core.data.Data.new_subset`
+the :class:`~glue.core.subset.SubsetState` and a label describing that subset, similarly to :meth:`~glue.core.data.BaseData.new_subset`
 
     >>> from glue.core import DataCollection
     >>> data_collection = DataCollection([data])

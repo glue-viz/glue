@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import Subset
+from glue.core import Subset, Data
 from glue.config import data_exporter
 from glue.core.coordinates import WCSCoordinates
 
@@ -42,37 +42,49 @@ def fits_writer(filename, data, components=None):
         The components to export. Set this to `None` to export all components.
     """
 
+    from astropy.io import fits
+
     if isinstance(data, Subset):
         mask = data.to_mask()
         data = data.data
     else:
         mask = None
 
-    data_header = data.coords.header if isinstance(data.coords, WCSCoordinates) else None
-
-    from astropy.io import fits
+    data_header = data.coords.header if isinstance(data.coords, WCSCoordinates) else fits.Header()
 
     hdus = fits.HDUList()
 
-    for cid in data.visible_components:
+    for cid in data.main_components + data.derived_components:
 
         if components is not None and cid not in components:
             continue
 
-        comp = data.get_component(cid)
-        if comp.categorical:
+        if data.get_kind(cid) != 'numerical':
             # TODO: emit warning
             continue
-        else:
-            # We need to cast to float otherwise we can't set the masked
-            # values to NaN.
-            values = comp.data.astype(float, copy=True)
+
+        values = data[cid]
 
         if mask is not None:
-            values[~mask] = np.nan
+            # We need to copy the values so that we can mask them
+            values = values.copy()
+            if values.dtype.kind == 'f':
+                blank = None
+                values[~mask] = np.nan
+            elif values.dtype.kind == 'i':
+                blank = np.iinfo(values.dtype).min
+                values[~mask] = blank
 
         # TODO: special behavior for PRIMARY?
-        header = make_component_header(comp, data_header) if data_header else None
+        if isinstance(data, Data):
+            comp = data.get_component(cid)
+            header = make_component_header(comp, data_header)
+        else:
+            header = fits.Header()
+
+        if mask is not None and blank is not None:
+            header['BLANK'] = blank
+
         hdu = fits.ImageHDU(values, name=cid.label, header=header)
         hdus.append(hdu)
 

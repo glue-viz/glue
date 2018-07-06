@@ -4,6 +4,14 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Change 'Export Session' dialog to offer to save with relative paths to data
+  by default instead of absolute paths. [#1803]
+
+* Added a new method ``screenshot`` on ``GlueApplication`` to save a
+  screenshot of the current view. [#1808]
+
+* Show the active subset in the toolbar. [#1797]
+
 * Refactored the viewer class base classes:
 
   - ``glue.core.application_base.ViewerBase`` has been removed in favor of
@@ -16,22 +24,72 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
+* Make it possible to unglue multiple links in one go. [#1809]
+
+* Make it so that adding a subset to a viewer no longer adds the
+  associated data, since in some cases the viewer can handle the
+  subset size, but not the full data. [#1807]
+
+* Defined a new abstract base class for all datasets, ``BaseData``,
+  and a base class ``BaseCartesianData``,
+  which can be used to implement interfaces to datasets that may be
+  remote or may not be stored as regular cartesian data. [#1768]
+
 * Add a new method ``Data.compute_statistic`` which can be used
   to find scalar and array statistics on the data, and use for
   the profile viewer and the state limits helpers. [#1737]
 
-* Compute profiles asynchronously to avoid holding up the UI,
-  and in chunks to avoid excessive memory usage. [#1736]
+* Add a new method ``Data.compute_histogram`` which can be used
+  to find histograms of specific components, with or without
+  subsets applied. [#1739]
+
+* Removed ``Data.get_pixel_component_ids`` and ``Data.get_world_component_ids``
+  in favor of ``Data.pixel_component_ids`` and ``Data.world_component_ids``.
+  [#1784]
+
+* Deprecated ``Data.visible_components`` and ``Data.primary_components``. [#1788]
+
+* Speed up histogram calculations by using the fast-histogram package instead of
+  np.histogram. [#1806]
+
+* In the case of categorical attributes, ``Data[name]`` now returns a
+  ``categorical_ndarray`` object rather than the indices of the categories. You
+  can access the indices with ``Data[name].codes`` and the unique categories
+  with ``Data[name].categories``.  [#1784]
+
+* Compute profiles and histograms asynchronously when dataset is large
+  to avoid holding up the UI, and compute profiles in chunks to avoid
+  excessive memory usage. [#1736, #1764]
 
 * Improved naming of components when merging datasets. [#1249]
 
-* Moved calculation of histograms to Data.compute_histogram. [#1739]
+* Fixed an issue that caused residual references to viewers
+  after they were closed if they were accessed through the
+  IPython console. [#1770]
+
+* Don't show layer edit options if layer is not visible. [#1805]
 
 v0.13.4 (unreleased)
 --------------------
 
+* Fixed a bug that caused ROIs to not be erased after selection if the
+  active subset was not in the list of layers for the viewer. [#1801]
+
+* Always returned to last used folder when opening/saving files. [#1794]
+
+* Show correct dataset when using control-click to select to add
+  arithmetic attributes or rename/reorder components. [#1802]
+
 * Improve performance when updating links and changing attributes
   on subsets. [#1716]
+
+* Fix errors that happened when clicking on the 'Export Data' and
+  'Define arithmetic attributes' buttons when no data was present,
+  and fixed Qt errors that happened if the data collection changed
+  after the 'Export Data' dialog was opened. [#1795]
+
+* Better preserve data types when exporting data/subsets to FITS
+  and HDF5 formats. [#1800]
 
 * Fixed parsing of AVM meta-data from images. [#1732]
 

@@ -65,7 +65,7 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.register_to_hub(self.hub)
 
     def init_subset(self):
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data_collection.new_subset_group('subset 1', cid > 0)
 
     @property
@@ -114,21 +114,6 @@ class BaseTestMatplotlibDataViewer(object):
 
         self.init_subset()
         self.viewer.add_data(self.data)
-
-        assert len(self.viewer.layers) == 2
-        assert self.viewer.layers[0].layer is self.data
-        assert self.viewer.layers[1].layer is self.data.subsets[0]
-
-        assert len(self.viewer.state.layers) == 2
-        assert self.viewer.state.layers[0].layer is self.data
-        assert self.viewer.state.layers[1].layer is self.data.subsets[0]
-
-    def test_adding_subset_adds_data(self):
-
-        # TODO: in future consider whether we want to deprecate this behavior
-
-        self.init_subset()
-        self.viewer.add_subset(self.data.subsets[0])
 
         assert len(self.viewer.layers) == 2
         assert self.viewer.layers[0].layer is self.data
@@ -191,7 +176,7 @@ class BaseTestMatplotlibDataViewer(object):
         count_before = self.draw_count
 
         # Change the subset
-        cid = self.data.visible_components[0]
+        cid = self.data.main_components[0]
         self.data.subsets[0].subset_state = cid > 1
 
         # Make sure the figure has been redrawn
@@ -535,7 +520,10 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.draw_count == 1
         data = Data(label=self.data.label)
         data.coords = self.data.coords
-        for cid in self.data.visible_components:
-            data.add_component(self.data[cid] * 2, cid.label)
+        for cid in self.data.main_components:
+            if self.data.get_kind(cid) == 'numerical':
+                data.add_component(self.data[cid] * 2, cid.label)
+            else:
+                data.add_component(self.data[cid], cid.label)
         self.data.update_values_from_data(data)
         assert self.draw_count == 2

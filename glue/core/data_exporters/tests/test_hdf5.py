@@ -1,19 +1,24 @@
 from __future__ import absolute_import, division, print_function
 
+import pytest
 import numpy as np
+
 from glue.core import Data
 from glue.tests.helpers import requires_h5py
 
 from ..hdf5 import hdf5_writer
 
+DTYPES = [np.int16, np.int32, np.int64, np.float32, np.float64]
+
 
 @requires_h5py
-def test_hdf5_writer_data(tmpdir):
+@pytest.mark.parametrize('dtype', DTYPES)
+def test_hdf5_writer_data(tmpdir, dtype):
 
     filename = tmpdir.join('test1.hdf5').strpath
 
-    data = Data(x=np.arange(6).reshape(2, 3),
-                y=(np.arange(6) * 2).reshape(2, 3))
+    data = Data(x=np.arange(6).reshape(2, 3).astype(dtype),
+                y=(np.arange(6) * 2).reshape(2, 3).astype(dtype))
 
     hdf5_writer(filename, data)
 
@@ -23,6 +28,8 @@ def test_hdf5_writer_data(tmpdir):
     assert len(f) == 2
     np.testing.assert_equal(f['x'].value, data['x'])
     np.testing.assert_equal(f['y'].value, data['y'])
+    assert f['x'].value.dtype == dtype
+    assert f['y'].value.dtype == dtype
     f.close()
 
     # Only write out some components
@@ -38,12 +45,13 @@ def test_hdf5_writer_data(tmpdir):
 
 
 @requires_h5py
-def test_hdf5_writer_subset(tmpdir):
+@pytest.mark.parametrize('dtype', DTYPES)
+def test_hdf5_writer_subset(tmpdir, dtype):
 
     filename = tmpdir.join('test').strpath
 
-    data = Data(x=np.arange(6).reshape(2, 3).astype(float),
-                y=(np.arange(6) * 2).reshape(2, 3).astype(float))
+    data = Data(x=np.arange(6).reshape(2, 3).astype(dtype),
+                y=(np.arange(6) * 2).reshape(2, 3).astype(dtype))
 
     subset = data.new_subset()
     subset.subset_state = data.id['x'] > 2
@@ -53,8 +61,16 @@ def test_hdf5_writer_subset(tmpdir):
     from h5py import File
 
     f = File(filename)
-    assert np.all(np.isnan(f['x'].value[0]))
-    assert np.all(np.isnan(f['y'].value[0]))
+
+    if np.dtype(dtype).kind == 'f':
+        assert np.all(np.isnan(f['x'].value[0]))
+        assert np.all(np.isnan(f['y'].value[0]))
+    else:
+        np.testing.assert_equal(f['x'].value[0], 0)
+        np.testing.assert_equal(f['y'].value[0], 0)
+
     np.testing.assert_equal(f['x'].value[1], data['x'][1])
     np.testing.assert_equal(f['y'].value[1], data['y'][1])
+    assert f['x'].value.dtype == dtype
+    assert f['y'].value.dtype == dtype
     f.close()

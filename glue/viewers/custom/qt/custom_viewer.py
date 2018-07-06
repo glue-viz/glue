@@ -83,12 +83,12 @@ from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
 from glue.config import qt_client
 
-from glue.core import Data
+from glue.core import BaseData
 from glue.core.subset import SubsetState
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.core.component_id import ComponentID
 
-from glue.utils import as_list, all_artists, new_artists
+from glue.utils import as_list, all_artists, new_artists, categorical_ndarray, defer_draw
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState, MatplotlibLayerState
@@ -113,13 +113,12 @@ class AttributeWithInfo(np.ndarray):
     """
 
     @classmethod
-    def make(cls, id, values, comp, categories=None):
+    def make(cls, id, values, categories=None):
         values = np.asarray(values)
         result = values.view(AttributeWithInfo)
         result.id = id
         result.values = values
         result.categories = categories
-        result._component = comp
         return result
 
     @classmethod
@@ -137,11 +136,12 @@ class AttributeWithInfo(np.ndarray):
             What slice into the data to use
         """
         values = layer[cid, view]
-        comp = layer.data.get_component(cid)
-        categories = None
-        if comp.categorical:
-            categories = comp.categories
-        return cls.make(cid, values, comp, categories)
+        if isinstance(values, categorical_ndarray):
+            categories = values.categories
+            values = values.codes
+        else:
+            categories = None
+        return cls.make(cid, values, categories)
 
     def __gluestate__(self, context):
         return dict(cid=context.id(self.id))
@@ -699,7 +699,7 @@ class CustomLayerArtist(MatplotlibLayerArtist):
 
         old = all_artists(self.axes.figure)
 
-        if isinstance(self.state.layer, Data):
+        if isinstance(self.state.layer, BaseData):
             a = self._coordinator.plot_data(layer=self.state.layer)
         else:
             a = self._coordinator.plot_subset(layer=self.state.layer, subset=self.state.layer)
@@ -743,9 +743,19 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self._coordinator, self.axes, self.state, layer=layer, layer_state=layer_state)
 
+    @defer_draw
     def apply_roi(self, roi):
+
+        # Force redraw to get rid of ROI. We do this because applying the
+        # subset state below might end up not having an effect on the viewer,
+        # for example there may not be any layers, or the active subset may not
+        # be one of the layers. So we just explicitly redraw here to make sure
+        # a redraw will happen after this method is called.
+        self.redraw()
+
         if len(self.layers) == 0:
             return
+
         subset_state = self._coordinator._build_subset_state(roi=roi)
         self.apply_subset_state(subset_state)
 

@@ -188,6 +188,16 @@ class CallbackProperty(object):
         else:
             raise ValueError("Callback function not found: %s" % func)
 
+    def clear_callbacks(self, instance):
+        """
+        Remove all callbacks on this property.
+        """
+        for cb in [self._callbacks, self._2arg_callbacks]:
+            if instance in cb:
+                cb[instance].clear()
+        if instance in self._disabled:
+            self._disabled.pop(instance)
+
 
 class HasCallbackProperties(object):
     """
@@ -345,6 +355,14 @@ class HasCallbackProperties(object):
 
     def callback_properties(self):
         return [name for name in dir(self) if self.is_callback_property(name)]
+
+    def clear_callbacks(self):
+        """
+        Remove all global and property-specific callbacks.
+        """
+        self._global_callbacks.clear()
+        for name, prop in self.iter_callback_properties():
+            prop.clear_callbacks(self)
 
 
 def add_callback(instance, prop, callback, echo_old=False, priority=0):

@@ -2,9 +2,14 @@ from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
+import abc
 import uuid
+import warnings
+
 import numpy as np
 import pandas as pd
+
+from fast_histogram import histogram1d
 
 from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
@@ -25,7 +30,7 @@ from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.config import settings
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to)
+                        datetime64_to_mpl, broadcast_to, categorical_ndarray)
 
 
 # Note: leave all the following imports for component and component_id since
@@ -34,12 +39,384 @@ from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
-__all__ = ['Data']
+__all__ = ['Data', 'BaseCartesianData', 'BaseData']
 
 
-class Data(object):
+@six.add_metaclass(abc.ABCMeta)
+class BaseData(object):
+    """
+    Base class for any glue data object which indicates which methods should be
+    provided at a minimum.
 
-    """The basic data container in Glue.
+    For now, subclasses of BaseData are not guaranteed to work in glue, and you
+    should instead subclass BaseCartesianData.
+    """
+
+    def __init__(self):
+
+        # Metadata
+        self.meta = OrderedDict()
+
+        # Subsets of the data
+        self._subsets = []
+
+        # Hub that the data is attached to
+        self.hub = None
+
+        self.style = VisualAttributes(parent=self)
+
+    @property
+    def label(self):
+        """
+        The name of the dataset
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_kind(self, cid):
+        """
+        Get the kind of data for a given component.
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data kind for
+
+        Returns
+        -------
+        kind : {'numerical', 'categorical', 'datetime'}
+            The kind of data for the given component ID.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractproperty
+    def main_components(self):
+        raise NotImplementedError()
+
+    @property
+    def components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        available components in the data
+        """
+        return self.pixel_component_ids + self.world_component_ids + self.main_components
+
+    @property
+    def coordinate_components(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        coordinate components in the data
+        """
+        return self.pixel_component_ids + self.world_component_ids
+
+    @property
+    def pixel_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        pixel coordinate components in the data
+        """
+        if not hasattr(self, '_pixel_component_ids'):
+            self._pixel_component_ids = []
+            for i in range(self.ndim):
+                pid = PixelComponentID(i, 'Pixel Axis {0}'.format(i), parent=self)
+                self._pixel_component_ids.append(pid)
+        return self._pixel_component_ids
+
+    @property
+    def world_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        world coordinate components in the data
+        """
+        return []
+
+    @property
+    def derived_components(self):
+        return []
+
+    def find_component_id(self, label):
+        """
+        Find a component ID by name.
+
+        This returns the associated ComponentID if label is found and unique,
+        and `None` otherwise.
+        """
+
+        # This is a simple implementation that relies on .components and should
+        # not need to be overriden
+
+        if isinstance(label, ComponentID):
+            return label
+
+        matches = [cid for cid in self.components if cid.label == label]
+
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            return None
+
+    @contract(hub=Hub)
+    def register_to_hub(self, hub):
+        """ Connect to a hub.
+
+        This method usually doesn't have to be called directly, as
+        DataCollections manage the registration of data objects
+        """
+        if not isinstance(hub, Hub):
+            raise TypeError("input is not a Hub object: %s" % type(hub))
+        self.hub = hub
+
+    @property
+    def data(self):
+        return self
+
+    @contract(subset='isinstance(Subset)|None',
+              color='color|None',
+              label='string|None',
+              returns=Subset)
+    def new_subset(self, subset=None, color=None, label=None, **kwargs):
+        """
+        Create a new subset, and attach to self.
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+
+        :param subset: optional, reference subset or subset state.
+                       If provided, the new subset will copy the logic of
+                       this subset.
+
+        :returns: The new subset object
+        """
+        nsub = len(self.subsets)
+        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
+        label = label or "%s.%i" % (self.label, nsub + 1)
+        new_subset = Subset(self, color=color, label=label, **kwargs)
+        if subset is not None:
+            new_subset.subset_state = subset.subset_state.copy()
+
+        self.add_subset(new_subset)
+        return new_subset
+
+    @contract(subset='inst($Subset, $SubsetState)')
+    def add_subset(self, subset):
+        """Assign a pre-existing subset to this data object.
+
+        :param subset: A :class:`~glue.core.subset.Subset` or
+                       :class:`~glue.core.subset.SubsetState` object
+
+        If input is a :class:`~glue.core.subset.SubsetState`,
+        it will be wrapped in a new Subset automatically
+
+        .. note:: The preferred way for creating subsets is via
+            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+            Manually-instantiated subsets will **not** be
+            represented properly by the UI
+        """
+
+        if subset in self.subsets:
+            return  # prevents infinite recursion
+        if isinstance(subset, SubsetState):
+            # auto-wrap state in subset
+            state = subset
+            subset = Subset(None)
+            subset.subset_state = state
+
+        self._subsets.append(subset)
+
+        if subset.data is not self:
+            subset.do_broadcast(False)
+            subset.data = self
+            subset.label = subset.label  # hacky. disambiguates name if needed
+
+        if self.hub is not None:
+            msg = SubsetCreateMessage(subset)
+            self.hub.broadcast(msg)
+
+        subset.do_broadcast(True)
+
+    @contract(attribute='string')
+    def broadcast(self, attribute):
+        """
+        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
+
+        :param attribute: Name of an attribute that has changed (or None)
+        :type attribute: str
+        """
+        if not self.hub:
+            return
+        msg = DataUpdateMessage(self, attribute=attribute)
+        self.hub.broadcast(msg)
+
+    @property
+    def subsets(self):
+        """
+        Tuple of subsets attached to this dataset
+        """
+        return tuple(self._subsets)
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseCartesianData(BaseData):
+    """
+    Base class for any glue data object which indicates which methods should be
+    provided at a minimum.
+
+    The underlying data can be any kind of data (structured or unstructured) but
+    it needs to expose an interface that looks like a regular n-dimensional
+    cartesian dataset. This means exposing e.g. ``shape`` and ``ndim``, and
+    means that get_data can expect ndarray slices. Non-regular datasets should
+    therefore have the concept of 'virtual' pixel coordinates and should
+    typically match the highest resolution a user might want to access the data
+    at.
+    """
+
+    def __init__(self):
+        super(BaseCartesianData, self).__init__()
+
+    @abc.abstractproperty
+    def shape(self):
+        """
+        The n-dimensional shape of the dataset, as a tuple.
+        """
+        raise NotImplementedError()
+
+    @property
+    def ndim(self):
+        """
+        The number of dimensions of the data, as an integer.
+        """
+        return len(self.shape)
+
+    @property
+    def size(self):
+        """
+        The size of the data (the product of the shape dimensions), as an integer.
+        """
+        return np.product(self.shape)
+
+    def get_data(self, cid, view=None):
+        """
+        Get the data values for a given component
+
+        Parameters
+        ----------
+        cid : `ComponentID`
+            The component ID to get the data for
+        view
+            The 'view' on the data - anything that is considered a valid
+            Numpy slice/index.
+        """
+        if cid in self.pixel_component_ids:
+            shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
+            pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
+            return broadcast_to(pix, self.shape)[view]
+        else:
+            raise IncompatibleAttribute(cid)
+
+    @abc.abstractmethod
+    def get_mask(self, subset_state, view=None):
+        """
+        Get a boolean mask for a given subset state.
+
+        Parameters
+        ----------
+        subset_state : `SubsetState`
+            The subset state to use to compute the mask
+        view
+            The 'view' on the mask - anything that is considered a valid
+            Numpy slice/index.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
+                          finite=True, positive=False, percentile=None, view=None,
+                          random_subset=None):
+        """
+        Compute a statistic for the data.
+
+        Parameters
+        ----------
+        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+            The statistic to compute
+        cid : `ComponentID` or str
+            The component ID to compute the statistic on - if given as a string
+            this will be assumed to be for the component belonging to the dataset
+            (not external links).
+        subset_state : `SubsetState`
+            If specified, the statistic will only include the values that are in
+            the subset specified by this subset state.
+        axis : None or int or tuple of int
+            If specified, the axis/axes to compute the statistic over.
+        finite : bool, optional
+            Whether to include only finite values in the statistic. This should
+            be `True` to ignore NaN/Inf values
+        positive : bool, optional
+            Whether to include only (strictly) positive values in the statistic.
+            This is used for example when computing statistics of data shown in
+            log space.
+        percentile : float, optional
+            If ``statistic`` is ``'percentile'``, the ``percentile`` argument
+            should be given and specify the percentile to calculate in the
+            range [0:100]
+        random_subset : int, optional
+            If specified, this should be an integer giving the number of values
+            to use for the statistic. This can only be used if ``axis`` is `None`
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+        """
+        Compute an n-dimensional histogram with regularly spaced bins.
+
+        Parameters
+        ----------
+        cids : list of str or `ComponentID`
+            Component IDs to compute the histogram over
+        weights : str or ComponentID
+            Component IDs to use for the histogram weights
+        range : list of tuple
+            The ``(min, max)`` of the histogram range
+        bins : list of int
+            The number of bins
+        log : list of bool
+            Whether to compute the histogram in log space
+        subset_state : `SubsetState`, optional
+            If specified, the histogram will only take into account values in
+            the subset state.
+        """
+        raise NotImplementedError()
+
+    def __getitem__(self, key):
+        """
+        Shortcut syntax to access the numerical data in a component.
+        Equivalent to::
+
+            component = data.get_data(component_id)
+
+        The key can be either just a component name, component ID, or a
+        component name/ID and a view.
+        """
+
+        # Note: this method is generic and shouldn't need to be overriden by
+        # subclasses.
+
+        key, view = split_component_view(key)
+        if isinstance(key, six.string_types):
+            _k = key
+            key = self.find_component_id(key)
+            if key is None:
+                raise IncompatibleAttribute(_k)
+
+        return self.get_data(key, view=view)
+
+
+class Data(BaseCartesianData):
+    """
+    The basic data container in Glue.
 
     The data object stores data as a collection of
     :class:`~glue.core.component.Component` objects.  Each component stored in a
@@ -64,16 +441,20 @@ class Data(object):
         data[xid, [True, False, True]]
 
     See also: :ref:`data_tutorial`
+
+    Parameters
+    ----------
+    label : str
+        The name of the dataset
+    coords : :class:`~glue.core.coordinates.Coordinates`
+        The coordinates object to use to define world coordinates
     """
 
     def __init__(self, label="", coords=None, **kwargs):
-        """
 
-        :param label: label for data
-        :type label: str
+        super(Data, self).__init__()
 
-        Extra array-like keywords are extracted into components
-        """
+        self.label = label
 
         self._shape = ()
 
@@ -89,21 +470,7 @@ class Data(object):
 
         self.id = ComponentIDDict(self)
 
-        # Metadata
-        self.meta = OrderedDict()
-
-        # Subsets of the data
-        self._subsets = []
-
-        # Hub that the data is attached to
-        self.hub = None
-
-        self.style = VisualAttributes(parent=self)
-
         self._coordinate_links = []
-
-        self.data = self
-        self.label = label
 
         self.edit_subset = None
 
@@ -132,35 +499,19 @@ class Data(object):
                 self._update_world_components(self.ndim)
 
     @property
-    def subsets(self):
-        """
-        Tuple of subsets attached to this dataset
-        """
-        return tuple(self._subsets)
-
-    @property
     def ndim(self):
-        """
-        Dimensionality of the dataset
-        """
         return len(self.shape)
 
     @property
     def shape(self):
-        """
-        Tuple of array dimensions, like :attr:`numpy.ndarray.shape`
-        """
         return self._shape
 
     @property
     def label(self):
-        """ Convenience access to data set's label """
         return self._label
 
     @label.setter
     def label(self, value):
-        """ Set the label to value
-        """
         if getattr(self, '_label', None) != value:
             self._label = value
             self.broadcast(attribute='label')
@@ -169,9 +520,6 @@ class Data(object):
 
     @property
     def size(self):
-        """
-        Total number of elements in the dataset.
-        """
         return np.product(self.shape)
 
     @contract(component=Component)
@@ -193,7 +541,7 @@ class Data(object):
 
         # grab a small piece of data
         ind = tuple([slice(0, 1)] * self.ndim)
-        arr = self[cid, ind]
+        arr = self.get_data(cid, view=ind)
         return arr.dtype
 
     @contract(component_id=ComponentID)
@@ -643,15 +991,6 @@ class Data(object):
         return list(self._externally_derivable_components.keys())
 
     @property
-    def visible_components(self):
-        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinate.
-
-        :rtype: list
-        """
-        return [cid for cid, comp in self._components.items()
-                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
-
-    @property
     def coordinate_components(self):
         """The ComponentIDs associated with a :class:`~glue.core.component.CoordinateComponent`
 
@@ -664,15 +1003,6 @@ class Data(object):
     def main_components(self):
         return [c for c in self.component_ids() if
                 not isinstance(self._components[c], (DerivedComponent, CoordinateComponent))]
-
-    @property
-    def primary_components(self):
-        """The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
-
-        :rtype: list
-        """
-        return [c for c in self.component_ids() if
-                not isinstance(self._components[c], DerivedComponent)]
 
     @property
     def derived_components(self):
@@ -712,7 +1042,7 @@ class Data(object):
             one takes precedence.
         """
 
-        for cid_set in (self.primary_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
+        for cid_set in (self.main_components, self.derived_components, self.coordinate_components, list(self._externally_derivable_components)):
 
             result = []
             for cid in cid_set:
@@ -752,114 +1082,12 @@ class Data(object):
         """
         return [self.get_component(cid).link for cid in self.derived_components]
 
-    @contract(axis=int, returns=ComponentID)
-    def get_pixel_component_id(self, axis):
-        """Return the pixel :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._pixel_component_ids[axis]
-
-    @contract(axis=int, returns=ComponentID)
-    def get_world_component_id(self, axis):
-        """Return the world :class:`glue.core.component_id.ComponentID` associated with a given axis
-        """
-        return self._world_component_ids[axis]
-
     @contract(returns='list(inst($ComponentID))')
     def component_ids(self):
         """
         Equivalent to :attr:`Data.components`
         """
         return ComponentIDList(self._components.keys())
-
-    @contract(subset='isinstance(Subset)|None',
-              color='color|None',
-              label='string|None',
-              returns=Subset)
-    def new_subset(self, subset=None, color=None, label=None, **kwargs):
-        """
-        Create a new subset, and attach to self.
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-
-        :param subset: optional, reference subset or subset state.
-                       If provided, the new subset will copy the logic of
-                       this subset.
-
-        :returns: The new subset object
-        """
-        nsub = len(self.subsets)
-        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
-        label = label or "%s.%i" % (self.label, nsub + 1)
-        new_subset = Subset(self, color=color, label=label, **kwargs)
-        if subset is not None:
-            new_subset.subset_state = subset.subset_state.copy()
-
-        self.add_subset(new_subset)
-        return new_subset
-
-    @contract(subset='inst($Subset, $SubsetState)')
-    def add_subset(self, subset):
-        """Assign a pre-existing subset to this data object.
-
-        :param subset: A :class:`~glue.core.subset.Subset` or
-                       :class:`~glue.core.subset.SubsetState` object
-
-        If input is a :class:`~glue.core.subset.SubsetState`,
-        it will be wrapped in a new Subset automatically
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
-        """
-
-        if subset in self.subsets:
-            return  # prevents infinite recursion
-        if isinstance(subset, SubsetState):
-            # auto-wrap state in subset
-            state = subset
-            subset = Subset(None)
-            subset.subset_state = state
-
-        self._subsets.append(subset)
-
-        if subset.data is not self:
-            subset.do_broadcast(False)
-            subset.data = self
-            subset.label = subset.label  # hacky. disambiguates name if needed
-
-        if self.hub is not None:
-            msg = SubsetCreateMessage(subset)
-            self.hub.broadcast(msg)
-
-        subset.do_broadcast(True)
-
-    @contract(hub=Hub)
-    def register_to_hub(self, hub):
-        """ Connect to a hub.
-
-        This method usually doesn't have to be called directly, as
-        DataCollections manage the registration of data objects
-        """
-        if not isinstance(hub, Hub):
-            raise TypeError("input is not a Hub object: %s" % type(hub))
-        self.hub = hub
-
-    @contract(attribute='string')
-    def broadcast(self, attribute):
-        """
-        Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
-
-        :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: str
-        """
-        if not self.hub:
-            return
-        msg = DataUpdateMessage(self, attribute=attribute)
-        self.hub.broadcast(msg)
 
     @contract(old=ComponentID, new=ComponentID)
     def update_id(self, old, new):
@@ -939,46 +1167,40 @@ class Data(object):
                                  "to a different hub")
         object.__setattr__(self, name, value)
 
-    def __getitem__(self, key):
-        """ Shortcut syntax to access the numerical data in a component.
-        Equivalent to:
+    def get_data(self, cid, view=None):
 
-        ``component = data.get_component(component_id).data``
+        if isinstance(cid, ComponentLink):
+            return cid.compute(self, view)
 
-        :param key:
-          The component to fetch data from
-
-        :type key: :class:`~glue.core.component_id.ComponentID`
-
-        :returns: :class:`~numpy.ndarray`
-        """
-
-        key, view = split_component_view(key)
-        if isinstance(key, six.string_types):
-            _k = key
-            key = self.find_component_id(key)
-            if key is None:
-                raise IncompatibleAttribute(_k)
-
-        if isinstance(key, ComponentLink):
-            return key.compute(self, view)
-
-        if key in self._components:
-            comp = self._components[key]
-        elif key in self._externally_derivable_components:
-            comp = self._externally_derivable_components[key]
+        if cid in self._components:
+            comp = self._components[cid]
+        elif cid in self._externally_derivable_components:
+            comp = self._externally_derivable_components[cid]
         else:
-            raise IncompatibleAttribute(key)
+            raise IncompatibleAttribute(cid)
 
         if view is not None:
             result = comp[view]
         else:
-            if comp.categorical:
-                result = comp.codes
-            else:
-                result = comp.data
+            result = comp.data
 
         return result
+
+    def get_kind(self, cid):
+
+        comp = self.get_component(cid)
+
+        if comp.datetime:
+            return 'datetime'
+        elif comp.numeric:
+            return 'numerical'
+        elif comp.categorical:
+            return 'categorical'
+        else:
+            raise TypeError("Unknown data kind")
+
+    def get_mask(self, subset_state, view=None):
+        return subset_state.to_mask(self, view=view)
 
     def __setitem__(self, key, value):
         """
@@ -1240,7 +1462,7 @@ class Data(object):
             else:
                 mask = subset_state.to_mask(self, view)
                 if np.any(unbroadcast(mask)):
-                    data = self[cid, view]
+                    data = self.get_data(cid, view)
                 else:
                     if axis is None:
                         return np.nan
@@ -1250,8 +1472,11 @@ class Data(object):
                         final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
                         return broadcast_to(np.nan, final_shape)
         else:
-            data = self[cid, view]
+            data = self.get_data(cid, view=view)
             mask = None
+
+        if isinstance(data, categorical_ndarray):
+            data = data.codes
 
         if axis is None and mask is None:
             # Since we are just finding overall statistics, not along axes, we
@@ -1300,9 +1525,14 @@ class Data(object):
             bins = bins[0]
             log = log[0]
 
-        x = self[cid]
+        x = self.get_data(cid)
+        if isinstance(x, categorical_ndarray):
+            x = x.codes
+
         if weights is not None:
-            w = self[weights]
+            w = self.get_data(weights)
+            if isinstance(w, categorical_ndarray):
+                w = w.codes
         else:
             w = None
 
@@ -1331,12 +1561,40 @@ class Data(object):
             return np.zeros(bins)
 
         if log:
-            range = None
-            bins = np.logspace(np.log10(xmin), np.log10(xmax), bins + 1)
-        else:
-            range = (xmin, xmax)
+            xmin = np.log10(xmin)
+            xmax = np.log10(xmax)
+            x = np.log10(x)
 
-        return np.histogram(x, range=range, bins=bins, weights=w)[0]
+        # By default fast-histogram drops values that are exactly xmax, so we
+        # increase xmax very slightly to make sure that this doesn't happen
+        xmax += 10 * np.spacing(xmax)
+
+        range = (xmin, xmax)
+
+        return histogram1d(x, range=range, bins=bins, weights=w)
+
+    # DEPRECATED
+
+    @property
+    def primary_components(self):
+        """
+        The ComponentIDs not associated with a :class:`~glue.core.component.DerivedComponent`
+
+        This property is deprecated.
+        """
+        warnings.warn('Data.primary_components is deprecated', UserWarning)
+        return [c for c in self.component_ids() if
+                not isinstance(self._components[c], DerivedComponent)]
+
+    @property
+    def visible_components(self):
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data that aren't coordinates.
+
+        This property is deprecated.
+        """
+        warnings.warn('Data.visible_components is deprecated', UserWarning)
+        return [cid for cid, comp in self._components.items()
+                if not isinstance(comp, CoordinateComponent) and cid.parent is self]
 
 
 @contract(i=int, ndim=int)
