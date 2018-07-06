@@ -65,13 +65,23 @@ class Roi(object):  # pragma: no cover
     def contains(self, x, y):
         """Return true/false for each x/y pair.
 
-        :param x: Array of X locations
-        :param y: Array of Y locations
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
 
-        :returns: A Boolean array, where each element is True
-                  if the corresponding (x,y) tuple is inside the Roi.
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
 
-        :raises: UndefinedROI exception if not defined
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         raise NotImplementedError()
 
