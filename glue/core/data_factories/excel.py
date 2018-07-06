@@ -12,13 +12,21 @@ __all__ = []
 
 @data_factory(label="Excel", identifier=has_extension('xls xlsx'))
 def panda_read_excel(path, sheet=None, **kwargs):
-    """ A factory for reading excel data using pandas.
-    :param path: path/to/file
-    :param sheet: The sheet to read. If `None`, all sheets are read.
-    :param kwargs: All other kwargs are passed to pandas.read_excel
-    :return: core.data.Data object.
-    """
+    """A factory for reading excel data using pandas.
 
+    Parameters
+    ----------
+    path : str`
+        path/to/file
+    sheet :
+        The sheet to read. If `None`, all sheets are read.
+    kwargs :
+        All other kwargs are passed to pandas.read_excel
+
+    Returns
+    -------
+    core.data.Data object`
+    """
     try:
         import pandas as pd
     except ImportError:

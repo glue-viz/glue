@@ -65,13 +65,23 @@ class Roi(object):  # pragma: no cover
     def contains(self, x, y):
         """Return true/false for each x/y pair.
 
-        :param x: Array of X locations
-        :param y: Array of Y locations
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
 
-        :returns: A Boolean array, where each element is True
-                  if the corresponding (x,y) tuple is inside the Roi.
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
 
-        :raises: UndefinedROI exception if not defined
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         raise NotImplementedError()
 
@@ -210,19 +220,26 @@ class RectangularROI(Roi):
         return self.ymax - self.ymin
 
     def contains(self, x, y):
+        """Return true/false for each x/y pair.
+
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
+
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
+
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A scalar or numpy array of x points
-        :param y: A scalar or numpy array of y points
-
-        *Returns*
-
-            A list of True/False values, for whether each (x,y)
-            point falls within the ROI
-        """
-
         if not self.defined():
             raise UndefinedROI
 
@@ -383,18 +400,25 @@ class CircularROI(Roi):
         self.radius = radius
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
+        """Return true/false for each x/y pair.
 
-        :param x: A list of x points
-        :param y: A list of y points
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
 
-        *Returns*
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
 
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         if not self.defined():
             raise UndefinedROI
@@ -463,10 +487,10 @@ class VertexROIBase(Roi):
 
     def __init__(self, vx=None, vy=None):
         """
-        :param vx: initial x vertices
-        :type vx: list
-        :param vy: initial y vertices
-        :type vy: list
+        vx : list
+             initial x vertices
+        vy : list
+             initial y vertices
         """
         super(VertexROIBase, self).__init__()
         self.vx = vx
@@ -559,18 +583,25 @@ class PolygonalROI(VertexROIBase):
         return result
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
+        """Return true/false for each x/y pair.
 
-        :param x: A list of x points
-        :param y: A list of y points
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
 
-        *Returns*
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
 
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         if not self.defined():
             raise UndefinedROI
@@ -1344,19 +1375,25 @@ class CategoricalROI(Roi):
             return np.asarray(indata)
 
     def contains(self, x, y):
-        """
-        Test whether a set categorical elements fall within
-        the region of interest
+        """Return true/false for each x/y pair.
 
-        :param x: Any array-like object of categories
-                 (includes CategoricalComponenets)
-        :param y: Unused but required for compatibility
+        Parameters
+        ----------
+        x : :class:`numpy.ndarray`
+            Array of x locations
+        y : :class:`numpy.ndarray`
+            Array of y locations
 
-        *Returns*
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (x,y) tuple is inside the Roi.
 
-           A list of True/False values, for whether each x value falls
-           within the ROI
-
+        Raises
+        ------
+        UndefinedROI
+            if not defined
         """
         if self.categories is None or len(self.categories) == 0:
             return np.zeros(x.shape, dtype=bool)
