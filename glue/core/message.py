@@ -30,7 +30,7 @@ class Message(object):
 
     Attributes
     ----------
-    sender : 
+    sender :
         The object which sent the message
     tag: str
         An optional string describing the message
@@ -41,7 +41,7 @@ class Message(object):
 
         Parameters
         ----------
-        sender : 
+        sender :
             The object sending the message.
         tag : str
             An optional string describing the message.

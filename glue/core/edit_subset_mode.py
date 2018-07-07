@@ -86,7 +86,7 @@ class EditSubsetMode(object):
             Data or Collection to act upon
         new_state : :class:`~glue.core.subset.SubsetState`
             Subset state to combine with
-        focus_data : 
+        focus_data :
             The main data set in focus by the client,
             if relevant. If a data set is in focus and has no subsets,
             a new one will be created using new_state.

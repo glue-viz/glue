@@ -62,7 +62,7 @@ class Command(object):
 
         Parameters
         ----------
-        session : 
+        session :
             An object used to store and fetch resources
             needed by a Command.
         """
@@ -221,7 +221,7 @@ class NewDataViewer(Command):
 
     Parameters
     ----------
-    viewer: 
+    viewer:
         The class of viewer to create
     data: :class:`~glue.core.data.Data` or None
         The data object to initialize the viewer with, or None.
@@ -248,7 +248,7 @@ class AddLayer(Command):
     ----------
     layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
         The layer to add
-    viewer: 
+    viewer :
         The viewer to add the layer to
 
     :param layer: The layer to add
