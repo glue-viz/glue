@@ -250,10 +250,6 @@ class AddLayer(Command):
         The layer to add
     viewer :
         The viewer to add the layer to
-
-    :param layer: The layer to add
-    :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
-    :param viewer: The viewer to add the layer to
     """
     kwargs = ['layer', 'viewer']
     label = 'add layer'
