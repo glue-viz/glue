@@ -72,6 +72,8 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Fixed a bug that caused custom data importers to no longer work. [#1813]
+
 * Fixed a bug that caused ROIs to not be erased after selection if the
   active subset was not in the list of layers for the viewer. [#1801]
 
