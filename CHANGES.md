@@ -4,6 +4,8 @@ Full changelog
 v0.13.4 (unreleased)
 --------------------
 
+* Fixed a bug that caused custom data importers to no longer work. [#1813]
+
 * Always returned to last used folder when opening/saving files. [#1794]
 
 * Show correct dataset when using control-click to select to add

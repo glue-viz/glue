@@ -224,6 +224,34 @@ class ExportHelper(object):
             return saver(app, label)
 
 
+class ImportHelper(object):
+
+    def __init__(self, app):
+        self.app = weakref.ref(app)
+
+    def _choose_load_data_wizard(self, *args):
+        self._choose_load_data(data_importer=data_wizard)
+
+    def _choose_load_data(self, data_importer=None):
+
+        app = self.app()
+        if app is None:
+            return
+
+        if data_importer is None:
+            app.add_datasets(app.data_collection, data_wizard())
+        else:
+            data = data_importer()
+            if not isinstance(data, list):
+                raise TypeError("Data loader should return list of "
+                                "Data objects")
+            for item in data:
+                if not isinstance(item, Data):
+                    raise TypeError("Data loader should return list of "
+                                    "Data objects")
+            app.add_datasets(app.data_collection, data)
+
+
 class GlueApplication(Application, QtWidgets.QMainWindow):
 
     """ The main GUI application for the Qt frontend"""
@@ -239,6 +267,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._original_icon = self._original_app.windowIcon()
 
         self._export_helper = ExportHelper(self)
+        self._import_helper = ImportHelper(self)
 
         # Now we can get the application instance, which involves setting it
         # up if it doesn't already exist.
@@ -347,7 +376,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_open_data.setText("Open Data")
         self._button_open_data.setIcon(get_icon('glue_open'))
         self._button_open_data.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_open_data.clicked.connect(self._choose_load_data_wizard)
+        self._button_open_data.clicked.connect(self._import_helper._choose_load_data_wizard)
 
         self._data_toolbar.addWidget(self._button_open_data)
 
@@ -786,23 +815,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         window.show()
         window.exec_()
 
-    def _choose_load_data_wizard(self, *args):
-        self._choose_load_data(data_importer=data_wizard)
-
-    def _choose_load_data(self, data_importer=None):
-        if data_importer is None:
-            self.add_datasets(self.data_collection, data_wizard())
-        else:
-            data = data_importer()
-            if not isinstance(data, list):
-                raise TypeError("Data loader should return list of "
-                                "Data objects")
-            for item in data:
-                if not isinstance(item, Data):
-                    raise TypeError("Data loader should return list of "
-                                    "Data objects")
-            self.add_datasets(self.data_collection, data)
-
     def _choose_save_data(self, *args):
         dialog = SaveDataDialog(data_collection=self.data_collection, parent=self)
         dialog.exec_()
@@ -855,7 +867,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # also add it again below in the Import menu for consistency.
         a = action("&Open Data Set", self, tip="Open a new data set",
                    shortcut=QtGui.QKeySequence.Open)
-        a.triggered.connect(self._choose_load_data_wizard)
+        a.triggered.connect(self._import_helper._choose_load_data_wizard)
         self._actions['data_new'] = a
 
         # We now populate the "Import data" menu
@@ -865,13 +877,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Add default file loader (later we can add this to the registry)
         a = action("Import from file", self, tip="Import from file")
-        a.triggered.connect(self._choose_load_data_wizard)
+        a.triggered.connect(self._import_helper._choose_load_data_wizard)
         acts.append(a)
 
-        for i in importer:
-            label, data_importer = i
+        for label, data_importer in importer:
             a = action(label, self, tip=label)
-            a.triggered.connect(self._choose_load_data_wizard)
+            a.triggered.connect(nonpartial(self._import_helper._choose_load_data, data_importer))
             acts.append(a)
 
         self._actions['data_importers'] = acts
