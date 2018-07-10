@@ -288,7 +288,7 @@ class ApplySubsetState(Command):
     override_mode: bool
         Flag indicating whether to update current subset or create a new one
     """
-    kwargs = ['data_collection', 'subset_state', 'override_mode']
+    kwargs = ['data_collection', 'subset_state']
     label = 'apply subset'
 
     def do(self, session):
@@ -299,7 +299,8 @@ class ApplySubsetState(Command):
                 self.old_states[subset] = subset.subset_state
 
         mode = session.edit_subset_mode
-        mode.update(self.data_collection, self.subset_state, override_mode=self.override_mode)
+        override_mode = self.extra.get('override_mode')
+        mode.update(self.data_collection, self.subset_state, override_mode=override_mode)
 
     def undo(self, session):
         for data in self.data_collection:
