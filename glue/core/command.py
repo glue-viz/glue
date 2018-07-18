@@ -62,7 +62,7 @@ class Command(object):
 
         Parameters
         ----------
-        session :
+        session
             An object used to store and fetch resources
             needed by a Command.
         """
@@ -104,7 +104,9 @@ class CommandStack(CallbackMixin):
 
     @property
     def undo_label(self):
-        """ Brief label for the command reversed by an undo """
+        """
+        Brief label for the command reversed by an undo
+        """
         if len(self._command_stack) == 0:
             return ''
         cmd = self._command_stack[-1]
@@ -112,7 +114,9 @@ class CommandStack(CallbackMixin):
 
     @property
     def redo_label(self):
-        """ Brief label for the command executed on a redo"""
+        """
+        Brief label for the command executed on a redo
+        """
         if len(self._undo_stack) == 0:
             return ''
         cmd = self._undo_stack[-1]
@@ -121,10 +125,6 @@ class CommandStack(CallbackMixin):
     def do(self, cmd):
         """
         Execute and log a new command
-
-        Returns:
-
-            The return value of cmd.do()
         """
         logging.getLogger(__name__).debug("Do %s", cmd)
         self._command_stack.append(cmd)
@@ -176,9 +176,11 @@ class CommandStack(CallbackMixin):
         Return whether undo and redo options are possible
 
         Returns
-        -------
-        (bool, bool)
-            Whether undo and redo are possible, respectively
+        --------
+        undo_possible : bool
+            Whether undoing is possible
+        redo_possible : bool
+            Whether redoing is possible
         """
         return len(self._command_stack) > 0, len(self._undo_stack) > 0
 
@@ -221,7 +223,7 @@ class NewDataViewer(Command):
 
     Parameters
     ----------
-    viewer:
+    viewer: glue.viewers.common.viewer.BaseViewer
         The class of viewer to create
     data: :class:`~glue.core.data.Data` or None
         The data object to initialize the viewer with, or None.

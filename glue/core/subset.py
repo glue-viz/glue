@@ -49,9 +49,10 @@ class Subset(object):
     state changes back to the hub. Subclasses implement the actual
     description and manipulation of data subsets
 
-    :param data:
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
         The dataset that this subset describes
-    :type data: :class:`~glue.core.data.Data`
     """
 
     @contract(data='isinstance(Data)|None',
@@ -156,13 +157,13 @@ class Subset(object):
            x.flat[subset.to_index_list()]
            x[subset.to_mask()]
 
-        Returns:
-
+        Returns
+        -------
            A numpy array, giving the indices of elements in the data that
            belong to this subset.
 
-        Raises:
-
+        Raises
+        ------
            IncompatibleDataException: if an index list cannot be created
            for the requested data set.
 
@@ -292,11 +293,11 @@ class Subset(object):
         """
         Explicitly broadcast a SubsetUpdateMessage to the hub
 
-        :param attribute:
-                   The name of the attribute (if any) that should be
-                   broadcast as updated.
-        :type attribute: ``str``
-
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute (if any) that should be
+            broadcast as updated.
         """
 
         if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):

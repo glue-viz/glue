@@ -16,8 +16,8 @@ def panda_read_excel(path, sheet=None, **kwargs):
 
     Parameters
     ----------
-    path : str`
-        path/to/file
+    path : str
+        Path to file
     sheet :
         The sheet to read. If `None`, all sheets are read.
     kwargs :

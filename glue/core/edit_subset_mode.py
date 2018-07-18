@@ -82,15 +82,15 @@ class EditSubsetMode(object):
 
         Parameters
         ----------
-        d : Data or DataCollection
+        d : :class:`~glue.core.data.Data` or :class:`~glue.core.data.DataCollection`
             Data or Collection to act upon
         new_state : :class:`~glue.core.subset.SubsetState`
             Subset state to combine with
-        focus_data :
+        focus_data : glue.core.data.Data
             The main data set in focus by the client,
             if relevant. If a data set is in focus and has no subsets,
             a new one will be created using new_state.
-        override_mode : bool
+        override_mode : callable
             Mode to use instead of EditSubsetMode.mode
         """
         logging.getLogger(__name__).debug("Update subset for %s", d)

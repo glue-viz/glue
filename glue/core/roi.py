@@ -488,9 +488,9 @@ class VertexROIBase(Roi):
     def __init__(self, vx=None, vy=None):
         """
         vx : list
-             initial x vertices
+            initial x vertices
         vy : list
-             initial y vertices
+            initial y vertices
         """
         super(VertexROIBase, self).__init__()
         self.vx = vx
