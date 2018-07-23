@@ -4,7 +4,33 @@ import numpy as np
 
 from glue.utils import unbroadcast, broadcast_to
 
-__all__ = ['points_inside_poly', 'polygon_line_intersections', 'floodfill']
+__all__ = ['polygon_mask', 'points_inside_poly', 'polygon_line_intersections', 'floodfill']
+
+
+def polygon_mask(shape, vx, vy):
+    """
+    Given an array shape and polygon vertices, return a boolean mask indicating
+    which values are inside the polygon.
+    """
+
+    vx = np.asanyarray(vx)
+    vy = np.asanyarray(vy)
+
+    xmin = int(np.floor(np.min(vx)))
+    xmax = int(np.ceil(np.max(vx)))
+    ymin = int(np.floor(np.min(vy)))
+    ymax = int(np.ceil(np.max(vy)))
+
+    ix = np.arange(xmin, xmax + 1, dtype=int)
+    iy = np.arange(ymin, ymax + 1, dtype=int)
+
+    x, y = np.meshgrid(ix, iy)
+
+    inside = np.zeros(shape, bool)
+
+    inside[ymin:ymax + 1, xmin:xmax + 1] = points_inside_poly(x, y, vx, vy)
+
+    return inside
 
 
 def points_inside_poly(x, y, vx, vy):

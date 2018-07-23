@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from mock import MagicMock
 from matplotlib.figure import Figure
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from .. import roi as r
 from ..component import CategoricalComponent
@@ -151,7 +151,7 @@ class TestXRange(object):
         x = np.array([0, 1, 2, 3])
         y = np.array([-np.inf, 100, 200, 0])
         np.testing.assert_array_equal(roi.contains(x, y),
-                                      [False, False, True, False])
+                                      [False, True, True, True])
 
     def test_contains_undefined(self):
         roi = XRangeROI()
@@ -192,7 +192,7 @@ class TestYRange(object):
         y = np.array([0, 1, 2, 3])
         x = np.array([-np.inf, 100, 200, 0])
         np.testing.assert_array_equal(roi.contains(x, y),
-                                      [False, False, True, False])
+                                      [False, True, True, True])
 
     def test_contains_undefined(self):
         roi = YRangeROI()
@@ -998,3 +998,28 @@ class TestUtil(object):
 
 
 del TestMpl  # prevents unittest discovery from running abstract base class
+
+
+ROIS = [PointROI(4.1, 4.3),
+        RectangularROI(12.1, 14.3, 5.5, 10),
+        XRangeROI(10.2, 30),
+        YRangeROI(10, 22.2),
+        CircularROI(5.3, 8.3, 3.8),
+        PolygonalROI([4.4, 8.9, 8.8, 4.3], [3.4, 3.3, 9.9, 9.7])]
+
+
+@pytest.mark.parametrize('roi', ROIS)
+def test_mask(roi):
+
+    shape = (100, 100)
+    y, x = np.indices((100, 100))
+
+    mask1 = roi.contains(x, y)
+    mask2 = roi.mask(shape)
+
+    from astropy.io import fits
+
+    fits.writeto('mask1_{0}.fits'.format(roi.__class__.__name__), mask1.astype(int), overwrite=True)
+    fits.writeto('mask2_{0}.fits'.format(roi.__class__.__name__), mask2.astype(int), overwrite=True)
+
+    assert_equal(mask1, mask2)

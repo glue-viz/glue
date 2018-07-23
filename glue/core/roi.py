@@ -3,12 +3,13 @@ from __future__ import absolute_import, division, print_function
 import copy
 
 import numpy as np
+
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
 from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.component import CategoricalComponent
 from glue.core.exceptions import UndefinedROI
-from glue.utils import points_inside_poly, iterate_chunks
+from glue.utils import points_inside_poly, polygon_mask, iterate_chunks, broadcast_to
 
 
 np.seterr(all='ignore')
@@ -61,6 +62,18 @@ class Roi(object):  # pragma: no cover
     are many specific subtypes of Roi, but they all have a ``contains``
     method to test whether a collection of 2D points lies inside the region.
     """
+
+    def mask(self, shape):
+        """
+        Return a mask which is the projection of the ROI onto pixel space.
+        The mask is True if the center of the pixel is inside the ROI.
+
+        Parameters
+        ----------
+        shape : tuple
+            The shape of the array to project the ROI onto
+        """
+        raise NotImplementedError()
 
     def contains(self, x, y):
         """Return true/false for each x/y pair.
@@ -136,8 +149,11 @@ class PointROI(Roi):
         self.x = x
         self.y = y
 
+    def mask(self, shape):
+        return broadcast_to(False, shape)
+
     def contains(self, x, y):
-        return False
+        return broadcast_to(False, np.shape(x))
 
     def move_to(self, x, y):
         self.x = x
@@ -209,6 +225,15 @@ class RectangularROI(Roi):
     def height(self):
         return self.ymax - self.ymin
 
+    def mask(self, shape):
+        mask = np.zeros(shape, dtype=bool)
+        imin = int(np.ceil(self.xmin))
+        imax = int(np.floor(self.xmax))
+        jmin = int(np.ceil(self.ymin))
+        jmax = int(np.floor(self.ymax))
+        mask[jmin:jmax + 1, imin:imax + 1] = True
+        return mask
+
     def contains(self, x, y):
         """
         Test whether a set of (x,y) points falls within
@@ -226,8 +251,8 @@ class RectangularROI(Roi):
         if not self.defined():
             raise UndefinedROI
 
-        return (x > self.xmin) & (x < self.xmax) & \
-               (y > self.ymin) & (y < self.ymax)
+        return (x >= self.xmin) & (x <= self.xmax) & \
+               (y >= self.ymin) & (y <= self.ymax)
 
     def update_limits(self, xmin, ymin, xmax, ymax):
         """
@@ -318,12 +343,25 @@ class RangeROI(Roi):
         self.min += delta
         self.max += delta
 
+    def mask(self, shape):
+        mask = np.zeros(shape, dtype=bool)
+        if self.ori == 'x':
+            imin = int(np.ceil(self.min))
+            imax = int(np.floor(self.max))
+            mask[:, imin:imax + 1] = True
+        else:
+            jmin = int(np.ceil(self.min))
+            jmax = int(np.floor(self.max))
+            print(jmin, jmax)
+            mask[jmin:jmax + 1, :] = True
+        return mask
+
     def contains(self, x, y):
         if not self.defined():
             raise UndefinedROI()
 
         coord = x if self.ori == 'x' else y
-        return (coord > self.min) & (coord < self.max)
+        return (coord >= self.min) & (coord <= self.max)
 
     def transformed(self, xfunc=None, yfunc=None):
         if self.ori == 'x':
@@ -381,6 +419,16 @@ class CircularROI(Roi):
         self.xc = xc
         self.yc = yc
         self.radius = radius
+
+    def mask(self, shape):
+        mask = np.zeros(shape, dtype=bool)
+        imin = int(np.ceil(self.xc - self.radius))
+        imax = int(np.floor(self.xc + self.radius))
+        jmin = int(np.ceil(self.yc - self.radius))
+        jmax = int(np.floor(self.yc + self.radius))
+        x, y = np.meshgrid(np.arange(imin, imax + 1), np.arange(jmin, jmax + 1))
+        mask[jmin:jmax + 1, imin:imax + 1] = self.contains(x, y)
+        return mask
 
     def contains(self, x, y):
         """
@@ -557,6 +605,9 @@ class PolygonalROI(VertexROIBase):
                             for x, y in zip(self.vx, self.vy)])
         result += ')'
         return result
+
+    def mask(self, shape):
+        return polygon_mask(shape, self.vx, self.vy)
 
     def contains(self, x, y):
         """
