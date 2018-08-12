@@ -17,7 +17,7 @@ default_steps: &steps
           source flake8/bin/activate
           pip install pip --upgrade
           pip install flake8 --progress-bar off
-          flake8 --max-line-length=100 --exclude=extern glue
+          flake8 --max-line-length=100 --exclude=external glue
     - run:
         name: Run tests
         command: |
