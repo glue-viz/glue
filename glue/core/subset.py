@@ -652,8 +652,8 @@ class RoiSubsetState(SubsetState):
                 else:
                     subset.append(slice(0, 1))
 
-            x_slice = x[subset]
-            y_slice = y[subset]
+            x_slice = x[tuple(subset)]
+            y_slice = y[tuple(subset)]
 
             if self.roi.defined():
                 result = self.roi.contains(x_slice, y_slice)
@@ -1229,7 +1229,7 @@ class MaskSubsetState(SubsetState):
 
         # locate each element of data in the coordinate system of the mask
         vals = [data[c, view].astype(np.int) for c in self.cids]
-        result = self.mask[vals]
+        result = self.mask[tuple(vals)]
 
         for v, n in zip(vals, data.shape):
             result &= ((v >= 0) & (v < n))
@@ -1302,7 +1302,7 @@ class SliceSubsetState(SubsetState):
         if view is None:
             view = Ellipsis
         elif isinstance(view, slice) or np.isscalar(view):
-            view = [view]
+            view = (view,)
 
         # Figure out the shape of the final mask given the requested view
         shape = view_shape(data.shape, view)
@@ -1326,7 +1326,7 @@ class SliceSubsetState(SubsetState):
         if (isinstance(view, np.ndarray) or
                 (isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray))):
             mask = np.zeros(data.shape, dtype=bool)
-            mask[slices] = True
+            mask[tuple(slices)] = True
             return mask[view]
 
         # The original slices assume the full array, not the array with the view
@@ -1354,7 +1354,7 @@ class SliceSubsetState(SubsetState):
 
         # Create mask with final shape
         mask = np.zeros(shape, dtype=bool)
-        mask[subslices] = True
+        mask[tuple(subslices)] = True
 
         return mask
 
@@ -1366,7 +1366,7 @@ class SliceSubsetState(SubsetState):
             if order is None:
                 raise IncompatibleAttribute()
             slices = [self.slices[idx] for idx in order]
-        return data[att, slices]
+        return data[att, tuple(slices)]
 
     def __gluestate__(self, context):
         return dict(slices=context.do(self.slices),

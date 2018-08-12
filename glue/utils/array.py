@@ -244,7 +244,7 @@ def iterate_chunks(shape, chunk_shape=None, n_max=None):
 
         end_index = [min(start_index[i] + chunk_shape[i], shape[i]) for i in range(ndim)]
 
-        slices = [slice(start_index[i], end_index[i]) for i in range(ndim)]
+        slices = tuple([slice(start_index[i], end_index[i]) for i in range(ndim)])
 
         yield slices
 

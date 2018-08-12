@@ -925,14 +925,14 @@ def test_slice_subset_state():
 
     data1 = Data(x=np.arange(24).reshape((2, 3, 4)))
 
-    slices = [slice(None), slice(1, 3), slice(None, None, 2)]
+    slices = (slice(None), slice(1, 3), slice(None, None, 2))
     subset_state = SliceSubsetState(data1, slices)
 
     expected_mask = np.zeros((2, 3, 4))
     expected_mask[slices] = 1
     assert_equal(subset_state.to_mask(data1), expected_mask)
 
-    view = [slice(0, 1), slice(None), slice(None)]
+    view = (slice(0, 1), slice(None), slice(None))
     assert_equal(subset_state.to_mask(data1, view=view), expected_mask[view])
 
     data2 = Data(x=np.arange(24).reshape((3, 4, 2)))
@@ -949,7 +949,7 @@ def test_slice_subset_state():
 
     assert_equal(subset_state.to_mask(data2), expected_mask.transpose().swapaxes(0, 1))
 
-    view = [slice(None), slice(1, 3), slice(None)]
+    view = (slice(None), slice(1, 3), slice(None))
     assert_equal(subset_state.to_mask(data2, view=view), expected_mask.transpose().swapaxes(0, 1)[view])
 
 
@@ -957,7 +957,7 @@ def test_slice_subset_state_clone():
 
     data1 = Data(x=np.arange(24).reshape((2, 3, 4)))
 
-    slices = [slice(None), slice(1, 3), slice(None, None, 2)]
+    slices = (slice(None), slice(1, 3), slice(None, None, 2))
     subset_state = SliceSubsetState(data1, slices)
     subset = data1.new_subset()
     subset.subset_state = subset_state
