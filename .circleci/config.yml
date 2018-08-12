@@ -11,6 +11,9 @@ default_steps: &steps
         name: Install virtualenv
         command: pip install virtualenv
     - run:
+        name: Install missing dependencies
+        command: apt install -y python-tk python3-tk
+    - run:
         name: Flake8 checks
         command: |
           virtualenv flake8 --system-site-packages
