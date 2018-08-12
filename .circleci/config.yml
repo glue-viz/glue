@@ -27,8 +27,10 @@ default_steps: &steps
           virtualenv main --system-site-packages
           source main/bin/activate
           pip install pip --upgrade
-          pip install .[all,test] --progress-bar off
+          pip install -e .[all,test] --progress-bar off
           pip freeze
+          # Change directory to avoid __file__ being relative in Python 2.7
+          cd ..
           python -c 'import glue; import sys; sys.exit(glue.test(no_optional_skip=True))'
 
 jobs:
