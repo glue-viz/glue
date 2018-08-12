@@ -36,8 +36,7 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
     #       we override get_data_layer_artist and get_subset_layer_artist for
     #       more advanced logic.
 
-    tools = ['select:rectangle', 'select:xrange',
-             'select:yrange', 'select:circle',
+    tools = ['select:rectangle', 'select:circle',
              'select:polygon', 'image:point_selection', 'image:contrast_bias',
              'profile-viewer']
 

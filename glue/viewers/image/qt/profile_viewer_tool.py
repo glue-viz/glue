@@ -10,6 +10,15 @@ class ProfileViewerTool(Tool):
     icon = 'glue_spectrum'
     tool_id = 'profile-viewer'
 
+    def __init__(self, viewer):
+        super(ProfileViewerTool, self).__init__(viewer)
+        self.profile_viewers = []
+        self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+
+    def _on_reference_data_change(self, reference_data):
+        if reference_data is not None:
+            self.enabled = reference_data.ndim == 3
+
     @property
     def profile_viewers_exist(self):
         from glue.viewers.profile.qt import ProfileViewer

@@ -3,13 +3,48 @@ from unittest.mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.core.coordinates import IdentityCoordinates
-from glue.viewers.image.qt import StandaloneImageViewer, ImageViewer
-from glue.tests.helpers import requires_astropy, requires_scipy
 from glue.app.qt import GlueApplication
-from glue.utils.qt import process_events
+from glue.tests.helpers import requires_astropy, requires_scipy
+from glue.viewers.image.qt.data_viewer import ImageViewer
 
-from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget
+from ..pv_slicer import _slice_from_path, _slice_label, _slice_index
+
+
+class TestPVSlicerMode(object):
+
+    def setup_method(self, method):
+        self.app = GlueApplication()
+        self.data_collection = self.app.data_collection
+        self.data = Data(x=np.arange(6000).reshape((10, 20, 30)))
+        self.data_collection.append(self.data)
+        self.viewer = self.app.new_data_viewer(ImageViewer, data=self.data)
+
+    def teardown_method(self, method):
+        self.viewer = None
+        self.app.close()
+        self.app = None
+
+    def test_plain(self):
+
+        self.viewer.toolbar.active_tool = 'slice'
+        tool = self.viewer.toolbar.active_tool  # should now be set to PVSlicerMode
+
+        roi = MagicMock()
+        roi.to_polygon.return_value = [1, 10, 12], [2, 13, 14]
+
+        mode = MagicMock()
+        mode.roi.return_value = roi
+
+        tool._extract_callback(mode)
+
+        assert len(self.data_collection) == 2
+        assert self.data_collection[1].shape == (10, 16)
+
+        # If we do it again it should just update the existing slice dataset in-place
+
+        roi.to_polygon.return_value = [1, 10, 12], [2, 13, 14]
+
+        tool._extract_callback(mode)
 
 
 @requires_astropy
@@ -62,93 +97,3 @@ def test_slice_index():
     d = Data(x=np.zeros((2, 3, 4)))
     assert _slice_index(d, (0, 'y', 'x')) == 0
     assert _slice_index(d, ('y', 0, 'x')) == 1
-
-
-class TestStandaloneImageViewer(object):
-
-    def setup_method(self, method):
-        im = np.random.random((3, 3))
-        self.w = StandaloneImageViewer(im)
-
-    def teardown_method(self, method):
-        self.w.close()
-
-    def test_set_cmap(self):
-        cm_mode = self.w.toolbar.tools['image:colormap']
-        act = cm_mode.menu_actions()[1]
-        act.trigger()
-        assert self.w._composite.layers['image']['color'] is act.cmap
-
-    def test_double_set_image(self):
-        assert len(self.w._axes.images) == 1
-        self.w.set_image(np.zeros((3, 3)))
-        assert len(self.w._axes.images) == 1
-
-
-class MockImageViewer(object):
-
-    def __init__(self, slice, data):
-        self.slice = slice
-        self.data = data
-        self.wcs = None
-        self.state = MagicMock()
-
-
-class TestPVSliceWidget(object):
-
-    def setup_method(self, method):
-
-        self.d = Data(x=np.zeros((2, 3, 4)))
-        self.slc = (0, 'y', 'x')
-        self.image = MockImageViewer(self.slc, self.d)
-        self.w = PVSliceWidget(image=np.zeros((3, 4)), wcs=None, image_viewer=self.image)
-
-    def teardown_method(self, method):
-        self.w.close()
-
-    def test_basic(self):
-        pass
-
-
-class TestPVSliceTool(object):
-
-    def setup_method(self, method):
-        self.cube = Data(label='cube', x=np.arange(1000).reshape((5, 10, 20)))
-        self.application = GlueApplication()
-        self.application.data_collection.append(self.cube)
-        self.viewer = self.application.new_data_viewer(ImageViewer)
-        self.viewer.add_data(self.cube)
-
-    def teardown_method(self, method):
-        self.viewer.close()
-        self.viewer = None
-        self.application.close()
-        self.application = None
-
-    @requires_astropy
-    @requires_scipy
-    def test_basic(self):
-
-        self.viewer.toolbar.active_tool = 'slice'
-
-        self.viewer.axes.figure.canvas.draw()
-        process_events()
-
-        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
-        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-        x, y = self.viewer.axes.transData.transform([[7.2, 6.6]])[0]
-        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
-
-        process_events()
-
-        assert len(self.application.tab().subWindowList()) == 1
-
-        self.viewer.axes.figure.canvas.key_press_event('enter')
-
-        process_events()
-
-        assert len(self.application.tab().subWindowList()) == 2
-
-        pv_widget = self.application.tab().subWindowList()[1].widget()
-        assert pv_widget._x.shape == (6,)
-        assert pv_widget._y.shape == (6,)

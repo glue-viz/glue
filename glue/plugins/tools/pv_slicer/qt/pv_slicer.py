@@ -35,7 +35,6 @@ class PVSlicerMode(PathMode):
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
 
     def _on_reference_data_change(self, reference_data):
-        print(reference_data, reference_data.ndim)
         if reference_data is not None:
             self.enabled = reference_data.ndim == 3
 
@@ -67,17 +66,12 @@ class PVSlicerMode(PathMode):
         data.coords = coordinates_from_wcs(wcs)
         data[self.viewer.state.layers[0].attribute] = pv_slice
 
-        # TODO: use weak references
-        data.parent_data = self.viewer.state.reference_data
-        data.parent_data_x = x
-        data.parent_data_y = y
-        data.parent_viewer = self.viewer
-
         selected = self.viewer.session.application.selected_layers()
 
         if len(selected) == 1 and isinstance(selected[0], PVSliceData):
             selected[0].update_values_from_data(data)
             data = selected[0]
+            open_viewer = True
             for tab in self.viewer.session.application.viewers:
                 for viewer in tab:
                     if data in viewer._layer_artist_container:
@@ -85,15 +79,21 @@ class PVSlicerMode(PathMode):
                         break
                 if not open_viewer:
                     break
-            else:
-                open_viewer = True
         else:
             self.viewer.session.data_collection.append(data)
             open_viewer = True
 
-        print("OPEN VIEWER", open_viewer)
+        # TODO: use weak references
+        data.parent_data = self.viewer.state.reference_data
+        data.parent_data_x = x
+        data.parent_data_y = y
+        data.parent_viewer = self.viewer
+
         if open_viewer:
-            self.viewer.session.application.new_data_viewer(ImageViewer, data=data)
+            viewer = self.viewer.session.application.new_data_viewer(ImageViewer, data=data)
+
+        viewer.state.aspect = 'auto'
+        viewer.state.reset_limits()
 
 
 @viewer_tool
