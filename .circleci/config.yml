@@ -12,7 +12,7 @@ default_steps: &steps
         command: pip install virtualenv
     - run:
         name: Install missing dependencies
-        command: apt install -y python-tk python3-tk
+        command: apt install -y python-tk python3-tk graphviz
     - run:
         name: Flake8 checks
         command: |
@@ -32,6 +32,8 @@ default_steps: &steps
           # Change directory to avoid __file__ being relative in Python 2.7
           cd ..
           python -c 'import glue; import sys; sys.exit(glue.test(no_optional_skip=True))'
+    - store_artifacts:
+        path: /tmp
 
 jobs:
 
