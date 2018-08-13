@@ -16,12 +16,11 @@ def get_qapp(icon_path=None):
 
     if qapp is None:
 
-        # Some Qt modules are picky in terms of being imported before the
-        # application is set up, so we import them here.
-        try:
-            from qtpy import QtWebEngineWidgets  # noqa
-        except ImportError:  # Not all PyQt installations have this module
-            pass
+        # NOTE: plugins that need WebEngine may complain that QtWebEngineWidgets
+        # needs to be imported before QApplication is constructed, but this can
+        # cause segmentation faults to crop up under certain conditions, so we
+        # don't do it here and instead ask that the plugins do it in their
+        # main __init__.py (which should get executed before glue is launched).
 
         qapp = QtWidgets.QApplication([''])
         qapp.setQuitOnLastWindowClosed(True)
