@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import warnings
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
 
@@ -84,7 +85,7 @@ def pytest_unconfigure(config):
         obj = objgraph.by_type('GlueApplication')
         if len(obj) > 0:
             objgraph.show_backrefs(objgraph.by_type('GlueApplication'))
-            raise ValueError('There are {0} remaining references to GlueApplication'.format(len(obj)))
+            warnings.warn('There are {0} remaining references to GlueApplication'.format(len(obj)))
 
         # Uncomment when checking for memory leaks
         # objgraph.show_most_common_types(limit=100)
