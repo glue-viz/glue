@@ -217,7 +217,7 @@ class ProfileLayerState(MatplotlibLayerState):
         else:
             axis_view = [0] * data.ndim
             axis_view[pix_cid.axis] = slice(None)
-            axis_values = data[self.viewer_state.x_att, axis_view]
+            axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
             self._profile_cache = axis_values, profile_values
 
         if update_limits:

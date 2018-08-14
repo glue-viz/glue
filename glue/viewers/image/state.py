@@ -417,7 +417,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         # to get the image to use.
 
         if self.layer.data is self.viewer_state.reference_data:
-            image = self._get_image(view=full_view)
+            image = self._get_image(view=tuple(full_view))
         else:
 
             # Second, we check whether the current data is linked pixel-wise with
@@ -436,7 +436,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                 # doesn't make sense to show.
 
                 full_view = [full_view[idx] for idx in order]
-                image = self._get_image(view=full_view)
+                image = self._get_image(view=tuple(full_view))
 
                 if image.ndim != 2:
                     raise IncompatibleDataException()
@@ -526,7 +526,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                 for icoord, coord in enumerate(coords):
                     keep[(coord < 0) | (coord >= self.layer.shape[icoord])] = False
                 coords = [coord[keep] for coord in coords]
-                image[keep] = self._get_image(view=coords)
+                image[keep] = self._get_image(view=tuple(coords))
 
                 # Finally convert array back to a 2D array
                 image = image.reshape(original_shape)

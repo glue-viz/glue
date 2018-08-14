@@ -225,7 +225,7 @@ def _slice_from_path(x, y, data, attribute, slc):
         cube_wcs = cube_wcs.sub([data.ndim - nx for nx in dims[::-1]])
 
     # slice down from >3D to 3D if needed
-    s = [slice(None)] * 3 + [slc[d] for d in dims[3:]]
+    s = tuple([slice(None)] * 3 + [slc[d] for d in dims[3:]])
     cube = cube[s]
 
     # sample cube

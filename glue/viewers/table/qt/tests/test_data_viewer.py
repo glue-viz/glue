@@ -291,7 +291,7 @@ def test_table_widget_session_no_subset(tmpdir):
     gapp2.viewers[0][0]
 
 
-@pytest.mark.xfail('QT_LT_58')
+@pytest.mark.skipif('QT_LT_58')
 def test_change_components():
 
     # Regression test for a bug that caused table viewers to not update when
