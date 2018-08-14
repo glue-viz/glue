@@ -15,7 +15,7 @@ Glue relies on several libraries to parse different file formats:
    variety of `ascii table formats
    <http://docs.astropy.org/en/latest/io/ascii/index.html>`_, and VO
    tables.
- * `scikit-image <http://scikit-image.org/>`_ to read popular image
+ * `scikit-image <https://scikit-image.org/>`_ to read popular image
    formats like ``.jpeg`` and ``.tiff``
  * `h5py <http://www.h5py.org/>`_ to read HDF5 files
 

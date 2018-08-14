@@ -20,7 +20,7 @@ The Goal: Basketball Shot Charts
 --------------------------------
 
 In basketball, Shot Charts show the spatial distribution of shots
-for a particiular player, team, or game. The `New York Times <http://www.nytimes.com/interactive/2012/06/11/sports/basketball/nba-shot-analysis.html?_r=0>`_ has a nice example.
+for a particiular player, team, or game. The `New York Times <https://archive.nytimes.com/www.nytimes.com/interactive/2012/06/11/sports/basketball/nba-shot-analysis.html?_r=0>`_ has a nice example.
 
 There are three basic features that we might want to incorporate into
 a shot chart:

@@ -13,7 +13,7 @@ branch of the Glue repository, the script runs, and triggers a Travis build for
 the `Travis-MacGlue <https://github.com/glue-viz/Travis-MacGlue>`_ repository.
 
 This then sets up a Travis build that includes all the dependencies for Glue,
-and then runs `py2app <http://pythonhosted.org/py2app/>`_. Once this has
+and then runs `py2app <https://pythonhosted.org/py2app/>`_. Once this has
 completed successfully, the app file is uploaded to `Amazon S3
 <https://aws.amazon.com/s3/>`_ and becomes available at `mac.glueviz.org
 <http://mac.glueviz.org/>`_.
