@@ -2,7 +2,7 @@ Visualizing Astronomical Dendrograms
 ====================================
 
 You can use Glue to visualize dendrograms created by the
-`astrodendro <http://dendrograms.org/>`_ package.
+`astrodendro <https://dendrograms.readthedocs.io/>`_ package.
 
 Enabling the viewer
 -------------------
@@ -16,7 +16,7 @@ Building a dendrogram
 ---------------------
 
 The details of constructing dendrograms for astronomical images
-is beyond the scope of this document -- see `<http://dendrograms.org/>`_
+is beyond the scope of this document -- see `<https://dendrograms.readthedocs.io/>`_
 for more information. The following snippet builds a dendrogram
 from the W5 image used in the :ref:`tutorial <getting_started>`::
 

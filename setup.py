@@ -112,6 +112,13 @@ extras_require = {
 extras_require['all'] = (extras_require['recommended'] +
                          extras_require['astronomy'])
 
+extras_require['test'] = ['pytest>=3.5,<3.7',
+                          'pytest-cov',
+                          'pytest-qt',
+                          'pytest-faulthandler',
+                          'objgraph',
+                          'mock']
+
 setup(name='glue-core',
       version=__version__,
       description='Multidimensional data visualzation across files',

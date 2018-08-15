@@ -306,7 +306,7 @@ Experimental SAMP plugin
 
 A number of Astronomy applications including `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, `Aladin
-<http://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
+<https://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
 `WorldWideTelescope <http://www.worldwidetelescope.org/webclient>`_ and more support a
 message-passing system that allows data and subsets to be exchanged between
 applications. We have now developed a plugin that adds SAMP capabilities to
@@ -584,7 +584,7 @@ Ginga plugin now moved to a separate package
 
 The plugin that allows `ginga <https://ejeschke.github.io/ginga/>`_ viewers to
 be used inside glue has been moved to a new package,
-`glue-ginga <https://pypi.python.org/pypi/glue-ginga/0.1>`_. To install
+`glue-ginga <https://pypi.org/project/glue-ginga/0.1>`_. To install
 this plugin, simply do::
 
     pip install glue-ginga
@@ -762,7 +762,7 @@ custom toolbars <custom-toolbars>`, has been added to the documentation to show
 how to use this functionality.
 
 We have now also switched from using the ``glue.external.qt`` module to the
-`QtPy <https://pypi.python.org/pypi/QtPy>`__ package for supporting different
+`QtPy <https://pypi.org/project/QtPy>`__ package for supporting different
 Python Qt wrappers (PyQt4 and 5, as well as PySide). See :ref:`qtpy` for more
 information.
 

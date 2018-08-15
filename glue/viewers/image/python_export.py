@@ -16,7 +16,7 @@ def python_export_image_layer(layer, *args):
     # TODO: implement aggregation, ignore for now
 
     script += "# Get main data values\n"
-    script += "image = layer_data['{0}', {1}]".format(layer.state.attribute, slices)
+    script += "image = layer_data['{0}', {1}]".format(layer.state.attribute, tuple(slices))
 
     if transpose:
         script += ".transpose()"
@@ -58,7 +58,7 @@ def python_export_image_subset_layer(layer, *args):
     # TODO: implement aggregation, ignore for now
 
     script += "# Get main subset values\n"
-    script += "mask = layer_data.to_mask(view={0})\n\n".format(slices)
+    script += "mask = layer_data.to_mask(view={0})\n\n".format(tuple(slices))
 
     imports.append('from glue.utils import color2rgb')
     imports.append('import numpy as np')

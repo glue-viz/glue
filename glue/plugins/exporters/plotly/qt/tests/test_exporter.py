@@ -187,8 +187,7 @@ class TestQtPlotlyExporter():
                         exporter.accept()
                         assert exporter.text_status.text() == status
 
-    @pytest.mark.parametrize(('error', 'status'), ERRORS)
-    def test_fix_url(self, tmpdir, error, status):
+    def test_fix_url(self, tmpdir):
 
         credentials_file = tmpdir.join('.credentials').strpath
 
@@ -196,9 +195,12 @@ class TestQtPlotlyExporter():
 
         plot = mock.MagicMock(return_value='https://plot.ly/~batman/6?share_key=rbkWvJQn6cyj3HMMGROiqI')
 
+        sign_in = mock.MagicMock()
+
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
-            with patch('plotly.plotly.plot', plot):
-                with patch('webbrowser.open_new_tab') as open_new_tab:
-                    exporter = self.get_exporter()
-                    exporter.accept()
-                    assert open_new_tab.called_once_with('https://plot.ly/~batman/6/?share_key=rbkWvJQn6cyj3HMMGROiqI')
+            with patch('plotly.plotly.sign_in', sign_in):
+                with patch('plotly.plotly.plot', plot):
+                    with patch('webbrowser.open_new_tab') as open_new_tab:
+                        exporter = self.get_exporter()
+                        exporter.accept()
+                        assert open_new_tab.called_once_with('https://plot.ly/~batman/6/?share_key=rbkWvJQn6cyj3HMMGROiqI')
