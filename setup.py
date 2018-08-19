@@ -73,18 +73,6 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
-# Glue can work with PyQt5 and PySide2. We can't add them to install_requires
-# because they aren't on PyPI but we can check here that one of them is
-# installed.
-try:
-    import PyQt5  # noqa
-except ImportError:
-    try:
-        import PySide2  # noqa
-    except ImportError:
-        print("Glue requires PyQt5 or PySide2 to be installed")
-        sys.exit(1)
-
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=1.3',
@@ -99,6 +87,17 @@ install_requires = ['numpy>=1.9',
                     'h5py>=2.4',
                     'bottleneck>=1.2',
                     'mpl-scatter-density>=0.3']
+
+# Glue can work with PyQt5 and PySide2. We first check if they are already
+# installed before adding PyQt5 to install_requires, since the conda
+# installation of PyQt5 is not recognized by install_requires.
+try:
+    import PyQt5  # noqa
+except ImportError:
+    try:
+        import PySide2  # noqa
+    except ImportError:
+        install_requires.append('PyQt5')
 
 extras_require = {
     'recommended': ['scipy',
