@@ -49,14 +49,15 @@ lab - this is not quite ready yet for general use, but if you are interested
 in following on or helping with the development, the GitHub repository is at
 https://github.com/glue-viz/glue-jupyter.
 
-Plugin for Medicine
--------------------
+Plugin for Medical imaging
+--------------------------
 
 The **glue-medical** is a plugin under development to provide functionality
 related to medical imaging in glue. At the moment, the plugin only includes a
 `DICOM <https://en.wikipedia.org/wiki/DICOM>`_ reader, but we want to expand
 this to other formats and as well as other functionality (e.g. colormaps) that
-would be useful in medical imaging. You can install this plugin with::
+would be useful in medical imaging. You can install the current version of this
+plugin with::
 
     conda install -c glueviz glue-medical
 
@@ -81,8 +82,8 @@ related to geospatial data in glue. At the moment, the plugin includes a
 reader based on the `rasterio <https://github.com/mapbox/rasterio>`_ package,
 which allows e.g. GeoTIFF files to be loaded into glue. In addition, the glue
 plugin tries to automatically set up the coordinate system for the datasets so
-that you can link datasets based on longitude/latitude. You can install this
-plugin with::
+that you can link datasets based on longitude/latitude. You can install the
+current version of this plugin with::
 
     conda install -c glueviz glue-geospatial
 
@@ -163,13 +164,13 @@ Once the plugin is installed, you can go to the **Plugins** menu and select
 
 .. image:: images/samp_open.png
    :align: center
-   :width: 300px
+   :width: 250px
 
 A window will then appear:
 
 .. image:: images/samp_window.png
    :align: center
-   :width: 600px
+   :width: 500px
 
 Click on **Start SAMP**, and the status should change to something like
 **Connected to SAMP Hub**. If you open another SAMP-enabled application such as
@@ -200,7 +201,7 @@ The `specviz <https://github.com/spacetelescope/specviz>`_ package is a
 standalone application for spectral visualization and analysis, but it
 incorporates a plugin for glue that makes it possible to view spectral and/or
 spectral cubes open in glue. Full installation instructions are available in
-the `specviz documnetation
+the `specviz documentation
 <https://specviz.readthedocs.io/en/latest/installation.html>`__, but you can
 also install specviz using::
 
