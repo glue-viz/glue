@@ -5,7 +5,9 @@ List of available plugins
 
 This page lists available plugin packages, as well as information on installing
 these. If you are interested in writing your own plugin package, see
-:ref:`writing_plugin`.
+:ref:`writing_plugin`. We rely on domain experts to help us develop plugins, so
+if your domain is not represented below, or if you want to help us extend the
+existing plugins, we'd love to hear from you!
 
 General plugins
 ---------------
