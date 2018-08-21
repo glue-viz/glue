@@ -47,8 +47,62 @@ lab - this is not quite ready yet for general use, but if you are interested
 in following on or helping with the development, the GitHub repository is at
 https://github.com/glue-viz/glue-jupyter.
 
+Plugin for Medicine
+-------------------
+
+The **glue-medical** is a plugin under development to provide functionality
+related to medical imaging in glue. At the moment, the plugin only includes a
+`DICOM <https://en.wikipedia.org/wiki/DICOM>`_ reader, but we want to expand
+this to other formats and as well as other functionality (e.g. colormaps) that
+would be useful in medical imaging. You can install this plugin with::
+
+    conda install -c glueviz glue-medical
+
+or if you don't use conda::
+
+    pip install glue-medical
+
+Once the plugin is installed, you should be able to read in DICOM files as you
+would normally read other files. You can also read in DICOM directories
+containing individual slices into a single dataset by going to the **File**
+menu, then **Import data**, and **Import DICOM directory as a single array**.
+
+If you run into issues or have requests related to this plugin, or if you would
+like to contribute to the development, the GitHub repository for this plugin is
+at https://github.com/glue-viz/glue-medical.
+
+Plugin for Geosciences
+----------------------
+
+The **glue-geospatial** is a plugin under development to provide functionality
+related to geospatial data in glue. At the moment, the plugin includes a
+reader based on the `rasterio <https://github.com/mapbox/rasterio>`_ package,
+which allows e.g. GeoTIFF files to be loaded into glue. In addition, the glue
+plugin tries to automatically set up the coordinate system for the datasets so
+that you can link datasets based on longitude/latitude. You can install this
+plugin with::
+
+    conda install -c glueviz glue-geospatial
+
+or if you don't use conda::
+
+    pip install glue-geospatial
+
+Once the plugin is installed, you should be able to read in e.g. GeoTIFF files
+as you would normally read other files.
+
+If you run into issues or have requests related to this plugin, or if you would
+like to contribute to the development, the GitHub repository for this plugin is
+at https://github.com/glue-viz/glue-geospatial.
+
 Plugins for Astronomy
 ---------------------
+
+For historical reasons, the core glue application already includes some
+Astronomy-specific functionality, such as data readers for e.g. FITS and other
+common astronomy formats, as well as linking funcitons that are aware of
+Astronomy coordinate systems. In addition to this built-in functionality, there
+are a number of plugins available and/or in development for Astronomy.
 
 glue-wwt: WorldWide Telescope viewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -175,13 +229,3 @@ you can easily install these using::
 or if you don't use conda::
 
     pip install cubeviz mosviz
-
-Plugins for Medicine
---------------------
-
-glue-medical
-
-Plugins for Geosciences
------------------------
-
-glue-geospatial
