@@ -19,12 +19,12 @@ The **glue-vispy-viewers** plugin package adds a 3D scatter plot viewer and a 3D
 volume rendering viewer to glue. This plugin package is installed by default
 with glue (provided that you installed the **glueviz** package with pip or
 conda). You can read up more about the functionality avalable in this plugin
-in :ref:`3d-viewers`. You can check that you have this plugin installed by going
+in :ref:`viewers-3d`. You can check that you have this plugin installed by going
 to the **Canvas** menu in glue and selecting **New Data Viewer**, or
 alternatively by dragging a dataset onto the canvas area. If the 3D viewers
 plugin is installed, you should see the 3D viewers in the list:
 
-.. image:: images/3d_viewers_select.png
+.. image:: ../gui_guide/images/3d_viewers_select.png
    :align: center
    :width: 339
 
