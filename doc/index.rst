@@ -83,8 +83,11 @@ Customizing/Hacking Glue
 .. toctree::
    :maxdepth: 1
 
+   customizing_guide/introduction.rst
+   customizing_guide/available_plugins.rst
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
+   customizing_guide/writing_plugin.rst
    python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
