@@ -4,6 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Automatically select datasets in link editor if there are only two. [#1837]
+
 * Change 'Export Session' dialog to offer to save with relative paths to data
   by default instead of absolute paths. [#1803]
 

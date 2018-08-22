@@ -34,10 +34,17 @@ class LinkEditor(QtWidgets.QDialog):
 
         self._size = None
 
+        if len(self._collection) == 2:
+            self._ui.left_components.data = self._collection[0]
+            self._ui.right_components.data = self._collection[1]
+        else:
+            self._ui.left_components.data = None
+            self._ui.right_components.data = None
+
         self._ui.left_components.data_changed.connect(self._on_data_change_combo)
         self._ui.right_components.data_changed.connect(self._on_data_change_combo)
 
-        self._on_data_change_graph()
+        self._on_data_change_combo()
 
     @avoid_circular
     def _on_data_change_graph(self):
