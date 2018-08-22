@@ -622,7 +622,7 @@ class ImageLayerState(BaseImageLayerState):
 
     attribute = DDSCProperty(docstring='The attribute shown in the layer')
     v_min = DDCProperty(docstring='The lower level shown')
-    v_max = DDCProperty(docstring='The upper leven shown')
+    v_max = DDCProperty(docstring='The upper level shown')
     percentile = DDSCProperty(docstring='The percentile value used to '
                                         'automatically calculate levels')
     contrast = DDCProperty(1, docstring='The contrast of the layer')

@@ -154,7 +154,7 @@ will look like this:
    :width: 400px
 
 At this point, you can visualize and drilldown into this catalog. However, Glue
-doesn't know enough to intercompare the catalog and image. To do that, we must
+doesn't know enough to compare the catalog and image. To do that, we must
 *Link* these two data entries. Click on the ``Link Data`` button in the toolbar.
 This brings up a new window, showing all the pieces of information within each
 dataset:

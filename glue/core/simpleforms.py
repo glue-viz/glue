@@ -16,7 +16,7 @@ class Option(object):
     """
     Base class for other options.
 
-    This shouldn't be used directly
+    This should not be used directly
 
     Parameters
     ----------

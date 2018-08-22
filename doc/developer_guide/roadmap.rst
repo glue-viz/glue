@@ -79,7 +79,7 @@ versus another.
 We therefore need to work on more efficient ways to show scatter plot data. In
 particular, we could explore methods that rasterize the points extremely
 efficiently, or methods that sub-sample the points in smart ways (for example,
-neighbouring points could be replaced by a slightly larger point).
+neighboring points could be replaced by a slightly larger point).
 
 Related GitHub issues: `#722 <https://github.com/glue-viz/glue/issues/722>`_
 
@@ -98,8 +98,3 @@ framework. Therefore, this would just require developing new viewers, not
 re-writing large sections of already existing code.
 
 Related GitHub issues: `#801 <https://github.com/glue-viz/glue/issues/801>`_
-
-
-
-
-

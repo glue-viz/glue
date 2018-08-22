@@ -15,10 +15,10 @@ To do this, Glue needs to understand how quantities in different datasets relate
 
 * Sometimes, two datasets define the same quantity (e.g., two catalogs that both report time)
 * Sometimes, datasets define the same quantities in different units (elapsed time in hours vs elapsed time in days)
-* Sometimes, a quantity (like area) can be derived from other quantites (like length and width).
+* Sometimes, a quantity (like area) can be derived from other quantities (like length and width).
 
 **Data Links** tell Glue how to translate between different quantities,
-to intercompare different datasets.
+to compare different datasets.
 
 .. note::
 
@@ -26,8 +26,8 @@ to intercompare different datasets.
   concepts from SQL, R, or Pandas, you might think data links are like
   data mergers or joins. They are different -- mergers assume
   information about the **same entity** is present in many tables,
-  such that the diffent tables can in principle be merged together.
-  Data Links in glue, on the other hand, assume that the entrys in
+  such that the different tables can in principle be merged together.
+  Data Links in glue, on the other hand, assume that the entries in
   different datasets correspond to different entities, but may
   describe the **same quantity**. For example, an image and a position
   catalog both have spatial information, but no row in the catalog
@@ -65,10 +65,12 @@ specify how to use a translation function to derive one quantity from others:
    :align: center
    :width: 600
 
-Here, a ``boxes`` dataset reports the linear dimensions of some boxes, and a crates dataset reports the volume of crates. The box volumes can be intercompared with the crate volumes by multiplying the box width, height, and depth.
-To specify this link, we select a translation function (``lengths_to_volume``),
-and drag the components to the relevant inputs and output of the translation
-function.
+Here, a ``boxes`` dataset reports the linear dimensions of some boxes, and a
+crates dataset reports the volume of crates. The box volumes can be
+compared with the crate volumes by multiplying the box width, height, and
+depth. To specify this link, we select a translation function
+(``lengths_to_volume``), and drag the components to the relevant inputs and
+output of the translation function.
 
 Note that this link is one-way: we can compute area from width height
 and depth, but not vice versa. Thus, we will be able to overlay

@@ -21,7 +21,7 @@ n-dimensional :class:`~glue.core.component.Component` objects.
 
 Inside :class:`~glue.core.data.Data` objects, each
 :class:`~glue.core.component.Component` is assigned a
-:class:`~glue.core.component_id.ComponentID`. However, this is not necesarily a
+:class:`~glue.core.component_id.ComponentID`. However, this is not necessarily a
 unique ID for each and every component -- instead, different components
 representing the same conceptual quantity can be given the same component ID.
 Component IDs are central to the linking framework
@@ -247,7 +247,7 @@ This selects objects with H band magnitudes between 10 and 15:
 Accessing subset data
 ---------------------
 
-Once you have defined subsets, you can acceess the subsets on specific datasets using the ``.subsets`` attribute on :class:`~glue.core.data.Data` objects. For instance, after the above selections, you might have something that looks like this::
+Once you have defined subsets, you can access the subsets on specific datasets using the ``.subsets`` attribute on :class:`~glue.core.data.Data` objects. For instance, after the above selections, you might have something that looks like this::
 
     >>> catalog.subsets
     (Subset: between_10_15 (data: w5_psc), Subset: J > H (data: w5_psc))

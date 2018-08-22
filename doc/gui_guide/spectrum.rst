@@ -132,7 +132,7 @@ Model with constraints
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Models like those found in ``astropy.modeling`` support fixing or
-constraining certain parameters. If you would like to add user-setttable
+constraining certain parameters. If you would like to add user-settable
 constraints to your model, add a ``param_names`` list to the class::
 
     class ConstrainedGaussian(BaseFitter1D):

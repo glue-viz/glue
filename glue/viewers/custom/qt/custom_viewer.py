@@ -416,9 +416,9 @@ class CustomViewer(object):
 
     Custom methods should use argument names from the following list:
 
-      - The name of a UI element(e.g. keywords passed to :func:`glue.custom_viewer`,
+      - The name of a UI element (e.g. keywords passed to :func:`glue.custom_viewer`,
         or class-level variables in subclasses). The value assigned to this
-        argument will be the current UI setting (e.g. bools for checkboxes).
+        argument will be the current UI setting (e.g. booleans for checkboxes).
       - ``axes`` will contain a matplotlib Axes object
       - ``roi``  will contain the ROI a user has drawn (only available for ``make_selector``)
       - ``state`` will contain a general-purpose object to store other data

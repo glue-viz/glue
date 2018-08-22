@@ -43,7 +43,7 @@ doesn't require understanding any other parts of Glue.
 As its name describes, this is the most important part of the Glue package.
 This defines the general classes for datasets, subsets, data collections,
 messages, layer artists, and other Glue concepts. On the other hand it does
-*not* define specific viewers or data readers. The code in this sub-pacakge is
+*not* define specific viewers or data readers. The code in this sub-package is
 not concerned with specific graphical user interface (GUI) representations, and
 you could in principle develop a completely different GUI than the main Glue
 one making use of the Glue core code. You could even use :mod:`glue.core` to

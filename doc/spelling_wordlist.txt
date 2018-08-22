@@ -41,10 +41,12 @@ Metadata
 Miniconda
 NUMPY
 NaN
+NN
 Numpy
 Overplot
 Plugin
 Plugins
+PKx
 Programmatically
 QAction
 QActions
@@ -82,6 +84,7 @@ ToolButtonStyle
 Ubuntu
 Uninstalling
 Unsubscribe
+Valdes
 WidgetAttribute
 WindowFlags
 WindowModality
@@ -194,6 +197,7 @@ kwargs
 labeldata
 linestyle
 linewidth
+ly
 matplotlib
 memmap
 menubar
@@ -223,12 +227,14 @@ objectName
 objectNameChanged
 objectNames
 online
-ou
+outmode
 overplot
 overplotted
 overriden
 param
 params
+phi
+plo
 plugin
 plugins
 poly

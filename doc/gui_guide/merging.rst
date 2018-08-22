@@ -31,7 +31,7 @@ called "age", but row N describes a different object in each spreadsheet).
 Merging, on the other hand, indicates that two spreadsheets are
 pre-aligned along each **row** (e.g. row N describes the same item in every spreadsheet, but the columns of each spreadsheet might be different).
 
-Merging collapses sevral datasets into a single dataset, while
+Merging collapses several datasets into a single dataset, while
 linking keeps each dataset separate.
 
 How to merge datasets
@@ -50,4 +50,3 @@ To merge datasets programmatically, use the :meth:`DataCollection.merge <glue.co
     Datasets should only be merged if each element describes the same item
     in each file. Consequently, all merged datasets must have the same
     number of elements.
-
