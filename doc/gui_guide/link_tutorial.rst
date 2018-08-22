@@ -37,7 +37,8 @@ to compare different datasets.
 
 Data Linking from the GUI
 -------------------------
-The :ref:`Data Linking Editor <getting_started_link>` let's users
+
+The :ref:`Data Linking Editor <getting_started_link>` lets users
 define data links from the GUI.
 
 
