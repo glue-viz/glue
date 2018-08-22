@@ -18,7 +18,7 @@ glue-vispy-viewers: 3d viewers
 The **glue-vispy-viewers** plugin package adds a 3D scatter plot viewer and a 3D
 volume rendering viewer to glue. This plugin package is installed by default
 with glue (provided that you installed the **glueviz** package with pip or
-conda). You can read up more about the functionality avalable in this plugin
+conda). You can read up more about the functionality available in this plugin
 in :ref:`viewers-3d`. You can check that you have this plugin installed by going
 to the **Canvas** menu in glue and selecting **New Data Viewer**, or
 alternatively by dragging a dataset onto the canvas area. If the 3D viewers
@@ -103,7 +103,7 @@ Plugins for Astronomy
 
 For historical reasons, the core glue application already includes some
 Astronomy-specific functionality, such as data readers for e.g. FITS and other
-common astronomy formats, as well as linking funcitons that are aware of
+common astronomy formats, as well as linking functions that are aware of
 Astronomy coordinate systems. In addition to this built-in functionality, there
 are a number of plugins available and/or in development for Astronomy.
 

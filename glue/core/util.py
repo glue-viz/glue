@@ -93,7 +93,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     Create a series of subsets that partition the values of a particular
     attribute into several bins
 
-    This creates `steps` new subet groups, adds them to the data collection, and
+    This creates `steps` new subset groups, adds them to the data collection, and
     returns the list of newly created subset groups.
 
     Parameters
@@ -279,7 +279,7 @@ def visible_limits(artists, axis):
 
     Ignores non-visible artists
 
-    Assumes each artist as a get_data method wich returns a tuple of x,y
+    Assumes each artist as a get_data method which returns a tuple of x,y
 
     Returns a tuple of min, max for the requested axis, or None if no data
     present

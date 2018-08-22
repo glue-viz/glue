@@ -203,7 +203,7 @@ functionality, click on the **Save** icon and select **Save Python script to
 reproduce plot**. This functionality is still experimental, and will be extended
 to more data viewers in future.
 
-Datatime64 support
+Datetime64 support
 ------------------
 
 Datasets that include attributes with a Numpy ``datetime64`` dtype will now

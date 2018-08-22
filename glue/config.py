@@ -567,10 +567,10 @@ class LinkFunctionRegistry(Registry):
 
     """Stores functions to convert between quantities
 
-    The members properety is a list of (function, info_string,
+    The members property is a list of (function, info_string,
     output_labels) namedtuples. ``info_string`` describes what the
     function does. ``output_labels`` is a list of names for each output.
-    ``category`` is a category in which the link funtion will appear (defaults
+    ``category`` is a category in which the link function will appear (defaults
     to 'General').
 
     New link functions can be registered via
@@ -578,7 +578,7 @@ class LinkFunctionRegistry(Registry):
         @link_function(info="maps degrees to arcseconds",
                        output_labels=['arcsec'])
         def degrees2arcsec(degrees):
-            return degress * 3600
+            return degrees * 3600
 
     Link functions are expected to receive and return numpy arrays
     """
@@ -640,7 +640,7 @@ class LinkHelperRegistry(Registry):
     The members property is a list of (object, info_string,
     input_labels) tuples. `Object` is the link helper. `info_string`
     describes what `object` does. `input_labels` is a list labeling
-    the inputs. ``category`` is a category in which the link funtion will appear
+    the inputs. ``category`` is a category in which the link function will appear
     (defaults to 'General').
 
     Each link helper takes a list of ComponentIDs as inputs, and

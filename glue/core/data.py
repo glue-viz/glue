@@ -1285,7 +1285,7 @@ class Data(BaseCartesianData):
         :param mapping: A dict mapping Components or ComponenIDs to arrays.
 
         This method has the following restrictions:
-          - New compoments must have the same shape as old compoments
+          - New components must have the same shape as old components
           - Component subclasses cannot be updated.
         """
         for comp, data in mapping.items():

@@ -33,7 +33,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     hist_x_min = DDCProperty(docstring='The minimum value used to compute the '
                                        'histogram')
-    hist_x_max = DDCProperty(docstring='The maxumum value used to compute the '
+    hist_x_max = DDCProperty(docstring='The maximum value used to compute the '
                                        'histogram')
     hist_n_bin = DDCProperty(docstring='The number of bins in the histogram')
 

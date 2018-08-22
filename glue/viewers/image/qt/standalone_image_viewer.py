@@ -103,7 +103,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
     @property
     def axes(self):
         """
-        The Matplolib axes object for this figure
+        The Matplotlib axes object for this figure
         """
         return self._axes
 

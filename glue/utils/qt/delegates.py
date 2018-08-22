@@ -6,7 +6,7 @@ from qtpy import QtWidgets, QtGui, QtCore
 class HtmlItemDelegate(QtWidgets.QStyledItemDelegate):
     """
     An item delegate that can be used for e.g. QTreeView, QTreeWidget,
-    QListView or QListWidget. This will automatically intepret any HTML that
+    QListView or QListWidget. This will automatically interpret any HTML that
     is inside the items in these views/widgets.
 
     This is more efficient than using e.g. QLabel instances embedded in the

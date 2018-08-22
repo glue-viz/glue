@@ -457,5 +457,5 @@ then in ``config.py``, you can do::
     qt_client.lazy_add('my_qt_viewer')
 
 With this in place, the ``setup`` in your plugin will only get called if the
-Qt data viewers are needed, but you will avoid unecessarily importing Qt if
+Qt data viewers are needed, but you will avoid unnecessarily importing Qt if
 you only want to access ``glue.core``.

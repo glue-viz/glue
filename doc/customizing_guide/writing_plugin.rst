@@ -31,7 +31,7 @@ which contains a custom data viewer.
 In addition to this file (or multiple files), you will need an ``__init__.py``
 file, which should contain a ``setup`` function. This function is used to
 register any customizations with glue. In this function, you should import any
-files containing customizations. If the cutomizations use a decorator to be
+files containing customizations. If the customizations use a decorator to be
 registered (e.g. ``@data_factory`` or ``@menubar_plugin``), then you are all set.
 Otherwise, for registering e.g. custom_viewers, the ``setup`` function should
 also do the registration - in the template, this looks like::
@@ -61,7 +61,7 @@ our case).
 
 Once you have this in place, you should be able to install the plugin in
 'develop' mode (meaning that you can then make changes and have them be updated
-in the installed version withoug having to re-install every time) with::
+in the installed version without having to re-install every time) with::
 
     pip install -e .
 
@@ -69,8 +69,8 @@ You can then start up glue with::
 
     glue -v
 
-The startup log then contains information about whether plugins were successfuly
-loaded. You should either see something like::
+The startup log then contains information about whether plugins were
+successfully loaded. You should either see something like::
 
     INFO:glue:Loading plugin myplugin succeeded
 

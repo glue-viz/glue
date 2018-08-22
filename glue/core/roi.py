@@ -509,7 +509,7 @@ class VertexROIBase(Roi):
         :param x: The x coordinate of the reference point
         :param y: The y coordinate of the reference point
 
-        :param thresh: An optional threshhold. If present, the vertex
+        :param thresh: An optional threshold. If present, the vertex
                 closest to (x,y) will only be removed if the distance
                 is less than thresh
 

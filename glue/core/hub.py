@@ -119,7 +119,7 @@ class Hub(object):
 
     def is_subscribed(self, subscriber, message):
         """
-        Test whether the subscriber has suscribed to a given message class
+        Test whether the subscriber has subscribed to a given message class
 
         :param subscriber: The subscriber to test
         :param message: The message class to test

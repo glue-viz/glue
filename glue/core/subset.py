@@ -45,7 +45,7 @@ class Subset(object):
     These objects both describe subsets of a dataset, and relay any
     state changes to the hub that their parent data are assigned to.
 
-    This base class only directly impements the logic that relays
+    This base class only directly implements the logic that relays
     state changes back to the hub. Subclasses implement the actual
     description and manipulation of data subsets
 
@@ -893,7 +893,7 @@ class CategoricalROISubsetState2D(SubsetState):
     ----------
     categories : dict
         A dictionary containing for each label of one categorical component an
-        interable of labels for the other categorical component (using sets will
+        iterable of labels for the other categorical component (using sets will
         provide the best performance)
     att1 : :class:`~glue.core.component_id.ComponentID`
         The component ID matching the keys of the ``categories`` dictionary
@@ -910,7 +910,7 @@ class CategoricalROISubsetState2D(SubsetState):
     def categories(self):
         """
         A dictionary containing for each label of one categorical component an
-        interable of labels for the other categorical component.
+        iterable of labels for the other categorical component.
         """
         return self._categories
 
@@ -1384,7 +1384,7 @@ class SliceSubsetState(SubsetState):
 class CategorySubsetState(SubsetState):
     """
     A subset defined by the set of categorical values that are equal to
-    a set of cateogories.
+    a set of categories.
 
     Parameters
     ----------

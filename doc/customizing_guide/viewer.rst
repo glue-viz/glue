@@ -222,7 +222,7 @@ should permanently remove the layer from the visualization, the
 :meth:`~glue.viewers.common.layer_artist.LayerArtist.redraw` method
 should force the layer to be redrawn, and
 :meth:`~glue.viewers.common.layer_artist.LayerArtist.update` should
-update the apparance of the layer as necessary before redrawing -- note that
+update the appearance of the layer as necessary before redrawing -- note that
 :meth:`~glue.viewers.common.layer_artist.LayerArtist.update` is called
 for example when a subset has changed.
 
@@ -231,7 +231,7 @@ By default, layer artists inheriting from
 initialized with a reference to the layer state (accessible as ``state``) and
 the viewer state (accessible as ``_viewer_state``).
 
-This means that we can then do the following, asssuming a layer state
+This means that we can then do the following, assuming a layer state
 with the ``fill`` property defined previously::
 
   from glue.viewers.common.layer_artist import LayerArtist

@@ -2,7 +2,7 @@
 This module provides several classes and LinkCollection classes to
 assist in linking data.
 
-The :class:`LinkCollection` class and its sublcasses are factories to create
+The :class:`LinkCollection` class and its sub-classes are factories to create
 multiple ComponentLinks easily. They are meant to be passed to
 :meth:`~glue.core.data_collection.DataCollection.add_link()`
 """

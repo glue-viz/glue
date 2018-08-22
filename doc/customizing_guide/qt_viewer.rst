@@ -152,7 +152,7 @@ In glue, we split up the classes using the following layout:
 ============================ ========================================
 Filename                     Description
 ============================ ========================================
-``state.py``                 State clases for the viewer and layer
+``state.py``                 State classes for the viewer and layer
 ``layer_artist.py``          Layer artist class
 ``qt/options_widget.ui``     Qt ui file for the viewer state widget
 ``qt/options_widget.py``     Qt viewer state widget

@@ -161,7 +161,7 @@ class BaseFitter1D(object):
 
     def predict(self, fit_result, x):
         """
-        Evaulate the model at a set of locations.
+        Evaluate the model at a set of locations.
 
         **This must be overridden in a subclass.**
 
@@ -253,10 +253,10 @@ class AstropyFitter1D(BaseFitter1D):
         :type x: :class:`numpy.ndarray`
         :param y: Y - values of the data
         :type y: :class:`numpy.ndarray`
-        :param dy: ncertainties on Y(assumed to be 1 sigma)
+        :param dy: uncertainties on Y(assumed to be 1 sigma)
         :type dy: :class:`numpy.ndarray`
 
-        :returns: A dict maping ``{parameter_name: value guess}`` for each
+        :returns: A dict mapping ``{parameter_name: value guess}`` for each
                   parameter
         """
         return {}
@@ -332,7 +332,7 @@ try:
     class SimpleAstropyGaussianFitter(AstropyFitter1D):
 
         """
-        Guassian fitter using astropy.modeling.
+        Gaussian fitter using astropy.modeling.
         """
         model_cls = models.Gaussian1D
         try:
