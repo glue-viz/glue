@@ -1,7 +1,7 @@
 .. _viewers-3d:
 
-3D viewers in Glue
-==================
+3D scatter and volume rendering viewers
+=======================================
 
 A plugin with 3D viewers for glue, powered by `VisPy <http://vispy.org/>`_,
 is available. Provided that you installed glue with ``conda`` or with ``pip``,

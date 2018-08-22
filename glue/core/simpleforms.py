@@ -6,7 +6,7 @@ construct GUIs, without having to write GUI code in the form class itself.
 :class:`Option` objects are defined at the class-level. To instances of
 these classes, an :class:`Option` behaves like a normal instance attribute.
 
-See :ref:`fit_plugins` for example usage.
+See :ref:`custom-fitting` for example usage.
 """
 
 from __future__ import absolute_import, division, print_function

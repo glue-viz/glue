@@ -2,7 +2,7 @@
 Glue's fitting classes are designed to be easily subclassed for performing
 custom model fitting in Glue.
 
-See the guide on :ref:`writing custom fit plugins <fit_plugins>` for
+See the guide on :ref:`writing custom fit plugins <custom-fitting>` for
 help with using custom fitting utilities in Glue.
 """
 
