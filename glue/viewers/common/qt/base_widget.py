@@ -165,8 +165,9 @@ class BaseQtViewerWidget(QtWidgets.QMainWindow):
     @viewer_size.setter
     def viewer_size(self, value):
         width, height = value
-        self.resize(width, height)
-        if self._mdi_wrapper is not None:
+        if self._mdi_wrapper is None:
+            self.resize(width, height)
+        else:
             self._mdi_wrapper.resize(width, height)
 
     def closeEvent(self, event):
