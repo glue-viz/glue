@@ -44,7 +44,7 @@ Data** button in the toolbar:
 
 .. image:: images/link_toolbar.png
    :align: center
-   :width: 600
+   :width: 400
 
 This will open up a dialog where you can set up links between any of the open
 datasets:
