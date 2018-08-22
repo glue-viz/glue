@@ -268,6 +268,7 @@ class LinkEquation(QtWidgets.QWidget):
         layout = self._ui.inputs_layout
         for a in self._argument_widgets:
             layout.removeWidget(a)
+            a.hide()
             a.close()
 
         self._argument_widgets = []

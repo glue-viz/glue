@@ -74,6 +74,8 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Fix visual bug in link editor in advanced mode when resizing window. [#1837]
+
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
 
 * Fixed a bug that caused ROIs to not be erased after selection if the
