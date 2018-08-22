@@ -20,12 +20,12 @@ Required files
 --------------
 
 To start with, any Python code that is part of the plugin package should be
-placed in a directory that is the name of the module for the plugin. In our
+placed in a directory with the name of the module for the plugin. In our
 template, this is the ``myplugin`` directory - for some of the real plugins we
 have developed in the past, this is for example ``glue_medical`` or
 ``glue_geospatial``. This directory should contain at least one Python file
 that contains the customizations that you would otherwise have put in your
-``config.py`` file. In our template example, this is the ``data_viewer.py`` file
+``config.py`` file. In the template example, this is the ``data_viewer.py`` file
 which contains a custom data viewer.
 
 In addition to this file (or multiple files), you will need an ``__init__.py``
@@ -34,7 +34,7 @@ register any customizations with glue. In this function, you should import any
 files containing customizations. If the cutomizations use a decorator to be
 registered (e.g. ``@data_factory`` or ``@menubar_plugin``), then you are all set.
 Otherwise, for registering e.g. custom_viewers, the ``setup`` function should
-also do the registration - in our template, this looks like::
+also do the registration - in the template, this looks like::
 
     def setup():
         from .data_viewer import MyViewer
@@ -89,11 +89,11 @@ Optional files
 
 The only files that are really required are the directory with the source code
 and the ``setup.py`` file - however, you should make sure you also include an
-open source license if you are planning to distribute the package, as well as
-a README file that describes your package, its requirements, and how to install
-and use it.
+`open source license <https://choosealicense.com/>`_ if you are planning to
+distribute the package, as well as a README file that describes your package,
+its requirements, and how to install and use it.
 
-Consider also adding tests (using e.g. the `pytest <http://www.pytest.org`_
+Consider also adding tests (using e.g. the `pytest <http://www.pytest.org>`_
 framework), as well as setting up continuous integration services such as
 `Travis <http://travis-ci.org>`_ to run the tests any time a change is made.
 Describing how to do this is beyond the scope of this tutorial, but there are
@@ -102,8 +102,8 @@ plenty of resources online to help you do this.
 Distributing the package
 ------------------------
 
-Since your package follows the standard layout for packages, you can follow
-instructions such as `these <>`_ to release your package and upload it to PyPI.
-If you are interested in including your package as a conda package in the
-``glueviz`` channel, please let us know by opening an issue at
-http://github.com/glue-viz/conda-dev.
+Since your package follows the standard layout for packages, you can follow the
+`Packaging Python Projects <https://packaging.python.org/tutorials/packaging-projects/>`_
+guide to release your package and upload it to PyPI. If you are interested in
+including your package as a conda package in the ``glueviz`` channel, please let
+us know by opening an issue at http://github.com/glue-viz/conda-dev.

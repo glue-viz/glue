@@ -46,8 +46,8 @@ glue-jupyter: Jupyter notebook/lab viewers
 
 We are currently developing data viewers for the Jupyter notebook and Jupyter
 lab - this is not quite ready yet for general use, but if you are interested
-in following on or helping with the development, the GitHub repository is at
-https://github.com/glue-viz/glue-jupyter.
+in following on or helping with the development, the GitHub repository for this
+plugin is at https://github.com/glue-viz/glue-jupyter.
 
 Plugin for Medical imaging
 --------------------------
@@ -137,8 +137,8 @@ at https://github.com/glue-viz/glue-wwt.
 glue-aladin: Aladin Lite viewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A data viewer similar to glue-wwt but for Aladin Lite
-`<http://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
+A data viewer similar to glue-wwt but for `Aladin Lite
+<http://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
 ready yet for general use, but if you are interested in following on or helping
 with the development, the GitHub repository is at
 https://github.com/glue-viz/glue-aladin.

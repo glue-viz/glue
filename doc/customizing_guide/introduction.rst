@@ -2,8 +2,8 @@ Introduction to customizing/extending glue
 ==========================================
 
 Glue has been designed from the ground up to be easily customizable by users,
-with a number of aspects requiring only simple Python code and no knowledge of
-e.g. Qt. There are two main ways to customize/extend glue:
+with a number of customization aspects requiring only simple Python code and no
+knowledge of e.g. Qt. There are two main ways to customize/extend glue:
 
 * Installing an existing plugin package that will automatically extend glue.
   For example, you can install a package called glue-geospatial to add the
