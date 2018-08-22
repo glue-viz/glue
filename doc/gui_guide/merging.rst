@@ -4,11 +4,10 @@ Merging Datasets
 ================
 
 If several of your files describe the same items, you can merge them into a
-single Glue :class:`~glue.core.data.Data` object.
+single Glue :class:`~glue.core.data.Data` object. Examples of files that make
+sense to merge together include:
 
-Examples of files that make sense to merge together include:
-
- - 2 or more images that are pixel-aligned to each other
+ - Two or more images that are pixel-aligned to each other
  - Several catalogs whose rows describe the same objects
 
 Why merge?
