@@ -18,7 +18,7 @@ A new window will appear for defining attributes. To start off, use the
 drop-down menu to select the dataset for which you want to create an arithmetic
 attribute. Then, click on **New arithmetic attribute**, which will open up the
 equation editor. From here, set the new attribute name, then type the expression
-in the box provided. Attribute names shold be included in curly brackets, e.g.
+in the box provided. Attribute names should be included in curly brackets, e.g.
 ``{ID}``. You can either type attribute names directly, using tab-completion
 if necessary, or you can also select an attribute from the list of available
 attributes and click on **Insert** to insert it into the expression.

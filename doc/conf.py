@@ -46,7 +46,8 @@ with warnings.catch_warnings():
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
               'sphinx.ext.mathjax', 'sphinx.ext.viewcode',
               'sphinx_automodapi.automodapi', 'numpydoc',
-              'sphinx.ext.intersphinx', 'sphinxcontrib.spelling']
+              'sphinx.ext.intersphinx']
+              # 'sphinxcontrib.spelling']
 
 
 # Add the redirect.py plugin which is in this directory
