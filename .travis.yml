@@ -22,7 +22,7 @@ env:
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density bottleneck"
-    - PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler flake8"
+    - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler flake8"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -75,7 +75,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=3.6
                CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
-               PIP_DEPENDENCIES="pytest-cov coveralls flake8"
+               PIP_DEPENDENCIES="pytest-cov codecov flake8"
                REMOVE_INSTALL_REQUIRES=1
 
         - os: linux
@@ -116,7 +116,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph flake8"
+               PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
     allow_failures:
@@ -147,10 +147,6 @@ before_install:
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git
   - source ci-helpers/travis/setup_conda.sh
-
-  # setup tools to trigger mac buildbot
-  - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then source .setup_app_trigger.sh; fi
-  - if [ $TRAVIS_BRANCH = master ]; then export S3_DIR=latest; else export S3_DIR=$TRAVIS_BRANCH; fi
 
   # now set up a plugin configuration file with some plugins disabled. This is
   # to make sure that when we run the tests, glue will ignore this
@@ -246,6 +242,4 @@ script:
 after_success:
 
   # Coverage testing
-  - if [[ $QT_PKG != False ]]; then coveralls --rcfile=.coveragerc; fi
-  # Trigger the building of the MacOS X app in the Travis-MacGlue repo
-  - if [ $TRAVIS_PULL_REQUEST == false && $APP_TRIGGER ]; then ./.trigger_app_build.sh; fi
+  - if [[ $QT_PKG != False ]]; then codecov; fi
