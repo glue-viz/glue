@@ -47,7 +47,7 @@ class MatplotlibImageMixin(object):
         self.state.add_callback('slices', self._on_slice_change)
         self.state.add_callback('reference_data', self._set_wcs)
         self.axes._composite = CompositeArray()
-        self.axes._composite_image = imshow(self.axes, self.axes._composite,
+        self.axes._composite_image = imshow(self.axes, self.axes._composite, aspect='auto',
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 

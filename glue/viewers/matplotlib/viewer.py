@@ -58,14 +58,10 @@ class MatplotlibViewerMixin(object):
                                            transform=self.axes.transAxes)
         self.loading_text.set_visible(False)
 
-        self.state.add_callback('aspect', self.update_aspect)
-
-        self.update_aspect()
-
-        self.state.add_callback('x_min', self.limits_to_mpl)
-        self.state.add_callback('x_max', self.limits_to_mpl)
-        self.state.add_callback('y_min', self.limits_to_mpl)
-        self.state.add_callback('y_max', self.limits_to_mpl)
+        self.state.add_callback('x_min', self._on_state_xlim_changed)
+        self.state.add_callback('x_max', self._on_state_xlim_changed)
+        self.state.add_callback('y_min', self._on_state_ylim_changed)
+        self.state.add_callback('y_max', self._on_state_ylim_changed)
 
         self.limits_to_mpl()
 
@@ -74,8 +70,8 @@ class MatplotlibViewerMixin(object):
 
         self.update_x_log()
 
-        self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
-        self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
+        self.axes.callbacks.connect('xlim_changed', self._on_mpl_xlim_changed)
+        self.axes.callbacks.connect('ylim_changed', self._on_mpl_ylim_changed)
 
         self.axes.set_autoscale_on(False)
 
@@ -131,70 +127,140 @@ class MatplotlibViewerMixin(object):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
         self.redraw()
 
-    def update_aspect(self, aspect=None):
-        self.axes.set_aspect(self.state.aspect, adjustable='datalim')
+    def _on_mpl_xlim_changed(self, *args):
+        # If the x limits have been set, if the aspect ratio is 'equal', we
+        # adjust the y limits to preserve the aspect ratio.
+        self.limits_from_mpl(aspect_adjustable='y')
+
+    def _on_mpl_ylim_changed(self, *args):
+        # If the y limits have been set, if the aspect ratio is 'equal', we
+        # adjust the x limits to preserve the aspect ratio.
+        self.limits_from_mpl(aspect_adjustable='x')
 
     @avoid_circular
-    def limits_from_mpl(self, *args):
+    def limits_from_mpl(self, aspect_adjustable='x'):
+
+        if isinstance(self.state.x_min, np.datetime64):
+            x_min, x_max = [mpl_to_datetime64(x) for x in self.axes.get_xlim()]
+        else:
+            x_min, x_max = self.axes.get_xlim()
+
+        if isinstance(self.state.y_min, np.datetime64):
+            y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
+        else:
+            y_min, y_max = self.axes.get_ylim()
+
+        x_min, x_max, y_min, y_max, changed = self.limits_with_aspect(x_min, x_max,
+                                                                      y_min, y_max,
+                                                                      aspect_adjustable=aspect_adjustable)
+
+        # If the aspect ratio has caused some of the limits to change, we simply
+        # change the relevant matplotlib limits and return - changing the
+        # matplotlib limits will cause this method to be called again, at which
+        # point the limits should no longer change, and will be set on the
+        # state.
+        if changed:
+            if aspect_adjustable == 'x':
+                self.axes.set_xlim(x_min, x_max)
+            else:
+                self.axes.set_ylim(y_min, y_max)
+            self.axes.figure.canvas.draw()
+            return
 
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.state.x_min = x_min
+            self.state.x_max = x_max
+            self.state.y_min = y_min
+            self.state.y_max = y_max
 
-            if isinstance(self.state.x_min, np.datetime64):
-                x_min, x_max = [mpl_to_datetime64(x) for x in self.axes.get_xlim()]
-            else:
-                x_min, x_max = self.axes.get_xlim()
+    def _on_state_xlim_changed(self, *args):
+        self.limits_to_mpl(aspect_adjustable='y')
 
-            self.state.x_min, self.state.x_max = x_min, x_max
-
-            if isinstance(self.state.y_min, np.datetime64):
-                y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
-            else:
-                y_min, y_max = self.axes.get_ylim()
-
-            self.state.y_min, self.state.y_max = y_min, y_max
+    def _on_state_ylim_changed(self, *args):
+        self.limits_to_mpl(aspect_adjustable='x')
 
     @avoid_circular
-    def limits_to_mpl(self, *args):
+    def limits_to_mpl(self, aspect_adjustable='x'):
 
-        if self.state.x_min is not None and self.state.x_max is not None:
-            x_min, x_max = self.state.x_min, self.state.x_max
-            if self.state.x_log:
-                if self.state.x_max <= 0:
-                    x_min, x_max = 0.1, 1
-                elif self.state.x_min <= 0:
-                    x_min = x_max / 10
-            self.axes.set_xlim(x_min, x_max)
+        if (self.state.x_min is None or self.state.x_max is None or
+            self.state.y_min is None or self.state.y_max is None):
+            return
 
-        if self.state.y_min is not None and self.state.y_max is not None:
-            y_min, y_max = self.state.y_min, self.state.y_max
-            if self.state.y_log:
-                if self.state.y_max <= 0:
-                    y_min, y_max = 0.1, 1
-                elif self.state.y_min <= 0:
-                    y_min = y_max / 10
-            self.axes.set_ylim(y_min, y_max)
+        x_min, x_max = self.state.x_min, self.state.x_max
+        if self.state.x_log:
+            if self.state.x_max <= 0:
+                x_min, x_max = 0.1, 1
+            elif self.state.x_min <= 0:
+                x_min = x_max / 10
+
+        y_min, y_max = self.state.y_min, self.state.y_max
+        if self.state.y_log:
+            if self.state.y_max <= 0:
+                y_min, y_max = 0.1, 1
+            elif self.state.y_min <= 0:
+                y_min = y_max / 10
+
+        x_min, x_max, y_min, y_max, changed = self.limits_with_aspect(x_min, x_max,
+                                                                      y_min, y_max,
+                                                                      aspect_adjustable=aspect_adjustable)
+
+        # If the limits have changed, we just change them back on the state, but
+        # we don't need to return as the @avoid_circular means that this method
+        # won't get called again.
+        if changed:
+            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+                self.state.x_min = x_min
+                self.state.x_max = x_max
+                self.state.y_min = y_min
+                self.state.y_max = y_max
+
+        self.axes.set_xlim(x_min, x_max)
+        self.axes.set_ylim(y_min, y_max)
+
+        self.axes.figure.canvas.draw()
+
+    def limits_with_aspect(self, x_min, x_max, y_min, y_max, aspect_adjustable='auto'):
+        """
+        Determine whether the limits need to be changed based on the aspect ratio.
+        """
+
+        changed = False
 
         if self.state.aspect == 'equal':
 
-            # FIXME: for a reason I don't quite understand, dataLim doesn't
-            # get updated immediately here, which means that there are then
-            # issues in the first draw of the image (the limits are such that
-            # only part of the image is shown). We just set dataLim manually
-            # to avoid this issue.
-            self.axes.dataLim.intervalx = self.axes.get_xlim()
-            self.axes.dataLim.intervaly = self.axes.get_ylim()
+            # Get figure aspect ratio
+            width, height = self.figure.get_size_inches()
+            fig_aspect = height / width
 
-            # We then force the aspect to be computed straight away
-            self.axes.apply_aspect()
+            # Get axes aspect ratio
+            l, b, w, h = self.axes.get_position().bounds
+            axes_ratio = fig_aspect * (h / w)
 
-            # And propagate any changes back to the state since we have the
-            # @avoid_circular decorator
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-                # TODO: fix case with datetime64 here
-                self.state.x_min, self.state.x_max = self.axes.get_xlim()
-                self.state.y_min, self.state.y_max = self.axes.get_ylim()
+            # Find current data ratio
+            data_ratio = abs(y_max - y_min) / abs(x_max - x_min)
 
-        self.axes.figure.canvas.draw()
+            # Only do something if the data ratio is sufficiently different
+            # from the axes ratio.
+            if abs(data_ratio - axes_ratio) / (0.5 * (data_ratio + axes_ratio)) > 0.01:
+
+                # We now adjust the limits - which ones we adjust depends on
+                # the adjust keyword. We also make sure we preserve the
+                # mid-point of the current coordinates.
+
+                if (aspect_adjustable == 'auto' and data_ratio > axes_ratio) or aspect_adjustable == 'x':
+                    x_mid = 0.5 * (x_min + x_max)
+                    x_width = abs(y_max - y_min) / axes_ratio
+                    x_min = x_mid - x_width / 2.
+                    x_max = x_mid + x_width / 2.
+                else:
+                    y_mid = 0.5 * (y_min + y_max)
+                    y_width = abs(x_max - x_min) * axes_ratio
+                    y_min = y_mid - y_width / 2.
+                    y_max = y_mid + y_width / 2.
+
+                changed = True
+
+        return x_min, x_max, y_min, y_max, changed
 
     def _update_appearance_from_settings(self, message=None):
         update_appearance_from_settings(self.axes)
