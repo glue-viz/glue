@@ -74,7 +74,7 @@ This will send this data to Glue, and label it ``xyz``.
 
 .. note:: Reminder: in Glue, :class:`~glue.core.data.Data` sets are collections
           of one or more :class:`~glue.core.component.Component` objects.
-          Components in a dataset are bascially arrays of the same shape. For
+          Components in a dataset are basically arrays of the same shape. For
           more information, see :ref:`data_tutorial`
 
 .. note:: Datasets cannot be given the label ``links``.
@@ -100,7 +100,7 @@ The ``links`` keyword for ``qglue`` accepts a list of link descriptions. Each li
   quantities in ``component_set_b``, given the quantities in
   ``component_list_a``.
 
-* ``back_func`` performs the reverse operastion.
+* ``back_func`` performs the reverse operation.
 
 Here's an example::
 
@@ -180,7 +180,7 @@ Some remarks:
  * Individual data objects are bundled inside a
    :class:`~glue.core.data_collection.DataCollection`
  * The :class:`~glue.core.link_helpers.LinkSame` function indicates that two
-   attributes in different data sets descirbe the same quantity
+   attributes in different data sets describe the same quantity
  * ``GlueApplication`` takes a ``DataCollection`` as input, and starts the GUI
    via ``start()``
 

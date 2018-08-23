@@ -13,6 +13,9 @@ from glue.core.data_collection import DataCollection
 from glue.core.data import Data
 from glue.utils import as_list
 
+__all__ = ['EditSubsetMode', 'NewMode', 'ReplaceMode', 'AndMode', 'OrMode',
+           'XorMode', 'AndNotMode']
+
 
 class EditSubsetMode(object):
     """

@@ -2,7 +2,7 @@
 LayerArtist classes handle the visualization of an individual subset
 or dataset.
 
-Visualization clients in Glue typically combose visualizations by stacking
+Visualization clients in Glue typically compose visualizations by stacking
 visualizations of several datasets and subsets on top of each other. They
 do this by creating and managing a collection of LayerArtists, one for
 each Data or Subset to view.

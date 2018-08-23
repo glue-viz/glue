@@ -65,7 +65,6 @@ Using the Glue application
    installation/installation.rst
    getting_started/index.rst
    gui_guide/index.rst
-   gui_guide/3d_viewers.rst
 
 Interacting with data from Python
 ---------------------------------
@@ -77,17 +76,29 @@ Interacting with data from Python
    python_guide/data_tutorial.rst
    python_guide/glue_from_python.rst
 
+Domain-specific guides
+----------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   gui_guide/dendro.rst
+
 Customizing/Hacking Glue
 ------------------------
 
 .. toctree::
    :maxdepth: 1
 
+   customizing_guide/introduction.rst
+   customizing_guide/available_plugins.rst
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
+   customizing_guide/writing_plugin.rst
    python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
+   customizing_guide/fitting.rst
 
 Advanced customization
 ----------------------

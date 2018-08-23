@@ -9,7 +9,7 @@ class GlueItemWidget(object):
 
     """
     A mixin for QtWidgets.QListWidget/GlueTreeWidget subclasses, that provides
-    drag+drop funtionality.
+    drag+drop functionality.
     """
     # Implementation detail: QXXWidgetItems are unhashable in PySide,
     # and cannot be used as dictionary keys. we hash on IDs instead

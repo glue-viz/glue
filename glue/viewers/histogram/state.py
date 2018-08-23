@@ -33,7 +33,7 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     hist_x_min = DDCProperty(docstring='The minimum value used to compute the '
                                        'histogram')
-    hist_x_max = DDCProperty(docstring='The maxumum value used to compute the '
+    hist_x_max = DDCProperty(docstring='The maximum value used to compute the '
                                        'histogram')
     hist_n_bin = DDCProperty(docstring='The number of bins in the histogram')
 
@@ -195,7 +195,6 @@ class HistogramLayerState(MatplotlibLayerState):
     A state class that includes all the attributes for layers in a histogram plot.
     """
 
-    _viewer_callbacks_set = False
     _histogram_cache = None
 
     def reset_cache(self, *args):
@@ -212,7 +211,7 @@ class HistogramLayerState(MatplotlibLayerState):
     @property
     def histogram(self):
         self.update_histogram()
-        edges, unscaled = self._histogram_cache
+        edges, unscaled = self._histogram_cache[1]
         scaled = unscaled.astype(np.float)
         dx = edges[1] - edges[0]
         if self.viewer_state.cumulative:
@@ -225,16 +224,14 @@ class HistogramLayerState(MatplotlibLayerState):
 
     def update_histogram(self):
 
-        if self._histogram_cache is not None:
-            return self._histogram_cache
+        current_settings = (id(self.viewer_state.x_att),
+                            self.viewer_state.x_log,
+                            self.viewer_state.hist_x_min,
+                            self.viewer_state.hist_x_max,
+                            self.viewer_state.hist_n_bin)
 
-        if not self._viewer_callbacks_set:
-            self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
-            self.viewer_state.add_callback('x_log', self.reset_cache, priority=100000)
-            self.viewer_state.add_callback('hist_x_min', self.reset_cache, priority=100000)
-            self.viewer_state.add_callback('hist_x_max', self.reset_cache, priority=100000)
-            self.viewer_state.add_callback('hist_n_bin', self.reset_cache, priority=100000)
-            self._viewer_callbacks_set = True
+        if self._histogram_cache is not None and self._histogram_cache[0] == current_settings:
+            return self._histogram_cache[1]
 
         if (self.viewer_state is None or self.viewer_state.x_att is None or
             self.viewer_state.hist_x_min is None or self.viewer_state.hist_x_max is None or
@@ -267,4 +264,4 @@ class HistogramLayerState(MatplotlibLayerState):
             hist_edges = np.linspace(range[0], range[1],
                                      self._viewer_state.hist_n_bin + 1)
 
-        self._histogram_cache = hist_edges, hist_values
+        self._histogram_cache = current_settings, (hist_edges, hist_values)

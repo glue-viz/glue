@@ -4,6 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Automatically select datasets in link editor if there are only two. [#1837]
+
 * Change 'Export Session' dialog to offer to save with relative paths to data
   by default instead of absolute paths. [#1803]
 
@@ -71,6 +73,8 @@ v0.14.0 (unreleased)
 
 v0.13.4 (unreleased)
 --------------------
+
+* Fix visual bug in link editor in advanced mode when resizing window. [#1837]
 
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
 

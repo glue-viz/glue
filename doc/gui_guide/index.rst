@@ -1,5 +1,5 @@
-User Interface Guide
-====================
+Advanced User Interface Guide
+=============================
 
 .. toctree::
    :maxdepth: 2
@@ -7,6 +7,6 @@ User Interface Guide
    link_tutorial.rst
    merging.rst
    components.rst
+   3d_viewers.rst
    spectrum.rst
    slice.rst
-   dendro.rst

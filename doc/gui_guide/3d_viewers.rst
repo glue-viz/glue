@@ -1,7 +1,7 @@
 .. _viewers-3d:
 
-3D viewers in Glue
-==================
+3D scatter and volume rendering viewers
+=======================================
 
 A plugin with 3D viewers for glue, powered by `VisPy <http://vispy.org/>`_,
 is available. Provided that you installed glue with ``conda`` or with ``pip``,
@@ -18,7 +18,7 @@ If you don't see these in the list, then if you are using
 `Anaconda <https://www.anaconda.com/download/>`_ to manage your Python
 distribution, you can install the 3D viewers plugin using::
 
-    pip install glue-vispy-viewers
+    conda install -c glueviz glue-vispy-viewers
 
 With the plugin installed, you will now have access to two new data
 viewers in Glue:

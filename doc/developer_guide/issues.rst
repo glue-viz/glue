@@ -19,7 +19,7 @@ assigned! Even in the case where an issue is assigned but there has not been
 any recent activity, you can add a comment to ask about whether you can help
 with it.
 
-.. note:: If you decide to work on an open issue, please leave a comment on 
+.. note:: If you decide to work on an open issue, please leave a comment on
           it to make sure other people know you are doing so!
 
 Picking an issue
@@ -38,15 +38,21 @@ are some of the labels (click on the label name to go to those issues):
   there are also a number of reasonably straightforward issues that just need
   a little time spent on them.
 
-* `bug <https://github.com/glue-viz/glue/labels/bug>`_: these are bug 
+* `bug <https://github.com/glue-viz/glue/labels/bug>`_: these are bug
   reports. Fixing bugs can sometimes be a nice place to start, because you
   don't have to worry about creating new functionality, just fixing existing
   ones. However, not all bugs are easy, so make sure you check the other
   labels.
 
-* `effort-low <https://github.com/glue-viz/glue/labels/effort-low>`_, `effort-medium <https://github.com/glue-viz/glue/labels/effort-medium>`_, and `effort-high <https://github.com/glue-viz/glue/labels/effort-high>`_: these indicate whether the issue will likely take respectively: at most a few hours to fix, at most a few days, and more than a few days. Not all issues are labelled with these, because it's not always easy to predict how long issues will take to tackle.
+* `effort-low <https://github.com/glue-viz/glue/labels/effort-low>`_,
+  `effort-medium <https://github.com/glue-viz/glue/labels/effort-medium>`_, and
+  `effort-high <https://github.com/glue-viz/glue/labels/effort-high>`_: these
+  indicate whether the issue will likely take respectively: at most a few hours
+  to fix, at most a few days, and more than a few days. Not all issues are
+  labeled with these, because it's not always easy to predict how long issues
+  will take to tackle.
 
-* `standalone-project <https://github.com/glue-viz/glue/labels/standalone-project>`_: these are 
+* `standalone-project <https://github.com/glue-viz/glue/labels/standalone-project>`_: these are
   issues which are projects rather than simple fixes, in that they could take
   several days or more to implement, and they can sometimes be done in
   several stages. These projects are nicely isolated from the rest of the
@@ -54,9 +60,14 @@ are some of the labels (click on the label name to go to those issues):
   shiny new feature in glue. These are great issues to work on if you want to
   get more involved in glue development!
 
-Note that GitHub allows you to filter by multiple labels, so you can for example search for issues that are both `package-novice and non-gui <https://github.com/glue-viz/glue/issues?q=is%3Aopen+label%3Apackage-novice+label%3Anon-gui>`_
+Note that GitHub allows you to filter by multiple labels, so you can for example
+search for issues that are both `package-novice and non-gui
+<https://github.com/glue-viz/glue/issues?q=is%3Aopen+label%3Apackage-novice+label%3Anon-gui>`_
 
-If you have other ideas of things to implement, you can of course do so, and the issue tracker is not meant to be an exhautive list. Just drop us a message on `glue-viz-dev <https://groups.google.com/forum/#!forum/glue-viz-dev>`_ to let us know what you are working on!
+If you have other ideas of things to implement, you can of course do so, and the
+issue tracker is not meant to be an exhaustive list. Just drop us a message on
+`glue-viz-dev <https://groups.google.com/forum/#!forum/glue-viz-dev>`_ to let us
+know what you are working on!
 
 Getting help
 ------------

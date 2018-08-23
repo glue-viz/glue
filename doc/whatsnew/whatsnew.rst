@@ -203,7 +203,7 @@ functionality, click on the **Save** icon and select **Save Python script to
 reproduce plot**. This functionality is still experimental, and will be extended
 to more data viewers in future.
 
-Datatime64 support
+Datetime64 support
 ------------------
 
 Datasets that include attributes with a Numpy ``datetime64`` dtype will now
@@ -328,7 +328,7 @@ applications is sometimes buggy, so you may encounter issues unrelated to glue.
 Improved performance in 3D viewers
 ----------------------------------
 
-The **3D Volume Rendering** is now signficantly faster for large datasets. In
+The **3D Volume Rendering** is now significantly faster for large datasets. In
 particular, the resolution of the rendering is now reduced when rotating or
 zooming, and we have made it so that the viewer is now much more efficient in
 terms of memory.
@@ -640,7 +640,7 @@ Collection** panel in the top left if you want to modify a subset, or make sure
 no subset is selected to make a new subset (as in other viewers), then
 click the button on the left in the table viewer toolbar, select rows you want
 to include in the subset, and press enter to validate the selection. You can
-also combine this with the ususal logical selections ('and', 'or', etc.) from
+also combine this with the usual logical selections ('and', 'or', etc.) from
 glue to modify existing subsets by adding/removing rows.
 
 Improvements to 3D viewers
@@ -983,7 +983,7 @@ slice:
    :width: 50%
    :align: center
 
-Finally, when extracing a spectrum/profile from a data cube, the box used to
+Finally, when extracting a spectrum/profile from a data cube, the box used to
 extract the spectrum can now be moved around by pressing the control key and
 dragging the box around, resulting in the spectrum/profile being updated in
 real time.
@@ -1067,10 +1067,6 @@ Glue v0.5 includes a number of new features, in particular:
 
 * An improved interface for :ref:`creating new components <new_components>`,
   including tab-completion and color highlighting of component names.
-
-.. figure:: ../gui_guide/images/define_component_02.png
-   :align: center
-   :width: 600px
 
 * The ability to pass ``HDUList`` objects when using ``qglue``.
 

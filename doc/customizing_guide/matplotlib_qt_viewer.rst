@@ -6,7 +6,7 @@ Writing a custom viewer for glue with Qt and Matplotlib
 If you are a user trying to build a very simple viewer using Matplotlib, you may
 want to check out :doc:`custom_viewer` -- the present tutorial is intended for
 people who wish to write and distribute a viewer using Matplotlib with full
-control over layout and beahvior. This tutorial assumes that you have already
+control over layout and behavior. This tutorial assumes that you have already
 gone over the :ref:`state-viewer` and :ref:`state-qt-viewer` tutorials.
 
 Glue provides a set of base classes for the state classes, layer artist, and

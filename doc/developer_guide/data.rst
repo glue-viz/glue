@@ -8,7 +8,7 @@ By default, data objects in glue are instances of the
 :class:`~glue.core.data.Data` class, and this class assumes that the data are
 stored in one or more local n-dimensional Numpy arrays. However, glue now
 includes a way of defining a wider variety of data objects, which may rely for
-example on lage remote datasets, or datasets that are not inheritly stored as
+example on large remote datasets, or datasets that are not inherently stored as
 regular n-dimensional arrays.
 
 The base class for all datasets is :class:`~glue.core.data.BaseData`, which is
@@ -17,7 +17,7 @@ recognize classes that inherit directly from :class:`~glue.core.data.BaseData`.
 Instead, for now, the base class that can be used to define custom data objects
 is :class:`~glue.core.data.BaseCartesianData`, which inherits from
 :class:`~glue.core.data.BaseData` and requires data objects to present an
-interface that looks like n-dimesnional arrays (although the storage of the data
+interface that looks like n-dimensional arrays (although the storage of the data
 could still be unstructured). In future, we will also make it possible to
 support a more generic interface for data access based on the
 :class:`~glue.core.data.BaseData` class.
@@ -27,7 +27,7 @@ Main data interface
 
 Before we dive in, we recommend that you take a look at the :ref:`data_tutorial`
 tutorial to understand how the default :class:`~glue.core.data.Data` objects
-work. The most important takeway from this which is relevant here is that glue
+work. The most important takeaway from this which is relevant here is that glue
 data objects are collections of attributes (*components* in glue-speak) that are
 assumed to be aligned (for regular cartesian datasets, this means they are on
 the same grid). For example a table consists of a collection of 1-d attributes

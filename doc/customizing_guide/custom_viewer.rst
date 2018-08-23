@@ -7,7 +7,7 @@ Writing a simple custom data viewer
 Glue's standard data viewers (scatter plots, images, histograms) are useful in a
 wide variety of data exploration settings. However, they represent a *tiny*
 fraction of the ways to view a particular dataset. For this reason, Glue
-provides a way to create more deta viewers that me better suited to what you
+provides a way to create more data viewers that me better suited to what you
 need.
 
 There are several ways to do this - the tutorial on this page shows the easiest
@@ -20,7 +20,7 @@ The Goal: Basketball Shot Charts
 --------------------------------
 
 In basketball, Shot Charts show the spatial distribution of shots
-for a particiular player, team, or game. The `New York Times <https://archive.nytimes.com/www.nytimes.com/interactive/2012/06/11/sports/basketball/nba-shot-analysis.html?_r=0>`_ has a nice example.
+for a particular player, team, or game. The `New York Times <https://archive.nytimes.com/www.nytimes.com/interactive/2012/06/11/sports/basketball/nba-shot-analysis.html?_r=0>`_ has a nice example.
 
 There are three basic features that we might want to incorporate into
 a shot chart:
@@ -70,7 +70,7 @@ arguments, depending on what they need to do. Glue looks at the names
 of the inputs to decide what data to pass along.  In the case of this
 function:
 
- - Arguments named ``axes`` contain the Matplolib Axes object to draw with
+ - Arguments named ``axes`` contain the Matplotlib Axes object to draw with
  - ``x`` and ``y`` were provided as keywords to ``custom_viewer``. They
    contain the data (as arrays) corresponding to the attributes labeled
    ``x`` and ``y`` in the catalog
@@ -85,7 +85,7 @@ to the style keyword is a :class:`~glue.core.visual.VisualAttributes`
 object.
 
 Custom data viewers give you the control to visualize data how you
-want, while Glue handles all the tedious bookeeping associated with updating plots when selections, styles, or datasets change. Try it out!
+want, while Glue handles all the tedious bookkeeping associated with updating plots when selections, styles, or datasets change. Try it out!
 
 Still, this viewer is pretty limited. In particular, it's missing
 court markings, the ability to select data in the plot, and the ability

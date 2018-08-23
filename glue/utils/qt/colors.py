@@ -18,7 +18,7 @@ __all__ = ['mpl_to_qt_color', 'qt_to_mpl_color', 'cmap2pixmap',
 
 def mpl_to_qt_color(color, alpha=None):
     """
-    Convert a matplotlib color stirng into a Qt QColor object
+    Convert a matplotlib color string into a Qt QColor object
 
     Parameters
     ----------
@@ -64,7 +64,7 @@ def qt_to_mpl_color(qcolor):
 
 def cmap2pixmap(cmap, steps=50, size=(100, 100)):
     """
-    Convert a maplotlib colormap into a QPixmap
+    Convert a matplotlib colormap into a QPixmap
 
     Parameters
     ----------

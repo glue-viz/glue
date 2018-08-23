@@ -199,7 +199,7 @@ The minimal layer artist class looks like the following::
 Essentially, each layer artist has to define the three methods shown above. The
 ``clear`` method should remove the layer from the visualization, the ``redraw``
 method should redraw the entire visualization, and ``update``, should update
-the apparance of the layer as necessary before redrawing.
+the appearance of the layer as necessary before redrawing.
 
 In the data viewer, when the user adds a dataset or a subset, the list of
 layers should then be updated. The layers are kept in a list in the

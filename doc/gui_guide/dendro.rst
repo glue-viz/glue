@@ -27,7 +27,7 @@ from the W5 image used in the :ref:`tutorial <getting_started>`::
     dg = Dendrogram.compute(data, min_value=500, min_npix=50)
     dg.save_to('w5_dendro.fits')
 
-Next, load this file into Glue, choosing "Denrdogram" as a file type.
+Next, load this file into Glue, choosing "Dendrogram" as a file type.
 You can now visualize the W5 dendrogram alongside its image:
 
 .. figure:: images/dendro.png
