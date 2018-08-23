@@ -16,8 +16,6 @@ env:
     - CONDA_CHANNELS="astropy-ci-extras astropy glueviz"
     - ASTROPY_VERSION=stable
     - NUMPY_VERSION=1.13
-    # We pin Sphinx due to https://github.com/sphinx-doc/sphinx/issues/4689
-    - SPHINX_VERSION=1.7.0
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
@@ -48,6 +46,11 @@ matrix:
         - os: linux
           stage: Initial
           env: PYTHON_VERSION=3.6
+
+        - os: linux
+          stage: Initial
+          env: PYTHON_VERSION=3.7
+               NUMPY_VERSION=1.14
 
         - os: osx
           stage: Full
