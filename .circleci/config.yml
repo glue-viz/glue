@@ -29,8 +29,6 @@ default_steps: &steps
           pip install pip --upgrade
           pip install -e .[all,test] codecov --progress-bar off
           pip freeze
-          # Change directory to avoid __file__ being relative in Python 2.7
-          cd ..
           pytest --cov glue --no-optional-skip -v glue
           codecov
     - store_artifacts:
