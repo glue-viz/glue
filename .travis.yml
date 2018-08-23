@@ -75,7 +75,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=3.6
                CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
-               PIP_DEPENDENCIES="pytest-cov coveralls flake8"
+               PIP_DEPENDENCIES="pytest-cov codecov flake8"
                REMOVE_INSTALL_REQUIRES=1
 
         - os: linux
@@ -116,7 +116,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="coveralls pyavm astrodendro plotly objgraph flake8"
+               PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
     allow_failures:
