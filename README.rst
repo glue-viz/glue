@@ -44,8 +44,8 @@ License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
    :target: https://travis-ci.org/glue-viz/glue
 .. |AppVeyor status| image:: https://img.shields.io/appveyor/ci/glue-viz/glue/master.svg
    :target: https://ci.appveyor.com/project/glue-viz/glue/branch/master
-.. |Coverage Status| image:: https://coveralls.io/repos/glue-viz/glue/badge.svg
-   :target: https://coveralls.io/r/glue-viz/glue
+.. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/glue-viz/glue
 .. |DOI| image:: https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg
    :target: http://dx.doi.org/10.5281/zenodo.13866
 .. |User mailing list| image:: http://img.shields.io/badge/mailing%20list-users-green.svg?style=flat
