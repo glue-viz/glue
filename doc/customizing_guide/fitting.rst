@@ -13,7 +13,7 @@ Simple line fitter
 -------------------
 Our first example is a simple linear model:
 
-.. literalinclude:: line_fit_plugin.py
+.. literalinclude:: scripts/line_fit_plugin.py
    :linenos:
    :emphasize-lines: 6,8,10,13
 
@@ -56,7 +56,7 @@ Polynomial fitter, with Options
 Generalizing the line fitter above to higher degree polynomials is trivial, since ``polyfit/polyval`` both handle this case. We might want to make the degree of the fit a user-settable
 parameter. We can do this by adding a UI :mod:`option <glue.core.simpleforms>`, and a few keywords to our class:
 
-.. literalinclude:: poly_fit_plugin.py
+.. literalinclude:: scripts/poly_fit_plugin.py
    :linenos:
 
 This code adds a few new features:
@@ -120,7 +120,7 @@ Fit plugins can also override the :meth:`~glue.core.fitters.BaseFitter1D.plot` m
 Example: Gaussian fitting with Emcee
 ------------------------------------
 
-The :download:`emcee plugin example <emcee_plugin.py>` combines many
+The :download:`emcee plugin example <scripts/emcee_plugin.py>` combines many
 of these ideas.
 
 .. figure:: images/emcee_screenshot.png

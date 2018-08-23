@@ -1068,10 +1068,6 @@ Glue v0.5 includes a number of new features, in particular:
 * An improved interface for :ref:`creating new components <new_components>`,
   including tab-completion and color highlighting of component names.
 
-.. figure:: ../gui_guide/images/define_component_02.png
-   :align: center
-   :width: 600px
-
 * The ability to pass ``HDUList`` objects when using ``qglue``.
 
 * The ability to define floating-point and text parameter boxes when defining
