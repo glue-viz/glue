@@ -40,7 +40,7 @@ def extract_hdf5_datasets(filename, memmap=True):
     def visitor(name, item):
         if isinstance(item, h5py.Dataset):
             full_path = item.name
-            if item.dtype.kind in ('f', 'i'):
+            if item.dtype.kind in ('f', 'i', 'S'):
                 offset = item.id.get_offset()
                 # If an offset is available, the data is contiguous and we can
                 # use memory mapping for efficiency.
