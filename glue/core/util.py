@@ -327,7 +327,11 @@ def tick_linker(all_categories, pos, *args):
     else:
         try:
             pos = np.round(pos)
-            return all_categories[int(pos)]
+            label = all_categories[int(pos)]
+            if isinstance(label, bytes):
+                return label.decode('ascii')
+            else:
+                return label
         except IndexError:
             return ''
 
