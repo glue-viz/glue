@@ -4,6 +4,8 @@ Full changelog
 v0.13.4 (unreleased)
 --------------------
 
+* Fix HDF5 reader for string columns. [#1840]
+
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
 
 * Always returned to last used folder when opening/saving files. [#1794]
