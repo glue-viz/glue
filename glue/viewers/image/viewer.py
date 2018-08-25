@@ -162,11 +162,7 @@ class MatplotlibImageMixin:
 
     def _scatter_artist(self, axes, state, layer=None, layer_state=None):
         if len(self._layer_artist_container) == 0:
-            # FIXME: re-instate this error
-            # QMessageBox.critical(self, "Error", "Can only add a scatter plot "
-            #                      "overlay once an image is present",
-            #                      buttons=QMessageBox.Ok)
-            return None
+            raise Exception("Can only add a scatter plot overlay once an image is present")
         return ScatterLayerArtist(axes, state, layer=layer, layer_state=None)
 
     def get_data_layer_artist(self, layer=None, layer_state=None):
