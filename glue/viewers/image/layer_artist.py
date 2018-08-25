@@ -247,7 +247,7 @@ class ImageSubsetArray(object):
             self.layer_artist.disable_incompatible_subset()
             return broadcast_to(np.nan, self.shape)
         else:
-            self.layer_artist.enable()
+            self.layer_artist.enable(redraw=False)
 
         r, g, b = color2rgb(self.layer_state.color)
         mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
@@ -306,10 +306,9 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
             self._line_x.set_visible(False)
             self._line_y.set_visible(False)
         self.image_artist.invalidate_cache()
-        self.redraw()  # forces subset to be recomputed
 
     @defer_draw
-    def _update_visual_attributes(self):
+    def _update_visual_attributes(self, redraw=True):
 
         if not self.enabled:
             return
@@ -327,7 +326,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
                 artist.set_alpha(self.state.alpha * 0.5)
             artist.set_zorder(self.state.zorder)
 
-        self.redraw()
+        if redraw:
+            self.redraw()
 
     def _update_image(self, force=False, **kwargs):
 
@@ -368,14 +368,14 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         super(ImageSubsetLayerArtist, self).remove()
         self.image_artist.invalidate_cache()
 
-    def enable(self):
+    def enable(self, redraw=True):
         super(ImageSubsetLayerArtist, self).enable()
         # We need to now ensure that image_artist, which may have been marked
         # as not being visible when the layer was cleared is made visible
         # again.
         if hasattr(self, 'image_artist'):
             self.image_artist.invalidate_cache()
-            self._update_visual_attributes()
+            self._update_visual_attributes(redraw=redraw)
 
     @defer_draw
     def update(self, *event):

@@ -2,9 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from glue.core.subset import roi_to_subset_state
 
-from glue.viewers.common.qt import toolbar_mode  # noqa
-from glue.viewers.profile.qt.profile_tools import ProfileAnalysisTool  # noqa
-
 __all__ = ['MatplotlibProfileMixin']
 
 

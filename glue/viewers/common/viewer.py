@@ -58,7 +58,7 @@ class BaseViewer(HubListener):
     def add_data(self, data):
         raise NotImplementedError()
 
-    def add_subset(self, data):
+    def add_subset(self, subset):
         raise NotImplementedError()
 
     def __str__(self):
