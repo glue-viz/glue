@@ -305,8 +305,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             percentile = 100
             log = False
         else:
-            percentile = self.percentile or 100
-            log = self.log or False
+            percentile = getattr(self, 'percentile', None) or 100
+            log = getattr(self, 'log', None) or False
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
 

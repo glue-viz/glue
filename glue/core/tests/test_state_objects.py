@@ -452,3 +452,32 @@ def test_nan_inf_minmax():
 
     assert_allclose(state.lower, -1.97)
     assert_allclose(state.upper, +2.98)
+
+
+def test_percentile_no_log():
+
+    # Regression test for a bug that caused a crash if the state class had a
+    # percentile attribute but no log.
+
+    data = Data(x=np.linspace(-100, 100, 10000),
+                y=np.linspace(2, 3, 10000), label='test_data')
+
+    class SimpleState(State):
+
+        layer = CallbackProperty()
+        comp = CallbackProperty()
+        lower = CallbackProperty()
+        upper = CallbackProperty()
+        scale = CallbackProperty()
+
+    state = SimpleState()
+
+    state.comp = data.id['x']
+    state.lower = 2
+    state.upper = 4
+
+    helper = StateAttributeLimitsHelper(state, attribute='comp',
+                                        lower='lower', upper='upper',
+                                        percentile='scale')
+
+    state.scale = 90
