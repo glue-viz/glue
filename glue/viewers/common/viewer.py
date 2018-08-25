@@ -15,6 +15,7 @@ from glue.core import message as msg
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
 from glue.external.echo import delay_callback
+from glue.core.layer_artist import LayerArtistContainer
 
 from glue.viewers.common.state import ViewerState
 
@@ -112,7 +113,7 @@ class Viewer(BaseViewer):
     """
 
     # The LayerArtistContainer class/subclass to use
-    _layer_artist_container_cls = None
+    _layer_artist_container_cls = LayerArtistContainer
 
     # The state class/subclass to use
     _state_cls = ViewerState
