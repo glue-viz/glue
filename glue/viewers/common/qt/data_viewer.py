@@ -232,8 +232,8 @@ class DataViewer(Viewer, BaseQtViewerWidget):
 
     @messagebox_on_error("Failed to add data")
     def add_data(self, data):
-        super(DataViewer, self).add_data(data)
+        return super(DataViewer, self).add_data(data)
 
     @messagebox_on_error("Failed to add subset")
-    def add_subset(self, data):
-        super(DataViewer, self).add_subset(data)
+    def add_subset(self, subset):
+        return super(DataViewer, self).add_subset(subset)
