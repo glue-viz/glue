@@ -239,7 +239,7 @@ class MatplotlibImageMixin:
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             raise NotImplementedError()
         else:
-            imports.append('from glue.viewers.image.qt.data_viewer import get_identity_wcs')
+            imports.append('from glue.viewers.image.viewer import get_identity_wcs')
             script += "ax.reset_wcs(slices={0}, wcs=get_identity_wcs(ref_data.ndim))\n".format(self.state.wcsaxes_slice)
 
         return imports, script
