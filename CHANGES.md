@@ -4,6 +4,9 @@ Full changelog
 v0.13.4 (unreleased)
 --------------------
 
+* Fix bug that occurred in certain cases when using the state attribute limit
+  helper with a state class that did not have a log attribute. [#1842]
+
 * Fix HDF5 reader for string columns. [#1840]
 
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
