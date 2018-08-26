@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
-from glue.utils.qt import set_cursor
+from glue.utils.qt import set_cursor, messagebox_on_error
 from glue.external import six
 from glue.core.qt.dialogs import warn
 from glue.utils.noconflict import classmaker
@@ -229,3 +229,11 @@ class DataViewer(Viewer, BaseQtViewerWidget):
         viewer.move(x=x, y=y)
 
         return viewer
+
+    @messagebox_on_error("Failed to add data")
+    def add_data(self, data):
+        return super(DataViewer, self).add_data(data)
+
+    @messagebox_on_error("Failed to add subset")
+    def add_subset(self, subset):
+        return super(DataViewer, self).add_subset(subset)

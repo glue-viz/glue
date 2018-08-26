@@ -228,11 +228,9 @@ class TestGlueApplication(object):
         m = QtCore.QMimeData()
         m.setUrls([QtCore.QUrl('test.glu'), QtCore.QUrl('test.fits')])
         e.mimeData.return_value = m
-        with patch('qtpy.QtWidgets.QMessageBox') as mb:
+        with pytest.raises(Exception) as exc:
             self.app.dropEvent(e)
-            assert mb.call_count == 1
-            assert "When dragging and dropping files" in mb.call_args[0][2]
-            mb.reset_mock()
+        assert exc.value.args[0].startswith("When dragging and dropping files")
 
         load_data.reset_mock()
 

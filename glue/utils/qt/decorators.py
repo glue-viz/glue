@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import sys
 import traceback
 from contextlib import contextmanager
@@ -51,6 +52,11 @@ def messagebox_on_error(msg, sep='\n'):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+
+            # If we are in glue testing mode, don't show GUI errors
+            if os.environ.get("GLUE_TESTING") == 'True':
+                return func(*args, **kwargs)
+
             try:
                 return func(*args, **kwargs)
             except Exception as e:

@@ -71,6 +71,9 @@ v0.14.0 (unreleased)
 
 * Don't show layer edit options if layer is not visible. [#1805]
 
+* Make the Matplotlib viewer code that doesn't depend on Qt accessible
+  to non-Qt frontends. [#1841]
+
 v0.13.4 (unreleased)
 --------------------
 
