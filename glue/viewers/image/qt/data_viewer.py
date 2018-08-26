@@ -46,3 +46,9 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
     def __init__(self, session, parent=None, state=None):
         MatplotlibDataViewer.__init__(self, session, wcs=True, parent=parent, state=state)
         MatplotlibImageMixin.setup_callbacks(self)
+
+    def closeEvent(self, *args):
+        super(ImageViewer, self).closeEvent(*args)
+        if self.axes._composite_image is not None:
+            self.axes._composite_image.remove()
+            self.axes._composite_image = None
