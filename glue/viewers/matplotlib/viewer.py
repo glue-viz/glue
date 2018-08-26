@@ -40,7 +40,7 @@ plt.close(fig)
 ZORDER_MAX = 100000
 
 
-class MatplotlibViewerMixin:
+class MatplotlibViewerMixin(object):
 
     def setup_callbacks(self):
 

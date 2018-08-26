@@ -9,7 +9,7 @@ from glue.viewers.scatter.compat import update_scatter_viewer_state
 __all__ = ['MatplotlibScatterMixin']
 
 
-class MatplotlibScatterMixin:
+class MatplotlibScatterMixin(object):
 
     def setup_callbacks(self):
         self.state.add_callback('x_att', self._update_axes)

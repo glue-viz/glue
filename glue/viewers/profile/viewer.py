@@ -5,7 +5,7 @@ from glue.core.subset import roi_to_subset_state
 __all__ = ['MatplotlibProfileMixin']
 
 
-class MatplotlibProfileMixin:
+class MatplotlibProfileMixin(object):
 
     def setup_callbacks(self):
         self.state.add_callback('x_att', self._update_axes)

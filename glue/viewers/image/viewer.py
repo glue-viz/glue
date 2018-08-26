@@ -36,7 +36,7 @@ ax.coords[{y_att_axis}].set_ticklabel(size={y_ticklabel_size})
 """.strip()
 
 
-class MatplotlibImageMixin:
+class MatplotlibImageMixin(object):
 
     def setup_callbacks(self):
         self._wcs_set = False

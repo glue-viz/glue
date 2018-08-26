@@ -10,7 +10,7 @@ from glue.viewers.histogram.compat import update_histogram_viewer_state
 __all__ = ['MatplotlibHistogramMixin']
 
 
-class MatplotlibHistogramMixin:
+class MatplotlibHistogramMixin(object):
 
     def setup_callbacks(self):
         self.state.add_callback('x_att', self._update_axes)
