@@ -143,8 +143,17 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     import glue
 
-    from glue.utils.qt import get_qapp
+    # Some Qt modules are picky in terms of being imported before the
+    # application is set up, so we import them here. We do it here rather
+    # than in get_qapp since in the past, including this code in get_qapp
+    # caused severe issues (e.g. segmentation faults) in plugin packages
+    # during testing.
+    try:
+        from qtpy import QtWebEngineWidgets  # noqa
+    except ImportError:  # Not all PyQt installations have this module
+        pass
 
+    from glue.utils.qt import get_qapp
     app = get_qapp()
 
     splash = get_splash()
