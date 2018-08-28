@@ -19,8 +19,20 @@ from glue.core.layer_artist import LayerArtistContainer
 
 from glue.viewers.common.state import ViewerState
 
+from glue import config
+
 __all__ = ['BaseViewer', 'Viewer']
 
+def get_data_layer_artist_from_registry(data, viewer):
+    """
+    Create a new Layer Artist type based on a registry
+    """
+
+    for datatype, viewertype in config.data_layer_registry.members:
+        
+        if isinstance(data, datatype):
+            
+            return viewertype(viewer.axes, viewer.state, layer=data)
 
 class BaseViewer(HubListener):
     """
@@ -180,7 +192,8 @@ class Viewer(BaseViewer):
             raise IncompatibleDataException("Data not in DataCollection")
 
         # Create layer artist and add to container
-        layer = self.get_data_layer_artist(data)
+        layer = (get_data_layer_artist_from_registry(data, self) or
+                 self.get_data_layer_artist(data))
 
         if layer is None:
             return False

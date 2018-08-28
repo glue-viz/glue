@@ -737,7 +737,30 @@ class KeyboardShortcut(DictRegistry):
             return func
         return adder
 
+class DataLayerPluginRegistry(Registry):
+    """
+    
+    """
 
+    def add(self, datatype, viewertype):
+        """
+        Add a new menubar plugin
+        :param label: Short label for the plugin
+        :type label: str
+
+        :param function: function
+        :type function: function()
+        """
+        self.members.append((datatype, viewertype))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
+
+
+data_layer_registry = DataLayerPluginRegistry()
 qt_client = QtClientRegistry()
 qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
