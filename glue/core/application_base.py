@@ -4,7 +4,7 @@ import os
 import traceback
 from functools import wraps
 
-from glue.core.data import Data, Subset
+from glue.core.data import Subset
 from glue.external.six import string_types
 from glue.core.session import Session
 from glue.core.hub import HubListener
@@ -82,7 +82,7 @@ class Application(HubListener):
         c.register_to_hub(self._session.hub)
 
         if data is not None:
-            if isinstance(data, Data):
+            if isinstance(data, BaseData):
                 result = c.add_data(data)
             elif isinstance(data, Subset):
                 result = c.add_subset(data)
