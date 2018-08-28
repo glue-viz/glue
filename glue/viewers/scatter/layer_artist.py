@@ -10,6 +10,7 @@ from mpl_scatter_density import ScatterDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
+from glue.core.subset import Subset
 from glue.utils import defer_draw, broadcast_to, nanmax, categorical_ndarray
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
@@ -161,7 +162,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.density_auto_limits = DensityMapLimits()
         self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white',
                                                    vmin=self.density_auto_limits.min,
-                                                   vmax=self.density_auto_limits.max)
+                                                   vmax=self.density_auto_limits.max,
+                                                   compute_on_pan=False,
+                                                   histogram2d_callable=self.histogram2d)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -171,6 +174,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_index = 3
 
         self.reset_cache()
+
+    def histogram2d(self, x, y, **kwargs):
+        if len(x) == 0:
+            return np.zeros(kwargs['bins'])
+        if isinstance(self.layer, Subset):
+            data = self.layer.data
+            subset_state = self.layer.subset_state
+        else:
+            data = self.layer
+            subset_state = None
+        return data.compute_histogram([self._viewer_state.y_att, self._viewer_state.x_att], subset_state=subset_state, **kwargs)
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -184,7 +198,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return
 
         try:
-            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+            if not self.state.density_map:
+                x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -193,7 +208,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         try:
-            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+            if not self.state.density_map:
+                y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
@@ -203,7 +219,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.markers_visible:
             if self.state.density_map:
-                self.density_artist.set_xy(x, y)
+                self.density_artist.set_xy([1, 2, 3], [4, 5, 6])
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:

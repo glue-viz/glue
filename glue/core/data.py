@@ -9,7 +9,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from fast_histogram import histogram1d
+from fast_histogram import histogram1d, histogram2d
 
 from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
@@ -1517,61 +1517,139 @@ class Data(BaseCartesianData):
             the subset state.
         """
 
-        if len(cids) > 1:
+        if len(cids) > 2:
             raise NotImplementedError()
-        else:
+
+        ndim = len(cids)
+
+        if ndim == 1:
+
             cid = cids[0]
             range = range[0]
             bins = bins[0]
             log = log[0]
 
-        x = self.get_data(cid)
-        if isinstance(x, categorical_ndarray):
-            x = x.codes
+            x = self.get_data(cid)
+            if isinstance(x, categorical_ndarray):
+                x = x.codes
 
-        if weights is not None:
-            w = self.get_data(weights)
-            if isinstance(w, categorical_ndarray):
-                w = w.codes
-        else:
-            w = None
+            if weights is not None:
+                w = self.get_data(weights)
+                if isinstance(w, categorical_ndarray):
+                    w = w.codes
+            else:
+                w = None
 
-        if subset_state is not None:
-            mask = subset_state.to_mask(self)
-            x = x[mask]
+            if subset_state is not None:
+                mask = subset_state.to_mask(self)
+                x = x[mask]
+                if w is not None:
+                    w = w[mask]
+
+            xmin, xmax = sorted(range)
+
+            keep = (x >= xmin) & (x <= xmax)
+
+            if x.dtype.kind == 'M':
+                x = datetime64_to_mpl(x)
+                xmin = datetime64_to_mpl(xmin)
+                xmax = datetime64_to_mpl(xmax)
+            else:
+                keep &= ~np.isnan(x)
+
+            x = x[keep]
             if w is not None:
-                w = w[mask]
+                w = w[keep]
 
-        xmin, xmax = sorted(range)
+            if len(x) == 0:
+                return np.zeros(bins)
 
-        keep = (x >= xmin) & (x <= xmax)
+            if log:
+                xmin = np.log10(xmin)
+                xmax = np.log10(xmax)
+                x = np.log10(x)
 
-        if x.dtype.kind == 'M':
-            x = datetime64_to_mpl(x)
-            xmin = datetime64_to_mpl(xmin)
-            xmax = datetime64_to_mpl(xmax)
+            # By default fast-histogram drops values that are exactly xmax, so we
+            # increase xmax very slightly to make sure that this doesn't happen
+            xmax += 10 * np.spacing(xmax)
+
+            range = (xmin, xmax)
+
+            return histogram1d(x, range=range, bins=bins, weights=w)
+
         else:
-            keep &= ~np.isnan(x)
 
-        x = x[keep]
-        if w is not None:
-            w = w[keep]
+            x = self.get_data(cids[0])
+            if isinstance(x, categorical_ndarray):
+                x = x.codes
 
-        if len(x) == 0:
-            return np.zeros(bins)
+            y = self.get_data(cids[1])
+            if isinstance(y, categorical_ndarray):
+                y = y.codes
 
-        if log:
-            xmin = np.log10(xmin)
-            xmax = np.log10(xmax)
-            x = np.log10(x)
+            if weights is not None:
+                w = self.get_data(weights)
+                if isinstance(w, categorical_ndarray):
+                    w = w.codes
+            else:
+                w = None
 
-        # By default fast-histogram drops values that are exactly xmax, so we
-        # increase xmax very slightly to make sure that this doesn't happen
-        xmax += 10 * np.spacing(xmax)
+            if subset_state is not None:
+                mask = subset_state.to_mask(self)
+                x = x[mask]
+                y = y[mask]
+                if w is not None:
+                    w = w[mask]
 
-        range = (xmin, xmax)
+            (xmin, xmax), (ymin, ymax) = range
+            xmin, xmax = sorted((xmin, xmax))
+            ymin, ymax = sorted((ymin, ymax))
 
-        return histogram1d(x, range=range, bins=bins, weights=w)
+            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax)
+
+            if x.dtype.kind == 'M':
+                x = datetime64_to_mpl(x)
+                xmin = datetime64_to_mpl(xmin)
+                xmax = datetime64_to_mpl(xmax)
+            else:
+                keep &= ~np.isnan(x)
+
+            if y.dtype.kind == 'M':
+                y = datetime64_to_mpl(y)
+                ymin = datetime64_to_mpl(ymin)
+                ymax = datetime64_to_mpl(ymax)
+            else:
+                keep &= ~np.isnan(y)
+
+            x = x[keep]
+            y = y[keep]
+            if w is not None:
+                w = w[keep]
+
+            if len(x) == 0:
+                return np.zeros(bins)
+
+            if len(y) == 0:
+                return np.zeros(bins)
+
+            if log is not None and log[0]:
+                xmin = np.log10(xmin)
+                xmax = np.log10(xmax)
+                x = np.log10(x)
+
+            if log is not None and log[1]:
+                ymin = np.log10(ymin)
+                ymax = np.log10(ymax)
+                y = np.log10(y)
+
+            # By default fast-histogram drops values that are exactly xmax, so we
+            # increase xmax very slightly to make sure that this doesn't happen
+            xmax += 10 * np.spacing(xmax)
+            ymax += 10 * np.spacing(ymax)
+
+            range = [(xmin, xmax), (ymin, ymax)]
+
+            return histogram2d(x, y, range=range, bins=bins, weights=w)
 
     # DEPRECATED
 
