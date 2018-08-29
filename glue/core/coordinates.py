@@ -333,6 +333,9 @@ class WCSCoordinates(Coordinates):
                 Freq='Frequency'
             )
             return translate.get(ax, ax)
+        unit = self._header.get('CUNIT%i' % num)
+        if unit is not None:
+            return "World {} ({})".format(axis, unit)
         return super(WCSCoordinates, self).axis_label(axis)
 
     def __gluestate__(self, context):
