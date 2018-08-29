@@ -1124,6 +1124,42 @@ class CompositeSubsetState(SubsetState):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
 
+class MultiOrState(SubsetState):
+    """
+    A state for many states to be or'd together.
+    """
+
+    op = operator.or_
+
+    def __init__(self, states):
+        super(CompositeSubsetState, self).__init__()
+        assert len(states) > 1
+        self.states = states
+
+    def copy(self):
+        return type(self)(self.states)
+
+    @property
+    def attributes(self):
+        att = self.states[0].attributes
+        for state in self.states[1:]:
+            att += state.attributes
+        return tuple(sorted(set(att)))
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        result = self.op(self.states[0],
+                         self.states[1])
+        if len(self.states) > 2:
+            for state in self.states[2:]
+            result = self.op(result, state)
+        return result
+
+    def __str__(self):
+        sym = OPSYM.get(self.op, self.op)
+        return "(%s of many states)" % (sym)
+
 
 class OrState(CompositeSubsetState):
     """
