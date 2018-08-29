@@ -1129,10 +1129,8 @@ class MultiOrState(SubsetState):
     A state for many states to be or'd together.
     """
 
-    op = operator.or_
-
     def __init__(self, states):
-        super(CompositeSubsetState, self).__init__()
+        super(MultiOrState, self).__init__()
         assert len(states) > 1
         self.states = states
 
@@ -1149,16 +1147,14 @@ class MultiOrState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        result = self.op(self.states[0],
-                         self.states[1])
+        result = operator.or_(self.states[0], self.states[1])
         if len(self.states) > 2:
             for state in self.states[2:]:
-                result = self.op(result, state)
-        return result
+                result = operator.or_(result, state)
+        return result.to_mask(data, view=view)
 
     def __str__(self):
-        sym = OPSYM.get(self.op, self.op)
-        return "(%s of many states)" % (sym)
+        return "('or' combination of many states)"
 
 
 class OrState(CompositeSubsetState):
