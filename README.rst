@@ -1,5 +1,5 @@
 |Travis Status| |AppVeyor status| |Coverage Status| |DOI| |User mailing
-list| |Developer mailing list|
+glist| |Developer mailing glist|
 
 Glue
 ====
@@ -48,9 +48,9 @@ License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
    :target: https://codecov.io/gh/glue-viz/glue
 .. |DOI| image:: https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg
    :target: http://dx.doi.org/10.5281/zenodo.13866
-.. |User mailing list| image:: http://img.shields.io/badge/mailing%20list-users-green.svg?style=flat
+.. |User mailing glist| image:: http://img.shields.io/badge/mailing%20list-users-green.svg?style=flat
    :target: https://groups.google.com/forum/#!forum/glue-viz
-.. |Developer mailing list| image:: http://img.shields.io/badge/mailing%20list-development-green.svg?style=flat
+.. |Developer mailing glist| image:: http://img.shields.io/badge/mailing%20list-development-green.svg?style=flat
    :target: https://groups.google.com/forum/#!forum/glue-viz-dev
 .. |Glue demo| image:: https://raw.githubusercontent.com/glue-viz/glue/master/doc/readme.gif
    :target: http://vimeo.com/53378575
