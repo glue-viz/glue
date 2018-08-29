@@ -12,7 +12,9 @@ default_steps: &steps
         command: pip install virtualenv
     - run:
         name: Install missing dependencies
-        command: apt install -y python-tk python3-tk graphviz
+        command: |
+          apt update
+          apt install -y python-tk python3-tk graphviz
     - run:
         name: Flake8 checks
         command: |
