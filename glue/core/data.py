@@ -368,7 +368,7 @@ class BaseCartesianData(BaseData):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def compute_histogram(self, cids, range=None, bins=None, log=None, subset_state=None):
+    def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
         Compute an n-dimensional histogram with regularly spaced bins.
 
