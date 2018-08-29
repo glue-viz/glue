@@ -168,12 +168,10 @@ install:
   - if [[ $QT_PKG == False ]]; then
       sed -i.bak '/qtpy/d' setup.py;
       sed -i.bak '/sys.exit(1)/d' setup.py;
-      conda remove --no-pin --force qtpy || true;
       conda remove --no-pin --force pyqt || true;
       conda remove --no-pin --force pyside || true;
       conda remove --no-pin --force pyside2 || true;
       conda remove --no-pin --force qt || true;
-      pip uninstall --yes qtpy || true;
       find . -name "qt" -type d -exec rm -r {} \; || true;
       rm glue/external/qt.py || true;
       sed -i.bak 's/in REQUIRED_PLUGINS/in REQUIRED_PLUGINS and False/' glue/main.py || true;
