@@ -37,10 +37,21 @@ class ModestImage(mi.AxesImage):
     """
 
     def __init__(self, *args, **kwargs):
+        self._pressed = False
         self._full_res = None
         self._full_extent = kwargs.get('extent', None)
         super(ModestImage, self).__init__(*args, **kwargs)
         self.invalidate_cache()
+        self.axes.figure.canvas.mpl_connect('button_press_event', self._press)
+        self.axes.figure.canvas.mpl_connect('button_release_event', self._release)
+
+    def _press(self, event):
+        self._pressed = True
+
+    def _release(self, event):
+        self._pressed = False
+        self.stale = True
+        self.axes.figure.canvas.draw()
 
     def set_data(self, A):
         """
@@ -179,7 +190,8 @@ class ModestImage(mi.AxesImage):
     def draw(self, renderer, *args, **kwargs):
         if self._full_res.shape is None:
             return
-        self._scale_to_res()
+        if not self._pressed:
+            self._scale_to_res()
         # Due to a bug in Matplotlib, we need to return here if all values
         # in the array are masked.
         if hasattr(self._A, 'mask') and np.all(self._A.mask):
