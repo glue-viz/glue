@@ -1152,8 +1152,8 @@ class MultiOrState(SubsetState):
         result = self.op(self.states[0],
                          self.states[1])
         if len(self.states) > 2:
-            for state in self.states[2:]
-            result = self.op(result, state)
+            for state in self.states[2:]:
+                result = self.op(result, state)
         return result
 
     def __str__(self):
