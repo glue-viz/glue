@@ -104,7 +104,15 @@ User Interface
    :no-inheritance-diagram:
    :inherited-members:
 
+.. automodapi:: glue.viewers.matplotlib.viewer
+   :no-inheritance-diagram:
+   :inherited-members:
+
 .. automodapi:: glue.viewers.matplotlib.qt.toolbar
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.histogram.viewer
    :no-inheritance-diagram:
    :inherited-members:
 
