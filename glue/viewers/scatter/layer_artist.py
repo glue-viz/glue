@@ -521,3 +521,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     def update(self):
         self._update_scatter(force=True)
         self.redraw()
+
+    def remove(self):
+        super(ScatterLayerArtist, self).remove()
+        # Clean up the density artist to avoid circular references to do a
+        # reference to the self.histogram2d method in density artist.
+        self.density_artist = None
