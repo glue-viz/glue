@@ -247,7 +247,7 @@ class TestScatterViewer(object):
         self.viewer.state.layers[0].points_mode = 'auto'
         assert len(self.viewer.layers[0].density_artist._x) == 0
         self.viewer.state.layers[0].points_mode = 'density'
-        assert len(self.viewer.layers[0].density_artist._x) == 4
+        assert len(self.viewer.layers[0].density_artist._x) > 0
         self.viewer.state.layers[0].points_mode = 'markers'
         assert len(self.viewer.layers[0].density_artist._x) == 0
 
