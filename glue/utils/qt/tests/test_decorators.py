@@ -5,6 +5,7 @@ from mock import patch
 
 from ..decorators import messagebox_on_error, die_on_error
 
+
 def test_messagebox_on_error():
 
     os.environ['GLUE_TESTING'] = 'False'
