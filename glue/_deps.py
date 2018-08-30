@@ -142,6 +142,7 @@ class QtPy(Dependency):
             # ImportError.
             return False
 
+
 # Add any dependencies here
 # Make sure to add new categories to the categories tuple
 
