@@ -16,7 +16,7 @@ from glue.viewers.histogram.qt import HistogramViewer
 
 from glue.plugins.exporters.plotly.export_plotly import build_plotly_call
 
-from .. import QtPlotlyExporter
+from ..exporter import QtPlotlyExporter
 
 plotly_sign_in = mock.MagicMock()
 plotly_plot = mock.MagicMock()
