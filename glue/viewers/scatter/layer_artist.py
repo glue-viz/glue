@@ -219,6 +219,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.markers_visible:
             if self.state.density_map:
+                # We don't use x, y here because we actually make use of the
+                # ability of the density artist to call a custom histogram
+                # method which is defined on this class and does the data
+                # access.
                 self.density_artist.set_xy([1, 2, 3], [4, 5, 6])
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
