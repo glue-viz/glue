@@ -43,60 +43,61 @@ def set_cursor_cm(shape):
         app.restoreOverrideCursor()
 
 
-def messagebox_on_error(msg, sep='\n'):
-    """Decorator that catches exceptions and displays an error message"""
+# Once we drop support for Python 2.7, we'll be able to avoid defining these as
+# classes and defining __call__ below, by using contextmanager.
 
-    from qtpy import QtWidgets  # Must be here
-    from qtpy.QtCore import Qt
+class messagebox_on_error(object):
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+    def __init__(self, msg, sep='\n', exit=False):
+        self.msg = msg
+        self.sep = sep
+        self.exit = exit
 
-            # If we are in glue testing mode, don't show GUI errors
+    def __call__(self, f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            # If we are in glue testing mode, just execute function
             if os.environ.get("GLUE_TESTING") == 'True':
-                return func(*args, **kwargs)
+                return f(*args, **kwargs)
+            with self:
+                return f(*args, **kwargs)
+        return decorated
 
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                m = "%s%s%s" % (msg, sep, str(e))
-                detail = str(traceback.format_exc())
-                qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
-                qmb.setDetailedText(detail)
-                qmb.resize(400, qmb.size().height())
-                qmb.setTextInteractionFlags(Qt.TextSelectableByMouse)
-                qmb.exec_()
-        return wrapper
+    def __enter__(self):
+        pass
 
-    return decorator
+    def __exit__(self, exc_type, exc_val, tb):
+
+        if exc_type is None:
+            return
+
+        # Make sure application has been started
+        from glue.utils.qt import get_qapp  # Here to avoid circular import
+        get_qapp()
+
+        m = "%s\n%s" % (self.msg, exc_val)
+        detail = ''.join(traceback.format_exception(exc_type, exc_val, tb))
+        if len(m) > 500:
+            detail = "Full message:\n\n%s\n\n%s" % (m, detail)
+            m = m[:500] + '...'
+
+        from qtpy import QtWidgets
+        from qtpy.QtCore import Qt
+
+        qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
+        qmb.setDetailedText(detail)
+        qmb.resize(400, qmb.size().height())
+        qmb.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        qmb.exec_()
+
+        if self.exit:
+            sys.exit(1)
+
+        # Just for cases where we are testing and patching sys.exit
+        return True
 
 
-def die_on_error(msg):
-    """Decorator that catches errors, displays a popup message, and quits"""
+class die_on_error(messagebox_on_error):
 
-    from qtpy import QtWidgets  # Must be here
-
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                # Make sure application has been started
-                from glue.utils.qt import get_qapp  # Here to avoid circ import
-                get_qapp()
-
-                m = "%s\n%s" % (msg, e)
-                detail = str(traceback.format_exc())
-                if len(m) > 500:
-                    detail = "Full message:\n\n%s\n\n%s" % (m, detail)
-                    m = m[:500] + '...'
-
-                qmb = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", m)
-                qmb.setDetailedText(detail)
-                qmb.show()
-                qmb.raise_()
-                qmb.exec_()
-                sys.exit(1)
-        return wrapper
-    return decorator
+    def __init__(self, msg):
+        super(die_on_error, self).__init__(msg, exit=True)
