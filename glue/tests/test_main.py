@@ -7,27 +7,7 @@ from mock import patch
 from glue.tests.helpers import requires_qt
 
 from ..core import Data
-from ..main import die_on_error, load_data_files, main, start_glue
-
-
-@requires_qt
-def test_die_on_error_exception():
-    """Decorator should spawn a QMessageBox and exit"""
-    with pytest.raises(SystemExit):
-        with patch('qtpy.QtWidgets.QMessageBox') as qmb:
-            @die_on_error('test_msg')
-            def test():
-                raise Exception()
-            test()
-            assert qmb.call_count == 1
-
-
-def test_die_on_error_noexception():
-    """Decorator should have no effect"""
-    @die_on_error('test_msg')
-    def test():
-        return 0
-    assert test() == 0
+from ..main import load_data_files, main, start_glue
 
 
 def test_load_data_files():
