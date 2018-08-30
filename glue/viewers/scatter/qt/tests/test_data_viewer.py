@@ -245,11 +245,11 @@ class TestScatterViewer(object):
 
         self.viewer.add_data(self.data)
         self.viewer.state.layers[0].points_mode = 'auto'
-        assert len(self.viewer.layers[0].density_artist._x) == 0
+        assert not self.viewer.layers[0].density_artist._compute_density_artist
         self.viewer.state.layers[0].points_mode = 'density'
-        assert len(self.viewer.layers[0].density_artist._x) > 0
+        assert self.viewer.layers[0].density_artist._compute_density_artist
         self.viewer.state.layers[0].points_mode = 'markers'
-        assert len(self.viewer.layers[0].density_artist._x) == 0
+        assert not self.viewer.layers[0].density_artist._compute_density_artist
 
     def test_density_map_color(self):
 
