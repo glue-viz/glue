@@ -95,26 +95,14 @@ def verify(parser, argv):
     return err_msg
 
 
-def restore_session(gluefile):
-    """Load a .glu file and return a DataCollection, Hub tuple"""
-
-    from glue.app.qt import GlueApplication
-    from glue.utils.qt.decorators import die_on_error
-
-    with die_on_error("Error restoring Glue session"):
-        return GlueApplication.restore_session(gluefile)
-
-
 def load_data_files(datafiles):
     """Load data files and return a list of datasets"""
 
     from glue.core.data_factories import load_data
-    from glue.utils.qt.decorators import die_on_error
 
-    with die_on_error("Error reading data file"):
-        datasets = []
-        for df in datafiles:
-            datasets.append(load_data(df))
+    datasets = []
+    for df in datafiles:
+        datasets.append(load_data(df))
 
     return datasets
 
@@ -154,6 +142,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     except ImportError:  # Not all PyQt installations have this module
         pass
 
+    from glue.utils.qt.decorators import die_on_error
+
     from glue.utils.qt import get_qapp
     app = get_qapp()
 
@@ -180,7 +170,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     timer.start()
 
     if gluefile is not None:
-        app = restore_session(gluefile)
+        with die_on_error("Error restoring Glue session"):
+            app = GlueApplication.restore_session(gluefile)
         return app.start()
 
     if config is not None:
@@ -195,7 +186,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     ga = GlueApplication(session=session)
 
     if datafiles:
-        datasets = load_data_files(datafiles)
+        with die_on_error("Error reading data file"):
+            datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets, auto_merge=auto_merge)
 
     if startup_actions is not None:
@@ -334,7 +326,7 @@ def load_plugins(splash=None):
         except Exception as exc:
             # Here we check that some of the 'core' plugins load well and
             # raise an actual exception if not.
-            if item.module_name in REQUIRED_PLUGINS:
+            if item.module_name in REQUIRED_PLUGINS and False:
                 raise
             else:
                 logger.info("Loading plugin {0} failed "
