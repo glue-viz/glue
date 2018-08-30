@@ -130,6 +130,18 @@ class PySide2(QtDependency):
             return 'unknown version'
 
 
+class QtPy(Dependency):
+
+    @property
+    def installed(self):
+        try:
+            importlib.import_module(self.module)
+            return True
+        except Exception:
+            # QtPy raises a PythonQtError in some cases, so we can't use
+            # ImportError.
+            return False
+
 # Add any dependencies here
 # Make sure to add new categories to the categories tuple
 
@@ -143,7 +155,7 @@ gui_framework = (
 )
 
 required = (
-    Dependency('qtpy', 'Required', min_version='1.2'),
+    QtPy('qtpy', 'Required', min_version='1.2'),
     Dependency('setuptools', 'Required', min_version='1.0'),
     Dependency('numpy', 'Required', min_version='1.9'),
     Dependency('bottleneck', 'Required', min_version='1.2'),
