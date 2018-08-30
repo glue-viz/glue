@@ -163,8 +163,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white',
                                                    vmin=self.density_auto_limits.min,
                                                    vmax=self.density_auto_limits.max,
-                                                   compute_on_pan=False,
-                                                   histogram2d_callable=self.histogram2d)
+                                                   update_while_panning=False,
+                                                   histogram2d_func=self.histogram2d)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
