@@ -326,7 +326,7 @@ def load_plugins(splash=None):
         except Exception as exc:
             # Here we check that some of the 'core' plugins load well and
             # raise an actual exception if not.
-            if item.module_name in REQUIRED_PLUGINS and False:
+            if item.module_name in REQUIRED_PLUGINS:
                 raise
             else:
                 logger.info("Loading plugin {0} failed "
