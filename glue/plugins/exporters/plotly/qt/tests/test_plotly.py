@@ -12,7 +12,7 @@ from glue.app.qt import GlueApplication
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
 
-from ..export_plotly import build_plotly_call
+from ...export_plotly import build_plotly_call
 
 
 class TestPlotly(object):

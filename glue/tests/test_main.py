@@ -7,27 +7,7 @@ from mock import patch
 from glue.tests.helpers import requires_qt
 
 from ..core import Data
-from ..main import die_on_error, load_data_files, main, start_glue
-
-
-@requires_qt
-def test_die_on_error_exception():
-    """Decorator should spawn a QMessageBox and exit"""
-    with pytest.raises(SystemExit):
-        with patch('qtpy.QtWidgets.QMessageBox') as qmb:
-            @die_on_error('test_msg')
-            def test():
-                raise Exception()
-            test()
-            assert qmb.call_count == 1
-
-
-def test_die_on_error_noexception():
-    """Decorator should have no effect"""
-    @die_on_error('test_msg')
-    def test():
-        return 0
-    assert test() == 0
+from ..main import load_data_files, main, start_glue
 
 
 def test_load_data_files():
@@ -120,18 +100,14 @@ def test_invalid(cmd):
                           (None, None, ['a.fits', 'b.fits']),
                           (None, 'test.py', ['a.fits'])])
 def test_start(glue, config, data):
-    with patch('glue.main.restore_session') as rs:
-        with patch('glue.config.load_configuration') as lc:
-            with patch('glue.main.load_data_files') as ldf:
-                with patch('glue.app.qt.GlueApplication') as ga:
+    with patch('glue.config.load_configuration') as lc:
+        with patch('glue.main.load_data_files') as ldf:
+            with patch('glue.app.qt.GlueApplication') as ga:
 
-                    rs.return_value = ga
-                    ldf.return_value = Data()
+                ldf.return_value = Data()
 
-                    start_glue(glue, config, data)
-                    if glue:
-                        rs.assert_called_once_with(glue)
-                    if config:
-                        lc.assert_called_once_with(search_path=[config])
-                    if data:
-                        ldf.assert_called_once_with(data)
+                start_glue(glue, config, data)
+                if config:
+                    lc.assert_called_once_with(search_path=[config])
+                if data:
+                    ldf.assert_called_once_with(data)

@@ -42,7 +42,9 @@ def pytest_configure(config):
     # Start up QApplication, if the Qt code is present
     try:
         from glue.utils.qt import get_qapp
-    except ImportError:
+    except Exception:
+        # Note that we catch any exception, not just ImportError, because
+        # QtPy can raise a PythonQtError.
         pass
     else:
         get_qapp()
@@ -71,7 +73,9 @@ def pytest_unconfigure(config):
     try:
         from glue.utils.qt import app
         app.qapp = None
-    except ImportError:  # for when we run the tests without the qt directories
+    except Exception:  # for when we run the tests without the qt directories
+        # Note that we catch any exception, not just ImportError, because
+        # QtPy can raise a PythonQtError.
         pass
 
     if OBJGRAPH_INSTALLED and not ON_APPVEYOR:

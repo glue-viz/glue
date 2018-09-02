@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import sys
+import logging
 import traceback
 import webbrowser
 
@@ -9,6 +10,31 @@ from qtpy import QtWidgets
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui
 from glue.utils.qt.widget_properties import TextProperty, ButtonProperty
+from glue.plugins.exporters.plotly.export_plotly import build_plotly_call
+
+
+def save_plotly(application):
+    """
+    Save a Glue session to a plotly plot
+
+    This is currently restricted to 1-4 scatterplots or histograms
+
+    Parameters
+    ----------
+    application : `~glue.core.application_base.Application`
+        Glue application to save
+    label : str
+        Label for the exported plot
+    """
+
+    args, kwargs = build_plotly_call(application)
+
+    logging.getLogger(__name__).debug(args, kwargs)
+
+    # TODO: check what current GUI framework is
+
+    exporter = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
+    exporter.exec_()
 
 
 class QtPlotlyExporter(QtWidgets.QDialog):

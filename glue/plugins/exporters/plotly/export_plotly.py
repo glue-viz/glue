@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import logging
-
 import numpy as np
 
 try:
@@ -260,7 +258,7 @@ def can_save_plotly(application):
             if hasattr(viewer, '__plotly__'):
                 continue
 
-            if not isinstance(viewer, (ScatterViewer, HistogramViewer)):
+            if not isinstance(viewer, tuple(DISPATCH)):
                 raise ValueError("Plotly Export cannot handle viewer: %s"
                                  % type(viewer))
 
@@ -276,38 +274,4 @@ def can_save_plotly(application):
         raise ValueError("Plotly Export supports at most 4 plots")
 
 
-def save_plotly(application):
-    """
-    Save a Glue session to a plotly plot
-
-    This is currently restricted to 1-4 scatterplots or histograms
-
-    Parameters
-    ----------
-    application : `~glue.core.application_base.Application`
-        Glue application to save
-    label : str
-        Label for the exported plot
-    """
-
-    args, kwargs = build_plotly_call(application)
-
-    logging.getLogger(__name__).debug(args, kwargs)
-
-    # TODO: check what current GUI framework is
-
-    from glue.plugins.exporters.plotly.qt import QtPlotlyExporter
-    exporter = QtPlotlyExporter(plotly_args=args, plotly_kwargs=kwargs)
-    exporter.exec_()
-
-
 DISPATCH = {}
-
-try:
-    from glue.viewers.scatter.qt import ScatterViewer
-    from glue.viewers.histogram.qt import HistogramViewer
-except ImportError:
-    pass
-else:
-    DISPATCH[ScatterViewer] = export_scatter
-    DISPATCH[HistogramViewer] = export_histogram

@@ -9,11 +9,6 @@ from importlib import import_module
 from glue import __version__
 from glue.logger import logger
 
-try:
-    from glue.utils.qt.decorators import die_on_error
-except ImportError:
-    from glue.utils.decorators import die_on_error
-
 
 def parse(argv):
     """ Parse argument list, check validity
@@ -100,21 +95,15 @@ def verify(parser, argv):
     return err_msg
 
 
-@die_on_error("Error restoring Glue session")
-def restore_session(gluefile):
-    """Load a .glu file and return a DataCollection, Hub tuple"""
-    from glue.app.qt import GlueApplication
-    return GlueApplication.restore_session(gluefile)
-
-
-@die_on_error("Error reading data file")
 def load_data_files(datafiles):
     """Load data files and return a list of datasets"""
+
     from glue.core.data_factories import load_data
 
     datasets = []
     for df in datafiles:
         datasets.append(load_data(df))
+
     return datasets
 
 
@@ -153,6 +142,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     except ImportError:  # Not all PyQt installations have this module
         pass
 
+    from glue.utils.qt.decorators import die_on_error
+
     from glue.utils.qt import get_qapp
     app = get_qapp()
 
@@ -179,7 +170,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     timer.start()
 
     if gluefile is not None:
-        app = restore_session(gluefile)
+        with die_on_error("Error restoring Glue session"):
+            app = GlueApplication.restore_session(gluefile)
         return app.start()
 
     if config is not None:
@@ -194,7 +186,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     ga = GlueApplication(session=session)
 
     if datafiles:
-        datasets = load_data_files(datafiles)
+        with die_on_error("Error reading data file"):
+            datasets = load_data_files(datafiles)
         ga.add_datasets(data_collection, datasets, auto_merge=auto_merge)
 
     if startup_actions is not None:
@@ -204,15 +197,16 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     return ga.start(maximized=maximized)
 
 
-@die_on_error("Error running script")
 def execute_script(script):
     """ Run a python script and exit.
 
     Provides a way for people with pre-installed binaries to use
     the glue library
     """
-    with open(script) as fin:
-        exec(fin.read())
+    from glue.utils.qt.decorators import die_on_error
+    with die_on_error("Error running script"):
+        with open(script) as fin:
+            exec(fin.read())
     sys.exit(0)
 
 

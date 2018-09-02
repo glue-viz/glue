@@ -22,28 +22,23 @@ class MatplotlibBackendSetter(object):
 
 def set_mpl_backend():
 
-    try:
-        from qtpy import PYQT5  # noqa
-    except Exception:
-        # If Qt isn't available, we don't have to worry about
-        # setting the backend
-        return
-
     from matplotlib import rcParams, rcdefaults
 
-    # standardize mpl setup
+    # Standardize mpl setup
     rcdefaults()
 
-    rcParams['backend'] = 'Qt5Agg'
+    # Set default backend to Agg. The Qt and Jupyter glue applications don't
+    # use the default backend, so this is just to make sure that importing
+    # matplotlib doesn't cause errors related to the MacOSX or Qt backend.
+    rcParams['backend'] = 'Agg'
 
-    # disable key bindings in matplotlib
+    # Disable key bindings in matplotlib
     for setting in list(rcParams.keys()):
         if setting.startswith('keymap'):
             rcParams[setting] = ''
 
     # The following is a workaround for the fact that Matplotlib checks the
-    # rcParams at import time, not at run-time. I have opened an issue with
-    # Matplotlib here: https://github.com/matplotlib/matplotlib/issues/5513
+    # rcParams at import time, not at run-time. This is fixed in Matplotlib>=2.1
     from matplotlib import get_backend
     from matplotlib import backends
     backends.backend = get_backend()
