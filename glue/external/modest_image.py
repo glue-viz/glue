@@ -55,6 +55,10 @@ class ModestImage(mi.AxesImage):
         self.timer.start()
 
     def _resize_paused(self, *args):
+        # If the artist has been removed, self.axes is no longer defined, so
+        # we can return early here.
+        if self.axes is None:
+            return
         self._pressed = False
         self.axes.figure.canvas.draw()
 
