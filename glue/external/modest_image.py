@@ -44,11 +44,24 @@ class ModestImage(mi.AxesImage):
         self.invalidate_cache()
         self.axes.figure.canvas.mpl_connect('button_press_event', self._press)
         self.axes.figure.canvas.mpl_connect('button_release_event', self._release)
+        self.axes.figure.canvas.mpl_connect('resize_event', self._resize)
 
-    def _press(self, event):
+        self.timer = self.axes.figure.canvas.new_timer(interval=500)
+        self.timer.single_shot = True
+        self.timer.add_callback(self._resize_paused)
+
+    def _resize(self, *args):
+        self._pressed = True
+        self.timer.start()
+
+    def _resize_paused(self, *args):
+        self._pressed = False
+        self.axes.figure.canvas.draw()
+
+    def _press(self, *args):
         self._pressed = True
 
-    def _release(self, event):
+    def _release(self, *args):
         self._pressed = False
         self.stale = True
         self.axes.figure.canvas.draw()
