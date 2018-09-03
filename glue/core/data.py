@@ -1601,7 +1601,6 @@ class Data(BaseCartesianData):
 
         if ndim == 1:
             range = (xmin, xmax)
-            print(x, range, bins, w)
             return histogram1d(x, range=range, bins=bins[0], weights=w)
         elif ndim > 1:
             range = [(xmin, xmax), (ymin, ymax)]

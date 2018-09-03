@@ -162,7 +162,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                    vmin=self.density_auto_limits.min,
                                                    vmax=self.density_auto_limits.max,
                                                    update_while_panning=False,
-                                                   histogram2d_func=self.histogram2d)
+                                                   histogram2d_func=self.state.compute_density_map)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -172,31 +172,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_index = 3
 
         self.reset_cache()
-
-    def histogram2d(self, bins=None, range=None):
-
-        if not self._compute_density_artist:
-            return np.zeros(bins)
-
-        if isinstance(self.layer, Subset):
-            data = self.layer.data
-            subset_state = self.layer.subset_state
-        else:
-            data = self.layer
-            subset_state = None
-
-        count = data.compute_histogram([self._viewer_state.y_att, self._viewer_state.x_att],
-                                        subset_state=subset_state, bins=bins,
-                                        range=range)
-
-        if self.state.cmap_mode == 'Fixed':
-            return count
-        else:
-            total = data.compute_histogram([self._viewer_state.y_att, self._viewer_state.x_att],
-                                            subset_state=subset_state, bins=bins,
-                                            weights=self.state.cmap_att,
-                                            range=range)
-            return total / count
 
     def reset_cache(self):
         self._last_viewer_state = {}
@@ -235,11 +210,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 # ability of the density artist to call a custom histogram
                 # method which is defined on this class and does the data
                 # access.
-                self._compute_density_artist = True
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
-                self._compute_density_artist = False
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
@@ -250,7 +223,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     offsets = np.vstack((x, y)).transpose()
                     self.scatter_artist.set_offsets(offsets)
         else:
-            self._compute_density_artist = False
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))
 

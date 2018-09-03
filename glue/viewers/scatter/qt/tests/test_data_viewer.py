@@ -243,13 +243,15 @@ class TestScatterViewer(object):
 
     def test_density_map(self):
 
+        kwargs = dict(range=[(-5, 5), (-5, 5)], bins = (2, 2))
+
         self.viewer.add_data(self.data)
         self.viewer.state.layers[0].points_mode = 'auto'
-        assert not self.viewer.layers[0]._compute_density_artist
+        assert self.viewer.layers[0].state.compute_density_map(**kwargs).sum() == 0
         self.viewer.state.layers[0].points_mode = 'density'
-        assert self.viewer.layers[0]._compute_density_artist
+        assert self.viewer.layers[0].state.compute_density_map(**kwargs).sum() == 4
         self.viewer.state.layers[0].points_mode = 'markers'
-        assert not self.viewer.layers[0]._compute_density_artist
+        assert self.viewer.layers[0].state.compute_density_map(**kwargs).sum() == 0
 
     def test_density_map_color(self):
 
