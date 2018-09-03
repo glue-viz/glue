@@ -203,7 +203,7 @@ class ModestImage(mi.AxesImage):
     def draw(self, renderer, *args, **kwargs):
         if self._full_res.shape is None:
             return
-        if not self._pressed:
+        if not self._pressed or self._bounds is None:
             self._scale_to_res()
         # Due to a bug in Matplotlib, we need to return here if all values
         # in the array are masked.
