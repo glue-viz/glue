@@ -46,13 +46,18 @@ class ModestImage(mi.AxesImage):
         self.axes.figure.canvas.mpl_connect('button_release_event', self._release)
         self.axes.figure.canvas.mpl_connect('resize_event', self._resize)
 
-        self.timer = self.axes.figure.canvas.new_timer(interval=500)
-        self.timer.single_shot = True
-        self.timer.add_callback(self._resize_paused)
+        self._timer = self.axes.figure.canvas.new_timer(interval=500)
+        self._timer.single_shot = True
+        self._timer.add_callback(self._resize_paused)
+
+    def remove(self):
+        super(ModestImage, self).remove()
+        self._timer.stop()
+        self._timer = None
 
     def _resize(self, *args):
         self._pressed = True
-        self.timer.start()
+        self._timer.start()
 
     def _resize_paused(self, *args):
         # If the artist has been removed, self.axes is no longer defined, so
