@@ -1547,7 +1547,8 @@ class Data(BaseCartesianData):
                 w = w[mask]
 
         if ndim == 1:
-            xmin, xmax = sorted(range)
+            xmin, xmax = range[0]
+            xmin, xmax = sorted((xmin, xmax))
             keep = (x >= xmin) & (x <= xmax)
         else:
             (xmin, xmax), (ymin, ymax) = range
@@ -1600,7 +1601,8 @@ class Data(BaseCartesianData):
 
         if ndim == 1:
             range = (xmin, xmax)
-            return histogram1d(x, range=range, bins=bins, weights=w)
+            print(x, range, bins, w)
+            return histogram1d(x, range=range, bins=bins[0], weights=w)
         elif ndim > 1:
             range = [(xmin, xmax), (ymin, ymax)]
             return histogram2d(x, y, range=range, bins=bins, weights=w)
