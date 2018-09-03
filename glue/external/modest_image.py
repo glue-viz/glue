@@ -37,10 +37,43 @@ class ModestImage(mi.AxesImage):
     """
 
     def __init__(self, *args, **kwargs):
+        self._pressed = False
         self._full_res = None
         self._full_extent = kwargs.get('extent', None)
         super(ModestImage, self).__init__(*args, **kwargs)
         self.invalidate_cache()
+        self.axes.figure.canvas.mpl_connect('button_press_event', self._press)
+        self.axes.figure.canvas.mpl_connect('button_release_event', self._release)
+        self.axes.figure.canvas.mpl_connect('resize_event', self._resize)
+
+        self._timer = self.axes.figure.canvas.new_timer(interval=500)
+        self._timer.single_shot = True
+        self._timer.add_callback(self._resize_paused)
+
+    def remove(self):
+        super(ModestImage, self).remove()
+        self._timer.stop()
+        self._timer = None
+
+    def _resize(self, *args):
+        self._pressed = True
+        self._timer.start()
+
+    def _resize_paused(self, *args):
+        # If the artist has been removed, self.axes is no longer defined, so
+        # we can return early here.
+        if self.axes is None:
+            return
+        self._pressed = False
+        self.axes.figure.canvas.draw()
+
+    def _press(self, *args):
+        self._pressed = True
+
+    def _release(self, *args):
+        self._pressed = False
+        self.stale = True
+        self.axes.figure.canvas.draw()
 
     def set_data(self, A):
         """
@@ -179,7 +212,8 @@ class ModestImage(mi.AxesImage):
     def draw(self, renderer, *args, **kwargs):
         if self._full_res.shape is None:
             return
-        self._scale_to_res()
+        if not self._pressed or self._bounds is None:
+            self._scale_to_res()
         # Due to a bug in Matplotlib, we need to return here if all values
         # in the array are masked.
         if hasattr(self._A, 'mask') and np.all(self._A.mask):

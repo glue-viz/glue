@@ -26,6 +26,10 @@ v0.14.0 (unreleased)
 
   - ``glue.viewers.common.qt.DataViewerWithState`` is now deprecated.
 
+* Make it so that the modest image only resamples the data when the
+  mouse is no longer pressed - this avoids too many refreshes when
+  panning/zooming. [#1866]
+
 * Make it possible to unglue multiple links in one go. [#1809]
 
 * Make it so that adding a subset to a viewer no longer adds the
