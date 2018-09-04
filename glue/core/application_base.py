@@ -232,7 +232,10 @@ class Application(HubListener):
         datasets = []
 
         for path in args:
-            datasets.append(load_data(path))
+            if isinstance(path, BaseData):
+                datasets.append(path)
+            else:
+                datasets.append(load_data(path))
 
         links = kwargs.pop('links', None)
 

@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib.collections import LineCollection
 
-from mpl_scatter_density import ScatterDensityArtist
+from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
@@ -71,9 +71,7 @@ def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=N
         vmin = state.cmap_vmin
         vmax = state.cmap_vmax
         cmap = state.cmap
-    if isinstance(artist, ScatterDensityArtist):
-        artist.set_c(values)
-    else:
+    if not isinstance(artist, GenericDensityArtist):
         artist.set_array(values)
     artist.set_cmap(cmap)
     if vmin > vmax:
@@ -159,9 +157,11 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         # Scatter density
         self.density_auto_limits = DensityMapLimits()
-        self.density_artist = ScatterDensityArtist(self.axes, [], [], color='white',
+        self.density_artist = GenericDensityArtist(self.axes, color='white',
                                                    vmin=self.density_auto_limits.min,
-                                                   vmax=self.density_auto_limits.max)
+                                                   vmax=self.density_auto_limits.max,
+                                                   update_while_panning=False,
+                                                   histogram2d_func=self.state.compute_density_map)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -184,7 +184,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return
 
         try:
-            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+            if not self.state.density_map:
+                x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -193,7 +194,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         try:
-            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+            if not self.state.density_map:
+                y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
@@ -203,12 +205,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.markers_visible:
             if self.state.density_map:
-                self.density_artist.set_xy(x, y)
+                # We don't use x, y here because we actually make use of the
+                # ability of the density artist to call a custom histogram
+                # method which is defined on this class and does the data
+                # access.
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
-                self.density_artist.set_xy([], [])
-                self.density_artist.set_c(None)
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
@@ -221,7 +224,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         else:
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))
-            self.density_artist.set_xy([], [])
 
         if self.state.line_visible:
             if self.state.cmap_mode == 'Fixed':
@@ -311,7 +313,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 if self.state.cmap_mode == 'Fixed':
                     if force or 'color' in changed or 'cmap_mode' in changed:
                         self.density_artist.set_color(self.state.color)
-                        self.density_artist.set_c(None)
                         self.density_artist.set_clim(self.density_auto_limits.min,
                                                      self.density_auto_limits.max)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
@@ -505,3 +506,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
     def update(self):
         self._update_scatter(force=True)
         self.redraw()
+
+    def remove(self):
+        super(ScatterLayerArtist, self).remove()
+        # Clean up the density artist to avoid circular references to do a
+        # reference to the self.histogram2d method in density artist.
+        self.density_artist = None

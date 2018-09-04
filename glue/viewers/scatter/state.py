@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from glue.core import BaseData
+from glue.core import BaseData, Subset
 
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -353,6 +353,31 @@ class ScatterLayerState(MatplotlibLayerState):
     @property
     def cmap_name(self):
         return colormaps.name_from_cmap(self.cmap)
+
+    def compute_density_map(self, bins=None, range=None):
+
+        if not self.markers_visible or not self.density_map:
+            return np.zeros(bins)
+
+        if isinstance(self.layer, Subset):
+            data = self.layer.data
+            subset_state = self.layer.subset_state
+        else:
+            data = self.layer
+            subset_state = None
+
+        count = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
+                                        subset_state=subset_state, bins=bins,
+                                        range=range)
+
+        if self.cmap_mode == 'Fixed':
+            return count
+        else:
+            total = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
+                                            subset_state=subset_state, bins=bins,
+                                            weights=self.cmap_att,
+                                            range=range)
+            return total / count
 
     @classmethod
     def __setgluestate__(cls, rec, context):
