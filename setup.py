@@ -87,7 +87,7 @@ install_requires = ['numpy>=1.9',
                     'xlrd>=1.0',
                     'h5py>=2.4',
                     'bottleneck>=1.2',
-                    'mpl-scatter-density>=0.3']
+                    'mpl-scatter-density>=0.4']
 
 # Glue can work with PyQt5 and PySide2. We first check if they are already
 # installed before adding PyQt5 to install_requires, since the conda
@@ -139,6 +139,7 @@ setup(name='glue-core',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
           'Topic :: Scientific/Engineering :: Visualization',
           'License :: OSI Approved :: BSD License'
           ],
