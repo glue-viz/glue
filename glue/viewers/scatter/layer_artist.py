@@ -10,7 +10,6 @@ from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.core.subset import Subset
 from glue.utils import defer_draw, broadcast_to, nanmax, categorical_ndarray
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer

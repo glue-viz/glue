@@ -243,7 +243,7 @@ class TestScatterViewer(object):
 
     def test_density_map(self):
 
-        kwargs = dict(range=[(-5, 5), (-5, 5)], bins = (2, 2))
+        kwargs = dict(range=[(-5, 5), (-5, 5)], bins=(2, 2))
 
         self.viewer.add_data(self.data)
         self.viewer.state.layers[0].points_mode = 'auto'
