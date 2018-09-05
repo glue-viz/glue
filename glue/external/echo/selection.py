@@ -26,8 +26,9 @@ class SelectionCallbackProperty(CallbackProperty):
         self._force_next_sync = WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        if value is not None and value not in self.get_choices(instance):
-            raise ValueError('value {0} is not in valid choices'.format(value))
+        choices = self.get_choices(instance)
+        if value is not None and value not in choices:
+            raise ValueError('value {0} is not in valid choices: {}'.format(value, choices))
         super(SelectionCallbackProperty, self).__set__(instance, value)
 
     def force_next_sync(self, instance):
