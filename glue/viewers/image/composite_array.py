@@ -76,7 +76,7 @@ class CompositeArray(object):
                 return shape
         return None
 
-    def __getitem__(self, view):
+    def get_array(self, bounds):
 
         img = None
         visible_layers = 0
@@ -91,16 +91,16 @@ class CompositeArray(object):
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
 
-            if callable(layer['array']):
-                array = layer['array'](view=view)
-            else:
-                array = layer['array']
+            # if callable(layer['array']):
+            array = layer['array'](bounds=bounds)
+            # else:
+            #     array = layer['array']
 
             if array is None:
                 continue
 
-            if not callable(layer['array']):
-                array = array[view]
+            # if not callable(layer['array']):
+            #     array = array[view]
 
             if np.isscalar(array):
                 scalar = True
@@ -156,10 +156,11 @@ class CompositeArray(object):
             img += plane
 
         if img is None:
-            if self.shape is None:
-                return None
-            else:
-                img = np.zeros(view_shape(self.shape, view) + (4,))
+            return None
+            # if self.shape is None:
+            #     return None
+            # else:
+            #     img = np.zeros(view_shape(self.shape, view) + (4,))
         else:
             img = np.clip(img, 0, 1)
 

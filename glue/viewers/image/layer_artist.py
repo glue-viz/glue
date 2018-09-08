@@ -113,10 +113,12 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         return full_shape[y_axis], full_shape[x_axis]
 
-    def get_image_data(self, view=None):
+    def get_image_data(self, bounds=None):
+
+        print(bounds)
 
         try:
-            image = self.state.get_sliced_data(view=view)
+            image = self.state.get_sliced_data(bounds=bounds)
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
@@ -230,7 +232,7 @@ class ImageSubsetArray(object):
 
         return full_shape[y_axis], full_shape[x_axis]
 
-    def __getitem__(self, view=None):
+    def get_array(self, bounds):
 
         if (self.layer_artist is None or
                 self.layer_state is None or
@@ -242,7 +244,7 @@ class ImageSubsetArray(object):
         # trigger __getitem__)
 
         try:
-            mask = self.layer_state.get_sliced_data(view=view)
+            mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
             return broadcast_to(np.nan, self.shape)

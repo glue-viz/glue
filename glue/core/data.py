@@ -1615,6 +1615,10 @@ class Data(BaseCartesianData):
             range = [(xmin, xmax), (ymin, ymax)]
             return histogram2d(x, y, range=range, bins=bins, weights=w)
 
+    def get_fixed_resolution_buffer(data, target_data, bounds, target_cid=None, subset_state=None):
+        from .fixed_resolution_buffer import get_fixed_resolution_buffer
+        return get_fixed_resolution_buffer(data, target_data, bounds, target_cid=target_cid, subset_state=subset_state)
+
     # DEPRECATED
 
     @property

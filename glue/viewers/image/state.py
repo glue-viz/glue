@@ -5,6 +5,7 @@ from collections import defaultdict
 import numpy as np
 
 from glue.core import BaseData, Coordinates
+from glue.core.component import CoordinateComponent
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -335,6 +336,26 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.y_min, self.y_max = self.y_max, self.y_min
 
 
+def reproject(data, target_cid, pixel_values):
+
+    if target_cid in data.pixel_component_ids:
+        return pixel_values[target_cid.axis]
+
+    component = data.get_component(target_cid)
+
+    if hasattr(component, 'link'):
+        link = component.link
+        values = []
+        for cid in link._from:
+            values.append(reproject(data, cid, pixel_values))
+        return link._using(*values)
+    elif isinstance(component, CoordinateComponent):
+        # Hack for now - if we pass arrays in the view, it's interpreted
+        return component._calculate(view=pixel_values)
+    else:
+        raise Exception("Dependency on non-pixel component", target_cid)
+
+
 class BaseImageLayerState(MatplotlibLayerState):
 
     _viewer_callbacks_set = False
@@ -359,261 +380,69 @@ class BaseImageLayerState(MatplotlibLayerState):
         else:
             return view_shape(shape_slice, view)
 
-    def get_sliced_data(self, view=None):
-
-        # Getting the sliced data can be computationally expensive in some cases
-        # in particular when reprojecting data/subsets. To avoid recomputing
-        # these in cases where it isn't necessary, for example if the reference
-        # data is a spectral cube and the layer is a 2D mosaic, we set up a
-        # cache at the end of this method, and we then set up callbacks to
-        # reset the cache if any of the following properties change. We need
-        # to set a very high priority so that this is the first thing to happen.
-        # Note that we need to set up the callbacks here as the viewer_state is
-        # not always set in the __init__, for example when loading up sessions.
-        # We also need to make sure that the cache gets reset when the links
-        # change or when the subset changes. This is taken care of by calling
-        # reset_cache in the layer artist update() method, which gets called
-        # for these cases.
-
-        if not self._viewer_callbacks_set:
-            self.viewer_state.add_callback('slices', self.reset_cache_from_slices,
-                                           echo_old=True, priority=100000)
-            self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
-            self.viewer_state.add_callback('y_att', self.reset_cache, priority=100000)
-            if self.is_callback_property('attribute'):  # this isn't the case for subsets
-                self.add_callback('attribute', self.reset_cache, priority=100000)
-            self._viewer_callbacks_set = True
-
-        if self._image_cache is not None:
-            if view == self._image_cache['view']:
-                return self._image_cache['image']
-
-        # In the cache, we need to keep track of which slice indices should
-        # cause the cache to be reset. By default, we assume that any changes
-        # in slices should cause the cache to get reset, and in the reprojection
-        # code below we then set up more specific conditions.
-        reset_slices = True
+    def get_sliced_data(self, view=None, bounds=None):
 
         full_view, agg_func, transpose = self.viewer_state.numpy_slice_aggregation_transpose
+
+        x_axis = self.viewer_state.x_att.axis
+        y_axis = self.viewer_state.y_att.axis
 
         # The view should be that which should just be applied to the data
         # slice, not to all the dimensions of the data - thus it should have at
         # most two dimension
 
-        if view is not None:
+        def slice_to_bound(slc, size):
+            min, max, step = slc.indices(size)
+            n = (max - min - 1) // step
+            max = min + step * n
+            return (min, max, n + 1)
 
-            if len(view) > 2:
-                raise ValueError('view should have at most two elements')
-            if len(view) == 1:
+        if bounds is None:
+
+            if view is None:
+                view = [slice(None), slice(None)]
+            elif len(view) == 1:
                 view = view + [slice(None)]
-
-            x_axis = self.viewer_state.x_att.axis
-            y_axis = self.viewer_state.y_att.axis
+            elif len(view) > 2:
+                raise ValueError('view should have at most two elements')
 
             full_view[x_axis] = view[1]
             full_view[y_axis] = view[0]
 
-        # First, check whether the data is simply the reference data - if so
-        # we can just use _get_image (which assumed alignment with reference_data)
-        # to get the image to use.
+            for i in range(self.viewer_state.reference_data.ndim):
+                if isinstance(full_view[i], slice):
+                    full_view[i] = slice_to_bound(full_view[i], self.viewer_state.reference_data.shape[i])
 
-        if self.layer.data is self.viewer_state.reference_data:
-            image = self._get_image(view=tuple(full_view))
         else:
 
-            # Second, we check whether the current data is linked pixel-wise with
-            # the reference data.
+            full_view[x_axis] = bounds[1]
+            full_view[y_axis] = bounds[0]
 
-            order = self.layer.data.pixel_aligned_data.get(self.viewer_state.reference_data)
-
-            if order is not None:
-
-                # order gives the order of the pixel components of the reference
-                # data in the current data. With this we adjust the view and then
-                # check that the result is a 2D array - if not, it means for example
-                # that the layer is a 2D image and the reference data is a 3D cube
-                # and that we are not slicing one of the dimensions in the 3D cube
-                # that is also in the 2D image, resulting in a 1D array (which it
-                # doesn't make sense to show.
-
-                full_view = [full_view[idx] for idx in order]
-                image = self._get_image(view=tuple(full_view))
-
-                if image.ndim != 2:
-                    raise IncompatibleDataException()
-                else:
-                    # Now check whether we need to transpose the image - we need
-                    # to update this since the previously defined ``tranpose``
-                    # value assumed data in the order of the reference data
-                    x_axis = self.viewer_state.x_att.axis
-                    y_axis = self.viewer_state.y_att.axis
-                    transpose = order.index(x_axis) < order.index(y_axis)
-
-            else:
-
-                # Now the real fun begins! The pixel grids are not lined up. Fun
-                # times!
-
-                # Let's make sure there are no AggregateSlice variables in
-                # the view as we can't deal with this currently
-                if any(isinstance(v, AggregateSlice) for v in full_view):
-                    raise IncompatibleDataException()
-                else:
-                    agg_func = None
-
-                # Start off by finding all the pixel coordinates of the current
-                # view in the reference frame of the current layer data. In
-                # principle we could do something as simple as:
-                #
-                #   pixel_coords = [self.viewer_state.reference_data[pix, full_view]
-                #                   for pix in self.layer.pixel_component_ids]
-                #   coords = [np.round(p.ravel()).astype(int) for p in pixel_coords]
-                #
-                # However this is sub-optimal because in reality some of these
-                # pixel coordinate conversions won't change when the view is
-                # changed (e.g. when a slice index changes). We therefore
-                # cache each transformed pixel coordinate.
-
-                if self._pixel_cache is None:
-                    # The cache hasn't been set yet or has been reset so we
-                    # initialize it here.
-                    self._pixel_cache = {'reset_slices': [None] * self.layer.ndim,
-                                         'coord': [None] * self.layer.ndim,
-                                         'shape': [None] * self.layer.ndim,
-                                         'view': None}
-
-                coords = []
-
-                sub_data_view = [slice(0, 2)] * self.viewer_state.reference_data.ndim
-
-                for ipix, pix in enumerate(self.layer.pixel_component_ids):
-
-                    if self._pixel_cache['view'] != view or self._pixel_cache['coord'][ipix] is None:
-
-                        # Start off by finding all the pixel coordinates of the current
-                        # view in the reference frame of the current layer data.
-                        pixel_coord = self.viewer_state.reference_data[pix, full_view]
-                        coord = np.round(pixel_coord.ravel()).astype(int)
-
-                        # Now update cache - basically check which dimensions in
-                        # the output of the transformation rely on broadcasting.
-                        # The 'reset_slices' item is a list that indicates
-                        # whether the cache should be reset when the index along
-                        # a given dimension changes.
-                        sub_data = self.viewer_state.reference_data[pix, sub_data_view]
-                        sub_data = unbroadcast(sub_data)
-                        self._pixel_cache['reset_slices'][ipix] = [x > 1 for x in sub_data.shape]
-                        self._pixel_cache['coord'][ipix] = coord
-                        self._pixel_cache['shape'][ipix] = pixel_coord.shape
-                        original_shape = pixel_coord.shape
-
-                    else:
-
-                        coord = self._pixel_cache['coord'][ipix]
-                        original_shape = self._pixel_cache['shape'][ipix]
-
-                    coords.append(coord)
-
-                self._pixel_cache['view'] = view
-
-                # TODO: add test when image is smaller than cube
-
-                # We now do a nearest-neighbor interpolation. We don't use
-                # map_coordinates because it is picky about array endian-ness
-                # and if we just use normal Numpy slicing we can preserve the
-                # data type (and avoid memory copies)
-                keep = np.ones(len(coords[0]), dtype=bool)
-                image = np.zeros(len(coords[0])) * np.nan
-                for icoord, coord in enumerate(coords):
-                    keep[(coord < 0) | (coord >= self.layer.shape[icoord])] = False
-                coords = [coord[keep] for coord in coords]
-                image[keep] = self._get_image(view=tuple(coords))
-
-                # Finally convert array back to a 2D array
-                image = image.reshape(original_shape)
-
-                # Determine which slice indices should cause the cache to get
-                # reset and the image to be re-projected.
-
-                reset_slices = []
-                single_pixel = (0,) * self.layer.ndim
-                for pix in self.viewer_state.reference_data.pixel_component_ids:
-                    try:
-                        self.layer[pix, single_pixel]
-                        reset_slices.append(True)
-                    except IncompatibleAttribute:
-                        reset_slices.append(False)
+        if isinstance(self.layer, BaseData):
+            image = self.layer.get_fixed_resolution_buffer(self.viewer_state.reference_data, full_view, target_cid=self.attribute)
+        else:
+            image = self.layer.data.get_fixed_resolution_buffer(self.viewer_state.reference_data, full_view, subset_state=self.layer.subset_state)
 
         # Apply aggregation functions if needed
-
         if agg_func is None:
-
             if image.ndim != 2:
                 raise IncompatibleDataException()
-
         else:
-
             if image.ndim != len(agg_func):
                 raise ValueError("Sliced image dimensions ({0}) does not match "
                                  "aggregation function list ({1})"
                                  .format(image.ndim, len(agg_func)))
-
             for axis in range(image.ndim - 1, -1, -1):
                 func = agg_func[axis]
                 if func is not None:
                     image = func(image, axis=axis)
-
             if image.ndim != 2:
                 raise ValueError("Image after aggregation should have two dimensions")
 
         if transpose:
             image = image.transpose()
 
-        self._image_cache = {'view': view, 'image': image, 'reset_slices': reset_slices}
-
         return image
-
-    def reset_cache_from_slices(self, slice_before, slice_after):
-
-        # When the slice changes, we don't necessarily need to reset the cache
-        # as the slice being changed may not have a counterpart in the image
-        # shown. For instance, when showing a spectral cube and a 2D image, the
-        # 2D image doesn't need to be reprojected every time the spectral slice
-        # changes. The reset_slices key in the cache dictionary is either `True`
-        # if any change in slice should cause the cache to get reset, or it is
-        # a list of boolean values for each slice dimension.
-
-        # We do this first for the image cache, which is the cache of the
-        # reprojected slice.
-
-        if self._image_cache is not None:
-            if self._image_cache['reset_slices'] is True:
-                self._image_cache = None
-            else:
-                reset_slices = self._image_cache['reset_slices']
-                for islice in range(len(slice_before)):
-                    if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
-                        self._image_cache = None
-                        break
-
-        # And we then deal with the pixel transformation cache.
-
-        if self._pixel_cache is not None:
-            for ipix in range(self.layer.ndim):
-                reset_slices = self._pixel_cache['reset_slices'][ipix]
-                if reset_slices is not None:
-                    for islice in range(len(slice_before)):
-                        if slice_before[islice] != slice_after[islice] and reset_slices[islice]:
-                            self._pixel_cache['coord'][ipix] = None
-                            self._pixel_cache['reset_slices'][ipix] = None
-                            break
-
-    def reset_cache(self, *event):
-        self._image_cache = None
-        self._pixel_cache = None
-
-    def _get_image(self, view=None):
-        raise NotImplementedError()
 
 
 class ImageLayerState(BaseImageLayerState):
