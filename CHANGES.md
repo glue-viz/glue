@@ -23,6 +23,8 @@ v0.14.0 (unreleased)
 * Fix unit display for coordinates from WCS headers that don't have
   CTYPE but have CUNIT. [#1856]
 
+* Enable tab completion on Data objects. [#1874]
+
 * Automatically select datasets in link editor if there are only two. [#1837]
 
 * Change 'Export Session' dialog to offer to save with relative paths to data
