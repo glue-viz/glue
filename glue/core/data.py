@@ -413,6 +413,9 @@ class BaseCartesianData(BaseData):
 
         return self.get_data(key, view=view)
 
+    def _ipython_key_completions_(self):
+        return [cid.label for cid in self.components]
+
 
 class Data(BaseCartesianData):
     """
