@@ -111,6 +111,8 @@ v0.13.4 (unreleased)
 
 * Fixed parsing of AVM meta-data from images. [#1732]
 
+* Fixed compatibility with Matplotlib 3.0. [#1875]
+
 v0.13.3 (unreleased)
 --------------------
 
