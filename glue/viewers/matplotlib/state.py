@@ -54,6 +54,8 @@ class MatplotlibDataViewerState(ViewerState):
 
     aspect = DeferredDrawCallbackProperty('auto', docstring='Aspect ratio for the axes')
 
+    show_axes = DeferredDrawCallbackProperty(True, docstring='Whether the axes are shown')
+
     x_axislabel = DeferredDrawCallbackProperty('', docstring='Label for the x-axis')
     y_axislabel = DeferredDrawCallbackProperty('', docstring='Label for the y-axis')
 
