@@ -70,7 +70,7 @@ class Application(HubListener):
     def data_collection(self):
         return self.session.data_collection
 
-    def new_data_viewer(self, viewer_class, data=None):
+    def new_data_viewer(self, viewer_class, data=None, state=None):
         """
         Create a new data viewer, add it to the UI,
         and populate with data
@@ -78,7 +78,10 @@ class Application(HubListener):
         if viewer_class is None:
             return
 
-        c = viewer_class(self._session)
+        if state is not None:
+            c = viewer_class(self._session, state=state)
+        else:
+            c = viewer_class(self._session)
         c.register_to_hub(self._session.hub)
 
         if data is not None:
