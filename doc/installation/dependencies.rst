@@ -9,7 +9,7 @@ Glue has the following required dependencies:
 * `Numpy <http://www.numpy.org>`_ 1.9 or later
 * `Matplotlib <https://matplotlib.org/>`_ 2.0 or later
 * `Pandas <http://pandas.pydata.org/>`_ 0.14 or later
-* `Astropy <http://www.astropy.org>`_ 1.0 or higher
+* `Astropy <http://www.astropy.org>`_ 2.0 or higher
 * `setuptools <http://setuptools.readthedocs.io/en/latest/>`_ 1.0 or later
 * Either `PyQt5 <https://www.riverbankcomputing.com/software/pyqt/intro>`__ or
   `PySide2 <https://wiki.qt.io/PySide2>`__
