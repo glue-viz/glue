@@ -26,6 +26,105 @@ about glue in general, you can find information :ref:`here
 <help>` about contacting us and/or
 reporting issues.
 
+.. _whatsnew_014:
+
+What's new in glue v0.14?
+=========================
+
+Active subset in menu bar
+-------------------------
+
+The active subset, which is the subset that would be modified during the next
+selection, is now shown in the toolbar:
+
+.. image:: images/v0.14/active_subset.png
+   :align: center
+   :width: 500
+
+Prior to this, the only way to set the active subset was to select a subset
+in the data collection list on the left, or deselect all subsets to create a new
+one. The drop-down menu in the toolbar should make the process of choosing the
+subset to modify (or choosing to create a new subset) more straightforward.
+
+Documentation about plugins
+---------------------------
+
+We have now added a page to the documentation which provides a :ref:`list of
+available plugins <available_plugins>`, as well a page describing how to
+:ref:`write your own plugin package <writing_plugin>`
+
+Changes in behavior
+-------------------
+
+There are a couple of changes in behavior in glue that we want to mention here:
+
+* The first is that when saving session files, the default has now changed to
+  be to include relative paths to the data files (as opposed to absolute paths).
+
+* The second is that when accessing string components in datasets, you will
+  now get back a specialized Numpy array class that behaves like an array of
+  strings, but also has a ``.codes`` attribute to get the numerical category for
+  each value, as well as a ``.categories`` attribute to get the unique
+  categories::
+
+    >>> from glue.core import Data
+    >>> d = Data(x=['a', 'b', 'c', 'a', 'a'])
+    >>> d['x']
+    categorical_ndarray(['a', 'b', 'c', 'a', 'a'], dtype='<U1')
+    >>> d['x'].codes
+    array([0., 1., 2., 0., 0.])
+    >>> d['x'].categories
+    array(['a', 'b', 'c'], dtype=object)
+
+  In previous versions, ``d['x']`` returns the numerical ``.codes`` directly
+  but it was not easy to access the original labels.
+
+Performance
+-----------
+
+This release includes a number of significant performance enhancements (both
+in terms of speed and memory usage). In particular, the histogram and profile
+viewers have been updated to be able to compute histograms and profiles in the
+background without causing the rest of the application to hang - in this case
+the viewers will look like this while they are updated:
+
+.. image:: images/v0.14/computing.png
+   :align: center
+   :width: 500
+
+Documentation about creating custom viewers [advanced]
+------------------------------------------------------
+
+We have now written extensive documentation on writing fully customized
+viewers for glue. The new pages available are:
+
+* :ref:`state-viewer`
+* :ref:`state-qt-viewer`
+* :ref:`matplotlib-qt-viewer`
+
+This is intended for developers working on plugin packages that define new
+viewers. If you are a user and want to make Matplotlib-based custom viewers,
+we recommend that you start off with the existing :ref:`simple-custom-viewer`
+page.
+
+Abstract data classes [advanced]
+--------------------------------
+
+By default, data objects in glue are instances of the Data class, and this class
+assumes that the data are stored in one or more local n-dimensional arrays.
+However, glue now includes a way of defining a wider variety of data objects,
+which may rely for example on large remote datasets, or datasets that are not
+inherently stored as regular n-dimensional arrays. We have written up
+documentation on :ref:`basedata`.
+
+Better isolation of Qt code [advanced]
+--------------------------------------
+
+The code related to the data viewers has been significantly re-organized to
+split out as much as possible of the code to make it non-Qt-specific. This will
+enable other interfaces, such as Jupyter widgets, to re-use as much of the code
+as possible.
+
 .. _whatsnew_013:
 
 What's new in glue v0.13?

@@ -1,3 +1,5 @@
+.. _simple-custom-viewer:
+
 Writing a simple custom data viewer
 ===================================
 

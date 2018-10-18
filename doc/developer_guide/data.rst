@@ -1,3 +1,5 @@
+.. _basedata:
+
 Defining your own data objects
 ==============================
 
