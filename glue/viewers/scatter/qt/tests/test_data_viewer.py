@@ -244,12 +244,17 @@ class TestScatterViewer(object):
     def test_density_map(self):
 
         self.viewer.add_data(self.data)
+
+        density_artist = self.viewer.layers[0].density_artist
+        if hasattr(density_artist, 'histogram2d_helper'):
+            density_artist = density_artist.histogram2d_helper
+
         self.viewer.state.layers[0].points_mode = 'auto'
-        assert len(self.viewer.layers[0].density_artist._x) == 0
+        assert len(density_artist._x) == 0
         self.viewer.state.layers[0].points_mode = 'density'
-        assert len(self.viewer.layers[0].density_artist._x) == 4
+        assert len(density_artist._x) == 4
         self.viewer.state.layers[0].points_mode = 'markers'
-        assert len(self.viewer.layers[0].density_artist._x) == 0
+        assert len(density_artist._x) == 0
 
     def test_density_map_color(self):
 
