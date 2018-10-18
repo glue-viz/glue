@@ -4,6 +4,25 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Added documentation about plugins. [#1837]
+
+* Better isolate code related to pixel selection tool in image
+  viewer that dependended on Qt. [#1763]
+
+* Improve handling of units in FITS files. [#1723]
+
+* Added documentation about creating viewers for glue using the
+  new state-based infrastructure. [#1740]
+
+* Make it possible to pass the initial state of a viewer to an
+  application's ``new_data_viewer`` method. [#1877]
+
+* Ensure that glue can be imported if QtPy is installed but PyQt
+  and PySide aren't. [#1865, #1836]
+
+* Fix unit display for coordinates from WCS headers that don't have
+  CTYPE but have CUNIT. [#1856]
+
 * Automatically select datasets in link editor if there are only two. [#1837]
 
 * Change 'Export Session' dialog to offer to save with relative paths to data
@@ -14,7 +33,7 @@ v0.14.0 (unreleased)
 
 * Show the active subset in the toolbar. [#1797]
 
-* Refactored the viewer class base classes:
+* Refactored the viewer class base classes [#1746]:
 
   - ``glue.core.application_base.ViewerBase`` has been removed in favor of
     ``glue.viewers.common.viewer.BaseViewer`` and
@@ -81,12 +100,17 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Avoid repeated coordinate components in merged datasets. [#1792]
+
+* Fix bug that caused new subset to be created when dragging an existing
+  subset in an image viewer. [#1793]
+
 * Fix bug that occurred in certain cases when using the state attribute limit
   helper with a state class that did not have a log attribute. [#1842]
 
 * Fix HDF5 reader for string columns. [#1840]
 
-* Fix visual bug in link editor in advanced mode when resizing window. [#1837]
+* Fix visual bug in link editor in advanced mode when resizing window.
 
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
 
@@ -171,7 +195,7 @@ v0.13.0 (2018-04-27)
 * Added new perceptually uniform Matplotlib colormaps. [#1679]
 
 * Fixed a bug that caused vectors to not correctly be flipped when
-  flipping the x/y limits of the plot. [#1678]
+  flipping the x/y limits of the plot. [#1677]
 
 * Added a CSV and HDF5 data/subset exporter. [#1676]
 
