@@ -14,16 +14,17 @@ class ProfileViewerTool(Tool):
     tool_id = 'profile-viewer'
 
     @property
-    def profile_viewers(self):
+    def profile_viewers_exist(self):
         from glue.viewers.profile.qt import ProfileViewer
         for tab in self.viewer.session.application.viewers:
             for viewer in tab:
                 if isinstance(viewer, ProfileViewer):
-                    yield viewer
+                    return True
+        return False
 
     def activate(self):
 
-        if any(x() is not None for x in self.profile_viewers):
+        if self.profile_viewers_exist:
 
             proceed = warn('A profile viewer was already created',
                            'Do you really want to create a new one?',
