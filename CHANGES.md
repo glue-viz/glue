@@ -13,6 +13,9 @@ v0.13.4 (unreleased)
 
 * Fixed a bug that caused custom data importers to no longer work. [#1813]
 
+* Fixed a bug that caused ROIs to not be erased after selection if the
+  active subset was not in the list of layers for the viewer. [#1801]
+
 * Always returned to last used folder when opening/saving files. [#1794]
 
 * Show correct dataset when using control-click to select to add
@@ -88,7 +91,7 @@ v0.13.0 (2018-04-27)
 * Added new perceptually uniform Matplotlib colormaps. [#1679]
 
 * Fixed a bug that caused vectors to not correctly be flipped when
-  flipping the x/y limits of the plot. [#1678]
+  flipping the x/y limits of the plot. [#1677]
 
 * Added a CSV and HDF5 data/subset exporter. [#1676]
 
