@@ -97,13 +97,16 @@ v0.14.0 (unreleased)
 * Make the Matplotlib viewer code that doesn't depend on Qt accessible
   to non-Qt frontends. [#1841]
 
-v0.13.4 (unreleased)
---------------------
-
 * Avoid repeated coordinate components in merged datasets. [#1792]
 
 * Fix bug that caused new subset to be created when dragging an existing
   subset in an image viewer. [#1793]
+
+* Better preserve data types when exporting data/subsets to FITS
+  and HDF5 formats. [#1800]
+
+v0.13.4 (unreleased)
+--------------------
 
 * Fix bug that occurred in certain cases when using the state attribute limit
   helper with a state class that did not have a log attribute. [#1842]
@@ -130,14 +133,11 @@ v0.13.4 (unreleased)
   and fixed Qt errors that happened if the data collection changed
   after the 'Export Data' dialog was opened. [#1795]
 
-* Better preserve data types when exporting data/subsets to FITS
-  and HDF5 formats. [#1800]
-
 * Fixed parsing of AVM meta-data from images. [#1732]
 
 * Fixed compatibility with Matplotlib 3.0. [#1875]
 
-v0.13.3 (unreleased)
+v0.13.3 (2018-05-08)
 --------------------
 
 * Fixed a bug that caused the expression for derived attributes to
