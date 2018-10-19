@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
+from glue.tests.helpers import PYSIDE2_INSTALLED, MATPLOTLIB_GE_30_INSTALLED  # noqa
 from glue.app.qt import GlueApplication
 from glue.utils import nanmean
 from glue.utils.qt import get_qapp
@@ -45,6 +45,7 @@ class TestProfileTools(object):
         self.app.close()
         self.app = None
 
+    @pytest.mark.skipif('MATPLOTLIB_GE_30_INSTALLED')
     def test_navigate_sync_image(self):
 
         self.viewer.add_data(self.data)
@@ -66,7 +67,7 @@ class TestProfileTools(object):
         self.viewer.axes.figure.canvas.button_release_event(x, y, 1)
         assert image_viewer.state.slices == (5, 0, 0)
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
+    @pytest.mark.skipif('PYSIDE2_INSTALLED or MATPLOTLIB_GE_30_INSTALLED')
     def test_fit_polynomial(self):
 
         # TODO: need to deterministically set to polynomial fitter
@@ -121,6 +122,7 @@ class TestProfileTools(object):
         assert world_log[-2] == '4.000000e+00'
         assert world_log[-1] == '3.500000e+00'
 
+    @pytest.mark.skipif('MATPLOTLIB_GE_30_INSTALLED')
     def test_collapse(self):
 
         self.viewer.add_data(self.data)
