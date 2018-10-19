@@ -13,19 +13,6 @@ SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
 
 
-def _data(layer, component):
-    """
-    Extract the data associated with a Component
-
-    For categorical components, extracts the categories and not
-    the remapped integers
-    """
-    result = layer[component]
-    if layer.data.get_kind(component) == 'categorical':
-        result = layer[component].categories[result.astype(np.int)]
-    return result
-
-
 def _sanitize(*arrs):
     mask = np.ones(arrs[0].shape, dtype=np.bool)
     for a in arrs:
@@ -158,7 +145,7 @@ def export_scatter(viewer):
                       color=_color(l.style),
                       size=l.style.markersize)
 
-        x, y = _sanitize(_data(l, xatt), _data(l, yatt))
+        x, y = _sanitize(l[xatt], l[yatt])
 
         trace = dict(x=x, y=y,
                      type='scatter',
@@ -178,7 +165,7 @@ def export_scatter(viewer):
 
 def export_histogram(viewer):
     traces = []
-    att = viewer.component
+    att = viewer.state.x_att
     ymax = 1e-3
     for artist in viewer.layers:
         if not artist.visible:

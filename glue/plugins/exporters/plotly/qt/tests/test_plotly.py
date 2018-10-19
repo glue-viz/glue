@@ -18,7 +18,7 @@ from ...export_plotly import build_plotly_call
 class TestPlotly(object):
 
     def setup_method(self, method):
-        d = Data(x=[1, 2, 3], y=[2, 3, 4], label='data')
+        d = Data(x=[1, 2, 3], y=[2, 3, 4], z=['a', 'b', 'c'], label='data')
         dc = DataCollection([d])
         self.app = GlueApplication(dc)
         self.data = d
@@ -110,7 +110,7 @@ class TestPlotly(object):
         d.style.color = '#000000'
 
         viewer = self.app.new_data_viewer(HistogramViewer, data=d)
-        viewer.component = d.id['y']
+        viewer.state.x_att = d.id['y']
         viewer.state.hist_x_min = 0
         viewer.state.hist_x_max = 10
         viewer.state.hist_n_bin = 20
@@ -128,5 +128,46 @@ class TestPlotly(object):
         for k in expected:
             assert expected[k] == data[0][k]
         assert args[0]['layout']['barmode'] == 'overlay'
+
+        viewer.close()
+
+    def test_scatter_categorical(self):
+
+        viewer = self.app.new_data_viewer(ScatterViewer, data=self.data)
+
+        viewer.state.x_att = self.data.id['x']
+        viewer.state.y_att = self.data.id['z']
+
+        args, kwargs = build_plotly_call(self.app)
+
+        xaxis = dict(type='linear', rangemode='normal',
+                     range=[0.9, 3.1], title='x', zeroline=False)
+        yaxis = dict(type='linear', rangemode='normal',
+                     range=[-0.65, 2.65], title='z', zeroline=False)
+        layout = args[0]['layout']
+        for k, v in layout['xaxis'].items():
+            assert xaxis.get(k, v) == v
+        for k, v in layout['yaxis'].items():
+            assert yaxis.get(k, v) == v
+
+        viewer.close()
+
+    def test_histogram_categorical(self):
+
+        viewer = self.app.new_data_viewer(HistogramViewer, data=self.data)
+
+        viewer.state.x_att = self.data.id['z']
+
+        args, kwargs = build_plotly_call(self.app)
+
+        xaxis = dict(type='linear', rangemode='normal',
+                     range=[-0.5, 2.5], title='z', zeroline=False)
+        yaxis = dict(type='linear', rangemode='normal',
+                     range=[0, 1.05], title='', zeroline=False)
+        layout = args[0]['layout']
+        for k, v in layout['xaxis'].items():
+            assert xaxis.get(k, v) == v
+        for k, v in layout['yaxis'].items():
+            assert yaxis.get(k, v) == v
 
         viewer.close()

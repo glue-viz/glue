@@ -4,6 +4,9 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Fix Plot.ly exporter for categorical components and histogram
+  viewer. [#1886]
+
 * Added documentation about plugins. [#1837]
 
 * Better isolate code related to pixel selection tool in image
