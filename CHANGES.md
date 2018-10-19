@@ -105,7 +105,7 @@ v0.14.0 (unreleased)
 * Better preserve data types when exporting data/subsets to FITS
   and HDF5 formats. [#1800]
 
-v0.13.4 (unreleased)
+v0.13.4 (2018-10-19)
 --------------------
 
 * Fix bug that caused .svg icons to not be correctly installed. [#1882]
