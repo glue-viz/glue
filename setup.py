@@ -147,5 +147,5 @@ setup(name='glue-core',
       entry_points=entry_points,
       cmdclass=cmdclass,
       package_data={'': ['*.png', '*.ui', '*.glu', '*.hdf5', '*.fits',
-                         '*.xlsx', '*.txt', '*.csv']}
+                         '*.xlsx', '*.txt', '*.csv', '*.svg']}
       )
