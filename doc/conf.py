@@ -24,7 +24,7 @@ import warnings
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.6'
 
 # Import matplotlib now to make sure the warning doesn't cause the Sphinx build
 # to fail
