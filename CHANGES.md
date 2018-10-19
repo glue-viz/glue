@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.13.4 (unreleased)
+v0.13.4 (2018-10-19)
 --------------------
 
 * Fix bug that occurred in certain cases when using the state attribute limit
