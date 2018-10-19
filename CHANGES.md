@@ -108,6 +108,8 @@ v0.14.0 (unreleased)
 v0.13.4 (unreleased)
 --------------------
 
+* Fix bug that caused .svg icons to not be correctly installed. [#1882]
+
 * Fix bug that occurred in certain cases when using the state attribute limit
   helper with a state class that did not have a log attribute. [#1842]
 
