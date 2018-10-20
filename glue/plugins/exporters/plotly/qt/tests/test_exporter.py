@@ -70,7 +70,7 @@ class TestQtPlotlyExporter():
     def get_exporter(self):
         return QtPlotlyExporter(plotly_args=self.args, plotly_kwargs=self.kwargs)
 
-    def test_default(self, tmpdir):
+    def test_default_no_credentials(self, tmpdir):
 
         credentials_file = tmpdir.join('.credentials').strpath
 
@@ -80,10 +80,10 @@ class TestQtPlotlyExporter():
 
             exporter = self.get_exporter()
 
-            assert exporter.radio_account_glue.isChecked()
-            assert exporter.radio_sharing_public.isChecked()
-            assert not exporter.radio_sharing_secret.isEnabled()
-            assert not exporter.radio_sharing_private.isEnabled()
+            assert not exporter.radio_account_config.isChecked()
+            assert exporter.radio_account_manual.isChecked()
+
+            assert exporter.radio_sharing_secret.isChecked()
 
     def test_default_with_credentials(self, tmpdir):
 
@@ -98,68 +98,39 @@ class TestQtPlotlyExporter():
             assert exporter.radio_account_config.isChecked()
             assert 'username: batman' in exporter.radio_account_config.text()
             assert exporter.radio_sharing_secret.isChecked()
-            assert exporter.radio_sharing_secret.isEnabled()
-            assert exporter.radio_sharing_private.isEnabled()
-
-    def test_toggle_account_sharing(self, tmpdir):
-
-        credentials_file = tmpdir.join('.credentials').strpath
-
-        make_credentials_file(credentials_file)
-
-        with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
-
-            exporter = self.get_exporter()
-
-            assert not exporter.radio_sharing_secret.isEnabled()
-            assert not exporter.radio_sharing_private.isEnabled()
-
-            exporter.radio_account_manual.setChecked(True)
-
-            assert exporter.radio_sharing_secret.isEnabled()
-            assert exporter.radio_sharing_private.isEnabled()
-
-            exporter.radio_account_glue.setChecked(True)
-
-            assert not exporter.radio_sharing_secret.isEnabled()
-            assert not exporter.radio_sharing_private.isEnabled()
 
     def test_edit_username_toggle_custom(self, tmpdir):
 
         credentials_file = tmpdir.join('.credentials').strpath
 
-        make_credentials_file(credentials_file)
+        make_credentials_file(credentials_file, username='batman', api_key='batmobile')
 
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
 
             exporter = self.get_exporter()
 
-            assert exporter.radio_account_glue.isChecked()
-            assert not exporter.radio_account_manual.isChecked()
+            assert exporter.radio_account_config.isChecked()
             exporter.username = 'a'
-            assert not exporter.radio_account_glue.isChecked()
             assert exporter.radio_account_manual.isChecked()
 
-            exporter.radio_account_glue.setChecked(True)
-
-            assert exporter.radio_account_glue.isChecked()
-            assert not exporter.radio_account_manual.isChecked()
+            exporter.radio_account_config.setChecked(True)
+            assert exporter.radio_account_config.isChecked()
             exporter.api_key = 'a'
-            assert not exporter.radio_account_glue.isChecked()
             assert exporter.radio_account_manual.isChecked()
 
     def test_accept_default(self, tmpdir):
 
         credentials_file = tmpdir.join('.credentials').strpath
 
-        make_credentials_file(credentials_file)
+        make_credentials_file(credentials_file, username='batman', api_key='batmobile')
 
         with patch('plotly.tools.CREDENTIALS_FILE', credentials_file):
             with patch('plotly.plotly.plot', mock.MagicMock()):
-                with patch('webbrowser.open_new_tab') as open_new_tab:
-                    exporter = self.get_exporter()
-                    exporter.accept()
-                    assert exporter.text_status.text() == 'Exporting succeeded'
+                with patch('plotly.plotly.sign_in', mock.MagicMock()):
+                    with patch('webbrowser.open_new_tab') as open_new_tab:
+                        exporter = self.get_exporter()
+                        exporter.accept()
+                        assert exporter.text_status.text() == 'Exporting succeeded'
 
     ERRORS = [
         (PlotlyError(SIGN_IN_ERROR), 'Authentication failed'),

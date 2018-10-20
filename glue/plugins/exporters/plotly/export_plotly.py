@@ -8,22 +8,10 @@ except ImportError:
     plotly = None
 
 from glue.core.layout import Rectangle, snap_to_grid
+from glue.utils import categorical_ndarray
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
-
-
-def _data(layer, component):
-    """
-    Extract the data associated with a Component
-
-    For categorical components, extracts the categories and not
-    the remapped integers
-    """
-    result = layer[component]
-    if layer.data.get_kind(component) == 'categorical':
-        result = layer[component].categories[result.astype(np.int)]
-    return result
 
 
 def _sanitize(*arrs):
@@ -112,12 +100,6 @@ def _axis(log=False, lo=0, hi=1, title='', categorical=False):
                   rangemode='normal',
                   range=[lo, hi], title=title)
 
-    if categorical:
-        result.pop('type')
-        # about 10 categorical ticks per graph
-        result['autotick'] = False
-        result['dtick'] = max(int(hi - lo) / 10, 1)
-
     return result
 
 
@@ -158,7 +140,13 @@ def export_scatter(viewer):
                       color=_color(l.style),
                       size=l.style.markersize)
 
-        x, y = _sanitize(_data(l, xatt), _data(l, yatt))
+        x, y = l[xatt], l[yatt]
+        if isinstance(x, categorical_ndarray):
+            x = x.codes
+        if isinstance(y, categorical_ndarray):
+            y = y.codes
+
+        x, y = _sanitize(x, y)
 
         trace = dict(x=x, y=y,
                      type='scatter',
@@ -178,7 +166,7 @@ def export_scatter(viewer):
 
 def export_histogram(viewer):
     traces = []
-    att = viewer.component
+    att = viewer.state.x_att
     ymax = 1e-3
     for artist in viewer.layers:
         if not artist.visible:
