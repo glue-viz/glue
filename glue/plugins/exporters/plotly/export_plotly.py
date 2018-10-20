@@ -8,6 +8,7 @@ except ImportError:
     plotly = None
 
 from glue.core.layout import Rectangle, snap_to_grid
+from glue.utils import categorical_ndarray
 
 SYM = {'o': 'circle', 's': 'square', '+': 'cross', '^': 'triangle-up',
        '*': 'cross'}
@@ -99,12 +100,6 @@ def _axis(log=False, lo=0, hi=1, title='', categorical=False):
                   rangemode='normal',
                   range=[lo, hi], title=title)
 
-    if categorical:
-        result.pop('type')
-        # about 10 categorical ticks per graph
-        result['autotick'] = False
-        result['dtick'] = max(int(hi - lo) / 10, 1)
-
     return result
 
 
@@ -145,7 +140,13 @@ def export_scatter(viewer):
                       color=_color(l.style),
                       size=l.style.markersize)
 
-        x, y = _sanitize(l[xatt], l[yatt])
+        x, y = l[xatt], l[yatt]
+        if isinstance(x, categorical_ndarray):
+            x = x.codes
+        if isinstance(y, categorical_ndarray):
+            y = y.codes
+
+        x, y = _sanitize(x, y)
 
         trace = dict(x=x, y=y,
                      type='scatter',

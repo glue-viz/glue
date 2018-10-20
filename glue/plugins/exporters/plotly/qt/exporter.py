@@ -61,7 +61,6 @@ class QtPlotlyExporter(QtWidgets.QDialog):
         # Set up radio button groups
 
         self._radio_account = QtWidgets.QButtonGroup()
-        self._radio_account.addButton(self.ui.radio_account_glue)
         self._radio_account.addButton(self.ui.radio_account_config)
         self._radio_account.addButton(self.ui.radio_account_manual)
 
@@ -83,31 +82,17 @@ class QtPlotlyExporter(QtWidgets.QDialog):
             label = self.ui.radio_account_config.text()
             self.ui.radio_account_config.setText(label + " (username: {0})".format(credentials['username']))
         else:
-            self.ui.radio_account_glue.setChecked(True)
-            self.ui.radio_account_config.setEnabled(False)
+            self.ui.radio_account_manual.setChecked(True)
 
         self.ui.radio_sharing_secret.setChecked(True)
 
         self.ui.text_username.textChanged.connect(nonpartial(self._set_manual_mode))
         self.ui.text_api_key.textChanged.connect(nonpartial(self._set_manual_mode))
-        self.ui.radio_account_glue.toggled.connect(nonpartial(self._set_allowed_sharing_modes))
 
         self.set_status('', color='black')
 
-        self._set_allowed_sharing_modes()
-
     def _set_manual_mode(self):
         self.ui.radio_account_manual.setChecked(True)
-
-    def _set_allowed_sharing_modes(self):
-        if self.ui.radio_account_glue.isChecked():
-            self.ui.radio_sharing_public.setChecked(True)
-            self.ui.radio_sharing_secret.setEnabled(False)
-            self.ui.radio_sharing_private.setEnabled(False)
-        else:
-            self.ui.radio_sharing_secret.setEnabled(True)
-            self.ui.radio_sharing_private.setEnabled(True)
-        QtWidgets.QApplication.instance().processEvents()
 
     def accept(self):
 
@@ -118,10 +103,7 @@ class QtPlotlyExporter(QtWidgets.QDialog):
 
         auth = {}
 
-        if self.ui.radio_account_glue.isChecked():
-            auth['username'] = 'Glue'
-            auth['api_key'] = 't24aweai14'
-        elif self.ui.radio_account_config.isChecked():
+        if self.ui.radio_account_config.isChecked():
             auth['username'] = ''
             auth['api_key'] = ''
         else:
@@ -168,6 +150,8 @@ class QtPlotlyExporter(QtWidgets.QDialog):
                 self.set_status("Authentication failed".format(username), color='red')
             elif "filled its quota of private files" in exc.args[0]:
                 self.set_status("Maximum number of private plots reached", color='red')
+            elif "Accounts on the Community Plan cannot save private files" in exc.args[0]:
+                self.set_status("Accounts on the Community Plan cannot save private files", color='red')
             else:
                 self.set_status("An unexpected error occurred", color='red')
             return
@@ -190,14 +174,6 @@ class QtPlotlyExporter(QtWidgets.QDialog):
                 traceback.print_exc(file=sys.stdout)
                 print('-' * 60)
                 self.set_status('Exporting succeeded (but saving login failed)', color='blue')
-
-        # We need to fix URL
-        # https://github.com/plotly/plotly.py/issues/526
-        if self.plotly_kwargs['sharing'] == 'secret':
-            pos = plotly_url.find('?share_key')
-            if pos >= 0:
-                if plotly_url[pos - 1] != '/':
-                    plotly_url = plotly_url.replace('?share_key', '/?share_key')
 
         print("Plotly URL: {0}".format(plotly_url))
 
