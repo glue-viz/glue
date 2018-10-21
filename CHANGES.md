@@ -4,6 +4,9 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Fix bug that caused component arithmetic to not work if
+  Numpy was imported in user's config.py file. [#1887]
+
 * Fix Plot.ly exporter for categorical components and histogram
   viewer. [#1886]
 
