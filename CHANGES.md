@@ -7,6 +7,8 @@ v0.14.0 (unreleased)
 * Fix Plot.ly exporter for categorical components and histogram
   viewer. [#1886]
 
+* Fix issues with reading very large FITS files on some systems. [#1884]
+
 * Added documentation about plugins. [#1837]
 
 * Better isolate code related to pixel selection tool in image
