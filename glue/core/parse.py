@@ -215,6 +215,9 @@ class ParsedCommand(object):
 
         result = eval(cmd, global_variables, locals())  # careful!
 
+        # At this point, np may have been defined in the globals but not the
+        # locals so we import it manually to avoid any issues.
+        import numpy as np  # noqa
         if data is not None and np.isscalar(result):
             result = np.ones(data.shape) * result
 

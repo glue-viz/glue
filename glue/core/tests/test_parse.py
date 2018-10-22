@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 import numpy as np
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from .. import parse
 from ..data import ComponentID, Component, Data
@@ -148,6 +148,15 @@ class TestParsedCommand(object):
         with pytest.raises(NameError) as exc:
             pc.evaluate_test()
         assert exc.value.args[0] == "name 'nump' is not defined"
+
+    def test_globals(self):
+
+        with patch('glue.env') as patched_env:
+            import numpy as np
+            patched_env.np = np
+            data = Data()
+            pc = parse.ParsedCommand('np.sin(3.4)', {})
+            pc.evaluate(data)
 
 
 class TestParsedComponentLink(object):
