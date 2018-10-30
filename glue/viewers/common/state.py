@@ -36,3 +36,9 @@ class LayerState(State):
     def __init__(self, viewer_state=None, **kwargs):
         super(LayerState, self).__init__(**kwargs)
         self.viewer_state = viewer_state
+
+    def __repr__(self):
+        if self.layer is None:
+            return "%s with layer unset" % (self.__class__.__name__)
+        else:
+            return "%s for %s" % (self.__class__.__name__, self.layer.label)
