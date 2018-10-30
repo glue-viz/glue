@@ -219,7 +219,7 @@ script:
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
   # Do style checks
-  - flake8 --exclude=external --ignore=E501,E731,F841,E127,E741,E402 glue
+  - flake8 --max-line-length=100 --exclude=external glue
 
   - pytest --cov glue --durations=20 -vs $PYTEST_ARGS glue
 
