@@ -570,22 +570,24 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if self.tab_widget.count() == 1:
             return
 
-        if warn and not os.environ.get('GLUE_TESTING'):
-            buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
-            dialog = QtWidgets.QMessageBox.warning(
-                self, "Confirm Close",
-                "Are you sure you want to close this tab? "
-                "This will close all data viewers in the tab.",
-                buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
-            if not dialog == QtWidgets.QMessageBox.Ok:
-                return
-
         w = self.tab_widget.widget(index)
 
-        for window in w.subWindowList():
-            widget = window.widget()
-            if isinstance(widget, DataViewer):
-                widget.close(warn=False)
+        if len(w.subWindowList()) > 0:
+
+            if warn and not os.environ.get('GLUE_TESTING'):
+                buttons = QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel
+                dialog = QtWidgets.QMessageBox.warning(
+                    self, "Confirm Close",
+                    "Are you sure you want to close this tab? "
+                    "This will close all data viewers in the tab.",
+                    buttons=buttons, defaultButton=QtWidgets.QMessageBox.Cancel)
+                if not dialog == QtWidgets.QMessageBox.Ok:
+                    return
+
+            for window in w.subWindowList():
+                widget = window.widget()
+                if isinstance(widget, DataViewer):
+                    widget.close(warn=False)
 
         w.close()
 
