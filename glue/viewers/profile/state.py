@@ -80,6 +80,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
         # and in the case of world coordinates we use online the spine of the
         # data.
 
+        if self.reference_data is None or self.x_att is None:
+            return
+
         data = self.reference_data
 
         if self.x_att in data.pixel_component_ids:
