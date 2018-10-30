@@ -10,7 +10,6 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
-from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
@@ -52,13 +51,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
-        self.x_lim_helper = StateAttributeLimitsHelper(self, 'x_att', lower='x_min',
-                                                       upper='x_max')
-
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed)
+        self.add_callback('x_att', self._reset_x_limits)
         self.add_callback('normalize', self._reset_y_limits)
-
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, categorical=False,
                                                    world_coord=True, pixel_coord=True)
@@ -73,20 +69,44 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     def reset_limits(self):
         with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.x_lim_helper.percentile = 100
-            self.x_lim_helper.update_values(force=True)
+            self._reset_x_limits()
             self._reset_y_limits()
+
+    def _reset_x_limits(self, *event):
+
+        # NOTE: we don't use AttributeLimitsHelper because we need to avoid
+        # trying to get the minimum of *all* the world coordinates in the
+        # dataset. Instead, we use the same approach as in the layer state below
+        # and in the case of world coordinates we use online the spine of the
+        # data.
+
+        data = self.reference_data
+
+        if self.x_att in data.pixel_component_ids:
+            x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
+        else:
+            axis = data.world_component_ids.index(self.x_att)
+            axis_view = [0] * data.ndim
+            axis_view[axis] = slice(None)
+            axis_values = data[self.x_att, tuple(axis_view)]
+            x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
+
+        with delay_callback(self, 'x_min', 'x_max'):
+            self.x_min = x_min
+            self.x_max = x_max
 
     def _reset_y_limits(self, *event):
         if self.normalize:
-            self.y_min = -0.1
-            self.y_max = +1.1
+            with delay_callback(self, 'y_min', 'y_max'):
+                self.y_min = -0.1
+                self.y_max = +1.1
 
     def flip_x(self):
         """
         Flip the x_min/x_max limits.
         """
-        self.x_lim_helper.flip_limits()
+        with delay_callback(self, 'x_min', 'x_max'):
+            self.x_min, self.x_max = self.x_max, self.x_min
 
     @defer_draw
     def _layers_changed(self, *args):
