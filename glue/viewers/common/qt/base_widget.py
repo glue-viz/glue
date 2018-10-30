@@ -98,8 +98,6 @@ class BaseQtViewerWidget(QtWidgets.QMainWindow):
                 # ignore and carry on.
                 pass
 
-        self._warn_close = True
-
         self._closed = True
 
     def mdi_wrap(self):
@@ -175,7 +173,7 @@ class BaseQtViewerWidget(QtWidgets.QMainWindow):
         Call unregister on window close
         """
 
-        if not self._confirm_close():
+        if self._warn_close and not self._confirm_close():
             event.ignore()
             return
 
