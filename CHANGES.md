@@ -4,6 +4,8 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Avoid showing a warning when closing an empty tab. [#1890]
+
 * Fix bug that caused component arithmetic to not work if
   Numpy was imported in user's config.py file. [#1887]
 
