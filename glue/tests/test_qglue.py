@@ -153,7 +153,6 @@ class TestQGlue(object):
 
         assert dc[0] is d
 
-
     def test_simple_link(self):
         using = lambda x: x * 2
         links = [['data1.x', 'data2.u', using]]
