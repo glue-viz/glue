@@ -62,7 +62,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
         # Prepare contents of combo box - we include a 'Create subset' item as
         # the last item
         labeldata = [(subset.label, subset) for subset in self._data_collection.subset_groups]
-        labeldata.append(('None', None))
+        labeldata.append(('None/Create New', None))
 
         # We now update the combo box, but we block the signals as we don't want
         # this to cause the current subset being edited to be modified.
