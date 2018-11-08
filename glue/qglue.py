@@ -17,11 +17,11 @@ from glue.external import six
 from glue.config import qglue_parser
 
 try:
-    from glue.core import Data
+    from glue.core import BaseData, Data
 except ImportError:
     # let qglue import, even though this won't work
     # qglue will throw an ImportError
-    Data = None
+    BaseData = Data = None
 
 
 __all__ = ['qglue']
@@ -60,9 +60,10 @@ def _parse_data_recarray(data, label):
     return [Data(label=label, **kwargs)]
 
 
-@qglue_parser(Data)
+@qglue_parser(BaseData)
 def _parse_data_glue_data(data, label):
-    data.label = label
+    if isinstance(data, Data):
+        data.label = label
     return [data]
 
 

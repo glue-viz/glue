@@ -6,7 +6,7 @@ import pandas as pd
 from mock import patch
 
 from .. import qglue
-from ..core import Data
+from ..core import BaseCartesianData, Data
 from ..core.exceptions import IncompatibleAttribute
 from ..core.registry import Registry
 from .helpers import requires_astropy, requires_qt
@@ -121,6 +121,37 @@ class TestQGlue(object):
             qglue(x=d)
             dc = ga.call_args[0][0]
         assert d.label == 'x'
+
+    def test_base_data(self):
+
+        class CustomData(BaseCartesianData):
+
+            def get_kind(self):
+                pass
+
+            def compute_histogram(self):
+                pass
+
+            def compute_statistic(self):
+                pass
+
+            def get_mask(self):
+                pass
+
+            @property
+            def shape(self):
+                pass
+
+            @property
+            def main_components(self):
+                return []
+
+        d = CustomData()
+        with patch('glue.app.qt.GlueApplication') as ga:
+            qglue(x=d)
+            dc = ga.call_args[0][0]
+
+        assert dc[0] is d
 
     def test_simple_link(self):
         using = lambda x: x * 2

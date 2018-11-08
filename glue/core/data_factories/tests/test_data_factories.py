@@ -9,7 +9,7 @@ from mock import MagicMock
 from numpy.testing import assert_allclose, assert_array_equal
 
 from glue.core.component import CategoricalComponent
-from glue.core.data import Data
+from glue.core.data import BaseCartesianData, Data
 from glue.core import data_factories as df
 from glue.config import data_factory
 from glue.tests.helpers import requires_astropy, make_file, requires_qt
@@ -284,3 +284,44 @@ def test_ambiguous_format(tmpdir):
     assert str(w[0].message) == "Multiple data factories matched the input: 'a', 'b'. Choosing 'a'."
 
     assert factory is reader2
+
+
+def test_basedata(tmpdir):
+
+    # Regression test for a bug that caused load_data to fail if a data
+    # factory returned a BaseData (but not Data) subclass, due to the
+    # LoadLog expecting a Data object
+
+    class BigData(BaseCartesianData):
+
+        def get_kind(self):
+            pass
+
+        def compute_histogram(self):
+            pass
+
+        def compute_statistic(self):
+            pass
+
+        def get_mask(self):
+            pass
+
+        @property
+        def shape(self):
+            pass
+
+        @property
+        def main_components(self):
+            return []
+
+    @data_factory('bigdata', identifier=df.has_extension('bigdata'), priority=34)
+    def reader(filename):
+        return BigData()
+
+    filename = tmpdir.join('test.bigdata').strpath
+    with open(filename, 'w') as f:
+        f.write('Camelot!')
+
+    d = df.load_data(filename)
+
+    assert isinstance(d, BigData)

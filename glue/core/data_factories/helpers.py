@@ -250,8 +250,15 @@ def load_data(path, factory=None, **kwargs):
 
     d = as_list(factory(path, **kwargs))
     d = list(as_data_objects(d, lbl))
+
     log = LoadLog(path, factory, kwargs)
     for item in d:
+
+        # NOTE: The LoadLog infrastructure is specifically designed for Data
+        # objects in mind and not more general data classes.
+        if not isinstance(item, Data):
+            continue
+
         if not item.label:
             item.label = lbl
         log.log(item)  # attaches log metadata to item
