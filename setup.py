@@ -74,7 +74,9 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
-install_requires = ['numpy>=1.9',
+required_numpy_version = 'numpy>=1.9'
+
+install_requires = [required_numpy_version,
                     'pandas>=0.14',
                     'astropy>=2.0',
                     'matplotlib>=2.0',
@@ -126,6 +128,9 @@ setup(name='glue-core',
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
       url='http://glueviz.org',
+      # This is necessary due to the bottleneck dependency, which has a
+      # packaging bug. See https://github.com/kwgoodman/bottleneck/issues/195.
+      setup_requires=[required_numpy_version],
       install_requires=install_requires,
       extras_require=extras_require,
       classifiers=[
