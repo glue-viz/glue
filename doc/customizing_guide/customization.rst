@@ -384,6 +384,30 @@ Startup actions have to then be explicitly specified using::
 
 and multiple actions can be given as a comma-separated string.
 
+Custom layer artist makers
+--------------------------
+
+In some cases, one may want to override the default layer artist classes used
+by specific viewers. For example, for a particular data object, one may want to
+show a tree or network on top of an image.
+
+This can be done by defining a function and decorating it with the
+``layer_artist_maker`` decorator::
+
+    @layer_artist_maker('custom_maker')
+    def custom_maker(viewer, data_or_subset):
+        ...
+
+The function should take two arguments - the first argument is the viewer to
+which the data is being added, and the second is the :class:`~glue.core.Data` or
+:class:`~glue.core.Subset` object to be added. The function should then either
+return a custom :class:`~glue.viewers.common.layer_artist.LayerArtist` instance,
+or `None` if the function does not need to override the default layer artists.
+
+Note that ``layer_artist_maker`` can take an optional ``priority=`` argument
+(which should be an integer), where higher values indicate that the layer artist
+maker should be considered first.
+
 Complete list of registries
 ---------------------------
 
