@@ -94,7 +94,6 @@ class Application(HubListener):
                 return
 
         self.add_widget(c)
-        c.show()
         return c
 
     @catch_error("Failed to save session")

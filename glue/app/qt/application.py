@@ -996,7 +996,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         cmd = command.NewDataViewer(viewer=client, data=data)
         return self.do(cmd)
 
-    new_data_viewer = defer_draw(Application.new_data_viewer)
+    @defer_draw
+    def new_data_viewer(self, viewer_class, data=None, state=None):
+        viewer = super(GlueApplication, self).new_data_viewer(viewer_class, data=data, state=state)
+        viewer.show()
+        return viewer
 
     def _choose_save_session(self, *args):
         """ Save the data collection and hub to file.
