@@ -20,7 +20,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
-           'LayerArtistRegistry', 'layer_artist']
+           'LayerArtistMakerRegistry', 'layer_artist_maker']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
