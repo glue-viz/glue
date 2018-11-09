@@ -180,32 +180,23 @@ class LayerArtistBase(PropertySetMixin):
     def layer(self, value):
         self._layer = value
 
-    @abstractmethod
     def redraw(self):
         """
         Re-render the plot
         """
-        raise NotImplementedError()
+        pass
 
-    @abstractmethod
-    def update(self, view=None):
+    def update(self):
         """
         Sync the visual appearance of the layer, and redraw
-
-        Subclasses may skip the update if the _changed attribute
-        is set to False.
-
-        Parameters
-        ----------
-        view : (ComponentID, numpy_style view) or None
-            A hint about what sub-view into the data is relevant.
         """
-        raise NotImplementedError()
+        pass
 
-    @abstractmethod
     def clear(self):
-        """Clear the visualization for this layer"""
-        raise NotImplementedError()
+        """
+        Clear the visualization for this layer
+        """
+        pass
 
     def remove(self):
         """
