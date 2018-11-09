@@ -20,7 +20,7 @@ def test_custom_layer_artist_maker():
             pass
 
     @layer_artist_maker('custom_maker')
-    def custom_maker(data, viewer):
+    def custom_maker(viewer, data):
         if hasattr(data, 'custom'):
             return CustomLayerArtist(viewer.state, layer=data)
 

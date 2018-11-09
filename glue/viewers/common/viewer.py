@@ -31,7 +31,7 @@ def get_layer_artist_from_registry(data, viewer):
     the specified data and viewer.
     """
     for maker in layer_artist_maker.members:
-        layer_artist = maker.function(data, viewer)
+        layer_artist = maker.function(viewer, data)
         if layer_artist is not None:
             return layer_artist
 
