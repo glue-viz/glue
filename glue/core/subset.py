@@ -27,7 +27,7 @@ __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
            'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
            'CategoricalMultiRangeSubsetState', 'CategoricalROISubsetState2D',
-           'SliceSubsetState', 'roi_to_subset_state']
+           'SliceSubsetState', 'roi_to_subset_state', 'MultiOrState']
 
 
 OPSYM = {operator.ge: '>=', operator.gt: '>',
@@ -1124,38 +1124,6 @@ class CompositeSubsetState(SubsetState):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
 
-class MultiOrState(SubsetState):
-    """
-    A state for many states to be or'd together.
-    """
-
-    def __init__(self, states):
-        super(MultiOrState, self).__init__()
-        assert len(states) > 1
-        self.states = states
-
-    def copy(self):
-        return type(self)(self.states)
-
-    @property
-    def attributes(self):
-        att = self.states[0].attributes
-        for state in self.states[1:]:
-            att += state.attributes
-        return tuple(sorted(set(att)))
-
-    @memoize
-    @contract(data='isinstance(Data)', view='array_view')
-    def to_mask(self, data, view=None):
-        result = operator.or_(self.states[0], self.states[1])
-        if len(self.states) > 2:
-            for state in self.states[2:]:
-                result = operator.or_(result, state)
-        return result.to_mask(data, view=view)
-
-    def __str__(self):
-        return "('or' combination of many states)"
-
 
 class OrState(CompositeSubsetState):
     """
@@ -1203,6 +1171,43 @@ class InvertState(CompositeSubsetState):
 
     def __str__(self):
         return "(~%s)" % self.state1
+
+
+class MultiOrState(SubsetState):
+    """
+    A state for many states to be or'd together.
+
+    This is meant to be used for cases where many subset states are meant to be
+    combined together and provides signficant performance enhancements compared
+    to chaining individual OrStates
+    """
+
+    def __init__(self, states):
+        super(MultiOrState, self).__init__()
+        if len(states) < 1:
+            raise ValueError("states should contain at least one subset state")
+        self.states = states
+
+    def copy(self):
+        return type(self)(self.states)
+
+    @property
+    def attributes(self):
+        att = self.states[0].attributes
+        for state in self.states[1:]:
+            att += state.attributes
+        return tuple(sorted(set(att)))
+
+    @memoize
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+        result = self.states[0].to_mask(data, view=view)
+        for state in self.states[1:]:
+            result |= state.to_mask(data, view=view)
+        return result
+
+    def __str__(self):
+        return "('or' combination of {0} individual states)".format(len(self.states))
 
 
 class MaskSubsetState(SubsetState):
