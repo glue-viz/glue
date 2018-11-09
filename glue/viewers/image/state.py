@@ -104,7 +104,7 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.update_from_dict(kwargs)
 
-    def reset_limits(self):
+    def reset_limits(self, aspect_ratio=None):
 
         if self.reference_data is None or self.x_att is None or self.y_att is None:
             return
@@ -112,11 +112,29 @@ class ImageViewerState(MatplotlibDataViewerState):
         nx = self.reference_data.shape[self.x_att.axis]
         ny = self.reference_data.shape[self.y_att.axis]
 
+        x_min = -0.5
+        x_max = nx - 0.5
+        y_min = -0.5
+        y_max = ny - 0.5
+
+        if aspect_ratio is not None:
+            data_ratio = abs(y_max - y_min) / abs(x_max - x_min)
+            if aspect_ratio > 1:
+                y_mid = 0.5 * (y_min + y_max)
+                y_width = abs(y_max - y_min) * aspect_ratio
+                y_min = y_mid - y_width / 2.
+                y_max = y_mid + y_width / 2.
+            elif aspect_ratio < 1:
+                x_mid = 0.5 * (x_min + x_max)
+                x_width = abs(x_max - x_min) / aspect_ratio
+                x_min = x_mid - x_width / 2.
+                x_max = x_mid + x_width / 2.
+
         with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.x_min = -0.5
-            self.x_max = nx - 0.5
-            self.y_min = -0.5
-            self.y_max = ny - 0.5
+            self.x_min = x_min
+            self.x_max = x_max
+            self.y_min = y_min
+            self.y_max = y_max
 
     @property
     def _display_world(self):
@@ -227,7 +245,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                 self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
             else:
                 self.x_att_world = self.x_att
-        self.reset_limits()
 
     @defer_draw
     def _on_yatt_change(self, *args):
@@ -236,7 +253,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                 self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
             else:
                 self.y_att_world = self.y_att
-        self.reset_limits()
 
     @defer_draw
     def _on_xatt_world_change(self, *args):

@@ -123,16 +123,14 @@ class TestImageViewer(object):
         assert self.viewer.axes.get_xlabel() == 'World 1'
         assert self.viewer.state.x_att_world is self.image1.id['World 1']
         assert self.viewer.state.x_att is self.image1.pixel_component_ids[1]
-        # TODO: make sure limits are deterministic then update this
-        # assert self.viewer.state.x_min == -0.5
-        # assert self.viewer.state.x_max == +1.5
+        assert_allclose(self.viewer.state.x_min, -0.8419913419913423)
+        assert_allclose(self.viewer.state.x_max, +1.8419913419913423)
 
         assert self.viewer.axes.get_ylabel() == 'World 0'
         assert self.viewer.state.y_att_world is self.image1.id['World 0']
         assert self.viewer.state.y_att is self.image1.pixel_component_ids[0]
-        # TODO: make sure limits are deterministic then update this
-        # assert self.viewer.state.y_min == -0.5
-        # assert self.viewer.state.y_max == +1.5
+        assert self.viewer.state.y_min == -0.5
+        assert self.viewer.state.y_max == +1.5
 
         assert not self.viewer.state.x_log
         assert not self.viewer.state.y_log
@@ -246,7 +244,6 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image1)
 
         assert self.viewer.state.aspect == 'equal'
-        assert self.viewer.axes.get_aspect() == 'equal'
 
         self.viewer.state.aspect = 'auto'
 
@@ -255,7 +252,6 @@ class TestImageViewer(object):
         assert len(self.viewer.state.layers) == 2
 
         assert self.viewer.state.aspect == 'auto'
-        assert self.viewer.axes.get_aspect() == 'auto'
 
         self.viewer.state.aspect = 'equal'
 
@@ -264,7 +260,6 @@ class TestImageViewer(object):
         assert len(self.viewer.state.layers) == 3
 
         assert self.viewer.state.aspect == 'equal'
-        assert self.viewer.axes.get_aspect() == 'equal'
 
     def test_hypercube(self):
 
@@ -278,16 +273,14 @@ class TestImageViewer(object):
         assert self.viewer.axes.get_xlabel() == 'World 3'
         assert self.viewer.state.x_att_world is self.hypercube.id['World 3']
         assert self.viewer.state.x_att is self.hypercube.pixel_component_ids[3]
-        # TODO: make sure limits are deterministic then update this
-        # assert self.viewer.state.x_min == -0.5
-        # assert self.viewer.state.x_max == +1.5
+        assert_allclose(self.viewer.state.x_min, -0.6839826839826846)
+        assert_allclose(self.viewer.state.x_max, +4.6839826839826846)
 
         assert self.viewer.axes.get_ylabel() == 'World 2'
         assert self.viewer.state.y_att_world is self.hypercube.id['World 2']
         assert self.viewer.state.y_att is self.hypercube.pixel_component_ids[2]
-        # TODO: make sure limits are deterministic then update this
-        # assert self.viewer.state.y_min == -0.5
-        # assert self.viewer.state.y_max == +1.5
+        assert self.viewer.state.y_min == -0.5
+        assert self.viewer.state.y_max == +3.5
 
         assert not self.viewer.state.x_log
         assert not self.viewer.state.y_log

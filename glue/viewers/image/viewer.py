@@ -117,7 +117,7 @@ class MatplotlibImageMixin(object):
         self.update_y_ticklabel()
 
         if relim:
-            self.state.reset_limits()
+            self._on_aspect_changed()
 
         # Determine whether changing slices requires changing the WCS
         if ref_coords is None or type(ref_coords) == Coordinates:
@@ -200,14 +200,11 @@ class MatplotlibImageMixin(object):
             self._crosshairs = None
             self.axes.figure.canvas.draw()
 
-    def update_aspect(self, aspect=None):
-        super(MatplotlibImageMixin, self).update_aspect(aspect=aspect)
-        if self.state.reference_data is not None and self.state.x_att is not None and self.state.y_att is not None:
-            nx = self.state.reference_data.shape[self.state.x_att.axis]
-            ny = self.state.reference_data.shape[self.state.y_att.axis]
-            self.axes.set_xlim(-0.5, nx - 0.5)
-            self.axes.set_ylim(-0.5, ny - 0.5)
-            self.axes.figure.canvas.draw()
+    def _on_aspect_changed(self, *args):
+        if self.state.aspect == 'equal':
+            self.state.reset_limits(aspect_ratio=self.axes_ratio)
+        else:
+            self.state.reset_limits()
 
     def _script_header(self):
 
