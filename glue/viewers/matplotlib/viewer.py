@@ -159,7 +159,7 @@ class MatplotlibViewerMixin(object):
     def limits_to_mpl(self, *args):
 
         if (self.state.x_min is None or self.state.x_max is None or
-            self.state.y_min is None or self.state.y_max is None):
+                self.state.y_min is None or self.state.y_max is None):
             return
 
         x_min, x_max = self.state.x_min, self.state.x_max

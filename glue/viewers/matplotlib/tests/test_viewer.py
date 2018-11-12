@@ -13,12 +13,15 @@ def test_aspect_ratio():
     # Test of the aspect ratio infrastructure
 
     class CustomViewer(MatplotlibViewerMixin, Viewer):
+
         _state_cls = MatplotlibDataViewerState
+
         def __init__(self, *args, **kwargs):
             Viewer.__init__(self, *args, **kwargs)
             self.figure = plt.figure(figsize=(12, 6))
             self.axes = self.figure.add_axes([0, 0, 1, 1])
             MatplotlibViewerMixin.setup_callbacks(self)
+
         def show(self):
             pass
 
