@@ -203,7 +203,7 @@ class MatplotlibViewerMixin(object):
 
         return axes_ratio
 
-    def _on_resize(self):
+    def _on_resize(self, *args):
         self.state._set_axes_aspect_ratio(self.axes_ratio)
 
     def _update_appearance_from_settings(self, message=None):
