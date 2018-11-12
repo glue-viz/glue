@@ -58,14 +58,10 @@ class MatplotlibViewerMixin(object):
                                            transform=self.axes.transAxes)
         self.loading_text.set_visible(False)
 
-        self.state.add_callback('x_min', self._on_state_xlim_changed)
-        self.state.add_callback('x_max', self._on_state_xlim_changed)
-        self.state.add_callback('y_min', self._on_state_ylim_changed)
-        self.state.add_callback('y_max', self._on_state_ylim_changed)
-
-        self.state.add_callback('aspect', self._on_aspect_changed)
-
-        self._on_aspect_changed()
+        self.state.add_callback('x_min', self.limits_to_mpl)
+        self.state.add_callback('x_max', self.limits_to_mpl)
+        self.state.add_callback('y_min', self.limits_to_mpl)
+        self.state.add_callback('y_max', self.limits_to_mpl)
 
         if (self.state.x_min or self.state.x_max or self.state.y_min or self.state.y_max) is None:
             self.limits_from_mpl()
@@ -77,9 +73,11 @@ class MatplotlibViewerMixin(object):
 
         self.update_x_log()
 
-        self.axes.callbacks.connect('xlim_changed', self._on_mpl_xlim_changed)
-        self.axes.callbacks.connect('ylim_changed', self._on_mpl_ylim_changed)
-        self.figure.canvas.mpl_connect('resize_event', self._on_aspect_changed)
+        self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
+        self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
+        self.figure.canvas.mpl_connect('resize_event', self._on_resize)
+
+        self._on_resize()
 
         self.axes.set_autoscale_on(False)
 
@@ -135,19 +133,10 @@ class MatplotlibViewerMixin(object):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
         self.redraw()
 
-    def _on_mpl_xlim_changed(self, *args):
-        # If the x limits have been set, if the aspect ratio is 'equal', we
-        # adjust the y limits to preserve the aspect ratio.
-        self.limits_from_mpl(aspect_adjustable='y')
+    # @avoid_circular
+    def limits_from_mpl(self, *args, **kwargs):
 
-    def _on_mpl_ylim_changed(self, *args):
-        # If the y limits have been set, if the aspect ratio is 'equal', we
-        # adjust the x limits to preserve the aspect ratio.
-        self.limits_from_mpl(aspect_adjustable='x')
-
-    def limits_from_mpl(self, aspect_adjustable='x'):
-
-        if getattr(self, '_skip_from_mpl', False):
+        if getattr(self, '_skip_limits_from_mpl', False):
             return
 
         if isinstance(self.state.x_min, np.datetime64):
@@ -160,42 +149,21 @@ class MatplotlibViewerMixin(object):
         else:
             y_min, y_max = self.axes.get_ylim()
 
-        x_min, x_max, y_min, y_max, changed = self.limits_with_aspect(x_min, x_max,
-                                                                      y_min, y_max,
-                                                                      aspect_adjustable=aspect_adjustable)
-
-        # If the aspect ratio has caused some of the limits to change, we simply
-        # change the relevant matplotlib limits and return - changing the
-        # matplotlib limits will cause this method to be called again, at which
-        # point the limits should no longer change, and will be set on the
-        # state.
-        if changed:
-            if changed == 'x':
-                self.axes.set_xlim(x_min, x_max)
-            else:
-                self.axes.set_ylim(y_min, y_max)
-            self.axes.figure.canvas.draw()
-            return
-
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
+
             self.state.x_min = x_min
             self.state.x_max = x_max
             self.state.y_min = y_min
             self.state.y_max = y_max
 
-    def _on_state_xlim_changed(self, *args):
-        self.limits_to_mpl(aspect_adjustable='y')
-
-    def _on_state_ylim_changed(self, *args):
-        self.limits_to_mpl(aspect_adjustable='x')
-
-    def limits_to_mpl(self, aspect_adjustable='x'):
+    def limits_to_mpl(self, *args):
 
         if (self.state.x_min is None or self.state.x_max is None or
             self.state.y_min is None or self.state.y_max is None):
             return
 
         x_min, x_max = self.state.x_min, self.state.x_max
+
         if self.state.x_log:
             if self.state.x_max <= 0:
                 x_min, x_max = 0.1, 1
@@ -209,25 +177,18 @@ class MatplotlibViewerMixin(object):
             elif self.state.y_min <= 0:
                 y_min = y_max / 10
 
-        x_min, x_max, y_min, y_max, changed = self.limits_with_aspect(x_min, x_max,
-                                                                      y_min, y_max,
-                                                                      aspect_adjustable=aspect_adjustable)
-
-        # If the limits have changed, we just change them back on the state
-        if changed:
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-                self.state.x_min = x_min
-                self.state.x_max = x_max
-                self.state.y_min = y_min
-                self.state.y_max = y_max
-            return
-
-        self._skip_from_mpl = True
-        self.axes.set_xlim(x_min, x_max)
-        self.axes.set_ylim(y_min, y_max)
-        self._skip_from_mpl = False
-
-        self.axes.figure.canvas.draw()
+        # Since we deal with aspect ratio internally, there are no conditions
+        # under which we would want to immediately change the state once the
+        # limits are set in Matplotlib, so we avoid this by setting the
+        # _skip_limits_from_mpl attribute which is then recognized inside
+        # limits_from_mpl
+        self._skip_limits_from_mpl = True
+        try:
+            self.axes.set_xlim(x_min, x_max)
+            self.axes.set_ylim(y_min, y_max)
+            self.axes.figure.canvas.draw()
+        finally:
+            self._skip_limits_from_mpl = False
 
     @property
     def axes_ratio(self):
@@ -242,81 +203,8 @@ class MatplotlibViewerMixin(object):
 
         return axes_ratio
 
-    def limits_with_aspect(self, x_min, x_max, y_min, y_max, aspect_adjustable='auto'):
-        """
-        Determine whether the limits need to be changed based on the aspect ratio.
-        """
-
-        changed = None
-
-        if self.state.aspect == 'equal':
-
-            # Find axes aspect ratio
-            axes_ratio = self.axes_ratio
-
-            # Find current data ratio
-            data_ratio = abs(y_max - y_min) / abs(x_max - x_min)
-
-            # Only do something if the data ratio is sufficiently different
-            # from the axes ratio.
-            if abs(data_ratio - axes_ratio) / (0.5 * (data_ratio + axes_ratio)) > 0.01:
-
-                # We now adjust the limits - which ones we adjust depends on
-                # the adjust keyword. We also make sure we preserve the
-                # mid-point of the current coordinates.
-
-                if aspect_adjustable == 'both':
-
-                    # We need to adjust both at the same time
-
-                    x_mid = 0.5 * (x_min + x_max)
-                    x_width = abs(x_max - x_min) * (data_ratio / axes_ratio) ** 0.5
-
-                    y_mid = 0.5 * (y_min + y_max)
-                    y_width = abs(y_max - y_min) / (data_ratio / axes_ratio) ** 0.5
-
-                    x_min = x_mid - x_width / 2.
-                    x_max = x_mid + x_width / 2.
-
-                    y_min = y_mid - y_width / 2.
-                    y_max = y_mid + y_width / 2.
-
-                    changed = 'both'
-
-                elif (aspect_adjustable == 'auto' and data_ratio > axes_ratio) or aspect_adjustable == 'x':
-                    x_mid = 0.5 * (x_min + x_max)
-                    x_width = abs(y_max - y_min) / axes_ratio
-                    x_min = x_mid - x_width / 2.
-                    x_max = x_mid + x_width / 2.
-                    changed = 'x'
-                else:
-                    y_mid = 0.5 * (y_min + y_max)
-                    y_width = abs(x_max - x_min) * axes_ratio
-                    y_min = y_mid - y_width / 2.
-                    y_max = y_mid + y_width / 2.
-                    changed = 'y'
-
-        return x_min, x_max, y_min, y_max, changed
-
-    def _on_aspect_changed(self, *args):
-
-        if (self.state.x_min is None or self.state.x_max is None or
-            self.state.y_min is None or self.state.y_max is None):
-            return
-
-        x_min, x_max, y_min, y_max, changed = self.limits_with_aspect(self.state.x_min,
-                                                                      self.state.x_max,
-                                                                      self.state.y_min,
-                                                                      self.state.y_max,
-                                                                      aspect_adjustable='both')
-
-        if changed:
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-                self.state.x_min = x_min
-                self.state.x_max = x_max
-                self.state.y_min = y_min
-                self.state.y_max = y_max
-
+    def _on_resize(self):
+        self.state._set_axes_aspect_ratio(self.axes_ratio)
 
     def _update_appearance_from_settings(self, message=None):
         update_appearance_from_settings(self.axes)

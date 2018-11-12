@@ -334,7 +334,7 @@ class BaseTestMatplotlibDataViewer(object):
         # glue, but leaving the tests below in case this is fixed some day. The
         # Matplotlib issue is https://github.com/matplotlib/matplotlib/issues/8439
 
-        axes.set_xscale('linear')
+        # axes.set_xscale('linear')
         #
         # assert viewer_state.x_min == 3
         # assert viewer_state.x_max == 9
@@ -343,7 +343,7 @@ class BaseTestMatplotlibDataViewer(object):
         # assert not viewer_state.x_log
         # assert viewer_state.y_log
         #
-        axes.set_yscale('linear')
+        # axes.set_yscale('linear')
         #
         # assert viewer_state.x_min == 3
         # assert viewer_state.x_max == 9
@@ -351,6 +351,9 @@ class BaseTestMatplotlibDataViewer(object):
         # assert viewer_state.y_max == 3
         # assert not viewer_state.x_log
         # assert not viewer_state.y_log
+
+        viewer_state.x_log = False
+        viewer_state.y_log = False
 
         axes.set_xlim(-1, 4)
 

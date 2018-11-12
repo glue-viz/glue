@@ -55,10 +55,14 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.add_callback('y_log', self._reset_y_limits)
 
     def _reset_x_limits(self, *args):
+        if self.x_att is None:
+            return
         self.x_lim_helper.percentile = 100
         self.x_lim_helper.update_values(force=True)
 
     def _reset_y_limits(self, *args):
+        if self.y_att is None:
+            return
         self.y_lim_helper.percentile = 100
         self.y_lim_helper.update_values(force=True)
 

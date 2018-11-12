@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync
+from glue.external.echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 
 from glue.core.message import LayerArtistUpdatedMessage
 
 from glue.viewers.common.state import ViewerState, LayerState
 
-from glue.utils import defer_draw
+from glue.utils import defer_draw, avoid_circular
 
 __all__ = ['DeferredDrawSelectionCallbackProperty', 'DeferredDrawCallbackProperty',
            'MatplotlibDataViewerState', 'MatplotlibLayerState']
@@ -69,9 +69,105 @@ class MatplotlibDataViewerState(ViewerState):
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
     def __init__(self, *args, **kwargs):
+
+        self._axes_aspect_ratio = None
+
         MatplotlibDataViewerState.x_axislabel_weight.set_choices(self, VALID_WEIGHTS)
         MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
+
         super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
+
+        self.add_callback('aspect', self._adjust_limits_aspect, priority=10000)
+        self.add_callback('x_min', self._adjust_limits_aspect_x, priority=10000)
+        self.add_callback('x_max', self._adjust_limits_aspect_x, priority=10000)
+        self.add_callback('y_min', self._adjust_limits_aspect_y, priority=10000)
+        self.add_callback('y_max', self._adjust_limits_aspect_y, priority=10000)
+
+    def _set_axes_aspect_ratio(self, value):
+        """
+        Set the aspect ratio of the axes in which the visualization is shown.
+        This is a private method that is intended only for internal use, and it
+        allows this viewer state class to adjust the limits accordingly when
+        the aspect callback property is set to 'equal'
+        """
+        self._axes_aspect_ratio = value
+        self._adjust_limits_aspect()
+
+    def _adjust_limits_aspect_x(self, *args):
+        self._adjust_limits_aspect(aspect_adjustable='y')
+
+    def _adjust_limits_aspect_y(self, *args):
+        self._adjust_limits_aspect(aspect_adjustable='x')
+
+    @avoid_circular
+    def _adjust_limits_aspect(self, *args, **kwargs):
+        """
+        Adjust the limits of the visualization to take into account the aspect
+        ratio. This only works if `_set_axes_aspect_ratio` has been called
+        previously.
+        """
+
+        if self.aspect == 'auto' or self._axes_aspect_ratio is None:
+            return
+
+        if self.x_min is None or self.x_max is None or self.y_min is None or self.y_max is None:
+            return
+
+        aspect_adjustable = kwargs.pop('aspect_adjustable', 'auto')
+
+        changed = None
+
+        # Find axes aspect ratio
+        axes_ratio = self._axes_aspect_ratio
+
+        # Put the limits in temporary variables so that we only actually change
+        # them in one go at the end.
+        x_min, x_max = self.x_min, self.x_max
+        y_min, y_max = self.y_min, self.y_max
+
+        # Find current data ratio
+        data_ratio = abs(y_max - y_min) / abs(x_max - x_min)
+
+        # Only do something if the data ratio is sufficiently different
+        # from the axes ratio.
+        if abs(data_ratio - axes_ratio) / (0.5 * (data_ratio + axes_ratio)) > 0.01:
+
+            # We now adjust the limits - which ones we adjust depends on
+            # the adjust keyword. We also make sure we preserve the
+            # mid-point of the current coordinates.
+
+            if aspect_adjustable == 'both':
+
+                # We need to adjust both at the same time
+
+                x_mid = 0.5 * (x_min + x_max)
+                x_width = abs(x_max - x_min) * (data_ratio / axes_ratio) ** 0.5
+
+                y_mid = 0.5 * (y_min + y_max)
+                y_width = abs(y_max - y_min) / (data_ratio / axes_ratio) ** 0.5
+
+                x_min = x_mid - x_width / 2.
+                x_max = x_mid + x_width / 2.
+
+                y_min = y_mid - y_width / 2.
+                y_max = y_mid + y_width / 2.
+
+            elif (aspect_adjustable == 'auto' and data_ratio > axes_ratio) or aspect_adjustable == 'x':
+                x_mid = 0.5 * (x_min + x_max)
+                x_width = abs(y_max - y_min) / axes_ratio
+                x_min = x_mid - x_width / 2.
+                x_max = x_mid + x_width / 2.
+            else:
+                y_mid = 0.5 * (y_min + y_max)
+                y_width = abs(x_max - x_min) * axes_ratio
+                y_min = y_mid - y_width / 2.
+                y_max = y_mid + y_width / 2.
+
+            with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
+                self.x_min = x_min
+                self.x_max = x_max
+                self.y_min = y_min
+                self.y_max = y_max
 
     def update_axes_settings_from(self, state):
         self.x_axislabel_size = state.x_axislabel_size
