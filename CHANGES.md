@@ -4,6 +4,9 @@ Full changelog
 v0.14.0 (unreleased)
 --------------------
 
+* Improved how we handle equal aspect ratio to not depend on
+  Matplotlib. [#1894]
+
 * Avoid showing a warning when closing an empty tab. [#1890]
 
 * Fix bug that caused component arithmetic to not work if
