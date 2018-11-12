@@ -296,8 +296,6 @@ class MatplotlibViewerMixin(object):
                     y_max = y_mid + y_width / 2.
                     changed = 'y'
 
-        data_ratio = abs(y_max - y_min) / abs(x_max - x_min)
-
         return x_min, x_max, y_min, y_max, changed
 
     def _on_aspect_changed(self, *args):
