@@ -1599,8 +1599,10 @@ class Data(BaseCartesianData):
         # By default fast-histogram drops values that are exactly xmax, so we
         # increase xmax very slightly to make sure that this doesn't happen, to
         # be consistent with np.histogram.
-        if ndim == 1:
+        if ndim >= 1:
             xmax += 10 * np.spacing(xmax)
+        if ndim >= 2:
+            ymax += 10 * np.spacing(ymax)
 
         if ndim == 1:
             range = (xmin, xmax)
