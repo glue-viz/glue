@@ -69,7 +69,7 @@ def _fix_ipython_pylab():
             pass
 
     try:
-        shell.enable_pylab('inline', import_all=True)
+        shell.enable_pylab('agg', import_all=True)
     except ValueError:
         # if the shell is a normal terminal shell, we get here
         pass
