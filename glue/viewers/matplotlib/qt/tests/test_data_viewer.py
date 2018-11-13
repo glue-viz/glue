@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+from numpy.testing import assert_allclose
 
 try:
     import objgraph
@@ -16,8 +17,6 @@ from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
 from glue.utils.qt import get_qapp
-
-from glue.viewers.matplotlib.tests.test_viewer import assert_limits
 
 
 class MatplotlibDrawCounter(object):
@@ -554,19 +553,20 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.show()
         app.processEvents()
 
-        # Set viewer to an initial size
+        def limits(viewer):
+            return (viewer.state.x_min, viewer.state.x_max,
+                    viewer.state.y_min, viewer.state.y_max)
+
+        # Set viewer to an initial size and save limits
         self.viewer.viewer_size = (800, 400)
         app.processEvents()
-        assert_limits(self.viewer,
-                      -0.4182279131271667, 1.4182279131271665,
-                      0.1346246604993242, 0.8653753395006758)
+        initial_limits = limits(self.viewer)
 
         # Change the viewer size, and make sure the limits are adjusted
         self.viewer.viewer_size = (400, 400)
         app.processEvents()
-        assert_limits(self.viewer,
-                      -0.08354436018121303, 1.0835443601812127,
-                      -0.07493115929292937, 1.0749311592929294)
+        with pytest.raises(AssertionError):
+            assert_allclose(limits(self.viewer), initial_limits)
 
         # Now change the viewer size a number of times and make sure if we
         # return to the original size, the limits match the initial ones.
@@ -578,13 +578,9 @@ class BaseTestMatplotlibDataViewer(object):
         app.processEvents()
         self.viewer.viewer_size = (800, 400)
         app.processEvents()
-        assert_limits(self.viewer,
-                      -0.4182279131271667, 1.4182279131271665,
-                      0.1346246604993242, 0.8653753395006758)
+        assert_allclose(limits(self.viewer), initial_limits)
 
         # Now check that the limits don't change in 'auto' mode
         self.viewer.state.aspect = 'auto'
         self.viewer.viewer_size = (900, 300)
-        assert_limits(self.viewer,
-                      -0.4182279131271667, 1.4182279131271665,
-                      0.1346246604993242, 0.8653753395006758)
+        assert_allclose(limits(self.viewer), initial_limits)
