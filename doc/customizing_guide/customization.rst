@@ -399,10 +399,11 @@ This can be done by defining a function and decorating it with the
         ...
 
 The function should take two arguments - the first argument is the viewer to
-which the data is being added, and the second is the :class:`~glue.core.Data` or
-:class:`~glue.core.Subset` object to be added. The function should then either
-return a custom :class:`~glue.viewers.common.layer_artist.LayerArtist` instance,
-or `None` if the function does not need to override the default layer artists.
+which the data is being added, and the second is the
+:class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset` object to be
+added. The function should then either return a custom
+:class:`~glue.viewers.common.layer_artist.LayerArtist` instance, or `None` if
+the function does not need to override the default layer artists.
 
 Note that ``layer_artist_maker`` can take an optional ``priority=`` argument
 (which should be an integer), where higher values indicate that the layer artist
