@@ -112,16 +112,11 @@ class ImageViewerState(MatplotlibDataViewerState):
         nx = self.reference_data.shape[self.x_att.axis]
         ny = self.reference_data.shape[self.y_att.axis]
 
-        x_min = -0.5
-        x_max = nx - 0.5
-        y_min = -0.5
-        y_max = ny - 0.5
-
         with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.x_min = x_min
-            self.x_max = x_max
-            self.y_min = y_min
-            self.y_max = y_max
+            self.x_min = -0.5
+            self.x_max = nx - 0.5
+            self.y_min = -0.5
+            self.y_max = ny - 0.5
             # We need to adjust the limits in here to avoid triggering all
             # the update events then changing the limits again.
             self._adjust_limits_aspect()

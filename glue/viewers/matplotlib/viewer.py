@@ -133,7 +133,6 @@ class MatplotlibViewerMixin(object):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
         self.redraw()
 
-    # @avoid_circular
     def limits_from_mpl(self, *args, **kwargs):
 
         if getattr(self, '_skip_limits_from_mpl', False):
