@@ -141,9 +141,9 @@ class TestPlotly(object):
         args, kwargs = build_plotly_call(self.app)
 
         xaxis = dict(type='linear', rangemode='normal',
-                     range=[0.9, 3.1], title='x', zeroline=False)
+                     range=[0.92, 3.08], title='x', zeroline=False)
         yaxis = dict(type='linear', rangemode='normal',
-                     range=[-0.65, 2.65], title='z', zeroline=False)
+                     range=[-0.62, 2.62], title='z', zeroline=False)
         layout = args[0]['layout']
         for k, v in layout['xaxis'].items():
             assert xaxis.get(k, v) == v

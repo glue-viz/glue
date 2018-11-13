@@ -117,6 +117,9 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.x_max = nx - 0.5
             self.y_min = -0.5
             self.y_max = ny - 0.5
+            # We need to adjust the limits in here to avoid triggering all
+            # the update events then changing the limits again.
+            self._adjust_limits_aspect()
 
     @property
     def _display_world(self):
@@ -227,7 +230,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                 self.x_att_world = self.reference_data.world_component_ids[self.x_att.axis]
             else:
                 self.x_att_world = self.x_att
-        self.reset_limits()
 
     @defer_draw
     def _on_yatt_change(self, *args):
@@ -236,7 +238,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                 self.y_att_world = self.reference_data.world_component_ids[self.y_att.axis]
             else:
                 self.y_att_world = self.y_att
-        self.reset_limits()
 
     @defer_draw
     def _on_xatt_world_change(self, *args):

@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
+from numpy.testing import assert_allclose
 
 try:
     import objgraph
@@ -334,7 +335,7 @@ class BaseTestMatplotlibDataViewer(object):
         # glue, but leaving the tests below in case this is fixed some day. The
         # Matplotlib issue is https://github.com/matplotlib/matplotlib/issues/8439
 
-        axes.set_xscale('linear')
+        # axes.set_xscale('linear')
         #
         # assert viewer_state.x_min == 3
         # assert viewer_state.x_max == 9
@@ -343,7 +344,7 @@ class BaseTestMatplotlibDataViewer(object):
         # assert not viewer_state.x_log
         # assert viewer_state.y_log
         #
-        axes.set_yscale('linear')
+        # axes.set_yscale('linear')
         #
         # assert viewer_state.x_min == 3
         # assert viewer_state.x_max == 9
@@ -351,6 +352,9 @@ class BaseTestMatplotlibDataViewer(object):
         # assert viewer_state.y_max == 3
         # assert not viewer_state.x_log
         # assert not viewer_state.y_log
+
+        viewer_state.x_log = False
+        viewer_state.y_log = False
 
         axes.set_xlim(-1, 4)
 
@@ -527,3 +531,56 @@ class BaseTestMatplotlibDataViewer(object):
                 data.add_component(self.data[cid], cid.label)
         self.data.update_values_from_data(data)
         assert self.draw_count == 2
+
+    def test_aspect_resize(self):
+
+        # Make sure that the limits are adjusted appropriately when resizing
+        # depending on the aspect ratio mode. Note that we don't add any data
+        # here since it isn't needed for this test.
+
+        app = get_qapp()
+
+        # Set initial limits to deterministic values
+        self.viewer.state.aspect = 'auto'
+        self.viewer.state.x_min = 0.
+        self.viewer.state.x_max = 1.
+        self.viewer.state.y_min = 0.
+        self.viewer.state.y_max = 1.
+
+        self.viewer.state.aspect = 'equal'
+
+        # Resize events only work if widget is visible
+        self.viewer.show()
+        app.processEvents()
+
+        def limits(viewer):
+            return (viewer.state.x_min, viewer.state.x_max,
+                    viewer.state.y_min, viewer.state.y_max)
+
+        # Set viewer to an initial size and save limits
+        self.viewer.viewer_size = (800, 400)
+        app.processEvents()
+        initial_limits = limits(self.viewer)
+
+        # Change the viewer size, and make sure the limits are adjusted
+        self.viewer.viewer_size = (400, 400)
+        app.processEvents()
+        with pytest.raises(AssertionError):
+            assert_allclose(limits(self.viewer), initial_limits)
+
+        # Now change the viewer size a number of times and make sure if we
+        # return to the original size, the limits match the initial ones.
+        self.viewer.viewer_size = (350, 800)
+        app.processEvents()
+        self.viewer.viewer_size = (900, 300)
+        app.processEvents()
+        self.viewer.viewer_size = (600, 600)
+        app.processEvents()
+        self.viewer.viewer_size = (800, 400)
+        app.processEvents()
+        assert_allclose(limits(self.viewer), initial_limits)
+
+        # Now check that the limits don't change in 'auto' mode
+        self.viewer.state.aspect = 'auto'
+        self.viewer.viewer_size = (900, 300)
+        assert_allclose(limits(self.viewer), initial_limits)

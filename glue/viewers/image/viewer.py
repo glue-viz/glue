@@ -47,7 +47,7 @@ class MatplotlibImageMixin(object):
         self.state.add_callback('slices', self._on_slice_change)
         self.state.add_callback('reference_data', self._set_wcs)
         self.axes._composite = CompositeArray()
-        self.axes._composite_image = imshow(self.axes, self.axes._composite,
+        self.axes._composite_image = imshow(self.axes, self.axes._composite, aspect='auto',
                                             origin='lower', interpolation='nearest')
         self._set_wcs()
 
@@ -198,15 +198,6 @@ class MatplotlibImageMixin(object):
         if getattr(self, '_crosshairs', None) is not None:
             self._crosshairs.remove()
             self._crosshairs = None
-            self.axes.figure.canvas.draw()
-
-    def update_aspect(self, aspect=None):
-        super(MatplotlibImageMixin, self).update_aspect(aspect=aspect)
-        if self.state.reference_data is not None and self.state.x_att is not None and self.state.y_att is not None:
-            nx = self.state.reference_data.shape[self.state.x_att.axis]
-            ny = self.state.reference_data.shape[self.state.y_att.axis]
-            self.axes.set_xlim(-0.5, nx - 0.5)
-            self.axes.set_ylim(-0.5, ny - 0.5)
             self.axes.figure.canvas.draw()
 
     def _script_header(self):

@@ -15,7 +15,7 @@ class LayerArtist(_LayerArtist):
     clear_count = 0
     redraw_count = 0
 
-    def update(self, view=None):
+    def update(self):
         self.update_count += 1
 
     def clear(self):

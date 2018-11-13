@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+import os
+
 
 class MatplotlibBackendSetter(object):
     """
@@ -42,3 +44,9 @@ def set_mpl_backend():
     from matplotlib import get_backend
     from matplotlib import backends
     backends.backend = get_backend()
+
+    # Set the MPLBACKEND variable explicitly, because ipykernel uses the lack of
+    # MPLBACKEND variable to indicate that it should use its own backend, and
+    # this in turn causes some rcParams to be changed, causing test failures
+    # etc.
+    os.environ['MPLBACKEND'] = 'Agg'

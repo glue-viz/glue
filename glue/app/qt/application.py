@@ -69,7 +69,7 @@ def _fix_ipython_pylab():
             pass
 
     try:
-        shell.enable_pylab('inline', import_all=True)
+        shell.enable_pylab('agg', import_all=True)
     except ValueError:
         # if the shell is a normal terminal shell, we get here
         pass
@@ -77,6 +77,9 @@ def _fix_ipython_pylab():
         # if the shell is a normal terminal shell, we can also get here
         pass
     except UsageError:
+        pass
+    except KeyError:
+        # old versions of ipython
         pass
 
     # Make sure we disable interactive mode (where figures get redrawn for

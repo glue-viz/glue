@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from glue.external.echo import delay_callback
-from glue.utils import mpl_to_datetime64, avoid_circular
+from glue.utils import mpl_to_datetime64
 
 __all__ = ['MatplotlibViewerMixin']
 
@@ -58,16 +58,15 @@ class MatplotlibViewerMixin(object):
                                            transform=self.axes.transAxes)
         self.loading_text.set_visible(False)
 
-        self.state.add_callback('aspect', self.update_aspect)
-
-        self.update_aspect()
-
         self.state.add_callback('x_min', self.limits_to_mpl)
         self.state.add_callback('x_max', self.limits_to_mpl)
         self.state.add_callback('y_min', self.limits_to_mpl)
         self.state.add_callback('y_max', self.limits_to_mpl)
 
-        self.limits_to_mpl()
+        if (self.state.x_min or self.state.x_max or self.state.y_min or self.state.y_max) is None:
+            self.limits_from_mpl()
+        else:
+            self.limits_to_mpl()
 
         self.state.add_callback('x_log', self.update_x_log, priority=1000)
         self.state.add_callback('y_log', self.update_y_log, priority=1000)
@@ -76,6 +75,9 @@ class MatplotlibViewerMixin(object):
 
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
+        self.figure.canvas.mpl_connect('resize_event', self._on_resize)
+
+        self._on_resize()
 
         self.axes.set_autoscale_on(False)
 
@@ -131,70 +133,77 @@ class MatplotlibViewerMixin(object):
         self.axes.set_yscale('log' if self.state.y_log else 'linear')
         self.redraw()
 
-    def update_aspect(self, aspect=None):
-        self.axes.set_aspect(self.state.aspect, adjustable='datalim')
+    def limits_from_mpl(self, *args, **kwargs):
 
-    @avoid_circular
-    def limits_from_mpl(self, *args):
+        if getattr(self, '_skip_limits_from_mpl', False):
+            return
+
+        if isinstance(self.state.x_min, np.datetime64):
+            x_min, x_max = [mpl_to_datetime64(x) for x in self.axes.get_xlim()]
+        else:
+            x_min, x_max = self.axes.get_xlim()
+
+        if isinstance(self.state.y_min, np.datetime64):
+            y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
+        else:
+            y_min, y_max = self.axes.get_ylim()
 
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
 
-            if isinstance(self.state.x_min, np.datetime64):
-                x_min, x_max = [mpl_to_datetime64(x) for x in self.axes.get_xlim()]
-            else:
-                x_min, x_max = self.axes.get_xlim()
+            self.state.x_min = x_min
+            self.state.x_max = x_max
+            self.state.y_min = y_min
+            self.state.y_max = y_max
 
-            self.state.x_min, self.state.x_max = x_min, x_max
-
-            if isinstance(self.state.y_min, np.datetime64):
-                y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
-            else:
-                y_min, y_max = self.axes.get_ylim()
-
-            self.state.y_min, self.state.y_max = y_min, y_max
-
-    @avoid_circular
     def limits_to_mpl(self, *args):
 
-        if self.state.x_min is not None and self.state.x_max is not None:
-            x_min, x_max = self.state.x_min, self.state.x_max
-            if self.state.x_log:
-                if self.state.x_max <= 0:
-                    x_min, x_max = 0.1, 1
-                elif self.state.x_min <= 0:
-                    x_min = x_max / 10
+        if (self.state.x_min is None or self.state.x_max is None or
+                self.state.y_min is None or self.state.y_max is None):
+            return
+
+        x_min, x_max = self.state.x_min, self.state.x_max
+
+        if self.state.x_log:
+            if self.state.x_max <= 0:
+                x_min, x_max = 0.1, 1
+            elif self.state.x_min <= 0:
+                x_min = x_max / 10
+
+        y_min, y_max = self.state.y_min, self.state.y_max
+        if self.state.y_log:
+            if self.state.y_max <= 0:
+                y_min, y_max = 0.1, 1
+            elif self.state.y_min <= 0:
+                y_min = y_max / 10
+
+        # Since we deal with aspect ratio internally, there are no conditions
+        # under which we would want to immediately change the state once the
+        # limits are set in Matplotlib, so we avoid this by setting the
+        # _skip_limits_from_mpl attribute which is then recognized inside
+        # limits_from_mpl
+        self._skip_limits_from_mpl = True
+        try:
             self.axes.set_xlim(x_min, x_max)
-
-        if self.state.y_min is not None and self.state.y_max is not None:
-            y_min, y_max = self.state.y_min, self.state.y_max
-            if self.state.y_log:
-                if self.state.y_max <= 0:
-                    y_min, y_max = 0.1, 1
-                elif self.state.y_min <= 0:
-                    y_min = y_max / 10
             self.axes.set_ylim(y_min, y_max)
+            self.axes.figure.canvas.draw()
+        finally:
+            self._skip_limits_from_mpl = False
 
-        if self.state.aspect == 'equal':
+    @property
+    def axes_ratio(self):
 
-            # FIXME: for a reason I don't quite understand, dataLim doesn't
-            # get updated immediately here, which means that there are then
-            # issues in the first draw of the image (the limits are such that
-            # only part of the image is shown). We just set dataLim manually
-            # to avoid this issue.
-            self.axes.dataLim.intervalx = self.axes.get_xlim()
-            self.axes.dataLim.intervaly = self.axes.get_ylim()
+        # Get figure aspect ratio
+        width, height = self.figure.get_size_inches()
+        fig_aspect = height / width
 
-            # We then force the aspect to be computed straight away
-            self.axes.apply_aspect()
+        # Get axes aspect ratio
+        l, b, w, h = self.axes.get_position().bounds
+        axes_ratio = fig_aspect * (h / w)
 
-            # And propagate any changes back to the state since we have the
-            # @avoid_circular decorator
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-                # TODO: fix case with datetime64 here
-                self.state.x_min, self.state.x_max = self.axes.get_xlim()
-                self.state.y_min, self.state.y_max = self.axes.get_ylim()
+        return axes_ratio
 
-        self.axes.figure.canvas.draw()
+    def _on_resize(self, *args):
+        self.state._set_axes_aspect_ratio(self.axes_ratio)
 
     def _update_appearance_from_settings(self, message=None):
         update_appearance_from_settings(self.axes)
