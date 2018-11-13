@@ -756,8 +756,8 @@ class LayerArtistMakerRegistry(Registry):
         `~glue.viewers.common.layer_artist.LayerArtist` sub-class object or
         `None`.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         label : str
             Name for the plugin
         function : callable
