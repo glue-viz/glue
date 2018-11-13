@@ -25,7 +25,7 @@ from ..subset import (Subset, SubsetState,
                       CategorySubsetState, MaskSubsetState,
                       CategoricalROISubsetState2D, RoiSubsetState3d,
                       CategoricalMultiRangeSubsetState, FloodFillSubsetState,
-                      SliceSubsetState)
+                      SliceSubsetState, MultiOrState)
 from ..subset import AndState
 from ..subset import InvertState
 from ..subset import OrState
@@ -968,3 +968,39 @@ def test_slice_subset_state_clone():
 
     data2 = clone(data1)
     assert_equal(data2.subsets[0].to_mask(), expected_mask)
+
+
+def test_multi_or_state():
+
+    data = Data(x=[1, 2, 3, 4, 5])
+
+    cids = data.pixel_component_ids
+
+    sub1 = MaskSubsetState(np.array([1, 1, 0, 0, 0], dtype='bool'), cids)
+    sub2 = MaskSubsetState(np.array([1, 0, 1, 0, 0], dtype='bool'), cids)
+    sub3 = MaskSubsetState(np.array([0, 0, 0, 0, 1], dtype='bool'), cids)
+
+    with pytest.raises(ValueError) as exc:
+        MultiOrState([])
+    assert exc.value.args[0] == 'states should contain at least one subset state'
+
+    state1 = MultiOrState([sub1])
+    assert_equal(state1.to_mask(data), [1, 1, 0, 0, 0])
+
+    state2 = MultiOrState([sub1, sub2])
+    assert_equal(state2.to_mask(data), [1, 1, 1, 0, 0])
+
+    state3 = MultiOrState([sub1, sub2, sub3])
+    assert_equal(state3.to_mask(data), [1, 1, 1, 0, 1])
+
+    # Test view
+    assert_equal(state3.to_mask(data, view=slice(1, 4)), [1, 1, 0])
+
+    # Test attributes
+    assert len(state3.attributes) == 1 and state3.attributes[0] is cids[0]
+
+    # Test copy
+    assert_equal(state3.to_mask(data).copy(), [1, 1, 1, 0, 1])
+
+    # Test str
+    assert str(state3) == "('or' combination of 3 individual states)"

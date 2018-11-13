@@ -9,6 +9,9 @@ v0.14.0 (unreleased)
 * Fix bug that caused component arithmetic to not work if
   Numpy was imported in user's config.py file. [#1887]
 
+* Added the ability to define custom layer artist makers to
+  override default layer artists in viewers. [#1850]
+
 * Fix Plot.ly exporter for categorical components and histogram
   viewer. [#1886]
 

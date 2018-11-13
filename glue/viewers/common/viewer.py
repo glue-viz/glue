@@ -18,8 +18,22 @@ from glue.external.echo import delay_callback
 from glue.core.layer_artist import LayerArtistContainer
 
 from glue.viewers.common.state import ViewerState
+from glue.viewers.common.layer_artist import LayerArtist
+
+from glue.config import layer_artist_maker
 
 __all__ = ['BaseViewer', 'Viewer']
+
+
+def get_layer_artist_from_registry(data, viewer):
+    """
+    Check whether any plugins define an appropriate custom layer artist for
+    the specified data and viewer.
+    """
+    for maker in layer_artist_maker.members:
+        layer_artist = maker.function(viewer, data)
+        if layer_artist is not None:
+            return layer_artist
 
 
 class BaseViewer(HubListener):
@@ -118,11 +132,13 @@ class Viewer(BaseViewer):
     # The state class/subclass to use
     _state_cls = ViewerState
 
-    _data_artist_cls = None
-    _subset_artist_cls = None
+    _data_artist_cls = LayerArtist
+    _subset_artist_cls = LayerArtist
 
     allow_duplicate_data = False
     allow_duplicate_subset = False
+
+    large_data_size = 0
 
     def __init__(self, session, state=None):
 
@@ -179,8 +195,9 @@ class Viewer(BaseViewer):
         if data not in self.session.data_collection:
             raise IncompatibleDataException("Data not in DataCollection")
 
-        # Create layer artist and add to container
-        layer = self.get_data_layer_artist(data)
+        # Create layer artist and add to container. First check whether any
+        # plugins want to make a custom layer artist.
+        layer = get_layer_artist_from_registry(data, self) or self.get_data_layer_artist(data)
 
         if layer is None:
             return False
@@ -211,7 +228,7 @@ class Viewer(BaseViewer):
         return self.get_layer_artist(self._subset_artist_cls, layer=layer, layer_state=layer_state)
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
-        return cls(layer=layer, layer_state=layer_state)
+        return cls(self.state, layer=layer, layer_state=layer_state)
 
     def add_subset(self, subset):
 
@@ -219,8 +236,13 @@ class Viewer(BaseViewer):
         if not self.allow_duplicate_subset and subset in self._layer_artist_container:
             return True
 
-        # Create scatter layer artist and add to container
-        layer = self.get_subset_layer_artist(subset)
+        # Create layer artist and add to container. First check whether any
+        # plugins want to make a custom layer artist.
+        layer = get_layer_artist_from_registry(subset, self) or self.get_subset_layer_artist(subset)
+
+        if layer is None:
+            return False
+
         self._layer_artist_container.append(layer)
         layer.update()
 

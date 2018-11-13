@@ -19,7 +19,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
-           'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut']
+           'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
+           'LayerArtistMakerRegistry', 'layer_artist_maker']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -738,6 +739,47 @@ class KeyboardShortcut(DictRegistry):
         return adder
 
 
+class LayerArtistMakerRegistry(Registry):
+    """
+    A registry that allows customization of layer artists based on the data
+    and viewer type.
+    """
+
+    item = namedtuple('LayerArtistMaker', 'label function priority')
+
+    def add(self, label, function, priority=0):
+        """
+        Add a new plugin for providing custom layer artists.
+
+        Plugins take the form of functions that take two arguments - the data or
+        subset being added, and the viewer. The function should either return a
+        `~glue.viewers.common.layer_artist.LayerArtist` sub-class object or
+        `None`.
+
+        Parameters
+        ----------
+        label : str
+            Name for the plugin
+        function : callable
+            The function that returns layer artists
+        priority : int, optional
+            Set this to a higher number if multiple plugins are present
+            and you want your plugin to take precedence over another.
+        """
+        self.members.append(self.item(label, function, priority))
+
+    def __call__(self, label, priority=0):
+        def adder(func):
+            self.add(label, func, priority=priority)
+            return func
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+
+layer_artist_maker = LayerArtistMakerRegistry()
 qt_client = QtClientRegistry()
 qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
