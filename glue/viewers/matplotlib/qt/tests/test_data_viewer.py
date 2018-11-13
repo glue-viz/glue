@@ -541,6 +541,13 @@ class BaseTestMatplotlibDataViewer(object):
 
         app = get_qapp()
 
+        # Set initial limits to deterministic values
+        self.viewer.state.aspect = 'auto'
+        self.viewer.state.x_min = 0.
+        self.viewer.state.x_max = 1.
+        self.viewer.state.y_min = 0.
+        self.viewer.state.y_max = 1.
+
         self.viewer.state.aspect = 'equal'
 
         # Resize events only work if widget is visible
@@ -551,15 +558,15 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.viewer_size = (800, 400)
         app.processEvents()
         assert_limits(self.viewer,
-                      -0.2926393590770347, 1.2926393590770346,
-                      0.18459804936875074, 0.8154019506312493)
+                      -0.4182279131271667, 1.4182279131271665,
+                      0.1346246604993242, 0.8653753395006758)
 
         # Change the viewer size, and make sure the limits are adjusted
         self.viewer.viewer_size = (400, 400)
         app.processEvents()
         assert_limits(self.viewer,
-                      -0.003731395043092167, 1.0037313950430922,
-                      0.003703754699241113, 0.9962962453007589)
+                      -0.08354436018121303, 1.0835443601812127,
+                      -0.07493115929292937, 1.0749311592929294)
 
         # Now change the viewer size a number of times and make sure if we
         # return to the original size, the limits match the initial ones.
@@ -572,12 +579,12 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.viewer_size = (800, 400)
         app.processEvents()
         assert_limits(self.viewer,
-                      -0.2926393590770347, 1.2926393590770346,
-                      0.18459804936875074, 0.8154019506312493)
+                      -0.4182279131271667, 1.4182279131271665,
+                      0.1346246604993242, 0.8653753395006758)
 
         # Now check that the limits don't change in 'auto' mode
         self.viewer.state.aspect = 'auto'
         self.viewer.viewer_size = (900, 300)
         assert_limits(self.viewer,
-                      -0.2926393590770347, 1.2926393590770346,
-                      0.18459804936875074, 0.8154019506312493)
+                      -0.4182279131271667, 1.4182279131271665,
+                      0.1346246604993242, 0.8653753395006758)
