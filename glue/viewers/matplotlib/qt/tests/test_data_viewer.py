@@ -17,6 +17,8 @@ from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
 from glue.utils.qt import get_qapp
 
+from glue.viewers.matplotlib.tests.test_viewer import assert_limits
+
 
 class MatplotlibDrawCounter(object):
 
@@ -530,3 +532,52 @@ class BaseTestMatplotlibDataViewer(object):
                 data.add_component(self.data[cid], cid.label)
         self.data.update_values_from_data(data)
         assert self.draw_count == 2
+
+    def test_aspect_resize(self):
+
+        # Make sure that the limits are adjusted appropriately when resizing
+        # depending on the aspect ratio mode. Note that we don't add any data
+        # here since it isn't needed for this test.
+
+        app = get_qapp()
+
+        self.viewer.state.aspect = 'equal'
+
+        # Resize events only work if widget is visible
+        self.viewer.show()
+        app.processEvents()
+
+        # Set viewer to an initial size
+        self.viewer.viewer_size = (800, 400)
+        app.processEvents()
+        assert_limits(self.viewer,
+                      -0.2926393590770347, 1.2926393590770346,
+                      0.18459804936875074, 0.8154019506312493)
+
+        # Change the viewer size, and make sure the limits are adjusted
+        self.viewer.viewer_size = (400, 400)
+        app.processEvents()
+        assert_limits(self.viewer,
+                      -0.003731395043092167, 1.0037313950430922,
+                      0.003703754699241113, 0.9962962453007589)
+
+        # Now change the viewer size a number of times and make sure if we
+        # return to the original size, the limits match the initial ones.
+        self.viewer.viewer_size = (350, 800)
+        app.processEvents()
+        self.viewer.viewer_size = (900, 300)
+        app.processEvents()
+        self.viewer.viewer_size = (600, 600)
+        app.processEvents()
+        self.viewer.viewer_size = (800, 400)
+        app.processEvents()
+        assert_limits(self.viewer,
+                      -0.2926393590770347, 1.2926393590770346,
+                      0.18459804936875074, 0.8154019506312493)
+
+        # Now check that the limits don't change in 'auto' mode
+        self.viewer.state.aspect = 'auto'
+        self.viewer.viewer_size = (900, 300)
+        assert_limits(self.viewer,
+                      -0.2926393590770347, 1.2926393590770346,
+                      0.18459804936875074, 0.8154019506312493)

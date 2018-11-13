@@ -91,7 +91,7 @@ class MatplotlibDataViewerState(ViewerState):
         the aspect callback property is set to 'equal'
         """
         self._axes_aspect_ratio = value
-        self._adjust_limits_aspect()
+        self._adjust_limits_aspect(aspect_adjustable='both')
 
     def _adjust_limits_aspect_x(self, *args):
         self._adjust_limits_aspect(aspect_adjustable='y')

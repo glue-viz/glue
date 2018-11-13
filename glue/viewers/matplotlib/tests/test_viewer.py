@@ -8,6 +8,16 @@ from glue.viewers.matplotlib.viewer import MatplotlibViewerMixin
 from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 
 
+def assert_limits(viewer, x_min, x_max, y_min, y_max):
+    # Convenience to check both state and matplotlib
+    assert_allclose(viewer.state.x_min, x_min)
+    assert_allclose(viewer.state.x_max, x_max)
+    assert_allclose(viewer.state.y_min, y_min)
+    assert_allclose(viewer.state.y_max, y_max)
+    assert_allclose(viewer.axes.get_xlim(), (x_min, x_max))
+    assert_allclose(viewer.axes.get_ylim(), (y_min, y_max))
+
+
 def test_aspect_ratio():
 
     # Test of the aspect ratio infrastructure
@@ -28,15 +38,6 @@ def test_aspect_ratio():
     class CustomApplication(Application):
         def add_widget(self, *args, **kwargs):
             pass
-
-    def assert_limits(viewer, x_min, x_max, y_min, y_max):
-        # Convenience to check both state and matplotlib
-        assert_allclose(viewer.state.x_min, x_min)
-        assert_allclose(viewer.state.x_max, x_max)
-        assert_allclose(viewer.state.y_min, y_min)
-        assert_allclose(viewer.state.y_max, y_max)
-        assert_allclose(viewer.axes.get_xlim(), (x_min, x_max))
-        assert_allclose(viewer.axes.get_ylim(), (y_min, y_max))
 
     app = CustomApplication()
 
@@ -70,3 +71,6 @@ def test_aspect_ratio():
 
     viewer.axes.set_ylim(0., 2.)
     assert_limits(viewer, 0.0, 4.0, 0.0, 2.0)
+
+    # We include tests for resizing inside the Qt folder (since this doesn't
+    # work correctly with the Agg backend)
