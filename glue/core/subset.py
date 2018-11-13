@@ -1201,7 +1201,8 @@ class MultiOrState(SubsetState):
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        result = self.states[0].to_mask(data, view=view)
+        # Copy the first mask so that we can then modify it in-place
+        result = self.states[0].to_mask(data, view=view).copy()
         for state in self.states[1:]:
             result |= state.to_mask(data, view=view)
         return result
