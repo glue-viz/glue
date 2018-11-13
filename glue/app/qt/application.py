@@ -78,6 +78,9 @@ def _fix_ipython_pylab():
         pass
     except UsageError:
         pass
+    except KeyError:
+        # old versions of ipython
+        pass
 
     # Make sure we disable interactive mode (where figures get redrawn for
     # every single Matplotlib command)
