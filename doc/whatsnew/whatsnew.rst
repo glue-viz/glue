@@ -15,7 +15,7 @@ interested.
 Before we get started, here's a reminder on how to install/update glue. You can
 easily update glue if you are using Anaconda/Miniconda by doing::
 
-    conda install -c glueviz glueviz=0.13
+    conda install -c glueviz glueviz=0.14
 
 If instead you installed glue with pip, you can update with::
 
