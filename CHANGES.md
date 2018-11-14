@@ -23,7 +23,7 @@ v0.14.0 (unreleased)
 * Added documentation about plugins. [#1837]
 
 * Better isolate code related to pixel selection tool in image
-  viewer that dependended on Qt. [#1763]
+  viewer that depended on Qt. [#1763]
 
 * Improve handling of units in FITS files. [#1723]
 
