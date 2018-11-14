@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.14.0 (unreleased)
+v0.14.0 (2018-11-14)
 --------------------
 
 * Improved how we handle equal aspect ratio to not depend on
