@@ -121,7 +121,7 @@ extras_require['test'] = ['pytest>=3.5,<3.7',
 
 setup(name='glue-core',
       version=__version__,
-      description='Multidimensional data visualzation across files',
+      description='Multidimensional data visualization across files',
       long_description=LONG_DESCRIPTION,
       author='Chris Beaumont, Thomas Robitaille',
       author_email='glueviz@gmail.com',
