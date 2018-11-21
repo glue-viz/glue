@@ -4,6 +4,32 @@ from glue.core.exceptions import IncompatibleAttribute
 __all__ = ['get_mask_with_key_joins']
 
 
+def concatenate_arrays(*arrays):
+    """
+    Given N arrays of size M, return an array of size M where each item is
+    the concatenation of the bytes of the orginal arrays for the respective
+    item.
+    """
+
+    # Find the total size of an item in the final array
+    total_size = sum(x.dtype.itemsize for x in arrays)
+
+    # Set up the final array
+    buffer = np.zeros(len(arrays[0]) * total_size, dtype=np.byte)
+
+    # Now view this array as a structured array
+    colnames = ['{0:x}'.format(x) for x in range(len(arrays))]
+    dtype = list(zip(colnames, [x.dtype for x in arrays]))
+    buffer_as_struct = buffer.view(dtype)
+
+    # Finally, fill the array column by column
+    for letter, array in zip(colnames, arrays):
+        buffer_as_struct[letter] = array
+
+    # And view as an array of size M
+    return buffer_as_struct.view('S{0}'.format(total_size))
+
+
 def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
     """
     Given a dataset and a subset state, check whether the subset state
@@ -30,7 +56,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
 
             key_left = data.get_data(cid1[0], view=view)
             key_right = other.get_data(cid2[0], view=mask_right)
-            mask = np.in1d(key_left.ravel(), key_right.ravel())
+            mask = np.isin(key_left.ravel(), key_right.ravel())
 
             return mask.reshape(key_left.shape)
 
@@ -43,17 +69,12 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
                 key_left_all.append(data.get_data(cid1_i, view=view).ravel())
                 key_right_all.append(other.get_data(cid2_i, view=mask_right).ravel())
 
-            # TODO: The following is slow because we are looping in Python.
-            #       This could be made significantly faster by switching to
-            #       C/Cython.
+            key_left_all = concatenate_arrays(*key_left_all)
+            key_right_all = concatenate_arrays(*key_right_all)
 
-            key_left_all = zip(*key_left_all)
-            key_right_all = set(zip(*key_right_all))
+            mask = np.isin(key_left_all, key_right_all)
 
-            result = [key in key_right_all for key in key_left_all]
-            result = np.array(result)
-
-            return result.reshape(data.get_data(cid1_i, view=view).shape)
+            return mask.reshape(data.get_data(cid1_i, view=view).shape)
 
         elif len(cid1) == 1:
 
@@ -61,7 +82,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
             mask = np.zeros_like(key_left, dtype=bool)
             for cid2_i in cid2:
                 key_right = other.get_data(cid2_i, view=mask_right).ravel()
-                mask |= np.in1d(key_left, key_right)
+                mask |= np.isin(key_left, key_right)
 
             return mask.reshape(data.get_data(cid1[0], view=view).shape)
 
@@ -71,7 +92,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
             mask = np.zeros_like(data.get_data(cid1[0], view=view).ravel(), dtype=bool)
             for cid1_i in cid1:
                 key_left = data.get_data(cid1_i, view=view).ravel()
-                mask |= np.in1d(key_left, key_right)
+                mask |= np.isin(key_left, key_right)
 
             return mask.reshape(data.get_data(cid1[0], view=view).shape)
 
