@@ -106,4 +106,4 @@ class DendrogramLayerState(MatplotlibLayerState):
     def __init__(self, viewer_state=None, **kwargs):
         super(DendrogramLayerState, self).__init__(viewer_state=viewer_state, **kwargs)
         self.linewidth = self.layer.style.linewidth
-        self._sync_color = keep_in_sync(self, 'linewidth', self.layer.style, 'linewidth')
+        self._sync_linewidth = keep_in_sync(self, 'linewidth', self.layer.style, 'linewidth')
