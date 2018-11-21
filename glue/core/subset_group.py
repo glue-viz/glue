@@ -109,6 +109,7 @@ class SubsetGroup(HubListener):
 
         self.style = VisualAttributes(parent=self)
         self.style.markersize *= 2.5
+        self.style.linewidth *= 2.5
         self.style.color = color
         self.style.alpha = alpha
 

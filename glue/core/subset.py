@@ -74,7 +74,8 @@ class Subset(object):
         self.subset_state = SubsetState()  # calls proper setter method
 
         self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 1.5
+        self.style.markersize *= 2.5
+        self.style.linewidth *= 2.5
         self.style.color = color
         self.style.alpha = alpha
 
