@@ -28,6 +28,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core.visual import VisualAttributes
 from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
+from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, broadcast_to, categorical_ndarray)
@@ -1203,7 +1204,10 @@ class Data(BaseCartesianData):
             raise TypeError("Unknown data kind")
 
     def get_mask(self, subset_state, view=None):
-        return subset_state.to_mask(self, view=view)
+        try:
+            return subset_state.to_mask(self, view=view)
+        except IncompatibleAttribute:
+            return get_mask_with_key_joins(self, self._key_joins, subset_state, view=view)
 
     def __setitem__(self, key, value):
         """
