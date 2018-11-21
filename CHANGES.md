@@ -6,6 +6,12 @@ v0.15.0 (unreleased)
 
 * No changes yet.
 
+v0.14.1 (unreleased)
+--------------------
+
+* Fix bug that caused the links based on ``join_on_key`` to not
+  always work. [#1902]
+
 v0.14.0 (2018-11-14)
 --------------------
 
