@@ -8,6 +8,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.external.echo import keep_in_sync
 
 from .dendro_helpers import dendrogram_layout
 
@@ -101,3 +102,8 @@ class DendrogramLayerState(MatplotlibLayerState):
     A state class that includes all the attributes for layers in a dendrogram plot.
     """
     linewidth = DDCProperty(1, docstring="The line width")
+
+    def __init__(self, viewer_state=None, **kwargs):
+        super(DendrogramLayerState, self).__init__(viewer_state=viewer_state, **kwargs)
+        self.linewidth = self.layer.style.linewidth
+        self._sync_color = keep_in_sync(self, 'linewidth', self.layer.style, 'linewidth')
