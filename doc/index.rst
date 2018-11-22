@@ -162,7 +162,7 @@ If you use glue for research presented in a publication, please consider citing
 the following two references:
 
 * `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
-  Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
+  Glue <https://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
 
 * `Robitaille et al (2017) glueviz v0.13.1: multidimensional data exploration
   <https://zenodo.org/record/1237692>`_
@@ -174,9 +174,9 @@ Publications
 ------------
 
 * `Goodman et al. (2012), Principles of high-dimensional data
-  visualization in astronomy <http://adsabs.harvard.edu/abs/2012AN....333..505G>`_
+  visualization in astronomy <https://adsabs.harvard.edu/abs/2012AN....333..505G>`_
 * `Beaumont et al. (2015), Hackable User Interfaces In Astronomy with
-  Glue <http://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
+  Glue <https://adsabs.harvard.edu/abs/2015ASPC..495..101B>`_
 * `Robitaille et al (2017) glueviz v0.10: multidimensional data exploration
   <https://zenodo.org/record/293197>`_
 

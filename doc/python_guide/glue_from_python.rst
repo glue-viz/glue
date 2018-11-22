@@ -19,7 +19,7 @@ The easiest way to send python variables to Glue is to use
 
     from glue import qglue
 
-For example, say you are working with a `Pandas <http://pandas.pydata.org/>`_ DataFrame::
+For example, say you are working with a `Pandas <https://pandas.pydata.org/>`_ DataFrame::
 
     >>> df
     <class 'pandas.core.frame.DataFrame'>

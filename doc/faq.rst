@@ -11,13 +11,13 @@ What data formats does Glue understand?
 
 Glue relies on several libraries to parse different file formats:
 
- * `Astropy <http://www.astropy.org>`_ for FITS images and tables, a
+ * `Astropy <https://www.astropy.org>`_ for FITS images and tables, a
    variety of `ascii table formats
    <http://docs.astropy.org/en/latest/io/ascii/index.html>`_, and VO
    tables.
  * `scikit-image <https://scikit-image.org/>`_ to read popular image
    formats like ``.jpeg`` and ``.tiff``
- * `h5py <http://www.h5py.org/>`_ to read HDF5 files
+ * `h5py <https://www.h5py.org/>`_ to read HDF5 files
 
 If Glue's predefined data loaders don't fit your needs, you can also :ref:`write
 your own <custom_data_factory>` loader, and plug it into Glue.
@@ -30,7 +30,7 @@ Take a look at this video. For more details, consult the :ref:`tutorial <getting
 .. raw:: html
 
     <center>
-    <iframe src="http://player.vimeo.com/video/54940097?badge=0" width="500" height="305" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+    <iframe src="https://player.vimeo.com/video/54940097?badge=0" width="500" height="305" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
     </center>
 
 How do I use Glue with the IPython notebook?

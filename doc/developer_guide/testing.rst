@@ -14,7 +14,7 @@ testing.
 
 In general, we try and make tests as specific as possible to the code being tested - so for example if we create a new dialog, and we want to check that various widgets in the tests are working correctly, we don't need to launch the whole Glue application. Instead, we can create a test data collection with some example data, and simply launch the dialog in question.
 
-We run tests using `py.test <http://www.pytest.org>`_, and tests are therefore written using this framework. The syntax for a basic test is actually very simple and not py.test-specific -- it is simply a function whose name starts with ``test_``. If the function crashes, the test fails, and if the function runs without crashing, the test passes::
+We run tests using `py.test <https://www.pytest.org>`_, and tests are therefore written using this framework. The syntax for a basic test is actually very simple and not py.test-specific -- it is simply a function whose name starts with ``test_``. If the function crashes, the test fails, and if the function runs without crashing, the test passes::
 
     def test_functionality():
         # This is an example of a test that passes

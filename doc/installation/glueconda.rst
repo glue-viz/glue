@@ -28,10 +28,10 @@ MacOS X
 -------
 
 There are two installation options for MacOS X - you can either download the
-`glueconda-stable-MacOSX-x86_64.pkg <http://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-MacOSX-x86_64.pkg>`__
+`glueconda-stable-MacOSX-x86_64.pkg <https://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-MacOSX-x86_64.pkg>`__
 graphical installer, and double click on it to run the installation, or you can
 download the
-`glueconda-stable-MacOSX-x86_64.sh <http://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-MacOSX-x86_64.sh>`__
+`glueconda-stable-MacOSX-x86_64.sh <https://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-MacOSX-x86_64.sh>`__
 command-line installer then run the installer using::
 
     bash glueconda-stable-MacOSX-x86_64.sh
@@ -40,7 +40,7 @@ command-line installer then run the installer using::
 ------------
 
 Download
-`glueconda-stable-Linux-x86.sh <http://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Linux-x86.sh>`__
+`glueconda-stable-Linux-x86.sh <https://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Linux-x86.sh>`__
 then run the installer using::
 
     bash glueconda-stable-Linux-x86.sh
@@ -49,7 +49,7 @@ then run the installer using::
 ------------
 
 Download
-`glueconda-stable-Linux-x86_64.sh <http://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Linux-x86_64.sh>`__
+`glueconda-stable-Linux-x86_64.sh <https://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Linux-x86_64.sh>`__
 then run the installer using::
 
     bash glueconda-stable-Linux-x86_64.sh
@@ -58,7 +58,7 @@ Windows
 -------
 
 Download and run the
-`glueconda-stable-Windows-x86_64.exe <http://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Windows-x86_64.exe>`__
+`glueconda-stable-Windows-x86_64.exe <https://www.glueviz.org.s3-website-us-east-1.amazonaws.com/glueconda/glueconda-stable-Windows-x86_64.exe>`__
 installer.
 
 Uninstalling

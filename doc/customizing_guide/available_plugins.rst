@@ -112,7 +112,7 @@ glue-wwt: WorldWide Telescope viewer
 
 The **glue-wwt** adds a data viewer to glue that allows users to overplot data
 onto maps of the sky, powered by `WorldWide Telescope
-<http://worldwidetelescope.org/>`_. You can install this plugin with::
+<http://worldwidetelescope.org/webclient/>`_. You can install this plugin with::
 
     conda install -c glueviz glue-wwt
 
@@ -138,7 +138,7 @@ glue-aladin: Aladin Lite viewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A data viewer similar to glue-wwt but for `Aladin Lite
-<http://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
+<https://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
 ready yet for general use, but if you are interested in following on or helping
 with the development, the GitHub repository is at
 https://github.com/glue-viz/glue-aladin.
@@ -148,7 +148,7 @@ glue-samp: Communicating with SAMP
 
 A few common applications in astronomy support communicating via the Simple
 Application Messaging Protocol (SAMP) - these include for example `DS9
-<http://ds9.si.edu/site/Home.html>`_, `TOPCAT
+<https://ds9.si.edu/site/Home.html>`_, `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, and `Aladin
 <https://aladin.u-strasbg.fr/>`_. The **glue-samp** plugin adds the ability to
 use SAMP from glue.  You can install this plugin with::

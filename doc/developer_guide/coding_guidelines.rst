@@ -7,7 +7,7 @@ Glue is written entirely in Python, and we abide by the following guidelines:
   <https://pypi.org/project/six>`_ package, which we bundle in
   ``glue.external.six``.
 
-* We follow many of the same guidelines as the `Astropy <http://www.astropy.org>`_ project, which you can find `here <http://docs.astropy.org/en/stable/development/codeguide.html#coding-style-conventions>`__.
+* We follow many of the same guidelines as the `Astropy <https://www.astropy.org>`_ project, which you can find `here <http://docs.astropy.org/en/stable/development/codeguide.html#coding-style-conventions>`__.
 
 * We use absolute imports for most of the code in Glue, with the exception of
   tests, which are allowed to import the classes/functions they are testing
