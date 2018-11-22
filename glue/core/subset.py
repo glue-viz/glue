@@ -74,7 +74,8 @@ class Subset(object):
         self.subset_state = SubsetState()  # calls proper setter method
 
         self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 1.5
+        self.style.markersize *= 2.5
+        self.style.linewidth *= 2.5
         self.style.color = color
         self.style.alpha = alpha
 
@@ -167,93 +168,7 @@ class Subset(object):
            for the requested data set.
 
         """
-        try:
-            return self.subset_state.to_index_list(self.data)
-        except IncompatibleAttribute as exc:
-            try:
-                return self._to_index_list_join()
-            except IncompatibleAttribute:
-                raise exc
-
-    def _to_index_list_join(self):
-        return np.where(self._to_mask_join(None).flat)[0]
-
-    def _to_mask_join(self, view):
-        """
-        Convert the subset to a mask through an entity join to another
-        dataset.
-        """
-        for other, (cid1, cid2) in self.data._key_joins.items():
-
-            if getattr(other, '_recursing', False):
-                continue
-
-            try:
-                self.data._recursing = True
-                s2 = Subset(other)
-                s2.subset_state = self.subset_state
-                mask_right = s2.to_mask()
-            except IncompatibleAttribute:
-                continue
-            finally:
-                self.data._recursing = False
-
-            if len(cid1) == 1 and len(cid2) == 1:
-
-                key_left = self.data[cid1[0], view]
-                key_right = other[cid2[0], mask_right]
-                mask = np.in1d(key_left.ravel(), key_right.ravel())
-
-                return mask.reshape(key_left.shape)
-
-            elif len(cid1) == len(cid2):
-
-                key_left_all = []
-                key_right_all = []
-
-                for cid1_i, cid2_i in zip(cid1, cid2):
-                    key_left_all.append(self.data[cid1_i, view].ravel())
-                    key_right_all.append(other[cid2_i, mask_right].ravel())
-
-                # TODO: The following is slow because we are looping in Python.
-                #       This could be made significantly faster by switching to
-                #       C/Cython.
-
-                key_left_all = zip(*key_left_all)
-                key_right_all = set(zip(*key_right_all))
-
-                result = [key in key_right_all for key in key_left_all]
-                result = np.array(result)
-
-                return result.reshape(self.data[cid1_i, view].shape)
-
-            elif len(cid1) == 1:
-
-                key_left = self.data[cid1[0], view].ravel()
-                mask = np.zeros_like(key_left, dtype=bool)
-                for cid2_i in cid2:
-                    key_right = other[cid2_i, mask_right].ravel()
-                    mask |= np.in1d(key_left, key_right)
-
-                return mask.reshape(self.data[cid1[0], view].shape)
-
-            elif len(cid2) == 1:
-
-                key_right = other[cid2[0], mask_right].ravel()
-                mask = np.zeros_like(self.data[cid1[0], view].ravel(), dtype=bool)
-                for cid1_i in cid1:
-                    key_left = self.data[cid1_i, view].ravel()
-                    mask |= np.in1d(key_left, key_right)
-
-                return mask.reshape(self.data[cid1[0], view].shape)
-
-            else:
-
-                raise Exception("Either the number of components in the key join sets "
-                                "should match, or one of the component sets should ",
-                                "contain a single component.")
-
-        raise IncompatibleAttribute
+        return self.subset_state.to_index_list(self.data)
 
     @contract(view='array_view', returns='array')
     def to_mask(self, view=None):
@@ -268,10 +183,7 @@ class Subset(object):
            defines whether each element belongs to the subset.
 
         """
-        try:
-            return self.data.get_mask(self.subset_state, view=view)
-        except IncompatibleAttribute as exc:
-            return self._to_mask_join(view)
+        return self.data.get_mask(self.subset_state, view=view)
 
     @contract(value=bool)
     def do_broadcast(self, value):
@@ -518,7 +430,7 @@ class SubsetState(object):
 
     @contract(data='isinstance(Data)')
     def to_index_list(self, data):
-        return np.where(self.to_mask(data).flat)[0]
+        return np.where(data.get_mask(self.subset_state).flat)[0]
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
