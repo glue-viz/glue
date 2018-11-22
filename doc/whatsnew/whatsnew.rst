@@ -405,7 +405,7 @@ Experimental SAMP plugin
 
 A number of Astronomy applications including `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, `Aladin
-<https://aladin.u-strasbg.fr>`_, `DS9 <https://ds9.si.edu/site/Home.html>`_,
+<https://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
 `WorldWideTelescope <http://worldwidetelescope.org/webclient>`_ and more support a
 message-passing system that allows data and subsets to be exchanged between
 applications. We have now developed a plugin that adds SAMP capabilities to

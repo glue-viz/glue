@@ -148,7 +148,7 @@ glue-samp: Communicating with SAMP
 
 A few common applications in astronomy support communicating via the Simple
 Application Messaging Protocol (SAMP) - these include for example `DS9
-<https://ds9.si.edu/site/Home.html>`_, `TOPCAT
+<http://ds9.si.edu/site/Home.html>`_, `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, and `Aladin
 <https://aladin.u-strasbg.fr/>`_. The **glue-samp** plugin adds the ability to
 use SAMP from glue.  You can install this plugin with::
