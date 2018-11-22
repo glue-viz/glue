@@ -12,7 +12,7 @@ class TestSubsets(object):
 
     def test_basic(self):
         x = Data(id=[0, 1, 2])
-        y = Data(id=[0, 1, 2], x=[1, 2, 3])
+        y = Data(id=[0, 1, 2, 3], x=[1, 2, 3, 4])
         x.join_on_key(y, 'id', 'id')
 
         s = x.new_subset()
@@ -20,9 +20,12 @@ class TestSubsets(object):
 
         assert_array_equal(s.to_mask(), [False, True, True])
 
+        # Make sure this also works if we use the Data.get_mask API
+        assert_array_equal(x.get_mask(s.subset_state), [False, True, True])
+
     def test_basic_to_index_list(self):
         x = Data(id=[0, 1, 2])
-        y = Data(id=[0, 1, 2], x=[1, 2, 3])
+        y = Data(id=[0, 1, 2, 3], x=[1, 2, 3, 4])
         x.join_on_key(y, 'id', 'id')
 
         s = x.new_subset()
@@ -32,7 +35,7 @@ class TestSubsets(object):
 
     def test_permute(self):
         x = Data(id=[1, 2, 1])
-        y = Data(id=[2, 0, 1], x=[1, 2, 3])
+        y = Data(id=[2, 0, 1, 5], x=[1, 2, 3, 2])
         x.join_on_key(y, 'id', 'id')
 
         s = x.new_subset()
@@ -54,7 +57,7 @@ class TestSubsets(object):
 
     def test_mismatch(self):
         x = Data(id=[3, 4, 5])
-        y = Data(id=[0, 0, 0], x=[1, 2, 3])
+        y = Data(id=[0, 0, 0, 0], x=[1, 2, 3, 4])
         x.join_on_key(y, 'id', 'id')
 
         s = x.new_subset()
@@ -64,7 +67,7 @@ class TestSubsets(object):
 
     def test_inverse_match(self):
 
-        x = Data(id=[0, 1, 2], x=[5, 6, 7])
+        x = Data(id=[0, 1, 2, 3], x=[5, 6, 7, 8])
         y = Data(id=[2, 1, 0], y=[1, 2, 3])
         x.join_on_key(y, 'id', 'id')
 
@@ -75,7 +78,7 @@ class TestSubsets(object):
 
     def test_join_chain(self):
         x = Data(id1=[0, 1, 2], label='x')
-        y = Data(id1=[2, 1, 0], id2=[3, 4, 5], label='y')
+        y = Data(id1=[2, 1, 0, 3], id2=[3, 4, 5, 6], label='y')
         z = Data(id2=[5, 4, 5], z=[1, 2, 3], label='z')
 
         x.join_on_key(y, 'id1', 'id1')
@@ -92,7 +95,7 @@ class TestSubsets(object):
 
     def test_incompatible_attibute_without_join(self):
         x = Data(id1=[0, 1, 2], label='x')
-        y = Data(y=[1, 2, 3])
+        y = Data(y=[1, 2, 3, 4])
 
         s = x.new_subset()
         s.subset_state = y.id['y'] > 2
@@ -102,7 +105,7 @@ class TestSubsets(object):
 
     def test_bad_join_key(self):
         x = Data(id1=[0, 1, 2], label='x')
-        y = Data(id1=[1, 2, 3], label='y')
+        y = Data(id1=[1, 2, 3, 4], label='y')
 
         with pytest.raises(ValueError) as exc:
             x.join_on_key(y, 'bad_key', 'id1')
@@ -114,7 +117,7 @@ class TestSubsets(object):
 
     def test_clone(self):
         x = Data(id=[0, 1, 2], label='data_x')
-        y = Data(id=[0, 1, 2], x=[1, 2, 3], label='data_y')
+        y = Data(id=[0, 1, 2, 3], x=[1, 2, 3, 4], label='data_y')
         x.join_on_key(y, 'id', 'id')
 
         dc = DataCollection([x, y])
@@ -135,8 +138,8 @@ def test_many_to_many():
 
     d1 = Data(x=[1, 2, 3, 5, 5],
               y=[0, 0, 1, 1, 2], label='d1')
-    d2 = Data(a=[2, 5, 5, 8, 4],
-              b=[1, 3, 2, 2, 3], label='d2')
+    d2 = Data(a=[2, 5, 5, 8, 4, 9],
+              b=[1, 3, 2, 2, 3, 9], label='d2')
     d2.join_on_key(d1, ('a', 'b'), ('x', 'y'))
 
     s = d1.new_subset()
@@ -145,7 +148,7 @@ def test_many_to_many():
 
     s = d2.new_subset()
     s.subset_state = d1.id['x'] == 5
-    assert_array_equal(s.to_mask(), [0, 0, 1, 0, 0])
+    assert_array_equal(s.to_mask(), [0, 0, 1, 0, 0, 0])
 
 
 def test_one_and_many():
@@ -155,21 +158,21 @@ def test_one_and_many():
     """
 
     d1 = Data(x=[1, 2, 3], label='d1')
-    d2 = Data(a=[1, 1, 2],
-              b=[2, 3, 3], label='d2')
+    d2 = Data(a=[1, 1, 2, 5],
+              b=[2, 3, 3, 5], label='d2')
     d1.join_on_key(d2, 'x', ('a', 'b'))
 
     s = d2.new_subset()
     s.subset_state = d2.id['a'] == 2
-    assert_array_equal(s.to_mask(), [0, 0, 1])
+    assert_array_equal(s.to_mask(), [0, 0, 1, 0])
 
     s = d1.new_subset()
     s.subset_state = d2.id['a'] == 2
     assert_array_equal(s.to_mask(), [0, 1, 1])
 
     d1 = Data(x=[1, 2, 3], label='d1')
-    d2 = Data(a=[1, 1, 2],
-              b=[2, 3, 3], label='d2')
+    d2 = Data(a=[1, 1, 2, 5],
+              b=[2, 3, 3, 5], label='d2')
     d2.join_on_key(d1, ('a', 'b'), 'x')
 
     s = d1.new_subset()
@@ -178,7 +181,7 @@ def test_one_and_many():
 
     s = d2.new_subset()
     s.subset_state = d1.id['x'] == 1
-    assert_array_equal(s.to_mask(), [1, 1, 0])
+    assert_array_equal(s.to_mask(), [1, 1, 0, 0])
 
 
 def test_mismatch():
