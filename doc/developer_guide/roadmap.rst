@@ -43,7 +43,7 @@ even have to worry about the concept of 'pixels' in the data.
 A consequence of this is that image viewers for example would simply request
 fixed resolution buffers at the screen resolution, for both data and subsets,
 and would then be able to display them. Behind the scenes, the user could be
-using e.g. a package such as `yt <http://yt-project.org/>`_ to access a 3Tb
+using e.g. a package such as `yt <https://yt-project.org/>`_ to access a 3Tb
 simulation file with adaptive/nested grids, but this would be seamless to the
 user (except of course that the speed would be limited by the computational
 requirements of the data object).
@@ -90,7 +90,7 @@ It is currently already possible to :ref:`launch glue from an IPython/Jupyter no
 access the data and viewers using the returned application object. However, the
 next step would be to implement actual viewers that are not based on Qt, but
 instead can be used inside the notebook directly. One promising avenue would be
-to explore the use of `bokeh <http://bokeh.pydata.org>`_.
+to explore the use of `bokeh <https://bokeh.pydata.org>`_.
 
 The glue code base is designed so that the core representation of data objects,
 subsets, and so on in glue.core is completely independent of the visualization

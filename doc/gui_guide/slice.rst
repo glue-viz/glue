@@ -36,7 +36,7 @@ slice extraction and spectrum extraction.
 .. raw:: html
 
     <center>
-    <iframe src="http://player.vimeo.com/video/96815794?badge=0"  width="500" height="333" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+    <iframe src="https://player.vimeo.com/video/96815794?badge=0"  width="500" height="333" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
     </center>
     <br>
 
@@ -48,7 +48,7 @@ an on-the-fly cross section of a brain tumor MRI:
 .. raw:: html
 
     <center>
-    <img src="http://i.imgur.com/RqznLN5.png">
+    <img src="https://i.imgur.com/RqznLN5.png">
     </center>
     <br>
 

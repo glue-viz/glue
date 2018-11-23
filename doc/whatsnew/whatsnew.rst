@@ -346,7 +346,7 @@ PySide2
 -------
 
 Glue 0.13 is now compatible with the `PySide2
-<http://wiki.qt.io/Qt_for_Python>`_ library (the Python bindings for Qt5
+<https://wiki.qt.io/Qt_for_Python>`_ library (the Python bindings for Qt5
 developed by the Qt company). Since PySide2 was still in pre-release at the time
 of writing, we recommend using Glue with PyQt5 for now. In parallel with this,
 support for PyQt4 and PySide has now been removed from glue.
@@ -406,7 +406,7 @@ Experimental SAMP plugin
 A number of Astronomy applications including `TOPCAT
 <http://www.star.bris.ac.uk/~mbt/topcat/>`_, `Aladin
 <https://aladin.u-strasbg.fr>`_, `DS9 <http://ds9.si.edu/site/Home.html>`_,
-`WorldWideTelescope <http://www.worldwidetelescope.org/webclient>`_ and more support a
+`WorldWideTelescope <http://worldwidetelescope.org/webclient>`_ and more support a
 message-passing system that allows data and subsets to be exchanged between
 applications. We have now developed a plugin that adds SAMP capabilities to
 glue. To try this out, you will need to install the `glue-samp
@@ -808,7 +808,7 @@ along a line that goes down the center of the cube.
 Improvements to Astronomy-specific functionality
 ------------------------------------------------
 
-If you have the `spectral-cube <http://spectral-cube.readthedocs.io>`__ package
+If you have the `spectral-cube <https://spectral-cube.readthedocs.io>`__ package
 installed, glue can now use this to read in spectral cubes in FITS format. To
 use this, you will need to go through the **Open Data Set** menu item and
 explicitly select **FITS Spectral Cube** from the list:
@@ -1017,7 +1017,7 @@ A significant amount of work has gone into improving the build-in readers for
 various data formats. In particular:
 
 - Glue now supports a wider range of ASCII table formats. Any format that can
-  be read by the `Astropy <http://www.astropy.org>`_ package can now be read
+  be read by the `Astropy <https://www.astropy.org>`_ package can now be read
   by Glue. If you run into ASCII tables that cannot be read, please let us
   know!
 

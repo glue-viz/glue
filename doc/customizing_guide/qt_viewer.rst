@@ -57,7 +57,7 @@ In the above example, you can see that we use the
 :func:`~glue.external.echo.qt.connect_checkable_button` function to link the
 ``fill`` property from the layer state with the checkbox. For a full list of
 available functions, see `here
-<http://echo.readthedocs.io/en/latest/api.html>`__.
+<https://echo.readthedocs.io/en/latest/api.html>`__.
 
 For more complex cases, you may want to use Qt Designer to create a ui file with
 your layout (such as :download:`viewer_state.ui <state_viewer/viewer_state.ui>`), then load it
@@ -86,7 +86,7 @@ this to create a widget to control the viewer state::
 For :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` to work, you need
 to follow certain naming conventions for the UI elements in the ``.ui`` file. You
 can read up more about this convention `here
-<http://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`__.
+<https://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`__.
 
 Data viewer
 -----------

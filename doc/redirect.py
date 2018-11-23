@@ -2,7 +2,7 @@
 # originally licensed under a Creative Commons Attribution 3.0 Unported License.
 # The full text for this license can be found here:
 #
-# http://creativecommons.org/licenses/by/3.0/legalcode
+# https://creativecommons.org/licenses/by/3.0/legalcode
 
 
 # A simple sphinx plugin which creates HTML redirections from old names

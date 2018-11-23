@@ -112,7 +112,7 @@ glue-wwt: WorldWide Telescope viewer
 
 The **glue-wwt** adds a data viewer to glue that allows users to overplot data
 onto maps of the sky, powered by `WorldWide Telescope
-<http://worldwidetelescope.org/>`_. You can install this plugin with::
+<http://worldwidetelescope.org/webclient/>`_. You can install this plugin with::
 
     conda install -c glueviz glue-wwt
 
@@ -138,7 +138,7 @@ glue-aladin: Aladin Lite viewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A data viewer similar to glue-wwt but for `Aladin Lite
-<http://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
+<https://aladin.u-strasbg.fr/AladinLite/>`_, is being developed and is not quite
 ready yet for general use, but if you are interested in following on or helping
 with the development, the GitHub repository is at
 https://github.com/glue-viz/glue-aladin.
