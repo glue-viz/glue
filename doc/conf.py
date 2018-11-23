@@ -62,12 +62,12 @@ if ON_RTD:
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
-    'sphinx': ('http://www.sphinx-doc.org/en/latest/', None),
-    'python': ('https://docs.python.org/3.6', None),
-    'matplotlib': ('http://matplotlib.org', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/latest/', None),
+    'python': ('https://docs.python.org/3.7', None),
+    'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
-    'echo': ('http://echo.readthedocs.io/en/latest/', None),
+    'echo': ('https://echo.readthedocs.io/en/latest/', None),
 }
 
 numpydoc_show_class_members = False
@@ -346,4 +346,4 @@ WidgetProperty.__get__ = lambda self, *args, **kwargs: self
 
 viewcode_import = False
 
-linkcheck_ignore = [r'http://www.glueviz.org.s3']
+linkcheck_ignore = [r'https://www.glueviz.org.s3']

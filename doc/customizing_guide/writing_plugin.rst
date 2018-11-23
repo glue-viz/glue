@@ -13,7 +13,7 @@ Plugin packages use the same mechanism of registering customizations described
 in :ref:`customization` as you would if you were using a ``config.py`` file -
 the only real difference is the file structure you will need to use. To make
 things easier, we provide a template plugin package at
-http://github.com/glue-viz/glue-plugin-template to show you how files should be
+https://github.com/glue-viz/glue-plugin-template to show you how files should be
 organized.
 
 Required files
@@ -93,9 +93,9 @@ and the ``setup.py`` file - however, you should make sure you also include an
 distribute the package, as well as a README file that describes your package,
 its requirements, and how to install and use it.
 
-Consider also adding tests (using e.g. the `pytest <http://www.pytest.org>`_
+Consider also adding tests (using e.g. the `pytest <https://www.pytest.org>`_
 framework), as well as setting up continuous integration services such as
-`Travis <http://travis-ci.org>`_ to run the tests any time a change is made.
+`Travis <https://travis-ci.org>`_ to run the tests any time a change is made.
 Describing how to do this is beyond the scope of this tutorial, but there are
 plenty of resources online to help you do this.
 
@@ -106,4 +106,4 @@ Since your package follows the standard layout for packages, you can follow the
 `Packaging Python Projects <https://packaging.python.org/tutorials/packaging-projects/>`_
 guide to release your package and upload it to PyPI. If you are interested in
 including your package as a conda package in the ``glueviz`` channel, please let
-us know by opening an issue at http://github.com/glue-viz/conda-dev.
+us know by opening an issue at https://github.com/glue-viz/conda-dev.
