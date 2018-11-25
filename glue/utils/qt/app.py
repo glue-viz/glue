@@ -3,9 +3,24 @@ from __future__ import absolute_import, division, print_function
 import platform
 from qtpy import QtCore, QtGui, QtWidgets
 
-__all__ = ['get_qapp', 'fix_tab_widget_fontsize']
+from glue.config import settings
+
+__all__ = ['get_qapp', 'fix_tab_widget_fontsize', 'update_global_font_size']
 
 qapp = None
+
+
+def __get_font_size_offset():
+    if platform.system() == 'Darwin':
+        # On Mac, the fonts are generally too large compared to other
+        # applications, so we reduce the default here. In future we should
+        # make this a setting in the system preferences.
+        size_offset = 2
+    else:
+        # On other platforms, we reduce the font size by 1 point to save
+        # space too. Again, this should probably be a global setting.
+        size_offset = 1
+    return size_offset
 
 
 def get_qapp(icon_path=None):
@@ -28,18 +43,10 @@ def get_qapp(icon_path=None):
         if icon_path is not None:
             qapp.setWindowIcon(QtGui.QIcon(icon_path))
 
-        if platform.system() == 'Darwin':
-            # On Mac, the fonts are generally too large compared to other
-            # applications, so we reduce the default here. In future we should
-            # make this a setting in the system preferences.
-            size_offset = 2
-        else:
-            # On other platforms, we reduce the font size by 1 point to save
-            # space too. Again, this should probably be a global setting.
-            size_offset = 1
-
+        size_offset = __get_font_size_offset()
         font = qapp.font()
-        font.setPointSize(font.pointSize() - size_offset)
+        point_size = font.pointSize() if settings.FONT_SIZE is None else settings.FONT_SIZE
+        font.setPointSize(point_size - size_offset)
         qapp.setFont(font)
 
     # Make sure we use high resolution icons for HDPI displays.
@@ -56,3 +63,16 @@ def fix_tab_widget_fontsize(tab_widget):
         app = get_qapp()
         app_font = app.font()
         tab_widget.setStyleSheet('font-size: {0}px'.format(app_font.pointSize()))
+
+
+def update_global_font_size():
+    """Updates the global font size through the current UI backend
+    """
+    if qapp is None:
+        get_qapp()
+
+    font = qapp.font()
+    point_size = settings.FONT_SIZE
+    size_offset = __get_font_size_offset()
+    font.setPointSize(point_size - size_offset)
+    qapp.setFont(font)

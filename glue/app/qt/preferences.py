@@ -28,6 +28,7 @@ class PreferencesDialog(QtWidgets.QDialog):
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
     save_to_disk = ButtonProperty('ui.checkbox_save')
+    font_size = ValueProperty('ui.spinner_font_size')
 
     def __init__(self, application, parent=None):
 
@@ -57,6 +58,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.foreground = settings.FOREGROUND_COLOR
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
+        self.font_size = settings.FONT_SIZE
 
         self._update_theme_from_colors()
 
@@ -107,6 +109,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.BACKGROUND_COLOR = self.background
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
+        settings.FONT_SIZE = self.font_size
 
         for pane in self.panes:
             pane.finalize()
@@ -122,7 +125,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         app = self._app()
 
         if app is not None:
-            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')))
+            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE')))
             if self.data_apply:  # If requested, trigger data to update color
                 app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 
