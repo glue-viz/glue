@@ -4,6 +4,7 @@ import platform
 from qtpy import QtCore, QtGui, QtWidgets
 
 from glue.config import settings
+from glue._settings_helpers import save_settings
 
 __all__ = ['get_qapp', 'fix_tab_widget_fontsize', 'update_global_font_size']
 
@@ -45,7 +46,13 @@ def get_qapp(icon_path=None):
 
         size_offset = __get_font_size_offset()
         font = qapp.font()
-        point_size = font.pointSize() if settings.FONT_SIZE is None else settings.FONT_SIZE
+
+        if settings.FONT_SIZE is None or settings.FONT_SIZE == -1:
+            default_font = QtGui.QFont()
+            settings.FONT_SIZE = default_font.pointSize()
+            save_settings()
+
+        point_size = settings.FONT_SIZE
         font.setPointSize(point_size - size_offset)
         qapp.setFont(font)
 
