@@ -12,13 +12,13 @@ from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
 
 from glue.core.application_base import Application
-from glue.core.message import ApplicationClosedMessage, DataCollectionMessage
+from glue.core.message import ApplicationClosedMessage, DataCollectionMessage, SettingsChangeMessage
 from glue.core import command, BaseData
 from glue.core.coordinates import WCSCoordinates
 from glue import env
 from glue.main import load_plugins
 from glue.icons.qt import get_icon
-from glue.utils.qt import get_qapp
+from glue.utils.qt import get_qapp, update_global_font_size
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -476,6 +476,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._log.hide()
 
         self._hub.subscribe(self, DataCollectionMessage, handler=self._on_data_collection_change)
+        self._hub.subscribe(self, SettingsChangeMessage, handler=self._on_ui_settings_change)
 
     def _artihmetic_dialog(self, *event):
         dialog = ArithmeticEditorWidget(self.data_collection)
@@ -485,6 +486,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_save_data.setEnabled(len(self.data_collection) > 0)
         self._button_link_data.setEnabled(len(self.data_collection) > 1)
         self._button_edit_components.setEnabled(len(self.data_collection) > 0)
+
+    def _on_ui_settings_change(self, *event):
+        update_global_font_size()
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():

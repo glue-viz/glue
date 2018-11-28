@@ -37,6 +37,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -49,6 +50,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (0, 0.5, 1)
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
+            assert settings.FONT_SIZE == 8.0
 
     def test_theme_autodetect(self):
 
@@ -60,6 +62,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = 'black'
             settings.DATA_COLOR = '0.75'
             settings.DATA_ALPHA = 0.8
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -70,6 +73,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = 'white'
             settings.DATA_COLOR = '0.35'
             settings.DATA_ALPHA = 0.8
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -86,6 +90,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -96,6 +101,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (0, 0, 0)
             assert rgb(settings.DATA_COLOR) == (0.75, 0.75, 0.75)
             assert settings.DATA_ALPHA == 0.8
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -106,6 +112,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 1, 1)
             assert rgb(settings.DATA_COLOR) == (0.35, 0.35, 0.35)
             assert settings.DATA_ALPHA == 0.8
+            settings.FONT_SIZE = 8.0
 
     def test_custom_changes(self):
 
@@ -117,6 +124,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -127,6 +135,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (0, 0.5, 1)
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -137,6 +146,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -147,6 +157,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
             assert settings.DATA_ALPHA == 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -157,6 +168,18 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
             assert settings.DATA_ALPHA == 0.4
+            settings.FONT_SIZE = 8.0
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.font_size = 16.0
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (0, 1, 1)
+            assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
+            assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
+            assert settings.DATA_ALPHA == 0.4
+            settings.FONT_SIZE = 16.0
 
     def test_custom_pane(self):
 
@@ -216,6 +239,7 @@ class TestPreferences():
             settings.BACKGROUND_COLOR = (0, 0.5, 1)
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
+            settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -223,7 +247,7 @@ class TestPreferences():
             dialog.accept()
 
         assert len(listener.received) == 1
-        assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR')
+        assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE')
 
     def test_save_to_disk(self, tmpdir):
 
@@ -234,6 +258,7 @@ class TestPreferences():
                 settings.BACKGROUND_COLOR = (0, 0.5, 1)
                 settings.DATA_COLOR = (1, 0.5, 0.25)
                 settings.DATA_ALPHA = 0.3
+                settings.FONT_SIZE = 8.0
 
                 dialog = PreferencesDialog(self.app)
                 dialog.show()
@@ -338,6 +363,7 @@ def test_foreground_background_settings():
         settings.BACKGROUND_COLOR = 'white'
         settings.DATA_COLOR = '0.5'
         settings.DATA_ALPHA = 0.5
+        settings.FONT_SIZE = 8.0
 
         dialog = PreferencesDialog(app)
         dialog.show()
