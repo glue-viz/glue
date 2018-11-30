@@ -419,9 +419,9 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[y_axis] = bounds[0]
 
         if isinstance(self.layer, BaseData):
-            image = self.layer.get_fixed_resolution_buffer(self.viewer_state.reference_data, full_view, target_cid=self.attribute, broadcast=False)
+            image = self.layer.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data, target_cid=self.attribute, broadcast=False)
         else:
-            image = self.layer.data.get_fixed_resolution_buffer(self.viewer_state.reference_data, full_view, subset_state=self.layer.subset_state, broadcast=False)
+            image = self.layer.data.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data, subset_state=self.layer.subset_state, broadcast=False)
 
         # Apply aggregation functions if needed
         if agg_func is None:

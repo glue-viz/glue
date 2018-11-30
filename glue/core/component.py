@@ -320,10 +320,6 @@ class CoordinateComponent(Component):
             return grids[self.axis]
 
     @property
-    def dependent_pixel_cids(self):
-        return [self._data.pixel_component_ids[i] for i in self._data.coords.dependent_axes(self.axis)]
-
-    @property
     def shape(self):
         """ Tuple of array dimensions. """
         return self._data.shape
