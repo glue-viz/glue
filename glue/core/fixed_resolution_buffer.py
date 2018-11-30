@@ -37,7 +37,7 @@ def translate_pixel(data, pixel_values, target_cid):
         raise Exception("Dependency on non-pixel component", target_cid)
 
 
-def get_fixed_resolution_buffer(data, target_data, bounds, target_cid=None, subset_state=None):
+def get_fixed_resolution_buffer(data, target_data, bounds, target_cid=None, subset_state=None, broadcast=True):
 
     coords = []
 
@@ -64,8 +64,6 @@ def get_fixed_resolution_buffer(data, target_data, bounds, target_cid=None, subs
     for i in range(target_data.ndim):
         if isinstance(bounds[i], tuple) and i not in pixel_cids:
             raise IncompatibleDataException()
-
-    print(coords)
 
     # We now do a nearest-neighbor interpolation. We don't use
     # map_coordinates because it is picky about array endian-ness
