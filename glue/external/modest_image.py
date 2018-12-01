@@ -156,7 +156,8 @@ class ModestImage(mi.AxesImage):
         self._array_maker = None
 
     def invalidate_cache(self):
-        pass
+        self.stale = True
+        self.set_visible(True)
 
     def get_array(self):
         """Override to return the full-resolution array"""

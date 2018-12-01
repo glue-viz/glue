@@ -3,6 +3,8 @@ from glue.core.exceptions import IncompatibleDataException
 from glue.core.component import CoordinateComponent
 from glue.utils import unbroadcast, broadcast_to
 
+# TODO: cache needs to be updated when links are removed/changed
+
 __all__ = ['get_fixed_resolution_buffer']
 
 
@@ -222,15 +224,15 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
 
     # Take subset_state into account, if present
     if subset_state is None:
-        array = data.get_data(target_cid, view=translated_coords)
-        invalid_value = np.nan
+        array = data.get_data(target_cid, view=translated_coords).astype(float)
+        invalid_value = -np.inf
     else:
         array = data.get_mask(subset_state, view=translated_coords)
         invalid_value = False
 
     if np.any(invalid_all):
         if not array.flags.writeable:
-            array = array.copy()
+            array = np.array(array, dtype=type(invalid_value))
         array[invalid_all] = invalid_value
 
     # Drop dimensions for which bounds were scalars

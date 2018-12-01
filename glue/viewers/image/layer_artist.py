@@ -196,6 +196,9 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
+        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
         self.redraw()
 
@@ -378,5 +381,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
+        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
         self.redraw()
