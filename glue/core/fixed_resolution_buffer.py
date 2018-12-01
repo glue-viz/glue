@@ -67,6 +67,16 @@ class AnyScalar(object):
         return np.isscalar(other)
 
 
+def bounds_for_cache(bounds, dimensions):
+    cache_bounds = []
+    for i in range(len(bounds)):
+        if i not in dimensions and np.isscalar(bounds[i]):
+            cache_bounds.append(AnyScalar())
+        else:
+            cache_bounds.append(bounds[i])
+    return cache_bounds
+
+
 def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True, cache_id=None):
     """
     Get a fixed-resolution buffer for a dataset.
@@ -114,13 +124,21 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
             # Use uuid for component ID since otherwise component IDs don't return
             # False when comparing two different CIDs (instead they return a subset state).
             # For bounds we use a special wrapper that can identify wildcards.
-            current_hash = (data, bounds, target_data, target_cid.uuid, broadcast)
+            current_array_hash = (data, bounds, target_data, target_cid.uuid, broadcast)
         else:
-            current_hash = (data, bounds, target_data, subset_state, broadcast)
+            current_array_hash = (data, bounds, target_data, subset_state, broadcast)
+
+        current_pixel_hash = (data, target_data)
 
         if cache_id in ARRAY_CACHE:
-            if ARRAY_CACHE[cache_id]['hash'] == current_hash:
+            if ARRAY_CACHE[cache_id]['hash'] == current_array_hash:
                 return ARRAY_CACHE[cache_id]['array']
+
+        # To save time later, if the pixel cache doesn't match at the level of the
+        # data and target_data, we just reset the cache.
+        if cache_id in PIXEL_CACHE:
+            if PIXEL_CACHE[cache_id]['hash'] != current_pixel_hash:
+                PIXEL_CACHE.pop(cache_id)
 
     # Start off by generating arrays of coordinates in the original dataset
     pixel_coords = [np.linspace(*bound) if isinstance(bound, tuple) else bound for bound in bounds]
@@ -139,20 +157,46 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
 
     for ipix, pix in enumerate(data.pixel_component_ids):
 
-        translated_coord, dimensions = translate_pixel(target_data, pixel_coords, pix)
+        # At this point, if cache_id is in PIXEL_CACHE, we know that data and
+        # target_data match so we just check the bounds. Note that the bounds
+        # include the AnyScalar wildcard for any dimensions that don't impact
+        # the pixel coordinates here. We do this so that we don't have to
+        # recompute the pixel coordinates when e.g. slicing through cubes.
 
-        # The returned coordinates may often be a broadcasted array. To convert
-        # the coordinates to integers and check which ones are within bounds, we
-        # thus operate on the un-broadcasted array, before broadcasting it back
-        # to the original shape.
-        translated_coord = np.round(unbroadcast(translated_coord)).astype(int)
-        invalid = (translated_coord < 0) | (translated_coord >= data.shape[ipix])
+        if cache_id in PIXEL_CACHE and ipix in PIXEL_CACHE[cache_id] and PIXEL_CACHE[cache_id][ipix]['bounds'] == bounds:
 
-        # Since we are going to be using these coordinates later on to index an
-        # array, we need the coordinates to be within the array, so we reset
-        # any invalid coordinates and keep track of which pixels are invalid
-        # to reset them later.
-        translated_coord[invalid] = 0
+            translated_coord = PIXEL_CACHE[cache_id][ipix]['translated_coord']
+            dimensions = PIXEL_CACHE[cache_id][ipix]['dimensions']
+            invalid = PIXEL_CACHE[cache_id][ipix]['invalid']
+
+        else:
+
+            translated_coord, dimensions = translate_pixel(target_data, pixel_coords, pix)
+
+            # The returned coordinates may often be a broadcasted array. To convert
+            # the coordinates to integers and check which ones are within bounds, we
+            # thus operate on the un-broadcasted array, before broadcasting it back
+            # to the original shape.
+            translated_coord = np.round(unbroadcast(translated_coord)).astype(int)
+            invalid = (translated_coord < 0) | (translated_coord >= data.shape[ipix])
+
+            # Since we are going to be using these coordinates later on to index an
+            # array, we need the coordinates to be within the array, so we reset
+            # any invalid coordinates and keep track of which pixels are invalid
+            # to reset them later.
+            translated_coord[invalid] = 0
+
+            # We now populate the cache
+            if cache_id is not None:
+
+                if cache_id not in PIXEL_CACHE:
+                    PIXEL_CACHE[cache_id] = {'hash': current_pixel_hash}
+
+                PIXEL_CACHE[cache_id][ipix] = {'translated_coord': translated_coord,
+                                               'dimensions': dimensions,
+                                               'invalid': invalid,
+                                               'bounds': bounds_for_cache(bounds, dimensions)}
+
         invalid_all |= invalid
 
         # Broadcast back to the original shape and add to the list
@@ -205,18 +249,13 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
         # the result. This will allow the cache to match regardless of the
         # value for those bounds. However, we only do this for scalar bounds.
 
-        cache_bounds = []
-        for i in range(len(bounds)):
-            if i not in dimensions_all and np.isscalar(bounds[i]):
-                cache_bounds.append(AnyScalar())
-            else:
-                cache_bounds.append(bounds[i])
+        cache_bounds = bounds_for_cache(bounds, dimensions_all)
 
-        current_hash = current_hash[:1] + (cache_bounds,) + current_hash[2:]
+        current_array_hash = current_array_hash[:1] + (cache_bounds,) + current_array_hash[2:]
 
         if subset_state is None:
-            ARRAY_CACHE[cache_id] = {'hash': current_hash, 'array': array}
+            ARRAY_CACHE[cache_id] = {'hash': current_array_hash, 'array': array}
         else:
-            ARRAY_CACHE[cache_id] = {'hash': current_hash, 'array': array}
+            ARRAY_CACHE[cache_id] = {'hash': current_array_hash, 'array': array}
 
     return array
