@@ -1,17 +1,18 @@
 import numpy as np
-from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
+from glue.core.exceptions import IncompatibleDataException
 from glue.core.component import CoordinateComponent
+from glue.utils import unbroadcast, broadcast_to
 
 __all__ = ['get_fixed_resolution_buffer']
 
-# We should consider creating a glue-wide caching infrastructure so that we can
-# better control the allowable size of the cache and centralize the cache
+# NOTE: We should consider creating a glue-wide caching infrastructure so that
+# we can better control the allowable size of the cache and centralize the cache
 # invalidation. There could be a way to indicate that the cache depends on
-# certain data components and/or certain subsets, so that when these are
-# updated we can invalidate the cache. Although since we rely on subset states
-# and not subsets, we could also just make sure that we cache based on
-# subset state, and have a way to know if a subset state changes. We also
-# should invalidate the cache based on links changing.
+# certain data components and/or certain subsets, so that when these are updated
+# we can invalidate the cache. Although since we rely on subset states and not
+# subsets, we could also just make sure that we cache based on subset state, and
+# have a way to know if a subset state changes. We also should invalidate the
+# cache based on links changing.
 
 
 def translate_pixel(data, pixel_coords, target_cid):
@@ -105,7 +106,7 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
 
     # Start off by generating arrays of coordinates in the original dataset
     pixel_coords = [np.linspace(*bound) if isinstance(bound, tuple) else bound for bound in bounds]
-    pixel_coords = np.meshgrid(*pixel_coords, indexing='ij')
+    pixel_coords = np.meshgrid(*pixel_coords, indexing='ij', copy=False)
 
     # Keep track of the original shape of these arrays
     original_shape = pixel_coords[0].shape
@@ -116,9 +117,15 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
     translated_coords = []
     dimensions_all = []
 
+    # TODO: there are still further optimizations that could be done here for
+    # broadcasted arrays, in particular in determining coords below.
+
     for ipix, pix in enumerate(data.pixel_component_ids):
         translated_coord, dimensions = translate_pixel(target_data, pixel_coords, pix)
-        translated_coords.append(np.round(translated_coord.ravel()).astype(int))
+        translated_coord = unbroadcast(translated_coord)
+        translated_coord = np.round(translated_coord).astype(int)
+        translated_coord = broadcast_to(translated_coord, original_shape).ravel()
+        translated_coords.append(translated_coord)
         dimensions_all.extend(dimensions)
 
     if data is not target_data and not broadcast:
@@ -153,4 +160,4 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
         else:
             slices.append(0)
 
-    return array[slices]
+    return array[tuple(slices)]
