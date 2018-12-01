@@ -115,8 +115,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     def get_image_data(self, bounds=None):
 
-        print(bounds)
-
         try:
             image = self.state.get_sliced_data(bounds=bounds)
         except (IncompatibleAttribute, IndexError):
@@ -198,7 +196,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        self.state.reset_cache()
         self._update_image(force=True)
         self.redraw()
 
@@ -381,6 +378,5 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        self.state.reset_cache()
         self._update_image(force=True)
         self.redraw()

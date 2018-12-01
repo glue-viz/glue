@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import uuid
 from collections import defaultdict
 
 import numpy as np
@@ -336,26 +337,6 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.y_min, self.y_max = self.y_max, self.y_min
 
 
-def reproject(data, target_cid, pixel_values):
-
-    if target_cid in data.pixel_component_ids:
-        return pixel_values[target_cid.axis]
-
-    component = data.get_component(target_cid)
-
-    if hasattr(component, 'link'):
-        link = component.link
-        values = []
-        for cid in link._from:
-            values.append(reproject(data, cid, pixel_values))
-        return link._using(*values)
-    elif isinstance(component, CoordinateComponent):
-        # Hack for now - if we pass arrays in the view, it's interpreted
-        return component._calculate(view=pixel_values)
-    else:
-        raise Exception("Dependency on non-pixel component", target_cid)
-
-
 class BaseImageLayerState(MatplotlibLayerState):
 
     _viewer_callbacks_set = False
@@ -387,9 +368,11 @@ class BaseImageLayerState(MatplotlibLayerState):
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
 
-        # The view should be that which should just be applied to the data
-        # slice, not to all the dimensions of the data - thus it should have at
-        # most two dimension
+        # For this method, we make use of Data.get_fixed_resolution_buffer,
+        # which requires us to specify bounds in the form (min, max, nsteps).
+        # We also allow view to be passed here (which is a normal Numpy view)
+        # and, if given, translate it to bounds. If neither are specified,
+        # we behave as if view was [slice(None), slice(None)].
 
         def slice_to_bound(slc, size):
             min, max, step = slc.indices(size)
@@ -398,6 +381,10 @@ class BaseImageLayerState(MatplotlibLayerState):
             return (min, max, n + 1)
 
         if bounds is None:
+
+            # The view should be that which should just be applied to the data
+            # slice, not to all the dimensions of the data - thus it should have at
+            # most two dimensions
 
             if view is None:
                 view = [slice(None), slice(None)]
@@ -418,12 +405,17 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[x_axis] = bounds[1]
             full_view[y_axis] = bounds[0]
 
-        if isinstance(self.layer, BaseData):
-            image = self.layer.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data, target_cid=self.attribute, broadcast=False)
-        else:
-            image = self.layer.data.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data, subset_state=self.layer.subset_state, broadcast=False)
+        # We now get the fixed resolution buffer
 
-        # Apply aggregation functions if needed
+        if isinstance(self.layer, BaseData):
+            image = self.layer.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
+                                                           target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
+        else:
+            image = self.layer.data.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
+                                                                subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
+
+        # We apply aggregation functions if needed
+
         if agg_func is None:
             if image.ndim != 2:
                 raise IncompatibleDataException()
@@ -438,6 +430,9 @@ class BaseImageLayerState(MatplotlibLayerState):
                     image = func(image, axis=axis)
             if image.ndim != 2:
                 raise ValueError("Image after aggregation should have two dimensions")
+
+        # And finally we transpose the data if the order of x/y is different
+        # from the native order.
 
         if transpose:
             image = image.transpose()
@@ -467,6 +462,8 @@ class ImageLayerState(BaseImageLayerState):
                                               'color and transparency for the data')
 
     def __init__(self, layer=None, viewer_state=None, **kwargs):
+
+        self.uuid = str(uuid.uuid4())
 
         super(ImageLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
 
@@ -555,6 +552,10 @@ class ImageSubsetLayerState(BaseImageLayerState):
 
     # TODO: we can save memory by not showing subset multiple times for
     # different image datasets since the footprint should be the same.
+
+    def __init__(self, *args, **kwargs):
+        self.uuid = str(uuid.uuid4())
+        super(ImageSubsetLayerState, self).__init__(*args, **kwargs)
 
     def _get_image(self, view=None):
         return self.layer.to_mask(view=view)

@@ -5,14 +5,9 @@ from glue.utils import unbroadcast, broadcast_to
 
 __all__ = ['get_fixed_resolution_buffer']
 
-# NOTE: We should consider creating a glue-wide caching infrastructure so that
-# we can better control the allowable size of the cache and centralize the cache
-# invalidation. There could be a way to indicate that the cache depends on
-# certain data components and/or certain subsets, so that when these are updated
-# we can invalidate the cache. Although since we rely on subset states and not
-# subsets, we could also just make sure that we cache based on subset state, and
-# have a way to know if a subset state changes. We also should invalidate the
-# cache based on links changing.
+
+ARRAY_CACHE = {}
+PIXEL_CACHE = {}
 
 
 def translate_pixel(data, pixel_coords, target_cid):
@@ -67,7 +62,12 @@ def translate_pixel(data, pixel_coords, target_cid):
         raise Exception("Dependency on non-pixel component", target_cid)
 
 
-def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True):
+class AnyScalar(object):
+    def __eq__(self, other):
+        return np.isscalar(other)
+
+
+def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True, cache_id=None):
     """
     Get a fixed-resolution buffer for a dataset.
 
@@ -104,6 +104,24 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
     if target_cid is not None and subset_state is not None:
         raise ValueError("Either target_cid or subset_state should be specified (not both)")
 
+    # If cache_id is specified, we keep a cached version of the resulting array
+    # indexed by cache_id as well as a hash formed of the call arguments to this
+    # function. We then check if the resulting array already exists in the cache.
+
+    if cache_id is not None:
+
+        if subset_state is None:
+            # Use uuid for component ID since otherwise component IDs don't return
+            # False when comparing two different CIDs (instead they return a subset state).
+            # For bounds we use a special wrapper that can identify wildcards.
+            current_hash = (data, bounds, target_data, target_cid.uuid, broadcast)
+        else:
+            current_hash = (data, bounds, target_data, subset_state, broadcast)
+
+        if cache_id in ARRAY_CACHE:
+            if ARRAY_CACHE[cache_id]['hash'] == current_hash:
+                return ARRAY_CACHE[cache_id]['array']
+
     # Start off by generating arrays of coordinates in the original dataset
     pixel_coords = [np.linspace(*bound) if isinstance(bound, tuple) else bound for bound in bounds]
     pixel_coords = np.meshgrid(*pixel_coords, indexing='ij', copy=False)
@@ -117,40 +135,59 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
     translated_coords = []
     dimensions_all = []
 
-    # TODO: there are still further optimizations that could be done here for
-    # broadcasted arrays, in particular in determining coords below.
+    invalid_all = np.zeros(original_shape, dtype=bool)
 
     for ipix, pix in enumerate(data.pixel_component_ids):
+
         translated_coord, dimensions = translate_pixel(target_data, pixel_coords, pix)
-        translated_coord = unbroadcast(translated_coord)
-        translated_coord = np.round(translated_coord).astype(int)
-        translated_coord = broadcast_to(translated_coord, original_shape).ravel()
-        translated_coords.append(translated_coord)
+
+        # The returned coordinates may often be a broadcasted array. To convert
+        # the coordinates to integers and check which ones are within bounds, we
+        # thus operate on the un-broadcasted array, before broadcasting it back
+        # to the original shape.
+        translated_coord = np.round(unbroadcast(translated_coord)).astype(int)
+        invalid = (translated_coord < 0) | (translated_coord >= data.shape[ipix])
+
+        # Since we are going to be using these coordinates later on to index an
+        # array, we need the coordinates to be within the array, so we reset
+        # any invalid coordinates and keep track of which pixels are invalid
+        # to reset them later.
+        translated_coord[invalid] = 0
+        invalid_all |= invalid
+
+        # Broadcast back to the original shape and add to the list
+        translated_coords.append(broadcast_to(translated_coord, original_shape))
+
+        # Also keep track of all the dimensions that contributed to this coordinate
         dimensions_all.extend(dimensions)
+
+    translated_coords = tuple(translated_coords)
+
+    # If a dimension from the target data for which bounds was set to an interval
+    # did not actually contribute to any of the coordinates in data, then if
+    # broadcast is set to False we raise an error, otherwise we proceed and
+    # implicitly broadcast values along that dimension of the target data.
 
     if data is not target_data and not broadcast:
         for i in range(target_data.ndim):
             if isinstance(bounds[i], tuple) and i not in dimensions_all:
                 raise IncompatibleDataException()
 
-    # We now do a nearest-neighbor interpolation. We don't use
-    # map_coordinates because it is picky about array endian-ness
-    # and if we just use normal Numpy slicing we can preserve the
-    # data type (and avoid memory copies)
-    keep = np.ones(len(translated_coords[0]), dtype=bool)
-    array = np.zeros(len(translated_coords[0])) * np.nan
-    for icoord, coord in enumerate(translated_coords):
-        keep[(coord < 0) | (coord >= data.shape[icoord])] = False
-    coords = [coord[keep] for coord in translated_coords]
+    # PERF: optimize further - check if we can extract a sub-region that
+    # contains all the valid values.
 
     # Take subset_state into account, if present
     if subset_state is None:
-        array[keep] = data.get_data(target_cid, view=tuple(coords))
+        array = data.get_data(target_cid, view=translated_coords)
+        invalid_value = np.nan
     else:
-        array[keep] = data.get_mask(subset_state, view=tuple(coords))
+        array = data.get_mask(subset_state, view=translated_coords)
+        invalid_value = False
 
-    # Finally convert array back to an n-D array
-    array = array.reshape(original_shape)
+    if np.any(invalid_all):
+        if not array.flags.writeable:
+            array = array.copy()
+        array[invalid_all] = invalid_value
 
     # Drop dimensions for which bounds were scalars
     slices = []
@@ -160,4 +197,26 @@ def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
         else:
             slices.append(0)
 
-    return array[tuple(slices)]
+    array = array[tuple(slices)]
+
+    if cache_id is not None:
+
+        # For the bounds, we use a special wildcard for bounds that don't affect
+        # the result. This will allow the cache to match regardless of the
+        # value for those bounds. However, we only do this for scalar bounds.
+
+        cache_bounds = []
+        for i in range(len(bounds)):
+            if i not in dimensions_all and np.isscalar(bounds[i]):
+                cache_bounds.append(AnyScalar())
+            else:
+                cache_bounds.append(bounds[i])
+
+        current_hash = current_hash[:1] + (cache_bounds,) + current_hash[2:]
+
+        if subset_state is None:
+            ARRAY_CACHE[cache_id] = {'hash': current_hash, 'array': array}
+        else:
+            ARRAY_CACHE[cache_id] = {'hash': current_hash, 'array': array}
+
+    return array
