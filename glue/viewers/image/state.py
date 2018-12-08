@@ -396,14 +396,14 @@ class BaseImageLayerState(MatplotlibLayerState):
             full_view[x_axis] = view[1]
             full_view[y_axis] = view[0]
 
-            for i in range(self.viewer_state.reference_data.ndim):
-                if isinstance(full_view[i], slice):
-                    full_view[i] = slice_to_bound(full_view[i], self.viewer_state.reference_data.shape[i])
-
         else:
 
             full_view[x_axis] = bounds[1]
             full_view[y_axis] = bounds[0]
+
+        for i in range(self.viewer_state.reference_data.ndim):
+            if isinstance(full_view[i], slice):
+                full_view[i] = slice_to_bound(full_view[i], self.viewer_state.reference_data.shape[i])
 
         # We now get the fixed resolution buffer
 

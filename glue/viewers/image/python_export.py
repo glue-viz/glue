@@ -15,8 +15,14 @@ def python_export_image_layer(layer, *args):
 
     # TODO: implement aggregation, ignore for now
 
-    script += "# Get main data values\n"
-    script += "image = layer_data['{0}', {1}]".format(layer.state.attribute, tuple(slices))
+    # TODO: need to simplify this!
+    script += "# Define a function that will get a fixed resolution buffer\n"
+
+    script += "def array_maker(bounds):\n    full_bounds={0}\n".format(list(slices))
+    script += "    full_bounds[{0}] = bounds[0]\n".format(layer._viewer_state.y_att.axis)
+    script += "    full_bounds[{0}] = bounds[1]\n".format(layer._viewer_state.x_att.axis)
+    script += "    data = layer_data.data if hasattr(layer_data, 'to_mask') else layer_data\n"
+    script += "    return data.get_fixed_resolution_buffer(target_cid=data.id['{0}'], bounds=full_bounds)\n\n".format(layer.state.attribute)
 
     if transpose:
         script += ".transpose()"
@@ -30,7 +36,7 @@ def python_export_image_layer(layer, *args):
     else:
         color = layer.state.color
 
-    options = dict(array=code('image'),
+    options = dict(array=code('array_maker'),
                    clim=(layer.state.v_min, layer.state.v_max),
                    visible=layer.state.visible,
                    zorder=layer.state.zorder,
