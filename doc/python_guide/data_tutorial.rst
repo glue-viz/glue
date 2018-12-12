@@ -24,7 +24,7 @@ Inside :class:`~glue.core.data.Data` objects, each
 :class:`~glue.core.component_id.ComponentID`. However, this is not necessarily a
 unique ID for each and every component -- instead, different components
 representing the same conceptual quantity can be given the same component ID.
-Component IDs are central to the linking framework
+Component IDs are central to the linking framework.
 
 When using the Glue application, the :class:`~glue.core.data.Data` objects are
 collected inside a :class:`~glue.core.data_collection.DataCollection`.
