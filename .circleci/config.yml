@@ -10,17 +10,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Start xvfb
-          command: start-xvfb
-      - run:
-          name: Install virtualenv
-          command: pip install virtualenv
-      - run:
-          name: Install missing dependencies
-          command: |
-            apt update
-            apt install -y python-tk python3-tk graphviz
-      - run:
           name: Run tests
           command: |
             pip3 install fast-histogram
