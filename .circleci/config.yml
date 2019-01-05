@@ -23,11 +23,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-            virtualenv main --system-site-packages
-            source main/bin/activate
-            pip install pip --upgrade
-            pip install fast-histogram
-            python -c 'import fast_histogram'
+            pip3 install fast-histogram
+            python3 -c 'import fast_histogram'
 
 workflows:
   version: 2
