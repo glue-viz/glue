@@ -1,87 +1,36 @@
 version: 2
 
 # Define standard job which can get run in different containers
-default_steps: &steps
-  steps:
-    - checkout
-    - run:
-        name: Start xvfb
-        command: start-xvfb
-    - run:
-        name: Install virtualenv
-        command: pip install virtualenv
-    - run:
-        name: Install missing dependencies
-        command: |
-          apt update
-          apt install -y python-tk python3-tk graphviz
-    - run:
-        name: Flake8 checks
-        command: |
-          virtualenv flake8 --system-site-packages
-          source flake8/bin/activate
-          pip install pip --upgrade
-          pip install flake8 --progress-bar off
-          flake8 --max-line-length=100 --exclude=external glue
-    - run:
-        name: Run tests
-        command: |
-          virtualenv main --system-site-packages
-          source main/bin/activate
-          pip install pip --upgrade
-          pip install -e .[all,test] codecov --progress-bar off
-          pip freeze
-          pytest --cov glue --no-optional-skip -v glue
-          codecov
-    - store_artifacts:
-        path: /tmp
 
 jobs:
-
-  py27_pyqt510:
-    docker:
-      - image: glueviz/py27-pyqt510:1.1
-    <<: *steps
-
-  py35_pyqt56:
-    docker:
-      - image: glueviz/py35-pyqt56:1.1
-    <<: *steps
-
-  py35_pyqt57:
-    docker:
-      - image: glueviz/py35-pyqt57:1.1
-    <<: *steps
 
   py35_pyqt58:
     docker:
       - image: glueviz/py35-pyqt58:1.1
-    <<: *steps
-
-  py35_pyqt59:
-    docker:
-      - image: glueviz/py35-pyqt59:1.1
-    <<: *steps
-
-  py35_pyqt510:
-    docker:
-      - image: glueviz/py35-pyqt510:1.1
-    <<: *steps
-
-  py36_pyqt511:
-    docker:
-      - image: glueviz/py36-pyqt511:1.1
-    <<: *steps
-
-
+    steps:
+      - checkout
+      - run:
+          name: Start xvfb
+          command: start-xvfb
+      - run:
+          name: Install virtualenv
+          command: pip install virtualenv
+      - run:
+          name: Install missing dependencies
+          command: |
+            apt update
+            apt install -y python-tk python3-tk graphviz
+      - run:
+          name: Run tests
+          command: |
+            virtualenv main --system-site-packages
+            source main/bin/activate
+            pip install pip --upgrade
+            pip install fast-histogram
+            python -c 'import fast_histogram'
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - py27_pyqt510
-      - py35_pyqt57
       - py35_pyqt58
-      - py35_pyqt59
-      - py35_pyqt510
-      - py36_pyqt511
