@@ -76,7 +76,7 @@ def astropy_tabular_data(*args, **kwargs):
             # fill array for now
             try:
                 c = c.filled(fill_value=np.nan)
-            except ValueError:  # assigning nan to integer dtype
+            except (ValueError, TypeError):  # assigning nan to integer dtype
                 c = c.filled(fill_value=-1)
 
         nc = Component.autotyped(c, units=u)
