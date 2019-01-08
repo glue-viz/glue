@@ -29,6 +29,7 @@ default_steps: &steps
           virtualenv main --system-site-packages
           source main/bin/activate
           pip install pip --upgrade
+          pip install numpy
           pip install -e .[all,test] codecov --progress-bar off
           pip freeze
           pytest --cov glue --no-optional-skip -v glue
