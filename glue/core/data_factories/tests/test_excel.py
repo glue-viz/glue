@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from numpy.testing import assert_array_equal
+import numpy as np
+from numpy.testing import assert_array_equal, assert_allclose
 
 from glue.core import data_factories as df
 from glue.tests.helpers import requires_xlrd, make_file
@@ -52,3 +53,21 @@ def test_excel_single():
     assert_array_equal(d['a'], ['b', 'c', 'd', 'e'])
 
     assert d.label == 'simple_data:Data2'
+
+
+@requires_xlrd
+def test_excel_datetime():
+
+    from ..excel import panda_read_excel
+
+    d = panda_read_excel(os.path.join(DATA, 'datetime.xlsx'))[0]
+
+    assert d.get_kind('date') == 'datetime'
+    assert d.get_kind('a') == 'numerical'
+    assert d.get_kind('b') == 'numerical'
+
+    expected = np.array(['2019-01-01', '2019-02-01', '2019-03-01', '2019-04-01'], dtype='datetime64[ns]')
+
+    assert_array_equal(d['date'], expected)
+    assert_allclose(d['a'], [61.35, 44.06, 83.02, 66.15])
+    assert_allclose(d['b'], [79.34, 15.66, 84.30, 61.53])
