@@ -10,7 +10,7 @@ from glue.utils import (shape_to_string, coerce_numeric,
 
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
-           'CoordinateComponent']
+           'CoordinateComponent', 'DateTimeComponent']
 
 
 class Component(object):
@@ -43,6 +43,8 @@ class Component(object):
         # The actual data
         # subclasses may pass non-arrays here as placeholders.
         if isinstance(data, np.ndarray):
+            if data.dtype.kind == 'M':
+                raise TypeError('DateTimeComponent should be used instead of Component for np.datetime64 arrays')
             data = coerce_numeric(data)
             data.setflags(write=False)  # data is read-only
 

@@ -37,7 +37,7 @@ def panda_process(indf):
                 # play well with np.unique
                 c = CategoricalComponent(column.fillna(''))
         else:
-            c = Component(column.values)
+            c = Component.autotyped(column.values)
 
         # convert header to string - in some cases if the first row contains
         # numbers, these are cast to numerical types, so we want to change that

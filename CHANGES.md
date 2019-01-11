@@ -9,6 +9,9 @@ v0.15.0 (unreleased)
 v0.14.2 (unreleased)
 --------------------
 
+* Fix bug that caused date/time columns in Excel files to not be
+  read in correctly.
+
 * Fix bug that caused demo VO Table to not be read in correctly with
   recent versions of Numpy and Astropy. [#1911]
 
