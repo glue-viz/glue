@@ -49,12 +49,37 @@ class ComboHelper(HubListener):
         The state to which the selection property belongs
     selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
         The selection property representing the combo.
+    none : bool or str, optional
+        Add an entry that means `None`. If a string, this is the display string
+        that will be shown for the `None` entry, otherwise an empty string is
+        shown.
     """
 
-    def __init__(self, state, selection_property):
+    def __init__(self, state, selection_property, none=False):
+
+        if isinstance(none, string_types):
+            self._none = True
+            self._none_label = none
+        else:
+            self._none = none
+            self._none_label = ''
 
         self._state = weakref.ref(state)
         self.selection_property = selection_property
+
+    @property
+    def none(self):
+        return self._none
+
+    @none.setter
+    def none(self, value):
+        if isinstance(value, string_types):
+            self._none = True
+            self._none_label = value
+        else:
+            self._none = value
+            self._none_label = ''
+        self.refresh()
 
     @property
     def state(self):
@@ -86,6 +111,8 @@ class ComboHelper(HubListener):
     def choices(self, choices):
         with delay_callback(self.state, self.selection_property):
             prop = getattr(type(self.state), self.selection_property)
+            if self._none:
+                choices = [None] + choices
             prop.set_choices(self.state, choices)
 
     @property
@@ -100,7 +127,15 @@ class ComboHelper(HubListener):
     @display.setter
     def display(self, display):
         prop = getattr(type(self.state), self.selection_property)
-        return prop.set_display_func(self.state, display)
+        if self._none:
+            def display_wrapper(value):
+                if value is None:
+                    return self._none_label
+                else:
+                    return display(value)
+            return prop.set_display_func(self.state, display_wrapper)
+        else:
+            return prop.set_display_func(self.state, display)
 
     def _on_rename(self, msg):
         # If a component ID is renamed, we don't need to refresh because the
@@ -160,20 +195,10 @@ class ComponentIDComboHelper(ComboHelper):
                  numeric=True, categorical=True,
                  pixel_coord=False, world_coord=False, derived=True, none=False):
 
-        super(ComponentIDComboHelper, self).__init__(state, selection_property)
-
-        if isinstance(none, string_types):
-            self._none = True
-            self._none_label = none
-        else:
-            self._none = none
-            self._none_label = ''
+        super(ComponentIDComboHelper, self).__init__(state, selection_property, none=none)
 
         def display_func_label(cid):
-            if cid is None:
-                return self._none_label
-            else:
-                return cid.label
+            return cid.label
 
         self.display = display_func_label
 
@@ -251,20 +276,6 @@ class ComponentIDComboHelper(ComboHelper):
         self._derived = value
         self.refresh()
 
-    @property
-    def none(self):
-        return self._none
-
-    @none.setter
-    def none(self, value):
-        if isinstance(value, string_types):
-            self._none = True
-            self._none_label = value
-        else:
-            self._none = value
-            self._none_label = ''
-        self.refresh()
-
     def append_data(self, data, refresh=True):
 
         if self._manual_data:
@@ -330,9 +341,6 @@ class ComponentIDComboHelper(ComboHelper):
     def refresh(self, *args):
 
         choices = []
-
-        if self._none:
-            choices.append(None)
 
         for data in self._data:
 
@@ -412,11 +420,15 @@ class BaseDataComboHelper(ComboHelper):
         The data collection to which the datasets belong - this is needed
         because if a dataset is removed from the data collection, we want to
         remove it here.
+    none : bool or str, optional
+        Add an entry that means `None`. If a string, this is the display string
+        that will be shown for the `None` entry, otherwise an empty string is
+        shown.
     """
 
-    def __init__(self, state, selection_property, data_collection=None):
+    def __init__(self, state, selection_property, data_collection=None, none=False):
 
-        super(BaseDataComboHelper, self).__init__(state, selection_property)
+        super(BaseDataComboHelper, self).__init__(state, selection_property, none=none)
 
         def display_func_label(cid):
             return cid.label
@@ -571,10 +583,10 @@ class DataCollectionComboHelper(BaseDataComboHelper):
         The data collection with which to stay in sync
     """
 
-    def __init__(self, state, selection_property, data_collection):
+    def __init__(self, state, selection_property, data_collection, none=False):
 
         super(DataCollectionComboHelper, self).__init__(state, selection_property,
-                                                        data_collection=data_collection)
+                                                        data_collection=data_collection, none=none)
 
         self._datasets = data_collection
 
