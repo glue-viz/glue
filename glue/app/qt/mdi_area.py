@@ -83,9 +83,37 @@ class GlueMdiArea(QtWidgets.QMdiArea):
         painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter,
                          "Drag Data To Plot")
 
+    def wheelEvent(self, event):
+
+        # NOTE: when a scroll wheel event happens on top of a GlueMdiSubWindow,
+        # we need to ignore it in GlueMdiArea to prevent the canvas from moving
+        # around. I couldn't find a clean way to do this with events, so instead
+        # in GlueMdiSubWindow I set a flag, _wheel_event, to indicate that a
+        # wheel event has happened in a subwindow, which means the next time
+        # the GlueMdiArea.wheelEvent gets called, we should ignore the wheel
+        # event.
+
+        any_subwindow_wheel = False
+
+        for window in self.subWindowList():
+            if getattr(window, '_wheel_event', None):
+                any_subwindow_wheel = True
+                window._wheel_event = None
+
+        if any_subwindow_wheel:
+            event.ignore()
+            return
+
+        super(GlueMdiArea, self).wheelEvent(event)
+
 
 class GlueMdiSubWindow(QtWidgets.QMdiSubWindow):
     closed = QtCore.Signal()
+
+    def wheelEvent(self, event):
+        # See NOTE in GlueMdiArea.wheelEvent
+        self._wheel_event = True
+        super(GlueMdiSubWindow, self).wheelEvent(event)
 
     def closeEvent(self, event):
         super(GlueMdiSubWindow, self).closeEvent(event)
