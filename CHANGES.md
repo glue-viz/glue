@@ -10,7 +10,7 @@ v0.14.2 (unreleased)
 --------------------
 
 * Make sure that scrolling above a viewer does not result in the
-  whole canvas also scrolling.
+  whole canvas also scrolling. [#1919]
 
 * Fix bug that caused date/time columns in Excel files to not be
   read in correctly.
