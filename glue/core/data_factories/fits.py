@@ -24,7 +24,7 @@ def is_fits(filename):
 
         # It isn't, so maybe it's compressed?
         if start[:2] == b'\x1f\x8b':
-            with gzip.GzipFile('2MASS_k.fits.gz') as gz:
+            with gzip.GzipFile(filename) as gz:
                 if not gz.read(9) == b'SIMPLE  =':
                     return False
         else:
