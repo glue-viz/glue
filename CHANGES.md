@@ -12,6 +12,8 @@ v0.14.2 (unreleased)
 * Fix bug that caused date/time columns in Excel files to not be
   read in correctly.
 
+* Improve performance when reading in large non-FITS files.
+
 * Fix bug that caused demo VO Table to not be read in correctly with
   recent versions of Numpy and Astropy. [#1911]
 
