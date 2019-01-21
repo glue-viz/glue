@@ -189,8 +189,6 @@ def is_casalike(filename, **kwargs):
     """
     from astropy.io import fits
 
-    print("IN HERE", is_fits(filename))
-
     if not is_fits(filename):
         return False
     with fits.open(filename, ignore_missing_end=True, mode='denywrite') as hdulist:
