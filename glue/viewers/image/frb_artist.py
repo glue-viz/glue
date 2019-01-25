@@ -24,7 +24,11 @@ class FRBArtist(BaseImageArtist):
             ny, nx = bins
             (ymin, ymax), (xmin, xmax) = range
             bounds = [(ymin, ymax, ny), (xmin, xmax, nx)]
-            return self._array_maker.get_array(bounds)
+            array = self._array_maker.get_array(bounds)
+            if array is None:
+                return np.array([[np.nan]])
+            else:
+                return array
 
     def set_array_maker(self, array_maker):
         self._array_maker = array_maker
