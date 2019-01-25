@@ -53,4 +53,12 @@ def imshow(axes, X, aspect=None, vmin=None, vmax=None, **kwargs):
     if vmin is not None or vmax is not None:
         im.set_clim(vmin, vmax)
 
+    axes.images.append(im)
+
+    def remove(h):
+        axes.images.remove(h)
+
+    # The following is needed for Matplotlib's .remove() method to work
+    im._remove_method = remove
+
     return im
