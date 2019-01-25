@@ -76,7 +76,7 @@ class CompositeArray(object):
                 return shape
         return None
 
-    def get_array(self, bounds):
+    def get_array(self, bounds=None):
 
         img = None
         visible_layers = 0
@@ -157,10 +157,6 @@ class CompositeArray(object):
 
         if img is None:
             return None
-            # if self.shape is None:
-            #     return None
-            # else:
-            #     img = np.zeros(view_shape(self.shape, view) + (4,))
         else:
             img = np.clip(img, 0, 1)
 
