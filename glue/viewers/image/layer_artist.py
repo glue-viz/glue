@@ -17,7 +17,7 @@ from glue.core import BaseData, HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
-from glue.external.modest_image import imshow
+from glue.viewers.image.frb_artist import imshow
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):

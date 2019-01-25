@@ -11,7 +11,7 @@ from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image.compat import update_image_viewer_state
 
-from glue.external.modest_image import imshow
+from glue.viewers.image.frb_artist import imshow
 from glue.viewers.image.composite_array import CompositeArray
 
 __all__ = ['MatplotlibImageMixin']
@@ -206,7 +206,7 @@ class MatplotlibImageMixin(object):
         imports.append('import matplotlib.pyplot as plt')
         imports.append('from glue.viewers.matplotlib.mpl_axes import init_mpl')
         imports.append('from glue.viewers.image.composite_array import CompositeArray')
-        imports.append('from glue.external.modest_image import imshow')
+        imports.append('from glue.viewers.image.frb_artist import imshow')
 
         script = ""
         script += "fig, ax = init_mpl(wcs=True)\n"
