@@ -62,12 +62,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.aspect = 'auto'
         self.assert_same(tmpdir)
 
-    @pytest.mark.xfail
     def test_subset(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
 
-    @pytest.mark.xfail
     def test_subset_slice(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.test_slice(tmpdir)

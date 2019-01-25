@@ -18,6 +18,31 @@ from glue.core.exceptions import IncompatibleDataException
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
 
+def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
+                          target_cid=None, reference_data=None):
+
+    if reference_data is None:
+        reference_data = data
+
+    class SlicedDataMaker(object):
+
+        @staticmethod
+        def get_array(bounds=None):
+
+            full_bounds = list(slices)
+            full_bounds[y_axis] = bounds[0]
+            full_bounds[x_axis] = bounds[1]
+
+            if isinstance(data, BaseData):
+                return data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+                                                        target_cid=target_cid, broadcast=False)
+            else:
+                return data.data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+                                                             subset_state=data.subset_state, broadcast=False)
+
+    return SlicedDataMaker()
+
+
 class AggregateSlice(object):
 
     def __init__(self, slice=None, center=None, function=None):

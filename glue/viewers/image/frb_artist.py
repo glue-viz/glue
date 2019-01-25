@@ -8,6 +8,8 @@ from mpl_scatter_density.base_image_artist import BaseImageArtist
 
 import numpy as np
 
+from glue.utils import color2rgb
+
 
 class FRBArtist(BaseImageArtist):
 
@@ -38,7 +40,7 @@ class FRBArtist(BaseImageArtist):
         self.set_visible(True)
 
 
-def imshow(axes, X, aspect=None, vmin=None, vmax=None, **kwargs):
+def imshow(axes, array_maker, aspect=None, vmin=None, vmax=None, color=None, **kwargs):
     """
     Similar to matplotlib's imshow command, but produces a FRBArtist
     """
@@ -47,7 +49,28 @@ def imshow(axes, X, aspect=None, vmin=None, vmax=None, **kwargs):
 
     im = FRBArtist(axes, **kwargs)
 
-    im.set_array_maker(X)
+    if color:
+
+        class Wrapper:
+            @staticmethod
+            def get_array(bounds=None):
+
+                # Get original array
+                mask = array_maker.get_array(bounds=bounds)
+
+                # Convert to RGBA array"
+                r, g, b = color2rgb(color)
+                mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
+                mask = (255 * mask).astype(np.uint8)
+
+                return mask
+
+        im.set_array_maker(Wrapper())
+
+    else:
+
+        im.set_array_maker(array_maker)
+
     axes._set_artist_props(im)
 
     if im.get_clip_path() is None:
