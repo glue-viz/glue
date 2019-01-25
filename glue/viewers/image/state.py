@@ -3,20 +3,17 @@ from __future__ import absolute_import, division, print_function
 import uuid
 from collections import defaultdict
 
-import numpy as np
-
 from glue.core import BaseData, Coordinates
-from glue.core.component import CoordinateComponent
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from glue.utils import defer_draw, view_shape, unbroadcast
+from glue.utils import defer_draw, view_shape
 from glue.external.echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
+from glue.core.exceptions import IncompatibleDataException
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 

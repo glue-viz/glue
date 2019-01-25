@@ -8,7 +8,6 @@ from numpy.testing import assert_equal
 from glue.tests.helpers import HYPOTHESIS_INSTALLED
 from glue.core import Data, DataCollection
 from glue.core.link_helpers import LinkSame
-from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 
 from glue.core.fixed_resolution_buffer import split_view_for_bounds
 
@@ -42,7 +41,7 @@ def test_split_view_for_bounds(data_shape, bounds, buffer_shape, buffer_view, da
 if HYPOTHESIS_INSTALLED:
 
     from hypothesis import given, settings, example
-    from hypothesis.strategies import none, integers
+    from hypothesis.strategies import integers
 
     @given(size=integers(1, 100),
            beg=integers(-100, 100),

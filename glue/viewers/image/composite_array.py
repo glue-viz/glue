@@ -5,8 +5,6 @@ from __future__ import absolute_import
 
 import numpy as np
 
-from glue.utils import view_shape
-
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch, ManualInterval, ContrastBiasStretch)
