@@ -5,73 +5,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_equal
 
-from glue.tests.helpers import HYPOTHESIS_INSTALLED
 from glue.core import Data, DataCollection
 from glue.core.link_helpers import LinkSame
 
-from glue.core.fixed_resolution_buffer import split_view_for_bounds
 
-
-ARRAY = np.arange(3024).reshape((6, 7, 8, 9))
-
-
-CASES = [
-    ((10,), [(0, 10, 1)], (10,), (slice(0, 10),), (slice(0, 10, 1),)),
-    ((10,), [(3, 6, 1)], (3,), (slice(0, 3,),), (slice(3, 6, 1),)),
-    ((10,), [(3, 13, 1)], (10,), (slice(0, 7),), (slice(3, 10, 1),)),
-    ((10,), [(-5, 15, 1)], (20,), (slice(5, 15),), (slice(0, 10, 1),)),
-    ((10,), [(-10, -5, 1)], (5,), None, None),
-    ((10,), [(15, 20, 1)], (5,), None, None),
-    ((10,), [(0, 10, 2)], (5,), (slice(0, 5),), (slice(0, 10, 2),)),
-    ((10,), [(0, 15, 2)], (8,), (slice(0, 5),), (slice(0, 10, 2),)),
-    ((10,), [(-5, 15, 2)], (10,), (slice(3, 8),), (slice(1, 10, 2),)),
-    ((10,), [(-1, 15, 5)], (4,), (slice(1, 3),), (slice(4, 10, 5),)),
-    ((10,), [(-100, 1000, 200)], (6,), None, None),
-    ((10,), [(-100, 1000, 26)], (43,), (slice(4, 5),), (slice(4, 10, 26),))]
-
-
-@pytest.mark.parametrize(('data_shape', 'bounds', 'buffer_shape', 'buffer_view', 'data_view'), CASES)
-def test_split_view_for_bounds(data_shape, bounds, buffer_shape, buffer_view, data_view):
-    bs, bv, dv = split_view_for_bounds(data_shape, bounds)
-    assert bs == buffer_shape
-    assert bv == buffer_view
-    assert dv == data_view
-
-
-if HYPOTHESIS_INSTALLED:
-
-    from hypothesis import given, settings, example
-    from hypothesis.strategies import integers
-
-    @given(size=integers(1, 100),
-           beg=integers(-100, 100),
-           end=integers(1, 100),
-           stp=integers(1, 100))
-    @settings(max_examples=10000, derandomize=True)
-    @example(size=2, beg=0, end=1, stp=2)
-    @example(size=1, beg=1, end=1, stp=1)
-    def test_split_view_for_bounds_hypot(size, beg, end, stp):
-
-        # Make sure end > beg
-        end = end + beg
-
-        bs, bv, dv = split_view_for_bounds((size,), [(beg, end, stp)])
-
-        # We need to do things differently here than in the function otherwise
-        # it defies the point of the test. So to do this, we check what happens
-        # if we use the above values on example arrays.
-        input_array = np.random.random(size)
-        buffer = np.zeros(bs)
-        if dv is not None:
-            buffer[bv] = input_array[dv]
-
-        # Now do the same but using the original slice, on a padded array
-        # without using the results from split_view_for_bounds
-        pad = 300
-        padded_array = np.pad(input_array, pad, mode='constant', constant_values=0)
-        expected = padded_array[slice(beg + pad, end + pad, stp)]
-
-        assert_equal(buffer, expected)
+ARRAY = np.arange(3024).reshape((6, 7, 8, 9)).astype(float)
 
 
 class TestFixedResolutionBuffer():
@@ -140,32 +78,32 @@ class TestFixedResolutionBuffer():
     DATA_IS_TARGET_CASES = [
 
         # Bounds are full extent of data
-        (((0, 6, 1), (0, 7, 1), (0, 8, 1), (0, 9, 1)),
+        ([(0, 5, 6), (0, 6, 7), (0, 7, 8), (0, 8, 9)],
             ARRAY),
 
         # Bounds are inside data
-        (((2, 4, 1), (3, 4, 1), (0, 8, 1), (0, 8, 1)),
+        ([(2, 3, 2), (3, 3, 1), (0, 7, 8), (0, 7, 8)],
             ARRAY[2:4, 3:4, :, :8]),
 
         # Bounds are outside data along some dimensions
-        (((-5, 10, 1), (3, 6, 1), (0, 10, 1), (5, 7, 1)),
+        ([(-5, 9, 15), (3, 5, 3), (0, 9, 10), (5, 6, 2)],
             np.pad(ARRAY[:, 3:6, :, 5:7], [(5, 4), (0, 0), (0, 2), (0, 0)],
-                   mode='constant', constant_values=0)),
+                   mode='constant', constant_values=-np.inf)),
 
         # No overlap
-        (((2, 4, 1), (3, 4, 1), (-5, -3, 1), (0, 8, 1)),
-            np.zeros((2, 1, 2, 8)))
+        ([(2, 3, 2), (3, 3, 1), (-5, -4, 2), (0, 7, 8)],
+            -np.inf * np.ones((2, 1, 2, 8)))
 
     ]
 
     @pytest.mark.parametrize(('bounds', 'expected'), DATA_IS_TARGET_CASES)
     def test_data_is_target_full_bounds(self, bounds, expected):
 
-        buffer = self.data1.get_fixed_resolution_buffer(self.data1, bounds,
+        buffer = self.data1.get_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
                                                         target_cid=self.data1.id['x'])
         assert_equal(buffer, expected)
 
-        buffer = self.data3.get_fixed_resolution_buffer(self.data1, bounds,
+        buffer = self.data3.get_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
                                                         target_cid=self.data3.id['x'])
         assert_equal(buffer, expected)
 
