@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import gzip
 import warnings
 from os.path import basename
 from collections import OrderedDict
@@ -13,6 +14,23 @@ __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 
 
 def is_fits(filename):
+
+    # First check if the first few characters of the file are SIMPLE
+    with open(filename, 'rb') as f:
+        start = f.read(9)
+
+    # Let's check if it could be a FITS file is uncompressed
+    if not start == b'SIMPLE  =':
+
+        # It isn't, so maybe it's compressed?
+        if start[:2] == b'\x1f\x8b':
+            with gzip.GzipFile(filename) as gz:
+                if not gz.read(9) == b'SIMPLE  =':
+                    return False
+        else:
+            # Not gzip compressed, so not a FITS file
+            return False
+
     from astropy.io import fits
     try:
         with warnings.catch_warnings():
