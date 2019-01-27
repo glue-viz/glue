@@ -74,6 +74,9 @@ class CompositeArray(object):
                 return shape
         return None
 
+    def __getitem__(self, item):
+        return self.get_array()[item]
+
     def get_array(self, bounds=None):
 
         img = None
