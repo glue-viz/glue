@@ -19,8 +19,8 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov mpl-scatter-density bottleneck"
-    - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler flake8"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck"
+    - PIP_DEPENDENCIES="mpl-scatter-density codecov pyavm astrodendro plotly objgraph pytest-qt pytest-faulthandler flake8"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -77,8 +77,8 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole mpl-scatter-density bottleneck"
-               PIP_DEPENDENCIES="pytest-cov codecov flake8"
+               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole bottleneck"
+               PIP_DEPENDENCIES="mpl-scatter-density pytest-cov codecov flake8"
                REMOVE_INSTALL_REQUIRES=1
 
         - os: linux

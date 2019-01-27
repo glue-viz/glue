@@ -11,8 +11,8 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       CONDA_CHANNELS: "glueviz"
-      CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy mpl-scatter-density bottleneck"
-      PIP_DEPENDENCIES: "plotly objgraph pytest-qt pytest-cov codecov"
+      CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy bottleneck"
+      PIP_DEPENDENCIES: "mpl-scatter-density plotly objgraph pytest-qt pytest-cov codecov"
       PIP_FALLBACK: "False"
       NUMPY_VERSION: "1.13"
 
@@ -49,4 +49,3 @@ build: false
 test_script:
   - "%CMD_IN_ENV% pytest --durations=20 --cov glue glue"
   - "%CMD_IN_ENV% codecov"
-
