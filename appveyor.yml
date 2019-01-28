@@ -11,7 +11,6 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       PIP_FALLBACK: "False"
-      NUMPY_VERSION: "1.13"
 
   matrix:
       - PYTHON_VERSION: "2.7"
