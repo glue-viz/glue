@@ -11,7 +11,8 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
       CONDA_CHANNELS: "glueviz"
-      CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy bottleneck"
+      # We pin libtiff to 4.0.9 due to https://github.com/ContinuumIO/anaconda-issues/issues/10553
+      CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy bottleneck libtiff=4.0.9"
       PIP_DEPENDENCIES: "mpl-scatter-density plotly objgraph pytest-qt pytest-cov codecov"
       PIP_FALLBACK: "False"
       NUMPY_VERSION: "1.13"
