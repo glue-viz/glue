@@ -26,15 +26,15 @@ install:
     - "git clone git://github.com/astropy/ci-helpers.git"
     - "powershell ci-helpers/appveyor/install-miniconda.ps1"
 
-    - conda info
-    - conda list --show-channel-urls
-
     # Set path again, need to find a way to avoid doing this again
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
 
     # List installed packages
     - "conda list"
+    - "conda info"
+    - "conda list --show-channel-urls"
+
 
 # Not a .NET project, we build SunPy in the install step instead
 build: false
