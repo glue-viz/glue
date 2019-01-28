@@ -5,7 +5,7 @@ from glue.utils import unbroadcast, broadcast_to
 
 # TODO: cache needs to be updated when links are removed/changed
 
-__all__ = ['get_fixed_resolution_buffer']
+__all__ = ['compute_fixed_resolution_buffer']
 
 
 ARRAY_CACHE = {}
@@ -79,7 +79,7 @@ def bounds_for_cache(bounds, dimensions):
     return cache_bounds
 
 
-def get_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True, cache_id=None):
+def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True, cache_id=None):
     """
     Get a fixed-resolution buffer for a dataset.
 

@@ -34,10 +34,10 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
         full_bounds[x_axis] = bounds[1]
 
         if isinstance(data, BaseData):
-            array = data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+            array = data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
                                                      target_cid=target_cid, broadcast=False)
         else:
-            array = data.data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+            array = data.data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
                                                           subset_state=data.subset_state, broadcast=False)
 
         if transpose:
@@ -395,7 +395,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         x_axis = self.viewer_state.x_att.axis
         y_axis = self.viewer_state.y_att.axis
 
-        # For this method, we make use of Data.get_fixed_resolution_buffer,
+        # For this method, we make use of Data.compute_fixed_resolution_buffer,
         # which requires us to specify bounds in the form (min, max, nsteps).
         # We also allow view to be passed here (which is a normal Numpy view)
         # and, if given, translate it to bounds. If neither are specified,
@@ -435,10 +435,10 @@ class BaseImageLayerState(MatplotlibLayerState):
         # We now get the fixed resolution buffer
 
         if isinstance(self.layer, BaseData):
-            image = self.layer.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
+            image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                            target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
         else:
-            image = self.layer.data.get_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
+            image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                 subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
 
         # We apply aggregation functions if needed

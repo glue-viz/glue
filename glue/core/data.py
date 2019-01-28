@@ -391,6 +391,34 @@ class BaseCartesianData(BaseData):
         """
         raise NotImplementedError()
 
+    def compute_fixed_resolution_buffer(self, bounds, target_data=None, target_cid=None,
+                                    subset_state=None, broadcast=True):
+        """
+        Get a fixed-resolution buffer.
+
+        Parameters
+        ----------
+        bounds : list
+            The list of bounds for the fixed resolution buffer. This list should
+            have as many items as there are dimensions in ``target_data``. Each
+            item should either be a scalar value, or a tuple of ``(min, max, nsteps)``.
+        target_data : `~glue.core.Data`, optional
+            The data in whose frame of reference the bounds are defined. Defaults
+            to ``data``.
+        target_cid : `~glue.core.component_id.ComponentID`, optional
+            If specified, gives the component ID giving the component to use for the
+            data values. Alternatively, use ``subset_state`` to get a subset mask.
+        subset_state : `~glue.core.subset.SubsetState`, optional
+            If specified, gives the subset state for which to compute a mask.
+            Alternatively, use ``target_cid`` if you want to get data values.
+        broadcast : bool, optional
+            If `True`, then if a dimension in ``target_data`` for which ``bounds``
+            is not a scalar does not affect any of the dimensions in ``data``,
+            then the final array will be effectively broadcast along this
+            dimension, otherwise an error will be raised.
+        """
+        raise NotImplementedError()
+
     def __getitem__(self, key):
         """
         Shortcut syntax to access the numerical data in a component.
@@ -1615,9 +1643,9 @@ class Data(BaseCartesianData):
             range = [(xmin, xmax), (ymin, ymax)]
             return histogram2d(x, y, range=range, bins=bins, weights=w)
 
-    def get_fixed_resolution_buffer(self, *args, **kwargs):
-        from .fixed_resolution_buffer import get_fixed_resolution_buffer
-        return get_fixed_resolution_buffer(self, *args, **kwargs)
+    def compute_fixed_resolution_buffer(self, *args, **kwargs):
+        from .fixed_resolution_buffer import compute_fixed_resolution_buffer
+        return compute_fixed_resolution_buffer(self, *args, **kwargs)
 
     # DEPRECATED
 

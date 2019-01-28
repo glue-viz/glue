@@ -99,11 +99,11 @@ class TestFixedResolutionBuffer():
     @pytest.mark.parametrize(('bounds', 'expected'), DATA_IS_TARGET_CASES)
     def test_data_is_target_full_bounds(self, bounds, expected):
 
-        buffer = self.data1.get_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
+        buffer = self.data1.compute_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
                                                         target_cid=self.data1.id['x'])
         assert_equal(buffer, expected)
 
-        buffer = self.data3.get_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
+        buffer = self.data3.compute_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
                                                         target_cid=self.data3.id['x'])
         assert_equal(buffer, expected)
 
