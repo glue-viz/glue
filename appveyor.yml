@@ -10,13 +10,14 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      CONDA_DEPENDENCIES: "pillow"
       PIP_FALLBACK: "False"
       NUMPY_VERSION: "1.13"
 
   matrix:
       - PYTHON_VERSION: "2.7"
-
+        CONDA_DEPENDENCIES: "pillow scikit-image"
+      - PYTHON_VERSION: "2.7"
+        CONDA_DEPENDENCIES: "pillow scikit-image libtiff=4.0.9"
 platform:
     -x64
 
