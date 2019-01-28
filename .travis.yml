@@ -119,7 +119,7 @@ matrix:
         - os: linux
           stage: Full
           env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
+               PIP_DEPENDENCIES="mpl-scatter-density codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
     allow_failures:
