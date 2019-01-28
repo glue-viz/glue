@@ -100,9 +100,6 @@ class CompositeArray(object):
             if array is None:
                 continue
 
-            # if not callable(layer['array']):
-            #     array = array[view]
-
             if np.isscalar(array):
                 scalar = True
                 array = np.atleast_2d(array)
