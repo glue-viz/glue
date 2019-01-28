@@ -23,10 +23,10 @@ def python_export_image_layer(layer, *args):
                'slices': slices,
                'target_cid': code("layer_data.id['{0}']".format(layer.state.attribute))}
 
-    script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
+    if transpose:
+        options['transpose'] = True
 
-    # if transpose:
-    #     script += ".transpose()"
+    script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
 
     script += "composite.allocate('{0}')\n".format(layer.uuid)
 
@@ -69,10 +69,10 @@ def python_export_image_subset_layer(layer, *args):
                'y_axis': layer._viewer_state.y_att.axis,
                'slices': slices}
 
-    script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
-
     if transpose:
-        script += ".transpose()"
+        options['transpose'] = True
+
+    script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
 
     script += "\n\n"
 

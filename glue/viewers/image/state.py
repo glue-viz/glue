@@ -19,7 +19,7 @@ __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'Aggr
 
 
 def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
-                          target_cid=None, reference_data=None):
+                          target_cid=None, reference_data=None, transpose=False):
     """
     Convenience function for use in exported Python scripts.
     """
@@ -34,11 +34,16 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
         full_bounds[x_axis] = bounds[1]
 
         if isinstance(data, BaseData):
-            return data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                    target_cid=target_cid, broadcast=False)
+            array = data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+                                                     target_cid=target_cid, broadcast=False)
         else:
-            return data.data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                         subset_state=data.subset_state, broadcast=False)
+            array = data.data.get_fixed_resolution_buffer(full_bounds, target_data=reference_data,
+                                                          subset_state=data.subset_state, broadcast=False)
+
+        if transpose:
+            array = array.transpose()
+
+        return array
 
     return get_array
 

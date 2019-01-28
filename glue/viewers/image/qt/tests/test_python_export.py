@@ -73,3 +73,9 @@ class TestExportPython(BaseTestExportPython):
     def test_subset_slice(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.test_slice(tmpdir)
+
+    def test_subset_transposed(self, tmpdir):
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+        self.viewer.state.y_att = self.data.pixel_component_ids[1]
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.assert_same(tmpdir)
