@@ -10,16 +10,12 @@ environment:
       PYTHON_ARCH: "64" # needs to be set for CMD_IN_ENV to succeed. If a mix
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
-      CONDA_CHANNELS: "glueviz"
-      CONDA_DEPENDENCIES: "astropy scipy cython pyqt matplotlib h5py pygments pyzmq scikit-image pandas xlrd pillow pytest mock coverage ipython ipykernel qtconsole traitlets qtpy mpl-scatter-density bottleneck"
-      PIP_DEPENDENCIES: "plotly objgraph pytest-qt pytest-cov codecov"
+      CONDA_DEPENDENCIES: "pillow"
       PIP_FALLBACK: "False"
       NUMPY_VERSION: "1.13"
 
   matrix:
       - PYTHON_VERSION: "2.7"
-      - PYTHON_VERSION: "3.5"
-      - PYTHON_VERSION: "3.6"
 
 platform:
     -x64
@@ -47,4 +43,3 @@ test_script:
   - "%CMD_IN_ENV% python test.py"
   - "%CMD_IN_ENV% pytest --durations=20 --cov glue glue"
   - "%CMD_IN_ENV% codecov"
-
