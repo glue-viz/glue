@@ -235,7 +235,8 @@ class CoordinateComponent(Component):
             # convert these straight to world coordinates since the indices
             # of the pixel coordinates are the pixel coordinates themselves.
             if isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray):
-                return np.array(self._data.coords.pixel2world(*view[::-1])[::-1])[self.axis]
+                axis = self._data.ndim - 1 - self.axis
+                return self._data.coords.pixel2world_single_axis(*view[::-1], axis=axis)
 
             # For 1D arrays, slice can be given as a single slice but we need
             # to wrap it in a list to make the following code work correctly,

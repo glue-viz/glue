@@ -103,6 +103,8 @@ def python_export_scatter_layer(layer, *args):
 
         if layer.state.vx_att is not None and layer.state.vy_att is not None:
 
+            imports += ['import numpy as np']
+
             script += "# Get vector data\n"
             if layer.state.vector_mode == 'Polar':
                 script += "angle = layer_data['{0}']\n".format(layer.state.vx_att.label)

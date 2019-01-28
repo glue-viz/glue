@@ -13,7 +13,7 @@ from astropy.wcs import WCS
 import numpy as np
 from numpy.testing import assert_allclose
 
-from glue.external.modest_image import ModestImage
+from glue.viewers.image.frb_artist import FRBArtist
 from glue.core.coordinates import Coordinates, WCSCoordinates
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
@@ -513,23 +513,23 @@ class TestImageViewer(object):
         # Regression test for a bug in v0.11.0 that meant that if a subset
         # was removed, the image viewer would then crash when changing view
         # (e.g. zooming in). The bug was caused by undeleted references to
-        # ModestImage due to circular references. We therefore check in this
-        # test how many ModestImage objects exist.
+        # FRBArtist due to circular references. We therefore check in this
+        # test how many FRBArtist objects exist.
 
-        def get_modest_images():
+        def get_frb_artists():
             mi = []
             gc.collect()
             for obj in gc.get_objects():
                 try:
-                    if isinstance(obj, ModestImage):
+                    if isinstance(obj, FRBArtist):
                         mi.append(obj)
                 except ReferenceError:
                     pass
             return mi
 
-        # The viewer starts off with one ModestImage. This is also a good test
-        # that other ModestImages in other tests have been removed.
-        assert len(get_modest_images()) == 1
+        # The viewer starts off with one FRBArtist. This is also a good test
+        # that other FRBArtist in other tests have been removed.
+        assert len(get_frb_artists()) == 1
 
         large_image = Data(x=np.random.random((2048, 2048)))
         self.data_collection.append(large_image)
@@ -540,15 +540,15 @@ class TestImageViewer(object):
         self.viewer.add_data(large_image)
 
         # Since the dataset added has a subset, and each subset has its own
-        # ModestImage, this increases the count.
-        assert len(get_modest_images()) == 2
+        # FRBArtist, this increases the count.
+        assert len(get_frb_artists()) == 2
 
         assert len(self.viewer.layers) == 2
 
         self.data_collection.remove_subset_group(subset_group)
 
         # Removing the subset should bring the count back to 1 again
-        assert len(get_modest_images()) == 1
+        assert len(get_frb_artists()) == 1
 
     def test_select_previously_incompatible_layer(self):
 

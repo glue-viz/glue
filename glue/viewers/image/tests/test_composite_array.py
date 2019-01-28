@@ -16,6 +16,7 @@ class TestCompositeArray(object):
         self.array3 = np.array([[0.0, 0.0], [1.0, 0.0]])
         self.array4 = np.array([[0.0, 0.0], [0.0, 1.0]])
         self.composite = CompositeArray()
+        self.default_bounds = [(0, 1, 2), (0, 1, 2)]
 
     def test_shape_size_ndim_dtype(self):
 
@@ -70,19 +71,19 @@ class TestCompositeArray(object):
 
         # If both layers have alpha=1, the top layer should be the only one visible
 
-        assert_allclose(self.composite[...], expected_b)
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_b)
 
         # If the top layer has alpha=0, the bottom layer should be the only one visible
 
         self.composite.set('b', alpha=0.)
 
-        assert_allclose(self.composite[...], expected_a)
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_a)
 
         # If the top layer has alpha=0.5, the result should be an equal blend of each
 
         self.composite.set('b', alpha=0.5)
 
-        assert_allclose(self.composite[...], 0.5 * (expected_b + expected_a))
+        assert_allclose(self.composite(bounds=self.default_bounds), 0.5 * (expected_b + expected_a))
 
     def test_color_blending(self):
 
@@ -107,19 +108,19 @@ class TestCompositeArray(object):
         # In this mode, the zorder shouldn't matter, and if both layers have
         # alpha=1, we should see a normal blend of the colors
 
-        assert_allclose(self.composite[...], np.maximum(expected_a, expected_b))
+        assert_allclose(self.composite(bounds=self.default_bounds), np.maximum(expected_a, expected_b))
 
         # If the top layer has alpha=0, the bottom layer should be the only one visible
 
         self.composite.set('b', alpha=0.)
 
-        assert_allclose(self.composite[...], expected_a)
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_a)
 
         # If the top layer has alpha=0.5, the result should have
 
         self.composite.set('b', alpha=0.5)
 
-        assert_allclose(self.composite[...], np.maximum(expected_a, expected_b * 0.5))
+        assert_allclose(self.composite(bounds=self.default_bounds), np.maximum(expected_a, expected_b * 0.5))
 
     def test_deallocate(self):
 
@@ -129,21 +130,17 @@ class TestCompositeArray(object):
         assert self.composite.shape == (2, 2)
         expected = np.ones(4) * self.array1[:, :, np.newaxis] / 2.
         expected[:, :, 3] = 1
-        assert_allclose(self.composite[...], expected)
+        assert_allclose(self.composite(bounds=self.default_bounds), expected)
 
         self.composite.deallocate('a')
         assert self.composite.shape is None
-        assert self.composite[...] is None
+        assert self.composite(bounds=self.default_bounds) is None
 
-    def test_getitem_noactive(self):
-
-        # Regression test for a bug that caused __getitem__ to return an array
-        # with the wrong size if a view was used and no layers were active.
+    def test_noactive(self):
 
         array = np.random.random((100, 100))
 
         self.composite.allocate('a')
         self.composite.set('a', array=array, visible=False)
 
-        assert self.composite[:].shape == (100, 100, 4)
-        assert self.composite[10:90, ::10].shape == (80, 10, 4)
+        assert self.composite() is None

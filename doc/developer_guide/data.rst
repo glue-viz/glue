@@ -84,6 +84,17 @@ The methods you need to define are:
   n-dimensional histogram of the required attributes. At the moment glue only
   makes use of this for one or two dimensions, though we may also use it for
   three dimensions in future.
+* :meth:`~glue.core.data.BaseCartesianData.compute_fixed_resolution_buffer`:
+  given a list of bounds of the form ``(min, max, n)`` along each dimension
+  of the data, return a fixed resolution buffer that goes from the respective
+  ``min`` to ``max`` in ``n`` steps. Bounds can also be single scalars in cases
+  where the fixed resolution buffer is a lower-dimensional slice. This method
+  can optionally take a target dataset in the case where the fixed resolution
+  buffer should be computed in the frame of reference of a different dataset,
+  in which case the bounds should be interpreted in the frame of reference of the
+  target dataset (but this is only needed if data linking is used). See
+  :meth:`~glue.core.data.BaseCartesianData.compute_fixed_resolution_buffer` for
+  a full list of arguments.
 
 Subset states
 -------------

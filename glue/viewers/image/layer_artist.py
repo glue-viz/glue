@@ -17,7 +17,7 @@ from glue.core import BaseData, HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
-from glue.external.modest_image import imshow
+from glue.viewers.image.frb_artist import imshow
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -113,10 +113,10 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         return full_shape[y_axis], full_shape[x_axis]
 
-    def get_image_data(self, view=None):
+    def get_image_data(self, bounds=None):
 
         try:
-            image = self.state.get_sliced_data(view=view)
+            image = self.state.get_sliced_data(bounds=bounds)
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
@@ -196,7 +196,9 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        self.state.reset_cache()
+        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
         self.redraw()
 
@@ -230,7 +232,7 @@ class ImageSubsetArray(object):
 
         return full_shape[y_axis], full_shape[x_axis]
 
-    def __getitem__(self, view=None):
+    def __call__(self, bounds):
 
         if (self.layer_artist is None or
                 self.layer_state is None or
@@ -242,7 +244,7 @@ class ImageSubsetArray(object):
         # trigger __getitem__)
 
         try:
-            mask = self.layer_state.get_sliced_data(view=view)
+            mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
             return broadcast_to(np.nan, self.shape)
@@ -379,6 +381,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        self.state.reset_cache()
+        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
         self.redraw()

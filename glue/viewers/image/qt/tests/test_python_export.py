@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.utils import NumpyRNGContext
 
+from glue.external.six import PY2
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
 from glue.viewers.image.qt import ImageViewer
@@ -32,6 +33,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer = None
         self.app.close()
         self.app = None
+
+    def assert_same(self, tmpdir):
+        # Due to numerical issues, the tests are not pixel perfect on Python 2
+        BaseTestExportPython.assert_same(self, tmpdir, tol=5 if PY2 else 0.1)
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
@@ -68,3 +73,9 @@ class TestExportPython(BaseTestExportPython):
     def test_subset_slice(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.test_slice(tmpdir)
+
+    def test_subset_transposed(self, tmpdir):
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+        self.viewer.state.y_att = self.data.pixel_component_ids[1]
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.assert_same(tmpdir)

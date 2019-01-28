@@ -367,7 +367,7 @@ class CoordinateComponentLink(ComponentLink):
             args2[f] = a
         for i in range(self.ndim):
             if args2[i] is None:
-                args2[i] = np.ones_like(args[0]) * default[self.ndim - 1 - i]
+                args2[i] = broadcast_to(default[self.ndim - 1 - i], args[0].shape)
         args2 = tuple(args2)
 
         return func(*args2[::-1], axis=self.ndim - 1 - self.index)

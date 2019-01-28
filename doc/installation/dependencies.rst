@@ -21,7 +21,7 @@ Glue has the following required dependencies:
 * `dill <https://pypi.org/project/dill>`_ 0.2 or later (which improves session saving)
 * `h5py <https://www.h5py.org>`_ 2.4 or later, for reading HDF5 files
 * `xlrd <https://pypi.org/project/xlrd>`_ 1.0 or later, for reading Excel files
-* `mpl-scatter-density <https://github.com/astrofrog/mpl-scatter-density>`_, for making
+* `mpl-scatter-density <https://github.com/astrofrog/mpl-scatter-density>`_ 0.5 or later, for making
   scatter density maps of many points.
 * `bottleneck <https://pypi.org/project/Bottleneck/>`_, for fast NaN-friendly computations
 

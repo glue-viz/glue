@@ -1,7 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import sys
 import pytest
+import subprocess
 
 import numpy as np
 
@@ -29,8 +31,7 @@ class BaseTestExportPython:
         self.viewer.axes.figure.savefig(expected)
 
         self.viewer.export_as_script(script)
-        with open(script) as f:
-            exec(f.read())
+        subprocess.call([sys.executable, script])
 
         msg = compare_images(expected, actual, tol=tol)
 

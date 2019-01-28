@@ -5,8 +5,6 @@ from __future__ import absolute_import
 
 import numpy as np
 
-from glue.utils import view_shape
-
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch, ManualInterval, ContrastBiasStretch)
@@ -76,7 +74,10 @@ class CompositeArray(object):
                 return shape
         return None
 
-    def __getitem__(self, view):
+    def __getitem__(self, item):
+        return self()[item]
+
+    def __call__(self, bounds=None):
 
         img = None
         visible_layers = 0
@@ -92,15 +93,12 @@ class CompositeArray(object):
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
 
             if callable(layer['array']):
-                array = layer['array'](view=view)
+                array = layer['array'](bounds=bounds)
             else:
                 array = layer['array']
 
             if array is None:
                 continue
-
-            if not callable(layer['array']):
-                array = array[view]
 
             if np.isscalar(array):
                 scalar = True
@@ -156,10 +154,7 @@ class CompositeArray(object):
             img += plane
 
         if img is None:
-            if self.shape is None:
-                return None
-            else:
-                img = np.zeros(view_shape(self.shape, view) + (4,))
+            return None
         else:
             img = np.clip(img, 0, 1)
 

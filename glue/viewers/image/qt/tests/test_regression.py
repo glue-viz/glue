@@ -18,7 +18,7 @@ def test_resample_on_zoom():
     # For images where the aspect ratio of pixels is fixed to be square, when
     # the user zooms in, the limits of the axes are actually changed twice by
     # matplotlib - a second time when the aspect ratio is enforced. So we need
-    # to make sure that we update the modest_image when this is the case.
+    # to make sure that we update the FRB artist when this is the case.
 
     session = simple_session()
 
