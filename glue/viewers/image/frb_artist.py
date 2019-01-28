@@ -26,7 +26,7 @@ class FRBArtist(BaseImageArtist):
             ny, nx = bins
             (ymin, ymax), (xmin, xmax) = range
             bounds = [(ymin, ymax, ny), (xmin, xmax, nx)]
-            array = self._array_maker.get_array(bounds)
+            array = self._array_maker(bounds)
             if array is None:
                 return np.array([[np.nan]])
             else:
@@ -51,21 +51,19 @@ def imshow(axes, array_maker, aspect=None, vmin=None, vmax=None, color=None, **k
 
     if color:
 
-        class Wrapper:
-            @staticmethod
-            def get_array(bounds=None):
+        def wrapper(bounds=None):
 
-                # Get original array
-                mask = array_maker.get_array(bounds=bounds)
+            # Get original array
+            mask = array_maker(bounds=bounds)
 
-                # Convert to RGBA array"
-                r, g, b = color2rgb(color)
-                mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
-                mask = (255 * mask).astype(np.uint8)
+            # Convert to RGBA array"
+            r, g, b = color2rgb(color)
+            mask = np.dstack((r * mask, g * mask, b * mask, mask * .5))
+            mask = (255 * mask).astype(np.uint8)
 
-                return mask
+            return mask
 
-        im.set_array_maker(Wrapper())
+        im.set_array_maker(wrapper)
 
     else:
 

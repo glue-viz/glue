@@ -75,9 +75,9 @@ class CompositeArray(object):
         return None
 
     def __getitem__(self, item):
-        return self.get_array()[item]
+        return self()[item]
 
-    def get_array(self, bounds=None):
+    def __call__(self, bounds=None):
 
         img = None
         visible_layers = 0

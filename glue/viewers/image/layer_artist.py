@@ -232,7 +232,7 @@ class ImageSubsetArray(object):
 
         return full_shape[y_axis], full_shape[x_axis]
 
-    def get_array(self, bounds):
+    def __call__(self, bounds):
 
         if (self.layer_artist is None or
                 self.layer_state is None or

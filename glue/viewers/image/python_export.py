@@ -35,7 +35,7 @@ def python_export_image_layer(layer, *args):
     else:
         color = layer.state.color
 
-    options = dict(array=code('array_maker.get_array'),
+    options = dict(array=code('array_maker'),
                    clim=(layer.state.v_min, layer.state.v_max),
                    visible=layer.state.visible,
                    zorder=layer.state.zorder,
