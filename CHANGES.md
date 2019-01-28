@@ -4,7 +4,12 @@ Full changelog
 v0.15.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Added a new method ``compute_fixed_resolution_buffer`` to data
+  objects (including the base data class) and use this for the
+  image viewer. This improves the case where images are reprojected
+  as they are now all reprojected to the screen resolution rather
+  than the resolution of the reference data, and this also opens
+  up the possibility of doing n-dimensional reprojection. [#1895]
 
 v0.14.2 (unreleased)
 --------------------
