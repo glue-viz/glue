@@ -30,9 +30,6 @@ install:
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - "activate test"
 
-    # Install to make sure entry points work
-    - "python setup.py install"
-
     # List installed packages
     - "conda list"
 
