@@ -14,9 +14,9 @@ environment:
 
   matrix:
       - PYTHON_VERSION: "2.7"
-        CONDA_DEPENDENCIES: "pillow scikit-image"
+        CONDA_DEPENDENCIES: "pillow"
       - PYTHON_VERSION: "2.7"
-        CONDA_DEPENDENCIES: "pillow scikit-image libtiff=4.0.9"
+        CONDA_DEPENDENCIES: "pillow libtiff=4.0.9"
 platform:
     -x64
 
