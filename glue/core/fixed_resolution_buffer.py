@@ -79,7 +79,8 @@ def bounds_for_cache(bounds, dimensions):
     return cache_bounds
 
 
-def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None, subset_state=None, broadcast=True, cache_id=None):
+def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
+                                    subset_state=None, broadcast=True, cache_id=None):
     """
     Get a fixed-resolution buffer for a dataset.
 

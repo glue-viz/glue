@@ -35,10 +35,10 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
 
         if isinstance(data, BaseData):
             array = data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                     target_cid=target_cid, broadcast=False)
+                                                         target_cid=target_cid, broadcast=False)
         else:
             array = data.data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                          subset_state=data.subset_state, broadcast=False)
+                                                              subset_state=data.subset_state, broadcast=False)
 
         if transpose:
             array = array.transpose()
@@ -436,10 +436,10 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         if isinstance(self.layer, BaseData):
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                           target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
+                                                               target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                                subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
+                                                                    subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
 
         # We apply aggregation functions if needed
 

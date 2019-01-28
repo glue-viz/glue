@@ -100,47 +100,9 @@ class TestFixedResolutionBuffer():
     def test_data_is_target_full_bounds(self, bounds, expected):
 
         buffer = self.data1.compute_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
-                                                        target_cid=self.data1.id['x'])
+                                                            target_cid=self.data1.id['x'])
         assert_equal(buffer, expected)
 
         buffer = self.data3.compute_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
-                                                        target_cid=self.data3.id['x'])
+                                                            target_cid=self.data3.id['x'])
         assert_equal(buffer, expected)
-
-
-# def test_reset_pixel_cache(self):
-#
-#     # Test to make sure that resetting the pixel cache works properly
-#
-#     self.viewer_state.x_att = self.data1.pixel_component_ids[0]
-#     self.viewer_state.y_att = self.data1.pixel_component_ids[2]
-#
-#     self.viewer_state.slices = (1, 1, 1, 1)
-#
-#     layer = self.viewer_state.layers[5]
-#
-#     assert layer._pixel_cache is None
-#
-#     layer.get_sliced_data()
-#
-#     assert layer._pixel_cache['reset_slices'][0] == [False, False, True, False]
-#     assert layer._pixel_cache['reset_slices'][1] == [True, True, False, False]
-#     assert layer._pixel_cache['reset_slices'][2] == [True, True, False, False]
-#
-#     self.viewer_state.slices = (1, 1, 1, 2)
-#
-#     assert layer._pixel_cache['reset_slices'][0] == [False, False, True, False]
-#     assert layer._pixel_cache['reset_slices'][1] == [True, True, False, False]
-#     assert layer._pixel_cache['reset_slices'][2] == [True, True, False, False]
-#
-#     self.viewer_state.slices = (1, 2, 1, 2)
-#
-#     assert layer._pixel_cache['reset_slices'][0] == [False, False, True, False]
-#     assert layer._pixel_cache['reset_slices'][1] is None
-#     assert layer._pixel_cache['reset_slices'][2] is None
-#
-#     self.viewer_state.slices = (1, 2, 2, 2)
-#
-#     assert layer._pixel_cache['reset_slices'][0] is None
-#     assert layer._pixel_cache['reset_slices'][1] is None
-#     assert layer._pixel_cache['reset_slices'][2] is None
