@@ -18,6 +18,7 @@ from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
 from glue.viewers.image.frb_artist import imshow
+from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -100,6 +101,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
         if self.uuid in self.composite:
             self.composite.deallocate(self.uuid)
             self.composite_image.invalidate_cache()
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
 
     def get_image_shape(self):
 
@@ -196,7 +199,6 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
         ARRAY_CACHE.pop(self.state.uuid, None)
         PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
@@ -369,6 +371,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
     def remove(self):
         super(ImageSubsetLayerArtist, self).remove()
         self.image_artist.invalidate_cache()
+        ARRAY_CACHE.pop(self.state.uuid, None)
+        PIXEL_CACHE.pop(self.state.uuid, None)
 
     def enable(self, redraw=True):
         super(ImageSubsetLayerArtist, self).enable()
@@ -381,7 +385,6 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
     @defer_draw
     def update(self, *event):
-        from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
         ARRAY_CACHE.pop(self.state.uuid, None)
         PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
