@@ -27,6 +27,7 @@ from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState, AggregateSlice
 from glue.core.link_helpers import LinkSame
 from glue.app.qt import GlueApplication
+from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 
 from ..data_viewer import ImageViewer
 
@@ -106,10 +107,18 @@ class TestImageViewer(object):
         self.options_widget = self.viewer.options_widget()
 
     def teardown_method(self, method):
+
+        # Properly close viewer and application
         self.viewer.close()
         self.viewer = None
         self.application.close()
         self.application = None
+
+        # Make sure cache is empty
+        if len(PIXEL_CACHE) > 0:
+            raise Exception("Pixel cache contains {0} elements".format(len(PIXEL_CACHE)))
+        if len(ARRAY_CACHE) > 0:
+            raise Exception("Array cache contains {0} elements".format(len(ARRAY_CACHE)))
 
     def test_basic(self):
 
