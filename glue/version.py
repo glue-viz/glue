@@ -1,10 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
-
-__version__ = '0.15.0.dev0'
+from pkg_resources import get_distribution, DistributionNotFound
 
 try:
-    from glue._githash import __githash__, __dev_value__  # noqa
-    __version__ += __dev_value__
-except Exception:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
     pass

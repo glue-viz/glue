@@ -1,101 +1,16 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-from setuptools import setup, find_packages
-from distutils.core import Command
-
-import os
-import re
-import sys
-import subprocess
-
-# Generate version.py
-
-with open('glue/version.py') as infile:
-    exec(infile.read())
-
-# If the version is not stable, we can add a git hash to the __version__
-if '.dev' in __version__:  # noqa
-
-    # Find hash for __githash__ and dev number for __version__ (can't use hash
-    # as per PEP440)
-
-    command_hash = 'git rev-list --max-count=1 --abbrev-commit HEAD'
-    command_number = 'git rev-list --count HEAD'
-
-    try:
-        commit_hash = subprocess.check_output(
-            command_hash, shell=True).decode('ascii').strip()
-        commit_number = subprocess.check_output(
-            command_number, shell=True).decode('ascii').strip()
-    except Exception:
-        pass
-    else:
-        # We write the git hash and value so that they gets frozen if installed
-        with open(os.path.join('glue', '_githash.py'), 'w') as f:
-            f.write("__githash__ = \"{githash}\"\n".format(
-                githash=commit_hash))
-            f.write("__dev_value__ = \"{dev_value}\"\n".format(
-                dev_value=commit_number))
-
-        # We modify __version__ here too for commands such as egg_info
-        __version__ = re.sub('\.dev[^"]*', '.dev{0}'.format(commit_number),
-                             __version__)  # noqa
-
-with open('README.rst') as infile:
-    LONG_DESCRIPTION = infile.read()
-
-cmdclass = {}
-
-# Define built-in plugins
-entry_points = """
-[glue.plugins]
-export_d3po = glue.plugins.export_d3po:setup
-pv_slicer = glue.plugins.tools.pv_slicer:setup
-coordinate_helpers = glue.plugins.coordinate_helpers:setup
-wcs_autolinking = glue.plugins.wcs_autolinking:setup
-spectral_cube = glue.plugins.data_factories.spectral_cube:setup
-dendro_factory = glue.plugins.dendro_viewer:setup
-dendro_viewer = glue.plugins.dendro_viewer.qt:setup
-image_viewer = glue.viewers.image.qt:setup
-scatter_viewer = glue.viewers.scatter.qt:setup
-histogram_viewer = glue.viewers.histogram.qt:setup
-profile_viewer = glue.viewers.profile.qt:setup
-table_viewer = glue.viewers.table.qt:setup
-data_exporters = glue.core.data_exporters:setup
-fits_format = glue.io.formats.fits:setup
-export_python = glue.plugins.tools:setup
-
-[console_scripts]
-glue-config = glue.config_gen:main
-glue-deps = glue._deps:main
-
-[gui_scripts]
-glue = glue.main:main
-"""
-
-# Note that we have to exclude ipykernel 5.0.0 and 5.1.0 below due to a bug
-# that caused issues in the IPython terminal. For more details:
-# https://github.com/ipython/ipykernel/pull/376
-
-install_requires = ['numpy>=1.9',
-                    'pandas>=0.14',
-                    'astropy>=2.0',
-                    'matplotlib>=2.1',
-                    'qtpy>=1.2',
-                    'setuptools>=1.0',
-                    'ipython>=4.0',
-                    'ipykernel>=4.0,!=5.0.0,!=5.1.0',
-                    'qtconsole',
-                    'dill>=0.2',
-                    'xlrd>=1.0',
-                    'h5py>=2.4',
-                    'bottleneck>=1.2',
-                    'mpl-scatter-density>=0.5']
+from setuptools import setup
+from setuptools.config import read_configuration
 
 # Glue can work with PyQt5 and PySide2. We first check if they are already
 # installed before adding PyQt5 to install_requires, since the conda
 # installation of PyQt5 is not recognized by install_requires.
+
+conf = read_configuration('setup.cfg')
+install_requires = conf['options']['install_requires']
+
 try:
     import PyQt5  # noqa
 except ImportError:
@@ -104,52 +19,4 @@ except ImportError:
     except ImportError:
         install_requires.append('PyQt5')
 
-extras_require = {
-    'recommended': ['scipy',
-                    'scikit-image',
-                    'plotly<3.8'],
-    'astronomy': ['PyAVM',
-                  'astrodendro',
-                  'spectral-cube']
-}
-
-extras_require['all'] = (extras_require['recommended'] +
-                         extras_require['astronomy'])
-
-extras_require['test'] = ['pytest',
-                          'pytest-cov',
-                          'pytest-qt',
-                          'pytest-faulthandler',
-                          'objgraph',
-                          'mock']
-
-setup(name='glue-core',
-      version=__version__,
-      description='Multidimensional data visualization across files',
-      long_description=LONG_DESCRIPTION,
-      author='Chris Beaumont, Thomas Robitaille',
-      author_email='glueviz@gmail.com',
-      url='http://glueviz.org',
-      install_requires=install_requires,
-      extras_require=extras_require,
-      classifiers=[
-          'Intended Audience :: Science/Research',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Topic :: Scientific/Engineering :: Visualization',
-          'License :: OSI Approved :: BSD License'
-          ],
-      packages=find_packages(),
-      entry_points=entry_points,
-      cmdclass=cmdclass,
-      package_data={'': ['*.png', '*.ui', '*.glu', '*.hdf5', '*.fits',
-                         '*.xlsx', '*.txt', '*.csv', '*.svg', '*.vot']}
-      )
+setup(use_scm_version=True, install_requires=install_requires)
