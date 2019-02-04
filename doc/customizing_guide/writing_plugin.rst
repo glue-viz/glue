@@ -104,6 +104,67 @@ Distributing the package
 
 Since your package follows the standard layout for packages, you can follow the
 `Packaging Python Projects <https://packaging.python.org/tutorials/packaging-projects/>`_
-guide to release your package and upload it to PyPI. If you are interested in
-including your package as a conda package in the ``glueviz`` channel, please let
-us know by opening an issue at https://github.com/glue-viz/conda-dev.
+guide to release your package and upload it to PyPI. The usual release process
+for glue plugins is as follows:
+
+#. Start off by editing the changelog (if present) and change the release date
+   from ``unreleased`` to today's date, in the ``YYYY-MM-DD`` format, for
+   example::
+
+      0.2 (2019-02-04)
+      ----------------
+
+#. Edit the ``version.py`` file in your package to not include the
+   ``.dev0`` suffix, e.g.::
+
+      version = '0.2'
+
+#. Commit the changes, e.g.::
+
+      git add CHANGES.rst */version.py
+      git commit -m "Preparing release v0.2"
+
+#. Remove any uncommitted files/changes with::
+
+      git clean -fxd
+
+#. Now create the release with::
+
+      python setup.py sdist
+
+   Provided you don't have any C extensions in your package, you can also make
+   a so-called 'wheel' release::
+
+      python setup.py bdist_wheel --universal
+
+#. Go inside the ``dist`` directory and use the `twine
+   <https://pypi.org/project/twine/>`_ tool to upload the files to PyPI::
+
+      cd dist
+      twine upload *.tar.gz *.whl
+
+#. Optionally tag the release in git with::
+
+      git tag -m v0.2 v0.2
+
+#. Add a new section in the changelog file for the next release::
+
+      0.3 (unreleased)
+      ----------------
+
+      - No changes yet.
+
+   and update the ``version.py`` file to point to the next version, with a
+   ``.dev0`` suffix::
+
+      version = '0.3.dev0'
+
+#. Finally, commit the changes and push to GitHub::
+
+      git add CHANGES.rst */version.py
+      git commit -m "Back to development: v0.3"
+      git push --tags upstream master
+
+If you are interested in including your package as a conda package in the
+``glueviz`` channel, please let us know by opening an issue at
+https://github.com/glue-viz/conda-dev.
