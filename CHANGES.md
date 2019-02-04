@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.14.2 (unreleased)
+v0.14.2 (2019-02-04)
 --------------------
 
 * Fix bug that caused demo VO Table to not be read in correctly with
