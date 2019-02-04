@@ -11,7 +11,7 @@ v0.15.0 (unreleased)
   than the resolution of the reference data, and this also opens
   up the possibility of doing n-dimensional reprojection. [#1895]
 
-v0.14.2 (unreleased)
+v0.14.3 (unreleased)
 --------------------
 
 * Make sure that scrolling above a viewer does not result in the
@@ -22,10 +22,13 @@ v0.14.2 (unreleased)
 
 * Improve performance when reading in large non-FITS files. [#1920]
 
+v0.14.2 (2019-02-04)
+--------------------
+
 * Fix bug that caused demo VO Table to not be read in correctly with
   recent versions of Numpy and Astropy. [#1911]
 
-v0.14.1 (unreleased)
+v0.14.1 (2018-11-23)
 --------------------
 
 * Fix bug that caused the links based on ``join_on_key`` to not
