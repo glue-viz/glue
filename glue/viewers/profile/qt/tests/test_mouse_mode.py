@@ -87,7 +87,7 @@ def test_range_mouse_mode():
 
     mode.press(event)
     assert mode.state.x_min == 1.5
-    assert mode.state.x_max is 1.5
+    assert mode.state.x_max == 1.5
 
     event.xdata = 2.5
     mode.move(event)
