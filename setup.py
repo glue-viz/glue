@@ -54,6 +54,7 @@ export_d3po = glue.plugins.export_d3po:setup
 export_plotly = glue.plugins.exporters.plotly.qt:setup
 pv_slicer = glue.plugins.tools.pv_slicer:setup
 coordinate_helpers = glue.plugins.coordinate_helpers:setup
+wcs_autolinking = glue.plugins.wcs_autolinking:setup
 spectral_cube = glue.plugins.data_factories.spectral_cube:setup
 dendro_factory = glue.plugins.dendro_viewer:setup
 dendro_viewer = glue.plugins.dendro_viewer.qt:setup
