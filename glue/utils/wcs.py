@@ -103,7 +103,7 @@ def pixel_to_pixel_correlation_matrix(wcs1, wcs2):
 
         raise ValueError("WCS classes can't be chained")
 
-    matrix = np.dot(matrix2.T, matrix1)
+    matrix = np.matmul(matrix2.T, matrix1)
 
     return matrix
 

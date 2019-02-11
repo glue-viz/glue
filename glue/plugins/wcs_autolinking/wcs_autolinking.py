@@ -6,6 +6,27 @@ from glue.utils import pixel_to_pixel_wrapper
 __all__ = ['wcs_autolink']
 
 
+def get_links(wcs1, wcs2, pixel_cids1, pixel_cids2):
+
+    def forwards(*pixel_input):
+        return pixel_to_pixel_wrapper(wcs1, wcs2, *pixel_input)
+
+    def backwards(*pixel_input):
+        return pixel_to_pixel_wrapper(wcs2, wcs1, *pixel_input)
+
+    pixel_input = (0,) * len(pixel_cids1)
+
+    try:
+        forwards(*pixel_input)
+        backwards(*pixel_input)
+    except Exception:
+        return None
+
+    return multi_link(pixel_cids1, pixel_cids2,
+                      forwards=forwards,
+                      backwards=backwards)
+
+
 def find_wcs_links(data1, data2):
     """
     Given two datasets, find pixel-world-pixel links that can be set up.
@@ -24,35 +45,42 @@ def find_wcs_links(data1, data2):
     # performance as well as to be able to link e.g. the celestial part of a
     # 3D WCS with a 2D WCS. So for now we require the number of pixel/world
     # coordinates to match
-    if wcs1.pixel_n_dim != wcs2.pixel_n_dim or wcs1.world_n_dim != wcs2.world_n_dim:
-        return []
+    if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
 
-    # The easiest way to check if the WCSes are compatible is to simply try and
-    # see if values can be transformed for a single pixel. In future we might
-    # find that this requires optimization performance-wise, but for now let's
-    # not do premature optimization.
+        # The easiest way to check if the WCSes are compatible is to simply try and
+        # see if values can be transformed for a single pixel. In future we might
+        # find that this requires optimization performance-wise, but for now let's
+        # not do premature optimization.
 
-    def forwards(*pixel_input):
-        return pixel_to_pixel_wrapper(wcs1, wcs2, *pixel_input)
+        link = get_links(wcs1, wcs2,
+                         data1.pixel_component_ids,
+                         data2.pixel_component_ids)
 
-    def backwards(*pixel_input):
-        return pixel_to_pixel_wrapper(wcs2, wcs1, *pixel_input)
+        if link:
+            return [link]
 
-    pixel_input = (0,) * wcs1.pixel_n_dim
+    # Try setting only a celestial link. We try and extract the celestial
+    # WCS, which will only work if the celestial coordinates are separable.
+    # TODO: find a more generalized APE 14-compatible way to do this.
+
     try:
-        forwards(*pixel_input)
-        backwards(*pixel_input)
+        wcs1_celestial = wcs1.celestial
+        wcs2_celestial = wcs2.celestial
     except Exception:
         return []
 
-    # If we get here, the two WCSes are compatible and we can set up a link
+    cids1 = data1.pixel_component_ids
+    pixel_cids1 = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1], cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
 
-    link = multi_link(data1.pixel_component_ids,
-                      data2.pixel_component_ids,
-                      forwards=forwards,
-                      backwards=backwards)
+    cids2 = data2.pixel_component_ids
+    pixel_cids2 = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1], cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
 
-    return [link]
+    link = get_links(wcs1_celestial, wcs2_celestial, pixel_cids1, pixel_cids2)
+
+    if link:
+        return [link]
+    else:
+        return []
 
 
 @link_wizard('Astronomy WCS')
