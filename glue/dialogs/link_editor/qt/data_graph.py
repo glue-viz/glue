@@ -271,15 +271,17 @@ class DataGraphWidget(QGraphicsView):
             y = self.height() - (i + 1) / (len(self.right_nodes) + 1) * self.height()
             node.label_position = self.width() / 2 + self.height() / 2, y
 
-    def set_data_collection(self, data_collection):
+    def set_data_collection(self, data_collection, links=None):
 
         # Get data and initialize nodes
         self.data_to_nodes = dict((data, DataNode(data)) for data in data_collection)
         self.nodes = list(self.data_to_nodes.values())
 
         # Get links and set up edges
+        if links is None:
+            links = data_collection.external_links
         self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
-                      for data1, data2 in get_connections(data_collection.external_links)]
+                      for data1, data2 in get_connections(links)]
 
         # Figure out positions
         self.relayout()

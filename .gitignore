@@ -36,3 +36,5 @@ glue/qt/glue_qt_resources.py
 .project
 .pydevproject
 .settings
+
+.eggs

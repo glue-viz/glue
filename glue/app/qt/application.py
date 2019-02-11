@@ -22,6 +22,7 @@ from glue.utils.qt import get_qapp, update_global_font_size
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.dialogs.link_editor.qt import LinkEditor
+from glue.dialogs.link_wizard.qt import run_link_wizard
 from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea
@@ -414,6 +415,14 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_link_data)
 
+        self._button_link_wizard = QtWidgets.QToolButton()
+        self._button_link_wizard.setText("Auto link")
+        self._button_link_wizard.setIcon(get_icon('glue_link'))
+        self._button_link_wizard.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._button_link_wizard.clicked.connect(self._link_wizard)
+
+        self._data_toolbar.addWidget(self._button_link_wizard)
+
         self._button_edit_components = QtWidgets.QToolButton()
         self._button_edit_components.setText("Arithmetic attributes")
         self._button_edit_components.setIcon(get_icon('arithmetic'))
@@ -518,6 +527,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _set_up_links(self, event):
         LinkEditor.update_links(self.data_collection)
+
+    def _link_wizard(self, event):
+        run_link_wizard(self.data_collection)
 
     def _tweak_geometry(self):
         """Maximize window by default."""
