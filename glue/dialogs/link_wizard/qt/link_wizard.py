@@ -5,6 +5,7 @@ import os
 from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
+from glue.config import settings
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.core.autolinking import find_possible_links
@@ -26,6 +27,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
                            directory=os.path.dirname(__file__))
 
         self._links = links
+        self._wizard_name = wizard_name
 
         self._ui.graph_widget.set_data_collection(data_collection, links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
@@ -85,12 +87,27 @@ class LinkWizardPreview(QtWidgets.QDialog):
                                          [link._using.__name__, from_ids, to_id])
         item.setData(0, Qt.UserRole, link)
 
+    def accept(self):
+        self._data_collection.add_link(self._links)
+        if self._ui.checkbox_apply_future.isChecked():
+            settings.AUTOLINK[self._wizard_name] = 'always_accept'
+        super(LinkWizardPreview, self).accept()
+
+    def reject(self):
+        if self._ui.checkbox_apply_future.isChecked():
+            settings.AUTOLINK[self._wizard_name] = 'always_ignore'
+        super(LinkWizardPreview, self).reject()
+
     @classmethod
     def suggest_links(cls, wizard_name, data_collection, links, parent=None):
-        widget = cls(wizard_name, data_collection, links)
-        apply = widget._ui.exec_()
-        if apply:
+        mode = settings.AUTOLINK.get(wizard_name, 'always_show')
+        if mode == 'always_show':
+            widget = cls(wizard_name, data_collection, links)
+            widget._ui.exec_()
+        elif mode == 'always_accept':
             data_collection.add_link(links)
+        else:
+            pass
 
 
 def run_link_wizard(data_collection):
