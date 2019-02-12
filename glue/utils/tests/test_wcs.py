@@ -155,11 +155,11 @@ def test_pixel_to_pixel_correlation_matrix_nonsquare():
                                          ('spat', 'dec', 'dec.degree'),
                                          ('spec', 0, 'value'),
                                          ('time', 0, 'utc.value')]
-    wcs1.world_axis_object_classes  = {'spat': ('astropy.coordinates.SkyCoord', (),
-                                                {'frame': 'icrs'}),
-                                       'spec': ('astropy.units.Wavelength', (None,), {}),
-                                       'time': ('astropy.time.Time', (None,),
-                                                {'format':'mjd', 'scale':'utc'})}
+    wcs1.world_axis_object_classes = {'spat': ('astropy.coordinates.SkyCoord', (),
+                                               {'frame': 'icrs'}),
+                                      'spec': ('astropy.units.Wavelength', (None,), {}),
+                                      'time': ('astropy.time.Time', (None,),
+                                               {'format': 'mjd', 'scale': 'utc'})}
 
     wcs2 = FakeWCS()
     wcs2.pixel_n_dim = 4
@@ -172,7 +172,7 @@ def test_pixel_to_pixel_correlation_matrix_nonsquare():
                                          ('spat', 'ra', 'ra.degree'),
                                          ('spat', 'dec', 'dec.degree'),
                                          ('time', 0, 'utc.value')]
-    wcs2.world_axis_object_classes  = wcs1.world_axis_object_classes
+    wcs2.world_axis_object_classes = wcs1.world_axis_object_classes
 
     matrix = pixel_to_pixel_correlation_matrix(wcs1, wcs2)
 
