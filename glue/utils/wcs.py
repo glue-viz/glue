@@ -44,18 +44,25 @@ def axis_correlation_matrix(wcs):
     return matrix
 
 
+def unique_with_order_preserved(items):
+    new_items = []
+    for item in items:
+        if item not in new_items:
+            new_items.append(item)
+    return new_items
+
+
 def pixel_to_world_correlation_matrix(wcs):
 
     # We basically want to collapse the world dimensions together that are
     # combined into the same high-level objects.
 
-    # Get these in advance as getting these properties can be expensive
+    # Get the following in advance as getting these properties can be expensive
     all_components = wcs.world_axis_object_components
     all_classes = wcs.world_axis_object_classes
     axis_correlation_matrix = wcs.axis_correlation_matrix
 
-    # The following returns a sorted unique list
-    components = np.unique([c[0] for c in all_components]).tolist()
+    components = unique_with_order_preserved([c[0] for c in all_components])
 
     matrix = np.zeros((len(components), wcs.pixel_n_dim), dtype=bool)
 
@@ -80,13 +87,16 @@ def pixel_to_pixel_correlation_matrix(wcs1, wcs2):
     matrix1, classes1 = pixel_to_world_correlation_matrix(wcs1)
     matrix2, classes2 = pixel_to_world_correlation_matrix(wcs2)
 
+    if len(classes1) != len(classes2):
+        raise ValueError("The two WCS return a different number of world coordinates")
+
     # Check if classes match uniquely
     unique_match = True
     mapping = []
     for class1 in classes1:
         matches = classes2.count(class1)
         if matches == 0:
-            raise ValueError("WCS classes can't be chained")
+            raise ValueError("The world coordinate types of the two WCS don't match")
         elif matches > 1:
             unique_match = False
             break
@@ -101,7 +111,7 @@ def pixel_to_pixel_correlation_matrix(wcs1, wcs2):
 
     elif classes1 != classes2:
 
-        raise ValueError("WCS classes can't be chained")
+        raise ValueError("World coordinate order doesn't match and automatic matching is ambiguous")
 
     matrix = np.matmul(matrix2.T, matrix1)
 
