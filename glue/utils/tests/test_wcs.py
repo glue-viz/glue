@@ -135,6 +135,56 @@ def test_pixel_to_pixel_correlation_matrix_mismatch():
     assert exc.value.args[0] == "World coordinate order doesn't match and automatic matching is ambiguous"
 
 
+def test_pixel_to_pixel_correlation_matrix_nonsquare():
+
+    # Here we set up an input WCS that maps 3 pixel coordinates to 4 world
+    # coordinates - the idea is to make sure that things work fine in cases
+    # where the number of input and output pixel coordinates don't match.
+
+    class FakeWCS(object):
+        pass
+
+    wcs1 = FakeWCS()
+    wcs1.pixel_n_dim = 3
+    wcs1.world_n_dim = 4
+    wcs1.axis_correlation_matrix = [[True, True, False],
+                                    [True, True, False],
+                                    [True, True, False],
+                                    [False, False, True]]
+    wcs1.world_axis_object_components = [('spat', 'ra', 'ra.degree'),
+                                         ('spat', 'dec', 'dec.degree'),
+                                         ('spec', 0, 'value'),
+                                         ('time', 0, 'utc.value')]
+    wcs1.world_axis_object_classes  = {'spat': ('astropy.coordinates.SkyCoord', (),
+                                                {'frame': 'icrs'}),
+                                       'spec': ('astropy.units.Wavelength', (None,), {}),
+                                       'time': ('astropy.time.Time', (None,),
+                                                {'format':'mjd', 'scale':'utc'})}
+
+    wcs2 = FakeWCS()
+    wcs2.pixel_n_dim = 4
+    wcs2.world_n_dim = 4
+    wcs2.axis_correlation_matrix = [[True, False, False, False],
+                                    [False, True, True, False],
+                                    [False, True, True, False],
+                                    [False, False, False, True]]
+    wcs2.world_axis_object_components = [('spec', 0, 'value'),
+                                         ('spat', 'ra', 'ra.degree'),
+                                         ('spat', 'dec', 'dec.degree'),
+                                         ('time', 0, 'utc.value')]
+    wcs2.world_axis_object_classes  = wcs1.world_axis_object_classes
+
+    matrix = pixel_to_pixel_correlation_matrix(wcs1, wcs2)
+
+    matrix = matrix.astype(int)
+
+    # The shape should be (n_pixel_out, n_pixel_in)
+    assert matrix.shape == (4, 3)
+
+    expected = np.array([[1, 1, 0], [1, 1, 0], [1, 1, 0], [0, 0, 1]])
+    assert_equal(matrix, expected)
+
+
 def test_split_matrix():
 
     assert split_matrix(np.array([[1]])) == [([0], [0])]

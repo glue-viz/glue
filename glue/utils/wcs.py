@@ -45,6 +45,10 @@ def axis_correlation_matrix(wcs):
 
 
 def unique_with_order_preserved(items):
+    """
+    Return a list of unique items in the list provided, preserving the order
+    in which they are found.
+    """
     new_items = []
     for item in items:
         if item not in new_items:
@@ -53,6 +57,14 @@ def unique_with_order_preserved(items):
 
 
 def pixel_to_world_correlation_matrix(wcs):
+    """
+    Return a correlation matrix between the pixel coordinates and the
+    high level world coordinates, along with the list of high level world
+    coordinate classes.
+
+    The shape of the matrix is ``(n_world, n_pix)``, where ``n_world`` is the
+    number of high level world coordinates.
+    """
 
     # We basically want to collapse the world dimensions together that are
     # combined into the same high-level objects.
@@ -77,11 +89,13 @@ def pixel_to_world_correlation_matrix(wcs):
 
 def pixel_to_pixel_correlation_matrix(wcs1, wcs2):
     """
-    Correlation matrix for a pixel -> world -> pixel transformation specified by
-    two WCSes where the matrix gives the correlation between the input and
-    output pixel coordinates. The first WCS specified is the one used for the
-    pixel -> world transformation and the second WCS specified is the one used
-    for the world -> pixel transformation.
+    Correlation matrix between the input and output pixel coordinates for a
+    pixel -> world -> pixel transformation specified by two WCS instances.
+
+    The first WCS specified is the one used for the pixel -> world
+    transformation and the second WCS specified is the one used for the world ->
+    pixel transformation. The shape of the matrix is
+    ``(n_pixel_out, n_pixel_in)``.
     """
 
     matrix1, classes1 = pixel_to_world_correlation_matrix(wcs1)
@@ -121,7 +135,7 @@ def pixel_to_pixel_correlation_matrix(wcs1, wcs2):
 def split_matrix(matrix):
     """
     Given an axis correlation matrix from a WCS object, return information about
-    the individual WCSes that can be split out.
+    the individual WCS that can be split out.
 
     The output is a list of tuples, where each tuple contains a list of
     pixel dimensions and a list of world dimensions that can be extracted to
@@ -159,6 +173,10 @@ def split_matrix(matrix):
 
 
 def efficient_pixel_to_pixel(wcs1, wcs2, *inputs):
+    """
+    Wrapper that performs a pixel -> world -> pixel transformation with two
+    WCS instances, and un-broadcasting arrays whenever possible for efficiency.
+    """
 
     # Shortcut for scalars
     if np.isscalar(inputs[0]):
