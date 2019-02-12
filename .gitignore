@@ -38,3 +38,5 @@ glue/qt/glue_qt_resources.py
 .settings
 
 .eggs
+.hypothesis
+.pytest_cache
