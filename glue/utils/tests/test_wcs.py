@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 
 # The functionality we are testing relies on the new WCS API (APE 14) in Astropy
 astropy = pytest.importorskip("astropy", minversion="3.1")
@@ -9,10 +9,11 @@ from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
 from astropy.units import Quantity
 
+from glue.utils import unbroadcast
 from glue.utils.wcs import (axis_correlation_matrix,
                             pixel_to_world_correlation_matrix,
                             pixel_to_pixel_correlation_matrix,
-                            split_matrix)
+                            split_matrix, efficient_pixel_to_pixel)
 
 
 def test_pixel_to_world_correlation_matrix_celestial():
@@ -152,3 +153,88 @@ def test_split_matrix():
     assert split_matrix(np.array([[0, 1, 1],
                                   [1, 0, 0],
                                   [1, 0, 1]])) == [([0, 1, 2], [0, 1, 2])]
+
+
+def test_efficient_pixel_to_pixel():
+
+    wcs1 = WCS(naxis=3)
+    wcs1.wcs.ctype = 'DEC--TAN', 'FREQ', 'RA---TAN'
+    wcs1.wcs.set()
+
+    wcs2 = WCS(naxis=3)
+    wcs2.wcs.ctype = 'GLON-CAR', 'GLAT-CAR', 'FREQ'
+    wcs2.wcs.set()
+
+    # First try with scalars
+    x, y, z = efficient_pixel_to_pixel(wcs1, wcs2, 1, 2, 3)
+    assert x.shape == ()
+    assert y.shape == ()
+    assert z.shape == ()
+
+    # Now try with broadcasted arrays
+    x = np.linspace(10, 20, 10)
+    y = np.linspace(10, 20, 20)
+    z = np.linspace(10, 20, 30)
+    Z1, Y1, X1 = np.meshgrid(z, y, x, indexing='ij', copy=False)
+    X2, Y2, Z2 = efficient_pixel_to_pixel(wcs1, wcs2, X1, Y1, Z1)
+
+    # The final arrays should have the correct shape
+    assert X2.shape == (30, 20, 10)
+    assert Y2.shape == (30, 20, 10)
+    assert Z2.shape == (30, 20, 10)
+
+    # But behind the scenes should also be broadcasted
+    assert unbroadcast(X2).shape == (30, 1, 10)
+    assert unbroadcast(Y2).shape == (30, 1, 10)
+    assert unbroadcast(Z2).shape == (1, 20, 1)
+
+    # We can put the values back through the function to ensure round-tripping
+    X3, Y3, Z3 = efficient_pixel_to_pixel(wcs2, wcs1, X2, Y2, Z2)
+
+    # The final arrays should have the correct shape
+    assert X2.shape == (30, 20, 10)
+    assert Y2.shape == (30, 20, 10)
+    assert Z2.shape == (30, 20, 10)
+
+    # But behind the scenes should also be broadcasted
+    assert unbroadcast(X3).shape == (30, 1, 10)
+    assert unbroadcast(Y3).shape == (1, 20, 1)
+    assert unbroadcast(Z3).shape == (30, 1, 10)
+
+    # And these arrays should match the input
+    assert_allclose(X1, X3)
+    assert_allclose(Y1, Y3)
+    assert_allclose(Z1, Z3)
+
+
+def test_efficient_pixel_to_pixel_simple():
+
+    # Simple test to make sure that when WCS only returns one world coordinate
+    # this still works correctly (since this requires special treatment behind
+    # the scenes).
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs1.wcs.set()
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'GLON-CAR', 'GLAT-CAR'
+    wcs2.wcs.set()
+
+    # First try with scalars
+    x, y = efficient_pixel_to_pixel(wcs1, wcs2, 1, 2)
+    assert x.shape == ()
+    assert y.shape == ()
+
+    # Now try with broadcasted arrays
+    x = np.linspace(10, 20, 10)
+    y = np.linspace(10, 20, 20)
+    Y1, X1 = np.meshgrid(y, x, indexing='ij', copy=False)
+    Y2, X2 = efficient_pixel_to_pixel(wcs1, wcs2, X1, Y1)
+
+    # The final arrays should have the correct shape
+    assert X2.shape == (20, 10)
+    assert Y2.shape == (20, 10)
+
+    # and there are no efficiency gains here since the celestial axes are correlated
+    assert unbroadcast(X2).shape == (20, 10)

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from glue.utils import unbroadcast, broadcast_to
 
-__all__ = ['axis_correlation_matrix', 'pixel_to_pixel_wrapper']
+__all__ = ['axis_correlation_matrix', 'efficient_pixel_to_pixel']
 
 
 def axis_correlation_matrix(wcs):
@@ -158,7 +158,7 @@ def split_matrix(matrix):
     return split_info
 
 
-def pixel_to_pixel_wrapper(wcs1, wcs2, *inputs):
+def efficient_pixel_to_pixel(wcs1, wcs2, *inputs):
 
     # Shortcut for scalars
     if np.isscalar(inputs[0]):

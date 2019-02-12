@@ -1,7 +1,7 @@
 from glue.config import link_wizard
 from glue.core.link_helpers import multi_link
 from glue.core.coordinates import WCSCoordinates
-from glue.utils import pixel_to_pixel_wrapper
+from glue.utils import efficient_pixel_to_pixel
 
 __all__ = ['wcs_autolink']
 
@@ -9,10 +9,10 @@ __all__ = ['wcs_autolink']
 def get_links(wcs1, wcs2, pixel_cids1, pixel_cids2):
 
     def forwards(*pixel_input):
-        return pixel_to_pixel_wrapper(wcs1, wcs2, *pixel_input)
+        return efficient_pixel_to_pixel(wcs1, wcs2, *pixel_input)
 
     def backwards(*pixel_input):
-        return pixel_to_pixel_wrapper(wcs2, wcs1, *pixel_input)
+        return efficient_pixel_to_pixel(wcs2, wcs1, *pixel_input)
 
     pixel_input = (0,) * len(pixel_cids1)
 
