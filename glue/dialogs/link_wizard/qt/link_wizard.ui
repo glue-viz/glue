@@ -6,17 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>816</width>
-    <height>502</height>
+    <width>756</width>
+    <height>496</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
-   <string>Link Wizard</string>
+   <string>Link Suggestions</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <property name="topMargin">
     <number>5</number>
    </property>
@@ -27,6 +36,16 @@
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Description of results</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>The suggested links are shown as lines in the following visualization. Hover over the lines to see more details about the links, then decide whether or not to proceed with the link suggestions.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -92,6 +111,13 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QPushButton" name="button_details">
+       <property name="text">
+        <string>Show Details</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -103,6 +129,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkbox_apply_future">
+       <property name="text">
+        <string>Apply to future suggestions (can be changed in Preferences)</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="button_ignore">

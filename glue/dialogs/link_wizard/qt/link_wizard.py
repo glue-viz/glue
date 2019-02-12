@@ -11,10 +11,7 @@ from glue.core.autolinking import find_possible_links
 
 __all__ = ['run_link_wizard']
 
-DESCRIPTION = ("The link wizard '{0}' has identified {1} links, which are "
-               "represented by lines in the following visualization. Hover "
-               "over the lines to see more details about the links, then "
-               "decide whether or not to proceed.")
+DESCRIPTION = "The link wizard '{0}' has identified {1} links between your datasets"
 
 
 class LinkWizardPreview(QtWidgets.QDialog):
@@ -41,6 +38,29 @@ class LinkWizardPreview(QtWidgets.QDialog):
         self._ui.button_apply.clicked.connect(self.accept)
         self._ui.button_ignore.clicked.connect(self.reject)
 
+        self._ui.button_details.clicked.connect(self._toggle_details)
+
+        self._set_details_visibility(False)
+
+    def _toggle_details(self, *args):
+        self._set_details_visibility(not self._details_visible)
+
+    def _set_details_visibility(self, visible):
+
+        self._details_visible = visible
+
+        self._ui.graph_widget.setVisible(visible)
+        self._ui.current_links.setVisible(visible)
+
+        if visible:
+            self._ui.button_details.setText('Hide Details')
+        else:
+            self._ui.button_details.setText('Show Details')
+
+        # Make sure the dialog is centered on the screen
+        screen = QtWidgets.QApplication.desktop().screenGeometry(0);
+        self.move(screen.center() - self.rect().center())
+
     @avoid_circular
     def _on_data_change_graph(self):
         self._update_links_list()
@@ -66,7 +86,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
         item.setData(0, Qt.UserRole, link)
 
     @classmethod
-    def suggest_links(cls, wizard_name, data_collection, links):
+    def suggest_links(cls, wizard_name, data_collection, links, parent=None):
         widget = cls(wizard_name, data_collection, links)
         apply = widget._ui.exec_()
         if apply:
