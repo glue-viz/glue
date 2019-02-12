@@ -12,8 +12,9 @@ from glue.core.autolinking import find_possible_links
 __all__ = ['run_link_wizard']
 
 DESCRIPTION = ("The link wizard '{0}' has identified {1} links, which are "
-"represented by lines in the following visualization. Hover over the lines to "
-"see more details about the links, then decide whether or not to proceed.")
+               "represented by lines in the following visualization. Hover "
+               "over the lines to see more details about the links, then "
+               "decide whether or not to proceed.")
 
 
 class LinkWizardPreview(QtWidgets.QDialog):
