@@ -42,6 +42,10 @@ def test_pixel_to_world_correlation_matrix_spectral_cube_uncorrelated():
 
 def test_pixel_to_world_correlation_matrix_spectral_cube_correlated():
 
+    # We need the following fix when celestial axes are correlated with
+    # non-celestial axes: https://github.com/astropy/astropy/pull/8420
+    pytest.importorskip("astropy", minversion="3.1.2")
+
     wcs = WCS(naxis=3)
     wcs.wcs.ctype = 'RA---TAN', 'FREQ', 'DEC--TAN'
     wcs.wcs.cd = np.ones((3, 3))
@@ -82,6 +86,10 @@ def test_pixel_to_pixel_correlation_matrix_spectral_cube_uncorrelated():
 
 
 def test_pixel_to_pixel_correlation_matrix_spectral_cube_correlated():
+
+    # We need the following fix when celestial axes are correlated with
+    # non-celestial axes: https://github.com/astropy/astropy/pull/8420
+    pytest.importorskip("astropy", minversion="3.1.2")
 
     # NOTE: only make one of the WCSes have correlated axes to really test this
 
