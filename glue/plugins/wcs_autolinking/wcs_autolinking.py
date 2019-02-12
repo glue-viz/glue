@@ -40,6 +40,11 @@ def find_wcs_links(data1, data2):
     # have the new Astropy APE 14 interface.
     wcs1, wcs2 = data1.coords.wcs, data2.coords.wcs
 
+    # Only check for links if the WCSes have well defined physical types
+    if (wcs1.world_axis_physical_types.count(None) > 0 or
+            wcs2.world_axis_physical_types.count(None) > 0):
+        return []
+
     # For now, we treat the WCS as non-separable, but in future we could
     # consider iterating over the separated components of the WCS for
     # performance as well as to be able to link e.g. the celestial part of a
@@ -62,6 +67,9 @@ def find_wcs_links(data1, data2):
     # Try setting only a celestial link. We try and extract the celestial
     # WCS, which will only work if the celestial coordinates are separable.
     # TODO: find a more generalized APE 14-compatible way to do this.
+
+    if not wcs1.has_celestial or not wcs2.has_celestial:
+        return []
 
     try:
         wcs1_celestial = wcs1.celestial
