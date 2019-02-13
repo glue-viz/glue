@@ -80,7 +80,6 @@ class LinkWizardPreview(QtWidgets.QDialog):
             from_data = [from_id.parent for from_id in link.get_from_ids()]
             if (data1 in to_data and data2 in from_data) or (data1 in from_data and data2 in to_data):
                 links_to_add.add(link)
-                break
 
         for link in links_to_add:
             self._add_link_to_list(link)
