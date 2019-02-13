@@ -74,6 +74,12 @@ class LinkCollection(object):
         for link in self._links:
             yield link
 
+    def __len__(self):
+        return len(self._links)
+
+    def __getitem__(self, item):
+        return self._links[item]
+
     def __contains__(self, cid):
         for link in self:
             if cid in link:
