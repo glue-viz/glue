@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 import math
 from functools import partial
 
-from qtpy import QtGui
+from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
 
 import numpy as np
@@ -16,7 +16,7 @@ from ..selection import SelectionCallbackProperty, ChoiceSeparator
 
 __all__ = ['connect_checkable_button', 'connect_text', 'connect_combo_data',
            'connect_combo_text', 'connect_float_text', 'connect_value',
-           'connect_combo_selection']
+           'connect_combo_selection', 'connect_list_selection']
 
 
 class UserDataWrapper(object):
@@ -388,5 +388,83 @@ def connect_combo_selection(instance, prop, widget, display=str):
 
     add_callback(instance, prop, update_widget)
     widget.currentIndexChanged.connect(update_prop)
+
+    update_widget(getattr(instance, prop))
+
+
+def connect_list_selection(instance, prop, widget, display=str):
+    """
+    Connect a SelectionCallbackProperty with a QListWidget that supports
+    single-item selection.
+    """
+
+    if not isinstance(getattr(type(instance), prop), SelectionCallbackProperty):
+        raise TypeError('connect_list_selection requires a SelectionCallbackProperty')
+
+    def update_widget(value):
+
+        items = [widget.item(idx) for idx in range(widget.count())]
+        list_text = [item.text() for item in items]
+        list_data = [item.data(Qt.UserRole) for item in items]
+
+        choices = getattr(type(instance), prop).get_choices(instance)
+        choice_labels = getattr(type(instance), prop).get_choice_labels(instance)
+
+        try:
+            idx = choices.index(value)
+        except ValueError:
+            idx = -1
+
+        if list_data == choices and list_text == choice_labels:
+            choices_updated = False
+        else:
+
+            widget.blockSignals(True)
+            widget.clear()
+
+            if len(choices) == 0:
+                return
+
+            # combo_model = widget.model()
+
+            for index, (label, choice) in enumerate(zip(choice_labels, choices)):
+
+                item = QtWidgets.QListWidgetItem(label)
+                item.setData(Qt.UserRole, UserDataWrapper(choice))
+                widget.addItem(item)
+
+                # We interpret None data as being disabled rows (used for headers)
+                if isinstance(choice, ChoiceSeparator):
+                    palette = widget.palette()
+                    item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
+                    item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
+
+            choices_updated = True
+
+        if len(widget.selectedItems()) == 0:
+            current_index = -1
+        else:
+            current_index = items.index(widget.selectedItems()[0])
+
+        if idx == current_index and not choices_updated:
+            return
+
+        widget.setCurrentItem(widget.item(idx))
+        widget.blockSignals(False)
+        widget.itemSelectionChanged.emit()
+
+    def update_prop():
+
+        if len(widget.selectedItems()) == 0:
+            setattr(instance, prop, None)
+        else:
+            data_wrapper = widget.selectedItems()[0].data(Qt.UserRole)
+            if data_wrapper is None:
+                setattr(instance, prop, None)
+            else:
+                setattr(instance, prop, data_wrapper.data)
+
+    add_callback(instance, prop, update_widget)
+    widget.itemSelectionChanged.connect(update_prop)
 
     update_widget(getattr(instance, prop))
