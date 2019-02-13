@@ -415,14 +415,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         self._data_toolbar.addWidget(self._button_link_data)
 
-        self._button_link_wizard = QtWidgets.QToolButton()
-        self._button_link_wizard.setText("Auto link")
-        self._button_link_wizard.setIcon(get_icon('glue_link'))
-        self._button_link_wizard.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self._button_link_wizard.clicked.connect(self._link_wizard)
-
-        self._data_toolbar.addWidget(self._button_link_wizard)
-
         self._button_edit_components = QtWidgets.QToolButton()
         self._button_edit_components.setText("Arithmetic attributes")
         self._button_edit_components.setIcon(get_icon('arithmetic'))
@@ -527,9 +519,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _set_up_links(self, event):
         LinkEditor.update_links(self.data_collection)
-
-    def _link_wizard(self, event):
-        run_link_wizard(self.data_collection)
 
     def _tweak_geometry(self):
         """Maximize window by default."""
@@ -1399,6 +1388,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.render(painter, QtCore.QPoint(), QtGui.QRegion(), flags)
         image.save(filename)
         painter.end()
+
+    @classmethod
+    def add_datasets(cls, data_collection, *args, **kwargs):
+        result = super(GlueApplication, cls).add_datasets(data_collection, *args, **kwargs)
+        run_link_wizard(data_collection)
+        return result
 
     def __gluestate__(self, context):
         state = super(GlueApplication, self).__gluestate__(context)
