@@ -222,6 +222,9 @@ class ComponentLink(object):
         """ The target ComponentID """
         return self._to
 
+    def get_to_ids(self):
+        return [self.get_to_id()]
+
     def set_to_id(self, to):
         self._to = to
 

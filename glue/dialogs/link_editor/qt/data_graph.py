@@ -9,6 +9,7 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
                             QGraphicsLineItem)
 
 from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
+from glue.core.link_helpers import LinkCollection
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 COLOR_CONNECTED = (0.6, 0.9, 0.9)
@@ -161,14 +162,18 @@ class DataNode:
 def get_connections(dc_links):
     links = set()
     for link in dc_links:
-        to_id = link.get_to_id()
-        for from_id in link.get_from_ids():
-            data1 = from_id.parent
-            data2 = to_id.parent
-            if data1 is data2:
-                continue
-            if (data1, data2) not in links and (data2, data1) not in links:
-                links.add((data1, data2))
+        if isinstance(link, LinkCollection):
+            to_ids = link.get_to_ids()
+        else:
+            to_ids = [link.get_to_id()]
+        for to_id in to_ids:
+            for from_id in link.get_from_ids():
+                data1 = from_id.parent
+                data2 = to_id.parent
+                if data1 is data2:
+                    continue
+                if (data1, data2) not in links and (data2, data1) not in links:
+                    links.add((data1, data2))
     return links
 
 

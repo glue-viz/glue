@@ -86,6 +86,15 @@ class LinkCollection(object):
                 return True
         return False
 
+    def get_from_ids(self):
+        from_ids = []
+        for link in self:
+            from_ids.extend(link.get_from_ids())
+        return list(set(from_ids))
+
+    def get_to_ids(self):
+        return [link.get_to_id() for link in self]
+
     def __gluestate__(self, context):
         state = {}
         state['values'] = context.id(self._links)

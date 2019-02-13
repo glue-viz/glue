@@ -6,7 +6,7 @@ __all__ = ['find_possible_links']
 
 def expand_links(links):
     new_links = []
-    if isinstance(links, (LinkCollection, list)):
+    if isinstance(links, list):
         for link in links:
             new_links.extend(expand_links(link))
     else:
