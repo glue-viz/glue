@@ -59,8 +59,36 @@ def _toid(arg):
         raise TypeError('Cannot be cast to a ComponentID: %s' % arg)
 
 
-class LinkCollection(list):
-    pass
+class LinkCollection(object):
+
+    def __init__(self, links=None):
+        self._links = []
+
+    def append(self, link):
+        self._links.append(link)
+
+    def extend(self, links):
+        self._links.extend(links)
+
+    def __iter__(self):
+        for link in self._links:
+            yield link
+
+    def __contains__(self, cid):
+        for link in self:
+            if cid in link:
+                return True
+        return False
+
+    def __gluestate__(self, context):
+        state = {}
+        state['values'] = context.id(self._links)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(context.object(rec['values']))
+        return self
 
 
 class LinkSame(LinkCollection):
@@ -71,7 +99,21 @@ class LinkSame(LinkCollection):
     """
 
     def __init__(self, cid1, cid2):
+        super(LinkSame, self).__init__()
+        self._cid1 = cid1
+        self._cid2 = cid2
         self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
+
+    def __gluestate__(self, context):
+        state = {}
+        state['cid1'] = context.id(self._cid1)
+        state['cid2'] = context.id(self._cid2)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(context.object(rec['cid1']), context.object(rec['cid2']))
+        return self
 
 
 class LinkTwoWay(LinkCollection):
@@ -87,8 +129,29 @@ class LinkTwoWay(LinkCollection):
         :returns: Two :class:`~glue.core.component_link.ComponentLink`
                   instances, specifying the link in each direction
         """
+        super(LinkTwoWay, self).__init__()
+        self._cid1 = cid1
+        self._cid2 = cid2
+        self._forwards = forwards
+        self._backwards = backwards
         self.append(ComponentLink([_toid(cid1)], _toid(cid2), forwards))
         self.append(ComponentLink([_toid(cid2)], _toid(cid1), backwards))
+
+    def __gluestate__(self, context):
+        state = {}
+        state['cid1'] = context.id(self._cid1)
+        state['cid2'] = context.id(self._cid2)
+        state['forwards'] = context.id(self._forwards)
+        state['backwards'] = context.id(self._backwards)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(context.object(rec['cid1']),
+                   context.object(rec['cid2']),
+                   context.object(rec['forwards']),
+                   context.object(rec['backwards']))
+        return self
 
 
 class MultiLink(LinkCollection):
@@ -112,13 +175,14 @@ class MultiLink(LinkCollection):
 
     cids = None
 
-    def __init__(self, *args):
-        self.cids = args
+    def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
 
-    def create_links(self, cids_left, cids_right, forwards=None, backwards=None):
+        super(MultiLink, self).__init__()
 
-        if self.cids is None:
-            raise Exception("MultiLink.__init__ was not called before creating links")
+        self._cids_left = cids_left
+        self._cids_right = cids_right
+        self._forwards = forwards
+        self._backwards = backwards
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
@@ -134,17 +198,24 @@ class MultiLink(LinkCollection):
                 self.append(ComponentLink(cids_right, l, func))
 
     def __gluestate__(self, context):
-        return {'cids': [context.id(cid) for cid in self.cids]}
+        state = {}
+        state['cids_left'] = context.id(self._cids_left)
+        state['cids_right'] = context.id(self._cids_right)
+        state['forwards'] = context.id(self._forwards)
+        state['backwards'] = context.id(self._backwards)
+        return state
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(*[context.object(cid) for cid in rec['cids']])
+        self = cls(context.object(rec['cids_left']),
+                   context.object(rec['cids_right']),
+                   context.object(rec['forwards']),
+                   context.object(rec['backwards']))
+        return self
 
 
 def multi_link(cids_left, cids_right, forwards=None, backwards=None):
-    ml = MultiLink(cids_left + cids_right)
-    ml.create_links(cids_left, cids_right, forwards=forwards, backwards=backwards)
-    return ml
+    return MultiLink(cids_left, cids_right, forwards=forwards, backwards=backwards)
 
 
 class LinkAligned(LinkCollection):
@@ -157,6 +228,7 @@ class LinkAligned(LinkCollection):
     """
 
     def __init__(self, data):
+        super(LinkAligned, self).__init__()
         shape = data[0].shape
         ndim = data[0].ndim
         for i, d in enumerate(data[1:]):

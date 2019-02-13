@@ -149,20 +149,16 @@ class LinkManager(HubListener):
         remove = []
         remove_cid = msg.component_id
         for link in self._external_links:
-            ids = set(link.get_from_ids()) | set([link.get_to_id()])
-            for cid in ids:
-                if cid is remove_cid:
-                    remove.append(link)
-                    break
+            if remove_cid in link:
+                remove.append(link)
         for link in remove:
             self.remove_link(link)
 
     def _data_removed(self, msg):
         remove = []
         for link in self._external_links:
-            ids = set(link.get_from_ids()) | set([link.get_to_id()])
-            for cid in ids:
-                if cid.parent is msg.data:
+            for cid in msg.data.components:
+                if cid in link and cid.parent is msg.data:
                     remove.append(link)
                     break
         for link in remove:
@@ -180,20 +176,20 @@ class LinkManager(HubListener):
         link : ComponentLink, LinkCollection, or list thereof
            The link(s) to ingest
         """
-        if isinstance(link, (LinkCollection, list)):
+        if isinstance(link, list):
             for l in link:
                 self.add_link(l, update_external=False)
             if update_external:
                 self.update_externally_derivable_components()
         else:
-            if link.inverse not in self._external_links:
+            if isinstance(link, LinkCollection) or link.inverse not in self._external_links:
                 self._external_links.add(link)
                 if update_external:
                     self.update_externally_derivable_components()
 
     @contract(link=ComponentLink)
     def remove_link(self, link, update_external=True):
-        if isinstance(link, (LinkCollection, list)):
+        if isinstance(link, list):
             for l in link:
                 self.remove_link(l, update_external=False)
             if update_external:
@@ -256,11 +252,22 @@ class LinkManager(HubListener):
 
     @property
     def _links(self):
+
         if self.data_collection is None:
             data_links = set()
         else:
             data_links = set(link for data in self.data_collection for link in getattr(data, 'links', []))
-        return data_links | self._external_links
+
+        external_links = set()
+
+        for link in self._external_links:
+            if isinstance(link, LinkCollection):
+                for sublink in link:
+                    external_links.add(sublink)
+            else:
+                external_links.add(link)
+
+        return data_links | external_links
 
     @property
     def _inverse_links(self):
