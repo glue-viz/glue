@@ -272,17 +272,3 @@ class LinkEquation(QtWidgets.QWidget):
             a.close()
 
         self._argument_widgets = []
-
-    def _populate_category_combo(self):
-        f = [f for f in link_function.members if len(f.output_labels) == 1]
-        categories = sorted(set(l.category for l in f + link_helper.members))
-        LinkEquation.category.set_choices(self, categories)
-        connect_combo_selection(self, 'category', self._ui.category)
-
-    def _populate_function_combo(self):
-        """ Add name of functions to function combo box """
-        f = [f for f in link_function.members if len(f.output_labels) == 1]
-        functions = [l for l in f + link_helper.members if l.category == self.category]
-        LinkEquation.function.set_choices(self, functions)
-        LinkEquation.function.set_display_func(self, lambda l: get_function_name(l[0]))
-        connect_combo_selection(self, 'function', self._ui.function)

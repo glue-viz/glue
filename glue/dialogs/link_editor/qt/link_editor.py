@@ -3,17 +3,13 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtWidgets
-from qtpy.QtCore import Qt
 
-from glue import core
-from glue.utils import nonpartial
 from glue.config import link_function, link_helper
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
-from glue.core.state_objects import State
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty, ChoiceSeparator
-from glue.core.data_combo_helper import DataCollectionComboHelper
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.external.echo.qt.connect import UserDataWrapper
+from glue.dialogs.link_editor.state import LinkEditorState
 
 __all__ = ['LinkEditor']
 
@@ -26,24 +22,20 @@ def get_function_name(info):
         return item.__name__
 
 
-class LinkEditorState(State):
+# TODO: make links shallow-copiable so that we avoid changing the real ones in-place
+# TODO: make data combos not allow same data to be selected twice
+# TODO: make a helper that can show the link editor panel on the right for
+# average links. But also need a way to provide a custom one, for example
+# for WCSLink.
 
-    data1 = SelectionCallbackProperty()
-    data2 = SelectionCallbackProperty()
-    links = SelectionCallbackProperty()
-    link_type = SelectionCallbackProperty()
+# Can we change type of an existing link? Or should 'add link' button have a
+# drop down for link type? Does this all make identity links harder?
 
-    def __init__(self, data_collection):
+class LinkMenu(QtWidgets.QMenu):
 
-        super(LinkEditorState, self).__init__()
+    def __init__(self, parent=None):
 
-        self.data1_helper = DataCollectionComboHelper(self, 'data1', data_collection)
-        self.data2_helper = DataCollectionComboHelper(self, 'data2', data_collection)
-
-        self.data_collection = data_collection
-
-        self.add_callback('data1', self.on_data_change)
-        self.add_callback('data2', self.on_data_change)
+        super(LinkMenu, self).__init__(parent=parent)
 
         categories = []
         for function in link_function.members:
@@ -53,44 +45,17 @@ class LinkEditorState(State):
             categories.append(helper.category)
         categories = ['General'] + sorted(set(categories) - set(['General']))
 
-        link_types = []
-
         for category in categories:
-            link_types.append(ChoiceSeparator(category))
+            submenu = self.addMenu(category)
             for function in link_function.members:
                 if function.category == category and len(function.output_labels) == 1:
-                    link_types.append(function)
+                    action = submenu.addAction(get_function_name(function))
+                    action.setData(UserDataWrapper(function))
             for helper in link_helper.members:
                 if helper.category == category:
-                    link_types.append(helper)
+                    action = submenu.addAction(get_function_name(helper))
+                    action.setData(UserDataWrapper(helper))
 
-        LinkEditorState.link_type.set_choices(self, link_types)
-        LinkEditorState.link_type.set_display_func(self, get_function_name)
-
-    def on_data_change(self, *args):
-
-        if self.data1 is None or self.data2 is None:
-            LinkEditorState.links.set_choices(self, [])
-            return
-
-        links = []
-        for link in self.data_collection.external_links:
-            to_ids = link.get_to_ids()
-            to_data = [to_id.parent for to_id in to_ids]
-            from_data = [from_id.parent for from_id in link.get_from_ids()]
-            if ((self.data1 in to_data and self.data2 in from_data) or
-                    (self.data1 in from_data and self.data2 in to_data)):
-                links.append(LinkWrapper(link=link))
-
-        LinkEditorState.links.set_choices(self, links)
-
-
-class LinkWrapper(State):
-    link = CallbackProperty()
-
-
-# TODO: make links shallow-copiable so that we avoid changing the real ones in-place
-# TODO: make data combos not allow same data to be selected twice
 
 class LinkEditor(QtWidgets.QDialog):
 
@@ -99,9 +64,12 @@ class LinkEditor(QtWidgets.QDialog):
         super(LinkEditor, self).__init__(parent=parent)
 
         self._data_collection = data_collection
+
+        # TODO: This is the point where we should actually take copies of the
+        # links because we are going to be editing them and the user may cancel
         self._links = list(data_collection.external_links)
 
-        self.state = LinkEditorState(data_collection)
+        self.state = LinkEditorState(data_collection, self._links)
 
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
@@ -110,69 +78,26 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.graph_widget.set_data_collection(data_collection)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
-        # self._on_data_change_combo()
+        self._menu = LinkMenu(parent=self._ui.button_add_link)
+        self._menu.triggered.connect(self._add_link)
+        self._ui.button_add_link.setMenu(self._menu)
+
+        # self.state.add_callback('links', self._on_link_change)
+
+    def _add_link(self, action):
+        self.state.add_link(action.data().data)
 
     @avoid_circular
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
-    #
-    # def _simple_links(self):
-    #     """Return identity links which connect the highlighted items
-    #     in each component selector.
-    #
-    #     Returns:
-    #       A list of :class:`~glue.core.ComponentLink` objects
-    #       If items are not selected in the component selectors,
-    #       an empty list is returned
-    #     """
-    #     comps = self._selected_components()
-    #     if len(comps) != 2:
-    #         return []
-    #     assert isinstance(comps[0], core.data.ComponentID), comps[0]
-    #     assert isinstance(comps[1], core.data.ComponentID), comps[1]
-    #     link1 = core.component_link.ComponentLink([comps[0]], comps[1])
-    #     return [link1]
-    #
-    # def _add_new_link(self):
-    #
-    #     if not self.advanced:
-    #         links = self._simple_links()
-    #     else:
-    #         links = self._ui.signature_editor.links()
-    #         self._ui.signature_editor.clear_inputs()
-    #
-    #     self._links.extend(links)
-    #
-    #     self._ui.graph_widget.set_links(self._links)
-    #     self._update_links_list()
-    #
-    # def links(self):
-    #     return self._links
-    #
-    # def _remove_link(self):
-    #     if self._ui.current_links.currentItem() is None:
-    #         return
-    #     for item in self._ui.current_links.selectedItems():
-    #         link = item.data(0, Qt.UserRole)
-    #         self._links.remove(link)
-    #     self._ui.graph_widget.set_links(self._links)
-    #     self._update_links_list()
-    #
+
     @classmethod
     def update_links(cls, collection):
         widget = cls(collection)
         isok = widget._ui.exec_()
         if isok:
             collection.set_links(widget._links)
-    #
-    # def _add_link_to_list(self, link):
-    #     current = self._ui.current_links
-    #     from_ids = ', '.join(cid.label for cid in link.get_from_ids())
-    #     to_ids = ', '.join(cid.label for cid in link.get_to_ids())
-    #     item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
-    #                                      [str(link), from_ids, to_ids])
-    #     item.setData(0, Qt.UserRole, link)
 
 
 def main():
@@ -193,4 +118,6 @@ def main():
 
 
 if __name__ == "__main__":
+    from glue.main import load_plugins
+    load_plugins()
     main()
