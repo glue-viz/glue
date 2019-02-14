@@ -229,10 +229,6 @@ class MultiLink(LinkCollection):
         return self
 
 
-def multi_link(cids_left, cids_right, forwards=None, backwards=None):
-    return MultiLink(cids_left, cids_right, forwards=forwards, backwards=backwards)
-
-
 class LinkAligned(LinkCollection):
 
     """Compute all the links to specify that the input data are pixel-aligned.

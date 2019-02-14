@@ -1,5 +1,5 @@
 from glue.config import link_wizard
-from glue.core.link_helpers import multi_link
+from glue.core.link_helpers import MultiLink
 from glue.core.coordinates import WCSCoordinates
 from glue.utils import efficient_pixel_to_pixel
 
@@ -22,9 +22,9 @@ def get_links(wcs1, wcs2, pixel_cids1, pixel_cids2):
     except Exception:
         return None
 
-    return multi_link(pixel_cids1, pixel_cids2,
-                      forwards=forwards,
-                      backwards=backwards)
+    return MultiLink(pixel_cids1, pixel_cids2,
+                     forwards=forwards,
+                     backwards=backwards)
 
 
 def find_wcs_links(data1, data2):
