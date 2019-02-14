@@ -29,7 +29,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
         self._links = links
         self._wizard_name = wizard_name
 
-        self._ui.graph_widget.set_data_collection(data_collection, links)
+        self._ui.graph_widget.set_data_collection(data_collection, new_links=links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
         self._ui.current_links.setColumnWidth(0, 200)
