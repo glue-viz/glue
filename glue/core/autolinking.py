@@ -17,7 +17,7 @@ def find_possible_links(data_collection):
     """
     Given a `~glue.core.data_collection.DataCollection` object, return a
     dictionary containing possible link suggestions, where the keys are the
-    name of the auto-linking Wizard, and the values are lists of links.
+    name of the auto-linking plugin, and the values are lists of links.
     """
 
     suggestions = {}

@@ -15,11 +15,11 @@ __all__ = ['run_autolinker']
 DESCRIPTION = "The auto-linking plugin '{0}' has identified {1} links between your datasets"
 
 
-class LinkWizardPreview(QtWidgets.QDialog):
+class AutoLinkPreview(QtWidgets.QDialog):
 
-    def __init__(self, wizard_name, data_collection, links, parent=None):
+    def __init__(self, autolinker_name, data_collection, links, parent=None):
 
-        super(LinkWizardPreview, self).__init__(parent=parent)
+        super(AutoLinkPreview, self).__init__(parent=parent)
 
         self._data_collection = data_collection
 
@@ -27,7 +27,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
                            directory=os.path.dirname(__file__))
 
         self._links = links
-        self._wizard_name = wizard_name
+        self._autolinker_name = autolinker_name
 
         self._ui.graph_widget.set_data_collection(data_collection, new_links=links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
@@ -35,7 +35,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
         self._ui.current_links.setColumnWidth(0, 200)
         self._ui.current_links.setColumnWidth(1, 300)
 
-        self._ui.label.setText(DESCRIPTION.format(wizard_name, len(links)))
+        self._ui.label.setText(DESCRIPTION.format(autolinker_name, len(links)))
 
         self._ui.button_apply.clicked.connect(self.accept)
         self._ui.button_ignore.clicked.connect(self.reject)
@@ -95,19 +95,19 @@ class LinkWizardPreview(QtWidgets.QDialog):
     def accept(self):
         self._data_collection.add_link(self._links)
         if self._ui.checkbox_apply_future.isChecked():
-            settings.AUTOLINK[self._wizard_name] = 'always_accept'
-        super(LinkWizardPreview, self).accept()
+            settings.AUTOLINK[self._autolinker_name] = 'always_accept'
+        super(AutoLinkPreview, self).accept()
 
     def reject(self):
         if self._ui.checkbox_apply_future.isChecked():
-            settings.AUTOLINK[self._wizard_name] = 'always_ignore'
-        super(LinkWizardPreview, self).reject()
+            settings.AUTOLINK[self._autolinker_name] = 'always_ignore'
+        super(AutoLinkPreview, self).reject()
 
     @classmethod
-    def suggest_links(cls, wizard_name, data_collection, links, parent=None):
-        mode = settings.AUTOLINK.get(wizard_name, 'always_show')
+    def suggest_links(cls, autolinker_name, data_collection, links, parent=None):
+        mode = settings.AUTOLINK.get(autolinker_name, 'always_show')
         if mode == 'always_show':
-            widget = cls(wizard_name, data_collection, links)
+            widget = cls(autolinker_name, data_collection, links)
             widget._ui.exec_()
         elif mode == 'always_accept':
             data_collection.add_link(links)
@@ -117,5 +117,5 @@ class LinkWizardPreview(QtWidgets.QDialog):
 
 def run_autolinker(data_collection):
     suggestions = find_possible_links(data_collection)
-    for wizard_name, links in suggestions.items():
-        LinkWizardPreview.suggest_links(wizard_name, data_collection, links)
+    for autolinker_name, links in suggestions.items():
+        AutoLinkPreview.suggest_links(autolinker_name, data_collection, links)
