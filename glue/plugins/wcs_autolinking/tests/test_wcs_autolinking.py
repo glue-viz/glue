@@ -152,8 +152,6 @@ def test_clone_wcs_link():
 
     # Make sure that WCSLink can be serialized/deserialized
 
-    from glue.core.tests.test_state import Cloner, doubler, clone
-
     wcs1 = WCS(naxis=2)
     wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
     wcs1.wcs.set()

@@ -11,6 +11,9 @@ v0.15.0 (unreleased)
   than the resolution of the reference data, and this also opens
   up the possibility of doing n-dimensional reprojection. [#1895]
 
+* Added initial infrastructure for developing auto-linking helpers
+  and implement an initial astronomy WCS auto-linker. [#1933]
+
 v0.14.3 (unreleased)
 --------------------
 
