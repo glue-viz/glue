@@ -44,7 +44,7 @@ class WCSLink(MultiLink):
         # Only check for links if the WCSes have well defined physical types
         if (wcs1.world_axis_physical_types.count(None) > 0 or
                 wcs2.world_axis_physical_types.count(None) > 0):
-            return []
+            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
 
         # For now, we treat the WCS as non-separable, but in future we could
         # consider iterating over the separated components of the WCS for
@@ -69,13 +69,13 @@ class WCSLink(MultiLink):
             # TODO: find a more generalized APE 14-compatible way to do this.
 
             if not wcs1.has_celestial or not wcs2.has_celestial:
-                return []
+                raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
 
             try:
                 wcs1_celestial = wcs1.celestial
                 wcs2_celestial = wcs2.celestial
             except Exception:
-                return []
+                raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
 
             cids1 = data1.pixel_component_ids
             cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
