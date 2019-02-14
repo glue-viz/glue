@@ -1,4 +1,4 @@
-from glue.config import link_wizard
+from glue.config import autolinker
 
 __all__ = ['find_possible_links']
 
@@ -22,8 +22,8 @@ def find_possible_links(data_collection):
 
     suggestions = {}
 
-    for label, wizard in link_wizard:
-        links = wizard(data_collection)
+    for label, function in autolinker:
+        links = function(data_collection)
         links = expand_links(links)
         if len(links) > 0:
             suggestions[label] = links

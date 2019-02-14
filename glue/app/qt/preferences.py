@@ -31,13 +31,13 @@ class AutolinkPreferencesPane(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(AutolinkPreferencesPane, self).__init__(parent=parent)
 
-        from glue.config import settings, link_wizard  # noqa
+        from glue.config import settings, autolinker  # noqa
 
         layout = QtWidgets.QGridLayout()
 
         self.combos = {}
 
-        for i, (label, wizard) in enumerate(link_wizard):
+        for i, (label, _) in enumerate(autolinker):
             combo = QtWidgets.QComboBox()
             for short, display in AUTOLINK_OPTIONS.items():
                 combo.addItem(display, userData=short)

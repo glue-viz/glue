@@ -10,9 +10,9 @@ from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.core.autolinking import find_possible_links
 
-__all__ = ['run_link_wizard']
+__all__ = ['run_autolinker']
 
-DESCRIPTION = "The link wizard '{0}' has identified {1} links between your datasets"
+DESCRIPTION = "The auto-linking plugin '{0}' has identified {1} links between your datasets"
 
 
 class LinkWizardPreview(QtWidgets.QDialog):
@@ -23,7 +23,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
 
         self._data_collection = data_collection
 
-        self._ui = load_ui('link_wizard.ui', self,
+        self._ui = load_ui('autolinker.ui', self,
                            directory=os.path.dirname(__file__))
 
         self._links = links
@@ -115,7 +115,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
             pass
 
 
-def run_link_wizard(data_collection):
+def run_autolinker(data_collection):
     suggestions = find_possible_links(data_collection)
     for wizard_name, links in suggestions.items():
         LinkWizardPreview.suggest_links(wizard_name, data_collection, links)

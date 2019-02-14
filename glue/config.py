@@ -20,8 +20,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
-           'LayerArtistMakerRegistry', 'layer_artist_maker', 'LinkWizardRegistry',
-           'link_wizard']
+           'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
+           'autolinker']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -315,18 +315,19 @@ class PreferencePanesRegistry(DictRegistry):
             yield label, self._members[label]
 
 
-class LinkWizardRegistry(Registry):
+class AutoLinkerRegistry(Registry):
     """
-    Registry for wizards that given a data collection can suggest links.
+    Registry for auto-linking functions that given a data collection can suggest
+    links.
 
-    The members property is a list of link wizard plugins, each represented as a
-    ``(label, function)`` tuple. The ``function`` should take a reference to the
-    data collection.
+    The members property is a list of auto-linking plugins, each represented as
+    a ``(label, function)`` tuple. The ``function`` should take a reference to
+    the data collection.
     """
 
     def add(self, label, function):
         """
-        Add a new link wizard plugin.
+        Add a new auto-linking function.
 
         Parameters
         ----------
@@ -826,7 +827,7 @@ preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
 startup_action = StartupActionRegistry()
 keyboard_shortcut = KeyboardShortcut()
-link_wizard = LinkWizardRegistry()
+autolinker = AutoLinkerRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)

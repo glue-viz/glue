@@ -1,4 +1,4 @@
-from glue.config import link_wizard
+from glue.config import autolinker
 from glue.core.link_helpers import MultiLink
 from glue.core.coordinates import WCSCoordinates
 from glue.utils import efficient_pixel_to_pixel
@@ -110,7 +110,7 @@ class WCSLink(MultiLink):
         return self
 
 
-@link_wizard('Astronomy WCS')
+@autolinker('Astronomy WCS')
 def wcs_autolink(data_collection):
 
     # Find subset of datasets with WCS coordinates

@@ -413,12 +413,12 @@ Custom auto-linking helper
 --------------------------
 
 It is possible to create functions that will automatically suggest links based
-on the available data. To do so, use the ``link_wizard`` decorator as follows::
+on the available data. To do so, use the ``autolinker`` decorator as follows::
 
-    from glue.config import link_wizard
+    from glue.config import autolinker
 
-    @link_wizard('Link wizard name')
-    def my_link_wizard(data_collection):
+    @autolinker('Auto-linker name')
+    def my_autolinker(data_collection):
 
         ...
 
