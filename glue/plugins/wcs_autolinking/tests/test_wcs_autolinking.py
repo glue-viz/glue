@@ -3,9 +3,10 @@ import numpy as np
 
 from astropy.wcs import WCS
 from glue.core import Data, DataCollection
-from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink
+from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink, WCSLink
 from glue.core.coordinates import WCSCoordinates
 from glue.core.link_helpers import MultiLink
+from glue.core.tests.test_state import clone
 
 # The autolinking functionality requires the APE 14 WCS implementation in
 # Astropy 3.1.
@@ -145,3 +146,33 @@ def test_wcs_autolink_image_and_spectral_cube():
     assert link[2].get_from_ids() == [px2, pz2]
     assert link[3].get_to_id() == px1
     assert link[3].get_from_ids() == [px2, pz2]
+
+
+def test_clone_wcs_link():
+
+    # Make sure that WCSLink can be serialized/deserialized
+
+    from glue.core.tests.test_state import Cloner, doubler, clone
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1['x'] = np.ones((2, 3))
+
+    wcs2 = WCS(naxis=3)
+    wcs2.wcs.ctype = 'GLON-CAR', 'FREQ', 'GLAT-CAR'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2['x'] = np.ones((2, 3, 4))
+
+    link1 = WCSLink(data1, data2)
+    link2 = clone(link1)
+
+    assert isinstance(link2, WCSLink)
+    assert link2.data1.label == 'Data 1'
+    assert link2.data2.label == 'Data 2'

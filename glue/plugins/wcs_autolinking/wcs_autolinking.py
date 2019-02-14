@@ -3,7 +3,7 @@ from glue.core.link_helpers import MultiLink
 from glue.core.coordinates import WCSCoordinates
 from glue.utils import efficient_pixel_to_pixel
 
-__all__ = ['wcs_autolink']
+__all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
 
 
 class IncompatibleWCS(Exception):
