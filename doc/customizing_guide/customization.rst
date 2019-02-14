@@ -458,6 +458,7 @@ Registry name                  Registry class
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``layer_action``             :class:`glue.config.LayerActionRegistry`
 ``startup_action``           :class:`glue.config.StartupActionRegistry`
+``autolinker``               :class:`glue.config.AutoLinkerRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:
