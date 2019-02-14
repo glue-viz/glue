@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 
 from astropy.wcs import WCS
@@ -5,6 +6,10 @@ from glue.core import Data, DataCollection
 from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink
 from glue.core.coordinates import WCSCoordinates
 from glue.core.link_helpers import MultiLink
+
+# The autolinking functionality requires the APE 14 WCS implementation in
+# Astropy 3.1.
+pytest.importorskip("astropy", minversion="3.1")
 
 
 def test_wcs_autolink_nowcs():

@@ -60,7 +60,7 @@ class LinkWizardPreview(QtWidgets.QDialog):
             self._ui.button_details.setText('Show Details')
 
         # Make sure the dialog is centered on the screen
-        screen = QtWidgets.QApplication.desktop().screenGeometry(0);
+        screen = QtWidgets.QApplication.desktop().screenGeometry(0)
         self.move(screen.center() - self.rect().center())
 
     @avoid_circular

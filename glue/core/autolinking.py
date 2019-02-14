@@ -1,5 +1,4 @@
 from glue.config import link_wizard
-from glue.core.link_helpers import LinkCollection
 
 __all__ = ['find_possible_links']
 
