@@ -188,8 +188,6 @@ class MultiLink(LinkCollection):
               objects.
     """
 
-    cids = None
-
     def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
 
         super(MultiLink, self).__init__()
