@@ -191,6 +191,9 @@ class ComponentLink(object):
 
         return result
 
+    def __contains__(self, cid):
+        return cid in self._from or cid is self._to
+
     def get_from_ids(self):
         """ The list of input ComponentIDs """
         return self._from
@@ -218,6 +221,9 @@ class ComponentLink(object):
     def get_to_id(self):
         """ The target ComponentID """
         return self._to
+
+    def get_to_ids(self):
+        return [self.get_to_id()]
 
     def set_to_id(self, to):
         self._to = to

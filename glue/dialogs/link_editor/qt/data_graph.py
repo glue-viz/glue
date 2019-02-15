@@ -9,6 +9,7 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
                             QGraphicsLineItem)
 
 from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
+from glue.core.link_helpers import LinkCollection
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 COLOR_CONNECTED = (0.6, 0.9, 0.9)
@@ -22,12 +23,12 @@ def get_pen(color, linewidth=1):
 
 class Edge(QGraphicsLineItem):
 
-    def __init__(self, node_source, node_dest):
-        self.linewidth = 3
+    def __init__(self, node_source, node_dest, linewidth=3, zindex=5):
+        self.linewidth = linewidth
         self.node_source = node_source
         self.node_dest = node_dest
         super(Edge, self).__init__(0, 0, 1, 1)
-        self.setZValue(5)
+        self.setZValue(zindex)
         self.color = '0.5'
 
     def update_position(self):
@@ -161,14 +162,18 @@ class DataNode:
 def get_connections(dc_links):
     links = set()
     for link in dc_links:
-        to_id = link.get_to_id()
-        for from_id in link.get_from_ids():
-            data1 = from_id.parent
-            data2 = to_id.parent
-            if data1 is data2:
-                continue
-            if (data1, data2) not in links and (data2, data1) not in links:
-                links.add((data1, data2))
+        if isinstance(link, LinkCollection):
+            to_ids = link.get_to_ids()
+        else:
+            to_ids = [link.get_to_id()]
+        for to_id in to_ids:
+            for from_id in link.get_from_ids():
+                data1 = from_id.parent
+                data2 = to_id.parent
+                if data1 is data2:
+                    continue
+                if (data1, data2) not in links and (data2, data1) not in links:
+                    links.add((data1, data2))
     return links
 
 
@@ -253,7 +258,7 @@ class DataGraphWidget(QGraphicsView):
                              radius=self.height() / 3, reorder=reorder)
 
         # Update edge positions
-        for edge in self.edges:
+        for edge in self.background_edges + self.edges:
             edge.update_position()
 
         # Set up labels
@@ -271,15 +276,23 @@ class DataGraphWidget(QGraphicsView):
             y = self.height() - (i + 1) / (len(self.right_nodes) + 1) * self.height()
             node.label_position = self.width() / 2 + self.height() / 2, y
 
-    def set_data_collection(self, data_collection):
+    def set_data_collection(self, data_collection, new_links=None):
 
         # Get data and initialize nodes
         self.data_to_nodes = dict((data, DataNode(data)) for data in data_collection)
         self.nodes = list(self.data_to_nodes.values())
 
         # Get links and set up edges
+        if new_links is None:
+            self.background_edges = []
+            main_links = data_collection.external_links
+        else:
+            self.background_edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], linewidth=1, zindex=1)
+                                     for data1, data2 in get_connections(data_collection.external_links)]
+            main_links = new_links
+
         self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
-                      for data1, data2 in get_connections(data_collection.external_links)]
+                      for data1, data2 in get_connections(main_links)]
 
         # Figure out positions
         self.relayout()
@@ -289,7 +302,7 @@ class DataGraphWidget(QGraphicsView):
         for node in self.nodes:
             node.add_to_scene(self.scene)
 
-        for edge in self.edges:
+        for edge in self.background_edges + self.edges:
             edge.add_to_scene(self.scene)
 
         self.text_adjusted = False

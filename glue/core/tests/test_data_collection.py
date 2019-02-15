@@ -338,9 +338,9 @@ class TestDataCollection(object):
 
     def test_merging_preserves_links_backwards(self):
 
-        a = Data(a=[1, 2, 3])
-        b = Data(b=[2, 3, 4])
-        c = Data(c=[3, 4, 5])
+        a = Data(a=[1, 2, 3], label='Data A')
+        b = Data(b=[2, 3, 4], label='Data B')
+        c = Data(c=[3, 4, 5], label='Data C')
 
         dc = DataCollection([a, b, c])
         dc.add_link(ComponentLink([c.id['c']], b.id['b'], lambda x: x))

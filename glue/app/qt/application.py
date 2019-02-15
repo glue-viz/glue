@@ -22,6 +22,7 @@ from glue.utils.qt import get_qapp, update_global_font_size
 from glue.app.qt.actions import action
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.dialogs.link_editor.qt import LinkEditor
+from glue.dialogs.autolinker.qt import run_autolinker
 from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.app.qt.edit_subset_mode_toolbar import EditSubsetModeToolBar
 from glue.app.qt.mdi_area import GlueMdiArea
@@ -1387,6 +1388,12 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self.render(painter, QtCore.QPoint(), QtGui.QRegion(), flags)
         image.save(filename)
         painter.end()
+
+    @classmethod
+    def add_datasets(cls, data_collection, *args, **kwargs):
+        result = super(GlueApplication, cls).add_datasets(data_collection, *args, **kwargs)
+        run_autolinker(data_collection)
+        return result
 
     def __gluestate__(self, context):
         state = super(GlueApplication, self).__gluestate__(context)

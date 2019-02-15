@@ -24,9 +24,8 @@ class BaseCelestialMultiLink(MultiLink):
     frame_out = None
 
     def __init__(self, in_lon, in_lat, out_lon, out_lat):
-        super(BaseCelestialMultiLink, self).__init__(in_lon, in_lat, out_lon, out_lat)
-        self.create_links([in_lon, in_lat], [out_lon, out_lat],
-                          forwards=self.forward, backwards=self.backward)
+        super(BaseCelestialMultiLink, self).__init__([in_lon, in_lat], [out_lon, out_lat],
+                                                     forwards=self.forward, backwards=self.backward)
 
     def forward(self, in_lon, in_lat):
         c = self.frame_in(in_lon * u.deg, in_lat * u.deg)
@@ -37,6 +36,22 @@ class BaseCelestialMultiLink(MultiLink):
         c = self.frame_out(in_lon * u.deg, in_lat * u.deg)
         out = c.transform_to(self.frame_in)
         return out.spherical.lon.degree, out.spherical.lat.degree
+
+    def __gluestate__(self, context):
+        state = {}
+        state['in_lon'] = context.id(self._cids_left[0])
+        state['in_lat'] = context.id(self._cids_left[1])
+        state['out_lon'] = context.id(self._cids_right[0])
+        state['out_lat'] = context.id(self._cids_right[1])
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(context.object(rec['in_lon']),
+                   context.object(rec['in_lat']),
+                   context.object(rec['out_lon']),
+                   context.object(rec['out_lat']))
+        return self
 
 
 @link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',

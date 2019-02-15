@@ -409,6 +409,28 @@ Note that ``layer_artist_maker`` can take an optional ``priority=`` argument
 (which should be an integer), where higher values indicate that the layer artist
 maker should be considered first.
 
+Custom auto-linking helper
+--------------------------
+
+It is possible to create functions that will automatically suggest links based
+on the available data. To do so, use the ``autolinker`` decorator as follows::
+
+    from glue.config import autolinker
+
+    @autolinker('Auto-linker name')
+    def my_autolinker(data_collection):
+
+        ...
+
+        return links
+
+The function should take a reference to a
+`~glue.core.data_collection.DataCollection` and should return a list of new
+links that could be added. These will then automatically be suggested to the
+user when new data are added. Note that it is your responsibility to ensure
+that links that currently exist (and are in ``data_collection.external_links``)
+are not suggested.
+
 Complete list of registries
 ---------------------------
 
@@ -436,6 +458,7 @@ Registry name                  Registry class
 ``fit_plugin``               :class:`glue.config.ProfileFitterRegistry`
 ``layer_action``             :class:`glue.config.LayerActionRegistry`
 ``startup_action``           :class:`glue.config.StartupActionRegistry`
+``autolinker``               :class:`glue.config.AutoLinkerRegistry`
 ========================== =======================================================
 
 .. _lazy_load_plugin:

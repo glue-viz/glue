@@ -20,7 +20,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
-           'LayerArtistMakerRegistry', 'layer_artist_maker']
+           'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
+           'autolinker']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -312,6 +313,36 @@ class PreferencePanesRegistry(DictRegistry):
     def __iter__(self):
         for label in self._members:
             yield label, self._members[label]
+
+
+class AutoLinkerRegistry(Registry):
+    """
+    Registry for auto-linking functions that given a data collection can suggest
+    links.
+
+    The members property is a list of auto-linking plugins, each represented as
+    a ``(label, function)`` tuple. The ``function`` should take a reference to
+    the data collection.
+    """
+
+    def add(self, label, function):
+        """
+        Add a new auto-linking function.
+
+        Parameters
+        ----------
+        label : str
+            Short label for the plugin
+        function : func
+            The plugin function
+        """
+        self.members.append((label, function))
+
+    def __call__(self, label):
+        def adder(func):
+            self.add(label, func)
+            return func
+        return adder
 
 
 class ExporterRegistry(Registry):
@@ -796,6 +827,7 @@ preference_panes = PreferencePanesRegistry()
 qglue_parser = QGlueParserRegistry()
 startup_action = StartupActionRegistry()
 keyboard_shortcut = KeyboardShortcut()
+autolinker = AutoLinkerRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
@@ -885,3 +917,4 @@ settings.add('SHOW_LARGE_DATA_WARNING', True, validator=bool)
 settings.add('SHOW_INFO_PROFILE_OPEN', True, validator=bool)
 settings.add('SHOW_WARN_PROFILE_DUPLICATE', True, validator=bool)
 settings.add('FONT_SIZE', -1.0, validator=float)
+settings.add('AUTOLINK', {}, validator=dict)

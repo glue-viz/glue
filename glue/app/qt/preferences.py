@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import weakref
 import platform
+from collections import OrderedDict
 
 import numpy as np
 from matplotlib.colors import ColorConverter
@@ -17,6 +18,45 @@ from glue._settings_helpers import save_settings
 __all__ = ["PreferencesDialog"]
 
 rgb = ColorConverter().to_rgb
+
+AUTOLINK_OPTIONS = OrderedDict([
+    ('always_show', 'Always show suggestions'),
+    ('always_accept', 'Always accept suggestions'),
+    ('always_ignore', 'Always ignore suggestions')
+])
+
+
+class AutolinkPreferencesPane(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(AutolinkPreferencesPane, self).__init__(parent=parent)
+
+        from glue.config import settings, autolinker  # noqa
+
+        layout = QtWidgets.QGridLayout()
+
+        self.combos = {}
+
+        for i, (label, _) in enumerate(autolinker):
+            combo = QtWidgets.QComboBox()
+            for short, display in AUTOLINK_OPTIONS.items():
+                combo.addItem(display, userData=short)
+            if label in settings.AUTOLINK:
+                index = list(AUTOLINK_OPTIONS.keys()).index(settings.AUTOLINK[label])
+            else:
+                index = 0
+            combo.setCurrentIndex(index)
+            layout.addWidget(QtWidgets.QLabel(label), i, 0)
+            layout.addWidget(combo, i, 1)
+            self.combos[label] = combo
+        layout.addWidget(QtWidgets.QWidget(), i + 1, 0)
+
+        self.setLayout(layout)
+
+    def finalize(self):
+        from glue.config import settings
+        for label, combo in self.combos.items():
+            settings.AUTOLINK[label] = combo.currentData()
 
 
 class PreferencesDialog(QtWidgets.QDialog):
@@ -61,6 +101,9 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.font_size = settings.FONT_SIZE
 
         self._update_theme_from_colors()
+
+        self._autolink_pane = AutolinkPreferencesPane()
+        self.ui.tab_widget.addTab(self._autolink_pane, 'Autolinking')
 
         self.panes = []
 
@@ -110,6 +153,8 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
         settings.FONT_SIZE = self.font_size
+
+        self._autolink_pane.finalize()
 
         for pane in self.panes:
             pane.finalize()

@@ -8,7 +8,7 @@ import numpy as np
 from glue.core import ComponentID, Data, Component, DataCollection
 
 from .. import link_helpers as lh
-from ..link_helpers import (LinkTwoWay, multi_link,
+from ..link_helpers import (LinkTwoWay, MultiLink,
                             LinkSame, LinkAligned)
 
 
@@ -38,13 +38,13 @@ def check_using(link, inp, out):
 
 
 def test_LinkTwoWay():
-    result = LinkTwoWay(R, D, forwards, backwards)
+    result = list(LinkTwoWay(R, D, forwards, backwards))
     check_link(result[0], [R], D, forwards)
     check_link(result[1], [D], R, backwards)
 
 
 def test_multilink_forwards():
-    result = multi_link([R, D], [L, B], forwards)
+    result = MultiLink([R, D], [L, B], forwards)
     assert len(result) == 2
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -53,7 +53,7 @@ def test_multilink_forwards():
 
 
 def test_multilink_backwards():
-    result = multi_link([R, D], [L, B], backwards=backwards)
+    result = MultiLink([R, D], [L, B], backwards=backwards)
     assert len(result) == 2
     check_link(result[0], [L, B], R)
     check_link(result[1], [L, B], D)
@@ -62,7 +62,7 @@ def test_multilink_backwards():
 
 
 def test_multilink_forwards_backwards():
-    result = multi_link([R, D], [L, B], forwards, backwards)
+    result = MultiLink([R, D], [L, B], forwards, backwards)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -76,7 +76,7 @@ def test_multilink_forwards_backwards():
 
 def test_multilink_nofunc():
     with pytest.raises(TypeError) as exc:
-        multi_link([R, D], [L, B])
+        MultiLink([R, D], [L, B])
     assert exc.value.args[0] == "Must supply either forwards or backwards"
 
 

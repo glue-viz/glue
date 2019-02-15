@@ -109,14 +109,6 @@ class LinkEditor(QtWidgets.QDialog):
         link1 = core.component_link.ComponentLink([comps[0]], comps[1])
         return [link1]
 
-    def _add_link_to_list(self, link):
-        current = self._ui.current_links
-        from_ids = ', '.join(cid.label for cid in link.get_from_ids())
-        to_id = link.get_to_id().label
-        item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
-                                         [link._using.__name__, from_ids, to_id])
-        item.setData(0, Qt.UserRole, link)
-
     def _add_new_link(self):
 
         if not self.advanced:
@@ -153,13 +145,26 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.current_links.clear()
         data1 = self._ui.left_components.data
         data2 = self._ui.right_components.data
+        if data1 is None or data2 is None:
+            return
+        links_to_add = set()
         for link in self._links:
-            to_id = link.get_to_id()
-            if to_id.parent in (data1, data2):
-                for from_id in link.get_from_ids():
-                    if from_id.parent in (data1, data2):
-                        self._add_link_to_list(link)
-                        break
+            to_ids = link.get_to_ids()
+            to_data = [to_id.parent for to_id in to_ids]
+            from_data = [from_id.parent for from_id in link.get_from_ids()]
+            if (data1 in to_data and data2 in from_data) or (data1 in from_data and data2 in to_data):
+                links_to_add.add(link)
+
+        for link in links_to_add:
+            self._add_link_to_list(link)
+
+    def _add_link_to_list(self, link):
+        current = self._ui.current_links
+        from_ids = ', '.join(cid.label for cid in link.get_from_ids())
+        to_ids = ', '.join(cid.label for cid in link.get_to_ids())
+        item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
+                                         [str(link), from_ids, to_ids])
+        item.setData(0, Qt.UserRole, link)
 
 
 def main():
