@@ -170,12 +170,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.errorbar_index = 2
         self.vector_index = 3
 
-        self.reset_cache()
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
-
     @defer_draw
     def _update_data(self, changed):
 

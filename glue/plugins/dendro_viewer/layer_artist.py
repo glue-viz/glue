@@ -31,12 +31,6 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
         self.state.data_collection = self._viewer_state.data_collection
         self.data_collection = self._viewer_state.data_collection
 
-        self.reset_cache()
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
-
     @defer_draw
     def _update_dendrogram(self):
 

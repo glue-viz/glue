@@ -40,8 +40,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         self.mpl_artists = [self.plot_artist]
 
-        self.reset_cache()
-
         if QT_INSTALLED:
             self.setup_thread()
 
@@ -69,10 +67,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
     def is_computing(self):
         if QT_INSTALLED:
             return self._worker.running
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     def setup_thread(self):
         self._worker = ComputeWorker(self._calculate_profile_thread)

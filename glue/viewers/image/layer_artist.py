@@ -28,8 +28,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         super(BaseImageLayerArtist, self).__init__(axes, viewer_state,
                                                    layer_state=layer_state, layer=layer)
 
-        self.reset_cache()
-
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_image)
@@ -52,10 +50,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
             return message.sender is self.layer
         else:
             return message.sender is self.layer.data
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     def _update_image(self, force=False, **kwargs):
         raise NotImplementedError()
