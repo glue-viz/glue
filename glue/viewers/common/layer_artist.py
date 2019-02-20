@@ -50,6 +50,14 @@ class LayerArtist(LayerArtistBase):
         return dict(state=context.id(self.state))
 
     def pop_changed(self):
+        """
+        Return the names of properties on the viewer and layer state classes
+        that have changed since the last call.
+
+        Note that calling this method updates the underlying cache, so if it is
+        called immediately after being called a first time, it will return an
+        empty set the second time.
+        """
 
         # Figure out which attributes are different from before. Ideally we
         # shouldn't need this but some methods in layer artists are called
