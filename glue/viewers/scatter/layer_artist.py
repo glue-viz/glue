@@ -467,27 +467,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        # Figure out which attributes are different from before. Ideally we shouldn't
-        # need this but currently this method is called multiple times if an
-        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
-        # If we can solve this so that _update_histogram is really only called once
-        # then we could consider simplifying this. Until then, we manually keep track
-        # of which properties have changed.
-
-        changed = set()
-
         if not force:
-
-            for key, value in self._viewer_state.as_dict().items():
-                if value != self._last_viewer_state.get(key, None):
-                    changed.add(key)
-
-            for key, value in self.state.as_dict().items():
-                if value != self._last_layer_state.get(key, None):
-                    changed.add(key)
-
-        self._last_viewer_state.update(self._viewer_state.as_dict())
-        self._last_layer_state.update(self.state.as_dict())
+            changed = self.pop_changed()
 
         if force or len(changed & DATA_PROPERTIES) > 0:
             self._update_data(changed)
