@@ -171,7 +171,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_index = 3
 
     @defer_draw
-    def _update_data(self, changed):
+    def _update_data(self):
 
         # Layer artist has been cleared already
         if len(self.mpl_artists) == 0:
@@ -461,11 +461,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        if not force:
-            changed = self.pop_changed()
+        changed = set() if force else self.pop_changed()
 
         if force or len(changed & DATA_PROPERTIES) > 0:
-            self._update_data(changed)
+            self._update_data()
             force = True
 
         if force or len(changed & VISUAL_PROPERTIES) > 0:

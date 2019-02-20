@@ -83,8 +83,7 @@ class DendrogramLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        if not force:
-            changed = self.pop_changed()
+        changed = set() if force else self.pop_changed()
 
         if force or any(prop in changed for prop in ('layer', 'height_att', 'parent_att', 'order_att')):
             self._update_dendrogram()
