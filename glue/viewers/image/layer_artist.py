@@ -28,8 +28,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         super(BaseImageLayerArtist, self).__init__(axes, viewer_state,
                                                    layer_state=layer_state, layer=layer)
 
-        self.reset_cache()
-
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_image)
@@ -52,10 +50,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
             return message.sender is self.layer
         else:
             return message.sender is self.layer.data
-
-    def reset_cache(self):
-        self._last_viewer_state = {}
-        self._last_layer_state = {}
 
     def _update_image(self, force=False, **kwargs):
         raise NotImplementedError()
@@ -164,27 +158,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         if self.state.attribute is None or self.state.layer is None:
             return
 
-        # Figure out which attributes are different from before. Ideally we shouldn't
-        # need this but currently this method is called multiple times if an
-        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
-        # If we can solve this so that _update_histogram is really only called once
-        # then we could consider simplifying this. Until then, we manually keep track
-        # of which properties have changed.
-
-        changed = set()
-
-        if not force:
-
-            for key, value in self._viewer_state.as_dict().items():
-                if value != self._last_viewer_state.get(key, None):
-                    changed.add(key)
-
-            for key, value in self.state.as_dict().items():
-                if value != self._last_layer_state.get(key, None):
-                    changed.add(key)
-
-        self._last_viewer_state.update(self._viewer_state.as_dict())
-        self._last_layer_state.update(self.state.as_dict())
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'attribute',
                                                      'slices', 'x_att', 'y_att')):
@@ -338,27 +312,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         if self.state.layer is None:
             return
 
-        # Figure out which attributes are different from before. Ideally we shouldn't
-        # need this but currently this method is called multiple times if an
-        # attribute is changed due to x_att changing then hist_x_min, hist_x_max, etc.
-        # If we can solve this so that _update_histogram is really only called once
-        # then we could consider simplifying this. Until then, we manually keep track
-        # of which properties have changed.
-
-        changed = set()
-
-        if not force:
-
-            for key, value in self._viewer_state.as_dict().items():
-                if value != self._last_viewer_state.get(key, None):
-                    changed.add(key)
-
-            for key, value in self.state.as_dict().items():
-                if value != self._last_layer_state.get(key, None):
-                    changed.add(key)
-
-        self._last_viewer_state.update(self._viewer_state.as_dict())
-        self._last_layer_state.update(self.state.as_dict())
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):
