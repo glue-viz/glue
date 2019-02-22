@@ -158,7 +158,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         if self.state.attribute is None or self.state.layer is None:
             return
 
-        changed = set() if force else self.pop_changed()
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'attribute',
                                                      'slices', 'x_att', 'y_att')):
@@ -312,7 +312,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         if self.state.layer is None:
             return
 
-        changed = set() if force else self.pop_changed()
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
                                                      'x_att', 'y_att', 'slices')):

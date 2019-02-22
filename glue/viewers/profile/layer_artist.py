@@ -206,7 +206,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        changed = set() if force else self.pop_changed()
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
             self._calculate_profile(reset=force)

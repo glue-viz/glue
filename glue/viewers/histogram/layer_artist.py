@@ -216,7 +216,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        changed = set() if force else self.pop_changed()
+        changed = set() if force else self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'x_log', 'y_log', 'normalize', 'cumulative')):
             self._calculate_histogram(reset=force)

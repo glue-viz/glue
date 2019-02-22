@@ -49,7 +49,7 @@ class LayerArtist(LayerArtistBase):
     def __gluestate__(self, context):
         return dict(state=context.id(self.state))
 
-    def pop_changed(self):
+    def pop_changed_properties(self):
         """
         Return the names of properties on the viewer and layer state classes
         that have changed since the last call.

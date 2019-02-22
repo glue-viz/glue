@@ -461,7 +461,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        changed = set() if force else self.pop_changed()
+        changed = set() if force else self.pop_changed_properties()
 
         if force or len(changed & DATA_PROPERTIES) > 0:
             self._update_data()
