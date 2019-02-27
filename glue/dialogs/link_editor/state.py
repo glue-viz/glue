@@ -7,6 +7,7 @@ except ImportError:  # Python 2.7
 
 from glue.config import link_function, link_helper
 
+from glue.core.component_link import ComponentLink
 from glue.core.state_objects import State
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
@@ -91,6 +92,7 @@ class EditableLinkFunctionState(State):
         return super(EditableLinkFunctionState, cls).__new__(CustomizedStateClass)
 
     def __init__(self, function, data_in, data_out, cids_in=None, cid_out=None):
+
         super(EditableLinkFunctionState, self).__init__()
 
         self.function = function
@@ -112,3 +114,12 @@ class EditableLinkFunctionState(State):
 
         if cid_out is not None:
             setattr(self, self._output_name, cid_out)
+
+    @property
+    def link(self):
+        """
+        Return a `glue.core.component_link.ComponentLink` object.
+        """
+        cids_in = [getattr(self, name) for name in self._input_names]
+        cid_out = getattr(self, self._output_name)
+        return ComponentLink(cids_in, cid_out, using=self.function)

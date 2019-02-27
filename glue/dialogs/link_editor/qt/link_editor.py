@@ -8,7 +8,7 @@ from glue.config import link_function, link_helper
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.external.echo.qt.connect import UserDataWrapper
+from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
 from glue.dialogs.link_editor.state import LinkEditorState
 
 __all__ = ['LinkEditor']
@@ -57,10 +57,6 @@ class LinkMenu(QtWidgets.QMenu):
                     action.setData(UserDataWrapper(helper))
 
 
-class WidgetContainer(object):
-    pass
-
-
 class LinkEditor(QtWidgets.QDialog):
 
     def __init__(self, data_collection, parent=None):
@@ -97,13 +93,10 @@ class LinkEditor(QtWidgets.QDialog):
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
 
     def _on_links_change(self, *args):
+
         # We update the link details panel on the right
 
-        print('_on_links_change')
-
         link = self.state.links
-
-        print(link)
 
         link_io = self._ui.link_io
 
@@ -118,44 +111,38 @@ class LinkEditor(QtWidgets.QDialog):
         if link is None:
             return
 
-        container = WidgetContainer()
-
         # FIXME: some combo widgets appear outside of window too
 
         link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
 
         for index, input_name in enumerate(link._input_names):
-            print("adding combo", input_name)
             combo = QtWidgets.QComboBox(parent=self)
-            setattr(container, 'combosel_' + input_name, combo)
             link_io.addWidget(QtWidgets.QLabel(input_name), index + 1, 0)
             link_io.addWidget(combo, index + 1, 1)
+            connect_combo_selection(link, input_name, combo)
 
         link_io.addItem(QtWidgets.QSpacerItem(5, 20,
                                               QtWidgets.QSizePolicy.Fixed,
-                                              QtWidgets.QSizePolicy.Fixed),
-                        index + 2, 0)
+                                              QtWidgets.QSizePolicy.Fixed), index + 2, 0)
 
         link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index + 3, 0, 1, 2)
 
         combo = QtWidgets.QComboBox(parent=self)
-        setattr(container, 'combosel_' + link._output_name, combo)
         link_io.addWidget(QtWidgets.QLabel(link._output_name), index + 4, 0)
         link_io.addWidget(combo, index + 4, 1)
+        connect_combo_selection(link, link._output_name, combo)
 
         link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
 
         link_io.setRowStretch(index + 5, 10)
-
-        # TODO: check that we don't have residual references
-        autoconnect_callbacks_to_qt(link, container)
 
     @classmethod
     def update_links(cls, collection):
         widget = cls(collection)
         isok = widget._ui.exec_()
         if isok:
-            collection.set_links(widget._links)
+            links = [link_state.link for link_state in widget._links]
+            collection.set_links(links)
 
 
 def main():
