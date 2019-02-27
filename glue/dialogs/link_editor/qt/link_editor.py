@@ -57,6 +57,10 @@ class LinkMenu(QtWidgets.QMenu):
                     action.setData(UserDataWrapper(helper))
 
 
+class WidgetContainer(object):
+    pass
+
+
 class LinkEditor(QtWidgets.QDialog):
 
     def __init__(self, data_collection, parent=None):
@@ -82,7 +86,7 @@ class LinkEditor(QtWidgets.QDialog):
         self._menu.triggered.connect(self._add_link)
         self._ui.button_add_link.setMenu(self._menu)
 
-        # self.state.add_callback('links', self._on_link_change)
+        self.state.add_callback('links', self._on_links_change)
 
     def _add_link(self, action):
         self.state.add_link(action.data().data)
@@ -91,6 +95,60 @@ class LinkEditor(QtWidgets.QDialog):
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
+
+    def _on_links_change(self, *args):
+        # We update the link details panel on the right
+
+        print('_on_links_change')
+
+        link = self.state.links
+
+        print(link)
+
+        link_io = self._ui.link_io
+
+        for i in reversed(range(link_io.count())):
+            item = link_io.itemAt(i)
+            if item is not None and item.widget() is not None:
+                item.widget().setParent(None)
+
+        for row in range(link_io.rowCount()):
+            link_io.setRowStretch(row, 0)
+
+        if link is None:
+            return
+
+        container = WidgetContainer()
+
+        # FIXME: some combo widgets appear outside of window too
+
+        link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
+
+        for index, input_name in enumerate(link._input_names):
+            print("adding combo", input_name)
+            combo = QtWidgets.QComboBox(parent=self)
+            setattr(container, 'combosel_' + input_name, combo)
+            link_io.addWidget(QtWidgets.QLabel(input_name), index + 1, 0)
+            link_io.addWidget(combo, index + 1, 1)
+
+        link_io.addItem(QtWidgets.QSpacerItem(5, 20,
+                                              QtWidgets.QSizePolicy.Fixed,
+                                              QtWidgets.QSizePolicy.Fixed),
+                        index + 2, 0)
+
+        link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index + 3, 0, 1, 2)
+
+        combo = QtWidgets.QComboBox(parent=self)
+        setattr(container, 'combosel_' + link._output_name, combo)
+        link_io.addWidget(QtWidgets.QLabel(link._output_name), index + 4, 0)
+        link_io.addWidget(combo, index + 4, 1)
+
+        link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
+
+        link_io.setRowStretch(index + 5, 10)
+
+        # TODO: check that we don't have residual references
+        autoconnect_callbacks_to_qt(link, container)
 
     @classmethod
     def update_links(cls, collection):

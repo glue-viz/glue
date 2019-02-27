@@ -89,9 +89,6 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     objectNames can be easily set during the editing process.
     """
 
-    if not hasattr(widget, 'children'):
-        return
-
     for original_name in dir(widget):
         if original_name.startswith('_') or '_' not in original_name:
             continue

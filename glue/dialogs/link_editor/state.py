@@ -50,12 +50,9 @@ class LinkEditorState(State):
 
         links = []
         for link in self._all_links:
-            to_ids = link.get_to_ids()
-            to_data = [to_id.parent for to_id in to_ids]
-            from_data = [from_id.parent for from_id in link.get_from_ids()]
-            if ((self.data1 in to_data and self.data2 in from_data) or
-                    (self.data1 in from_data and self.data2 in to_data)):
-                links.append(LinkWrapper(link=link))
+            if ((link.data_in is self.data1 and link.data_out is self.data2)
+                    or (link.data_in is self.data2 and link.data_out is self.data1)):
+                links.append(link)
 
         LinkEditorState.links.set_choices(self, links)
 
@@ -63,9 +60,11 @@ class LinkEditorState(State):
 
         if hasattr(function_or_helper, 'function'):
             link = EditableLinkFunctionState(function_or_helper.function, self.data1, self.data2)
-            print(dir(link))
         else:
             raise NotImplementedError("link helper support not implemented yet")
+
+        self._all_links.append(link)
+        self.on_data_change()
 
 
 class EditableLinkFunctionState(State):
@@ -75,23 +74,28 @@ class EditableLinkFunctionState(State):
     # below.
 
     function = CallbackProperty()
+    data_in = CallbackProperty()
+    data_out = CallbackProperty()
 
     def __new__(cls, function, data_in, data_out, cids_in=None, cid_out=None):
 
-        cls._input_names = getfullargspec(function)[0]
-        cls._output_name = 'output'
+        class CustomizedStateClass(EditableLinkFunctionState):
+            _input_names = getfullargspec(function)[0]
+            _output_name = 'output'
 
-        for index, input_arg in enumerate(cls._input_names):
-            setattr(cls, input_arg, SelectionCallbackProperty(default_index=index))
+        for index, input_arg in enumerate(CustomizedStateClass._input_names):
+            setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
 
-        setattr(cls, cls._output_name, SelectionCallbackProperty(default_index=0))
+        setattr(CustomizedStateClass, CustomizedStateClass._output_name, SelectionCallbackProperty(default_index=0))
 
-        return super(EditableLinkFunctionState, cls).__new__(cls)
+        return super(EditableLinkFunctionState, cls).__new__(CustomizedStateClass)
 
     def __init__(self, function, data_in, data_out, cids_in=None, cid_out=None):
         super(EditableLinkFunctionState, self).__init__()
 
         self.function = function
+        self.data_in = data_in
+        self.data_out = data_out
 
         for name in self._input_names:
             helper = ComponentIDComboHelper(self, name)
