@@ -81,12 +81,12 @@ jobs:
 
   py36_pyside511:
     docker:
-      - image: glueviz/py36-pyqt512:1.1
+      - image: glueviz/py36-pyside511:1.1
     <<: *steps
 
   py36_pyside512:
     docker:
-      - image: glueviz/py36-pyqt512:1.1
+      - image: glueviz/py36-pyside512:1.1
     <<: *steps
 
 
