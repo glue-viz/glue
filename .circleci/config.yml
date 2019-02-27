@@ -74,6 +74,20 @@ jobs:
       - image: glueviz/py36-pyqt511:1.1
     <<: *steps
 
+  py36_pyqt512:
+    docker:
+      - image: glueviz/py36-pyqt512:1.1
+    <<: *steps
+
+  py36_pyside511:
+    docker:
+      - image: glueviz/py36-pyqt512:1.1
+    <<: *steps
+
+  py36_pyside512:
+    docker:
+      - image: glueviz/py36-pyqt512:1.1
+    <<: *steps
 
 
 workflows:
@@ -86,3 +100,7 @@ workflows:
       - py35_pyqt59
       - py35_pyqt510
       - py36_pyqt511
+      - py36_pyqt512
+      - py36_pyside511
+      - py36_pyside512
+
