@@ -62,9 +62,8 @@ class LinkEditor(QtWidgets.QDialog):
 
         # TODO: This is the point where we should actually take copies of the
         # links because we are going to be editing them and the user may cancel
-        self._links = list(data_collection.external_links)
 
-        self.state = LinkEditorState(data_collection, self._links)
+        self.state = LinkEditorState(data_collection, list(data_collection.external_links))
 
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
@@ -140,6 +139,8 @@ class LinkEditor(QtWidgets.QDialog):
         link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
 
         link_io.setRowStretch(index + 5, 10)
+
+        self._ui.graph_widget.set_links(self.state._all_links)
 
     @classmethod
     def update_links(cls, collection):

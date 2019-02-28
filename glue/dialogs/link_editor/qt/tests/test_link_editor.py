@@ -1,3 +1,6 @@
+from mock import patch
+
+from glue.utils.qt import get_qapp
 from glue.core import Data, DataCollection
 from glue.dialogs.link_editor.qt import LinkEditor
 
@@ -65,6 +68,8 @@ class TestLinkEditor:
         # This is a bit more detailed test that checks that things update
         # correctly as we change various settings
 
+        app = get_qapp()
+
         dialog = LinkEditor(self.data_collection)
         dialog.show()
         dialog.state.data1 = self.data1
@@ -84,6 +89,9 @@ class TestLinkEditor:
         # Let's add an identity link
         add_identity_link.trigger()
 
+        # Ensure that all events get processed
+        app.processEvents()
+
         # Now there should be one link in the main list and content in the
         # right hand panel.
         assert dialog._ui.listsel_links.count() == 1
@@ -102,6 +110,9 @@ class TestLinkEditor:
 
         # We now add another link of a different type
         add_lengths_volume_link.trigger()
+
+        # Ensure that all events get processed
+        app.processEvents()
 
         # and make sure the UI has updated
         assert dialog._ui.listsel_links.count() == 2
@@ -135,6 +146,9 @@ class TestLinkEditor:
         # Add another identity link
         add_identity_link.trigger()
 
+        # Ensure that all events get processed
+        app.processEvents()
+
         # Now there should be one link in the main list
         assert dialog._ui.listsel_links.count() == 1
         assert dialog._ui.link_details.count() == 0
@@ -155,6 +169,9 @@ class TestLinkEditor:
         # Let's now remove this link
         dialog._ui.button_remove_link.click()
 
+        # Ensure that all events get processed
+        app.processEvents()
+
         # We should now see the lengths/volume link
         assert dialog._ui.listsel_links.count() == 1
         assert dialog._ui.link_details.count() == 0
@@ -163,5 +180,122 @@ class TestLinkEditor:
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
         assert dialog._ui.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
         assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
+
+        dialog.accept()
+
+    def test_graph(self):
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+
+        add_identity_link = dialog._menu.children()[1].actions()[0]
+
+        graph = dialog._ui.graph_widget
+
+        def click(node_or_edge):
+            # We now simulate a selection - since we can't deterministically
+            # figure out the exact pixel coordinates to use, we patch
+            # 'find_object' to return the object we want to select.
+            with patch.object(graph, 'find_object', return_value=node_or_edge):
+                graph.mousePressEvent(None)
+
+        def hover(node_or_edge):
+            # Same as for select, we patch find_object
+            with patch.object(graph, 'find_object', return_value=node_or_edge):
+                graph.mouseMoveEvent(None)
+
+        # To start with, no data should be selected
+        assert dialog.state.data1 is None
+        assert dialog.state.data2 is None
+
+        # and the graph should have three nodes and no edges
+        assert len(graph.nodes) == 3
+        assert len(graph.edges) == 0
+
+        click(graph.nodes[0])
+
+        # Check that this has caused one dataset to be selected
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is None
+
+        # Click on the same node again and this should deselect the data
+        # (but only once we move off from the node)
+
+        click(graph.nodes[0])
+
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is None
+
+        hover(None)
+
+        assert dialog.state.data1 is None
+        assert dialog.state.data2 is None
+
+        # Select it again
+        click(graph.nodes[0])
+
+        # and now select another node too
+        click(graph.nodes[1])
+
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is self.data2
+
+        assert len(graph.nodes) == 3
+        assert len(graph.edges) == 0
+
+        add_identity_link.trigger()
+
+        assert len(graph.nodes) == 3
+        assert len(graph.edges) == 1
+
+        # Unselect and select another node
+        click(graph.nodes[1])
+        click(graph.nodes[2])
+
+        # and check the data selections have been updated
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is self.data3
+
+        # Deselect it and move off
+        click(graph.nodes[2])
+        hover(None)
+
+        # and the second dataset should now once again be None
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is None
+
+        # Now change the data manually
+        dialog.state.data1 = self.data2
+        dialog.state.data2 = self.data3
+
+        # and check that if we select the edge the datasets change back
+        click(graph.edges[0])
+
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is self.data2
+
+        # Unselect and hover over nothing
+        click(graph.edges[0])
+        hover(None)
+        assert dialog.state.data1 is None
+        assert dialog.state.data2 is None
+
+        # Hover over the edge and the datasets should change back
+        hover(graph.edges[0])
+        assert dialog.state.data1 is self.data1
+        assert dialog.state.data2 is self.data2
+
+        # And check that clicking outside of nodes/edges deselects everything
+        click(None)
+        assert dialog.state.data1 is None
+        assert dialog.state.data2 is None
+
+        # Select a node, select another, then make sure that selecting a third
+        # one will deselect the two original ones
+        click(graph.nodes[0])
+        click(graph.nodes[1])
+        click(graph.nodes[2])
+        assert dialog.state.data1 is self.data3
+        assert dialog.state.data2 is None
 
         dialog.accept()

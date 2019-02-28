@@ -9,7 +9,6 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
                             QGraphicsLineItem)
 
 from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
-from glue.core.link_helpers import LinkCollection
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 COLOR_CONNECTED = (0.6, 0.9, 0.9)
@@ -162,18 +161,11 @@ class DataNode:
 def get_connections(dc_links):
     links = set()
     for link in dc_links:
-        if isinstance(link, LinkCollection):
-            to_ids = link.get_to_ids()
-        else:
-            to_ids = [link.get_to_id()]
-        for to_id in to_ids:
-            for from_id in link.get_from_ids():
-                data1 = from_id.parent
-                data2 = to_id.parent
-                if data1 is data2:
-                    continue
-                if (data1, data2) not in links and (data2, data1) not in links:
-                    links.add((data1, data2))
+        data1 = link.data_in
+        data2 = link.data_out
+        if (data1, data2) not in links and (data2, data1) not in links:
+            links.add((data1, data2))
+
     return links
 
 
@@ -349,20 +341,6 @@ class DataGraphWidget(QGraphicsView):
                 node.label.setTransform(transform)
 
             self.text_adjusted = True
-
-    def manual_select(self, data1=None, data2=None):
-        if data1 is None and data2 is not None:
-            data1, data2 = data2, data1
-        if data2 is not None:
-            self.selection_level = 2
-        elif data1 is not None:
-            self.selection_level = 1
-        else:
-            self.selection_level = 0
-        self.selected_node1 = self.data_to_nodes.get(data1, None)
-        self.selected_node2 = self.data_to_nodes.get(data2, None)
-        self._update_selected_edge()
-        self._update_selected_colors()
 
     def find_object(self, event):
         for obj in list(self.nodes) + self.edges:
