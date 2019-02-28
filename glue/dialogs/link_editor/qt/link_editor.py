@@ -105,22 +105,24 @@ class LinkEditor(QtWidgets.QDialog):
         for i in reversed(range(link_io.count())):
             item = link_io.itemAt(i)
             if item is not None and item.widget() is not None:
-                item.widget().setParent(None)
+                widget = item.widget()
+                widget.setParent(None)
+                # NOTE: we need to also hide the widget otherwise it will still
+                # appear but floating in front of or behind the dialog.
+                widget.hide()
 
         for row in range(link_io.rowCount()):
-            link_io.setRowStretch(row, 0)
+            link_io.setRowStretch(row, 0.5)
 
         link = self.state.links
 
         if link is None:
             return
 
-        # FIXME: some combo widgets appear outside of window too
-
         link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
 
         for index, input_name in enumerate(link._input_names):
-            combo = QtWidgets.QComboBox(parent=self)
+            combo = QtWidgets.QComboBox(parent=self._ui)
             link_io.addWidget(QtWidgets.QLabel(input_name), index + 1, 0)
             link_io.addWidget(combo, index + 1, 1)
             connect_combo_selection(link, input_name, combo)
@@ -131,7 +133,7 @@ class LinkEditor(QtWidgets.QDialog):
 
         link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index + 3, 0, 1, 2)
 
-        combo = QtWidgets.QComboBox(parent=self)
+        combo = QtWidgets.QComboBox(parent=self._ui)
         link_io.addWidget(QtWidgets.QLabel(link._output_name), index + 4, 0)
         link_io.addWidget(combo, index + 4, 1)
         connect_combo_selection(link, link._output_name, combo)
@@ -139,6 +141,10 @@ class LinkEditor(QtWidgets.QDialog):
         link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
 
         link_io.setRowStretch(index + 5, 10)
+
+        # We need to force a repaint here otherwise the combo boxes don't get
+        # drawn straight away.
+        self.repaint()
 
         self._ui.graph_widget.set_links(self.state._all_links)
 

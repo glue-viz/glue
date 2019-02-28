@@ -241,6 +241,9 @@
        </item>
        <item>
         <layout class="QGridLayout" name="link_io">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetFixedSize</enum>
+         </property>
          <property name="horizontalSpacing">
           <number>10</number>
          </property>
