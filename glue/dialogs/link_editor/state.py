@@ -9,7 +9,7 @@ except ImportError:  # Python 2.7
 
 from glue.core.component_link import ComponentLink
 from glue.core.state_objects import State
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty
+from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
 
 
@@ -62,18 +62,25 @@ class LinkEditorState(State):
                     (link.data_in is self.data2 and link.data_out is self.data1)):
                 links.append(link)
 
-        LinkEditorState.links.set_choices(self, links)
+        with delay_callback(self, 'links'):
+            LinkEditorState.links.set_choices(self, links)
+            if len(links) > 0:
+                self.links = links[0]
 
     def new_link(self, function_or_helper):
 
         if hasattr(function_or_helper, 'function'):
-            link = EditableLinkFunctionState(function_or_helper.function, self.data1, self.data2)
+            link = EditableLinkFunctionState(function_or_helper.function,
+                                             data_in=self.data1, data_out=self.data2,
+                                             output_name=function_or_helper.output_labels[0],
+                                             description=function_or_helper.info)
         else:
             raise NotImplementedError("link helper support not implemented yet")
 
         self._all_links.append(link)
-        self.on_data_change()
-        self.links = link
+        with delay_callback(self, 'links'):
+            self.on_data_change()
+            self.links = link
 
     def remove_link(self):
         self._all_links.remove(self.links)
@@ -82,56 +89,77 @@ class LinkEditorState(State):
 
 class EditableLinkFunctionState(State):
 
-    # TODO: At the moment if we just wrap the inner function we lose information
-    # about the 'info' and 'output_label'. So for now we just hard code 'output'
-    # below.
-
     function = CallbackProperty()
     data_in = CallbackProperty()
     data_out = CallbackProperty()
 
-    def __new__(cls, function, data_in, data_out, cids_in=None, cid_out=None):
+    def __new__(cls, function, data_in=None, data_out=None, cids_in=None,
+                cid_out=None, input_names=None, output_name=None,
+                description=None):
+
+        if isinstance(function, ComponentLink):
+            input_names = function.input_names
+            output_name = function.output_name
 
         class CustomizedStateClass(EditableLinkFunctionState):
-            _input_names = getfullargspec(function)[0]
-            _output_name = 'output'
+            pass
 
-        for index, input_arg in enumerate(CustomizedStateClass._input_names):
+        setattr(CustomizedStateClass, 'input_names', input_names or getfullargspec(function)[0])
+        setattr(CustomizedStateClass, 'output_name', output_name or 'output')
+
+        for index, input_arg in enumerate(CustomizedStateClass.input_names):
+            print("INIT1", input_arg)
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
 
-        setattr(CustomizedStateClass, CustomizedStateClass._output_name, SelectionCallbackProperty(default_index=0))
+            print("INIT2", CustomizedStateClass.output_name)
+        setattr(CustomizedStateClass, CustomizedStateClass.output_name, SelectionCallbackProperty(default_index=0))
 
         return super(EditableLinkFunctionState, cls).__new__(CustomizedStateClass)
 
-    def __init__(self, function, data_in, data_out, cids_in=None, cid_out=None):
+    def __init__(self, function, data_in=None, data_out=None, cids_in=None,
+                 cid_out=None, input_names=None, output_name=None,
+                 description=None):
 
         super(EditableLinkFunctionState, self).__init__()
 
-        self.function = function
+        if isinstance(function, ComponentLink):
+            self.function = function.get_using()
+            self.inverse = function.get_inverse()
+            cids_in = function.get_from_ids()
+            cid_out = function.get_to_id()
+            data_in = cids_in[0].parent
+            data_out = cid_out.parent
+            description = function.description
+        else:
+            self.function = function
+            self.inverse = None
+
         self.data_in = data_in
         self.data_out = data_out
 
-        for name in self._input_names:
+        for name in self.input_names:
             helper = ComponentIDComboHelper(self, name)
             helper.append_data(data_in)
             setattr(self, '_' + name + '_helper', helper)
 
-        helper = ComponentIDComboHelper(self, self._output_name)
-        setattr(self, '_' + self._output_name + '_helper', helper)
+        helper = ComponentIDComboHelper(self, self.output_name)
+        setattr(self, '_' + self.output_name + '_helper', helper)
         helper.append_data(data_out)
 
         if cids_in is not None:
-            for name, cid in zip(self._input_names, cids_in):
+            print("CIDS_IN", cids_in)
+            for name, cid in zip(self.input_names, cids_in):
                 setattr(self, name, cid)
 
         if cid_out is not None:
-            setattr(self, self._output_name, cid_out)
+            print("CID_OUT", cid_out)
+            setattr(self, self.output_name, cid_out)
 
     @property
     def link(self):
         """
         Return a `glue.core.component_link.ComponentLink` object.
         """
-        cids_in = [getattr(self, name) for name in self._input_names]
-        cid_out = getattr(self, self._output_name)
+        cids_in = [getattr(self, name) for name in self.input_names]
+        cid_out = getattr(self, self.output_name)
         return ComponentLink(cids_in, cid_out, using=self.function)

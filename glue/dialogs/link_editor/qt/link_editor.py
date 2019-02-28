@@ -9,7 +9,7 @@ from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
-from glue.dialogs.link_editor.state import LinkEditorState
+from glue.dialogs.link_editor.state import LinkEditorState, EditableLinkFunctionState
 
 __all__ = ['LinkEditor', 'main']
 
@@ -52,6 +52,10 @@ class LinkMenu(QtWidgets.QMenu):
                     action.setData(UserDataWrapper(helper))
 
 
+def link_key(link):
+    return tuple(link.input_names) + (link.output_name,)
+
+
 class LinkEditor(QtWidgets.QDialog):
 
     def __init__(self, data_collection, parent=None):
@@ -60,16 +64,19 @@ class LinkEditor(QtWidgets.QDialog):
 
         self._data_collection = data_collection
 
-        # TODO: This is the point where we should actually take copies of the
-        # links because we are going to be editing them and the user may cancel
+        # Convert links to editable states
+        links = [EditableLinkFunctionState(link) for link in data_collection.external_links]
 
-        self.state = LinkEditorState(data_collection, list(data_collection.external_links))
+        # Sort the links deterministically
+        links = sorted(links, key=link_key)
+
+        self.state = LinkEditorState(data_collection, links)
 
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
         autoconnect_callbacks_to_qt(self.state, self._ui)
 
-        self._ui.graph_widget.set_data_collection(data_collection)
+        self._ui.graph_widget.set_data_collection(data_collection, new_links=links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
         self._menu = LinkMenu(parent=self._ui.button_add_link)
@@ -121,7 +128,7 @@ class LinkEditor(QtWidgets.QDialog):
 
         link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
 
-        for index, input_name in enumerate(link._input_names):
+        for index, input_name in enumerate(link.input_names):
             combo = QtWidgets.QComboBox(parent=self._ui)
             link_io.addWidget(QtWidgets.QLabel(input_name), index + 1, 0)
             link_io.addWidget(combo, index + 1, 1)
@@ -134,9 +141,9 @@ class LinkEditor(QtWidgets.QDialog):
         link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index + 3, 0, 1, 2)
 
         combo = QtWidgets.QComboBox(parent=self._ui)
-        link_io.addWidget(QtWidgets.QLabel(link._output_name), index + 4, 0)
+        link_io.addWidget(QtWidgets.QLabel(link.output_name), index + 4, 0)
         link_io.addWidget(combo, index + 4, 1)
-        connect_combo_selection(link, link._output_name, combo)
+        connect_combo_selection(link, link.output_name, combo)
 
         link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
 

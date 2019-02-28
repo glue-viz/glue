@@ -3,6 +3,11 @@ from __future__ import absolute_import, division, print_function
 import numbers
 import operator
 
+try:
+    from inspect import getfullargspec
+except ImportError:  # Python 2.7
+    from inspect import getargspec as getfullargspec
+
 import numpy as np
 
 from glue.external.six import add_metaclass
@@ -30,13 +35,40 @@ OPSYM = {operator.add: '+', operator.sub: '-',
 
 @add_metaclass(ContractsMeta)
 class ComponentLink(object):
+    """
+    ComponentLinks represent transformation logic between ComponentIDs
 
-    """ ComponentLinks represent transformation logic between ComponentIDs
+    Parameters
+    ----------
+    comp_from : list of :class:`~glue.core.component_id.ComponentID`
+        The input ComponentIDs
+    comp_to : :class:`~glue.core.component_id.ComponentID`
+        The target component ID
+    using : func, optional
+        The translation function which maps data from ``comp_from`` to
+        ``comp_to``. The using function should satisfy
+        ``using(data[comp_from[0]],...,data[comp_from[-1]]) = desired data``.
+        If not specifies, this defaults to an identity function.
+    inverse : func, optional
+        The inverse translation function, if exists
+    description : str
+        A short description for the link. This is used e.g. in the link editor.
+    input_names : list of str, optional
+        The names to use for the inputs to the ``using`` function. By default
+        this is determined by inspecting the function signature. This is used
+        e.g. in the link editor.
+    output_name : str, optional
+        The name to use for the output of the ``using`` function. This is used
+        e.g. in the link editor.
 
-    ComponentLinks are be used to derive one
-    :class:`~glue.core.component_id.ComponentID` from another:
+    Notes
+    -----
+    Both ``inverse`` and ``using`` should accept and return numpy arrays.
 
-    Example::
+    Examples
+    --------
+
+    ::
 
        def hours_to_minutes(hours):
            return hours * 60
@@ -53,32 +85,10 @@ class ComponentLink(object):
 
     @contract(using='callable|None',
               inverse='callable|None')
-    def __init__(self, comp_from, comp_to, using=None, inverse=None, inverse_component_link=None):
-        """
-        :param comp_from: The input ComponentIDs
-        :type comp_from: list of :class:`~glue.core.component_id.ComponentID`
+    def __init__(self, comp_from, comp_to, using=None, inverse=None,
+                 inverse_component_link=None, description=None,
+                 input_names=None, output_name=None):
 
-        :param comp_to: The target component ID
-        :type comp_from: :class:`~glue.core.component_id.ComponentID`
-
-        :pram using: The translation function which maps data from
-                     comp_from to comp_to (optional)
-
-        The using function should satisfy::
-
-               using(data[comp_from[0]],...,data[comp_from[-1]]) = desired data
-
-        :param inverse:
-            The inverse translation function, if exists (optional)
-
-        :raises:
-           TypeError if input is invalid
-
-        .. note ::
-            Both ``inverse`` and ``using`` should accept and return
-            numpy arrays
-
-        """
         from glue.core.data import ComponentID
 
         self._from = comp_from
@@ -99,6 +109,10 @@ class ComponentLink(object):
         self._inverse = inverse
 
         self.identity = self._using is identity
+
+        self.description = description or ''
+        self.input_names = input_names or getfullargspec(using)[0]
+        self.output_name = output_name or 'output'
 
         if not isinstance(comp_from, list):
             raise TypeError("comp_from must be a list: %s" % type(comp_from))

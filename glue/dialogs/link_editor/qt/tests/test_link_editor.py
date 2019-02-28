@@ -3,6 +3,7 @@ from mock import patch
 from glue.utils.qt import get_qapp
 from glue.core import Data, DataCollection
 from glue.dialogs.link_editor.qt import LinkEditor
+from glue.core.component_link import ComponentLink
 
 
 def non_empty_rows_count(layout):
@@ -102,7 +103,7 @@ class TestLinkEditor:
 
         # Let's change the current components for the link
         dialog.state.links.x = self.data1.id['y']
-        dialog.state.links.output = self.data2.id['b']
+        dialog.state.links.y = self.data2.id['b']
 
         # and make sure the UI gets updated
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
@@ -297,5 +298,54 @@ class TestLinkEditor:
         click(graph.nodes[2])
         assert dialog.state.data1 is self.data3
         assert dialog.state.data2 is None
+
+        dialog.accept()
+
+    def test_preexisting_links(self):
+
+        # Check that things work properly if there are pre-existing links
+
+        app = get_qapp()
+
+        link1 = ComponentLink([self.data1.id['x']], self.data2.id['c'])
+
+        def add(x, y):
+            return x + y
+
+        link2 = ComponentLink([self.data2.id['a'], self.data2.id['b']], self.data3.id['j'], using=add)
+        link3 = ComponentLink([self.data3.id['i']], self.data2.id['c'])
+
+        self.data_collection.add_link(link1)
+        self.data_collection.add_link(link2)
+        self.data_collection.add_link(link3)
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+
+        dialog.state.data1 = self.data1
+        dialog.state.data2 = self.data2
+
+        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.link_details.count() == 0
+        assert non_empty_rows_count(dialog._ui.link_io) == 5
+        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+
+        dialog.state.data1 = self.data3
+
+        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.link_details.count() == 0
+        assert non_empty_rows_count(dialog._ui.link_io) == 5
+        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
+        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+
+        dialog.state.links = type(dialog.state).links.get_choices(dialog.state)[1]
+
+        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.link_details.count() == 0
+        assert non_empty_rows_count(dialog._ui.link_io) == 6
+        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'a'
+        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'b'
+        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'j'
 
         dialog.accept()
