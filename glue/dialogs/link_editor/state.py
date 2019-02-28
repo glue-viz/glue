@@ -64,7 +64,7 @@ class LinkEditorState(State):
 
         LinkEditorState.links.set_choices(self, links)
 
-    def add_link(self, function_or_helper):
+    def new_link(self, function_or_helper):
 
         if hasattr(function_or_helper, 'function'):
             link = EditableLinkFunctionState(function_or_helper.function, self.data1, self.data2)
@@ -72,6 +72,11 @@ class LinkEditorState(State):
             raise NotImplementedError("link helper support not implemented yet")
 
         self._all_links.append(link)
+        self.on_data_change()
+        self.links = link
+
+    def remove_link(self):
+        self._all_links.remove(self.links)
         self.on_data_change()
 
 

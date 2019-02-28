@@ -85,14 +85,14 @@ class LinkEditor(QtWidgets.QDialog):
         self._on_links_change()
 
     def _add_link(self, action):
-        self.state.add_link(action.data().data)
+        self.state.new_link(action.data().data)
 
     @avoid_circular
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
 
-    def _on_data_change(self):
+    def _on_data_change(self, *args):
         enabled = self.state.data1 is not None and self.state.data2 is not None
         self._ui.button_add_link.setEnabled(enabled)
         self._ui.button_remove_link.setEnabled(enabled)
@@ -100,8 +100,6 @@ class LinkEditor(QtWidgets.QDialog):
     def _on_links_change(self, *args):
 
         # We update the link details panel on the right
-
-        link = self.state.links
 
         link_io = self._ui.link_io
 
@@ -112,6 +110,8 @@ class LinkEditor(QtWidgets.QDialog):
 
         for row in range(link_io.rowCount()):
             link_io.setRowStretch(row, 0)
+
+        link = self.state.links
 
         if link is None:
             return
@@ -150,7 +150,7 @@ class LinkEditor(QtWidgets.QDialog):
             collection.set_links(links)
 
 
-def main():  # pragma: nocover
+def main():  # pragma: no cover
     import numpy as np
     from glue.main import load_plugins
     from glue.utils.qt import get_qapp
