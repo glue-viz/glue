@@ -40,6 +40,13 @@ class LinkEditorState(State):
         self.data_collection = data_collection
         self._all_links = links
 
+        if len(data_collection) == 2:
+            self.data1, self.data2 = self.data_collection
+        else:
+            self.data1 = self.data2 = None
+
+        self.on_data_change()
+
         self.add_callback('data1', self.on_data_change)
         self.add_callback('data2', self.on_data_change)
 

@@ -11,7 +11,7 @@ from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
 from glue.dialogs.link_editor.state import LinkEditorState
 
-__all__ = ['LinkEditor']
+__all__ = ['LinkEditor', 'main']
 
 
 def get_function_name(info):
@@ -24,12 +24,7 @@ def get_function_name(info):
 
 # TODO: make links shallow-copiable so that we avoid changing the real ones in-place
 # TODO: make data combos not allow same data to be selected twice
-# TODO: make a helper that can show the link editor panel on the right for
-# average links. But also need a way to provide a custom one, for example
-# for WCSLink.
 
-# Can we change type of an existing link? Or should 'add link' button have a
-# drop down for link type? Does this all make identity links harder?
 
 class LinkMenu(QtWidgets.QMenu):
 
@@ -82,7 +77,12 @@ class LinkEditor(QtWidgets.QDialog):
         self._menu.triggered.connect(self._add_link)
         self._ui.button_add_link.setMenu(self._menu)
 
+        self.state.add_callback('data1', self._on_data_change)
+        self.state.add_callback('data2', self._on_data_change)
+        self._on_data_change()
+
         self.state.add_callback('links', self._on_links_change)
+        self._on_links_change()
 
     def _add_link(self, action):
         self.state.add_link(action.data().data)
@@ -91,6 +91,11 @@ class LinkEditor(QtWidgets.QDialog):
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
+
+    def _on_data_change(self):
+        enabled = self.state.data1 is not None and self.state.data2 is not None
+        self._ui.button_add_link.setEnabled(enabled)
+        self._ui.button_remove_link.setEnabled(enabled)
 
     def _on_links_change(self, *args):
 
@@ -145,10 +150,13 @@ class LinkEditor(QtWidgets.QDialog):
             collection.set_links(links)
 
 
-def main():
+def main():  # pragma: nocover
     import numpy as np
+    from glue.main import load_plugins
     from glue.utils.qt import get_qapp
     from glue.core import Data, DataCollection
+
+    load_plugins()
 
     app = get_qapp()
 
@@ -160,9 +168,3 @@ def main():
         dc.append(d)
 
     LinkEditor.update_links(dc)
-
-
-if __name__ == "__main__":
-    from glue.main import load_plugins
-    load_plugins()
-    main()
