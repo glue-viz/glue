@@ -5,7 +5,7 @@ try:
 except ImportError:  # Python 2.7
     from inspect import getargspec as getfullargspec
 
-from glue.config import link_function, link_helper
+# from glue.config import link_function, link_helper
 
 from glue.core.component_link import ComponentLink
 from glue.core.state_objects import State
@@ -58,8 +58,8 @@ class LinkEditorState(State):
 
         links = []
         for link in self._all_links:
-            if ((link.data_in is self.data1 and link.data_out is self.data2)
-                    or (link.data_in is self.data2 and link.data_out is self.data1)):
+            if ((link.data_in is self.data1 and link.data_out is self.data2) or
+                    (link.data_in is self.data2 and link.data_out is self.data1)):
                 links.append(link)
 
         LinkEditorState.links.set_choices(self, links)
