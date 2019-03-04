@@ -16,12 +16,22 @@ R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
 
 
-def forwards(x, y):
-    print('forwads inputs', x, y)
+def forwards(x):
+    print('forwards input', x)
+    return x * 3
+
+
+def backwards(x):
+    print('backwards input', x)
+    return x / 3
+
+
+def forwards_xy(x, y):
+    print('forwards inputs', x, y)
     return x * 3, y * 5
 
 
-def backwards(x, y):
+def backwards_xy(x, y):
     print('backwards inputs', x, y)
     return x / 3, y / 5
 
@@ -44,7 +54,7 @@ def test_LinkTwoWay():
 
 
 def test_multilink_forwards():
-    result = MultiLink([R, D], [L, B], forwards)
+    result = MultiLink([R, D], [L, B], forwards_xy, labels2=['x', 'y'])
     assert len(result) == 2
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -53,7 +63,7 @@ def test_multilink_forwards():
 
 
 def test_multilink_backwards():
-    result = MultiLink([R, D], [L, B], backwards=backwards)
+    result = MultiLink([R, D], [L, B], backwards=backwards_xy, labels1=['x', 'y'])
     assert len(result) == 2
     check_link(result[0], [L, B], R)
     check_link(result[1], [L, B], D)
@@ -62,7 +72,7 @@ def test_multilink_backwards():
 
 
 def test_multilink_forwards_backwards():
-    result = MultiLink([R, D], [L, B], forwards, backwards)
+    result = MultiLink([R, D], [L, B], forwards_xy, backwards_xy)
     assert len(result) == 4
     check_link(result[0], [R, D], L)
     check_link(result[1], [R, D], B)
@@ -100,24 +110,17 @@ def test_toid():
         lh._toid(None)
 
 
-@pytest.mark.parametrize(('ndata', 'ndim'),
-                         [(1, 1), (2, 0), (2, 1), (2, 2), (3, 2)])
-def test_link_aligned(ndata, ndim):
-    ds = []
+@pytest.mark.parametrize('ndim', [0, 1, 2])
+def test_link_aligned(ndim):
     shp = tuple([2] * ndim)
-    for i in range(ndata):
-        d = Data()
-        c = Component(np.random.random(shp))
-        d.add_component(c, 'test')
-        ds.append(d)
+    data1 = Data(test=np.random.random(shp))
+    data2 = Data(test=np.random.random(shp))
 
-    # assert that all componentIDs are interchangeable
-    links = LinkAligned(ds)
-    dc = DataCollection(ds)
+    links = LinkAligned(data1, data2)
+    dc = DataCollection([data1, data2])
     dc.add_link(links)
 
     for i in range(ndim):
-        id0 = ds[0].pixel_component_ids[i]
-        for j in range(1, ndata):
-            id1 = ds[j].pixel_component_ids[i]
-            np.testing.assert_array_equal(ds[j][id0], ds[j][id1])
+        id0 = data1.pixel_component_ids[i]
+        id1 = data2.pixel_component_ids[i]
+        np.testing.assert_array_equal(data1[id0], data2[id1])

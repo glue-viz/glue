@@ -208,26 +208,28 @@ class BaseMultiLink(LinkCollection):
         A human-readable description of the link.
     """
 
-    def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
+    def __init__(self, cids1=None, cids2=None, data1=None, data2=None):
 
         super(BaseMultiLink, self).__init__(data1=data1, data2=data2,
-                                                    cids1=cids1, cids2=cids2)
+                                            cids1=cids1, cids2=cids2)
 
         links = []
 
-        if len(cids2) == 1:
-            links.append(ComponentLink(cids1, cids2[0], self.forwards))
-        else:
-            for i, r in enumerate(cids2):
-                func = PartialResult(self.forwards, i, name_prefix=self.__class__.__name__ + ".")
-                links.append(ComponentLink(cids1, r, func))
+        if self.forwards is not None:
+            if len(cids2) == 1:
+                links.append(ComponentLink(cids1, cids2[0], self.forwards))
+            else:
+                for i, r in enumerate(cids2):
+                    func = PartialResult(self.forwards, i, name_prefix=self.__class__.__name__ + ".")
+                    links.append(ComponentLink(cids1, r, func))
 
-        if len(cids1) == 1:
-            self.append(ComponentLink(cids2, cids1[0], self.backwards))
-        else:
-            for i, l in enumerate(cids1):
-                func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
-                links.append(ComponentLink(cids2, l, func))
+        if self.backwards is not None:
+            if len(cids1) == 1:
+                links.append(ComponentLink(cids2, cids1[0], self.backwards))
+            else:
+                for i, l in enumerate(cids1):
+                    func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
+                    links.append(ComponentLink(cids2, l, func))
 
         self._links[:] = links
 
@@ -249,36 +251,36 @@ class MultiLink(BaseMultiLink):
         are calculated.
     """
 
-    def __init__(self, forwards=None, backwards=None, labels1=None, labels2=None, **kwargs):
+    def __init__(self, cids1=None, cids2=None, forwards=None, backwards=None, labels1=None, labels2=None, **kwargs):
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
 
-        self._forwards = forwards
-        self._backwards = backwards
+        self.forwards = forwards
+        self.backwards = backwards
 
         if labels1 is None:
-            if isinstance(forwards, types.MethodType):
-                labels1 = getfullargspec(forwards)[0][1:]
+            if forwards is not None:
+                if isinstance(forwards, types.MethodType):
+                    labels1 = getfullargspec(forwards)[0][1:]
+                else:
+                    labels1 = getfullargspec(forwards)[0]
             else:
-                labels1 = getfullargspec(forwards)[0]
+                raise ValueError("labels1 needs to be specified if forwards isn't")
 
         if labels2 is None:
-            if isinstance(backwards, types.MethodType):
-                labels2 = getfullargspec(backwards)[0][1:]
+            if backwards is not None:
+                if isinstance(backwards, types.MethodType):
+                    labels2 = getfullargspec(backwards)[0][1:]
+                else:
+                    labels2 = getfullargspec(backwards)[0]
             else:
-                labels2 = getfullargspec(backwards)[0]
+                raise ValueError("labels2 needs to be specified if backwards isn't")
 
         self.labels1 = labels1
         self.labels2 = labels2
 
-        super(MultiLink, self).__init__(**kwargs)
-
-    def forwards(self, *args):
-        return self._forwards(*args)
-
-    def backwards(self, *args):
-        return self._backwards(*args)
+        super(MultiLink, self).__init__(cids1=cids1, cids2=cids2, **kwargs)
 
     def __gluestate__(self, context):
         state = super(MultiLink, self).__gluestate__(context)
@@ -304,6 +306,7 @@ class LinkSame(MultiLink):
         if cid1 is None:
             cid1 = kwargs['cids1']
         else:
+            cid1 = _toid(cid1)
             kwargs['data1'] = cid1.parent
             kwargs['cids1'] = [cid1]
             kwargs['forwards'] = identity
@@ -311,6 +314,7 @@ class LinkSame(MultiLink):
         if cid2 is None:
             cid2 = kwargs['cids2']
         else:
+            cid2 = _toid(cid2)
             kwargs['data2'] = cid2.parent
             kwargs['cids2'] = [cid2]
             kwargs['backwards'] = identity
