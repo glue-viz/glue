@@ -30,16 +30,20 @@ needs_sphinx = '1.6'
 # to fail
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    import sip
-    sip.setapi('QString', 2)
-    sip.setapi('QVariant', 2)
-    sip.setapi('QDate', 2)
-    sip.setapi('QDateTime', 2)
-    sip.setapi('QTextStream', 2)
-    sip.setapi('QTime', 2)
-    sip.setapi('QUrl', 2)
-    import PyQt5
-    import matplotlib.pyplot as plt
+    try:
+        import sip
+    except ImportError:
+        pass
+    else:
+        sip.setapi('QString', 2)
+        sip.setapi('QVariant', 2)
+        sip.setapi('QDate', 2)
+        sip.setapi('QDateTime', 2)
+        sip.setapi('QTextStream', 2)
+        sip.setapi('QTime', 2)
+        sip.setapi('QUrl', 2)
+    import PyQt5  # noqa
+    import matplotlib.pyplot as plt  # noqa
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.

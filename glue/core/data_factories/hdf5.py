@@ -45,7 +45,7 @@ def extract_hdf5_datasets(filename, memmap=True):
                 # If an offset is available, the data is contiguous and we can
                 # use memory mapping for efficiency.
                 if not memmap or offset is None:
-                    arrays[full_path] = item.value
+                    arrays[full_path] = item[()]
                 else:
                     arrays[full_path] = dict(offset=offset, shape=item.shape, dtype=item.dtype)
             elif item.dtype.kind in ('V',):
