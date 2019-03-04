@@ -8,10 +8,17 @@ except ImportError:  # Python 2.7
 # from glue.config import link_function, link_helper
 
 from glue.core.component_link import ComponentLink
+from glue.core.link_helpers import MultiLink
 from glue.core.state_objects import State
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
 
+
+# NOTES
+# At the moment the main issue with link helpers is that they return a function
+# that can just return a list of links. The issue is that in the resulting links,
+# the metadata is lost. So we should probably auto-convert the output from the
+# link helper into a link collection or multilink that includes metadata.
 
 __all__ = ['LinkEditorState']
 
@@ -72,7 +79,7 @@ class LinkEditorState(State):
         if hasattr(function_or_helper, 'function'):
             link = EditableLinkFunctionState(function_or_helper.function,
                                              data_in=self.data1, data_out=self.data2,
-                                             output_name=function_or_helper.output_labels[0],
+                                             output_names=function_or_helper.output_labels,
                                              description=function_or_helper.info)
         else:
             raise NotImplementedError("link helper support not implemented yet")
@@ -94,31 +101,33 @@ class EditableLinkFunctionState(State):
     data_out = CallbackProperty()
 
     def __new__(cls, function, data_in=None, data_out=None, cids_in=None,
-                cid_out=None, input_names=None, output_name=None,
-                description=None):
+                cid_out=None, input_names=None, output_names=None,
+                description=None, helper=False):
 
         if isinstance(function, ComponentLink):
             input_names = function.input_names
-            output_name = function.output_name
+            output_names = [function.output_name]
+        if isinstance(function, MultiLink):
+            input_names = function.input_names
+            output_names = function.output_names
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass
 
         setattr(CustomizedStateClass, 'input_names', input_names or getfullargspec(function)[0])
-        setattr(CustomizedStateClass, 'output_name', output_name or 'output')
+        setattr(CustomizedStateClass, 'output_names', output_names or ['output'])
 
         for index, input_arg in enumerate(CustomizedStateClass.input_names):
-            print("INIT1", input_arg)
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
 
-            print("INIT2", CustomizedStateClass.output_name)
-        setattr(CustomizedStateClass, CustomizedStateClass.output_name, SelectionCallbackProperty(default_index=0))
+        for index, output_arg in enumerate(CustomizedStateClass.output_names):
+            setattr(CustomizedStateClass, output_arg, SelectionCallbackProperty(default_index=index))
 
         return super(EditableLinkFunctionState, cls).__new__(CustomizedStateClass)
 
     def __init__(self, function, data_in=None, data_out=None, cids_in=None,
-                 cid_out=None, input_names=None, output_name=None,
-                 description=None):
+                 cids_out=None, input_names=None, output_names=None,
+                 description=None, helper=False):
 
         super(EditableLinkFunctionState, self).__init__()
 
@@ -126,9 +135,9 @@ class EditableLinkFunctionState(State):
             self.function = function.get_using()
             self.inverse = function.get_inverse()
             cids_in = function.get_from_ids()
-            cid_out = function.get_to_id()
+            cids_out = function.get_to_ids()
             data_in = cids_in[0].parent
-            data_out = cid_out.parent
+            data_out = cids_out[0].parent
             description = function.description
         else:
             self.function = function
@@ -142,24 +151,27 @@ class EditableLinkFunctionState(State):
             helper.append_data(data_in)
             setattr(self, '_' + name + '_helper', helper)
 
-        helper = ComponentIDComboHelper(self, self.output_name)
-        setattr(self, '_' + self.output_name + '_helper', helper)
-        helper.append_data(data_out)
+        for name in self.output_names:
+            helper = ComponentIDComboHelper(self, name)
+            helper.append_data(data_out)
+            setattr(self, '_' + name + '_helper', helper)
 
         if cids_in is not None:
-            print("CIDS_IN", cids_in)
             for name, cid in zip(self.input_names, cids_in):
                 setattr(self, name, cid)
 
-        if cid_out is not None:
-            print("CID_OUT", cid_out)
-            setattr(self, self.output_name, cid_out)
+        if cids_out is not None:
+            for name, cid in zip(self.output_names, cids_out):
+                setattr(self, name, cid)
 
     @property
     def link(self):
         """
         Return a `glue.core.component_link.ComponentLink` object.
         """
-        cids_in = [getattr(self, name) for name in self.input_names]
-        cid_out = getattr(self, self.output_name)
-        return ComponentLink(cids_in, cid_out, using=self.function)
+        if self.helper:
+            raise NotImplementedError('helpers not implemented')
+        else:
+            cids_in = [getattr(self, name) for name in self.input_names]
+            cid_out = getattr(self, self.output_names[0])
+            return ComponentLink(cids_in, cid_out, using=self.function)

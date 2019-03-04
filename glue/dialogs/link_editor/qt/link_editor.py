@@ -53,7 +53,7 @@ class LinkMenu(QtWidgets.QMenu):
 
 
 def link_key(link):
-    return tuple(link.input_names) + (link.output_name,)
+    return tuple(link.input_names) + tuple(link.output_names)
 
 
 class LinkEditor(QtWidgets.QDialog):
@@ -128,26 +128,27 @@ class LinkEditor(QtWidgets.QDialog):
 
         link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
 
-        for index, input_name in enumerate(link.input_names):
+        for index1, input_name in enumerate(link.input_names):
             combo = QtWidgets.QComboBox(parent=self._ui)
-            link_io.addWidget(QtWidgets.QLabel(input_name), index + 1, 0)
-            link_io.addWidget(combo, index + 1, 1)
+            link_io.addWidget(QtWidgets.QLabel(input_name), index1 + 1, 0)
+            link_io.addWidget(combo, index1 + 1, 1)
             connect_combo_selection(link, input_name, combo)
 
         link_io.addItem(QtWidgets.QSpacerItem(5, 20,
                                               QtWidgets.QSizePolicy.Fixed,
-                                              QtWidgets.QSizePolicy.Fixed), index + 2, 0)
+                                              QtWidgets.QSizePolicy.Fixed), index1 + 2, 0)
 
-        link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index + 3, 0, 1, 2)
+        link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index1 + 3, 0, 1, 2)
 
-        combo = QtWidgets.QComboBox(parent=self._ui)
-        link_io.addWidget(QtWidgets.QLabel(link.output_name), index + 4, 0)
-        link_io.addWidget(combo, index + 4, 1)
-        connect_combo_selection(link, link.output_name, combo)
+        for index2, output_name in enumerate(link.output_names):
+            combo = QtWidgets.QComboBox(parent=self._ui)
+            link_io.addWidget(QtWidgets.QLabel(output_name), index1 + index2 + 4, 0)
+            link_io.addWidget(combo, index1 + index2 + 4, 1)
+            connect_combo_selection(link, output_name, combo)
 
-        link_io.addWidget(QtWidgets.QWidget(), index + 5, 0)
+        link_io.addWidget(QtWidgets.QWidget(), index1 + index2 + 5, 0)
 
-        link_io.setRowStretch(index + 5, 10)
+        link_io.setRowStretch(index1 + index2 + 5, 10)
 
         # We need to force a repaint here otherwise the combo boxes don't get
         # drawn straight away.

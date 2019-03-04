@@ -14,6 +14,11 @@ from glue.external import six
 from glue.core.data import ComponentID
 from glue.core.component_link import ComponentLink
 
+try:
+    from inspect import getfullargspec
+except ImportError:  # Python 2.7
+    from inspect import getargspec as getfullargspec
+
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned']
@@ -246,3 +251,15 @@ class LinkAligned(LinkCollection):
             for j in range(ndim):
                 self.extend(LinkSame(data[0].pixel_component_ids[j],
                                      data[i + 1].pixel_component_ids[j]))
+
+
+class FunctionalMultiLink(MultiLink):
+
+    def __init__(self, cids, function, description=None, input_names=None):
+
+        self.cids = cids
+        self.function = function
+        self.description = description or ''
+        self.input_names = input_names or getfullargspec(function)[0]
+
+        self.extend(self.function(*self.cids))
