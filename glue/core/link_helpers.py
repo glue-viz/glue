@@ -76,42 +76,38 @@ class LinkCollection(object):
         The first dataset being linked
     data2 : `~glue.core.data.Data`
         The second dataset being linked
-    links : list
-        The initial links to add to the collection.
     """
 
     display = ''
-    labels1 = []
-    labels2 = []
     description = ''
 
-    def __init__(self, data1=None, data2=None,
-                 cids1=None, cids2=None,
-                 labels1=None, labels2=None,
-                 description=None,
-                 links=None):
-        self._links = links or []
+    labels1 = []
+    labels2 = []
 
-        self.data1 = data1 or cids1[0].parent
-        self.data2 = data2 or cids2[0].parent
+    def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
-        self.cids1 = cids1
-        self.cids2 = cids2
+        self.data1 = data1
+        self.data2 = data2
 
-        if labels1 is not None:
-            self.labels1 = labels1
+        if cids1 is not None:
+            if len(cids1) != len(self.labels1):
+                raise ValueError("Number of component IDs in cids1 ({0}) does "
+                                 "not match number of labels in labels1 ({1})"
+                                 .format(len(cids1), len(self.labels1)))
+            self.cids1 = cids1
+        else:
+            self.cids1 = []
 
-        if labels2 is not None:
-            self.labels2 = labels2
+        if cids2 is not None:
+            if len(cids2) != len(self.labels2):
+                raise ValueError("Number of component IDs in cids2 ({0}) does "
+                                 "not match number of labels in labels2 ({1})"
+                                 .format(len(cids2), len(self.labels2)))
+            self.cids2 = cids2
+        else:
+            self.cids2 = []
 
-        if description is not None:
-            self.description = description
-
-    def append(self, link):
-        self._links.append(link)
-
-    def extend(self, links):
-        self._links.extend(links)
+        self._links = []
 
     def __iter__(self):
         for link in self._links:
@@ -135,19 +131,57 @@ class LinkCollection(object):
         state['data2'] = context.id(self.data2)
         state['cids1'] = context.id(self.cids1)
         state['cids2'] = context.id(self.cids2)
-        state['labels1'] = context.id(self.cids2)
-        state['labels2'] = context.id(self.labels2)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(data1=context.object(rec['data1']),
+                   data2=context.object(rec['data2']),
+                   cids1=context.object(rec['cids1']),
+                   cids2=context.object(rec['cids2']))
+        return self
+
+
+class ManualLinkCollection(object):
+    """
+    A collection of links between two datasets.
+
+    Parameters
+    ----------
+    data1 : `~glue.core.data.Data`
+        The first dataset being linked
+    data2 : `~glue.core.data.Data`
+        The second dataset being linked
+    links : list
+        The initial links to add to the collection.
+    """
+
+    def __init__(self, data1=None, data2=None, links=None):
+        super(ManualLinkCollection, self).__init__(data1=data1, data2=data2)
+        self._links[:] = links or []
+
+    def append(self, link):
+        self._links.append(link)
+
+    def extend(self, links):
+        self._links.extend(links)
+
+    def __gluestate__(self, context):
+        state = super(ManualLinkCollection, self).__gluestate__(context)
         state['values'] = context.id(self._links)
         return state
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        # TODO: update this
-        self = cls(context.object(rec['values']))
+        self = super(ManualLinkCollection, cls).__setgluestate__(rec, context)
+        self._values[:] = context.object(rec['values'])
         return self
 
 
-class FixedMethodsMultiLink(LinkCollection):
+class BaseMultiLink(LinkCollection):
+
+    # TODO: could add a metaclass to set labels1 and labels2 automatically
+
     """
     A link collection that is generated on-the-fly based on forward and
     backward transformation functions and lists of input/output component IDs.
@@ -174,41 +208,28 @@ class FixedMethodsMultiLink(LinkCollection):
         A human-readable description of the link.
     """
 
-    def __init__(self, data1=None, data2=None,
-                 cids1=None, cids2=None,
-                 forwards=None, backwards=None,
-                 labels1=None, labels2=None, description=None):
+    def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
-        if labels1 is None:
-            if isinstance(self.forwards, types.MethodType):
-                labels1 = getfullargspec(self.forwards)[0][1:]
-            else:
-                labels1 = getfullargspec(self.forwards)[0]
+        super(BaseMultiLink, self).__init__(data1=data1, data2=data2,
+                                                    cids1=cids1, cids2=cids2)
 
-        if labels2 is None:
-            if isinstance(self.backwards, types.MethodType):
-                labels2 = getfullargspec(self.backwards)[0][1:]
-            else:
-                labels2 = getfullargspec(self.backwards)[0]
-
-        super(FixedMethodsMultiLink, self).__init__(data1=data1, data2=data2,
-                                                    cids1=cids1, cids2=cids2,
-                                                    labels1=labels1, labels2=labels2,
-                                                    description=description)
+        links = []
 
         if len(cids2) == 1:
-            self.append(ComponentLink(cids1, cids2[0], forwards))
+            links.append(ComponentLink(cids1, cids2[0], self.forwards))
         else:
             for i, r in enumerate(cids2):
                 func = PartialResult(self.forwards, i, name_prefix=self.__class__.__name__ + ".")
-                self.append(ComponentLink(cids1, r, func))
+                links.append(ComponentLink(cids1, r, func))
 
         if len(cids1) == 1:
-            self.append(ComponentLink(cids2, cids1[0], backwards))
+            self.append(ComponentLink(cids2, cids1[0], self.backwards))
         else:
             for i, l in enumerate(cids1):
                 func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
-                self.append(ComponentLink(cids2, l, func))
+                links.append(ComponentLink(cids2, l, func))
+
+        self._links[:] = links
 
     def forwards(self):
         raise NotImplementedError()
@@ -216,24 +237,8 @@ class FixedMethodsMultiLink(LinkCollection):
     def backwards(self):
         raise NotImplementedError()
 
-    def __gluestate__(self, context):
-        state = {}
-        state['data1'] = context.id(self.data1)
-        state['data2'] = context.id(self.data2)
-        state['cids1'] = context.id(self.cids1)
-        state['cids2'] = context.id(self.cids2)
-        return state
 
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        self = cls(data1=context.object(rec.get('data1', None)),
-                   data2=context.object(rec.get('data2', None)),
-                   cids1=context.object(rec['cids1']),
-                   cids2=context.object(rec['cids2']))
-        return self
-
-
-class MultiLink(FixedMethodsMultiLink):
+class MultiLink(BaseMultiLink):
     """
     forwards : function
         Function that maps ``cids1`` to  ``cids2``. This should have
@@ -264,7 +269,10 @@ class MultiLink(FixedMethodsMultiLink):
             else:
                 labels2 = getfullargspec(backwards)[0]
 
-        super(MultiLink, self).__init__(labels1=labels1, labels2=labels2, **kwargs)
+        self.labels1 = labels1
+        self.labels2 = labels2
+
+        super(MultiLink, self).__init__(**kwargs)
 
     def forwards(self, *args):
         return self._forwards(*args)
@@ -370,7 +378,6 @@ class LinkTwoWay(MultiLink):
 
 
 class LinkAligned(LinkCollection):
-
     """Compute all the links to specify that the input data are pixel-aligned.
     """
 
@@ -378,9 +385,11 @@ class LinkAligned(LinkCollection):
         super(LinkAligned, self).__init__(data1=data1, data2=data2)
         if data1.shape != data2.shape:
             raise TypeError("Input data do not have the same shape")
+        links = []
         for j in range(data1.ndim):
-            self.extend(LinkSame(data1.pixel_component_ids[j],
-                                 data2.pixel_component_ids[j]))
+            links.extend(LinkSame(data1.pixel_component_ids[j],
+                                  data2.pixel_component_ids[j]))
+        self._links[:] = links
 
 
 def functional_link_collection(function):
@@ -394,6 +403,6 @@ def functional_link_collection(function):
                                                            cids1=cids1, cids2=cids2,
                                                            labels1=labels1, labels2=labels2,
                                                            description=description)
-            self.extend(function(*cids1, *cids2))
+            self._links[:] = function(*cids1, *cids2)
 
     return FunctionalLinkCollection

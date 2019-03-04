@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric
 
-from glue.core.link_helpers import FixedMethodsMultiLink
+from glue.core.link_helpers import BaseMultiLink
 from glue.config import link_helper
 
 
@@ -17,7 +17,7 @@ __all__ = ["BaseCelestialMultiLink", "Galactic_to_FK5", "FK4_to_FK5",
            "ICRS_to_Galactic"]
 
 
-class BaseCelestialMultiLink(FixedMethodsMultiLink):
+class BaseCelestialMultiLink(BaseMultiLink):
 
     display = None
     frame_in = None
@@ -95,7 +95,7 @@ class ICRS_to_Galactic(BaseCelestialMultiLink):
 
 
 @link_helper(category='Astronomy')
-class GalactocentricToGalactic(FixedMethodsMultiLink):
+class GalactocentricToGalactic(BaseMultiLink):
 
     description = 'Link 3D Galactocentric and Galactic coordinates'
     labels1 = 'x (kpc)', 'y (kpc)', 'z (kpc)'
