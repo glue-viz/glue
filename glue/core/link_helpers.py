@@ -23,7 +23,7 @@ except ImportError:  # Python 2.7
 
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
-           'LinkAligned']
+           'LinkAligned', 'BaseMultiLink', 'ManualLinkCollection']
 
 
 @link_function("Link conceptually identical components",
@@ -76,11 +76,27 @@ class LinkCollection(object):
         The first dataset being linked
     data2 : `~glue.core.data.Data`
         The second dataset being linked
+    cids1 : list of `~glue.core.component_id.ComponentID`
+        The set of `~glue.core.component_id.ComponentID` in ``data1`` which
+        can be used to parametrize the links. Note that the links can also
+        use other IDs, but the ones defined here are the ones that can be
+        modified through e.g. the graphical link editor.
+    cids2 : list of `~glue.core.component_id.ComponentID`
+        The set of `~glue.core.component_id.ComponentID` in ``data2``. This is
+        defined as for ``cids1``.
     """
 
-    display = ''
+    # The following is a short name to be used for the link, which is used
+    # in e.g. drop-down menus in link editors.
+    display = 'Collection of links'
+
+    # The following can be a paragraph description explaining how the set
+    # of links works
     description = ''
 
+    # The following are lists of human-readable names for the component IDs
+    # to be specified in the initializer. For this base class, these are
+    # empty, but can be overridden in sub-classes.
     labels1 = []
     labels2 = []
 
@@ -131,6 +147,11 @@ class ManualLinkCollection(object):
     """
     A collection of links between two datasets.
 
+    This class is intended for manual link collections, i.e. collections where
+    the caller manually adds and removes individual links. These links can be
+    between any component IDs as long as they link component IDs between the
+    two specified datasets.
+
     Parameters
     ----------
     data1 : `~glue.core.data.Data`
@@ -140,6 +161,9 @@ class ManualLinkCollection(object):
     links : list
         The initial links to add to the collection.
     """
+
+    display = 'Custom list of links'
+    description = 'This is a list of links that has been manually constructed'
 
     def __init__(self, data1=None, data2=None, links=None):
         super(ManualLinkCollection, self).__init__(data1=data1, data2=data2)
@@ -164,34 +188,17 @@ class ManualLinkCollection(object):
 
 
 class BaseMultiLink(LinkCollection):
-
-    # TODO: could add a metaclass to set labels1 and labels2 automatically
-
     """
     A link collection that is generated on-the-fly based on forward and
     backward transformation functions and lists of input/output component IDs.
 
-    Parameters
-    ----------
-    data1 : `~glue.core.data.Data`
-        The first dataset being linked
-    data2 : `~glue.core.data.Data`
-        The second dataset being linked
-    cids1 : list of `~glue.core.component_id.ComponentID`
-        The list of component IDs in the first dataset that are used in the links
-    cids2 : list of `~glue.core.component_id.ComponentID`
-        The list of component IDs in the second dataset that are used in the links
-    labels1 : list of str, optional
-        The human-readable names for the inputs to the ``forwards`` function.
-        This is used for example in the graphical link editor. If not specified,
-        the names of the arguments to ``forwards`` are used.
-    labels2 : list of str, optional
-        The human-readable names for the inputs to the ``backwards`` function.
-        This is used for example in the graphical link editor. If not specified,
-        the names of the arguments to ``backwards`` are used.
-    description : str, optional
-        A human-readable description of the link.
+    The input parameters are as for
+    :class:`~glue.core.link_helpers.LinkCollection`. Sub-classes should
+    override the :meth:`~glue.core.link_helpers.BaseMultiLink.forwards` and
+    :meth:`~glue.core.link_helpers.BaseMultiLink.backwards` methods.
     """
+
+    # TODO: could add a metaclass to set labels1 and labels2 automatically
 
     def __init__(self, cids1=None, cids2=None, data1=None, data2=None):
 
@@ -231,6 +238,15 @@ class BaseMultiLink(LinkCollection):
 
 class MultiLink(BaseMultiLink):
     """
+    A link collection that is generated on-the-fly based on forward and
+    backward transformation functions and lists of input/output component IDs.
+
+    This is similar to :meth:`~glue.core.link_helpers.BaseMultiLink` except
+    that the ``forwards`` and ``backwards`` functions are specified in the
+    initializer rather than being methods of the class.
+
+    Parameters
+    ----------
     forwards : function
         Function that maps ``cids1`` to  ``cids2``. This should have
         the signature ``cids2 = forwards(*cids1)``, and is assumed
@@ -238,9 +254,21 @@ class MultiLink(BaseMultiLink):
     backwards : function
         The inverse function to ``forwards``. If not specifed, no forward links
         are calculated.
+    labels1 : list of str
+        The human-readable names of the inputs to the ``forwards`` function.
+        If not specified, this is set to the argument names of ``forwards``.
+    labels2 : list of str
+        The human-readable names of the inputs to the ``backwards`` function.
+        If not specified, this is set to the argument names of ``backwards``.
+    kwargs :
+        Additional arguments are passed
     """
 
     def __init__(self, cids1=None, cids2=None, forwards=None, backwards=None, labels1=None, labels2=None, **kwargs):
+
+        # NOTE: we explicitly specify ``cids1`` and ``cids2`` as the two first
+        # arguments for backwards-compatibility with callers that use positional
+        # arguments.
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
@@ -265,9 +293,6 @@ class MultiLink(BaseMultiLink):
                     labels2 = getfullargspec(backwards)[0]
             else:
                 raise ValueError("labels2 needs to be specified if backwards isn't")
-
-        self.labels1 = labels1
-        self.labels2 = labels2
 
         super(MultiLink, self).__init__(cids1=cids1, cids2=cids2, **kwargs)
 
@@ -327,18 +352,22 @@ class LinkSame(MultiLink):
 
 
 class LinkTwoWay(MultiLink):
+    """
+    Return two links that connect input ComponentIDs in both directions
+
+    Parameters
+    ----------
+    cid1 : `glue.core.component_id.ComponentID`
+        The first ComponentID to link
+    cid2 : `glue.core.component_id.ComponentID`
+        The second ComponentID to link
+    forwards : function
+        Function which maps cid1 to cid2 (e.g. ``cid2=f(cid1)``)
+    backwards : function
+        Function which maps cid2 to cid1 (e.g. ``cid1=f(cid2)``)
+    """
 
     def __init__(self, cid1=None, cid2=None, forwards=None, backwards=None, **kwargs):
-        """ Return 2 links that connect input ComponentIDs in both directions
-
-        :param cid1: First ComponentID to link
-        :param cid2: Second ComponentID to link
-        :param forwards: Function which maps cid1 to cid2 (e.g. cid2=f(cid1))
-        :param backwards: Function which maps cid2 to cid1 (e.g. cid1=f(cid2))
-
-        :returns: Two :class:`~glue.core.component_link.ComponentLink`
-                  instances, specifying the link in each direction
-        """
 
         if cid1 is None:
             cid1 = kwargs['cids1']
@@ -372,7 +401,8 @@ class LinkTwoWay(MultiLink):
 
 
 class LinkAligned(LinkCollection):
-    """Compute all the links to specify that the input data are pixel-aligned.
+    """
+    Compute all the links to specify that the input data are pixel-aligned.
     """
 
     def __init__(self, data1=None, data2=None):
