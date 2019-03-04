@@ -1,9 +1,11 @@
 from mock import patch
 
+from qtpy import QtWidgets
 from glue.utils.qt import get_qapp
 from glue.core import Data, DataCollection
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.core.component_link import ComponentLink
+from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5
 
 
 def non_empty_rows_count(layout):
@@ -18,6 +20,15 @@ def non_empty_rows_count(layout):
                     count += 1
                     break
     return count
+
+
+def get_action(dialog, text):
+    for submenu in dialog._menu.children():
+        if isinstance(submenu, QtWidgets.QMenu):
+            for action in submenu.actions():
+                if action.text() == text:
+                    return action
+    raise ValueError("Action '{0}' not found".format(text))
 
 
 class TestLinkEditor:
@@ -76,10 +87,8 @@ class TestLinkEditor:
         dialog.state.data1 = self.data1
         dialog.state.data2 = self.data2
 
-        # TODO: We should probably provide a way to get from a helper/function
-        # to the action to avoid having to do this.
-        add_identity_link = dialog._menu.children()[1].actions()[0]
-        add_lengths_volume_link = dialog._menu.children()[1].actions()[1]
+        add_identity_link = get_action(dialog, 'identity')
+        add_lengths_volume_link = get_action(dialog, 'lengths_to_volume')
 
         # At this point, there should be no links in the main list widget
         # and nothing on the right.
@@ -189,7 +198,7 @@ class TestLinkEditor:
         dialog = LinkEditor(self.data_collection)
         dialog.show()
 
-        add_identity_link = dialog._menu.children()[1].actions()[0]
+        add_identity_link = get_action(dialog, 'identity')
 
         graph = dialog._ui.graph_widget
 
@@ -349,3 +358,62 @@ class TestLinkEditor:
         assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'j'
 
         dialog.accept()
+
+    def test_add_helper(self):
+
+        app = get_qapp()
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+
+        dialog.state.data1 = self.data1
+        dialog.state.data2 = self.data2
+
+        add_coordinate_link = get_action(dialog, 'ICRS <-> Galactic')
+
+        # Add a coordinate link
+        add_coordinate_link.trigger()
+
+        # Ensure that all events get processed
+        app.processEvents()
+
+        # Now there should be a link with four inputs and no outputs in the
+        # right hand panel.
+        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.link_details.count() == 0
+        assert non_empty_rows_count(dialog._ui.link_io) == 6
+        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert dialog._ui.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
+        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'z'
+
+    def test_preexisting_helper(self):
+
+        app = get_qapp()
+
+        link1 = Galactic_to_FK5(self.data1.id['x'], self.data1.id['y'],
+                                self.data2.id['a'], self.data2.id['b'])
+
+        self.data_collection.add_link(link1)
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+
+        assert dialog._ui.listsel_links.count() == 0
+
+        dialog.state.data1 = self.data1
+        dialog.state.data2 = self.data2
+
+        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.link_details.count() == 0
+        assert non_empty_rows_count(dialog._ui.link_io) == 7
+        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
+        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
+
+        dialog.accept()
+
+
+# TODO: check that if we use a FunctionalMultiLink then either data can be used
+# in input.

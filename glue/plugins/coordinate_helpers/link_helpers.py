@@ -28,14 +28,14 @@ class BaseCelestialMultiLink(MultiLink):
                                                      forwards=self.forward, backwards=self.backward)
 
     def forward(self, in_lon, in_lat):
-        c = self.frame_in(in_lon * u.deg, in_lat * u.deg)
-        out = c.transform_to(self.frame_out)
-        return out.spherical.lon.degree, out.spherical.lat.degree
+        cin = self.frame_in(in_lon * u.deg, in_lat * u.deg)
+        cout = cin.transform_to(self.frame_out)
+        return cout.spherical.lon.degree, cout.spherical.lat.degree
 
-    def backward(self, in_lon, in_lat):
-        c = self.frame_out(in_lon * u.deg, in_lat * u.deg)
-        out = c.transform_to(self.frame_in)
-        return out.spherical.lon.degree, out.spherical.lat.degree
+    def backward(self, out_lon, out_lat):
+        cout = self.frame_out(out_lon * u.deg, out_lat * u.deg)
+        cin = cout.transform_to(self.frame_in)
+        return cin.spherical.lon.degree, cin.spherical.lat.degree
 
     def __gluestate__(self, context):
         state = {}

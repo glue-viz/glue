@@ -76,13 +76,20 @@ class LinkEditorState(State):
 
     def new_link(self, function_or_helper):
 
+        # TODO: keep track of name of original action so that we can find it
+        # again in the drop-down menu? Give IDs so that we can change the
+        # display name in future?
+
         if hasattr(function_or_helper, 'function'):
             link = EditableLinkFunctionState(function_or_helper.function,
                                              data_in=self.data1, data_out=self.data2,
                                              output_names=function_or_helper.output_labels,
                                              description=function_or_helper.info)
         else:
-            raise NotImplementedError("link helper support not implemented yet")
+            link = EditableLinkFunctionState(function_or_helper.helper,
+                                             data_in=self.data1, data_out=self.data2,
+                                             input_names=function_or_helper.input_labels,
+                                             description=function_or_helper.info)
 
         self._all_links.append(link)
         with delay_callback(self, 'links'):
@@ -108,14 +115,14 @@ class EditableLinkFunctionState(State):
             input_names = function.input_names
             output_names = [function.output_name]
         if isinstance(function, MultiLink):
-            input_names = function.input_names
-            output_names = function.output_names
+            input_names = function.labels_left
+            output_names = function.labels_right
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass
 
         setattr(CustomizedStateClass, 'input_names', input_names or getfullargspec(function)[0])
-        setattr(CustomizedStateClass, 'output_names', output_names or ['output'])
+        setattr(CustomizedStateClass, 'output_names', output_names or [])
 
         for index, input_arg in enumerate(CustomizedStateClass.input_names):
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
@@ -136,6 +143,13 @@ class EditableLinkFunctionState(State):
             self.inverse = function.get_inverse()
             cids_in = function.get_from_ids()
             cids_out = function.get_to_ids()
+            data_in = cids_in[0].parent
+            data_out = cids_out[0].parent
+            description = function.description
+        elif isinstance(function, MultiLink):
+            self.multi_link = function
+            cids_in = function.cids_left
+            cids_out = function.cids_right
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
             description = function.description

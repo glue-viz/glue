@@ -9,6 +9,8 @@ multiple ComponentLinks easily. They are meant to be passed to
 
 from __future__ import absolute_import, division, print_function
 
+import types
+
 from glue.config import link_function
 from glue.external import six
 from glue.core.data import ComponentID
@@ -152,8 +154,8 @@ class LinkTwoWay(LinkCollection):
         super(LinkTwoWay, self).__init__()
         self._cid1 = cid1
         self._cid2 = cid2
-        self._forwards = forwards
-        self._backwards = backwards
+        self.forwards = forwards
+        self.backwards = backwards
         self.append(ComponentLink([_toid(cid1)], _toid(cid2), forwards))
         self.append(ComponentLink([_toid(cid2)], _toid(cid1), backwards))
 
@@ -161,8 +163,8 @@ class LinkTwoWay(LinkCollection):
         state = {}
         state['cid1'] = context.id(self._cid1)
         state['cid2'] = context.id(self._cid2)
-        state['forwards'] = context.id(self._forwards)
-        state['backwards'] = context.id(self._backwards)
+        state['forwards'] = context.id(self.forwards)
+        state['backwards'] = context.id(self.backwards)
         return state
 
     @classmethod
@@ -193,14 +195,16 @@ class MultiLink(LinkCollection):
               objects.
     """
 
-    def __init__(self, cids_left, cids_right, forwards=None, backwards=None):
+    def __init__(self, cids_left, cids_right, forwards=None, backwards=None,
+                 labels_left=None, labels_right=None, description=None):
 
         super(MultiLink, self).__init__()
 
-        self._cids_left = cids_left
-        self._cids_right = cids_right
-        self._forwards = forwards
-        self._backwards = backwards
+        self.cids_left = cids_left
+        self.cids_right = cids_right
+        self.forwards = forwards
+        self.backwards = backwards
+        self.description = description or ''
 
         if forwards is None and backwards is None:
             raise TypeError("Must supply either forwards or backwards")
@@ -215,12 +219,34 @@ class MultiLink(LinkCollection):
                 func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids_right, l, func))
 
+        if forwards is None:
+            self.labels_left = []
+        else:
+            if labels_left is None:
+                if isinstance(forwards, types.MethodType):
+                    self.labels_left = getfullargspec(forwards)[0][1:]
+                else:
+                    self.labels_left = getfullargspec(forwards)[0]
+            else:
+                self.labels_left = labels_left
+
+        if backwards is None:
+            self.labels_right = []
+        else:
+            if labels_right is None:
+                if isinstance(backwards, types.MethodType):
+                    self.labels_right = getfullargspec(backwards)[0][1:]
+                else:
+                    self.labels_right = getfullargspec(backwards)[0]
+            else:
+                self.labels_right = labels_right
+
     def __gluestate__(self, context):
         state = {}
-        state['cids_left'] = context.id(self._cids_left)
-        state['cids_right'] = context.id(self._cids_right)
-        state['forwards'] = context.id(self._forwards)
-        state['backwards'] = context.id(self._backwards)
+        state['cids_left'] = context.id(self.cids_left)
+        state['cids_right'] = context.id(self.cids_right)
+        state['forwards'] = context.id(self.forwards)
+        state['backwards'] = context.id(self.backwards)
         return state
 
     @classmethod
@@ -255,11 +281,13 @@ class LinkAligned(LinkCollection):
 
 class FunctionalMultiLink(MultiLink):
 
-    def __init__(self, cids, function, description=None, input_names=None):
+    def __init__(self, cids, function, description=None, labels_left=None):
 
         self.cids = cids
-        self.function = function
+        self.forwards = function
+        self.backwards = None
         self.description = description or ''
-        self.input_names = input_names or getfullargspec(function)[0]
+        self.labels_left = labels_left or getfullargspec(function)[0]
+        self.labels_right = []
 
         self.extend(self.function(*self.cids))
