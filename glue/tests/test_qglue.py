@@ -172,8 +172,12 @@ class TestQGlue(object):
             d['x']
 
     def test_multi_link(self):
-        forwards = lambda *args: (args[0] * 2, args[1] * 3)
-        backwards = lambda *args: (args[0] / 2, args[1] / 3)
+
+        def forwards(x, y):
+            return x * 2, y * 3
+
+        def backwards(x, y):
+            return x / 2, y / 3
 
         links = [[['Data1.x', 'Data1.y'],
                   ['Data2.u', 'Data2.v'], forwards, backwards]]

@@ -35,7 +35,9 @@ class WCSLink(MultiLink):
     WCS transformations.
     """
 
-    def __init__(self, data1, data2):
+    description = 'WCS link'
+
+    def __init__(self, data1=None, data2=None):
 
         # Extract WCS objects - from here onwards, we assume that these objects
         # have the new Astropy APE 14 interface.
@@ -91,8 +93,11 @@ class WCSLink(MultiLink):
         if pixel_cids1 is None:
             raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
 
+        self.labels1 = ['p{0}'.format(index) for index in range(len(pixel_cids1))]
+        self.labels2 = ['p{0}'.format(index) for index in range(len(pixel_cids1))]
+
         super(WCSLink, self).__init__(pixel_cids1, pixel_cids2,
-                                        forwards=forwards, backwards=backwards)
+                                      forwards=forwards, backwards=backwards)
 
         self.data1 = data1
         self.data2 = data2

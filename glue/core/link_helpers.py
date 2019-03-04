@@ -89,23 +89,8 @@ class LinkCollection(object):
         self.data1 = data1
         self.data2 = data2
 
-        if cids1 is not None:
-            if len(cids1) != len(self.labels1):
-                raise ValueError("Number of component IDs in cids1 ({0}) does "
-                                 "not match number of labels in labels1 ({1})"
-                                 .format(len(cids1), len(self.labels1)))
-            self.cids1 = cids1
-        else:
-            self.cids1 = []
-
-        if cids2 is not None:
-            if len(cids2) != len(self.labels2):
-                raise ValueError("Number of component IDs in cids2 ({0}) does "
-                                 "not match number of labels in labels2 ({1})"
-                                 .format(len(cids2), len(self.labels2)))
-            self.cids2 = cids2
-        else:
-            self.cids2 = []
+        self.cids1 = cids1 or []
+        self.cids2 = cids2 or []
 
         self._links = []
 
