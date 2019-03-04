@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 import pytest
 import numpy as np
 
-from glue.core import ComponentID, Data, Component, DataCollection
+from glue.core import ComponentID, Data, DataCollection
 
 from .. import link_helpers as lh
 from ..link_helpers import (LinkTwoWay, MultiLink,
