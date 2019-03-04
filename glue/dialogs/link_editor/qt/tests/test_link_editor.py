@@ -105,7 +105,7 @@ class TestLinkEditor:
         # Now there should be one link in the main list and content in the
         # right hand panel.
         assert dialog._ui.listsel_links.count() == 1
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
@@ -126,7 +126,7 @@ class TestLinkEditor:
 
         # and make sure the UI has updated
         assert dialog._ui.listsel_links.count() == 2
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
@@ -138,7 +138,7 @@ class TestLinkEditor:
 
         # and make sure the UI updates and has preserved the correct settings
         assert dialog._ui.listsel_links.count() == 2
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
@@ -161,7 +161,7 @@ class TestLinkEditor:
 
         # Now there should be one link in the main list
         assert dialog._ui.listsel_links.count() == 1
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
@@ -171,7 +171,7 @@ class TestLinkEditor:
 
         # And check the output is as before
         assert dialog._ui.listsel_links.count() == 2
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
@@ -184,7 +184,7 @@ class TestLinkEditor:
 
         # We should now see the lengths/volume link
         assert dialog._ui.listsel_links.count() == 1
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
@@ -378,7 +378,7 @@ class TestLinkEditor:
         app.processEvents()
 
         assert dialog._ui.listsel_links.count() == 1
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link ICRS and Galactic coordinates'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
@@ -403,7 +403,7 @@ class TestLinkEditor:
         dialog.state.data2 = self.data2
 
         assert dialog._ui.listsel_links.count() == 1
-        assert dialog._ui.link_details.text() == ''
+        assert dialog._ui.link_details.text() == 'Link Galactic and FK5 (J2000) Equatorial coordinates'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
