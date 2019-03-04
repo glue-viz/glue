@@ -377,22 +377,20 @@ class TestLinkEditor:
         # Ensure that all events get processed
         app.processEvents()
 
-        # Now there should be a link with four inputs and no outputs in the
-        # right hand panel.
         assert dialog._ui.listsel_links.count() == 1
         assert dialog._ui.link_details.count() == 0
-        assert non_empty_rows_count(dialog._ui.link_io) == 6
+        assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'z'
+        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
+        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
 
     def test_preexisting_helper(self):
 
         app = get_qapp()
 
-        link1 = Galactic_to_FK5(self.data1.id['x'], self.data1.id['y'],
-                                self.data2.id['a'], self.data2.id['b'])
+        link1 = Galactic_to_FK5(cids1=[self.data1.id['x'], self.data1.id['y']],
+                                cids2=[self.data2.id['a'], self.data2.id['b']])
 
         self.data_collection.add_link(link1)
 

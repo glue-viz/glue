@@ -8,7 +8,7 @@ except ImportError:  # Python 2.7
 # from glue.config import link_function, link_helper
 
 from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import MultiLink
+from glue.core.link_helpers import MultiLink, FixedMethodsMultiLink
 from glue.core.state_objects import State
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
@@ -88,7 +88,8 @@ class LinkEditorState(State):
         else:
             link = EditableLinkFunctionState(function_or_helper.helper,
                                              data_in=self.data1, data_out=self.data2,
-                                             input_names=function_or_helper.input_labels,
+                                             input_names=function_or_helper.labels1,
+                                             output_names=function_or_helper.labels2,
                                              description=function_or_helper.info)
 
         self._all_links.append(link)
@@ -114,15 +115,21 @@ class EditableLinkFunctionState(State):
         if isinstance(function, ComponentLink):
             input_names = function.input_names
             output_names = [function.output_name]
-        if isinstance(function, MultiLink):
+        elif isinstance(function, FixedMethodsMultiLink):
             input_names = function.labels1
             output_names = function.labels2
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass
 
-        setattr(CustomizedStateClass, 'input_names', input_names or getfullargspec(function)[0])
-        setattr(CustomizedStateClass, 'output_names', output_names or [])
+        if input_names is None:
+            input_names = getfullargspec(function)[0]
+
+        if output_names is None:
+            output_names = []
+
+        setattr(CustomizedStateClass, 'input_names', input_names)
+        setattr(CustomizedStateClass, 'output_names', output_names)
 
         for index, input_arg in enumerate(CustomizedStateClass.input_names):
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
@@ -146,7 +153,7 @@ class EditableLinkFunctionState(State):
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
             description = function.description
-        elif isinstance(function, MultiLink):
+        elif isinstance(function, FixedMethodsMultiLink):
             self.multi_link = function
             cids_in = function.cids1
             cids_out = function.cids2
@@ -183,6 +190,11 @@ class EditableLinkFunctionState(State):
         """
         Return a `glue.core.component_link.ComponentLink` object.
         """
+
+        # FunctionalLinkCollection
+        #
+        # MultiLink
+
         if self.helper:
             raise NotImplementedError('helpers not implemented')
         else:

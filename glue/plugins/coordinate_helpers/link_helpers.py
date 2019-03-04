@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric
 
-from glue.core.link_helpers import MultiLink
+from glue.core.link_helpers import FixedMethodsMultiLink
 from glue.config import link_helper
 
 
@@ -17,102 +17,89 @@ __all__ = ["BaseCelestialMultiLink", "Galactic_to_FK5", "FK4_to_FK5",
            "ICRS_to_Galactic"]
 
 
-class BaseCelestialMultiLink(MultiLink):
+class BaseCelestialMultiLink(FixedMethodsMultiLink):
 
     display = None
     frame_in = None
     frame_out = None
 
-    def __init__(self, in_lon, in_lat, out_lon, out_lat):
-        super(BaseCelestialMultiLink, self).__init__(cids1=[in_lon, in_lat], cids2=[out_lon, out_lat],
-                                                     forwards=self.forward, backwards=self.backward)
-
-    def forward(self, in_lon, in_lat):
+    def forwards(self, in_lon, in_lat):
         cin = self.frame_in(in_lon * u.deg, in_lat * u.deg)
         cout = cin.transform_to(self.frame_out)
         return cout.spherical.lon.degree, cout.spherical.lat.degree
 
-    def backward(self, out_lon, out_lat):
+    def backwards(self, out_lon, out_lat):
         cout = self.frame_out(out_lon * u.deg, out_lat * u.deg)
         cin = cout.transform_to(self.frame_in)
         return cin.spherical.lon.degree, cin.spherical.lat.degree
 
-    def __gluestate__(self, context):
-        state = {}
-        state['in_lon'] = context.id(self._cids_left[0])
-        state['in_lat'] = context.id(self._cids_left[1])
-        state['out_lon'] = context.id(self._cids_right[0])
-        state['out_lat'] = context.id(self._cids_right[1])
-        return state
 
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        self = cls(context.object(rec['in_lon']),
-                   context.object(rec['in_lat']),
-                   context.object(rec['out_lon']),
-                   context.object(rec['out_lat']))
-        return self
-
-
-@link_helper('Link Galactic and FK5 (J2000) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk5)', 'dec (fk5)'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class Galactic_to_FK5(BaseCelestialMultiLink):
+    description = 'Link Galactic and FK5 (J2000) Equatorial coordinates'
+    labels1 = 'l', 'b'
+    labels2 = 'ra (fk5)', 'dec (fk5)'
     display = "Galactic <-> FK5 (J2000)"
     frame_in = Galactic
     frame_out = FK5
 
 
-@link_helper('Link FK4 (B1950) and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (fk4)', 'dec (fk4)', 'ra (fk5)', 'dec (fk5)'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class FK4_to_FK5(BaseCelestialMultiLink):
+    description = 'Link FK4 (B1950) and FK5 (J2000) Equatorial coordinates'
+    labels1 = 'ra (fk4)', 'dec (fk4)'
+    labels2 = 'ra (fk5)', 'dec (fk5)'
     display = "FK4 (B1950) <-> FK5 (J2000)"
     frame_in = FK4
     frame_out = FK5
 
 
-@link_helper('Link ICRS and FK5 (J2000) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk5)', 'dec (fk5)'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class ICRS_to_FK5(BaseCelestialMultiLink):
+    description = 'Link ICRS and FK5 (J2000) Equatorial coordinates'
+    labels1 = 'ra (fk4)', 'dec (fk4)'
+    labels2 = 'ra (icrs)', 'dec (icrs)'
     display = "ICRS <-> FK5 (J2000)"
     frame_in = ICRS
     frame_out = FK5
 
 
-@link_helper('Link Galactic and FK4 (B1950) Equatorial coordinates',
-             input_labels=['l', 'b', 'ra (fk4)', 'dec (fk4)'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class Galactic_to_FK4(BaseCelestialMultiLink):
+    description = 'Link Galactic and FK4 (B1950) Equatorial coordinates'
+    labels1 = 'l', 'b'
+    labels2 = 'ra (fk4)', 'dec (fk4)'
     display = "Galactic <-> FK4 (B1950)"
     frame_in = Galactic
     frame_out = FK4
 
 
-@link_helper('Link ICRS and FK4 (B1950) Equatorial coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'ra (fk4)', 'dec (fk4)'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class ICRS_to_FK4(BaseCelestialMultiLink):
+    description = 'Link ICRS and FK4 (B1950) Equatorial coordinates'
+    labels1 = 'ra (icrs)', 'dec (icrs)'
+    labels2 = 'ra (fk4)', 'dec (fk4)'
     display = "ICRS <-> FK4 (B1950)"
     frame_in = ICRS
     frame_out = FK4
 
 
-@link_helper('Link ICRS and Galactic coordinates',
-             input_labels=['ra (icrs)', 'dec (icrs)', 'l', 'b'],
-             category='Astronomy')
+@link_helper(category='Astronomy')
 class ICRS_to_Galactic(BaseCelestialMultiLink):
+    description = 'Link ICRS and Galactic coordinates'
+    labels1 = 'ra (icrs)', 'dec (icrs)'
+    labels2 = 'l', 'b'
     display = "ICRS <-> Galactic"
     frame_in = ICRS
     frame_out = Galactic
 
 
-@link_helper('Link 3D Galactocentric and Galactic coordinates',
-             input_labels=['x (kpc)', 'y (kpc)', 'z (kpc)', 'l (deg)', 'b (deg)', 'distance (kpc)'],
-             category='Astronomy')
-class GalactocentricToGalactic(MultiLink):
+@link_helper(category='Astronomy')
+class GalactocentricToGalactic(FixedMethodsMultiLink):
 
+    description = 'Link 3D Galactocentric and Galactic coordinates'
+    labels1 = 'x (kpc)', 'y (kpc)', 'z (kpc)'
+    labels2 = 'l (deg)', 'b (deg)', 'distance (kpc)'
     display = "3D Galactocentric <-> Galactic"
 
     def __init__(self, x_id, y_id, z_id, l_id, b_id, d_id):
@@ -120,10 +107,10 @@ class GalactocentricToGalactic(MultiLink):
         self.create_links([x_id, y_id, z_id], [l_id, b_id, d_id],
                           self.forward, self.backward)
 
-    def forward(self, x_kpc, y_kpc, z_kpc):
+    def forwards(self, x_kpc, y_kpc, z_kpc):
         gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
         return gal.l.degree, gal.b.degree, gal.distance.to(u.kpc).value
 
-    def backward(self, l_deg, b_deg, d_kpc):
+    def backwards(self, l_deg, b_deg, d_kpc):
         gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric)
         return gal.x.to(u.kpc).value, gal.y.to(u.kpc).value, gal.z.to(u.kpc).value

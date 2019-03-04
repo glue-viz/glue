@@ -120,7 +120,7 @@ class LinkCollection(object):
         return self
 
 
-class MultiLink(LinkCollection):
+class FixedMethodsMultiLink(LinkCollection):
     """
     A link collection that is generated on-the-fly based on forward and
     backward transformation functions and lists of input/output component IDs.
@@ -135,13 +135,6 @@ class MultiLink(LinkCollection):
         The list of component IDs in the first dataset that are used in the links
     cids2 : list of `~glue.core.component_id.ComponentID`
         The list of component IDs in the second dataset that are used in the links
-    forwards : function
-        Function that maps ``cids1`` to  ``cids2``. This should have
-        the signature ``cids2 = forwards(*cids1)``, and is assumed
-        to return a tuple. If not specifed, no forward links are calculated.
-    backwards : function
-        The inverse function to ``forwards``. If not specifed, no forward links
-        are calculated.
     labels1 : list of str, optional
         The human-readable names for the inputs to the ``forwards`` function.
         This is used for example in the graphical link editor. If not specified,
@@ -159,59 +152,52 @@ class MultiLink(LinkCollection):
                  forwards=None, backwards=None,
                  labels1=None, labels2=None, description=None):
 
-        super(MultiLink, self).__init__()
-
-        self.data1 = data1 or cids1[0].parent
-        self.data2 = data2 or cids2[0].parent
+        super(FixedMethodsMultiLink, self).__init__(data1=data1 or cids1[0].parent,
+                                                    data2=data2 or cids2[0].parent)
 
         self.cids1 = cids1
         self.cids2 = cids2
 
-        self.forwards = forwards
-        self.backwards = backwards
-
         self.description = description or ''
 
-        if forwards is None and backwards is None:
-            raise TypeError("Must supply either forwards or backwards")
-
-        if forwards is not None:
-            if len(cids2) == 1:
-                self.append(ComponentLink(cids1, cids2[0], forwards))
-            else:
-                for i, r in enumerate(cids2):
-                    func = PartialResult(forwards, i, name_prefix=self.__class__.__name__ + ".")
-                    self.append(ComponentLink(cids1, r, func))
-
-        if backwards is not None:
-            if len(cids1) == 1:
-                self.append(ComponentLink(cids2, cids1[0], backwards))
-            else:
-                for i, l in enumerate(cids1):
-                    func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
-                    self.append(ComponentLink(cids2, l, func))
-
-        if forwards is None:
-            self.labels1 = []
+        if len(cids2) == 1:
+            self.append(ComponentLink(cids1, cids2[0], forwards))
         else:
-            if labels1 is None:
-                if isinstance(forwards, types.MethodType):
-                    self.labels1 = getfullargspec(forwards)[0][1:]
-                else:
-                    self.labels1 = getfullargspec(forwards)[0]
-            else:
-                self.labels1 = labels1
+            for i, r in enumerate(cids2):
+                func = PartialResult(self.forwards, i, name_prefix=self.__class__.__name__ + ".")
+                self.append(ComponentLink(cids1, r, func))
 
-        if backwards is None:
-            self.labels2 = []
+        if len(cids1) == 1:
+            self.append(ComponentLink(cids2, cids1[0], backwards))
         else:
-            if labels2 is None:
-                if isinstance(backwards, types.MethodType):
-                    self.labels2 = getfullargspec(backwards)[0][1:]
-                else:
-                    self.labels2 = getfullargspec(backwards)[0]
+            for i, l in enumerate(cids1):
+                func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
+                self.append(ComponentLink(cids2, l, func))
+
+        print(self, labels1, labels2, self.forwards)
+
+        if labels1 is None:
+            if isinstance(self.forwards, types.MethodType):
+                labels1 = getfullargspec(self.forwards)[0][1:]
             else:
-                self.labels2 = labels2
+                labels1 = getfullargspec(self.forwards)[0]
+
+        if labels2 is None:
+            if isinstance(self.backwards, types.MethodType):
+                labels2 = getfullargspec(self.backwards)[0][1:]
+            else:
+                labels2 = getfullargspec(self.backwards)[0]
+
+        print(self, labels1, labels2)
+
+        self.labels1 = labels1
+        self.labels2 = labels2
+
+    def forwards(self):
+        raise NotImplementedError()
+
+    def backwards(self):
+        raise NotImplementedError()
 
     def __gluestate__(self, context):
         state = {}
@@ -219,8 +205,6 @@ class MultiLink(LinkCollection):
         state['data2'] = context.id(self.data2)
         state['cids1'] = context.id(self.cids1)
         state['cids2'] = context.id(self.cids2)
-        state['forwards'] = context.id(self.forwards)
-        state['backwards'] = context.id(self.backwards)
         return state
 
     @classmethod
@@ -228,9 +212,60 @@ class MultiLink(LinkCollection):
         self = cls(data1=context.object(rec.get('data1', None)),
                    data2=context.object(rec.get('data2', None)),
                    cids1=context.object(rec['cids1']),
-                   cids2=context.object(rec['cids2']),
-                   forwards=context.object(rec['forwards']),
-                   backwards=context.object(rec['backwards']))
+                   cids2=context.object(rec['cids2']))
+        return self
+
+
+class MultiLink(FixedMethodsMultiLink):
+    """
+    forwards : function
+        Function that maps ``cids1`` to  ``cids2``. This should have
+        the signature ``cids2 = forwards(*cids1)``, and is assumed
+        to return a tuple. If not specifed, no forward links are calculated.
+    backwards : function
+        The inverse function to ``forwards``. If not specifed, no forward links
+        are calculated.
+    """
+
+    def __init__(self, forwards=None, backwards=None, labels1=None, labels2=None, **kwargs):
+
+        if forwards is None and backwards is None:
+            raise TypeError("Must supply either forwards or backwards")
+
+        self._forwards = forwards
+        self._backwards = backwards
+
+        if labels1 is None:
+            if isinstance(forwards, types.MethodType):
+                labels1 = getfullargspec(forwards)[0][1:]
+            else:
+                labels1 = getfullargspec(forwards)[0]
+
+        if labels2 is None:
+            if isinstance(backwards, types.MethodType):
+                labels2 = getfullargspec(backwards)[0][1:]
+            else:
+                labels2 = getfullargspec(backwards)[0]
+
+        super(MultiLink, self).__init__(labels1=labels1, labels2=labels2, **kwargs)
+
+    def forwards(self, *args):
+        return self._forwards(*args)
+
+    def backwards(self, *args):
+        return self._backwards(*args)
+
+    def __gluestate__(self, context):
+        state = super(MultiLink, self).__gluestate__(context)
+        state['forwards'] = context.id(self._forwards)
+        state['backwards'] = context.id(self._backwards)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = super(MultiLink, cls).__setgluestate__(rec, context)
+        self._forwards = context.object(rec['forwards'])
+        self._backwards = context.object(rec['backwards'])
         return self
 
 
@@ -329,3 +364,20 @@ class LinkAligned(LinkCollection):
         for j in range(data1.ndim):
             self.extend(LinkSame(data1.pixel_component_ids[j],
                                  data2.pixel_component_ids[j]))
+
+
+class FunctionalLinkCollection(LinkCollection):
+
+    def __init__(self, data1=None, data2=None, cids=None,
+                 function=None, description=None, labels=None):
+
+        super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2)
+
+        self.cids = cids
+        self.function = function
+        self.description = description or ''
+        self.labels = labels or getfullargspec(function)[0]
+
+        self.extend(self.function(*self.cids))
+
+    # TODO: implement state
