@@ -80,10 +80,32 @@ class LinkCollection(object):
         The initial links to add to the collection.
     """
 
-    def __init__(self, data1=None, data2=None, links=None):
+    display = ''
+    labels1 = []
+    labels2 = []
+    description = ''
+
+    def __init__(self, data1=None, data2=None,
+                 cids1=None, cids2=None,
+                 labels1=None, labels2=None,
+                 description=None,
+                 links=None):
         self._links = links or []
-        self.data1 = data1
-        self.data2 = data2
+
+        self.data1 = data1 or cids1[0].parent
+        self.data2 = data2 or cids2[0].parent
+
+        self.cids1 = cids1
+        self.cids2 = cids2
+
+        if labels1 is not None:
+            self.labels1 = labels1
+
+        if labels2 is not None:
+            self.labels2 = labels2
+
+        if description is not None:
+            self.description = description
 
     def append(self, link):
         self._links.append(link)
@@ -111,11 +133,16 @@ class LinkCollection(object):
         state = {}
         state['data1'] = context.id(self.data1)
         state['data2'] = context.id(self.data2)
+        state['cids1'] = context.id(self.cids1)
+        state['cids2'] = context.id(self.cids2)
+        state['labels1'] = context.id(self.cids2)
+        state['labels2'] = context.id(self.labels2)
         state['values'] = context.id(self._links)
         return state
 
     @classmethod
     def __setgluestate__(cls, rec, context):
+        # TODO: update this
         self = cls(context.object(rec['values']))
         return self
 
@@ -152,13 +179,22 @@ class FixedMethodsMultiLink(LinkCollection):
                  forwards=None, backwards=None,
                  labels1=None, labels2=None, description=None):
 
-        super(FixedMethodsMultiLink, self).__init__(data1=data1 or cids1[0].parent,
-                                                    data2=data2 or cids2[0].parent)
+        if labels1 is None:
+            if isinstance(self.forwards, types.MethodType):
+                labels1 = getfullargspec(self.forwards)[0][1:]
+            else:
+                labels1 = getfullargspec(self.forwards)[0]
 
-        self.cids1 = cids1
-        self.cids2 = cids2
+        if labels2 is None:
+            if isinstance(self.backwards, types.MethodType):
+                labels2 = getfullargspec(self.backwards)[0][1:]
+            else:
+                labels2 = getfullargspec(self.backwards)[0]
 
-        self.description = description or ''
+        super(FixedMethodsMultiLink, self).__init__(data1=data1, data2=data2,
+                                                    cids1=cids1, cids2=cids2,
+                                                    labels1=labels1, labels2=labels2,
+                                                    description=description)
 
         if len(cids2) == 1:
             self.append(ComponentLink(cids1, cids2[0], forwards))
@@ -173,25 +209,6 @@ class FixedMethodsMultiLink(LinkCollection):
             for i, l in enumerate(cids1):
                 func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
                 self.append(ComponentLink(cids2, l, func))
-
-        print(self, labels1, labels2, self.forwards)
-
-        if labels1 is None:
-            if isinstance(self.forwards, types.MethodType):
-                labels1 = getfullargspec(self.forwards)[0][1:]
-            else:
-                labels1 = getfullargspec(self.forwards)[0]
-
-        if labels2 is None:
-            if isinstance(self.backwards, types.MethodType):
-                labels2 = getfullargspec(self.backwards)[0][1:]
-            else:
-                labels2 = getfullargspec(self.backwards)[0]
-
-        print(self, labels1, labels2)
-
-        self.labels1 = labels1
-        self.labels2 = labels2
 
     def forwards(self):
         raise NotImplementedError()
@@ -366,18 +383,17 @@ class LinkAligned(LinkCollection):
                                  data2.pixel_component_ids[j]))
 
 
-class FunctionalLinkCollection(LinkCollection):
+def functional_link_collection(function):
 
-    def __init__(self, data1=None, data2=None, cids=None,
-                 function=None, description=None, labels=None):
+    class FunctionalLinkCollection(LinkCollection):
 
-        super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2)
+        def __init__(self, data1=None, data2=None,
+                     cids1=None, cids2=None,
+                     labels1=None, labels2=None, description=None):
+            super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2,
+                                                           cids1=cids1, cids2=cids2,
+                                                           labels1=labels1, labels2=labels2,
+                                                           description=description)
+            self.extend(function(*cids1, *cids2))
 
-        self.cids = cids
-        self.function = function
-        self.description = description or ''
-        self.labels = labels or getfullargspec(function)[0]
-
-        self.extend(self.function(*self.cids))
-
-    # TODO: implement state
+    return FunctionalLinkCollection

@@ -8,11 +8,10 @@ except ImportError:  # Python 2.7
 # from glue.config import link_function, link_helper
 
 from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import MultiLink, FixedMethodsMultiLink
+from glue.core.link_helpers import LinkCollection
 from glue.core.state_objects import State
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
-
 
 # NOTES
 # At the moment the main issue with link helpers is that they return a function
@@ -87,10 +86,7 @@ class LinkEditorState(State):
                                              description=function_or_helper.info)
         else:
             link = EditableLinkFunctionState(function_or_helper.helper,
-                                             data_in=self.data1, data_out=self.data2,
-                                             input_names=function_or_helper.labels1,
-                                             output_names=function_or_helper.labels2,
-                                             description=function_or_helper.info)
+                                             data_in=self.data1, data_out=self.data2)
 
         self._all_links.append(link)
         with delay_callback(self, 'links'):
@@ -115,9 +111,14 @@ class EditableLinkFunctionState(State):
         if isinstance(function, ComponentLink):
             input_names = function.input_names
             output_names = [function.output_name]
-        elif isinstance(function, FixedMethodsMultiLink):
+        elif isinstance(function, LinkCollection):
             input_names = function.labels1
             output_names = function.labels2
+            description = function.description
+        elif type(function) is type and issubclass(function, LinkCollection):
+            input_names = function.labels1
+            output_names = function.labels2
+            description = function.description
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass
@@ -153,7 +154,7 @@ class EditableLinkFunctionState(State):
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
             description = function.description
-        elif isinstance(function, FixedMethodsMultiLink):
+        elif isinstance(function, LinkCollection):
             self.multi_link = function
             cids_in = function.cids1
             cids_out = function.cids2

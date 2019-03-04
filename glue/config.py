@@ -686,18 +686,15 @@ class LinkHelperRegistry(Registry):
             return [ComponentLink([degree], arcsecond, using=lambda d: d*3600),
                     ComponentLink([arcsecond], degree, using=lambda a: a/3600)]
     """
-    item = namedtuple('LinkHelper', 'helper info labels1 labels2 category')
+    item = namedtuple('LinkHelper', 'helper category')
 
     def __call__(self, info=None, input_labels=None, category='General'):
         def adder(func):
-            if hasattr(func, 'labels1'):
-                labels1 = func.labels1
-                labels2 = func.labels2
-                info = func.description
-            else:
-                labels1 = input_labels
-                labels2 = None
-            self.add(self.item(func, info, labels1, labels2, category))
+            from glue.core.link_helpers import LinkCollection, functional_link_collection
+            if not issubclass(func, LinkCollection):
+                func = functional_link_collection(func, description=info,
+                                                  labels1=input_labels, labels2=[])
+            self.add(self.item(func, category))
             return func
         return adder
 
