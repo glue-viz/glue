@@ -115,8 +115,8 @@ class EditableLinkFunctionState(State):
             input_names = function.input_names
             output_names = [function.output_name]
         if isinstance(function, MultiLink):
-            input_names = function.labels_left
-            output_names = function.labels_right
+            input_names = function.labels1
+            output_names = function.labels2
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass
@@ -148,8 +148,8 @@ class EditableLinkFunctionState(State):
             description = function.description
         elif isinstance(function, MultiLink):
             self.multi_link = function
-            cids_in = function.cids_left
-            cids_out = function.cids_right
+            cids_in = function.cids1
+            cids_out = function.cids2
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
             description = function.description

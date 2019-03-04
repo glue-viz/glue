@@ -67,9 +67,23 @@ def _toid(arg):
 
 
 class LinkCollection(object):
+    """
+    A collection of links between two datasets.
 
-    def __init__(self, links=None):
-        self._links = []
+    Parameters
+    ----------
+    data1 : `~glue.core.data.Data`
+        The first dataset being linked
+    data2 : `~glue.core.data.Data`
+        The second dataset being linked
+    links : list
+        The initial links to add to the collection.
+    """
+
+    def __init__(self, data1=None, data2=None, links=None):
+        self._links = links or []
+        self.data1 = data1
+        self.data2 = data2
 
     def append(self, link):
         self._links.append(link)
@@ -93,17 +107,10 @@ class LinkCollection(object):
                 return True
         return False
 
-    def get_from_ids(self):
-        from_ids = []
-        for link in self:
-            from_ids.extend(link.get_from_ids())
-        return list(set(from_ids))
-
-    def get_to_ids(self):
-        return [link.get_to_id() for link in self]
-
     def __gluestate__(self, context):
         state = {}
+        state['data1'] = context.id(self.data1)
+        state['data2'] = context.id(self.data2)
         state['values'] = context.id(self._links)
         return state
 
@@ -113,18 +120,145 @@ class LinkCollection(object):
         return self
 
 
-class LinkSame(LinkCollection):
-
+class MultiLink(LinkCollection):
     """
-    Return ComponentLinks to represent that two componentIDs
-    describe the same piece of information
+    A link collection that is generated on-the-fly based on forward and
+    backward transformation functions and lists of input/output component IDs.
+
+    Parameters
+    ----------
+    data1 : `~glue.core.data.Data`
+        The first dataset being linked
+    data2 : `~glue.core.data.Data`
+        The second dataset being linked
+    cids1 : list of `~glue.core.component_id.ComponentID`
+        The list of component IDs in the first dataset that are used in the links
+    cids2 : list of `~glue.core.component_id.ComponentID`
+        The list of component IDs in the second dataset that are used in the links
+    forwards : function
+        Function that maps ``cids1`` to  ``cids2``. This should have
+        the signature ``cids2 = forwards(*cids1)``, and is assumed
+        to return a tuple. If not specifed, no forward links are calculated.
+    backwards : function
+        The inverse function to ``forwards``. If not specifed, no forward links
+        are calculated.
+    labels1 : list of str, optional
+        The human-readable names for the inputs to the ``forwards`` function.
+        This is used for example in the graphical link editor. If not specified,
+        the names of the arguments to ``forwards`` are used.
+    labels2 : list of str, optional
+        The human-readable names for the inputs to the ``backwards`` function.
+        This is used for example in the graphical link editor. If not specified,
+        the names of the arguments to ``backwards`` are used.
+    description : str, optional
+        A human-readable description of the link.
     """
 
-    def __init__(self, cid1, cid2):
-        super(LinkSame, self).__init__()
+    def __init__(self, data1=None, data2=None,
+                 cids1=None, cids2=None,
+                 forwards=None, backwards=None,
+                 labels1=None, labels2=None, description=None):
+
+        super(MultiLink, self).__init__()
+
+        self.data1 = data1 or cids1[0].parent
+        self.data2 = data2 or cids2[0].parent
+
+        self.cids1 = cids1
+        self.cids2 = cids2
+
+        self.forwards = forwards
+        self.backwards = backwards
+
+        self.description = description or ''
+
+        if forwards is None and backwards is None:
+            raise TypeError("Must supply either forwards or backwards")
+
+        if forwards is not None:
+            if len(cids2) == 1:
+                self.append(ComponentLink(cids1, cids2[0], forwards))
+            else:
+                for i, r in enumerate(cids2):
+                    func = PartialResult(forwards, i, name_prefix=self.__class__.__name__ + ".")
+                    self.append(ComponentLink(cids1, r, func))
+
+        if backwards is not None:
+            if len(cids1) == 1:
+                self.append(ComponentLink(cids2, cids1[0], backwards))
+            else:
+                for i, l in enumerate(cids1):
+                    func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
+                    self.append(ComponentLink(cids2, l, func))
+
+        if forwards is None:
+            self.labels1 = []
+        else:
+            if labels1 is None:
+                if isinstance(forwards, types.MethodType):
+                    self.labels1 = getfullargspec(forwards)[0][1:]
+                else:
+                    self.labels1 = getfullargspec(forwards)[0]
+            else:
+                self.labels1 = labels1
+
+        if backwards is None:
+            self.labels2 = []
+        else:
+            if labels2 is None:
+                if isinstance(backwards, types.MethodType):
+                    self.labels2 = getfullargspec(backwards)[0][1:]
+                else:
+                    self.labels2 = getfullargspec(backwards)[0]
+            else:
+                self.labels2 = labels2
+
+    def __gluestate__(self, context):
+        state = {}
+        state['data1'] = context.id(self.data1)
+        state['data2'] = context.id(self.data2)
+        state['cids1'] = context.id(self.cids1)
+        state['cids2'] = context.id(self.cids2)
+        state['forwards'] = context.id(self.forwards)
+        state['backwards'] = context.id(self.backwards)
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(data1=context.object(rec.get('data1', None)),
+                   data2=context.object(rec.get('data2', None)),
+                   cids1=context.object(rec['cids1']),
+                   cids2=context.object(rec['cids2']),
+                   forwards=context.object(rec['forwards']),
+                   backwards=context.object(rec['backwards']))
+        return self
+
+
+class LinkSame(MultiLink):
+    """
+    A bi-directional identity link between two components.
+    """
+
+    def __init__(self, cid1=None, cid2=None, **kwargs):
+
+        if cid1 is None:
+            cid1 = kwargs['cids1']
+        else:
+            kwargs['data1'] = cid1.parent
+            kwargs['cids1'] = [cid1]
+            kwargs['forwards'] = identity
+
+        if cid2 is None:
+            cid2 = kwargs['cids2']
+        else:
+            kwargs['data2'] = cid2.parent
+            kwargs['cids2'] = [cid2]
+            kwargs['backwards'] = identity
+
         self._cid1 = cid1
         self._cid2 = cid2
-        self.append(ComponentLink([_toid(cid1)], _toid(cid2)))
+
+        super(LinkSame, self).__init__(**kwargs)
 
     def __gluestate__(self, context):
         state = {}
@@ -138,9 +272,9 @@ class LinkSame(LinkCollection):
         return self
 
 
-class LinkTwoWay(LinkCollection):
+class LinkTwoWay(MultiLink):
 
-    def __init__(self, cid1, cid2, forwards, backwards):
+    def __init__(self, cid1=None, cid2=None, forwards=None, backwards=None, **kwargs):
         """ Return 2 links that connect input ComponentIDs in both directions
 
         :param cid1: First ComponentID to link
@@ -151,13 +285,20 @@ class LinkTwoWay(LinkCollection):
         :returns: Two :class:`~glue.core.component_link.ComponentLink`
                   instances, specifying the link in each direction
         """
-        super(LinkTwoWay, self).__init__()
-        self._cid1 = cid1
-        self._cid2 = cid2
-        self.forwards = forwards
-        self.backwards = backwards
-        self.append(ComponentLink([_toid(cid1)], _toid(cid2), forwards))
-        self.append(ComponentLink([_toid(cid2)], _toid(cid1), backwards))
+
+        if cid1 is None:
+            cid1 = kwargs['cids1']
+        else:
+            kwargs['data1'] = cid1.parent
+            kwargs['cids1'] = [cid1]
+
+        if cid2 is None:
+            cid2 = kwargs['cids2']
+        else:
+            kwargs['data2'] = cid2.parent
+            kwargs['cids2'] = [cid2]
+
+        super(LinkTwoWay, self).__init__(forwards=forwards, backwards=backwards, **kwargs)
 
     def __gluestate__(self, context):
         state = {}
@@ -176,118 +317,15 @@ class LinkTwoWay(LinkCollection):
         return self
 
 
-class MultiLink(LinkCollection):
-    """
-    Compute all the ComponentLinks to link groups of ComponentIDs
-
-    :param cids_left: first collection of ComponentIDs
-    :param cids_right: second collection of ComponentIDs
-    :param forwards:
-        Function that maps ``cids_left -> cids_right``. Assumed to have
-        signature ``cids_right = forwards(*cids_left)``, and assumed
-        to return a tuple. If not provided, the relevant ComponentIDs
-        will not be generated
-    :param backwards:
-       The inverse function to forwards. If not provided, the relevant
-       ComponentIDs will not be generated
-
-    :returns: a collection of :class:`~glue.core.component_link.ComponentLink`
-              objects.
-    """
-
-    def __init__(self, cids_left, cids_right, forwards=None, backwards=None,
-                 labels_left=None, labels_right=None, description=None):
-
-        super(MultiLink, self).__init__()
-
-        self.cids_left = cids_left
-        self.cids_right = cids_right
-        self.forwards = forwards
-        self.backwards = backwards
-        self.description = description or ''
-
-        if forwards is None and backwards is None:
-            raise TypeError("Must supply either forwards or backwards")
-
-        if forwards is not None:
-            for i, r in enumerate(cids_right):
-                func = PartialResult(forwards, i, name_prefix=self.__class__.__name__ + ".")
-                self.append(ComponentLink(cids_left, r, func))
-
-        if backwards is not None:
-            for i, l in enumerate(cids_left):
-                func = PartialResult(backwards, i, name_prefix=self.__class__.__name__ + ".")
-                self.append(ComponentLink(cids_right, l, func))
-
-        if forwards is None:
-            self.labels_left = []
-        else:
-            if labels_left is None:
-                if isinstance(forwards, types.MethodType):
-                    self.labels_left = getfullargspec(forwards)[0][1:]
-                else:
-                    self.labels_left = getfullargspec(forwards)[0]
-            else:
-                self.labels_left = labels_left
-
-        if backwards is None:
-            self.labels_right = []
-        else:
-            if labels_right is None:
-                if isinstance(backwards, types.MethodType):
-                    self.labels_right = getfullargspec(backwards)[0][1:]
-                else:
-                    self.labels_right = getfullargspec(backwards)[0]
-            else:
-                self.labels_right = labels_right
-
-    def __gluestate__(self, context):
-        state = {}
-        state['cids_left'] = context.id(self.cids_left)
-        state['cids_right'] = context.id(self.cids_right)
-        state['forwards'] = context.id(self.forwards)
-        state['backwards'] = context.id(self.backwards)
-        return state
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        self = cls(context.object(rec['cids_left']),
-                   context.object(rec['cids_right']),
-                   context.object(rec['forwards']),
-                   context.object(rec['backwards']))
-        return self
-
-
 class LinkAligned(LinkCollection):
 
     """Compute all the links to specify that the input data are pixel-aligned.
-
-    :param data: An iterable of :class:`~glue.core.data.Data` instances
-                 that are aligned at the pixel level. They must be the
-                 same shape.
     """
 
-    def __init__(self, data):
-        super(LinkAligned, self).__init__()
-        shape = data[0].shape
-        ndim = data[0].ndim
-        for i, d in enumerate(data[1:]):
-            if d.shape != shape:
-                raise TypeError("Input data do not have the same shape")
-            for j in range(ndim):
-                self.extend(LinkSame(data[0].pixel_component_ids[j],
-                                     data[i + 1].pixel_component_ids[j]))
-
-
-class FunctionalMultiLink(MultiLink):
-
-    def __init__(self, cids, function, description=None, labels_left=None):
-
-        self.cids = cids
-        self.forwards = function
-        self.backwards = None
-        self.description = description or ''
-        self.labels_left = labels_left or getfullargspec(function)[0]
-        self.labels_right = []
-
-        self.extend(self.function(*self.cids))
+    def __init__(self, data1=None, data2=None):
+        super(LinkAligned, self).__init__(data1=data1, data2=data2)
+        if data1.shape != data2.shape:
+            raise TypeError("Input data do not have the same shape")
+        for j in range(data1.ndim):
+            self.extend(LinkSame(data1.pixel_component_ids[j],
+                                 data2.pixel_component_ids[j]))
