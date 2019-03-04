@@ -216,7 +216,9 @@ class BaseMultiLink(LinkCollection):
         links = []
 
         if self.forwards is not None:
-            if len(cids2) == 1:
+            if self.forwards is identity:
+                links.append(ComponentLink(cids1, cids2[0]))
+            elif len(cids2) == 1:
                 links.append(ComponentLink(cids1, cids2[0], self.forwards))
             else:
                 for i, r in enumerate(cids2):
@@ -224,7 +226,9 @@ class BaseMultiLink(LinkCollection):
                     links.append(ComponentLink(cids1, r, func))
 
         if self.backwards is not None:
-            if len(cids1) == 1:
+            if self.backwards is identity:
+                links.append(ComponentLink(cids2, cids1[0]))
+            elif len(cids1) == 1:
                 links.append(ComponentLink(cids2, cids1[0], self.backwards))
             else:
                 for i, l in enumerate(cids1):
@@ -309,6 +313,7 @@ class LinkSame(MultiLink):
             cid1 = _toid(cid1)
             kwargs['data1'] = cid1.parent
             kwargs['cids1'] = [cid1]
+            kwargs['labels1'] = 'x'
             kwargs['forwards'] = identity
 
         if cid2 is None:
@@ -317,7 +322,7 @@ class LinkSame(MultiLink):
             cid2 = _toid(cid2)
             kwargs['data2'] = cid2.parent
             kwargs['cids2'] = [cid2]
-            kwargs['backwards'] = identity
+            kwargs['labels2'] = 'y'
 
         self._cid1 = cid1
         self._cid2 = cid2
