@@ -108,6 +108,7 @@ class LinkEditor(QtWidgets.QDialog):
         # We update the link details panel on the right
 
         link_io = self._ui.link_io
+        link_details = self._ui.link_details
 
         for i in reversed(range(link_io.count())):
             item = link_io.itemAt(i)
@@ -124,7 +125,10 @@ class LinkEditor(QtWidgets.QDialog):
         link = self.state.links
 
         if link is None:
+            link_details.setText('')
             return
+
+        link_details.setText(link.description)
 
         index = 0
 

@@ -17,6 +17,9 @@
    <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
@@ -51,6 +54,9 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
      <item row="3" column="0">
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="2" column="2">
@@ -237,7 +243,14 @@
      <item row="3" column="2">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <layout class="QVBoxLayout" name="link_details"/>
+        <widget class="QLabel" name="link_details">
+         <property name="text">
+          <string>Details about the link</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QGridLayout" name="link_io">

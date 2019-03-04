@@ -83,7 +83,8 @@ class LinkEditorState(State):
             link = EditableLinkFunctionState(function_or_helper.function,
                                              data_in=self.data1, data_out=self.data2,
                                              output_names=function_or_helper.output_labels,
-                                             description=function_or_helper.info)
+                                             description=function_or_helper.info,
+                                             display=function_or_helper.function.__name__)
         else:
             link = EditableLinkFunctionState(function_or_helper.helper,
                                              data_in=self.data1, data_out=self.data2)
@@ -103,10 +104,12 @@ class EditableLinkFunctionState(State):
     function = CallbackProperty()
     data_in = CallbackProperty()
     data_out = CallbackProperty()
+    description = CallbackProperty()
+    display = CallbackProperty()
 
     def __new__(cls, function, data_in=None, data_out=None, cids_in=None,
                 cid_out=None, input_names=None, output_names=None,
-                description=None, helper=False):
+                display=None, description=None, helper=False):
 
         if isinstance(function, ComponentLink):
             input_names = function.input_names
@@ -142,7 +145,7 @@ class EditableLinkFunctionState(State):
 
     def __init__(self, function, data_in=None, data_out=None, cids_in=None,
                  cids_out=None, input_names=None, output_names=None,
-                 description=None, helper=False):
+                 display=None, description=None, helper=False):
 
         super(EditableLinkFunctionState, self).__init__()
 
@@ -153,17 +156,24 @@ class EditableLinkFunctionState(State):
             cids_out = function.get_to_ids()
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
-            description = function.description
+            self.display = self.function.__name__
+            self.description = function.description
         elif isinstance(function, LinkCollection):
             self.multi_link = function
             cids_in = function.cids1
             cids_out = function.cids2
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
-            description = function.description
+            self.display = function.display
+            self.description = function.description
+        elif type(function) is type and issubclass(function, LinkCollection):
+            self.display = function.display
+            self.description = function.description
         else:
             self.function = function
             self.inverse = None
+            self.display = display
+            self.description = description
 
         self.data_in = data_in
         self.data_out = data_out
@@ -185,6 +195,9 @@ class EditableLinkFunctionState(State):
         if cids_out is not None:
             for name, cid in zip(self.output_names, cids_out):
                 setattr(self, name, cid)
+
+    def __str__(self):
+        return self.display
 
     @property
     def link(self):
