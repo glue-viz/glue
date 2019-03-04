@@ -23,11 +23,11 @@ def mmap_info_to_array(info, mapping):
 
 
 def extract_hdf5_datasets(filename, memmap=True):
-    '''
+    """
     Recursive function that returns a dictionary with all the datasets found in
     an HDF5 file or group. `handle` should be an instance of h5py.highlevel.File
     or h5py.highlevel.Group.
-    '''
+    """
 
     import h5py
 

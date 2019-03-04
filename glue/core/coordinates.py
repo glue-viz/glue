@@ -12,9 +12,9 @@ __all__ = ['Coordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordina
 
 class Coordinates(object):
 
-    '''
+    """
     Base class for coordinate transformation
-    '''
+    """
 
     def __init__(self):
         pass
@@ -209,7 +209,7 @@ class Coordinates(object):
 
 class WCSCoordinates(Coordinates):
 
-    '''
+    """
     Class for coordinate transformation based on the WCS FITS
     standard.  This class does not take into account
     distortions.
@@ -227,7 +227,7 @@ class WCSCoordinates(Coordinates):
     * Calabretta & Greisen (2002), Astronomy and Astrophysics, 395, 1077
     * Greisen, Calabretta, Valdes & Allen (2006), Astronomy and
       Astrophysics, 446, 747
-    '''
+    """
 
     def __init__(self, header=None, wcs=None):
         super(WCSCoordinates, self).__init__()
