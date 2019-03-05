@@ -425,8 +425,6 @@ def connect_list_selection(instance, prop, widget, display=str):
             if len(choices) == 0:
                 return
 
-            # combo_model = widget.model()
-
             for index, (label, choice) in enumerate(zip(choice_labels, choices)):
 
                 item = QtWidgets.QListWidgetItem(label)

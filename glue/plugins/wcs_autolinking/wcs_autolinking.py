@@ -1,4 +1,4 @@
-from glue.config import autolinker
+from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 from glue.core.coordinates import WCSCoordinates
 from glue.utils import efficient_pixel_to_pixel
@@ -29,13 +29,17 @@ def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
     return pixel_cids1, pixel_cids2, forwards, backwards
 
 
+@link_helper(category='Astronomy')
 class WCSLink(MultiLink):
     """
     A collection of links that link the pixel components of two datasets via
     WCS transformations.
     """
 
-    description = 'WCS link'
+    display = 'WCS link'
+    description = ('This will automatically link the coordinates of the '
+                   'two datasets using the World Coordinate System (WCS) '
+                   'coordinates defined in the files.')
 
     def __init__(self, data1=None, data2=None):
 
@@ -92,9 +96,6 @@ class WCSLink(MultiLink):
 
         if pixel_cids1 is None:
             raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
-
-        self.labels1 = ['p{0}'.format(index) for index in range(len(pixel_cids1))]
-        self.labels2 = ['p{0}'.format(index) for index in range(len(pixel_cids1))]
 
         super(WCSLink, self).__init__(pixel_cids1, pixel_cids2,
                                       forwards=forwards, backwards=backwards)

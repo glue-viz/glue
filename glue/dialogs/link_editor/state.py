@@ -36,8 +36,9 @@ class LinkEditorState(State):
     data2 = SelectionCallbackProperty()
     current_link = SelectionCallbackProperty()
     link_type = SelectionCallbackProperty()
+    restrict_to_suggested = CallbackProperty(False)
 
-    def __init__(self, data_collection):
+    def __init__(self, data_collection, suggested_links=None):
 
         super(LinkEditorState, self).__init__()
 
@@ -48,6 +49,15 @@ class LinkEditorState(State):
 
         # Convert links to editable states
         links = [EditableLinkFunctionState(link) for link in data_collection.external_links]
+
+        # If supplied, also add suggested links and make sure we toggle the
+        # suggestion flag on the link state so that we can handle suggestions
+        # differently in the link viewer.
+        if suggested_links is not None:
+            for link in suggested_links:
+                link_state = EditableLinkFunctionState(link)
+                link_state.suggested = True
+                links.append(link_state)
 
         # Sort the links deterministically
         links = sorted(links, key=link_key)
@@ -63,23 +73,38 @@ class LinkEditorState(State):
 
         self.add_callback('data1', self.on_data_change)
         self.add_callback('data2', self.on_data_change)
+        self.add_callback('restrict_to_suggested', self.on_data_change)
 
-    def on_data_change(self, *args):
+        LinkEditorState.current_link.set_display_func(self, self._display_link)
+
+    @property
+    def visible_links(self):
 
         if self.data1 is None or self.data2 is None:
-            LinkEditorState.current_link.set_choices(self, [])
-            return
+            return []
 
         links = []
         for link in self.links:
-            if ((link.data_in is self.data1 and link.data_out is self.data2) or
-                    (link.data_in is self.data2 and link.data_out is self.data1)):
-                links.append(link)
+            if link.suggested or not self.restrict_to_suggested:
+                if ((link.data_in is self.data1 and link.data_out is self.data2) or
+                        (link.data_in is self.data2 and link.data_out is self.data1)):
+                    links.append(link)
 
+        return links
+
+    def on_data_change(self, *args):
+
+        links = self.visible_links
         with delay_callback(self, 'current_link'):
             LinkEditorState.current_link.set_choices(self, links)
             if len(links) > 0:
                 self.current_link = links[0]
+
+    def _display_link(self, link):
+        if link.suggested:
+            return str(link) + ' [Suggested]'
+        else:
+            return str(link)
 
     def new_link(self, function_or_helper):
 
@@ -114,6 +139,7 @@ class EditableLinkFunctionState(State):
     data_out = CallbackProperty()
     description = CallbackProperty()
     display = CallbackProperty()
+    suggested = CallbackProperty(False)
 
     def __new__(cls, function, data_in=None, data_out=None, cids_in=None,
                 cid_out=None, input_names=None, output_names=None,

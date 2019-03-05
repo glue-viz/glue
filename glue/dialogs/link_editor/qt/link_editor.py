@@ -54,13 +54,13 @@ class LinkMenu(QtWidgets.QMenu):
 
 class LinkEditor(QtWidgets.QDialog):
 
-    def __init__(self, data_collection, parent=None):
+    def __init__(self, data_collection, suggested_links=None, parent=None):
 
         super(LinkEditor, self).__init__(parent=parent)
 
         self._data_collection = data_collection
 
-        self.state = LinkEditorState(data_collection)
+        self.state = LinkEditorState(data_collection, suggested_links=suggested_links)
 
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
@@ -77,8 +77,8 @@ class LinkEditor(QtWidgets.QDialog):
         self.state.add_callback('data2', self._on_data_change)
         self._on_data_change()
 
-        self.state.add_callback('current_link', self._on_links_change)
-        self._on_links_change()
+        self.state.add_callback('current_link', self._on_current_link_change)
+        self._on_current_link_change()
 
     def _add_link(self, action):
         self.state.new_link(action.data().data)
@@ -93,7 +93,7 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.button_add_link.setEnabled(enabled)
         self._ui.button_remove_link.setEnabled(enabled)
 
-    def _on_links_change(self, *args):
+    def _on_current_link_change(self, *args):
 
         # We update the link details panel on the right
 
@@ -160,8 +160,8 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui.graph_widget.set_links(self.state.links)
 
     @classmethod
-    def update_links(cls, collection):
-        widget = cls(collection)
+    def update_links(cls, collection, suggested_links=None):
+        widget = cls(collection, suggested_links=suggested_links)
         isok = widget._ui.exec_()
         if isok:
             links = [link_state.link for link_state in widget._links]
