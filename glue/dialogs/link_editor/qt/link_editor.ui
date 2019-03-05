@@ -193,7 +193,7 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QListWidget" name="listsel_links"/>
+      <widget class="QListWidget" name="listsel_current_link"/>
      </item>
      <item row="0" column="2">
       <widget class="QLabel" name="label_7">

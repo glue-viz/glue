@@ -92,7 +92,7 @@ class TestLinkEditor:
 
         # At this point, there should be no links in the main list widget
         # and nothing on the right.
-        assert dialog._ui.listsel_links.count() == 0
+        assert dialog._ui.listsel_current_link.count() == 0
         assert dialog._ui.link_details.text() == ''
         assert dialog._ui.link_io.count() == 0
 
@@ -104,15 +104,15 @@ class TestLinkEditor:
 
         # Now there should be one link in the main list and content in the
         # right hand panel.
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
 
         # Let's change the current components for the link
-        dialog.state.links.x = self.data1.id['y']
-        dialog.state.links.y = self.data2.id['b']
+        dialog.state.current_link.x = self.data1.id['y']
+        dialog.state.current_link.y = self.data2.id['b']
 
         # and make sure the UI gets updated
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
@@ -125,7 +125,7 @@ class TestLinkEditor:
         app.processEvents()
 
         # and make sure the UI has updated
-        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.listsel_current_link.count() == 2
         assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
@@ -134,10 +134,10 @@ class TestLinkEditor:
         assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
 
         # Now switch back to the first link
-        dialog.state.links = type(dialog.state).links.get_choices(dialog.state)[0]
+        dialog.state.current_link = type(dialog.state).current_link.get_choices(dialog.state)[0]
 
         # and make sure the UI updates and has preserved the correct settings
-        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.listsel_current_link.count() == 2
         assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
@@ -149,7 +149,7 @@ class TestLinkEditor:
 
         # At this point there should be no links in the list
 
-        assert dialog._ui.listsel_links.count() == 0
+        assert dialog._ui.listsel_current_link.count() == 0
         assert dialog._ui.link_details.text() == ''
         assert non_empty_rows_count(dialog._ui.link_io) == 0
 
@@ -160,7 +160,7 @@ class TestLinkEditor:
         app.processEvents()
 
         # Now there should be one link in the main list
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
@@ -170,7 +170,7 @@ class TestLinkEditor:
         dialog.state.data1 = self.data1
 
         # And check the output is as before
-        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.listsel_current_link.count() == 2
         assert dialog._ui.link_details.text() == 'Link conceptually identical components'
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
@@ -183,7 +183,7 @@ class TestLinkEditor:
         app.processEvents()
 
         # We should now see the lengths/volume link
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
@@ -334,7 +334,7 @@ class TestLinkEditor:
         dialog.state.data1 = self.data1
         dialog.state.data2 = self.data2
 
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == ''
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
@@ -342,15 +342,15 @@ class TestLinkEditor:
 
         dialog.state.data1 = self.data3
 
-        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.listsel_current_link.count() == 2
         assert dialog._ui.link_details.text() == ''
         assert non_empty_rows_count(dialog._ui.link_io) == 5
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
         assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
 
-        dialog.state.links = type(dialog.state).links.get_choices(dialog.state)[1]
+        dialog.state.current_link = type(dialog.state).current_link.get_choices(dialog.state)[1]
 
-        assert dialog._ui.listsel_links.count() == 2
+        assert dialog._ui.listsel_current_link.count() == 2
         assert dialog._ui.link_details.text() == ''
         assert non_empty_rows_count(dialog._ui.link_io) == 6
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'a'
@@ -377,7 +377,7 @@ class TestLinkEditor:
         # Ensure that all events get processed
         app.processEvents()
 
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == 'Link ICRS and Galactic coordinates'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
@@ -397,12 +397,12 @@ class TestLinkEditor:
         dialog = LinkEditor(self.data_collection)
         dialog.show()
 
-        assert dialog._ui.listsel_links.count() == 0
+        assert dialog._ui.listsel_current_link.count() == 0
 
         dialog.state.data1 = self.data1
         dialog.state.data2 = self.data2
 
-        assert dialog._ui.listsel_links.count() == 1
+        assert dialog._ui.listsel_current_link.count() == 1
         assert dialog._ui.link_details.text() == 'Link Galactic and FK5 (J2000) Equatorial coordinates'
         assert non_empty_rows_count(dialog._ui.link_io) == 7
         assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'

@@ -34,7 +34,7 @@ class LinkEditorState(State):
 
     data1 = SelectionCallbackProperty()
     data2 = SelectionCallbackProperty()
-    links = SelectionCallbackProperty()
+    current_link = SelectionCallbackProperty()
     link_type = SelectionCallbackProperty()
 
     def __init__(self, data_collection):
@@ -67,7 +67,7 @@ class LinkEditorState(State):
     def on_data_change(self, *args):
 
         if self.data1 is None or self.data2 is None:
-            LinkEditorState.links.set_choices(self, [])
+            LinkEditorState.current_link.set_choices(self, [])
             return
 
         links = []
@@ -76,10 +76,10 @@ class LinkEditorState(State):
                     (link.data_in is self.data2 and link.data_out is self.data1)):
                 links.append(link)
 
-        with delay_callback(self, 'links'):
-            LinkEditorState.links.set_choices(self, links)
+        with delay_callback(self, 'current_link'):
+            LinkEditorState.current_link.set_choices(self, links)
             if len(links) > 0:
-                self.links = links[0]
+                self.current_link = links[0]
 
     def new_link(self, function_or_helper):
 
@@ -98,12 +98,12 @@ class LinkEditorState(State):
                                              data_in=self.data1, data_out=self.data2)
 
         self._all_links.append(link)
-        with delay_callback(self, 'links'):
+        with delay_callback(self, 'current_link'):
             self.on_data_change()
-            self.links = link
+            self.current_link = link
 
     def remove_link(self):
-        self._all_links.remove(self.links)
+        self._all_links.remove(self.current_link)
         self.on_data_change()
 
 

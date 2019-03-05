@@ -9,7 +9,7 @@ from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
-from glue.dialogs.link_editor.state import LinkEditorState, EditableLinkFunctionState
+from glue.dialogs.link_editor.state import LinkEditorState
 
 __all__ = ['LinkEditor', 'main']
 
@@ -77,7 +77,7 @@ class LinkEditor(QtWidgets.QDialog):
         self.state.add_callback('data2', self._on_data_change)
         self._on_data_change()
 
-        self.state.add_callback('links', self._on_links_change)
+        self.state.add_callback('current_link', self._on_links_change)
         self._on_links_change()
 
     def _add_link(self, action):
@@ -112,7 +112,7 @@ class LinkEditor(QtWidgets.QDialog):
         for row in range(link_io.rowCount()):
             link_io.setRowStretch(row, 0.5)
 
-        link = self.state.links
+        link = self.state.current_link
 
         if link is None:
             link_details.setText('')
