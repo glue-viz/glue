@@ -102,11 +102,6 @@ class GalactocentricToGalactic(BaseMultiLink):
     labels2 = 'l (deg)', 'b (deg)', 'distance (kpc)'
     display = "3D Galactocentric <-> Galactic"
 
-    def __init__(self, x_id, y_id, z_id, l_id, b_id, d_id):
-        super(GalactocentricToGalactic, self).__init__(x_id, y_id, z_id, l_id, b_id, d_id)
-        self.create_links([x_id, y_id, z_id], [l_id, b_id, d_id],
-                          self.forward, self.backward)
-
     def forwards(self, x_kpc, y_kpc, z_kpc):
         gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
         return gal.l.degree, gal.b.degree, gal.distance.to(u.kpc).value

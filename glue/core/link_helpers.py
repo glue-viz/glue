@@ -215,7 +215,7 @@ class BaseMultiLink(LinkCollection):
             else:
                 for i, r in enumerate(cids2):
                     func = PartialResult(self.forwards, i, name_prefix=self.__class__.__name__ + ".")
-                    links.append(ComponentLink(cids1, r, func))
+                    links.append(ComponentLink(cids1, r, using=func))
 
         if self.backwards is not None:
             if self.backwards is identity:
@@ -225,7 +225,7 @@ class BaseMultiLink(LinkCollection):
             else:
                 for i, l in enumerate(cids1):
                     func = PartialResult(self.backwards, i, name_prefix=self.__class__.__name__ + ".")
-                    links.append(ComponentLink(cids2, l, func))
+                    links.append(ComponentLink(cids2, l, using=func))
 
         self._links[:] = links
 
