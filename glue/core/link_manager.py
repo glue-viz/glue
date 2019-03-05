@@ -133,7 +133,7 @@ class LinkManager(HubListener):
     """
 
     def __init__(self, data_collection=None):
-        self._external_links = set()
+        self._external_links = []
         self.hub = None
         self.trigger = False
         self.data_collection = data_collection
@@ -182,8 +182,8 @@ class LinkManager(HubListener):
             if update_external:
                 self.update_externally_derivable_components()
         else:
-            if isinstance(link, LinkCollection) or link.inverse not in self._external_links:
-                self._external_links.add(link)
+            if link not in self._external_links and isinstance(link, LinkCollection) or link.inverse not in self._external_links:
+                self._external_links.append(link)
                 if update_external:
                     self.update_externally_derivable_components()
 
@@ -279,10 +279,10 @@ class LinkManager(HubListener):
 
     @property
     def external_links(self):
-        return list(self._external_links)
+        return self._external_links
 
     def clear(self):
-        self._external_links.clear()
+        self._external_links[:] = []
 
     def __contains__(self, item):
         return item in self._links
