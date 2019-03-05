@@ -27,11 +27,11 @@ class AutoLinkPreview(QtWidgets.QDialog):
 
         self._autolinker_name = autolinker_name
 
-        self.link_editor_widget = LinkEditorWidget(data_collection,
-                                                   suggested_links=links,
-                                                   parent=self)
+        self.link_widget = LinkEditorWidget(data_collection,
+                                            suggested_links=links,
+                                            parent=self)
 
-        self._ui.layout().insertWidget(2, self.link_editor_widget)
+        self._ui.layout().insertWidget(2, self.link_widget)
 
         self._ui.label.setText(DESCRIPTION.format(autolinker_name, len(links)))
 
@@ -49,7 +49,7 @@ class AutoLinkPreview(QtWidgets.QDialog):
 
         self._details_visible = visible
 
-        self.link_editor_widget.setVisible(visible)
+        self.link_widget.setVisible(visible)
 
         if visible:
             self._ui.button_details.setText('Hide Details')

@@ -171,11 +171,11 @@ class LinkEditor(QtWidgets.QDialog):
         self._ui = load_ui('link_editor_dialog.ui', self,
                            directory=os.path.dirname(__file__))
 
-        link_editor_widget = LinkEditorWidget(data_collection,
+        self.link_widget = LinkEditorWidget(data_collection,
                                               suggested_links=suggested_links,
                                               parent=self)
 
-        self._ui.layout().insertWidget(1, link_editor_widget)
+        self._ui.layout().insertWidget(1, self.link_widget)
 
     @classmethod
     def update_links(cls, collection, suggested_links=None):

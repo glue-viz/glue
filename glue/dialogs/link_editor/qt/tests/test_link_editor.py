@@ -22,8 +22,8 @@ def non_empty_rows_count(layout):
     return count
 
 
-def get_action(dialog, text):
-    for submenu in dialog._menu.children():
+def get_action(link_widget, text):
+    for submenu in link_widget._menu.children():
         if isinstance(submenu, QtWidgets.QMenu):
             for action in submenu.actions():
                 if action.text() == text:
@@ -45,21 +45,22 @@ class TestLinkEditor:
         # Make sure the dialog opens and closes and check default settings.
         dialog = LinkEditor(self.data_collection)
         dialog.show()
+        link_widget = dialog.link_widget
 
-        assert dialog.state.data1 is None
-        assert dialog.state.data2 is None
-        assert not dialog._ui.button_add_link.isEnabled()
-        assert not dialog._ui.button_remove_link.isEnabled()
+        assert link_widget.state.data1 is None
+        assert link_widget.state.data2 is None
+        assert not link_widget.button_add_link.isEnabled()
+        assert not link_widget.button_remove_link.isEnabled()
 
-        dialog.state.data1 = self.data2
+        link_widget.state.data1 = self.data2
 
-        assert not dialog._ui.button_add_link.isEnabled()
-        assert not dialog._ui.button_remove_link.isEnabled()
+        assert not link_widget.button_add_link.isEnabled()
+        assert not link_widget.button_remove_link.isEnabled()
 
-        dialog.state.data2 = self.data1
+        link_widget.state.data2 = self.data1
 
-        assert dialog._ui.button_add_link.isEnabled()
-        assert dialog._ui.button_remove_link.isEnabled()
+        assert link_widget.button_add_link.isEnabled()
+        assert link_widget.button_remove_link.isEnabled()
 
         dialog.accept()
 
@@ -69,10 +70,11 @@ class TestLinkEditor:
         self.data_collection.remove(self.data3)
         dialog = LinkEditor(self.data_collection)
         dialog.show()
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is self.data2
-        assert dialog._ui.button_add_link.isEnabled()
-        assert dialog._ui.button_remove_link.isEnabled()
+        link_widget = dialog.link_widget
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is self.data2
+        assert link_widget.button_add_link.isEnabled()
+        assert link_widget.button_remove_link.isEnabled()
         dialog.accept()
 
     def test_ui_behavior(self):
@@ -84,17 +86,19 @@ class TestLinkEditor:
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
-        dialog.state.data1 = self.data1
-        dialog.state.data2 = self.data2
+        link_widget = dialog.link_widget
 
-        add_identity_link = get_action(dialog, 'identity')
-        add_lengths_volume_link = get_action(dialog, 'lengths_to_volume')
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
+
+        add_identity_link = get_action(link_widget, 'identity')
+        add_lengths_volume_link = get_action(link_widget, 'lengths_to_volume')
 
         # At this point, there should be no links in the main list widget
         # and nothing on the right.
-        assert dialog._ui.listsel_current_link.count() == 0
-        assert dialog._ui.link_details.text() == ''
-        assert dialog._ui.link_io.count() == 0
+        assert link_widget.listsel_current_link.count() == 0
+        assert link_widget.link_details.text() == ''
+        assert link_widget.link_io.count() == 0
 
         # Let's add an identity link
         add_identity_link.trigger()
@@ -104,19 +108,19 @@ class TestLinkEditor:
 
         # Now there should be one link in the main list and content in the
         # right hand panel.
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == 'Link conceptually identical components'
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
 
         # Let's change the current components for the link
-        dialog.state.current_link.x = self.data1.id['y']
-        dialog.state.current_link.y = self.data2.id['b']
+        link_widget.state.current_link.x = self.data1.id['y']
+        link_widget.state.current_link.y = self.data2.id['b']
 
         # and make sure the UI gets updated
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
 
         # We now add another link of a different type
         add_lengths_volume_link.trigger()
@@ -125,33 +129,33 @@ class TestLinkEditor:
         app.processEvents()
 
         # and make sure the UI has updated
-        assert dialog._ui.listsel_current_link.count() == 2
-        assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
-        assert non_empty_rows_count(dialog._ui.link_io) == 7
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
-        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == 'Convert between linear measurements and volume'
+        assert non_empty_rows_count(link_widget.link_io) == 7
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
+        assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
 
         # Now switch back to the first link
-        dialog.state.current_link = type(dialog.state).current_link.get_choices(dialog.state)[0]
+        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[0]
 
         # and make sure the UI updates and has preserved the correct settings
-        assert dialog._ui.listsel_current_link.count() == 2
-        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == 'Link conceptually identical components'
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
 
         # Next up, we try changing the data
 
-        dialog.state.data1 = self.data3
+        link_widget.state.data1 = self.data3
 
         # At this point there should be no links in the list
 
-        assert dialog._ui.listsel_current_link.count() == 0
-        assert dialog._ui.link_details.text() == ''
-        assert non_empty_rows_count(dialog._ui.link_io) == 0
+        assert link_widget.listsel_current_link.count() == 0
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.link_io) == 0
 
         # Add another identity link
         add_identity_link.trigger()
@@ -160,36 +164,36 @@ class TestLinkEditor:
         app.processEvents()
 
         # Now there should be one link in the main list
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == 'Link conceptually identical components'
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'a'
 
         # Switch back to the original data
-        dialog.state.data1 = self.data1
+        link_widget.state.data1 = self.data1
 
         # And check the output is as before
-        assert dialog._ui.listsel_current_link.count() == 2
-        assert dialog._ui.link_details.text() == 'Link conceptually identical components'
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == 'Link conceptually identical components'
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'b'
 
         # Let's now remove this link
-        dialog._ui.button_remove_link.click()
+        link_widget.button_remove_link.click()
 
         # Ensure that all events get processed
         app.processEvents()
 
         # We should now see the lengths/volume link
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == 'Convert between linear measurements and volume'
-        assert non_empty_rows_count(dialog._ui.link_io) == 7
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
-        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == 'Convert between linear measurements and volume'
+        assert non_empty_rows_count(link_widget.link_io) == 7
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(3, 1).widget().currentText() == 'z'
+        assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
 
         dialog.accept()
 
@@ -197,10 +201,11 @@ class TestLinkEditor:
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
+        link_widget = dialog.link_widget
 
-        add_identity_link = get_action(dialog, 'identity')
+        add_identity_link = get_action(link_widget, 'identity')
 
-        graph = dialog._ui.graph_widget
+        graph = link_widget.graph_widget
 
         def click(node_or_edge):
             # We now simulate a selection - since we can't deterministically
@@ -215,8 +220,8 @@ class TestLinkEditor:
                 graph.mouseMoveEvent(None)
 
         # To start with, no data should be selected
-        assert dialog.state.data1 is None
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is None
+        assert link_widget.state.data2 is None
 
         # and the graph should have three nodes and no edges
         assert len(graph.nodes) == 3
@@ -225,21 +230,21 @@ class TestLinkEditor:
         click(graph.nodes[0])
 
         # Check that this has caused one dataset to be selected
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is None
 
         # Click on the same node again and this should deselect the data
         # (but only once we move off from the node)
 
         click(graph.nodes[0])
 
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is None
 
         hover(None)
 
-        assert dialog.state.data1 is None
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is None
+        assert link_widget.state.data2 is None
 
         # Select it again
         click(graph.nodes[0])
@@ -247,8 +252,8 @@ class TestLinkEditor:
         # and now select another node too
         click(graph.nodes[1])
 
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is self.data2
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is self.data2
 
         assert len(graph.nodes) == 3
         assert len(graph.edges) == 0
@@ -263,50 +268,50 @@ class TestLinkEditor:
         click(graph.nodes[2])
 
         # and check the data selections have been updated
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is self.data3
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is self.data3
 
         # Deselect it and move off
         click(graph.nodes[2])
         hover(None)
 
         # and the second dataset should now once again be None
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is None
 
         # Now change the data manually
-        dialog.state.data1 = self.data2
-        dialog.state.data2 = self.data3
+        link_widget.state.data1 = self.data2
+        link_widget.state.data2 = self.data3
 
         # and check that if we select the edge the datasets change back
         click(graph.edges[0])
 
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is self.data2
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is self.data2
 
         # Unselect and hover over nothing
         click(graph.edges[0])
         hover(None)
-        assert dialog.state.data1 is None
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is None
+        assert link_widget.state.data2 is None
 
         # Hover over the edge and the datasets should change back
         hover(graph.edges[0])
-        assert dialog.state.data1 is self.data1
-        assert dialog.state.data2 is self.data2
+        assert link_widget.state.data1 is self.data1
+        assert link_widget.state.data2 is self.data2
 
         # And check that clicking outside of nodes/edges deselects everything
         click(None)
-        assert dialog.state.data1 is None
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is None
+        assert link_widget.state.data2 is None
 
         # Select a node, select another, then make sure that selecting a third
         # one will deselect the two original ones
         click(graph.nodes[0])
         click(graph.nodes[1])
         click(graph.nodes[2])
-        assert dialog.state.data1 is self.data3
-        assert dialog.state.data2 is None
+        assert link_widget.state.data1 is self.data3
+        assert link_widget.state.data2 is None
 
         dialog.accept()
 
@@ -330,32 +335,33 @@ class TestLinkEditor:
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
+        link_widget = dialog.link_widget
 
-        dialog.state.data1 = self.data1
-        dialog.state.data2 = self.data2
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
 
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == ''
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
 
-        dialog.state.data1 = self.data3
+        link_widget.state.data1 = self.data3
 
-        assert dialog._ui.listsel_current_link.count() == 2
-        assert dialog._ui.link_details.text() == ''
-        assert non_empty_rows_count(dialog._ui.link_io) == 5
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
-        assert dialog._ui.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
 
-        dialog.state.current_link = type(dialog.state).current_link.get_choices(dialog.state)[1]
+        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[1]
 
-        assert dialog._ui.listsel_current_link.count() == 2
-        assert dialog._ui.link_details.text() == ''
-        assert non_empty_rows_count(dialog._ui.link_io) == 6
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'a'
-        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'b'
-        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'j'
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.link_io) == 6
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'a'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'b'
+        assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'j'
 
         dialog.accept()
 
@@ -365,11 +371,12 @@ class TestLinkEditor:
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
+        link_widget = dialog.link_widget
 
-        dialog.state.data1 = self.data1
-        dialog.state.data2 = self.data2
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
 
-        add_coordinate_link = get_action(dialog, 'ICRS <-> Galactic')
+        add_coordinate_link = get_action(link_widget, 'ICRS <-> Galactic')
 
         # Add a coordinate link
         add_coordinate_link.trigger()
@@ -377,13 +384,13 @@ class TestLinkEditor:
         # Ensure that all events get processed
         app.processEvents()
 
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == 'Link ICRS and Galactic coordinates'
-        assert non_empty_rows_count(dialog._ui.link_io) == 7
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
-        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == 'Link ICRS and Galactic coordinates'
+        assert non_empty_rows_count(link_widget.link_io) == 7
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
+        assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
 
     def test_preexisting_helper(self):
 
@@ -396,19 +403,20 @@ class TestLinkEditor:
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
+        link_widget = dialog.link_widget
 
-        assert dialog._ui.listsel_current_link.count() == 0
+        assert link_widget.listsel_current_link.count() == 0
 
-        dialog.state.data1 = self.data1
-        dialog.state.data2 = self.data2
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
 
-        assert dialog._ui.listsel_current_link.count() == 1
-        assert dialog._ui.link_details.text() == 'Link Galactic and FK5 (J2000) Equatorial coordinates'
-        assert non_empty_rows_count(dialog._ui.link_io) == 7
-        assert dialog._ui.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
-        assert dialog._ui.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert dialog._ui.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
-        assert dialog._ui.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text() == 'Link Galactic and FK5 (J2000) Equatorial coordinates'
+        assert non_empty_rows_count(link_widget.link_io) == 7
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
+        assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
+        assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
 
         dialog.accept()
 
