@@ -66,7 +66,7 @@ class LinkEditor(QtWidgets.QDialog):
                            directory=os.path.dirname(__file__))
         autoconnect_callbacks_to_qt(self.state, self._ui)
 
-        self._ui.graph_widget.set_data_collection(data_collection, new_links=self.state._all_links)
+        self._ui.graph_widget.set_data_collection(data_collection, new_links=self.state.links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
         self._menu = LinkMenu(parent=self._ui.button_add_link)
@@ -157,7 +157,7 @@ class LinkEditor(QtWidgets.QDialog):
         # drawn straight away.
         self.repaint()
 
-        self._ui.graph_widget.set_links(self.state._all_links)
+        self._ui.graph_widget.set_links(self.state.links)
 
     @classmethod
     def update_links(cls, collection):

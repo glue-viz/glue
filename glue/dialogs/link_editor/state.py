@@ -52,7 +52,7 @@ class LinkEditorState(State):
         # Sort the links deterministically
         links = sorted(links, key=link_key)
 
-        self._all_links = links
+        self.links = links
 
         if len(data_collection) == 2:
             self.data1, self.data2 = self.data_collection
@@ -71,7 +71,7 @@ class LinkEditorState(State):
             return
 
         links = []
-        for link in self._all_links:
+        for link in self.links:
             if ((link.data_in is self.data1 and link.data_out is self.data2) or
                     (link.data_in is self.data2 and link.data_out is self.data1)):
                 links.append(link)
@@ -97,13 +97,13 @@ class LinkEditorState(State):
             link = EditableLinkFunctionState(function_or_helper.helper,
                                              data_in=self.data1, data_out=self.data2)
 
-        self._all_links.append(link)
+        self.links.append(link)
         with delay_callback(self, 'current_link'):
             self.on_data_change()
             self.current_link = link
 
     def remove_link(self):
-        self._all_links.remove(self.current_link)
+        self.links.remove(self.current_link)
         self.on_data_change()
 
 
