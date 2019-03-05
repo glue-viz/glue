@@ -16,7 +16,7 @@ DESCRIPTION = "The auto-linking plugin '{0}' has identified {1} links between yo
 
 class AutoLinkPreview(QtWidgets.QDialog):
 
-    def __init__(self, autolinker_name, data_collection, links, parent=None):
+    def __init__(self, autolinker_name, data_collection, suggested_links, parent=None):
 
         super(AutoLinkPreview, self).__init__(parent=parent)
 
@@ -28,12 +28,12 @@ class AutoLinkPreview(QtWidgets.QDialog):
         self._autolinker_name = autolinker_name
 
         self.link_widget = LinkEditorWidget(data_collection,
-                                            suggested_links=links,
+                                            suggested_links=suggested_links,
                                             parent=self)
 
         self._ui.layout().insertWidget(2, self.link_widget)
 
-        self._ui.label.setText(DESCRIPTION.format(autolinker_name, len(links)))
+        self._ui.label.setText(DESCRIPTION.format(autolinker_name, len(suggested_links)))
 
         self._ui.button_apply.clicked.connect(self.accept)
         self._ui.button_ignore.clicked.connect(self.reject)
@@ -64,6 +64,7 @@ class AutoLinkPreview(QtWidgets.QDialog):
         # Check what we need to do here to apply links
         if self._ui.checkbox_apply_future.isChecked():
             settings.AUTOLINK[self._autolinker_name] = 'always_accept'
+        self.link_widget.state.update_links_in_collection()
         super(AutoLinkPreview, self).accept()
 
     def reject(self):
