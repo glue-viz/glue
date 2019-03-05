@@ -198,7 +198,20 @@ class EditableLinkFunctionState(State):
             cids_in = function.cids1
             cids_out = function.cids2
             data_in = cids_in[0].parent
-            data_out = cids_out[0].parent
+
+            # To be backward-compatible with cases where @link_helper doesn't
+            # include output labels, we need to assume cids_out can be empty
+            # in which case we look for the second dataset inside cids_in
+            if len(cids_out) > 0:
+                data_out = cids_out[0].parent
+            else:
+                for cid in cids_in[1:]:
+                    if cid.parent is not data_in:
+                        data_out = cid.parent
+                        break
+                else:
+                    raise ValueError("Could not determine second dataset in link")
+
             self.display = function.display
             self.description = function.description
             self._mode = 'helper'
@@ -224,6 +237,12 @@ class EditableLinkFunctionState(State):
             helper = ComponentIDComboHelper(self, name,
                                             pixel_coord=True, world_coord=True)
             helper.append_data(data_in)
+
+            # For backward-compatibility with @link_helpers that didn't specify
+            # output labels, we need to assume everything gets selected via inputs.
+            if len(self.output_names) == 0:
+                helper.append_data(data_out)
+
             setattr(self, '_' + name + '_helper', helper)
 
         for name in self.output_names:

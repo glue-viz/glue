@@ -416,17 +416,20 @@ class LinkAligned(LinkCollection):
         self._links[:] = links
 
 
-def functional_link_collection(function):
+def functional_link_collection(function, labels1=None, labels2=None,
+                               display=None, description=None):
 
     class FunctionalLinkCollection(LinkCollection):
 
         def __init__(self, data1=None, data2=None,
-                     cids1=None, cids2=None,
-                     labels1=None, labels2=None, description=None):
+                     cids1=None, cids2=None):
             super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2,
-                                                           cids1=cids1, cids2=cids2,
-                                                           labels1=labels1, labels2=labels2,
-                                                           description=description)
-            self._links[:] = function(*cids1, *cids2)
+                                                           cids1=cids1, cids2=cids2)
+            self._links[:] = function(*self.cids1, *self.cids2)
+
+    FunctionalLinkCollection.labels1 = labels1 or []
+    FunctionalLinkCollection.labels2 = labels2 or []
+    FunctionalLinkCollection.display = display or ''
+    FunctionalLinkCollection.description = description or ''
 
     return FunctionalLinkCollection

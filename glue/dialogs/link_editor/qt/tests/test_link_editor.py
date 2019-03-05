@@ -7,6 +7,7 @@ from glue.core.component_link import identity
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.core.component_link import ComponentLink
 from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5, ICRS_to_Galactic
+from glue.core.link_helpers import functional_link_collection
 
 
 def non_empty_rows_count(layout):
@@ -525,5 +526,69 @@ class TestLinkEditor:
         assert links[0].get_from_ids()[0] is self.data1.id['x']
         assert links[0].get_to_id() is self.data2.id['c']
 
-# TODO: check that if we use a FunctionalMultiLink then either data can be used
-# in input.
+    def test_functional_link_collection(self):
+
+        # Test that if we use a @link_helper in 'legacy' mode, i.e. with only
+        # input labels, both datasets are available from the combos in the
+        # link editor dialog. Also test the new-style @link_helper.
+
+        app = get_qapp()
+
+        def deg_arcsec(degree, arcsecond):
+            return [ComponentLink([degree], arcsecond, using=lambda d: d * 3600),
+                    ComponentLink([arcsecond], degree, using=lambda a: a / 3600)]
+
+        # Old-style link helper
+
+        helper1 = functional_link_collection(deg_arcsec, description='Legacy link',
+                                             labels1=['deg', 'arcsec'], labels2=[])
+
+        link1 = helper1(cids1=[self.data1.id['x'], self.data2.id['c']])
+
+        self.data_collection.add_link(link1)
+
+        # New-style link helper
+
+        helper2 = functional_link_collection(deg_arcsec, description='New-style link',
+                                             labels1=['deg'], labels2=['arcsec'])
+
+        link2 = helper2(cids1=[self.data1.id['x']], cids2=[self.data2.id['c']])
+
+        self.data_collection.add_link(link2)
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+        link_widget = dialog.link_widget
+
+        assert link_widget.listsel_current_link.count() == 0
+
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
+
+        assert link_widget.listsel_current_link.count() == 2
+
+        assert link_widget.link_details.text() == 'Legacy link'
+        assert non_empty_rows_count(link_widget.link_io) == 4
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'c'
+
+        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[1]
+
+        assert link_widget.link_details.text() == 'New-style link'
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+
+        dialog.accept()
+
+        links = self.data_collection.external_links
+
+        assert len(links) == 2
+
+        assert isinstance(links[0], helper1)
+        assert links[0].cids1[0] is self.data1.id['x']
+        assert links[0].cids1[1] is self.data2.id['c']
+
+        assert isinstance(links[1], helper2)
+        assert links[1].cids1[0] is self.data1.id['x']
+        assert links[1].cids2[0] is self.data2.id['c']

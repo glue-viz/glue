@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import imp
 import sys
+import warnings
 from collections import namedtuple
 
 """
@@ -667,10 +668,13 @@ class LayerActionRegistry(Registry):
 
 class LinkHelperRegistry(Registry):
 
-    """Stores helper objects that compute many ComponentLinks at once
+    # TODO: update docstring
 
-    The members property is a list of (object, info_string,
-    input_labels) tuples. `Object` is the link helper. `info_string`
+    """
+    Stores helper objects that compute many ComponentLinks at once
+
+    The members property is a list of (object, category) tuples.
+    `object` is the link helper. `info_string`
     describes what `object` does. `input_labels` is a list labeling
     the inputs. ``category`` is a category in which the link function will appear
     (defaults to 'General').
@@ -688,14 +692,22 @@ class LinkHelperRegistry(Registry):
     """
     item = namedtuple('LinkHelper', 'helper category')
 
-    def __call__(self, info=None, input_labels=None, category='General'):
+    def __call__(self, info=None, input_labels=None, output_labels=None, category='General'):
+
+        if output_labels is None:
+            warnings.warn('Specifying @link_helper without giving output_labels is '
+                          'deprecated and will be removed in future. See the '
+                          'documentation about how to specify output_labels', UserWarning)
+
         def adder(func):
             from glue.core.link_helpers import LinkCollection, functional_link_collection
             if not issubclass(func, LinkCollection):
                 func = functional_link_collection(func, description=info,
-                                                  labels1=input_labels, labels2=[])
+                                                  labels1=input_labels or [],
+                                                  labels2=output_labels or [])
             self.add(self.item(func, category))
             return func
+
         return adder
 
 
