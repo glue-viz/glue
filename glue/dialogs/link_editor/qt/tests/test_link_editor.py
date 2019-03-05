@@ -487,5 +487,43 @@ class TestLinkEditor:
         assert links[0].cids2[0] is self.data2.id['c']
         assert links[0].cids2[1] is self.data2.id['b']
 
+    def test_cancel(self):
+
+        # Make sure that changes aren't saved if dialog is cancelled
+        # This is a bit more detailed test that checks that things update
+        # correctly as we change various settings
+
+        app = get_qapp()
+
+        link1 = ComponentLink([self.data1.id['x']], self.data2.id['c'])
+
+        self.data_collection.add_link(link1)
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+        link_widget = dialog.link_widget
+
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
+
+        link_widget.state.current_link.x = self.data1.id['y']
+
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'y'
+
+        add_identity_link = get_action(link_widget, 'identity')
+        add_identity_link.trigger()
+
+        assert link_widget.listsel_current_link.count() == 2
+
+        dialog.reject()
+
+        links = self.data_collection.external_links
+
+        assert len(links) == 1
+
+        assert isinstance(links[0], ComponentLink)
+        assert links[0].get_from_ids()[0] is self.data1.id['x']
+        assert links[0].get_to_id() is self.data2.id['c']
+
 # TODO: check that if we use a FunctionalMultiLink then either data can be used
 # in input.
