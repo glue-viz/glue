@@ -425,7 +425,10 @@ def functional_link_collection(function, labels1=None, labels2=None,
                      cids1=None, cids2=None):
             super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2,
                                                            cids1=cids1, cids2=cids2)
-            self._links[:] = function(*self.cids1, *self.cids2)
+            # PY3 only
+            # self._links[:] = function(*self.cids1, *self.cids2)
+            cids = self.cids1 + self.cids2
+            self._links[:] = function(*cids)
 
     FunctionalLinkCollection.labels1 = labels1 or []
     FunctionalLinkCollection.labels2 = labels2 or []
