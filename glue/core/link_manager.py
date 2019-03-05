@@ -165,7 +165,7 @@ class LinkManager(HubListener):
             self.remove_link(link)
 
     def clear_links(self):
-        self._external_links.clear()
+        self._external_links[:] = []
 
     def add_link(self, link, update_external=True):
         """
