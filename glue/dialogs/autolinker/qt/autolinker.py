@@ -3,13 +3,10 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtWidgets
-from qtpy.QtCore import Qt
 
 from glue.config import settings
-from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.core.autolinking import find_possible_links
-from glue.dialogs.link_editor.state import EditableLinkFunctionState
 from glue.dialogs.link_editor.qt.link_editor import LinkEditorWidget
 
 __all__ = ['run_autolinker']
@@ -31,8 +28,8 @@ class AutoLinkPreview(QtWidgets.QDialog):
         self._autolinker_name = autolinker_name
 
         self.link_editor_widget = LinkEditorWidget(data_collection,
-                                              suggested_links=links,
-                                              parent=self)
+                                                   suggested_links=links,
+                                                   parent=self)
 
         self._ui.layout().insertWidget(2, self.link_editor_widget)
 
