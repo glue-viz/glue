@@ -24,6 +24,7 @@ EXPECTED = {
     ICRS_to_Galactic: [(143.12137717, -7.76422008), (238.23062019, 27.96352359)],
 }
 
+# TODO: Added test of galactocentric
 
 lon1, lat1, lon2, lat2 = (ComponentID('lon_in'), ComponentID('lat_in'),
                           ComponentID('lon_out'), ComponentID('lat_out'))

@@ -177,13 +177,14 @@ class LinkEditor(QtWidgets.QDialog):
 
         self._ui.layout().insertWidget(1, self.link_widget)
 
+    def accept(self, *args):
+        self.link_widget.state.update_links_in_collection()
+        super(LinkEditor, self).accept(*args)
+
     @classmethod
     def update_links(cls, collection, suggested_links=None):
         widget = cls(collection, suggested_links=suggested_links)
-        isok = widget._ui.exec_()
-        if isok:
-            links = [link_state.link for link_state in widget._links]
-            collection.set_links(links)
+        widget._ui.exec_()
 
 
 def main():  # pragma: no cover

@@ -3,9 +3,10 @@ from mock import patch
 from qtpy import QtWidgets
 from glue.utils.qt import get_qapp
 from glue.core import Data, DataCollection
+from glue.core.component_link import identity
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.core.component_link import ComponentLink
-from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5
+from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5, ICRS_to_Galactic
 
 
 def non_empty_rows_count(layout):
@@ -64,6 +65,8 @@ class TestLinkEditor:
 
         dialog.accept()
 
+        assert len(self.data_collection.external_links) == 0
+
     def test_defaults_two(self):
         # Make sure the dialog opens and closes and check default settings. With
         # two datasets, the datasets should be selected by default.
@@ -76,6 +79,7 @@ class TestLinkEditor:
         assert link_widget.button_add_link.isEnabled()
         assert link_widget.button_remove_link.isEnabled()
         dialog.accept()
+        assert len(self.data_collection.external_links) == 0
 
     def test_ui_behavior(self):
 
@@ -196,6 +200,20 @@ class TestLinkEditor:
         assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'a'
 
         dialog.accept()
+
+        links = self.data_collection.external_links
+
+        assert len(links) == 2
+
+        assert isinstance(links[0], ComponentLink)
+        assert links[0].get_from_ids()[0] is self.data1.id['x']
+        assert links[0].get_from_ids()[1] is self.data1.id['y']
+        assert links[0].get_from_ids()[2] is self.data1.id['z']
+        assert links[0].get_to_id() is self.data2.id['a']
+
+        assert isinstance(links[1], ComponentLink)
+        assert links[1].get_from_ids()[0] is self.data3.id['i']
+        assert links[1].get_to_id() is self.data2.id['a']
 
     def test_graph(self):
 
@@ -326,8 +344,14 @@ class TestLinkEditor:
         def add(x, y):
             return x + y
 
+        def double(x):
+            return x * 2
+
+        def halve(x):
+            return x / 2
+
         link2 = ComponentLink([self.data2.id['a'], self.data2.id['b']], self.data3.id['j'], using=add)
-        link3 = ComponentLink([self.data3.id['i']], self.data2.id['c'])
+        link3 = ComponentLink([self.data3.id['i']], self.data2.id['c'], using=double, inverse=halve)
 
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
@@ -350,20 +374,41 @@ class TestLinkEditor:
 
         assert link_widget.listsel_current_link.count() == 2
         assert link_widget.link_details.text() == ''
-        assert non_empty_rows_count(link_widget.link_io) == 5
-        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
-        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
-
-        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[1]
-
-        assert link_widget.listsel_current_link.count() == 2
-        assert link_widget.link_details.text() == ''
         assert non_empty_rows_count(link_widget.link_io) == 6
         assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'a'
         assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'b'
         assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'j'
 
+        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[1]
+
+        assert link_widget.listsel_current_link.count() == 2
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.link_io) == 5
+        assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'i'
+        assert link_widget.link_io.itemAtPosition(4, 1).widget().currentText() == 'c'
+
         dialog.accept()
+
+        links = self.data_collection.external_links
+
+        assert len(links) == 3
+
+        assert isinstance(links[0], ComponentLink)
+        assert links[0].get_from_ids()[0] is self.data1.id['x']
+        assert links[0].get_to_id() is self.data2.id['c']
+        assert links[0].get_using() is identity
+
+        assert isinstance(links[1], ComponentLink)
+        assert links[1].get_from_ids()[0] is self.data2.id['a']
+        assert links[1].get_from_ids()[1] is self.data2.id['b']
+        assert links[1].get_to_id() is self.data3.id['j']
+        assert links[1].get_using() is add
+
+        assert isinstance(links[2], ComponentLink)
+        assert links[2].get_from_ids()[0] is self.data3.id['i']
+        assert links[2].get_to_id() is self.data2.id['c']
+        assert links[2].get_using() is double
+        assert links[2].get_inverse() is halve
 
     def test_add_helper(self):
 
@@ -392,12 +437,24 @@ class TestLinkEditor:
         assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
         assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
 
+        dialog.accept()
+
+        links = self.data_collection.external_links
+
+        assert len(links) == 1
+
+        assert isinstance(links[0], ICRS_to_Galactic)
+        assert links[0].cids1[0] is self.data1.id['x']
+        assert links[0].cids1[1] is self.data1.id['y']
+        assert links[0].cids2[0] is self.data2.id['a']
+        assert links[0].cids2[1] is self.data2.id['b']
+
     def test_preexisting_helper(self):
 
         app = get_qapp()
 
         link1 = Galactic_to_FK5(cids1=[self.data1.id['x'], self.data1.id['y']],
-                                cids2=[self.data2.id['a'], self.data2.id['b']])
+                                cids2=[self.data2.id['c'], self.data2.id['b']])
 
         self.data_collection.add_link(link1)
 
@@ -415,11 +472,20 @@ class TestLinkEditor:
         assert non_empty_rows_count(link_widget.link_io) == 7
         assert link_widget.link_io.itemAtPosition(1, 1).widget().currentText() == 'x'
         assert link_widget.link_io.itemAtPosition(2, 1).widget().currentText() == 'y'
-        assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'a'
+        assert link_widget.link_io.itemAtPosition(5, 1).widget().currentText() == 'c'
         assert link_widget.link_io.itemAtPosition(6, 1).widget().currentText() == 'b'
 
         dialog.accept()
 
+        links = self.data_collection.external_links
+
+        assert len(links) == 1
+
+        assert isinstance(links[0], Galactic_to_FK5)
+        assert links[0].cids1[0] is self.data1.id['x']
+        assert links[0].cids1[1] is self.data1.id['y']
+        assert links[0].cids2[0] is self.data2.id['c']
+        assert links[0].cids2[1] is self.data2.id['b']
 
 # TODO: check that if we use a FunctionalMultiLink then either data can be used
 # in input.

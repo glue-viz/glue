@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from types import FunctionType, MethodType
+
 try:
     from inspect import getfullargspec
 except ImportError:  # Python 2.7
@@ -24,10 +26,6 @@ __all__ = ['LinkEditorState']
 
 class LinkWrapper(State):
     link = CallbackProperty()
-
-
-def link_key(link):
-    return tuple(link.input_names) + tuple(link.output_names)
 
 
 class LinkEditorState(State):
@@ -58,9 +56,6 @@ class LinkEditorState(State):
                 link_state = EditableLinkFunctionState(link)
                 link_state.suggested = True
                 links.append(link_state)
-
-        # Sort the links deterministically
-        links = sorted(links, key=link_key)
 
         self.links = links
 
@@ -131,6 +126,10 @@ class LinkEditorState(State):
         self.links.remove(self.current_link)
         self.on_data_change()
 
+    def update_links_in_collection(self):
+        links = [link_state.link for link_state in self.links]
+        self.data_collection.set_links(links)
+
 
 class EditableLinkFunctionState(State):
 
@@ -143,7 +142,7 @@ class EditableLinkFunctionState(State):
 
     def __new__(cls, function, data_in=None, data_out=None, cids_in=None,
                 cid_out=None, input_names=None, output_names=None,
-                display=None, description=None, helper=False):
+                display=None, description=None):
 
         if isinstance(function, ComponentLink):
             input_names = function.input_names
@@ -179,35 +178,44 @@ class EditableLinkFunctionState(State):
 
     def __init__(self, function, data_in=None, data_out=None, cids_in=None,
                  cids_out=None, input_names=None, output_names=None,
-                 display=None, description=None, helper=False):
+                 display=None, description=None):
 
         super(EditableLinkFunctionState, self).__init__()
 
         if isinstance(function, ComponentLink):
-            self.function = function.get_using()
-            self.inverse = function.get_inverse()
+            self._function = function.get_using()
+            self._inverse = function.get_inverse()
+            self._helper_class = None
             cids_in = function.get_from_ids()
             cids_out = function.get_to_ids()
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
-            self.display = self.function.__name__
+            self.display = self._function.__name__
             self.description = function.description
         elif isinstance(function, LinkCollection):
-            self.multi_link = function
+            self._function = None
+            self._helper_class = function.__class__
             cids_in = function.cids1
             cids_out = function.cids2
             data_in = cids_in[0].parent
             data_out = cids_out[0].parent
             self.display = function.display
             self.description = function.description
+            self._mode = 'helper'
         elif type(function) is type and issubclass(function, LinkCollection):
+            self._function = None
+            self._helper_class = function
             self.display = function.display
             self.description = function.description
-        else:
-            self.function = function
+        elif isinstance(function, (FunctionType, MethodType)):
+            self._function = function
+            self._inverse = None
+            self._helper_class = None
             self.inverse = None
             self.display = display
             self.description = description
+        else:
+            raise TypeError("Unexpected type for 'function': {0}".format(type(function)))
 
         self.data_in = data_in
         self.data_out = data_out
@@ -240,14 +248,13 @@ class EditableLinkFunctionState(State):
         """
         Return a `glue.core.component_link.ComponentLink` object.
         """
-
-        # FunctionalLinkCollection
-        #
-        # MultiLink
-
-        if self.helper:
-            raise NotImplementedError('helpers not implemented')
-        else:
+        if self._function is not None:
             cids_in = [getattr(self, name) for name in self.input_names]
             cid_out = getattr(self, self.output_names[0])
-            return ComponentLink(cids_in, cid_out, using=self.function)
+            return ComponentLink(cids_in, cid_out,
+                                 using=self._function, inverse=self._inverse)
+        else:
+            cids_in = [getattr(self, name) for name in self.input_names]
+            cids_out = [getattr(self, name) for name in self.output_names]
+            return self._helper_class(cids1=cids_in, cids2=cids_out,
+                                      data1=self.data_in, data2=self.data_out)
