@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LinkEditor</class>
+ <class>LinkEditorWidget</class>
  <widget class="QWidget" name="LinkEditorWidget">
   <property name="geometry">
    <rect>
@@ -16,6 +16,18 @@
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
    </property>
    <item>
     <widget class="DataGraphWidget" name="graph_widget">

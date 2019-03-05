@@ -88,7 +88,9 @@ class LinkEditorWidget(QtWidgets.QWidget):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
 
+    @avoid_circular
     def _on_data_change(self, *args):
+        self._ui.graph_widget.manual_select(self.state.data1, self.state.data2)
         enabled = self.state.data1 is not None and self.state.data2 is not None
         self._ui.button_add_link.setEnabled(enabled)
         self._ui.button_remove_link.setEnabled(enabled)
