@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
 import numpy as np
 
 from qtpy.QtCore import Qt, Signal
@@ -271,7 +272,7 @@ class DataGraphWidget(QGraphicsView):
     def set_data_collection(self, data_collection, old_links=None, new_links=None):
 
         # Get data and initialize nodes
-        self.data_to_nodes = dict((data, DataNode(data)) for data in data_collection)
+        self.data_to_nodes = OrderedDict((data, DataNode(data)) for data in data_collection)
         self.nodes = list(self.data_to_nodes.values())
 
         # Get links and set up edges
