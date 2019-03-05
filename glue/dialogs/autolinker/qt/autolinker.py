@@ -9,6 +9,8 @@ from glue.config import settings
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
 from glue.core.autolinking import find_possible_links
+from glue.dialogs.link_editor.state import EditableLinkFunctionState
+from glue.dialogs.link_editor.qt.link_editor import LinkEditorWidget
 
 __all__ = ['run_autolinker']
 
@@ -26,14 +28,13 @@ class AutoLinkPreview(QtWidgets.QDialog):
         self._ui = load_ui('autolinker.ui', self,
                            directory=os.path.dirname(__file__))
 
-        self._links = links
         self._autolinker_name = autolinker_name
 
-        self._ui.graph_widget.set_data_collection(data_collection, new_links=links)
-        self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
+        self.link_editor_widget = LinkEditorWidget(data_collection,
+                                              suggested_links=links,
+                                              parent=self)
 
-        self._ui.current_links.setColumnWidth(0, 200)
-        self._ui.current_links.setColumnWidth(1, 300)
+        self._ui.layout().insertWidget(2, self.link_editor_widget)
 
         self._ui.label.setText(DESCRIPTION.format(autolinker_name, len(links)))
 
@@ -51,8 +52,7 @@ class AutoLinkPreview(QtWidgets.QDialog):
 
         self._details_visible = visible
 
-        self._ui.graph_widget.setVisible(visible)
-        self._ui.current_links.setVisible(visible)
+        self.link_editor_widget.setVisible(visible)
 
         if visible:
             self._ui.button_details.setText('Hide Details')
@@ -63,37 +63,8 @@ class AutoLinkPreview(QtWidgets.QDialog):
         screen = QtWidgets.QApplication.desktop().screenGeometry(0)
         self.move(screen.center() - self.rect().center())
 
-    @avoid_circular
-    def _on_data_change_graph(self):
-        self._update_links_list()
-
-    def _update_links_list(self):
-        self._ui.current_links.clear()
-        data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
-        data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
-        if data1 is None or data2 is None:
-            return
-        links_to_add = set()
-        for link in self._links:
-            to_ids = link.get_to_ids()
-            to_data = [to_id.parent for to_id in to_ids]
-            from_data = [from_id.parent for from_id in link.get_from_ids()]
-            if (data1 in to_data and data2 in from_data) or (data1 in from_data and data2 in to_data):
-                links_to_add.add(link)
-
-        for link in links_to_add:
-            self._add_link_to_list(link)
-
-    def _add_link_to_list(self, link):
-        current = self._ui.current_links
-        from_ids = ', '.join(cid.label for cid in link.get_from_ids())
-        to_ids = ', '.join(cid.label for cid in link.get_to_ids())
-        item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
-                                         [str(link), from_ids, to_ids])
-        item.setData(0, Qt.UserRole, link)
-
     def accept(self):
-        self._data_collection.add_link(self._links)
+        # Check what we need to do here to apply links
         if self._ui.checkbox_apply_future.isChecked():
             settings.AUTOLINK[self._autolinker_name] = 'always_accept'
         super(AutoLinkPreview, self).accept()

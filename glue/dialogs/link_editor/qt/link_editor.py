@@ -52,17 +52,17 @@ class LinkMenu(QtWidgets.QMenu):
                     action.setData(UserDataWrapper(helper))
 
 
-class LinkEditor(QtWidgets.QDialog):
+class LinkEditorWidget(QtWidgets.QWidget):
 
     def __init__(self, data_collection, suggested_links=None, parent=None):
 
-        super(LinkEditor, self).__init__(parent=parent)
+        super(LinkEditorWidget, self).__init__(parent=parent)
 
         self._data_collection = data_collection
 
         self.state = LinkEditorState(data_collection, suggested_links=suggested_links)
 
-        self._ui = load_ui('link_editor.ui', self,
+        self._ui = load_ui('link_editor_widget.ui', self,
                            directory=os.path.dirname(__file__))
         autoconnect_callbacks_to_qt(self.state, self._ui)
 
@@ -158,6 +158,22 @@ class LinkEditor(QtWidgets.QDialog):
         self.repaint()
 
         self._ui.graph_widget.set_links(self.state.links)
+
+
+class LinkEditor(QtWidgets.QDialog):
+
+    def __init__(self, data_collection, suggested_links=None, parent=None):
+
+        super(LinkEditor, self).__init__(parent=parent)
+
+        self._ui = load_ui('link_editor_dialog.ui', self,
+                           directory=os.path.dirname(__file__))
+
+        link_editor_widget = LinkEditorWidget(data_collection,
+                                              suggested_links=suggested_links,
+                                              parent=self)
+
+        self._ui.layout().insertWidget(1, link_editor_widget)
 
     @classmethod
     def update_links(cls, collection, suggested_links=None):
