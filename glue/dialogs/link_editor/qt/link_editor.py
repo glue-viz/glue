@@ -52,10 +52,6 @@ class LinkMenu(QtWidgets.QMenu):
                     action.setData(UserDataWrapper(helper))
 
 
-def link_key(link):
-    return tuple(link.input_names) + tuple(link.output_names)
-
-
 class LinkEditor(QtWidgets.QDialog):
 
     def __init__(self, data_collection, parent=None):
@@ -64,19 +60,13 @@ class LinkEditor(QtWidgets.QDialog):
 
         self._data_collection = data_collection
 
-        # Convert links to editable states
-        links = [EditableLinkFunctionState(link) for link in data_collection.external_links]
-
-        # Sort the links deterministically
-        links = sorted(links, key=link_key)
-
-        self.state = LinkEditorState(data_collection, links)
+        self.state = LinkEditorState(data_collection)
 
         self._ui = load_ui('link_editor.ui', self,
                            directory=os.path.dirname(__file__))
         autoconnect_callbacks_to_qt(self.state, self._ui)
 
-        self._ui.graph_widget.set_data_collection(data_collection, new_links=links)
+        self._ui.graph_widget.set_data_collection(data_collection, new_links=self.state._all_links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
 
         self._menu = LinkMenu(parent=self._ui.button_add_link)

@@ -26,6 +26,10 @@ class LinkWrapper(State):
     link = CallbackProperty()
 
 
+def link_key(link):
+    return tuple(link.input_names) + tuple(link.output_names)
+
+
 class LinkEditorState(State):
 
     data1 = SelectionCallbackProperty()
@@ -33,10 +37,7 @@ class LinkEditorState(State):
     links = SelectionCallbackProperty()
     link_type = SelectionCallbackProperty()
 
-    def __init__(self, data_collection, links):
-
-        # Note that we could access the links in the data collection, but we
-        # instead want to use the edited list of links in the links variable
+    def __init__(self, data_collection):
 
         super(LinkEditorState, self).__init__()
 
@@ -44,6 +45,13 @@ class LinkEditorState(State):
         self.data2_helper = DataCollectionComboHelper(self, 'data2', data_collection)
 
         self.data_collection = data_collection
+
+        # Convert links to editable states
+        links = [EditableLinkFunctionState(link) for link in data_collection.external_links]
+
+        # Sort the links deterministically
+        links = sorted(links, key=link_key)
+
         self._all_links = links
 
         if len(data_collection) == 2:
@@ -179,12 +187,14 @@ class EditableLinkFunctionState(State):
         self.data_out = data_out
 
         for name in self.input_names:
-            helper = ComponentIDComboHelper(self, name)
+            helper = ComponentIDComboHelper(self, name,
+                                            pixel_coord=True, world_coord=True)
             helper.append_data(data_in)
             setattr(self, '_' + name + '_helper', helper)
 
         for name in self.output_names:
-            helper = ComponentIDComboHelper(self, name)
+            helper = ComponentIDComboHelper(self, name,
+                                            pixel_coord=True, world_coord=True)
             helper.append_data(data_out)
             setattr(self, '_' + name + '_helper', helper)
 
