@@ -14,6 +14,8 @@ v0.15.0 (unreleased)
 * Added initial infrastructure for developing auto-linking helpers
   and implement an initial astronomy WCS auto-linker. [#1933]
 
+* Improve the user interface for the link editor. [#1934]
+
 v0.14.3 (unreleased)
 --------------------
 
