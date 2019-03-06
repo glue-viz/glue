@@ -107,7 +107,7 @@ class LinkCollection(object):
 
         if data1 is None:
             if len(self.cids1) == 0:
-                raise ValueError("If cids1 is not given or is empty, data1 should be specified")
+                self.data1 = None
             else:
                 self.data1 = self.cids1[0].parent
         else:
@@ -115,7 +115,7 @@ class LinkCollection(object):
 
         if data2 is None:
             if len(self.cids2) == 0:
-                raise ValueError("If cids2 is not given or is empty, data2 should be specified")
+                self.data2 = None
             else:
                 self.data2 = self.cids2[0].parent
         else:
