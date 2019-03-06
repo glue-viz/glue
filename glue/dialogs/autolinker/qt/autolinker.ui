@@ -53,62 +53,6 @@
     </widget>
    </item>
    <item>
-    <widget class="DataGraphWidget" name="graph_widget">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>200</height>
-      </size>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTreeWidget" name="current_links">
-     <property name="minimumSize">
-      <size>
-       <width>300</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>150</height>
-      </size>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::MultiSelection</enum>
-     </property>
-     <column>
-      <property name="text">
-       <string>Function</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Component 1</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Component 2</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="button_details">
@@ -161,14 +105,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>DataGraphWidget</class>
-   <extends>QGraphicsView</extends>
-   <header>glue.dialogs.link_editor.qt.data_graph</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

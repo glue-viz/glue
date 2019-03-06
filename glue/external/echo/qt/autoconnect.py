@@ -9,7 +9,8 @@ from .connect import (connect_checkable_button,
                       connect_float_text,
                       connect_text,
                       connect_button,
-                      connect_combo_selection)
+                      connect_combo_selection,
+                      connect_list_selection)
 
 __all__ = ['autoconnect_callbacks_to_qt']
 
@@ -22,6 +23,7 @@ HANDLERS['combodata'] = connect_combo_data
 HANDLERS['combotext'] = connect_combo_text
 HANDLERS['button'] = connect_button
 HANDLERS['combosel'] = connect_combo_selection
+HANDLERS['listsel'] = connect_list_selection
 
 
 def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
@@ -86,9 +88,6 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     This function is especially useful when defining ui files, since widget
     objectNames can be easily set during the editing process.
     """
-
-    if not hasattr(widget, 'children'):
-        return
 
     for original_name in dir(widget):
         if original_name.startswith('_') or '_' not in original_name:

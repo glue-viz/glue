@@ -14,7 +14,7 @@ __all__ = ['VisualAttributes']
 
 class VisualAttributes(HasCallbackProperties):
 
-    '''
+    """
     This class is used to define visual attributes for any kind of objects
 
     The essential attributes of a VisualAttributes instance are:
@@ -26,7 +26,7 @@ class VisualAttributes(HasCallbackProperties):
     :param marker: The matplotlib marker shape (``'o' | 's' | '^' | etc``)
     :param markersize: The size of the marker (int)
 
-    '''
+    """
 
     def __init__(self, parent=None, washout=False, color=None, alpha=None):
 

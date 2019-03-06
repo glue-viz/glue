@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
 import numpy as np
 
 from qtpy.QtCore import Qt, Signal
@@ -9,7 +10,6 @@ from qtpy.QtWidgets import (QGraphicsView, QGraphicsScene, QApplication,
                             QGraphicsLineItem)
 
 from glue.utils.qt import mpl_to_qt_color, qt_to_mpl_color
-from glue.core.link_helpers import LinkCollection
 
 COLOR_SELECTED = (0.2, 0.9, 0.2)
 COLOR_CONNECTED = (0.6, 0.9, 0.9)
@@ -160,20 +160,13 @@ class DataNode:
 
 
 def get_connections(dc_links):
-    links = set()
+    links = []
     for link in dc_links:
-        if isinstance(link, LinkCollection):
-            to_ids = link.get_to_ids()
-        else:
-            to_ids = [link.get_to_id()]
-        for to_id in to_ids:
-            for from_id in link.get_from_ids():
-                data1 = from_id.parent
-                data2 = to_id.parent
-                if data1 is data2:
-                    continue
-                if (data1, data2) not in links and (data2, data1) not in links:
-                    links.add((data1, data2))
+        data1 = link.data_in
+        data2 = link.data_out
+        if (data1, data2) not in links and (data2, data1) not in links:
+            links.append((data1, data2))
+
     return links
 
 
@@ -276,23 +269,25 @@ class DataGraphWidget(QGraphicsView):
             y = self.height() - (i + 1) / (len(self.right_nodes) + 1) * self.height()
             node.label_position = self.width() / 2 + self.height() / 2, y
 
-    def set_data_collection(self, data_collection, new_links=None):
+    def set_data_collection(self, data_collection, old_links=None, new_links=None):
 
         # Get data and initialize nodes
-        self.data_to_nodes = dict((data, DataNode(data)) for data in data_collection)
+        self.data_to_nodes = OrderedDict((data, DataNode(data)) for data in data_collection)
         self.nodes = list(self.data_to_nodes.values())
 
         # Get links and set up edges
-        if new_links is None:
-            self.background_edges = []
-            main_links = data_collection.external_links
-        else:
+
+        if old_links:
             self.background_edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], linewidth=1, zindex=1)
                                      for data1, data2 in get_connections(data_collection.external_links)]
-            main_links = new_links
+        else:
+            self.background_edges = []
 
-        self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
-                      for data1, data2 in get_connections(main_links)]
+        if new_links:
+            self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
+                          for data1, data2 in get_connections(new_links)]
+        else:
+            self.edges = []
 
         # Figure out positions
         self.relayout()

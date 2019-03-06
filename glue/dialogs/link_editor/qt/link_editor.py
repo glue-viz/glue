@@ -3,174 +3,208 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from qtpy import QtWidgets
-from qtpy.QtCore import Qt
 
-from glue import core
-from glue.utils import nonpartial
+from glue.config import link_function, link_helper
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
+from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
+from glue.dialogs.link_editor.state import LinkEditorState
 
-__all__ = ['LinkEditor']
+__all__ = ['LinkEditor', 'main']
+
+
+def get_function_name(info):
+    item = info[0]
+    if hasattr(item, 'display') and item.display is not None:
+        return item.display
+    else:
+        return item.__name__
+
+
+class LinkMenu(QtWidgets.QMenu):
+
+    def __init__(self, parent=None):
+
+        super(LinkMenu, self).__init__(parent=parent)
+
+        categories = []
+        for function in link_function.members:
+            if len(function.output_labels) == 1:
+                categories.append(function.category)
+        for helper in link_helper.members:
+            categories.append(helper.category)
+        categories = ['General'] + sorted(set(categories) - set(['General']))
+
+        for category in categories:
+            submenu = self.addMenu(category)
+            for function in link_function.members:
+                if function.category == category and len(function.output_labels) == 1:
+                    action = submenu.addAction(get_function_name(function))
+                    action.setData(UserDataWrapper(function))
+            for helper in link_helper.members:
+                if helper.category == category:
+                    action = submenu.addAction(get_function_name(helper))
+                    action.setData(UserDataWrapper(helper))
+
+
+class LinkEditorWidget(QtWidgets.QWidget):
+
+    def __init__(self, data_collection, suggested_links=None, parent=None):
+
+        super(LinkEditorWidget, self).__init__(parent=parent)
+
+        self._data_collection = data_collection
+
+        self.state = LinkEditorState(data_collection, suggested_links=suggested_links)
+
+        self._ui = load_ui('link_editor_widget.ui', self,
+                           directory=os.path.dirname(__file__))
+        autoconnect_callbacks_to_qt(self.state, self._ui)
+
+        self._ui.graph_widget.set_data_collection(data_collection, new_links=self.state.links)
+        self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
+
+        self._menu = LinkMenu(parent=self._ui.button_add_link)
+        self._menu.triggered.connect(self._add_link)
+        self._ui.button_add_link.setMenu(self._menu)
+
+        self.state.add_callback('data1', self._on_data_change)
+        self.state.add_callback('data2', self._on_data_change)
+        self._on_data_change()
+
+        self.state.add_callback('data1', self._on_data_change_always)
+        self.state.add_callback('data2', self._on_data_change_always)
+        self._on_data_change_always()
+
+        self.state.add_callback('current_link', self._on_current_link_change)
+        self._on_current_link_change()
+
+    def _add_link(self, action):
+        self.state.new_link(action.data().data)
+
+    @avoid_circular
+    def _on_data_change_graph(self):
+        self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
+        self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
+
+    @avoid_circular
+    def _on_data_change(self, *args):
+        self._ui.graph_widget.manual_select(self.state.data1, self.state.data2)
+
+    def _on_data_change_always(self, *args):
+        # This should always run even when the change comes from the graph
+        enabled = self.state.data1 is not None and self.state.data2 is not None
+        self._ui.button_add_link.setEnabled(enabled)
+        self._ui.button_remove_link.setEnabled(enabled)
+
+    def _on_current_link_change(self, *args):
+
+        # We update the link details panel on the right
+
+        link_details = self._ui.link_details
+
+        link_io_widget = QtWidgets.QWidget()
+        link_io = QtWidgets.QGridLayout()
+        link_io_widget.setLayout(link_io)
+
+        link_io.setSizeConstraint(link_io.SetFixedSize)
+        link_io.setHorizontalSpacing(10)
+        link_io.setVerticalSpacing(5)
+        link_io.setContentsMargins(0, 0, 0, 0)
+
+        item = self._ui.link_io.itemAt(0)
+        if item is not None and item.widget() is not None:
+            widget = item.widget()
+            widget.setParent(None)
+            # NOTE: we need to also hide the widget otherwise it will still
+            # appear but floating in front of or behind the dialog.
+            widget.hide()
+
+        for row in range(link_io.rowCount()):
+            link_io.setRowStretch(row, 0.5)
+
+        link_io.setColumnStretch(1, 10)
+
+        link = self.state.current_link
+
+        if link is None:
+            link_details.setText('')
+            return
+
+        link_details.setText(link.description)
+
+        index = 0
+
+        if len(link.input_names) > 0:
+
+            link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
+
+            for input_name in link.input_names:
+                index += 1
+                combo = QtWidgets.QComboBox(parent=self._ui)
+                link_io.addWidget(QtWidgets.QLabel(input_name), index, 0)
+                link_io.addWidget(combo, index, 1)
+                connect_combo_selection(link, input_name, combo)
+
+        if len(link.output_names) > 0:
+
+            index += 1
+            link_io.addItem(QtWidgets.QSpacerItem(5, 20,
+                                                  QtWidgets.QSizePolicy.Fixed,
+                                                  QtWidgets.QSizePolicy.Fixed), index, 0)
+
+            index += 1
+            link_io.addWidget(QtWidgets.QLabel('<b>Output</b>'), index, 0, 1, 2)
+
+            for output_name in link.output_names:
+                index += 1
+                combo = QtWidgets.QComboBox(parent=self._ui)
+                link_io.addWidget(QtWidgets.QLabel(output_name), index, 0)
+                link_io.addWidget(combo, index, 1)
+                connect_combo_selection(link, output_name, combo)
+
+        index += 1
+        link_io.addWidget(QtWidgets.QWidget(), index, 0)
+        link_io.setRowStretch(index, 10)
+
+        self._ui.link_io.addWidget(link_io_widget)
+
+        self._ui.graph_widget.set_links(self.state.links)
 
 
 class LinkEditor(QtWidgets.QDialog):
 
-    def __init__(self, collection, functions=None, parent=None):
+    def __init__(self, data_collection, suggested_links=None, parent=None):
 
         super(LinkEditor, self).__init__(parent=parent)
 
-        self._collection = collection
-
-        self._ui = load_ui('link_editor.ui', self,
+        self._ui = load_ui('link_editor_dialog.ui', self,
                            directory=os.path.dirname(__file__))
 
-        self._links = list(collection.external_links)
+        self.link_widget = LinkEditorWidget(data_collection,
+                                              suggested_links=suggested_links,
+                                              parent=self)
 
-        self._ui.graph_widget.set_data_collection(collection)
-        self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
+        self._ui.layout().insertWidget(1, self.link_widget)
 
-        self._init_widgets()
-        self._connect()
-
-        self._size = None
-
-        if len(self._collection) == 2:
-            self._ui.left_components.data = self._collection[0]
-            self._ui.right_components.data = self._collection[1]
-        else:
-            self._ui.left_components.data = None
-            self._ui.right_components.data = None
-
-        self._ui.left_components.data_changed.connect(self._on_data_change_combo)
-        self._ui.right_components.data_changed.connect(self._on_data_change_combo)
-
-        self._on_data_change_combo()
-
-    @avoid_circular
-    def _on_data_change_graph(self):
-        self._ui.left_components.data = getattr(self._ui.graph_widget.selected_node1, 'data', None)
-        self._ui.right_components.data = getattr(self._ui.graph_widget.selected_node2, 'data', None)
-        self._update_links_list()
-
-    @avoid_circular
-    def _on_data_change_combo(self):
-        graph = self._ui.graph_widget
-        graph.manual_select(self._ui.left_components.data, self._ui.right_components.data)
-        self._update_links_list()
-
-    def _init_widgets(self):
-        self._ui.left_components.setup(self._collection)
-        self._ui.right_components.setup(self._collection)
-        self._ui.signature_editor.hide()
-
-    def _connect(self):
-        self._ui.add_link.clicked.connect(nonpartial(self._add_new_link))
-        self._ui.remove_link.clicked.connect(nonpartial(self._remove_link))
-        self._ui.toggle_editor.clicked.connect(nonpartial(self._toggle_advanced))
-
-    @property
-    def advanced(self):
-        return self._ui.signature_editor.isVisible()
-
-    @advanced.setter
-    def advanced(self, state):
-        """Set whether the widget is in advanced state"""
-        self._ui.signature_editor.setVisible(state)
-        self._ui.toggle_editor.setText("Basic linking" if state else "Advanced linking")
-
-    def _toggle_advanced(self):
-        """Show or hide the signature editor widget"""
-        self.advanced = not self.advanced
-
-    def _selected_components(self):
-        result = []
-        id1 = self._ui.left_components.component
-        id2 = self._ui.right_components.component
-        if id1:
-            result.append(id1)
-        if id2:
-            result.append(id2)
-        return result
-
-    def _simple_links(self):
-        """Return identity links which connect the highlighted items
-        in each component selector.
-
-        Returns:
-          A list of :class:`~glue.core.ComponentLink` objects
-          If items are not selected in the component selectors,
-          an empty list is returned
-        """
-        comps = self._selected_components()
-        if len(comps) != 2:
-            return []
-        assert isinstance(comps[0], core.data.ComponentID), comps[0]
-        assert isinstance(comps[1], core.data.ComponentID), comps[1]
-        link1 = core.component_link.ComponentLink([comps[0]], comps[1])
-        return [link1]
-
-    def _add_new_link(self):
-
-        if not self.advanced:
-            links = self._simple_links()
-        else:
-            links = self._ui.signature_editor.links()
-            self._ui.signature_editor.clear_inputs()
-
-        self._links.extend(links)
-
-        self._ui.graph_widget.set_links(self._links)
-        self._update_links_list()
-
-    def links(self):
-        return self._links
-
-    def _remove_link(self):
-        if self._ui.current_links.currentItem() is None:
-            return
-        for item in self._ui.current_links.selectedItems():
-            link = item.data(0, Qt.UserRole)
-            self._links.remove(link)
-        self._ui.graph_widget.set_links(self._links)
-        self._update_links_list()
+    def accept(self, *args):
+        self.link_widget.state.update_links_in_collection()
+        super(LinkEditor, self).accept(*args)
 
     @classmethod
-    def update_links(cls, collection):
-        widget = cls(collection)
-        isok = widget._ui.exec_()
-        if isok:
-            collection.set_links(widget._links)
-
-    def _update_links_list(self):
-        self._ui.current_links.clear()
-        data1 = self._ui.left_components.data
-        data2 = self._ui.right_components.data
-        if data1 is None or data2 is None:
-            return
-        links_to_add = set()
-        for link in self._links:
-            to_ids = link.get_to_ids()
-            to_data = [to_id.parent for to_id in to_ids]
-            from_data = [from_id.parent for from_id in link.get_from_ids()]
-            if (data1 in to_data and data2 in from_data) or (data1 in from_data and data2 in to_data):
-                links_to_add.add(link)
-
-        for link in links_to_add:
-            self._add_link_to_list(link)
-
-    def _add_link_to_list(self, link):
-        current = self._ui.current_links
-        from_ids = ', '.join(cid.label for cid in link.get_from_ids())
-        to_ids = ', '.join(cid.label for cid in link.get_to_ids())
-        item = QtWidgets.QTreeWidgetItem(current.invisibleRootItem(),
-                                         [str(link), from_ids, to_ids])
-        item.setData(0, Qt.UserRole, link)
+    def update_links(cls, collection, suggested_links=None):
+        widget = cls(collection, suggested_links=suggested_links)
+        widget._ui.exec_()
 
 
-def main():
+def main():  # pragma: no cover
     import numpy as np
+    from glue.main import load_plugins
     from glue.utils.qt import get_qapp
     from glue.core import Data, DataCollection
+
+    load_plugins()
 
     app = get_qapp()
 
@@ -182,7 +216,3 @@ def main():
         dc.append(d)
 
     LinkEditor.update_links(dc)
-
-
-if __name__ == "__main__":
-    main()

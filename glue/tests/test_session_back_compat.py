@@ -248,3 +248,33 @@ def test_load_log(protocol):
     assert type(data.get_component('b')) == Component
 
     ga.close()
+
+
+@requires_qt
+@requires_astropy
+def test_load_coordinate_link_helpers_013():
+
+    # This loads a session file made with Glue v0.13. In this session, we have
+    # two tables, and we use all the celestial link functions that were present
+    # in Glue v0.13. We now check that the paths are patched when loading the
+    # session (since the functions have been moved to a deprecated location)
+
+    with open(os.path.join(DATA, 'session_coordinate_links_013.glu'), 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+
+    data1, data2 = ga.session.data_collection
+
+    print(data1)
+    print(data2)
+
+    # Check that the links works
+    data1[data2.id['x']]
+    data1[data2.id['y']]
+    data2[data1.id['x']]
+    data2[data1.id['y']]
+
+    ga.close()

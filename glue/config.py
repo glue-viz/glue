@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import imp
 import sys
+import warnings
 from collections import namedtuple
 
 """
@@ -666,32 +667,47 @@ class LayerActionRegistry(Registry):
 
 
 class LinkHelperRegistry(Registry):
+    """
+    Stores helper objects that compute many ComponentLinks at once
 
-    """Stores helper objects that compute many ComponentLinks at once
+    Link helpers can either be functions or subclasses of
+    `~glue.core.link_helpers.LinkCollection`. If a function, it should take a
+    list of `~glue.core.component_id.ComponentIDs` as inputs, and returns an
+    iterable of `~glue.core.component_link.ComponentLink` objects.
 
-    The members property is a list of (object, info_string,
-    input_labels) tuples. `Object` is the link helper. `info_string`
-    describes what `object` does. `input_labels` is a list labeling
-    the inputs. ``category`` is a category in which the link function will appear
-    (defaults to 'General').
+    A link helper should only link components between two datasets, and the
+    order of the inputs to the function should be the
+    `~glue.core.component_id.ComponentIDs` of the first dataset, followed by
+    the ones for the second dataset. Human-readable names for the input and
+    output components should be given using ``input_labels`` and
+    ``output_labels``
 
-    Each link helper takes a list of ComponentIDs as inputs, and
-    returns an iterable object (e.g. list) of ComponentLinks.
-
-    New helpers can be registered via
+    New link helpers can be registered with e.g.::
 
         @link_helper('Links degrees and arcseconds in both directions',
-                     ['degree', 'arcsecond'])
+                     input_labels=['degree'], output_labels=['arcsecond'])
         def new_helper(degree, arcsecond):
             return [ComponentLink([degree], arcsecond, using=lambda d: d*3600),
                     ComponentLink([arcsecond], degree, using=lambda a: a/3600)]
     """
-    item = namedtuple('LinkHelper', 'helper info input_labels category')
+    item = namedtuple('LinkHelper', 'helper category')
 
-    def __call__(self, info, input_labels, category='General'):
+    def __call__(self, info=None, input_labels=None, output_labels=None, category='General'):
+
+        if input_labels is not None and output_labels is None:
+            warnings.warn('Specifying @link_helper without giving output_labels is '
+                          'deprecated and will be removed in future. See the '
+                          'documentation about how to specify output_labels', UserWarning)
+
         def adder(func):
-            self.add(self.item(func, info, input_labels, category))
+            from glue.core.link_helpers import LinkCollection, functional_link_collection
+            if not issubclass(func, LinkCollection):
+                func = functional_link_collection(func, description=info,
+                                                  labels1=input_labels or [],
+                                                  labels2=output_labels or [])
+            self.add(self.item(func, category))
             return func
+
         return adder
 
 

@@ -393,8 +393,8 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4], label='dy')
         dc = DataCollection([x, y])
         dc.merge(x, y)
-        assert dc[0].visible_components[0] is x.id['x']
-        assert dc[0].visible_components[1] is y.id['y']
+        assert dc[0].main_components[0] is x.id['x']
+        assert dc[0].main_components[1] is y.id['y']
 
     def test_remove_component_message(self):
 

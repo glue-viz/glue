@@ -23,11 +23,11 @@ def mmap_info_to_array(info, mapping):
 
 
 def extract_hdf5_datasets(filename, memmap=True):
-    '''
+    """
     Recursive function that returns a dictionary with all the datasets found in
     an HDF5 file or group. `handle` should be an instance of h5py.highlevel.File
     or h5py.highlevel.Group.
-    '''
+    """
 
     import h5py
 
@@ -45,7 +45,7 @@ def extract_hdf5_datasets(filename, memmap=True):
                 # If an offset is available, the data is contiguous and we can
                 # use memory mapping for efficiency.
                 if not memmap or offset is None:
-                    arrays[full_path] = item.value
+                    arrays[full_path] = item[()]
                 else:
                     arrays[full_path] = dict(offset=offset, shape=item.shape, dtype=item.dtype)
             elif item.dtype.kind in ('V',):

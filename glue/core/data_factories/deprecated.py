@@ -12,13 +12,13 @@ __all__ = ['is_gridded_data', 'gridded_data']
 
 
 def extract_data_hdf5(filename, use_datasets='all'):
-    '''
+    """
     Extract non-tabular datasets from an HDF5 file. If `use_datasets` is
     'all', then all non-tabular datasets are extracted, otherwise only the
     ones specified by `use_datasets` are extracted (`use_datasets` should
     then contain a list of paths). If the requested datasets do not have
     the same dimensions, an Exception is raised.
-    '''
+    """
 
     # Read in all datasets
     datasets = extract_hdf5_datasets(filename)
@@ -84,13 +84,13 @@ def filter_hdulist_by_shape(hdulist, use_hdu='all'):
 
 
 def extract_data_fits(filename, use_hdu='all'):
-    '''
+    """
     Extract non-tabular HDUs from a FITS file. If `use_hdu` is 'all', then
     all non-tabular HDUs are extracted, otherwise only the ones specified
     by `use_hdu` are extracted (`use_hdu` should then contain a list of
     integers). If the requested HDUs do not have the same dimensions, an
     Exception is raised.
-    '''
+    """
     from astropy.io import fits
 
     # Read in all HDUs
