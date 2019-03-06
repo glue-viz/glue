@@ -110,8 +110,12 @@ class ComponentLink(object):
 
         self.identity = self._using is identity
 
+        # NOTE: the getattr(using, 'func', using) in the following code
+        # is to make sure that things work properly if the functions are
+        # PartialResult objects.
+
         self.description = description or ''
-        self.input_names = input_names or getfullargspec(using)[0]
+        self.input_names = input_names or getfullargspec(getattr(using, 'func', using))[0]
         self.output_name = output_name or 'output'
 
         if not isinstance(comp_from, list):

@@ -278,21 +278,25 @@ class MultiLink(BaseMultiLink):
         self.forwards = forwards
         self.backwards = backwards
 
+        # NOTE: the getattr(forwards, 'func', forwards) in the following code
+        # is to make sure that things work properly if the functions are
+        # PartialResult objects.
+
         if labels1 is None:
             if forwards is not None:
                 if isinstance(forwards, types.MethodType):
-                    labels1 = getfullargspec(forwards)[0][1:]
+                    labels1 = getfullargspec(getattr(forwards, 'func', forwards))[0][1:]
                 else:
-                    labels1 = getfullargspec(forwards)[0]
+                    labels1 = getfullargspec(getattr(forwards, 'func', forwards))[0]
             else:
                 raise ValueError("labels1 needs to be specified if forwards isn't")
 
         if labels2 is None:
             if backwards is not None:
                 if isinstance(backwards, types.MethodType):
-                    labels2 = getfullargspec(backwards)[0][1:]
+                    labels2 = getfullargspec(getattr(backwards, 'func', backwards))[0][1:]
                 else:
-                    labels2 = getfullargspec(backwards)[0]
+                    labels2 = getfullargspec(getattr(backwards, 'func', backwards))[0]
             else:
                 raise ValueError("labels2 needs to be specified if backwards isn't")
 
