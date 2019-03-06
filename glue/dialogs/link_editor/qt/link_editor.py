@@ -77,6 +77,10 @@ class LinkEditorWidget(QtWidgets.QWidget):
         self.state.add_callback('data2', self._on_data_change)
         self._on_data_change()
 
+        self.state.add_callback('data1', self._on_data_change_always)
+        self.state.add_callback('data2', self._on_data_change_always)
+        self._on_data_change_always()
+
         self.state.add_callback('current_link', self._on_current_link_change)
         self._on_current_link_change()
 
@@ -91,6 +95,9 @@ class LinkEditorWidget(QtWidgets.QWidget):
     @avoid_circular
     def _on_data_change(self, *args):
         self._ui.graph_widget.manual_select(self.state.data1, self.state.data2)
+
+    def _on_data_change_always(self, *args):
+        # This should always run even when the change comes from the graph
         enabled = self.state.data1 is not None and self.state.data2 is not None
         self._ui.button_add_link.setEnabled(enabled)
         self._ui.button_remove_link.setEnabled(enabled)
@@ -124,15 +131,16 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         index = 0
 
-        if len(link.input_names):
+        if len(link.input_names) > 0:
+
             link_io.addWidget(QtWidgets.QLabel('<b>Inputs</b>'), 0, 0, 1, 2)
 
-        for input_name in link.input_names:
-            index += 1
-            combo = QtWidgets.QComboBox(parent=self._ui)
-            link_io.addWidget(QtWidgets.QLabel(input_name), index, 0)
-            link_io.addWidget(combo, index, 1)
-            connect_combo_selection(link, input_name, combo)
+            for input_name in link.input_names:
+                index += 1
+                combo = QtWidgets.QComboBox(parent=self._ui)
+                link_io.addWidget(QtWidgets.QLabel(input_name), index, 0)
+                link_io.addWidget(combo, index, 1)
+                connect_combo_selection(link, input_name, combo)
 
         if len(link.output_names) > 0:
 
@@ -154,10 +162,6 @@ class LinkEditorWidget(QtWidgets.QWidget):
         index += 1
         link_io.addWidget(QtWidgets.QWidget(), index, 0)
         link_io.setRowStretch(index, 10)
-
-        # We need to force a repaint here otherwise the combo boxes don't get
-        # drawn straight away.
-        self.repaint()
 
         self._ui.graph_widget.set_links(self.state.links)
 
