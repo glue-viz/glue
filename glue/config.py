@@ -694,7 +694,7 @@ class LinkHelperRegistry(Registry):
 
     def __call__(self, info=None, input_labels=None, output_labels=None, category='General'):
 
-        if output_labels is None:
+        if input_labels is not None and output_labels is None:
             warnings.warn('Specifying @link_helper without giving output_labels is '
                           'deprecated and will be removed in future. See the '
                           'documentation about how to specify output_labels', UserWarning)
