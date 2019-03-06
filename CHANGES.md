@@ -17,6 +17,11 @@ v0.15.0 (unreleased)
 v0.14.3 (unreleased)
 --------------------
 
+* Fix an error that occurred if creating a new viewer was
+  cancelled. [#1952]
+
+* Exclude problematic versions of ipykernel from dependencies. [#1952]
+
 * Make sure that scrolling above a viewer does not result in the
   whole canvas also scrolling. [#1919]
 
