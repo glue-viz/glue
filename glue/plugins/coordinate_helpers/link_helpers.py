@@ -33,6 +33,10 @@ class BaseCelestialMultiLink(BaseMultiLink):
         cin = cout.transform_to(self.frame_in)
         return cin.spherical.lon.degree, cin.spherical.lat.degree
 
+    # Backward-compatibility with glue-core <0.15
+    forward = forwards
+    backward = backwards
+
 
 @link_helper(category='Astronomy')
 class Galactic_to_FK5(BaseCelestialMultiLink):

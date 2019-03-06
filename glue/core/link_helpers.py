@@ -102,11 +102,24 @@ class LinkCollection(object):
 
     def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
-        self.data1 = data1
-        self.data2 = data2
-
         self.cids1 = cids1 or []
         self.cids2 = cids2 or []
+
+        if data1 is None:
+            if len(self.cids1) == 0:
+                raise ValueError("If cids1 is not given or is empty, data1 should be specified")
+            else:
+                self.data1 = self.cids1[0].parent
+        else:
+            self.data1 = data1
+
+        if data2 is None:
+            if len(self.cids2) == 0:
+                raise ValueError("If cids2 is not given or is empty, data2 should be specified")
+            else:
+                self.data2 = self.cids2[0].parent
+        else:
+            self.data2 = data2
 
         self._links = []
 
@@ -136,10 +149,16 @@ class LinkCollection(object):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        self = cls(data1=context.object(rec['data1']),
-                   data2=context.object(rec['data2']),
-                   cids1=context.object(rec['cids1']),
-                   cids2=context.object(rec['cids2']))
+        if 'data1' in rec:
+            self = cls(data1=context.object(rec['data1']),
+                       data2=context.object(rec['data2']),
+                       cids1=context.object(rec['cids1']),
+                       cids2=context.object(rec['cids2']))
+        else:  # glue-core <0.15
+            cids = context.object(rec['cids'])
+            cids1 = [context.object(c) for c in cids[:len(cls.labels1)]]
+            cids2 = [context.object(c) for c in cids[len(cls.labels1):]]
+            self = cls(cids1=cids1, cids2=cids2)
         return self
 
 
