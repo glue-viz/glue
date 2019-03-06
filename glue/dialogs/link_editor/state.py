@@ -15,17 +15,7 @@ from glue.core.state_objects import State
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
 
-# NOTES
-# At the moment the main issue with link helpers is that they return a function
-# that can just return a list of links. The issue is that in the resulting links,
-# the metadata is lost. So we should probably auto-convert the output from the
-# link helper into a link collection or multilink that includes metadata.
-
-__all__ = ['LinkEditorState']
-
-
-class LinkWrapper(State):
-    link = CallbackProperty()
+__all__ = ['LinkEditorState', 'EditableLinkFunctionState']
 
 
 class LinkEditorState(State):

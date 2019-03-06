@@ -41,7 +41,7 @@ class WCSLink(MultiLink):
                    'two datasets using the World Coordinate System (WCS) '
                    'coordinates defined in the files.')
 
-    def __init__(self, data1=None, data2=None):
+    def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
         # Extract WCS objects - from here onwards, we assume that these objects
         # have the new Astropy APE 14 interface.
