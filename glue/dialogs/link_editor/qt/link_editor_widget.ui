@@ -93,13 +93,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButton">
-       <property name="text">
-        <string>swap</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QComboBox" name="combosel_data1">
        <property name="minimumSize">
         <size>
@@ -150,10 +143,16 @@
      </property>
      <item row="2" column="1">
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
        <item>
         <widget class="QLabel" name="link_details">
          <property name="text">
           <string>Details about the link</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

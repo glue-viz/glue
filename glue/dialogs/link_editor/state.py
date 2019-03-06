@@ -54,11 +54,11 @@ class LinkEditorState(State):
         else:
             self.data1 = self.data2 = None
 
-        self.on_data_change()
+        self._on_data_change()
 
-        self.add_callback('data1', self.on_data_change)
-        self.add_callback('data2', self.on_data_change)
-        self.add_callback('restrict_to_suggested', self.on_data_change)
+        self.add_callback('data1', self._on_data1_change)
+        self.add_callback('data2', self._on_data2_change)
+        self.add_callback('restrict_to_suggested', self._on_data_change)
 
         LinkEditorState.current_link.set_display_func(self, self._display_link)
 
@@ -77,7 +77,19 @@ class LinkEditorState(State):
 
         return links
 
-    def on_data_change(self, *args):
+    def _on_data1_change(self, *args):
+        if self.data1 is self.data2 and self.data1 is not None:
+            self.data2 = next(data for data in self.data_collection if data is not self.data1)
+        else:
+            self._on_data_change()
+
+    def _on_data2_change(self, *args):
+        if self.data2 is self.data1 and self.data2 is not None:
+            self.data1 = next(data for data in self.data_collection if data is not self.data2)
+        else:
+            self._on_data_change()
+
+    def _on_data_change(self, *args):
 
         links = self.visible_links
         with delay_callback(self, 'current_link'):
@@ -93,10 +105,6 @@ class LinkEditorState(State):
 
     def new_link(self, function_or_helper):
 
-        # TODO: keep track of name of original action so that we can find it
-        # again in the drop-down menu? Give IDs so that we can change the
-        # display name in future?
-
         if hasattr(function_or_helper, 'function'):
             link = EditableLinkFunctionState(function_or_helper.function,
                                              data_in=self.data1, data_out=self.data2,
@@ -109,12 +117,12 @@ class LinkEditorState(State):
 
         self.links.append(link)
         with delay_callback(self, 'current_link'):
-            self.on_data_change()
+            self._on_data_change()
             self.current_link = link
 
     def remove_link(self):
         self.links.remove(self.current_link)
-        self.on_data_change()
+        self._on_data_change()
 
     def update_links_in_collection(self):
         links = [link_state.link for link_state in self.links]
@@ -227,11 +235,7 @@ class EditableLinkFunctionState(State):
             helper = ComponentIDComboHelper(self, name,
                                             pixel_coord=True, world_coord=True)
             helper.append_data(data_in)
-
-            # For backward-compatibility with @link_helpers that didn't specify
-            # output labels, we need to assume everything gets selected via inputs.
-            if len(self.output_names) == 0:
-                helper.append_data(data_out)
+            helper.append_data(data_out)
 
             setattr(self, '_' + name + '_helper', helper)
 
@@ -239,6 +243,7 @@ class EditableLinkFunctionState(State):
             helper = ComponentIDComboHelper(self, name,
                                             pixel_coord=True, world_coord=True)
             helper.append_data(data_out)
+            helper.append_data(data_in)
             setattr(self, '_' + name + '_helper', helper)
 
         if cids_in is not None:

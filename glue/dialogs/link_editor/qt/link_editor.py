@@ -22,10 +22,6 @@ def get_function_name(info):
         return item.__name__
 
 
-# TODO: make links shallow-copiable so that we avoid changing the real ones in-place
-# TODO: make data combos not allow same data to be selected twice
-
-
 class LinkMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None):
@@ -106,20 +102,29 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         # We update the link details panel on the right
 
-        link_io = self._ui.link_io
         link_details = self._ui.link_details
 
-        for i in reversed(range(link_io.count())):
-            item = link_io.itemAt(i)
-            if item is not None and item.widget() is not None:
-                widget = item.widget()
-                widget.setParent(None)
-                # NOTE: we need to also hide the widget otherwise it will still
-                # appear but floating in front of or behind the dialog.
-                widget.hide()
+        link_io_widget = QtWidgets.QWidget()
+        link_io = QtWidgets.QGridLayout()
+        link_io_widget.setLayout(link_io)
+
+        link_io.setSizeConstraint(link_io.SetFixedSize)
+        link_io.setHorizontalSpacing(10)
+        link_io.setVerticalSpacing(5)
+        link_io.setContentsMargins(0, 0, 0, 0)
+
+        item = self._ui.link_io.itemAt(0)
+        if item is not None and item.widget() is not None:
+            widget = item.widget()
+            widget.setParent(None)
+            # NOTE: we need to also hide the widget otherwise it will still
+            # appear but floating in front of or behind the dialog.
+            widget.hide()
 
         for row in range(link_io.rowCount()):
             link_io.setRowStretch(row, 0.5)
+
+        link_io.setColumnStretch(1, 10)
 
         link = self.state.current_link
 
@@ -162,6 +167,8 @@ class LinkEditorWidget(QtWidgets.QWidget):
         index += 1
         link_io.addWidget(QtWidgets.QWidget(), index, 0)
         link_io.setRowStretch(index, 10)
+
+        self._ui.link_io.addWidget(link_io_widget)
 
         self._ui.graph_widget.set_links(self.state.links)
 

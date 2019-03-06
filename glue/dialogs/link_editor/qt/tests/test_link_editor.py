@@ -592,3 +592,29 @@ class TestLinkEditor:
         assert isinstance(links[1], helper2)
         assert links[1].cids1[0] is self.data1.id['x']
         assert links[1].cids2[0] is self.data2.id['c']
+
+    def test_same_data(self):
+
+        # Test that we can't set the same data twice
+
+        app = get_qapp()
+
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+        link_widget = dialog.link_widget
+
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
+
+        assert link_widget.state.data1 == self.data1
+        assert link_widget.state.data2 == self.data2
+
+        link_widget.state.data1 = self.data2
+
+        assert link_widget.state.data1 == self.data2
+        assert link_widget.state.data2 == self.data1
+
+        link_widget.state.data2 = self.data2
+
+        assert link_widget.state.data1 == self.data1
+        assert link_widget.state.data2 == self.data2
