@@ -75,6 +75,10 @@ glue-deps = glue._deps:main
 glue = glue.main:main
 """
 
+# Note that we have to exclude ipykernel 5.0.0 and 5.1.0 below due to a bug
+# that caused issues in the IPython terminal. For more details:
+# https://github.com/ipython/ipykernel/pull/376
+
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=2.0',
@@ -82,7 +86,7 @@ install_requires = ['numpy>=1.9',
                     'qtpy>=1.2',
                     'setuptools>=1.0',
                     'ipython>=4.0',
-                    'ipykernel',
+                    'ipykernel>=4.0,!=5.0.0,!=5.1.0',
                     'qtconsole',
                     'dill>=0.2',
                     'xlrd>=1.0',
