@@ -212,8 +212,6 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         # Also keep track of all the dimensions that contributed to this coordinate
         dimensions_all.extend(dimensions)
 
-    translated_coords = tuple(translated_coords)
-
     # If a dimension from the target data for which bounds was set to an interval
     # did not actually contribute to any of the coordinates in data, then if
     # broadcast is set to False we raise an error, otherwise we proceed and
@@ -227,13 +225,33 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     # PERF: optimize further - check if we can extract a sub-region that
     # contains all the valid values.
 
+    # We should avoid accessing the data using tuples of 1D arrays if possible
+    # since that can be very inefficient. Instead, we should pre-fetch a regular
+    # array and then use array indexing on that smaller array. This should help
+    # for cases where e.g. the array is memory mapped or using dask.
+
+    preliminary_view = []
+    for idim in range(len(translated_coords)):
+        imin = np.min(translated_coords[idim])
+        imax = np.max(translated_coords[idim])
+        preliminary_view.append(slice(imin, imax + 1))
+        translated_coords[idim] = translated_coords[idim] - imin
+    preliminary_view = tuple(preliminary_view)
+
+    translated_coords = tuple(translated_coords)
+
+    print("Optimizing FRB by getting preliminary view:", preliminary_view)
+
     # Take subset_state into account, if present
     if subset_state is None:
-        array = data.get_data(target_cid, view=translated_coords).astype(float)
+        array = data.get_data(target_cid, view=preliminary_view).astype(float)
         invalid_value = -np.inf
     else:
-        array = data.get_mask(subset_state, view=translated_coords)
+        array = data.get_mask(subset_state, view=preliminary_view)
         invalid_value = False
+
+    # Now apply the array indices
+    array = array[translated_coords]
 
     if np.any(invalid_all):
         if not array.flags.writeable:
