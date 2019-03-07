@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
 
 import abc
+import time
 import uuid
 import warnings
 from contextlib import contextmanager
@@ -1216,22 +1217,31 @@ class Data(BaseCartesianData):
         else:
             print('Accessing data with view=', view)
 
-        if isinstance(cid, ComponentLink):
-            return cid.compute(self, view)
+        start = time.time()
 
-        if cid in self._components:
-            comp = self._components[cid]
-        elif cid in self._externally_derivable_components:
-            comp = self._externally_derivable_components[cid]
-        else:
-            raise IncompatibleAttribute(cid)
+        try:
 
-        if view is not None:
-            result = comp[view]
-        else:
-            result = comp.data
+            if isinstance(cid, ComponentLink):
+                return cid.compute(self, view)
 
-        return result
+            if cid in self._components:
+                comp = self._components[cid]
+            elif cid in self._externally_derivable_components:
+                comp = self._externally_derivable_components[cid]
+            else:
+                raise IncompatibleAttribute(cid)
+
+            if view is not None:
+                result = comp[view]
+            else:
+                result = comp.data
+
+            return result
+
+        finally:
+
+            end = time.time()
+            print('... completed in {0:3f}s'.format(end - start))
 
     def get_kind(self, cid):
 
@@ -1513,6 +1523,7 @@ class Data(BaseCartesianData):
                 data = subset_state.to_array(self, cid)
             else:
                 mask = subset_state.to_mask(self, view)
+                print(mask)
                 if np.any(unbroadcast(mask)):
                     data = self.get_data(cid, view)
                 else:
