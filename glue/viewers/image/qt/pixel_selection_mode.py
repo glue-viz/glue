@@ -55,8 +55,8 @@ class PixelSelectionTool(ToolbarModeBase):
         y = int(round(y))
 
         indices = [None] * self.viewer.state.reference_data.ndim
-        indices[self.viewer.state.x_att.axis] = slice(x, x + 1)
-        indices[self.viewer.state.y_att.axis] = slice(y, y + 1)
+        indices[self.viewer.state.x_att.axis] = x
+        indices[self.viewer.state.y_att.axis] = y
 
         if self._derived is None:
             self._derived = IndexedData(self.viewer.state.reference_data, indices)
