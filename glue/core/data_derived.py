@@ -106,6 +106,8 @@ class IndexedData(BaseCartesianData):
         return self._original_data.get_kind(cid)
 
     def _to_original_view(self, view):
+        if view is None:
+            view = [slice(None)] * self.ndim
         original_view = list(self.indices)
         idim_reduced = 0
         for idim in range(self._original_data.ndim):
@@ -132,10 +134,7 @@ class IndexedData(BaseCartesianData):
         return compute_fixed_resolution_buffer(self, *args, **kwargs)
 
     def compute_statistic(self, *args, **kwargs):
-        if kwargs.get('subset_state') is None:
-            kwargs['subset_state'] = self._indices_subset_state
-        else:
-            kwargs['subset_state'] &= self._indices_subset_state
+        kwargs['view'] = self._to_original_view(kwargs.get('view'))
         return self._original_data.compute_statistic(*args, **kwargs)
 
     def compute_histogram(self, *args, **kwargs):
