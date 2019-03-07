@@ -148,3 +148,8 @@ class TestIndexedData:
         with pytest.raises(ValueError) as exc:
             derived.indices = (2, None, 4, None)
         assert exc.value.args[0] == "The 'indices' tuple should have length 5"
+
+    def test_pixel_component_ids(self):
+        derived = IndexedData(self.data, (None, 2, None, 4, None))
+        assert_equal(derived.get_data(derived.pixel_component_ids[1]),
+                     self.data.get_data(self.data.pixel_component_ids[2])[:, 2, :, 4, :])

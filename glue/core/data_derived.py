@@ -58,8 +58,8 @@ class IndexedData(BaseCartesianData):
         # don't allow changes in dimensionality of the derived dataset.
         if hasattr(self, '_indices'):
             changed = False
-            for index in range(self._original_data.ndim):
-                before, after = self._indices[index], value[index]
+            for idim in range(self._original_data.ndim):
+                before, after = self._indices[idim], value[idim]
                 if type(before) != type(after):
                     raise TypeError("Can't change where the ``None`` values are in indices")
                 elif before != after:
@@ -73,6 +73,12 @@ class IndexedData(BaseCartesianData):
         # for compute_statistic and compute_histogram
         slices = [slice(x) if x is None else x for x in self._indices]
         self._indices_subset_state = SliceSubsetState(self._original_data, slices)
+
+        # Construct a list of original pixel component IDs
+        self._original_pixel_cids = []
+        for idim in range(self._original_data.ndim):
+            if self._indices[idim] is None:
+                self._original_pixel_cids.append(self._original_data.pixel_component_ids[idim])
 
         # Tell glue that the data has changed
         if changed and self.hub is not None:
@@ -112,6 +118,8 @@ class IndexedData(BaseCartesianData):
         return original_view
 
     def get_data(self, cid, view=None):
+        if cid in self.pixel_component_ids:
+            cid = self._original_pixel_cids[cid.axis]
         original_view = self._to_original_view(view)
         return self._original_data.get_data(cid, view=original_view)
 
