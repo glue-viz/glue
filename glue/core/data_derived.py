@@ -4,6 +4,7 @@
 # http://docs.glueviz.org/en/stable/developer_guide/data.html and transparently
 # applying changes.
 
+from glue.core.hub import HubListener
 from glue.core.data import BaseCartesianData
 from glue.core.message import NumericalDataChangedMessage
 from glue.core.subset import SliceSubsetState
@@ -15,7 +16,7 @@ class DerivedData(BaseCartesianData):
     """
 
 
-class IndexedData(BaseCartesianData):
+class IndexedData(BaseCartesianData, HubListener):
     """
     A dataset where some dimensions have been removed via indexing.
 
@@ -118,6 +119,18 @@ class IndexedData(BaseCartesianData):
                     original_view[idim] = view[idim_reduced]
                 idim_reduced += 1
         return tuple(original_view)
+
+    def register_to_hub(self, hub):
+        hub.subscribe(self, NumericalDataChangedMessage,
+                      handler=self._check_for_original_changes)
+        super(IndexedData, self).register_to_hub(hub)
+
+    def _check_for_original_changes(self, message):
+        # If the parent's values are changed, we should assume the values
+        # of the current dataset have changed too
+        if message.data is self._original_data:
+            msg = NumericalDataChangedMessage(self)
+            self.hub.broadcast(msg)
 
     def get_data(self, cid, view=None):
         if cid in self.pixel_component_ids:
