@@ -115,7 +115,7 @@ class IndexedData(BaseCartesianData):
                 else:
                     original_view[idim] = view[idim_reduced]
                 idim_reduced += 1
-        return original_view
+        return tuple(original_view)
 
     def get_data(self, cid, view=None):
         if cid in self.pixel_component_ids:
