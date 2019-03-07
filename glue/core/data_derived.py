@@ -6,6 +6,7 @@
 
 from glue.core.data import BaseCartesianData
 from glue.core.message import NumericalDataChangedMessage
+from glue.core.subset import SliceSubsetState
 
 
 class DerivedData(BaseCartesianData):
@@ -40,7 +41,7 @@ class IndexedData(BaseCartesianData):
                              .format(original_data.ndim))
 
         self._original_data = original_data
-        self._indices = indices
+        self.indices = indices
 
     @property
     def indices(self):
@@ -55,21 +56,33 @@ class IndexedData(BaseCartesianData):
 
         # For now we require the indices to be in the same position, i.e. we
         # don't allow changes in dimensionality of the derived dataset.
-        for index in range(self._original_data.ndim):
-            before, after = self._indices[index], value[index]
-            if type(before) != type(after):
-                raise TypeError("Can't change where the ``None`` values are in indices")
+        if hasattr(self, '_indices'):
+            changed = False
+            for index in range(self._original_data.ndim):
+                before, after = self._indices[index], value[index]
+                if type(before) != type(after):
+                    raise TypeError("Can't change where the ``None`` values are in indices")
+                elif before != after:
+                    changed = True
+        else:
+            changed = False
 
         self._indices = value
 
+        # Compute a subset state that represents the indexing - this is used
+        # for compute_statistic and compute_histogram
+        slices = [slice(x) if x is None else x for x in self._indices]
+        self._indices_subset_state = SliceSubsetState(self._original_data, slices)
+
         # Tell glue that the data has changed
-        if self.hub is not None:
+        if changed and self.hub is not None:
             msg = NumericalDataChangedMessage(self)
             self.hub.broadcast(msg)
 
     @property
     def label(self):
-        return self._original_data.label + ' [indexed]'
+        slice = '[' + ','.join([':' if x is None else str(x) for x in self._indices]) + ']'
+        return self._original_data.label + slice
 
     @property
     def shape(self):
@@ -77,7 +90,7 @@ class IndexedData(BaseCartesianData):
         for idim in range(self._original_data.ndim):
             if self.indices[idim] is None:
                 shape.append(self._original_data.shape[idim])
-        return shape
+        return tuple(shape)
 
     @property
     def main_components(self):
@@ -110,10 +123,16 @@ class IndexedData(BaseCartesianData):
         from glue.core.fixed_resolution_buffer import compute_fixed_resolution_buffer
         return compute_fixed_resolution_buffer(self, *args, **kwargs)
 
-    # The following aren't correct yet
-
     def compute_statistic(self, *args, **kwargs):
+        if kwargs.get('subset_state') is None:
+            kwargs['subset_state'] = self._indices_subset_state
+        else:
+            kwargs['subset_state'] &= self._indices_subset_state
         return self._original_data.compute_statistic(*args, **kwargs)
 
     def compute_histogram(self, *args, **kwargs):
+        if kwargs.get('subset_state') is None:
+            kwargs['subset_state'] = self._indices_subset_state
+        else:
+            kwargs['subset_state'] &= self._indices_subset_state
         return self._original_data.compute_histogram(*args, **kwargs)
