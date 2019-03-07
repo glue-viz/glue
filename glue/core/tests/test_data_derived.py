@@ -33,7 +33,7 @@ class TestIndexedData:
         assert derived.main_components == self.data.main_components
         assert derived.get_kind(self.x_id) == self.data.get_kind(self.x_id)
 
-        for view in [None, [1, slice(None), slice(None), slice(1, 4), slice(0, 7, 2)]]:
+        for view in [None, (1, slice(None), slice(None), slice(1, 4), slice(0, 7, 2))]:
 
             assert_equal(derived.get_data(self.x_id, view=view),
                          self.data.get_data(self.x_id, view=view))
@@ -75,7 +75,7 @@ class TestIndexedData:
         assert derived.main_components == manual.main_components
         assert derived.get_kind(self.x_id) == manual.get_kind(self.x_id)
 
-        for view in [None, [1, slice(None), slice(1, 4)]]:
+        for view in [None, (1, slice(None), slice(1, 4))]:
 
             assert_equal(derived.get_data(self.x_id, view=view),
                          manual.get_data(self.x_id, view=view))
