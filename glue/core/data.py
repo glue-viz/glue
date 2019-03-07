@@ -1211,6 +1211,11 @@ class Data(BaseCartesianData):
 
     def get_data(self, cid, view=None):
 
+        if view is not None and view is not Ellipsis and isinstance(view[0], np.ndarray):
+            print('Accessing data with view with 1D arrays with shape', view[0].shape)
+        else:
+            print('Accessing data with view=', view)
+
         if isinstance(cid, ComponentLink):
             return cid.compute(self, view)
 
@@ -1462,6 +1467,8 @@ class Data(BaseCartesianData):
             If there are more elements in the array than this value, operate in
             chunks with at most this size.
         """
+
+        print('Calling compute_statistic with axis={0}, view={1}, and random_subset={2}'.format(axis, view, random_subset))
 
         # TODO: generalize chunking to more types of axis
 
