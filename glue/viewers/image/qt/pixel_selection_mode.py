@@ -31,6 +31,12 @@ class PixelSelectionTool(ToolbarModeBase):
         self._release_callback = self._on_release
         self._derived = None
 
+        self._line_x = self.viewer.axes.axvline(0, color='orange')
+        self._line_x.set_visible(False)
+
+        self._line_y = self.viewer.axes.axhline(0, color='orange')
+        self._line_y.set_visible(False)
+
     def _on_press(self, mode):
         self._pressed = True
         self._select_pixel(mode)
@@ -51,12 +57,18 @@ class PixelSelectionTool(ToolbarModeBase):
         if x is None or y is None:
             return None
 
-        x = int(round(x))
-        y = int(round(y))
+        xi = int(round(x))
+        yi = int(round(y))
 
         indices = [None] * self.viewer.state.reference_data.ndim
-        indices[self.viewer.state.x_att.axis] = x
-        indices[self.viewer.state.y_att.axis] = y
+        indices[self.viewer.state.x_att.axis] = xi
+        indices[self.viewer.state.y_att.axis] = yi
+
+        self._line_x.set_data([x, x], [0, 1])
+        self._line_x.set_visible(True)
+        self._line_y.set_data([0, 1], [y, y])
+        self._line_y.set_visible(True)
+        self.viewer.axes.figure.canvas.draw()
 
         if self._derived is None:
             self._derived = IndexedData(self.viewer.state.reference_data, indices)
