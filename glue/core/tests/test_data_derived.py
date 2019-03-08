@@ -30,7 +30,7 @@ class TestIndexedData:
 
         assert derived.label == 'Test data[:,:,:,:,:]'
         assert derived.shape == self.data.shape
-        assert derived.main_components == self.data.main_components
+        assert [str(c) for c in derived.main_components] == [str(c) for c in self.data.main_components]
         assert derived.get_kind(self.x_id) == self.data.get_kind(self.x_id)
 
         for view in [None, (1, slice(None), slice(None), slice(1, 4), slice(0, 7, 2))]:
@@ -72,7 +72,7 @@ class TestIndexedData:
 
         assert derived.label == 'Test data[:,2,:,4,:]'
         assert derived.shape == manual.shape
-        assert derived.main_components == manual.main_components
+        assert [str(c) for c in derived.main_components] == [str(c) for c in manual.main_components]
         assert derived.get_kind(self.x_id) == manual.get_kind(self.x_id)
 
         for view in [None, (1, slice(None), slice(1, 4))]:

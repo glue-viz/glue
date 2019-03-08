@@ -8,6 +8,7 @@ from glue.core.hub import HubListener
 from glue.core.data import BaseCartesianData
 from glue.core.message import NumericalDataChangedMessage
 from glue.core.subset import SliceSubsetState
+from glue.core.component_id import ComponentID
 
 
 class DerivedData(BaseCartesianData):
@@ -43,6 +44,8 @@ class IndexedData(BaseCartesianData, HubListener):
 
         self._original_data = original_data
         self.indices = indices
+        self._cid_to_original_cid = {}
+        self._original_cid_to_cid = {}
 
     @property
     def indices(self):
@@ -101,9 +104,17 @@ class IndexedData(BaseCartesianData, HubListener):
 
     @property
     def main_components(self):
-        return self._original_data.main_components
+        main = []
+        for cid in self._original_data.main_components:
+            if cid not in self._original_cid_to_cid:
+                cid_new = ComponentID(label=cid.label, parent=self)
+                self._original_cid_to_cid[cid] = cid_new
+                self._cid_to_original_cid[cid_new] = cid
+            main.append(self._original_cid_to_cid[cid])
+        return main
 
     def get_kind(self, cid):
+        cid = self._translate_cid(cid)
         return self._original_data.get_kind(cid)
 
     def _to_original_view(self, view):
@@ -132,9 +143,15 @@ class IndexedData(BaseCartesianData, HubListener):
             msg = NumericalDataChangedMessage(self)
             self.hub.broadcast(msg)
 
-    def get_data(self, cid, view=None):
+    def _translate_cid(self, cid):
         if cid in self.pixel_component_ids:
             cid = self._original_pixel_cids[cid.axis]
+        elif cid in self._cid_to_original_cid:
+            cid = self._cid_to_original_cid[cid]
+        return cid
+
+    def get_data(self, cid, view=None):
+        cid = self._translate_cid(cid)
         original_view = self._to_original_view(view)
         return self._original_data.get_data(cid, view=original_view)
 
@@ -143,12 +160,15 @@ class IndexedData(BaseCartesianData, HubListener):
         return self._original_data.get_mask(subset_state, view=original_view)
 
     def compute_fixed_resolution_buffer(self, *args, **kwargs):
+        if 'target_cid' in kwargs:
+            kwargs['target_cid'] = self._translate_cid(kwargs['target_cid'])
         from glue.core.fixed_resolution_buffer import compute_fixed_resolution_buffer
         return compute_fixed_resolution_buffer(self, *args, **kwargs)
 
-    def compute_statistic(self, *args, **kwargs):
+    def compute_statistic(self, statistic, cid, **kwargs):
+        cid = self._translate_cid(cid)
         kwargs['view'] = self._to_original_view(kwargs.get('view'))
-        return self._original_data.compute_statistic(*args, **kwargs)
+        return self._original_data.compute_statistic(statistic, cid, **kwargs)
 
     def compute_histogram(self, *args, **kwargs):
         if kwargs.get('subset_state') is None:
