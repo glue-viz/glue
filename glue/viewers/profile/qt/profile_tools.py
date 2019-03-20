@@ -142,7 +142,7 @@ class ProfileTools(QtWidgets.QWidget):
         self._nav_data = self._visible_data()
         self._nav_viewers = {}
         for data in self._nav_data:
-            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att_pixel)
             self._nav_viewers[data] = self._viewers_with_data_slice(data, pix_cid)
 
     def _on_slider_change(self, *args):
@@ -167,7 +167,7 @@ class ProfileTools(QtWidgets.QWidget):
             axis = self.viewer.state.x_att.axis
             slc = int(round(x))
         else:
-            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att_pixel)
             axis = pix_cid.axis
             axis_view = [0] * data.ndim
             axis_view[pix_cid.axis] = slice(None)
@@ -310,7 +310,7 @@ class ProfileTools(QtWidgets.QWidget):
 
         for data in self._visible_data():
 
-            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att)
+            pix_cid = is_convertible_to_single_pixel_cid(data, self.viewer.state.x_att_pixel)
 
             for viewer in self._viewers_with_data_slice(data, pix_cid):
 

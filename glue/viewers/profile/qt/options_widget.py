@@ -11,9 +11,7 @@ __all__ = ['ProfileOptionsWidget']
 
 
 WARNING_TEXT = ("Warning: the coordinate '{label}' is not aligned with pixel "
-                "grid for any of the datasets, so no profiles could be "
-                "computed. Try selecting another world coordinates or one of the "
-                "pixel coordinates.")
+                "grid, so the values shown on the x-axis are approximate.")
 
 
 class ProfileOptionsWidget(QtWidgets.QWidget):
@@ -40,14 +38,15 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
     def _on_attribute_change(self, *args):
 
-        if self.viewer_state.x_att is None:
+        if self.viewer_state.reference_data is None or self.viewer_state.x_att_pixel is None:
             self.ui.text_warning.hide()
             return
 
-        for layer_state in self.viewer_state.layers:
-            if layer_state.independent_x_att:
-                self.ui.text_warning.hide()
-                return
+        world_warning = len(self.viewer_state.reference_data.coords
+                            .dependent_axes(self.viewer_state.x_att_pixel.axis)) > 1
 
-        self.ui.text_warning.show()
-        self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
+        if world_warning:
+            self.ui.text_warning.show()
+            self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
+        else:
+            self.ui.text_warning.hide()
