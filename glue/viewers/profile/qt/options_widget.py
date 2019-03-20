@@ -38,7 +38,9 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
     def _on_attribute_change(self, *args):
 
-        if self.viewer_state.reference_data is None or self.viewer_state.x_att_pixel is None:
+        if (self.viewer_state.reference_data is None or
+                self.viewer_state.x_att_pixel is None or
+                self.viewer_state.x_att is self.viewer_state.x_att_pixel):
             self.ui.text_warning.hide()
             return
 
