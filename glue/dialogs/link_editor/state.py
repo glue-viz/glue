@@ -33,6 +33,12 @@ class LinkEditorState(State):
         self.data1_helper = DataCollectionComboHelper(self, 'data1', data_collection)
         self.data2_helper = DataCollectionComboHelper(self, 'data2', data_collection)
 
+        # FIXME: We unregister the combo helpers straight away to avoid issues with
+        # leftover references once the dialog is closed. This shouldn't happen
+        # ideally so in future we should investigate how to avoid it.
+        self.data1_helper.unregister(data_collection.hub)
+        self.data2_helper.unregister(data_collection.hub)
+
         self.data_collection = data_collection
 
         # Convert links to editable states
