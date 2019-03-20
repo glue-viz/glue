@@ -47,6 +47,7 @@ class NavigateMouseMode(MouseMode):
             if self.state.x is None:
                 self._line.set_visible(False)
             else:
+                self._line.set_visible(True)
                 self._line.set_data([self.state.x, self.state.x], [0, 1])
         else:
             if self.state.x is not None:
