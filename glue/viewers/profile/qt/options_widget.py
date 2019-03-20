@@ -52,3 +52,4 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
             self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
         else:
             self.ui.text_warning.hide()
+            self.ui.text_warning.setText('')
