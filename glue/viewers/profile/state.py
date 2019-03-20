@@ -241,7 +241,7 @@ class ProfileLayerState(MatplotlibLayerState):
             raise IncompatibleDataException()
 
         # Check what pixel axis in the current dataset x_att corresponds to
-        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
+        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att_pixel)
 
         if pix_cid is None:
             raise IncompatibleDataException()
