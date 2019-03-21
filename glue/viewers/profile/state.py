@@ -30,13 +30,16 @@ class ProfileViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for a Profile viewer.
     """
 
+    x_att_pixel = DDCProperty(docstring='The component ID giving the pixel component '
+                                  'shown on the x axis')
+
+    x_att = DDSCProperty(docstring='The component ID giving the pixel or world component '
+                                   'shown on the x axis')
+
     reference_data = DDSCProperty(docstring='The dataset that is used to define the '
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
                                             'which the images are shown')
-
-    x_att = DDSCProperty(docstring='The data component to use for the x-axis '
-                                   'of the profile (should be a pixel component)')
 
     function = DDSCProperty(docstring='The function to use for collapsing data')
 
@@ -53,11 +56,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed)
-        self.add_callback('x_att', self._reset_x_limits)
+        self.add_callback('x_att', self._update_att)
         self.add_callback('normalize', self._reset_y_limits)
+
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, categorical=False,
-                                                   world_coord=True, pixel_coord=True)
+                                                   pixel_coord=True)
 
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))
         ProfileViewerState.function.set_display_func(self, FUNCTIONS.get)
@@ -72,6 +76,24 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self._reset_x_limits()
             self._reset_y_limits()
 
+    @property
+    def _display_world(self):
+        return (isinstance(getattr(self.reference_data, 'coords', None), Coordinates) and
+                type(self.reference_data.coords) != Coordinates)
+
+    @defer_draw
+    def _update_att(self, *args):
+        if self.x_att is not None:
+            if self._display_world:
+                if self.x_att in self.reference_data.pixel_component_ids:
+                    self.x_att_pixel = self.x_att
+                else:
+                    index = self.reference_data.world_component_ids.index(self.x_att)
+                    self.x_att_pixel = self.reference_data.pixel_component_ids[index]
+            else:
+                self.x_att_pixel = self.x_att
+        self._reset_x_limits()
+
     def _reset_x_limits(self, *event):
 
         # NOTE: we don't use AttributeLimitsHelper because we need to avoid
@@ -80,7 +102,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         # and in the case of world coordinates we use online the spine of the
         # data.
 
-        if self.reference_data is None or self.x_att is None:
+        if self.reference_data is None or self.x_att_pixel is None:
             return
 
         data = self.reference_data
@@ -117,15 +139,23 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _reference_data_changed(self, *args):
-        if self.reference_data is None:
-            self.x_att_helper.set_multiple_data([])
-        else:
-            self.x_att_helper.set_multiple_data([self.reference_data])
-            if (getattr(self.reference_data, 'coords', None) is None or
-                    type(self.reference_data.coords) == Coordinates):
-                self.x_att = self.reference_data.pixel_component_ids[0]
+
+        # This signal can get emitted if just the choices but not the actual
+        # reference data change, so we check here that the reference data has
+        # actually changed
+        if self.reference_data is not getattr(self, '_last_reference_data', None):
+            self._last_reference_data = self.reference_data
+
+            if self.reference_data is None:
+                self.x_att_helper.set_multiple_data([])
             else:
-                self.x_att = self.reference_data.world_component_ids[0]
+                self.x_att_helper.set_multiple_data([self.reference_data])
+                if self._display_world:
+                    self.x_att_helper.world_coord = True
+                    self.x_att = self.reference_data.world_component_ids[0]
+                else:
+                    self.x_att_helper.world_coord = False
+                    self.x_att = self.reference_data.pixel_component_ids[0]
 
 
 class ProfileLayerState(MatplotlibLayerState):
@@ -211,7 +241,7 @@ class ProfileLayerState(MatplotlibLayerState):
             raise IncompatibleDataException()
 
         # Check what pixel axis in the current dataset x_att corresponds to
-        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
+        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att_pixel)
 
         if pix_cid is None:
             raise IncompatibleDataException()

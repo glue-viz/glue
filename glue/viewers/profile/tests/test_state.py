@@ -18,6 +18,12 @@ class SimpleCoordinates(Coordinates):
     def pixel2world(self, *pixel):
         return tuple([2 * p for p in pixel])
 
+    def dependent_axes(self, axis):
+        if axis == 0:
+            return [0]
+        else:
+            return [1, 2]
+
 
 class TestProfileViewerState:
 

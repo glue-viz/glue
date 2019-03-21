@@ -152,3 +152,28 @@ class TestProfileViewer(object):
         data2 = Data(x=[[2, 3], [4, 3]], label='d2')
         self.data_collection.append(data2)
         self.viewer.add_data(data2)
+
+    def test_dependent_axes(self):
+
+        # Make sure that if we pick a world component that has correlations with
+        # others and is not lined up with the pixel grid, a warning is shown.
+
+        self.viewer.add_data(self.data)
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+        assert self.viewer.options_widget().ui.text_warning.text() == ''
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[1]
+        assert self.viewer.options_widget().ui.text_warning.text() == ''
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[2]
+        assert self.viewer.options_widget().ui.text_warning.text() == ''
+
+        self.viewer.state.x_att = self.data.world_component_ids[0]
+        assert self.viewer.options_widget().ui.text_warning.text() == ''
+
+        self.viewer.state.x_att = self.data.world_component_ids[1]
+        assert self.viewer.options_widget().ui.text_warning.text() != ''
+
+        self.viewer.state.x_att = self.data.world_component_ids[2]
+        assert self.viewer.options_widget().ui.text_warning.text() != ''
