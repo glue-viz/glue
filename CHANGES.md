@@ -16,6 +16,9 @@ v0.15.0 (unreleased)
 
 * Improve the user interface for the link editor. [#1934]
 
+* Added a new ``IndexedData`` class to represent a derived dataset produced
+  by indexing a higher-dimensional dataset. [#1953]
+
 v0.14.3 (unreleased)
 --------------------
 
