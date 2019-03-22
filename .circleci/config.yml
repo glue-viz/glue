@@ -14,7 +14,7 @@ default_steps: &steps
         name: Install missing dependencies
         command: |
           apt update
-          apt install -y python-tk python3-tk graphviz
+          apt install -y python-tk python3-tk graphviz libxkbcommon-x11-0
     - run:
         name: Flake8 checks
         command: |
