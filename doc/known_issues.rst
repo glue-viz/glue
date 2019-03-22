@@ -70,3 +70,10 @@ can try::
     conda update qt pyqt icu sip
 
 but note that this may not always be sufficient to fix the issue.
+
+Incompatibility with PySide2 5.12.0
+-----------------------------------
+
+Glue is known to not work correctly with PySide2 5.12.0 due to a `bug
+<https://bugreports.qt.io/browse/PYSIDE-883>`_ with that package. If you are
+using PySide2, make sure you update to 5.12.1 or later.
