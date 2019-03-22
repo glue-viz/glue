@@ -56,16 +56,20 @@ class TestQtPlotlyExporter():
 
         data = Data(x=[1, 2, 3], y=[2, 3, 4], label='data')
         dc = DataCollection([data])
-        app = GlueApplication(dc)
+        self.app = GlueApplication(dc)
 
         data.style.color = '#000000'
-        v = app.new_data_viewer(HistogramViewer, data=data)
+        v = self.app.new_data_viewer(HistogramViewer, data=data)
         v.component = data.id['y']
         v.xmin = 0
         v.xmax = 10
         v.bins = 20
 
-        self.args, self.kwargs = build_plotly_call(app)
+        self.args, self.kwargs = build_plotly_call(self.app)
+
+    def teardown_class(self):
+        self.app.close()
+        self.app = None
 
     def get_exporter(self):
         return QtPlotlyExporter(plotly_args=self.args, plotly_kwargs=self.kwargs)
