@@ -372,6 +372,7 @@ class ScatterLayerState(MatplotlibLayerState):
 
         count = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
                                         subset_state=subset_state, bins=bins,
+                                        log=(self.viewer_state.y_log, self.viewer_state.x_log),
                                         range=range)
 
         if self.cmap_mode == 'Fixed':
@@ -380,6 +381,7 @@ class ScatterLayerState(MatplotlibLayerState):
             total = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
                                             subset_state=subset_state, bins=bins,
                                             weights=self.cmap_att,
+                                            log=(self.viewer_state.y_log, self.viewer_state.x_log),
                                             range=range)
             return total / count
 
