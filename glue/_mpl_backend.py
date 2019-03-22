@@ -39,14 +39,12 @@ def set_mpl_backend():
         if setting.startswith('keymap'):
             rcParams[setting] = ''
 
-    # The following is a workaround for the fact that Matplotlib checks the
-    # rcParams at import time, not at run-time. This is fixed in Matplotlib>=2.1
-    from matplotlib import get_backend
-    from matplotlib import backends
-    backends.backend = get_backend()
-
     # Set the MPLBACKEND variable explicitly, because ipykernel uses the lack of
     # MPLBACKEND variable to indicate that it should use its own backend, and
     # this in turn causes some rcParams to be changed, causing test failures
     # etc.
     os.environ['MPLBACKEND'] = 'Agg'
+
+    # Explicitly switch backend
+    from matplotlib.pyplot import switch_backend
+    switch_backend('agg')

@@ -82,7 +82,7 @@ glue = glue.main:main
 install_requires = ['numpy>=1.9',
                     'pandas>=0.14',
                     'astropy>=2.0',
-                    'matplotlib>=2.0',
+                    'matplotlib>=2.1',
                     'qtpy>=1.2',
                     'setuptools>=1.0',
                     'ipython>=4.0',
