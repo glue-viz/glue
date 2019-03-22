@@ -48,6 +48,7 @@ class TestHistogramLayerArtist(object):
         sys.setprofile(self.call_counter)
 
     def teardown_method(self, method):
+        self.artist.remove()
         sys.setprofile(None)
 
     def test_recalc_on_state_changes(self):
