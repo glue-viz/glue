@@ -103,4 +103,3 @@ workflows:
       - py36_pyqt512
       - py36_pyside511
       - py36_pyside512
-
