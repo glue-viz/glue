@@ -22,7 +22,6 @@ from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlib
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
 from glue.app.qt import GlueApplication
-from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 
 from ..data_viewer import ScatterViewer
 
@@ -265,7 +264,6 @@ class TestScatterViewer(object):
         self.viewer.state.layers[0].points_mode = 'markers'
         self.viewer.state.layers[0].points_mode = 'density'
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
@@ -326,6 +324,8 @@ class TestScatterViewer(object):
         assert viewer3.state.layers[1].visible
         assert not viewer3.state.layers[2].visible
 
+        ga.close()
+
     def test_session_line_back_compat(self):
 
         # Backward-compatibility for v0.11 files in which the line and scatter
@@ -359,6 +359,8 @@ class TestScatterViewer(object):
         assert viewer1.state.y_att is dc[0].id['b']
         assert not viewer1.state.layers[0].markers_visible
         assert viewer1.state.layers[0].line_visible
+
+        ga.close()
 
     def test_save_svg(self, tmpdir):
         # Regression test for a bug in AxesCache that caused SVG saving to
@@ -510,6 +512,8 @@ class TestScatterViewer(object):
         assert viewer.state.x_att is dc[0].id['z']
         assert visible_xaxis_labels(self.viewer.axes) == ['a', 'b', 'c']
 
+        ga.close()
+
     def test_enable_disable_components_combo(self):
 
         # Regression test for a bug that caused an error when turning off pixel
@@ -590,3 +594,5 @@ class TestScatterViewer(object):
         assert options.valuetext_x_max.text() == '1971-02-17'
         assert options.valuetext_y_min.text() == '3.188'
         assert options.valuetext_y_max.text() == '3.512'
+
+        ga.close()
