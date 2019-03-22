@@ -11,6 +11,7 @@ from glue.utils import mpl_to_datetime64
 __all__ = ['MatplotlibViewerMixin']
 
 SCRIPT_HEADER = """
+# Initialize figure
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
 """.strip()
@@ -218,7 +219,7 @@ class MatplotlibViewerMixin(object):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
-        return ['import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
+        return ['import matplotlib', "matplotlib.use('Agg')", 'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         state_dict = self.state.as_dict()
