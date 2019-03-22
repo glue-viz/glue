@@ -8,10 +8,10 @@ import numpy as np
 from glue.core import Data
 from glue.viewers.image.qt import ImageViewer
 from glue.core.tests.util import simple_session
-from glue.tests.helpers import requires_matplotlib_ge_14
+from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 
 
-@requires_matplotlib_ge_14
+@pytest.mark.skipif('PYSIDE2_INSTALLED')
 @pytest.mark.mpl_image_compare(tolerance=1, savefig_kwargs={'dpi': 50})
 def test_resample_on_zoom():
 
