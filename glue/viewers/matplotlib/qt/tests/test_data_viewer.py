@@ -17,6 +17,7 @@ from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
 from glue.utils.qt import get_qapp
+from glue.tests.helpers import requires_matplotlib_ge_22
 
 
 class MatplotlibDrawCounter(object):
@@ -532,11 +533,15 @@ class BaseTestMatplotlibDataViewer(object):
         self.data.update_values_from_data(data)
         assert self.draw_count == 2
 
+    @requires_matplotlib_ge_22
     def test_aspect_resize(self):
 
         # Make sure that the limits are adjusted appropriately when resizing
         # depending on the aspect ratio mode. Note that we don't add any data
         # here since it isn't needed for this test.
+
+        # This test works with Matplotlib 2.0 and 2.2 but not 2.1, hence we
+        # skip it with Matplotlib 2.1 above.
 
         app = get_qapp()
 
