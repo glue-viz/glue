@@ -26,6 +26,8 @@ def make_skipper(module, label=None, version=None):
 ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy',
                                                    label='Astropy')
 
+MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version='2.2')
+
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
 SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
