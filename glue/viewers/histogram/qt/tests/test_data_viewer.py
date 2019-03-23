@@ -541,6 +541,8 @@ class TestHistogramViewer(object):
         assert viewer4.state.cumulative
         assert not viewer4.state.normalize
 
+        ga.close()
+
     def test_apply_roi_single(self):
 
         # Regression test for a bug that caused mode.update to be called
@@ -631,3 +633,5 @@ class TestHistogramViewer(object):
 
         assert options.valuetext_x_min.text() == '1970-04-14'
         assert options.valuetext_x_max.text() == '1971-02-05'
+
+        ga.close()

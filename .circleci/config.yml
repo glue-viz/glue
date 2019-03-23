@@ -14,7 +14,7 @@ default_steps: &steps
         name: Install missing dependencies
         command: |
           apt update
-          apt install -y python-tk python3-tk graphviz
+          apt install -y python-tk python3-tk graphviz libxkbcommon-x11-0
     - run:
         name: Flake8 checks
         command: |
@@ -74,6 +74,20 @@ jobs:
       - image: glueviz/py36-pyqt511:1.1
     <<: *steps
 
+  py36_pyqt512:
+    docker:
+      - image: glueviz/py36-pyqt512:1.1
+    <<: *steps
+
+  py36_pyside511:
+    docker:
+      - image: glueviz/py36-pyside511:1.1
+    <<: *steps
+
+  py36_pyside512:
+    docker:
+      - image: glueviz/py36-pyside512:1.1
+    <<: *steps
 
 
 workflows:
@@ -86,3 +100,6 @@ workflows:
       - py35_pyqt59
       - py35_pyqt510
       - py36_pyqt511
+      - py36_pyqt512
+      - py36_pyside511
+      - py36_pyside512
