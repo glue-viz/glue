@@ -14,7 +14,7 @@ from glue.core.data import Data
 from glue.core.component_link import ComponentLink
 from glue.core.data_collection import DataCollection
 from glue.core.tests.test_state import Cloner, doubler, clone
-from glue.tests.helpers import requires_ipython, PYSIDE2_INSTALLED  # noqa
+from glue.tests.helpers import requires_ipython  # noqa
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
@@ -139,7 +139,6 @@ class TestGlueApplication(object):
 
             pc.reset_mock()
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_new_data_viewer_ok(self):
 
         with patch('glue.app.qt.application.pick_class') as pc:
@@ -156,14 +155,12 @@ class TestGlueApplication(object):
 
             pc.reset_mock()
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_move(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.move(10, 20)
         assert viewer.position == (10, 20)
         viewer.close()
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_resize(self):
         viewer = self.app.new_data_viewer(ScatterViewer)
         viewer.viewer_size = (100, 200)
@@ -347,7 +344,6 @@ class TestApplicationSession(object):
         app = GlueApplication(dc)
         self.check_clone(app)
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_scatter_viewer(self):
         d = Data(label='x', x=[1, 2, 3, 4, 5], y=[2, 3, 4, 5, 6])
         dc = DataCollection([d])
@@ -369,7 +365,6 @@ class TestApplicationSession(object):
         copy1.close()
         copy2.close()
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_multi_tab(self):
         d = Data(label='hist', x=[[1, 2], [2, 3]])
         dc = DataCollection([d])
@@ -385,7 +380,6 @@ class TestApplicationSession(object):
         app.close()
         copy.close()
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_histogram(self):
         d = Data(label='hist', x=[[1, 2], [2, 3]])
         dc = DataCollection([d])
@@ -420,7 +414,6 @@ class TestApplicationSession(object):
         sg.style.color = '#112233'
         assert sg.subsets[0].style.color == '#112233'
 
-    @pytest.mark.skipif('PYSIDE2_INSTALLED')
     def test_deselect_tool_on_viewer_change(self):
 
         d = Data(label='hist', x=[[1, 2], [2, 3]])
