@@ -915,3 +915,7 @@ def test_compute_histogram_log():
     data = Data(x=np.ones(10), y=np.ones(10))
     result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 3], [-3, 5]], bins=[2, 3], log=[True, True])
     assert result.shape == (2, 3) and np.sum(result) == 0
+
+    data = Data(x=np.ones(10), y=np.ones(10))
+    result = data.compute_histogram([data.id['x'], data.id['y']], range=[[1, 3], [-3, 5]], bins=[2, 3], log=[True, True])
+    assert result.shape == (2, 3) and np.sum(result) == 0
