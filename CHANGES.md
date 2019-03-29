@@ -22,6 +22,9 @@ v0.15.0 (unreleased)
 v0.14.3 (unreleased)
 --------------------
 
+* Improve tab-completion of attribute names in Data to not include
+  non-relevant items. [#1971]
+
 * Fix an error that occurred if creating a new viewer was
   cancelled. [#1952]
 
