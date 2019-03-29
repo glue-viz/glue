@@ -204,6 +204,17 @@ In ``initialize_toolbar`` (and elsewhere in the class) you can then access the
 tool instances using ``self.toolbar.tools`` (which is a dictionary where each
 key is a ``tool_id``).
 
+By default, tools are inherited from parent classes, but this can be controlled
+using the ``inherit_tools`` class-level attribute - for example, the following
+will result in only the ``custom_tool`` being available, and nothing else:
+
+.. code:: python
+
+    class MyImageViewer(ImageViewer):
+
+        tools = ['custom_tool']
+        inherit_tools = False
+
 Available tools
 ---------------
 

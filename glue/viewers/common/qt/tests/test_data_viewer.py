@@ -9,10 +9,12 @@ from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 
 from glue.core.tests.util import simple_session
+from glue.viewers.common.qt.data_viewer import DataViewer, get_viewer_tools
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.utils.qt import get_qapp
+
 
 # TODO: We should maybe consider running these tests for all
 # registered Qt viewers.
@@ -109,3 +111,43 @@ class TestDataViewerImage(BaseTestDataViewer):
 
 class TestDataViewerHistogram(BaseTestDataViewer):
     widget_cls = HistogramViewer
+
+
+def test_get_viewer_tools():
+
+    class CustomViewer1(DataViewer):
+        pass
+
+    tools, subtools = get_viewer_tools(CustomViewer1)
+
+    assert tools == ['save']
+    assert subtools == {'save': []}
+
+    class CustomViewer2(DataViewer):
+        tools = ['banana']
+        subtools = {'save': ['apple', 'pear']}
+
+    tools, subtools = get_viewer_tools(CustomViewer2)
+
+    assert tools == ['save', 'banana']
+    assert subtools == {'save': ['apple', 'pear']}
+
+    CustomViewer2.inherit_tools = False
+
+    tools, subtools = get_viewer_tools(CustomViewer2)
+
+    assert tools == ['banana']
+    assert subtools == {'save': ['apple', 'pear']}
+
+    class Mixin(object):
+        pass
+
+    class CustomViewer3(CustomViewer2, Mixin):
+        tools = ['orange']
+        subtools = {'banana': ['one', 'two']}
+        inherit_tools = True
+
+    tools, subtools = get_viewer_tools(CustomViewer3)
+
+    assert tools == ['banana', 'orange']
+    assert subtools == {'save': ['apple', 'pear'], 'banana': ['one', 'two']}

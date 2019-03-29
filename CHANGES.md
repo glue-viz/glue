@@ -4,6 +4,10 @@ Full changelog
 v0.15.0 (unreleased)
 --------------------
 
+* Expose an option (``inherit_tools``) on data viewer classes
+  related to whether tools should be inherited or not from
+  parent classes. [#1972]
+
 * Added a new method ``compute_fixed_resolution_buffer`` to data
   objects (including the base data class) and use this for the
   image viewer. This improves the case where images are reprojected
