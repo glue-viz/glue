@@ -893,3 +893,25 @@ def test_compute_statistic_empty_subset():
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, axis=(0, 1, 2))
     assert_equal(result, np.nan)
+
+
+def test_compute_histogram_log():
+
+    # Make sure that the returned histogram is NaN everywhere if either of the
+    # limits are negative in log mode
+
+    data = Data(x=np.ones(10), y=np.ones(10))
+    result = data.compute_histogram([data.id['x']], range=[[0.5, 2.5]], bins=[2])
+    assert_allclose(result, [10, 0])
+
+    data = Data(x=np.ones(10), y=np.ones(10))
+    result = data.compute_histogram([data.id['x']], range=[[0.5, 2.5]], bins=[2], log=[True])
+    assert_allclose(result, [10, 0])
+
+    data = Data(x=np.ones(10), y=np.ones(10))
+    result = data.compute_histogram([data.id['x']], range=[[-0.5, 2.5]], bins=[2], log=[True])
+    assert result.shape == (2,) and np.sum(result) == 0
+
+    data = Data(x=np.ones(10), y=np.ones(10))
+    result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 3], [-3, 5]], bins=[2, 3], log=[True, True])
+    assert result.shape == (2, 3) and np.sum(result) == 0

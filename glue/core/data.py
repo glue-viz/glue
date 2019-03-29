@@ -1619,13 +1619,17 @@ class Data(BaseCartesianData):
             return np.zeros(bins)
 
         if log is not None and log[0]:
-            xmin = np.log10(xmin) if xmin > 0 else np.log10(xmax) - 10
-            xmax = np.log10(xmax) if xmax > 0 else np.log10(xmin) + 10
+            if xmin < 0 or xmax < 0:
+                return np.zeros(bins)
+            xmin = np.log10(xmin)
+            xmax = np.log10(xmax)
             x = np.log10(x)
 
         if ndim > 1 and log is not None and log[1]:
-            ymin = np.log10(ymin) if ymin > 0 else np.log10(ymax) - 10
-            ymax = np.log10(ymax) if ymax > 0 else np.log10(ymin) + 10
+            if ymin < 0 or ymax < 0:
+                return np.zeros(bins)
+            ymin = np.log10(ymin)
+            ymax = np.log10(ymax)
             y = np.log10(y)
 
         # By default fast-histogram drops values that are exactly xmax, so we
