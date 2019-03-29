@@ -20,6 +20,7 @@ from qtpy import QtWidgets
 from IPython import get_ipython
 
 from IPython.core.interactiveshell import InteractiveShell
+from IPython.core.completer import IPCompleter
 
 from ipykernel.inprocess.ipkernel import InProcessInteractiveShell
 from ipykernel.connect import get_connection_file
@@ -41,6 +42,11 @@ from glue.utils.qt import get_qapp
 # then there will be a remaining reference to the viewer in the IPython
 # namespace.
 InteractiveShell.cache_size.default_value = 0
+
+# Make sure that tab competion only shows items returned by
+# _ipython_key_completions_
+if hasattr(IPCompleter, 'dict_keys_only'):
+    IPCompleter.dict_keys_only.default_value = True
 
 kernel_manager = None
 kernel_client = None
