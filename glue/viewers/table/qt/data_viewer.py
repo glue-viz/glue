@@ -183,7 +183,7 @@ class TableViewer(DataViewer):
     _data_artist_cls = TableLayerArtist
     _subset_artist_cls = TableLayerArtist
 
-    _inherit_tools = True
+    inherit_tools = False
     tools = ['table:rowselect']
 
     def __init__(self, session, state=None, parent=None, widget=None):

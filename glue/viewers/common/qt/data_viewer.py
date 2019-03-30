@@ -13,7 +13,7 @@ from glue.viewers.common.qt.tool import SimpleToolMenu
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.viewer import Viewer
 
-__all__ = ['DataViewer']
+__all__ = ['DataViewer', 'get_viewer_tools']
 
 
 class ToolbarInitializer(object):
@@ -45,6 +45,40 @@ class SaveTool(SimpleToolMenu):
     tool_tip = 'Save/export the plot'
 
 
+def get_viewer_tools(cls, tools=None, subtools=None):
+    """
+    Given a viewer class, find all the tools and subtools to include in the
+    viewer.
+
+    Parameters
+    ----------
+    cls : type
+        The viewer class for which to look for tools.
+    tools : list
+        The list to add the tools to - this is modified in-place.
+    subtools : dict
+        The dictionary to add the subtools to - this is modified in-place.
+    """
+    if not issubclass(cls, DataViewer):
+        return
+    if tools is None:
+        tools = []
+    if subtools is None:
+        subtools = {}
+    if cls.inherit_tools and cls is not DataViewer:
+        for parent_cls in cls.__bases__:
+            get_viewer_tools(parent_cls, tools, subtools)
+    for tool_id in cls.tools:
+        if tool_id not in tools:
+            tools.append(tool_id)
+    for tool_id in cls.subtools:
+        if tool_id not in subtools:
+            subtools[tool_id] = []
+        for subtool_id in cls.subtools[tool_id]:
+            if subtool_id not in subtools[tool_id]:
+                subtools[tool_id].append(subtool_id)
+    return tools, subtools
+
 # Note: we need to use classmaker here because otherwise we run into issues when
 # trying to use the meta-class with the Qt class.
 @six.add_metaclass(classmaker(left_metas=(ToolbarInitializer,)))
@@ -66,7 +100,7 @@ class DataViewer(Viewer, BaseQtViewerWidget):
     # This defines the mouse mode to be used when no toolbar modes are active
     _default_mouse_mode_cls = None
 
-    _inherit_tools = True
+    inherit_tools = True
     tools = ['save']
     subtools = {'save': []}
 
@@ -142,27 +176,9 @@ class DataViewer(Viewer, BaseQtViewerWidget):
 
         self.toolbar = self._toolbar_cls(self, default_mouse_mode_cls=self._default_mouse_mode_cls)
 
-        def get_tools_recursive(cls, tools, subtools):
-            if not issubclass(cls, DataViewer):
-                return
-            if cls._inherit_tools and cls is not DataViewer:
-                for parent_cls in cls.__bases__:
-                    get_tools_recursive(parent_cls, tools, subtools)
-            for tool_id in cls.tools:
-                if tool_id not in tools:
-                    tools.append(tool_id)
-            for tool_id in cls.subtools:
-                if tool_id not in subtools:
-                    subtools[tool_id] = []
-                for subtool_id in cls.subtools[tool_id]:
-                    if subtool_id not in subtools[tool_id]:
-                        subtools[tool_id].append(subtool_id)
-
         # Need to include tools and subtools declared by parent classes unless
         # specified otherwise
-        tool_ids = []
-        subtool_ids = {}
-        get_tools_recursive(self.__class__, tool_ids, subtool_ids)
+        tool_ids, subtool_ids = get_viewer_tools(self.__class__)
 
         for tool_id in tool_ids:
             mode_cls = viewer_tool.members[tool_id]
