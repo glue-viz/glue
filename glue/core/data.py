@@ -5,6 +5,7 @@ from collections import OrderedDict
 import abc
 import uuid
 import warnings
+from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd
@@ -973,16 +974,25 @@ class Data(BaseCartesianData):
             self._pixel_component_ids.append(cid)
 
     def _update_world_components(self, ndim):
-        for cid in self._world_component_ids[:]:
-            self.remove_component(cid)
-            self._world_component_ids.remove(cid)
-        if self.coords:
-            for i in range(ndim):
-                comp = CoordinateComponent(self, i, world=True)
-                label = self.coords.axis_label(i)
-                cid = self.add_component(comp, label)
-                self._world_component_ids.append(cid)
-            self._set_up_coordinate_component_links(ndim)
+
+        if self.hub:
+            delay_callbacks = self.hub.delay_callbacks
+        else:
+            @contextmanager
+            def delay_callbacks():
+                yield
+
+        with delay_callbacks():
+            for cid in self._world_component_ids[:]:
+                self.remove_component(cid)
+                self._world_component_ids.remove(cid)
+            if self.coords:
+                for i in range(ndim):
+                    comp = CoordinateComponent(self, i, world=True)
+                    label = self.coords.axis_label(i)
+                    cid = self.add_component(comp, label)
+                    self._world_component_ids.append(cid)
+                self._set_up_coordinate_component_links(ndim)
 
     def _set_up_coordinate_component_links(self, ndim):
 
