@@ -250,6 +250,13 @@ class TableViewer(DataViewer):
             self.state.layers[:] = []
             return super(TableViewer, self).add_data(data)
 
+    @property
+    def window_title(self):
+        if len(self.state.layers) > 0:
+            return 'Table: ' + self.state.layers[0].layer.label
+        else:
+            return 'Table'
+
     def closeEvent(self, event):
         """
         On close, Qt seems to scan through the entire model
