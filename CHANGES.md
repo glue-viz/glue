@@ -23,6 +23,9 @@ v0.15.0 (unreleased)
 * Added a new ``IndexedData`` class to represent a derived dataset produced
   by indexing a higher-dimensional dataset. [#1953]
 
+* Added a ``--faulthandler`` command-line flag to help debug segmentation
+  faults. [#1974]
+
 v0.14.3 (unreleased)
 --------------------
 

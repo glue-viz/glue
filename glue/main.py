@@ -60,6 +60,8 @@ def parse(argv):
                       help="Startup actions to carry out", default='')
     parser.add_option('--auto-merge', dest='auto_merge', action='store_true',
                       help="Automatically merge any data passed on the command-line", default='')
+    parser.add_option('--faulthandler', dest='faulthandler', action='store_true',
+                      help="Run glue with the built-in faulthandler to debug segmentation faults", default=False)
 
     err_msg = verify(parser, argv)
     if err_msg:
@@ -223,6 +225,10 @@ def main(argv=sys.argv):
 
     if opt.verbose:
         logger.setLevel("INFO")
+
+    if opt.faulthandler:
+        import faulthandler
+        faulthandler.enable()
 
     logger.info("Input arguments: %s", sys.argv)
 
