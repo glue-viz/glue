@@ -4,6 +4,8 @@ Full changelog
 v0.15.0 (unreleased)
 --------------------
 
+* Show dataset name in table viewer title. [#1973]
+
 * Expose an option (``inherit_tools``) on data viewer classes
   related to whether tools should be inherited or not from
   parent classes. [#1972]
