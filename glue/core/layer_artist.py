@@ -246,7 +246,8 @@ class LayerArtistContainer(object):
         self.artists = []
         self.empty_callbacks = CallbackContainer()
         self.change_callbacks = CallbackContainer()
-        self._ignore_callbacks = False
+        self._ignore_empty_callbacks = False
+        self._ignore_change_callbacks = False
 
     def on_empty(self, func):
         """
@@ -304,13 +305,12 @@ class LayerArtistContainer(object):
         self.change_callbacks.clear()
 
     def _notify(self):
-        if self._ignore_callbacks:
-            return
 
-        for cb in self.change_callbacks:
-            cb()
+        if not self._ignore_change_callbacks:
+            for cb in self.change_callbacks:
+                cb()
 
-        if len(self) == 0:
+        if not self._ignore_empty_callbacks and len(self) == 0:
             for cb in self.empty_callbacks:
                 cb()
 
@@ -328,12 +328,37 @@ class LayerArtistContainer(object):
 
     @contextmanager
     def ignore_empty(self):
-        """A context manager that temporarily disables calling callbacks if container is emptied"""
+        """
+        A context manager that temporarily disables calling callbacks if
+        container is empty.
+        """
         try:
-            self._ignore_callbacks = True
+            self._ignore_empty_callbacks = True
             yield
         finally:
-            self._ignore_callbacks = False
+            self._ignore_empty_callbacks = False
+
+    @contextmanager
+    def ignore_change(self):
+        """
+        A context manager that temporarily disables calling callbacks if
+        container is changed.
+        """
+        try:
+            self._ignore_change_callbacks = True
+            yield
+        finally:
+            self._ignore_change_callbacks = False
+
+    @contextmanager
+    def ignore_callbacks(self):
+        try:
+            self._ignore_change_callbacks = True
+            self._ignore_empty_callbacks = True
+            yield
+        finally:
+            self._ignore_change_callbacks = False
+            self._ignore_empty_callbacks = False
 
     def __len__(self):
         return len(self.artists)

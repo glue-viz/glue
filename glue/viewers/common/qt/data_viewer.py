@@ -140,6 +140,8 @@ class DataViewer(Viewer, BaseQtViewerWidget):
             self._layer_artist_container.on_empty(self._close_nowarn)
         self._layer_artist_container.on_changed(self.update_window_title)
 
+        self.update_window_title()
+
     @property
     def selected_layer(self):
         return self._view.layer_list.current_artist()

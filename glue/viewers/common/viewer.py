@@ -356,7 +356,7 @@ class Viewer(BaseViewer):
 
         # Restore layer artists. Ideally we would delay instead of ignoring the
         # callback here.
-        with viewer._layer_artist_container.ignore_empty():
+        with viewer._layer_artist_container.ignore_callbacks():
             for l in rec['layers']:
                 cls = lookup_class_with_patches(l.pop('_type'))
                 layer_state = context.object(l['state'])

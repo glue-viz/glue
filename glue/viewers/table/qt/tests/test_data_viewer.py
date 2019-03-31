@@ -333,3 +333,27 @@ def test_change_components():
     assert data_changed.call_count == 2
     assert layout_changed.call_count == 2
     viewer.model.columnCount() == 2
+
+
+def test_table_title():
+
+    app = get_qapp()  # noqa
+
+    data1 = Data(a=[1, 2, 3, 4, 5], label='test1')
+    data2 = Data(a=[1, 2, 3, 4, 5], label='test2')
+
+    dc = DataCollection([data1, data2])
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableViewer)
+
+    assert viewer.windowTitle() == 'Table'
+
+    viewer.add_data(data1)
+
+    assert viewer.windowTitle() == 'Table: test1'
+
+    viewer.add_data(data2)
+
+    assert viewer.windowTitle() == 'Table: test2'
