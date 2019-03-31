@@ -119,9 +119,6 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('x_att', self._on_xatt_change, priority=500)
         self.add_callback('y_att', self._on_yatt_change, priority=500)
 
-        self.add_callback('x_att_world', self._update_att, priority=500)
-        self.add_callback('y_att_world', self._update_att, priority=500)
-
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
 
@@ -234,25 +231,6 @@ class ImageViewerState(MatplotlibDataViewerState):
             return 1
 
     @defer_draw
-    def _update_att(self, *args):
-        # Need to delay the callbacks here to make sure that we get a chance to
-        # update both x_att and y_att otherwise could end up triggering image
-        # slicing with two pixel components that are the same.
-        with delay_callback(self, 'x_att', 'y_att'):
-            if self.x_att_world is not None:
-                if self._display_world:
-                    index = self.reference_data.world_component_ids.index(self.x_att_world)
-                    self.x_att = self.reference_data.pixel_component_ids[index]
-                else:
-                    self.x_att = self.x_att_world
-            if self.y_att_world is not None:
-                if self._display_world:
-                    index = self.reference_data.world_component_ids.index(self.y_att_world)
-                    self.y_att = self.reference_data.pixel_component_ids[index]
-                else:
-                    self.y_att = self.y_att_world
-
-    @defer_draw
     def _on_xatt_change(self, *args):
         if self.x_att is not None:
             if self._display_world:
@@ -270,21 +248,39 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _on_xatt_world_change(self, *args):
-        if self.x_att_world is not None and self.x_att_world == self.y_att_world:
-            world_ids = self.reference_data.world_component_ids
-            if self.x_att_world == world_ids[-1]:
-                self.y_att_world = world_ids[-2]
+
+        if self.x_att_world is not None:
+
+            if self.x_att_world == self.y_att_world:
+                world_ids = self.reference_data.world_component_ids
+                if self.x_att_world == world_ids[-1]:
+                    self.y_att_world = world_ids[-2]
+                else:
+                    self.y_att_world = world_ids[-1]
+
+            if self._display_world:
+                index = self.reference_data.world_component_ids.index(self.x_att_world)
+                self.x_att = self.reference_data.pixel_component_ids[index]
             else:
-                self.y_att_world = world_ids[-1]
+                self.x_att = self.x_att_world
 
     @defer_draw
     def _on_yatt_world_change(self, *args):
-        if self.y_att_world is not None and self.y_att_world == self.x_att_world:
-            world_ids = self.reference_data.world_component_ids
-            if self.y_att_world == world_ids[-1]:
-                self.x_att_world = world_ids[-2]
+
+        if self.y_att_world is not None:
+
+            if self.y_att_world == self.x_att_world:
+                world_ids = self.reference_data.world_component_ids
+                if self.y_att_world == world_ids[-1]:
+                    self.x_att_world = world_ids[-2]
+                else:
+                    self.x_att_world = world_ids[-1]
+
+            if self._display_world:
+                index = self.reference_data.world_component_ids.index(self.y_att_world)
+                self.y_att = self.reference_data.pixel_component_ids[index]
             else:
-                self.x_att_world = world_ids[-1]
+                self.y_att = self.y_att_world
 
     def _set_reference_data(self):
         if self.reference_data is None:

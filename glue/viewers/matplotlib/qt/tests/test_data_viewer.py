@@ -589,3 +589,15 @@ class BaseTestMatplotlibDataViewer(object):
         self.viewer.state.aspect = 'auto'
         self.viewer.viewer_size = (900, 300)
         assert_allclose(limits(self.viewer), initial_limits)
+
+    def test_update_data_values(self):
+
+        # Regression test for a bug that caused some viewers to not behave
+        # correctly if the data values were updated.
+
+        self.viewer.add_data(self.data)
+
+        data = self.init_data()
+        self.data_collection.append(data)
+
+        self.data.update_values_from_data(data)
