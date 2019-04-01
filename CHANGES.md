@@ -37,6 +37,8 @@ v0.14.3 (unreleased)
 * Fix an error that occurred if creating a new viewer was
   cancelled. [#1952]
 
+* Fix error in image viewer when using update_values_from_data. [#1975]
+
 * Exclude problematic versions of ipykernel from dependencies. [#1952]
 
 * Make sure that scrolling above a viewer does not result in the
