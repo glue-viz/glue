@@ -48,8 +48,8 @@ class MplCanvas(FigureCanvasQTAgg):
 
         FigureCanvasQTAgg.__init__(self, self.fig)
         FigureCanvasQTAgg.setSizePolicy(self,
-                                   QtWidgets.QSizePolicy.Expanding,
-                                   QtWidgets.QSizePolicy.Expanding)
+                                        QtWidgets.QSizePolicy.Expanding,
+                                        QtWidgets.QSizePolicy.Expanding)
 
         FigureCanvasQTAgg.updateGeometry(self)
         self.manager = FigureManagerQT(self, 0)
