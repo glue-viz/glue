@@ -160,15 +160,6 @@ class Application(HubListener):
         finally:
             os.chdir(start_dir)
 
-    def new_tab(self):
-        raise NotImplementedError()
-
-    def add_widget(self, widget, label=None, tab=None):
-        raise NotImplementedError()
-
-    def close_tab(self):
-        raise NotImplementedError()
-
     def get_setting(self, key):
         """
         Fetch the value of an application setting
