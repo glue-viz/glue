@@ -9,9 +9,15 @@ from matplotlib.figure import Figure
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.config import settings
+from glue.utils.matplotlib import DEFER_DRAW_BACKENDS
 
-from matplotlib.backends.backend_qt5 import FigureManagerQT as FigureManager
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5 import FigureManagerQT
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+
+__all__ = ['MplCanvas', 'MplWidget']
+
+# Register the Qt backend with defer_draw
+DEFER_DRAW_BACKENDS.append(FigureCanvasQTAgg)
 
 # We want to ignore warnings about left==right and bottom==top since these are
 # not critical and the default behavior makes sense.
@@ -19,7 +25,7 @@ warnings.filterwarnings('ignore', '.*Attempting to set identical left==right', U
 warnings.filterwarnings('ignore', '.*Attempting to set identical bottom==top', UserWarning)
 
 
-class MplCanvas(FigureCanvas):
+class MplCanvas(FigureCanvasQTAgg):
 
     """Class to represent the FigureCanvas widget"""
 
@@ -40,13 +46,13 @@ class MplCanvas(FigureCanvas):
 
         self.fig = Figure(facecolor=settings.BACKGROUND_COLOR)
 
-        FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self,
+        FigureCanvasQTAgg.__init__(self, self.fig)
+        FigureCanvasQTAgg.setSizePolicy(self,
                                    QtWidgets.QSizePolicy.Expanding,
                                    QtWidgets.QSizePolicy.Expanding)
 
-        FigureCanvas.updateGeometry(self)
-        self.manager = FigureManager(self, 0)
+        FigureCanvasQTAgg.updateGeometry(self)
+        self.manager = FigureManagerQT(self, 0)
         matplotlib.interactive(interactive)
 
         self._resize_timer = QtCore.QTimer()
@@ -118,6 +124,10 @@ class MplCanvas(FigureCanvas):
     def draw(self, *args, **kwargs):
         self._draw_count += 1
         return super(MplCanvas, self).draw(*args, **kwargs)
+
+    def draw_idle(self, *args, **kwargs):
+        self._draw_count += 1
+        return super(MplCanvas, self).draw_idle(*args, **kwargs)
 
     def keyPressEvent(self, event):
         event.setAccepted(False)
