@@ -8,7 +8,7 @@ import webbrowser
 
 from qtpy import QtWidgets
 from glue.utils import nonpartial
-from glue.utils.qt import load_ui
+from glue.utils.qt import load_ui, process_events
 from glue.utils.qt.widget_properties import TextProperty, ButtonProperty
 from glue.plugins.exporters.plotly.export_plotly import build_plotly_call
 
@@ -184,4 +184,4 @@ class QtPlotlyExporter(QtWidgets.QDialog):
     def set_status(self, text, color):
         self.ui.text_status.setText(text)
         self.ui.text_status.setStyleSheet("color: {0}".format(color))
-        QtWidgets.QApplication.instance().processEvents()
+        process_events()

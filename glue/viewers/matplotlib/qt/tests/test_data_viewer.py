@@ -16,7 +16,7 @@ from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
 from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
-from glue.utils.qt import get_qapp
+from glue.utils.qt import process_events
 from glue.tests.helpers import requires_matplotlib_ge_22
 
 
@@ -27,8 +27,7 @@ class MatplotlibDrawCounter(object):
 
     @property
     def draw_count(self):
-        app = get_qapp()
-        app.processEvents()
+        process_events()
         return self.figure.canvas._draw_count - 1
 
 
@@ -74,8 +73,7 @@ class BaseTestMatplotlibDataViewer(object):
 
     @property
     def viewer_count(self):
-        app = get_qapp()
-        app.processEvents()
+        process_events()
         obj = objgraph.by_type(self.viewer_cls.__name__)
         return len(obj)
 
@@ -545,8 +543,6 @@ class BaseTestMatplotlibDataViewer(object):
         # This test works with Matplotlib 2.0 and 2.2 but not 2.1, hence we
         # skip it with Matplotlib 2.1 above.
 
-        app = get_qapp()
-
         # Set initial limits to deterministic values
         self.viewer.state.aspect = 'auto'
         self.viewer.state.x_min = 0.
@@ -558,7 +554,7 @@ class BaseTestMatplotlibDataViewer(object):
 
         # Resize events only work if widget is visible
         self.viewer.show()
-        app.processEvents()
+        process_events()
 
         def limits(viewer):
             return (viewer.state.x_min, viewer.state.x_max,
@@ -566,25 +562,25 @@ class BaseTestMatplotlibDataViewer(object):
 
         # Set viewer to an initial size and save limits
         self.viewer.viewer_size = (800, 400)
-        app.processEvents()
+        process_events()
         initial_limits = limits(self.viewer)
 
         # Change the viewer size, and make sure the limits are adjusted
         self.viewer.viewer_size = (400, 400)
-        app.processEvents()
+        process_events()
         with pytest.raises(AssertionError):
             assert_allclose(limits(self.viewer), initial_limits)
 
         # Now change the viewer size a number of times and make sure if we
         # return to the original size, the limits match the initial ones.
         self.viewer.viewer_size = (350, 800)
-        app.processEvents()
+        process_events()
         self.viewer.viewer_size = (900, 300)
-        app.processEvents()
+        process_events()
         self.viewer.viewer_size = (600, 600)
-        app.processEvents()
+        process_events()
         self.viewer.viewer_size = (800, 400)
-        app.processEvents()
+        process_events()
         assert_allclose(limits(self.viewer), initial_limits)
 
         # Now check that the limits don't change in 'auto' mode
