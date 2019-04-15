@@ -24,11 +24,13 @@ class MatplotlibDrawCounter(object):
 
     def __init__(self, figure):
         self.figure = figure
+        process_events()
+        self.start = self.figure.canvas._draw_count
 
     @property
     def draw_count(self):
         process_events()
-        return self.figure.canvas._draw_count - 1
+        return self.figure.canvas._draw_count - self.start
 
 
 class BaseTestMatplotlibDataViewer(object):
