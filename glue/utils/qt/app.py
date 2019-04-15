@@ -6,7 +6,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 from glue.config import settings
 from glue._settings_helpers import save_settings
 
-__all__ = ['get_qapp', 'fix_tab_widget_fontsize', 'update_global_font_size']
+__all__ = ['process_events', 'get_qapp', 'fix_tab_widget_fontsize', 'update_global_font_size']
 
 qapp = None
 
@@ -22,6 +22,11 @@ def __get_font_size_offset():
         # space too. Again, this should probably be a global setting.
         size_offset = 1
     return size_offset
+
+
+def process_events():
+    app = get_qapp()
+    app.processEvents()
 
 
 def get_qapp(icon_path=None):

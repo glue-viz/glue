@@ -125,10 +125,6 @@ class MplCanvas(FigureCanvasQTAgg):
         self._draw_count += 1
         return super(MplCanvas, self).draw(*args, **kwargs)
 
-    def draw_idle(self, *args, **kwargs):
-        self._draw_count += 1
-        return super(MplCanvas, self).draw_idle(*args, **kwargs)
-
     def keyPressEvent(self, event):
         event.setAccepted(False)
         super(MplCanvas, self).keyPressEvent(event)

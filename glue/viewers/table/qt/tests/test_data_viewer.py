@@ -10,7 +10,7 @@ from qtpy import QT_VERSION
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt
 
-from glue.utils.qt import get_qapp
+from glue.utils.qt import get_qapp, process_events
 from glue.core import Data, DataCollection
 from glue.utils.qt import qt_to_mpl_color
 from glue.app.qt import GlueApplication
@@ -169,13 +169,15 @@ def test_table_widget(tmpdir):
         app.postEvent(widget.ui.table, event)
         app.processEvents()
 
-    app.processEvents()
+    process_events()
 
     # We now use key presses to navigate down to the third row
 
     press_key(Qt.Key_Tab)
     press_key(Qt.Key_Down)
     press_key(Qt.Key_Down)
+
+    process_events()
 
     indices = selection.selectedRows()
 

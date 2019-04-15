@@ -23,11 +23,13 @@ from glue.tests.helpers import requires_matplotlib_ge_22
 class MatplotlibDrawCounter(object):
 
     def __init__(self, figure):
-        self.draw_count = 0
-        figure.canvas.mpl_connect('draw_event', self.on_draw)
+        self.figure = figure
 
-    def on_draw(self, event):
-        self.draw_count += 1
+    @property
+    def draw_count(self):
+        app = get_qapp()
+        app.processEvents()
+        return self.figure.canvas._draw_count - 1
 
 
 class BaseTestMatplotlibDataViewer(object):

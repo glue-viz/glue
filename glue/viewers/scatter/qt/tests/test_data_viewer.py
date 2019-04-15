@@ -17,7 +17,7 @@ from glue.core.roi import XRangeROI, RectangularROI, CircularROI
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string
+from glue.utils.qt import combo_as_string, process_events
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
@@ -494,6 +494,8 @@ class TestScatterViewer(object):
 
         self.viewer.add_data(self.data)
         self.viewer.state.x_att = self.data.id['z']
+
+        process_events()
 
         assert visible_xaxis_labels(self.viewer.axes) == ['a', 'b', 'c']
 
