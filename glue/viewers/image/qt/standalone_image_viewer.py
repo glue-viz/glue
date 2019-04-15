@@ -112,7 +112,7 @@ class StandaloneImageViewer(QtWidgets.QMainWindow):
         self._redraw()
 
     def _redraw(self):
-        self.central_widget.canvas.draw()
+        self.central_widget.canvas.draw_idle()
 
     def set_cmap(self, cmap):
         self._composite.set('image', color=cmap)

@@ -62,4 +62,4 @@ class MatplotlibLayerArtist(LayerArtist):
         return self.state.color
 
     def redraw(self):
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()

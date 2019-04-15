@@ -52,19 +52,19 @@ class NavigateMouseMode(MouseMode):
         else:
             if self.state.x is not None:
                 self._line = self._axes.axvline(self.state.x, color=COLOR)
-        self._canvas.draw()
+        self._canvas.draw_idle()
 
     def deactivate(self):
         if hasattr(self, '_line'):
             self._line.set_visible(False)
-        self._canvas.draw()
+        self._canvas.draw_idle()
         super(NavigateMouseMode, self).deactivate()
         self.active = False
 
     def activate(self):
         if hasattr(self, '_line'):
             self._line.set_visible(True)
-        self._canvas.draw()
+        self._canvas.draw_idle()
         super(NavigateMouseMode, self).activate()
         self.active = True
 
@@ -169,7 +169,7 @@ class RangeMouseMode(MouseMode):
                 self._interval = self._axes.axvspan(self.state.x_min,
                                                     self.state.x_max,
                                                     color=COLOR, alpha=0.05)
-        self._canvas.draw()
+        self._canvas.draw_idle()
 
     def deactivate(self):
         if hasattr(self, '_lines'):
@@ -177,7 +177,7 @@ class RangeMouseMode(MouseMode):
             self._lines[1].set_visible(False)
             self._interval.set_visible(False)
 
-        self._canvas.draw()
+        self._canvas.draw_idle()
         super(RangeMouseMode, self).deactivate()
         self.active = False
 
@@ -186,7 +186,7 @@ class RangeMouseMode(MouseMode):
             self._lines[0].set_visible(True)
             self._lines[1].set_visible(True)
             self._interval.set_visible(True)
-        self._canvas.draw()
+        self._canvas.draw_idle()
         super(RangeMouseMode, self).activate()
         self.active = True
 

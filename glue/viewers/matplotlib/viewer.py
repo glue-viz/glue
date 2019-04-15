@@ -124,7 +124,7 @@ class MatplotlibViewerMixin(object):
         self.redraw()
 
     def redraw(self):
-        self.figure.canvas.draw()
+        self.figure.canvas.draw_idle()
 
     def update_x_log(self, *args):
         self.axes.set_xscale('log' if self.state.x_log else 'linear')
@@ -186,7 +186,7 @@ class MatplotlibViewerMixin(object):
         try:
             self.axes.set_xlim(x_min, x_max)
             self.axes.set_ylim(y_min, y_max)
-            self.axes.figure.canvas.draw()
+            self.axes.figure.canvas.draw_idle()
         finally:
             self._skip_limits_from_mpl = False
 

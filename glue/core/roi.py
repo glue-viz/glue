@@ -694,7 +694,7 @@ class AbstractMplRoi(object):  # pragma: no cover
         self._scrubbing = False
 
     def _draw(self):
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
     def _roi_factory(self):
         raise NotImplementedError()
@@ -1097,7 +1097,7 @@ class MplCircularROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
     def start_selection(self, event):
 
@@ -1172,7 +1172,7 @@ class MplCircularROI(AbstractMplRoi):
         self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
 
 class MplPolygonalROI(AbstractMplRoi):
@@ -1223,7 +1223,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
     def start_selection(self, event, scrubbing=False):
 
@@ -1272,7 +1272,7 @@ class MplPolygonalROI(AbstractMplRoi):
         self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
 
 class MplPathROI(MplPolygonalROI):
@@ -1301,13 +1301,13 @@ class MplPathROI(MplPolygonalROI):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
     def finalize_selection(self, event):
         self._mid_selection = False
         if self._patch is not None:
             self._patch.set_visible(False)
-        self._axes.figure.canvas.draw()
+        self._axes.figure.canvas.draw_idle()
 
 
 class CategoricalROI(Roi):

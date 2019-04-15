@@ -269,7 +269,7 @@ class AxesResizer(object):
         dy = max(0.01, y1 - y0)
 
         self.ax.set_position([x0, y0, dx, dy])
-        self.ax.figure.canvas.draw()
+        self.ax.figure.canvas.draw_idle()
 
 
 def freeze_margins(axes, margins=[1, 1, 1, 1]):

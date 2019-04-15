@@ -65,7 +65,7 @@ class ModestImage(mi.AxesImage):
         if self.axes is None:
             return
         self._pressed = False
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def _press(self, *args):
         self._pressed = True
@@ -73,7 +73,7 @@ class ModestImage(mi.AxesImage):
     def _release(self, *args):
         self._pressed = False
         self.stale = True
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def set_data(self, A):
         """
@@ -240,7 +240,7 @@ def main():
     ax.add_artist(artist)
 
     t0 = time()
-    plt.gcf().canvas.draw()
+    plt.gcf().canvas.draw_idle()
     t1 = time()
 
     print("Draw time for %s: %0.1f ms" % (artist.__class__.__name__,

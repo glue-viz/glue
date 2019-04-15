@@ -215,7 +215,7 @@ class ProfileTools(QtWidgets.QWidget):
         def on_done():
             self.ui.button_fit.setText("Fit")
             self.ui.button_fit.setEnabled(True)
-            self.canvas.draw()
+            self.canvas.draw_idle()
 
         self.ui.button_fit.setText("Running...")
         self.ui.button_fit.setEnabled(False)
@@ -237,7 +237,7 @@ class ProfileTools(QtWidgets.QWidget):
     def _on_clear(self):
         self.ui.text_log.document().setPlainText('')
         self._clear_fit()
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def _fit(self, fitter, xlim=None):
 
@@ -273,7 +273,7 @@ class ProfileTools(QtWidgets.QWidget):
                                                  color=layer.state.color,
                                                  normalize=normalize.get(layer, None))[0])
 
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def _visible_data(self):
         datasets = set()
