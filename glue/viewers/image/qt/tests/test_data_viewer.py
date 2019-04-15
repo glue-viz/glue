@@ -19,7 +19,7 @@ from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI
 from glue.core.subset import RoiSubsetState
-from glue.utils.qt import combo_as_string
+from glue.utils.qt import combo_as_string, process_events
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
@@ -324,6 +324,7 @@ class TestImageViewer(object):
         self.viewer.layers[1].visible = False
         self.viewer.layers[1].image_artist.invalidate_cache()
         self.viewer.layers[1].redraw()
+        process_events()
         assert not np.any(self.viewer.layers[1].image_artist._A.mask)
         self.viewer.layers[1].visible = True
         assert not np.any(self.viewer.layers[1].image_artist._A.mask)
@@ -387,6 +388,8 @@ class TestImageViewer(object):
 
         self.data_collection.new_subset_group()
 
+        process_events()
+
         assert len(self.viewer.layers) == 4
 
         # Only the two layers associated with the reference data should be enabled
@@ -402,6 +405,8 @@ class TestImageViewer(object):
         link1 = LinkSame(px1, px2)
         self.data_collection.add_link(link1)
 
+        process_events()
+
         # One link isn't enough, second dataset layers are still not enabled
 
         for layer_artist in self.viewer.layers:
@@ -413,12 +418,16 @@ class TestImageViewer(object):
         link2 = LinkSame(py1, py2)
         self.data_collection.add_link(link2)
 
+        process_events()
+
         # All layers should now be enabled
 
         for layer_artist in self.viewer.layers:
             assert layer_artist.enabled
 
         self.data_collection.remove_link(link2)
+
+        process_events()
 
         # We should now be back to the original situation
 
@@ -575,6 +584,8 @@ class TestImageViewer(object):
 
         self.data_collection.new_subset_group(subset_state=self.catalog.id['e'] > 4)
 
+        process_events()
+
         assert self.viewer.layers[0].enabled  # image
         assert self.viewer.layers[1].enabled  # scatter
         assert not self.viewer.layers[2].enabled  # image subset
@@ -583,6 +594,8 @@ class TestImageViewer(object):
         assert not self.viewer.layers[2].image_artist.get_visible()
 
         self.data_collection.subset_groups[0].subset_state = self.catalog.id['c'] > -1
+
+        process_events()
 
         assert self.viewer.layers[0].enabled  # image
         assert self.viewer.layers[1].enabled  # scatter
@@ -602,6 +615,8 @@ class TestImageViewer(object):
 
         self.data_collection.new_subset_group(subset_state=self.catalog.id['e'] > 4)
 
+        process_events()
+
         assert self.viewer.layers[0].enabled  # image
         assert not self.viewer.layers[1].enabled  # scatter
         assert not self.viewer.layers[2].enabled  # image subset
@@ -611,6 +626,8 @@ class TestImageViewer(object):
         link2 = LinkSame(self.catalog.id['d'], self.image1.world_component_ids[1])
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
+
+        process_events()
 
         assert self.viewer.layers[0].enabled  # image
         assert self.viewer.layers[1].enabled  # scatter

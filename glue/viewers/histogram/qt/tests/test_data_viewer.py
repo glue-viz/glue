@@ -17,7 +17,7 @@ from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
 from glue import core
 from glue.app.qt import GlueApplication
 from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string
+from glue.utils.qt import combo_as_string, process_events
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
@@ -111,6 +111,8 @@ class TestHistogramViewer(object):
 
         self.viewer.add_data(data)
         viewer_state.x_log = True
+
+        process_events()
 
         labels = [x.get_text() for x in self.viewer.axes.xaxis.get_ticklabels()]
 

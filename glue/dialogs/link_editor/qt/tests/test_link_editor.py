@@ -1,7 +1,7 @@
 from mock import patch
 
 from qtpy import QtWidgets
-from glue.utils.qt import get_qapp
+from glue.utils.qt import process_events
 from glue.core import Data, DataCollection
 from glue.core.component_link import identity
 from glue.dialogs.link_editor.qt import LinkEditor
@@ -91,8 +91,6 @@ class TestLinkEditor:
         # This is a bit more detailed test that checks that things update
         # correctly as we change various settings
 
-        app = get_qapp()
-
         dialog = LinkEditor(self.data_collection)
         dialog.show()
         link_widget = dialog.link_widget
@@ -113,7 +111,7 @@ class TestLinkEditor:
         add_identity_link.trigger()
 
         # Ensure that all events get processed
-        app.processEvents()
+        process_events()
 
         # Now there should be one link in the main list and content in the
         # right hand panel.
@@ -135,7 +133,7 @@ class TestLinkEditor:
         add_lengths_volume_link.trigger()
 
         # Ensure that all events get processed
-        app.processEvents()
+        process_events()
 
         # and make sure the UI has updated
         assert link_widget.listsel_current_link.count() == 2
@@ -170,7 +168,7 @@ class TestLinkEditor:
         add_identity_link.trigger()
 
         # Ensure that all events get processed
-        app.processEvents()
+        process_events()
 
         # Now there should be one link in the main list
         assert link_widget.listsel_current_link.count() == 1
@@ -193,7 +191,7 @@ class TestLinkEditor:
         link_widget.button_remove_link.click()
 
         # Ensure that all events get processed
-        app.processEvents()
+        process_events()
 
         # We should now see the lengths/volume link
         assert link_widget.listsel_current_link.count() == 1
@@ -342,8 +340,6 @@ class TestLinkEditor:
 
         # Check that things work properly if there are pre-existing links
 
-        app = get_qapp()
-
         link1 = ComponentLink([self.data1.id['x']], self.data2.id['c'])
 
         def add(x, y):
@@ -417,8 +413,6 @@ class TestLinkEditor:
 
     def test_add_helper(self):
 
-        app = get_qapp()
-
         dialog = LinkEditor(self.data_collection)
         dialog.show()
         link_widget = dialog.link_widget
@@ -432,7 +426,7 @@ class TestLinkEditor:
         add_coordinate_link.trigger()
 
         # Ensure that all events get processed
-        app.processEvents()
+        process_events()
 
         assert link_widget.listsel_current_link.count() == 1
         assert link_widget.link_details.text() == 'Link ICRS and Galactic coordinates'
@@ -455,8 +449,6 @@ class TestLinkEditor:
         assert links[0].cids2[1] is self.data2.id['b']
 
     def test_preexisting_helper(self):
-
-        app = get_qapp()
 
         link1 = Galactic_to_FK5(cids1=[self.data1.id['x'], self.data1.id['y']],
                                 cids2=[self.data2.id['c'], self.data2.id['b']])
@@ -498,8 +490,6 @@ class TestLinkEditor:
         # This is a bit more detailed test that checks that things update
         # correctly as we change various settings
 
-        app = get_qapp()
-
         link1 = ComponentLink([self.data1.id['x']], self.data2.id['c'])
 
         self.data_collection.add_link(link1)
@@ -535,8 +525,6 @@ class TestLinkEditor:
         # Test that if we use a @link_helper in 'legacy' mode, i.e. with only
         # input labels, both datasets are available from the combos in the
         # link editor dialog. Also test the new-style @link_helper.
-
-        app = get_qapp()
 
         def deg_arcsec(degree, arcsecond):
             return [ComponentLink([degree], arcsecond, using=lambda d: d * 3600),
@@ -600,8 +588,6 @@ class TestLinkEditor:
     def test_same_data(self):
 
         # Test that we can't set the same data twice
-
-        app = get_qapp()
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()

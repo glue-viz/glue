@@ -92,7 +92,7 @@ def test_defer_draw():
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         ax.plot([1, 2, 3], [4, 5, 6])
-        fig.canvas.draw()
+        fig.canvas.draw_idle()
         return 3.5
 
     result = draw_figure()

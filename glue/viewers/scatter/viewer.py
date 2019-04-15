@@ -40,7 +40,7 @@ class MatplotlibScatterMixin(object):
             else:
                 self.state.y_axislabel = self.state.y_att.label
 
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
 

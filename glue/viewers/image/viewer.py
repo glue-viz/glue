@@ -77,7 +77,7 @@ class MatplotlibImageMixin(object):
         if self.state.y_att_world is not None:
             self.state.y_axislabel = self.state.y_att_world.label
 
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def add_data(self, data):
         result = super(MatplotlibImageMixin, self).add_data(data)
@@ -192,13 +192,13 @@ class MatplotlibImageMixin(object):
                                            mfc='none', mec='#d32d26',
                                            mew=1, zorder=100)
 
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def hide_crosshairs(self):
         if getattr(self, '_crosshairs', None) is not None:
             self._crosshairs.remove()
             self._crosshairs = None
-            self.axes.figure.canvas.draw()
+            self.axes.figure.canvas.draw_idle()
 
     def _script_header(self):
 

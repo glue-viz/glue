@@ -18,7 +18,7 @@ from glue.tests.helpers import requires_ipython  # noqa
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
 from glue.viewers.histogram.qt import HistogramViewer
-from glue.utils.qt import get_qapp
+from glue.utils.qt import process_events
 
 
 from ..application import GlueApplication, GlueLogger
@@ -467,8 +467,7 @@ def test_logger_close():
     app = GlueApplication()
     app.close()
 
-    qapp = get_qapp()
-    qapp.processEvents()
+    process_events()
 
     assert not isinstance(sys.stderr, GlueLogger)
 

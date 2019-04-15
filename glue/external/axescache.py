@@ -158,7 +158,7 @@ class AxesCache(object):
         enable() is next called
         """
         self._enabled = False
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def enable(self):
         """

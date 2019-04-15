@@ -98,7 +98,7 @@ class TutorialLayerArtist(LayerArtist):
         self.artist.remove()
 
     def redraw(self):
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def update(self):
         self._on_fill_change()

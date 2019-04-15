@@ -139,6 +139,12 @@ def fast_limits(data, plo, phi):
     return lo, hi
 
 
+# We don't know in advance what backends are going to be used for Matplotlib
+# so we can set up a list here and use it in defer_draw below, and each front-
+# end is responsible for adding their backend here.
+DEFER_DRAW_BACKENDS = []
+
+
 def defer_draw(func):
     """
     Decorator that globally defers all Agg canvas draws until
@@ -150,25 +156,30 @@ def defer_draw(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
 
-        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        if len(DEFER_DRAW_BACKENDS) == 0:
+            return func(*args, **kwargs)
 
-        # don't recursively defer draws
-        if isinstance(FigureCanvasAgg.draw, DeferredMethod):
+        # Don't recursively defer draws. We just check the first draw_idle
+        # method since all should be modified in sync.
+        if isinstance(DEFER_DRAW_BACKENDS[0].draw_idle, DeferredMethod):
             return func(*args, **kwargs)
 
         try:
-            FigureCanvasAgg.draw = DeferredMethod(FigureCanvasAgg.draw)
+            for backend in DEFER_DRAW_BACKENDS:
+                backend.draw_idle = DeferredMethod(backend.draw_idle)
             result = func(*args, **kwargs)
         finally:
-            # We need to use another try...finally block here in case the
-            # executed deferred draw calls fail for any reason
-            try:
+            for backend in DEFER_DRAW_BACKENDS:
+                # We need to use another try...finally block here in case the
+                # executed deferred draw calls fail for any reason
                 try:
-                    FigureCanvasAgg.draw.execute_deferred_calls()
-                except RuntimeError:  # For C/C++ errors
-                    pass
-            finally:
-                FigureCanvasAgg.draw = FigureCanvasAgg.draw.original_method
+                    try:
+                        backend.draw_idle.execute_deferred_calls()
+                    except RuntimeError:  # For C/C++ errors with Qt
+                        pass
+                finally:
+                    backend.draw_idle = backend.draw_idle.original_method
+
         return result
 
     wrapper._is_deferred = True
@@ -269,7 +280,7 @@ class AxesResizer(object):
         dy = max(0.01, y1 - y0)
 
         self.ax.set_position([x0, y0, dx, dy])
-        self.ax.figure.canvas.draw()
+        self.ax.figure.canvas.draw_idle()
 
 
 def freeze_margins(axes, margins=[1, 1, 1, 1]):

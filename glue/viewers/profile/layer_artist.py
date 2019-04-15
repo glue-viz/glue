@@ -49,9 +49,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             time.sleep(0.5)
             while self._worker.running:
                 time.sleep(1 / 25)
-            from glue.utils.qt import get_qapp
-            app = get_qapp()
-            app.processEvents()
+            from glue.utils.qt import process_events
+            process_events()
 
     def remove(self):
         super(ProfileLayerArtist, self).remove()

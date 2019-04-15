@@ -9,7 +9,7 @@ from glue.core import Data
 from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 from glue.app.qt import GlueApplication
 from glue.utils import nanmean
-from glue.utils.qt import get_qapp
+from glue.utils.qt import process_events
 from glue.viewers.image.state import AggregateSlice
 
 from glue.viewers.image.qt import ImageViewer
@@ -57,8 +57,7 @@ class TestProfileTools(object):
         # Force events to be processed to make sure that the callback functions
         # for the computation thread are executed (since they rely on signals)
         self.viewer.layers[0].wait()
-        app = get_qapp()
-        app.processEvents()
+        process_events()
 
         x, y = self.viewer.axes.transData.transform([[1, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
@@ -87,8 +86,7 @@ class TestProfileTools(object):
         # Force events to be processed to make sure that the callback functions
         # for the computation thread are executed (since they rely on signals)
         self.viewer.layers[0].wait()
-        app = get_qapp()
-        app.processEvents()
+        process_events()
 
         x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
@@ -102,7 +100,7 @@ class TestProfileTools(object):
 
         # Force events to be processed to make sure that the callback functions
         # for the computation thread are executed (since they rely on signals)
-        app.processEvents()
+        process_events()
 
         pixel_log = self.profile_tools.text_log.toPlainText().splitlines()
         assert pixel_log[0] == 'd1'
@@ -126,8 +124,7 @@ class TestProfileTools(object):
 
         self.profile_tools.ui.button_fit.click()
         self.profile_tools.wait_for_fit()
-        app = get_qapp()
-        app.processEvents()
+        process_events()
 
         world_log = self.profile_tools.text_log.toPlainText().splitlines()
         assert world_log[0] == 'd1'
@@ -151,8 +148,7 @@ class TestProfileTools(object):
         # Force events to be processed to make sure that the callback functions
         # for the computation thread are executed (since they rely on signals)
         self.viewer.layers[0].wait()
-        app = get_qapp()
-        app.processEvents()
+        process_events()
 
         x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
@@ -174,7 +170,7 @@ class TestProfileTools(object):
         # Force events to be processed to make sure that the callback functions
         # for the computation thread are executed (since they rely on signals)
         self.viewer.layers[0].wait()
-        app.processEvents()
+        process_events()
 
         x, y = self.viewer.axes.transData.transform([[1.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)

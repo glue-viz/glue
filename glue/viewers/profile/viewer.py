@@ -21,7 +21,7 @@ class MatplotlibProfileMixin(object):
         else:
             self.state.y_axislabel = 'Data values'
 
-        self.axes.figure.canvas.draw()
+        self.axes.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
 
