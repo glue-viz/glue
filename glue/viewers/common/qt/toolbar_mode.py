@@ -21,7 +21,6 @@ import os
 
 from qtpy import QtGui, QtWidgets
 from glue.core import roi
-from glue.core.qt import roi as qt_roi
 from glue.utils.qt import get_qapp
 from glue.utils import nonpartial
 from glue.utils.qt import load_ui, cmap2pixmap
@@ -236,7 +235,7 @@ class RectangleMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(RectangleMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtRectangularROI(self._axes)
+        self._roi_tool = roi.MplRectangularROI(self._axes)
 
 
 class PathMode(ClickRoiMode):
@@ -245,7 +244,7 @@ class PathMode(ClickRoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(PathMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtPathROI(self._axes)
+        self._roi_tool = roi.MplPathROI(self._axes)
 
         self._roi_tool.plot_opts.update(edgecolor='#de2d26',
                                         facecolor=None,
@@ -267,7 +266,7 @@ class CircleMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(CircleMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtCircularROI(self._axes)
+        self._roi_tool = roi.MplCircularROI(self._axes)
 
 
 @viewer_tool
@@ -288,7 +287,7 @@ class PolyMode(ClickRoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(PolyMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
+        self._roi_tool = roi.MplPolygonalROI(self._axes)
 
 
 # TODO: determine why LassoMode exists since it's the same as PolyMode?
@@ -311,7 +310,7 @@ class LassoMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(LassoMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtPolygonalROI(self._axes)
+        self._roi_tool = roi.MplPolygonalROI(self._axes)
 
 
 @viewer_tool
@@ -330,7 +329,7 @@ class HRangeMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(HRangeMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtXRangeROI(self._axes)
+        self._roi_tool = roi.MplXRangeROI(self._axes)
 
 
 @viewer_tool
@@ -349,7 +348,7 @@ class VRangeMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(VRangeMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = qt_roi.QtYRangeROI(self._axes)
+        self._roi_tool = roi.MplYRangeROI(self._axes)
 
 
 @viewer_tool

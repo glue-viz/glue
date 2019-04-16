@@ -676,28 +676,42 @@ class Path(VertexROIBase):
         return result
 
 
-class AbstractMplRoi(object):  # pragma: no cover
+class AbstractMplRoi(object):
+    """
+    Base class for objects which use Matplotlib user events to edit/display ROIs.
 
-    """ Base class for objects which use
-    Matplotlib user events to edit/display ROIs
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    roi : `~glue.core.roi.Roi`, optional
+        If specified, this ROI will be used and updated, otherwise a new one
+        will be created.
     """
 
-    def __init__(self, axes, roi=None):
-        """
-        :param axes: The Matplotlib Axes object to draw to
-        """
+    _roi_cls = None
 
+    def __init__(self, axes, roi=None):
         self._axes = axes
-        self._roi = roi or self._roi_factory()
+        self._roi = self._roi_cls()
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
+        self._background_cache = None
 
     def _draw(self):
-        self._axes.figure.canvas.draw_idle()
 
-    def _roi_factory(self):
-        raise NotImplementedError()
+        # When drawing the ROI, we first keep a cache of the contents of the
+        # plot then just re-plot the ROI artist on top every time for
+        # performance. However, if the background cache hasn't been set, we need
+        # to do a full draw.
+
+        if self._background_cache is None:
+            self._axes.figure.canvas.draw_idle()
+        else:
+            self._axes.figure.canvas.restore_region(self._background_cache)
+            self._axes.draw_artist(self._patch)
+            self._axes.figure.canvas.blit()
 
     def roi(self):
         return self._roi.copy()
@@ -723,26 +737,36 @@ class AbstractMplRoi(object):  # pragma: no cover
 
     def abort_selection(self, event):
         if self._mid_selection:
-            self._roi_restore()
+            self._restore_previous_roi()
         self.reset(include_roi=False)
 
     def _sync_patch(self):
         raise NotImplementedError()
 
-    def _roi_store(self):
+    def _store_previous_roi(self):
         self._previous_roi = self._roi.copy()
 
-    def _roi_restore(self):
+    def _store_background(self):
+        self._background_cache = self._axes.figure.canvas.copy_from_bbox(self._axes.bbox)
+
+    def _restore_previous_roi(self):
         self._roi = self._previous_roi
 
 
 class MplPickROI(AbstractMplRoi):
+    """
+    Matplotlib ROI for point selections
+
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    """
+
+    _roi_cls = PointROI
 
     def _draw(self):
         pass
-
-    def _roi_factory(self):
-        return PointROI()
 
     def start_selection(self, event):
         self._roi.x = event.xdata
@@ -761,45 +785,31 @@ class MplPickROI(AbstractMplRoi):
 
 
 class MplRectangularROI(AbstractMplRoi):
-
     """
-    A subclass of RectangularROI that also renders the ROI to a plot
+    Matplotlib ROI for rectangular selections
 
-    *Attributes*:
-
-        plot_opts:
-
-                   Dictionary instance
-                   A dictionary of plot keywords that are passed to
-                   the patch representing the ROI. These control
-                   the visual properties of the ROI
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
     """
+
+    _roi_cls = RectangularROI
 
     def __init__(self, axes):
-        """
-        :param axes: A matplotlib Axes object to attach the graphical ROI to
-        """
 
-        AbstractMplRoi.__init__(self, axes)
+        super(MplRectangularROI, self).__init__(axes)
 
         self._xi = None
         self._yi = None
 
-        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
-        self._patch = Rectangle((0., 0.), 1., 1.)
-        self._patch.set_zorder(100)
-        self._setup_patch()
-
-    def _setup_patch(self):
-        self._axes.add_patch(self._patch)
+        self._patch = Rectangle((0., 0.), 1., 1., zorder=100)
         self._patch.set_visible(False)
-
-        self._sync_patch()
-
-    def _roi_factory(self):
-        return RectangularROI()
+        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -812,7 +822,9 @@ class MplRectangularROI(AbstractMplRoi):
             elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
-        self._roi_store()
+        self._store_previous_roi()
+        self._store_background()
+
         self._xi = event.xdata
         self._yi = event.ydata
 
@@ -825,7 +837,9 @@ class MplRectangularROI(AbstractMplRoi):
                                     event.xdata, event.ydata)
 
         self._mid_selection = True
+
         self._sync_patch()
+        self._draw()
 
     def update_selection(self, event):
 
@@ -844,7 +858,9 @@ class MplRectangularROI(AbstractMplRoi):
                                     min(event.ydata, self._yi),
                                     max(event.xdata, self._xi),
                                     max(event.ydata, self._yi))
+
         self._sync_patch()
+        self._draw()
 
     def finalize_selection(self, event):
         self._scrubbing = False
@@ -864,38 +880,38 @@ class MplRectangularROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
 
     def __str__(self):
         return "MPL Rectangle: %s" % self._patch
 
 
 class MplXRangeROI(AbstractMplRoi):
+    """
+    Matplotlib ROI for x range selections
+
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    """
+
+    _roi_cls = XRangeROI
 
     def __init__(self, axes):
-        """
-        :param axes: A matplotlib Axes object to attach the graphical ROI to
-        """
 
-        AbstractMplRoi.__init__(self, axes)
+        super(MplXRangeROI, self).__init__(axes)
+
         self._xi = None
 
-        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         trans = blended_transform_factory(self._axes.transData,
                                           self._axes.transAxes)
-        self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
-        self._patch.set_zorder(100)
-        self._setup_patch()
-
-    def _setup_patch(self):
-        self._axes.add_patch(self._patch)
+        self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._sync_patch()
-
-    def _roi_factory(self):
-        return XRangeROI()
+        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -908,7 +924,8 @@ class MplXRangeROI(AbstractMplRoi):
             elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
-        self._roi_store()
+        self._store_previous_roi()
+        self._store_background()
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
@@ -917,8 +934,11 @@ class MplXRangeROI(AbstractMplRoi):
             self.reset()
             self._roi.set_range(event.xdata, event.xdata)
             self._xi = event.xdata
+
         self._mid_selection = True
+
         self._sync_patch()
+        self._draw()
 
     def update_selection(self, event):
 
@@ -934,7 +954,9 @@ class MplXRangeROI(AbstractMplRoi):
         else:
             self._roi.set_range(min(event.xdata, self._xi),
                                 max(event.xdata, self._xi))
+
         self._sync_patch()
+        self._draw()
 
     def finalize_selection(self, event):
         self._scrubbing = False
@@ -952,35 +974,35 @@ class MplXRangeROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
 
 
 class MplYRangeROI(AbstractMplRoi):
+    """
+    Matplotlib ROI for y range selections
+
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    """
+
+    _roi_cls = YRangeROI
 
     def __init__(self, axes):
-        """
-        :param axes: A matplotlib Axes object to attach the graphical ROI to
-        """
 
-        AbstractMplRoi.__init__(self, axes)
+        super(MplYRangeROI, self).__init__(axes)
+
         self._xi = None
 
-        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         trans = blended_transform_factory(self._axes.transAxes,
                                           self._axes.transData)
-        self._patch = Rectangle((0., 0.), 1., 1., transform=trans)
-        self._patch.set_zorder(100)
-        self._setup_patch()
-
-    def _setup_patch(self):
-        self._axes.add_patch(self._patch)
+        self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._sync_patch()
-
-    def _roi_factory(self):
-        return YRangeROI()
+        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -993,7 +1015,8 @@ class MplYRangeROI(AbstractMplRoi):
             elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
-        self._roi_store()
+        self._store_previous_roi()
+        self._store_background()
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
@@ -1002,8 +1025,11 @@ class MplYRangeROI(AbstractMplRoi):
             self.reset()
             self._roi.set_range(event.ydata, event.ydata)
             self._xi = event.ydata
+
         self._mid_selection = True
+
         self._sync_patch()
+        self._draw()
 
     def update_selection(self, event):
 
@@ -1019,7 +1045,9 @@ class MplYRangeROI(AbstractMplRoi):
         else:
             self._roi.set_range(min(event.ydata, self._xi),
                                 max(event.ydata, self._xi))
+
         self._sync_patch()
+        self._draw()
 
     def finalize_selection(self, event):
         self._scrubbing = False
@@ -1037,67 +1065,51 @@ class MplYRangeROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
 
 
 class MplCircularROI(AbstractMplRoi):
-
     """
-    Class to display / edit circular ROIs using matplotlib
+    Matplotlib ROI for circular selections
 
-    Since circles on the screen may not be circles in the data
-    (due, e.g., to logarithmic scalings on the axes), the
-    ultimate ROI that is created is a polygonal ROI
+    Since circles on the screen may not be circles in the data (due, e.g., to
+    logarithmic scalings on the axes), the ultimate ROI that is created is a
+    polygonal ROI
 
-    :param plot_opts:
-
-               A dictionary of plot keywords that are passed to
-               the patch representing the ROI. These control
-               the visual properties of the ROI
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
     """
+
+    _roi_cls = CircularROI
 
     def __init__(self, axes):
-        """
-        :param axes: A matplotlib Axes object to attach the graphical ROI to
-        """
 
-        AbstractMplRoi.__init__(self, axes)
-        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+        super(MplCircularROI, self).__init__(axes)
+
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         self._xi = None
         self._yi = None
-        self._setup_patch()
 
-    def _setup_patch(self):
         self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
-                              width=0., height=0.,)
-        self._patch.set_zorder(100)
-        self._patch.set(**self.plot_opts)
-        self._axes.add_patch(self._patch)
+                              width=0., height=0., zorder=100)
         self._patch.set_visible(False)
-        self._sync_patch()
-
-    def _roi_factory(self):
-        return CircularROI()
+        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
-        # Update geometry
-        if not self._roi.defined():
-            self._patch.set_visible(False)
-        else:
+        if self._roi.defined():
             xy = self._roi.get_center()
             r = self._roi.get_radius()
             self._patch.center = xy
             self._patch.width = 2. * r
             self._patch.height = 2. * r
+            self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
-
-        # Update appearance
-        self._patch.set(**self.plot_opts)
-
-        # Refresh
-        self._axes.figure.canvas.draw_idle()
+        else:
+            self._patch.set_visible(False)
 
     def start_selection(self, event):
 
@@ -1114,7 +1126,8 @@ class MplCircularROI(AbstractMplRoi):
             elif not self._roi.contains(xi, yi):
                 return False
 
-        self._roi_store()
+        self._store_previous_roi()
+        self._store_background()
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
@@ -1129,7 +1142,9 @@ class MplCircularROI(AbstractMplRoi):
             self._yi = yi
 
         self._mid_selection = True
+
         self._sync_patch()
+        self._draw()
 
     def update_selection(self, event):
 
@@ -1152,11 +1167,11 @@ class MplCircularROI(AbstractMplRoi):
             self._roi.set_radius(np.hypot(dx, dy))
 
         self._sync_patch()
+        self._draw()
 
     def roi(self):
         if not self._roi.defined():
             return PolygonalROI()
-
         theta = np.linspace(0, 2 * np.pi, num=200)
         xy_center = self._roi.get_center()
         rad = self._roi.get_radius()
@@ -1172,58 +1187,45 @@ class MplCircularROI(AbstractMplRoi):
         self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
-        self._axes.figure.canvas.draw_idle()
+        self._draw()
 
 
 class MplPolygonalROI(AbstractMplRoi):
-
     """
-    Defines and displays polygonal ROIs on matplotlib plots
+    Matplotlib ROI for polygon selections
 
-    Attributes:
-
-        plot_opts: Dictionary instance
-                   A dictionary of plot keywords that are passed to
-                   the patch representing the ROI. These control
-                   the visual properties of the ROI
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    roi : `~glue.core.roi.Roi`, optional
+        If specified, this ROI will be used and updated, otherwise a new one
+        will be created.
     """
+
+    _roi_cls = PolygonalROI
 
     def __init__(self, axes, roi=None):
-        """
-        :param axes: A matplotlib Axes object to attach the graphical ROI to
-        """
-        AbstractMplRoi.__init__(self, axes, roi=roi)
-        self.plot_opts = {'edgecolor': PATCH_COLOR, 'facecolor': PATCH_COLOR,
+
+        super(MplPolygonalROI, self).__init__(axes, roi=roi)
+
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
-        self._setup_patch()
-
-    def _setup_patch(self):
-        self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))))
-        self._patch.set_zorder(100)
-        self._patch.set(**self.plot_opts)
-        self._axes.add_patch(self._patch)
+        self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))), zorder=100)
         self._patch.set_visible(False)
-        self._sync_patch()
-
-    def _roi_factory(self):
-        return PolygonalROI()
+        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
-        # Update geometry
-        if not self._roi.defined():
-            self._patch.set_visible(False)
-        else:
+        if self._roi.defined():
             x, y = self._roi.to_polygon()
             self._patch.set_xy(list(zip(x + [x[0]],
                                         y + [y[0]])))
             self._patch.set_visible(True)
-
-        # Update appearance
-        self._patch.set(**self.plot_opts)
-
-        # Refresh
-        self._axes.figure.canvas.draw_idle()
+            self._patch.set(**self.plot_opts)
+        else:
+            self._patch.set_visible(False)
 
     def start_selection(self, event, scrubbing=False):
 
@@ -1236,7 +1238,8 @@ class MplPolygonalROI(AbstractMplRoi):
             elif not self._roi.contains(event.xdata, event.ydata):
                 return False
 
-        self._roi_store()
+        self._store_previous_roi()
+        self._store_background()
 
         if scrubbing or event.key == SCRUBBING_KEY:
             self._scrubbing = True
@@ -1247,7 +1250,9 @@ class MplPolygonalROI(AbstractMplRoi):
             self._roi.add_point(event.xdata, event.ydata)
 
         self._mid_selection = True
+
         self._sync_patch()
+        self._draw()
 
     def update_selection(self, event):
 
@@ -1267,51 +1272,58 @@ class MplPolygonalROI(AbstractMplRoi):
             self._roi.add_point(event.xdata, event.ydata)
 
         self._sync_patch()
+        self._draw()
 
     def finalize_selection(self, event):
         self._scrubbing = False
         self._mid_selection = False
         self._patch.set_visible(False)
-        self._axes.figure.canvas.draw_idle()
+        self._draw()
 
 
 class MplPathROI(MplPolygonalROI):
+    """
+    Matplotlib ROI for path selections
 
-    def roi_factory(self):
-        return Path()
+    Parameters
+    ----------
+    axes : `~matplotlib.axes.Axes`
+        The Matplotlib axes to draw to.
+    """
 
-    def _setup_patch(self):
+    _roi_cls = Path
+
+    def __init__(self, axes, roi=None):
+
+        super(MplPolygonalROI, self).__init__(axes)
+
+        self.plot_opts = {'edgecolor': PATCH_COLOR,
+                          'facecolor': PATCH_COLOR,
+                          'alpha': 0.3}
+
         self._patch = None
 
     def _sync_patch(self):
+
         if self._patch is not None:
             self._patch.remove()
             self._patch = None
 
-        # Update geometry
-        if not self._roi.defined():
-            return
-        else:
+        if self._roi.defined():
             x, y = self._roi.to_polygon()
             p = MplPath(np.column_stack((x, y)))
             self._patch = PathPatch(p)
             self._patch.set_visible(True)
-
-        # Update appearance
-        self._patch.set(**self.plot_opts)
-
-        # Refresh
-        self._axes.figure.canvas.draw_idle()
+            self._patch.set(**self.plot_opts)
 
     def finalize_selection(self, event):
         self._mid_selection = False
         if self._patch is not None:
             self._patch.set_visible(False)
-        self._axes.figure.canvas.draw_idle()
+        self._draw()
 
 
 class CategoricalROI(Roi):
-
     """
     A ROI abstraction to represent selections of categorical data.
     """

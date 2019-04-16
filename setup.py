@@ -108,7 +108,7 @@ except ImportError:
 extras_require = {
     'recommended': ['scipy',
                     'scikit-image',
-                    'plotly'],
+                    'plotly<3.8'],
     'astronomy': ['PyAVM',
                   'astrodendro',
                   'spectral-cube']
