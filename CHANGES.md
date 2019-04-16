@@ -28,6 +28,10 @@ v0.15.0 (unreleased)
 * Added a ``--faulthandler`` command-line flag to help debug segmentation
   faults. [#1974]
 
+* Removed ``glue.core.qt.roi`` submodule. This provided faster versions of
+  the Matplotlib ROI classes in ``glue.core.roi`` but the latter are now
+  efficient enough that the Qt-specific versions are no longer needed. [#1983]
+
 v0.14.3 (unreleased)
 --------------------
 
