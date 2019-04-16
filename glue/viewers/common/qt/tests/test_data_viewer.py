@@ -9,7 +9,6 @@ from glue.core import Data, DataCollection
 from glue.app.qt import GlueApplication
 
 from glue.core.tests.util import simple_session
-from glue.viewers.common.qt.data_viewer import DataViewer, get_viewer_tools
 from glue.viewers.histogram.qt import HistogramViewer
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.scatter.qt import ScatterViewer
