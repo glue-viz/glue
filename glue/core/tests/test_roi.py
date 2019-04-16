@@ -496,16 +496,21 @@ class TestMpl(object):
         assert not self.roi._roi.defined()
 
     def test_canvas_syncs_properly(self):
-        assert self.axes.figure.canvas.draw_idle.call_count == 1
+        assert self.axes.figure.canvas.draw_idle.call_count == 0
+        assert self.axes.figure.canvas.blit.call_count == 0
         event = DummyEvent(5, 5, inaxes=self.axes)
         self.roi.start_selection(event)
-        assert self.axes.figure.canvas.draw_idle.call_count == 3
+        assert self.axes.figure.canvas.draw_idle.call_count == 0
+        assert self.axes.figure.canvas.blit.call_count == 1
         self.roi.update_selection(event)
-        assert self.axes.figure.canvas.draw_idle.call_count == 4
+        assert self.axes.figure.canvas.draw_idle.call_count == 0
+        assert self.axes.figure.canvas.blit.call_count == 2
         self.roi.update_selection(event)
-        assert self.axes.figure.canvas.draw_idle.call_count == 5
+        assert self.axes.figure.canvas.draw_idle.call_count == 0
+        assert self.axes.figure.canvas.blit.call_count == 3
         self.roi.finalize_selection(event)
-        assert self.axes.figure.canvas.draw_idle.call_count == 6
+        assert self.axes.figure.canvas.draw_idle.call_count == 0
+        assert self.axes.figure.canvas.blit.call_count == 4
 
     def test_patch_shown_on_start(self):
         assert not self.roi._patch.get_visible()
