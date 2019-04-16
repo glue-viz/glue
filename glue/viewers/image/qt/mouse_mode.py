@@ -4,7 +4,7 @@ from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu, QAction
 
 from glue.core.subset import RoiSubsetState
-from glue.core.qt.roi import QtPolygonalROI
+from glue.core.roi import MplPolygonalROI
 from glue.core.edit_subset_mode import ReplaceMode
 from glue.viewers.common.qt.mouse_mode import MouseMode
 from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
@@ -34,7 +34,7 @@ class RoiClickAndDragMode(MouseMode):
         self._selected = False
 
     def _select_roi(self, roi, index, event):
-        self._roi = QtPolygonalROI(self._axes, roi=roi)
+        self._roi = MplPolygonalROI(self._axes, roi=roi)
         self._roi.start_selection(event, scrubbing=True)
         self._edit_subset_mode.edit_subset = [self._dc.subset_groups[index]]
 

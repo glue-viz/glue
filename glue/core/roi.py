@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import time
 
 import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
@@ -692,9 +693,15 @@ class AbstractMplRoi(object):  # pragma: no cover
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
+        self._bg_cache = None
 
     def _draw(self):
-        self._axes.figure.canvas.draw_idle()
+        if self._bg_cache is None:
+            self._axes.figure.canvas.draw_idle()
+        else:
+            self._axes.figure.canvas.restore_region(self._bg_cache)
+            self._axes.draw_artist(self._patch)
+            self._axes.figure.canvas.blit()
 
     def _roi_factory(self):
         raise NotImplementedError()
@@ -731,6 +738,7 @@ class AbstractMplRoi(object):  # pragma: no cover
 
     def _roi_store(self):
         self._previous_roi = self._roi.copy()
+        self._bg_cache = self._axes.figure.canvas.copy_from_bbox(self._axes.bbox)
 
     def _roi_restore(self):
         self._roi = self._previous_roi
@@ -756,7 +764,7 @@ class MplPickROI(AbstractMplRoi):
         self._roi.x = event.xdata
         self._roi.y = event.ydata
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         pass
 
 
@@ -782,6 +790,8 @@ class MplRectangularROI(AbstractMplRoi):
 
         AbstractMplRoi.__init__(self, axes)
 
+        self.start_time = time.time()
+
         self._xi = None
         self._yi = None
 
@@ -796,7 +806,7 @@ class MplRectangularROI(AbstractMplRoi):
         self._axes.add_patch(self._patch)
         self._patch.set_visible(False)
 
-        self._sync_patch()
+        self._sync_patch(draw=False)
 
     def _roi_factory(self):
         return RectangularROI()
@@ -844,6 +854,7 @@ class MplRectangularROI(AbstractMplRoi):
                                     min(event.ydata, self._yi),
                                     max(event.xdata, self._xi),
                                     max(event.ydata, self._yi))
+
         self._sync_patch()
 
     def finalize_selection(self, event):
@@ -851,8 +862,9 @@ class MplRectangularROI(AbstractMplRoi):
         self._mid_selection = False
         self._patch.set_visible(False)
         self._draw()
+        self._bg_cache = None
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         if self._roi.defined():
             corner = self._roi.corner()
             width = self._roi.width()
@@ -864,7 +876,8 @@ class MplRectangularROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
+        if draw:
+            self._draw()
 
     def __str__(self):
         return "MPL Rectangle: %s" % self._patch
@@ -892,7 +905,7 @@ class MplXRangeROI(AbstractMplRoi):
     def _setup_patch(self):
         self._axes.add_patch(self._patch)
         self._patch.set_visible(False)
-        self._sync_patch()
+        self._sync_patch(draw=False)
 
     def _roi_factory(self):
         return XRangeROI()
@@ -942,7 +955,7 @@ class MplXRangeROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._draw()
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         if self._roi.defined():
             rng = self._roi.range()
             self._patch.set_xy((rng[0], 0))
@@ -952,7 +965,8 @@ class MplXRangeROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
+        if draw:
+            self._draw()
 
 
 class MplYRangeROI(AbstractMplRoi):
@@ -977,7 +991,7 @@ class MplYRangeROI(AbstractMplRoi):
     def _setup_patch(self):
         self._axes.add_patch(self._patch)
         self._patch.set_visible(False)
-        self._sync_patch()
+        self._sync_patch(draw=False)
 
     def _roi_factory(self):
         return YRangeROI()
@@ -1027,7 +1041,7 @@ class MplYRangeROI(AbstractMplRoi):
         self._patch.set_visible(False)
         self._draw()
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         if self._roi.defined():
             rng = self._roi.range()
             self._patch.set_xy((0, rng[0]))
@@ -1037,7 +1051,8 @@ class MplYRangeROI(AbstractMplRoi):
             self._patch.set_visible(True)
         else:
             self._patch.set_visible(False)
-        self._draw()
+        if draw:
+            self._draw()
 
 
 class MplCircularROI(AbstractMplRoi):
@@ -1076,12 +1091,12 @@ class MplCircularROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
         self._axes.add_patch(self._patch)
         self._patch.set_visible(False)
-        self._sync_patch()
+        self._sync_patch(draw=False)
 
     def _roi_factory(self):
         return CircularROI()
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         # Update geometry
         if not self._roi.defined():
             self._patch.set_visible(False)
@@ -1097,7 +1112,8 @@ class MplCircularROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw_idle()
+        if draw:
+            self._draw()
 
     def start_selection(self, event):
 
@@ -1204,12 +1220,12 @@ class MplPolygonalROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
         self._axes.add_patch(self._patch)
         self._patch.set_visible(False)
-        self._sync_patch()
+        self._sync_patch(draw=False)
 
     def _roi_factory(self):
         return PolygonalROI()
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         # Update geometry
         if not self._roi.defined():
             self._patch.set_visible(False)
@@ -1223,7 +1239,8 @@ class MplPolygonalROI(AbstractMplRoi):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw_idle()
+        if draw:
+            self._draw()
 
     def start_selection(self, event, scrubbing=False):
 
@@ -1283,7 +1300,7 @@ class MplPathROI(MplPolygonalROI):
     def _setup_patch(self):
         self._patch = None
 
-    def _sync_patch(self):
+    def _sync_patch(self, draw=True):
         if self._patch is not None:
             self._patch.remove()
             self._patch = None
@@ -1301,7 +1318,8 @@ class MplPathROI(MplPolygonalROI):
         self._patch.set(**self.plot_opts)
 
         # Refresh
-        self._axes.figure.canvas.draw_idle()
+        if draw:
+            self._draw()
 
     def finalize_selection(self, event):
         self._mid_selection = False
