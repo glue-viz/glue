@@ -7,7 +7,7 @@ from glue.utils import nonpartial
 from glue.utils.qt import load_ui, cmap2pixmap
 from glue.viewers.common.tool import Tool
 from glue.config import viewer_tool
-from glue.viewers.matplotlib.tools import ToolbarModeBase
+from glue.viewers.matplotlib.toolbar_mode import ToolbarModeBase
 
 __all__ = ['ContrastMode', 'ColormapMode']
 

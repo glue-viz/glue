@@ -20,7 +20,6 @@ All the mouse modes and tools in this file are Matplotlib-specific.
 from __future__ import absolute_import, division, print_function
 
 from glue.core import roi
-from glue.utils.qt import get_qapp
 from glue.viewers.common.tool import CheckableTool
 from glue.config import viewer_tool
 from .mouse_mode import MouseMode
@@ -119,8 +118,6 @@ class RoiMode(RoiModeBase):
 
         self._start_event = None
         self._drag = False
-        app = get_qapp()
-        self._drag_dist = app.startDragDistance()
 
     def _update_drag(self, event):
         if self._drag or self._start_event is None:
@@ -128,12 +125,13 @@ class RoiMode(RoiModeBase):
 
         dx = abs(event.x - self._start_event.x)
         dy = abs(event.y - self._start_event.y)
-        if (dx + dy) > self._drag_dist:
-            status = self._roi_tool.start_selection(self._start_event)
-            # If start_selection returns False, the selection has not been
-            # started and we should abort, so we set self._drag to False in
-            # this case.
-            self._drag = True if status is None else status
+
+        status = self._roi_tool.start_selection(self._start_event)
+
+        # If start_selection returns False, the selection has not been
+        # started and we should abort, so we set self._drag to False in
+        # this case.
+        self._drag = True if status is None else status
 
     def press(self, event):
         self._start_event = event
