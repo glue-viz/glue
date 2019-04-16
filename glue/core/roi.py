@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
-import time
 
 import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
