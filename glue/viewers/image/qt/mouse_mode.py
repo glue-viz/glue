@@ -6,7 +6,7 @@ from qtpy.QtWidgets import QMenu, QAction
 from glue.core.subset import RoiSubsetState
 from glue.core.roi import MplPolygonalROI
 from glue.core.edit_subset_mode import ReplaceMode
-from glue.viewers.common.qt.mouse_mode import MouseMode
+from glue.viewers.matplotlib.mouse_mode import MouseMode
 from glue.viewers.image.layer_artist import ImageSubsetLayerArtist
 
 

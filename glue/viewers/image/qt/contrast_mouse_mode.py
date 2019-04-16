@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 from glue.external.echo import delay_callback
 from glue.config import viewer_tool
-from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+from glue.viewers.matplotlib.tools import ToolbarModeBase
 
 
 @viewer_tool

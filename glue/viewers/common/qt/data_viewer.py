@@ -9,7 +9,7 @@ from glue.core.qt.dialogs import warn
 from glue.utils.noconflict import classmaker
 from glue.config import viewer_tool
 from glue.viewers.common.qt.base_widget import BaseQtViewerWidget
-from glue.viewers.common.qt.tool import SimpleToolMenu
+from glue.viewers.common.tool import SimpleToolMenu
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.viewers.common.viewer import Viewer
 from glue.viewers.common.utils import get_viewer_tools

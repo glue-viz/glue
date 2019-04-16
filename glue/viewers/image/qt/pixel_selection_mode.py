@@ -5,7 +5,7 @@ from glue.config import viewer_tool
 from glue.core.command import ApplySubsetState
 from glue.core.edit_subset_mode import ReplaceMode
 
-from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+from glue.viewers.matplotlib.tools import ToolbarModeBase
 from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
 
 __all__ = ['PixelSelectionTool']

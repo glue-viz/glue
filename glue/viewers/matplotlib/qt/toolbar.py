@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 
 from glue.config import viewer_tool
-from glue.viewers.common.qt.tool import CheckableTool, Tool
+from glue.viewers.common.tool import CheckableTool, Tool
 
 
 __all__ = ['MatplotlibTool', 'MatplotlibCheckableTool', 'HomeTool', 'SaveTool',
