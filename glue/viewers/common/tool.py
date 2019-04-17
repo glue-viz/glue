@@ -33,7 +33,8 @@ class Tool(object):
 
     def __init__(self, viewer=None):
         self.viewer = viewer
-        self.viewer.window_closed.connect(self._do_close)
+        if hasattr(self.viewer, 'window_closed'):
+            self.viewer.window_closed.connect(self._do_close)
 
     def activate(self):
         """
@@ -53,7 +54,8 @@ class Tool(object):
         self.close()
 
     def close(self):
-        self.viewer.window_closed.disconnect(self._do_close)
+        if hasattr(self.viewer, 'window_closed'):
+            self.viewer.window_closed.disconnect(self._do_close)
         self.viewer = None
 
 

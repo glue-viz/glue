@@ -348,6 +348,6 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
 from glue.utils.qt.widget_properties import WidgetProperty
 WidgetProperty.__get__ = lambda self, *args, **kwargs: self
 
-viewcode_import = False
+viewcode_follow_imported_members = False
 
 linkcheck_ignore = [r'https://www.glueviz.org.s3']

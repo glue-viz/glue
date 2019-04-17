@@ -13,7 +13,7 @@ from glue.core import BaseData, Data
 from glue.utils.qt import load_ui
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.qt.toolbar import BasicToolbar
-from glue.viewers.common.qt.tool import CheckableTool
+from glue.viewers.common.tool import CheckableTool
 from glue.viewers.common.layer_artist import LayerArtist
 from glue.core.subset import ElementSubsetState
 from glue.utils.colors import alpha_blend_colors

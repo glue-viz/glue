@@ -706,7 +706,7 @@ class AbstractMplRoi(object):
         # performance. However, if the background cache hasn't been set, we need
         # to do a full draw.
 
-        if self._background_cache is None:
+        if self._background_cache is None or not self._axes.figure.canvas.supports_blit:
             self._axes.figure.canvas.draw_idle()
         else:
             self._axes.figure.canvas.restore_region(self._background_cache)

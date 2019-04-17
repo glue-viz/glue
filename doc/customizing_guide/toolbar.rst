@@ -20,7 +20,7 @@ The basic structure for a non-checkable tool is:
 .. code:: python
 
     from glue.config import viewer_tool
-    from glue.viewers.common.qt.tool import Tool
+    from glue.viewers.common.tool import Tool
 
     @viewer_tool
     class MyCustomTool(Tool):
@@ -85,7 +85,7 @@ additional ``deactivate`` method, and a ``status_tip`` attribute:
 .. code:: python
 
     from glue.config import viewer_tool
-    from glue.viewers.common.qt.tool import CheckableTool
+    from glue.viewers.common.tool import CheckableTool
 
     @viewer_tool
     class MyCustomButton(CheckableTool):
@@ -224,13 +224,13 @@ used in all viewers, click on each tool class name to find out more):
 ======================  ========================================================
 Tool ID                 Class
 ======================  ========================================================
-``'select:circle'``     :class:`~glue.viewers.common.qt.toolbar_mode.CircleMode`
-``'select:lasso'``      :class:`~glue.viewers.common.qt.toolbar_mode.LassoMode`
-``'select:pick'``       :class:`~glue.viewers.common.qt.toolbar_mode.PickMode`
-``'select:polygon'``    :class:`~glue.viewers.common.qt.toolbar_mode.PolyMode`
-``'select:rectangle'``  :class:`~glue.viewers.common.qt.toolbar_mode.RectangleMode`
-``'select:xrange'``     :class:`~glue.viewers.common.qt.toolbar_mode.HRangeMode`
-``'select:yange'``      :class:`~glue.viewers.common.qt.toolbar_mode.VRangeMode`
-``'image:colormap'``    :class:`~glue.viewers.common.qt.toolbar_mode.ColormapMode`
-``'image:contrast'``    :class:`~glue.viewers.common.qt.toolbar_mode.ContrastMode`
+``'select:circle'``     :class:`~glue.viewers.matplotlib.toolbar_mode.CircleMode`
+``'select:lasso'``      :class:`~glue.viewers.matplotlib.toolbar_mode.LassoMode`
+``'select:pick'``       :class:`~glue.viewers.matplotlib.toolbar_mode.PickMode`
+``'select:polygon'``    :class:`~glue.viewers.matplotlib.toolbar_mode.PolyMode`
+``'select:rectangle'``  :class:`~glue.viewers.matplotlib.toolbar_mode.RectangleMode`
+``'select:xrange'``     :class:`~glue.viewers.matplotlib.toolbar_mode.HRangeMode`
+``'select:yange'``      :class:`~glue.viewers.matplotlib.toolbar_mode.VRangeMode`
+``'image:colormap'``    :class:`~glue.viewers.matplotlib.qt.toolbar_mode.ColormapMode`
+``'image:contrast'``    :class:`~glue.viewers.matplotlib.qt.toolbar_mode.ContrastMode`
 ======================  ========================================================

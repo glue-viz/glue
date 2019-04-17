@@ -85,15 +85,19 @@ User Interface
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.qt.tool
+.. automodapi:: glue.viewers.common.tool
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.qt.mouse_mode
+.. automodapi:: glue.viewers.matplotlib.mouse_mode
    :no-inheritance-diagram:
    :inherited-members:
 
-.. automodapi:: glue.viewers.common.qt.toolbar_mode
+.. automodapi:: glue.viewers.matplotlib.toolbar_mode
+   :no-inheritance-diagram:
+   :inherited-members:
+
+.. automodapi:: glue.viewers.matplotlib.qt.toolbar_mode
    :no-inheritance-diagram:
    :inherited-members:
 

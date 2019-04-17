@@ -6,7 +6,7 @@ import warnings
 
 from glue.config import viewer_tool
 from glue.viewers.common.qt.data_viewer import DataViewer
-from glue.viewers.common.qt.tool import Tool
+from glue.viewers.common.tool import Tool
 from glue.viewers.common.qt.toolbar import BasicToolbar
 from glue.core.tests.util import simple_session
 

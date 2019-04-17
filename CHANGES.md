@@ -32,6 +32,11 @@ v0.15.0 (unreleased)
   the Matplotlib ROI classes in ``glue.core.roi`` but the latter are now
   efficient enough that the Qt-specific versions are no longer needed. [#1983]
 
+* Moved ``glue.viewers.common.qt.tool`` to ``glue.viewers.common.tool``;
+  ``glue.viewers.common.qt.mouse_mode`` to ``glue.viewers.matplotlib.mouse_mode``;
+  and ``glue.viewers.common.qt.toolbar_mode`` to ``glue.viewers.matplotlib.toolbar_mode``
+  and ``glue.viewers.matplotlib.qt.toolbar_mode``. [#1984]
+
 v0.14.3 (unreleased)
 --------------------
 
