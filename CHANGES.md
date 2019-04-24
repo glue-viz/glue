@@ -4,6 +4,9 @@ Full changelog
 v0.15.0 (unreleased)
 --------------------
 
+* Make it possible to view only a subset of data in the table
+  viewer. [#1988]
+
 * Show dataset name in table viewer title. [#1973]
 
 * Expose an option (``inherit_tools``) on data viewer classes
