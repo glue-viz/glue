@@ -40,6 +40,8 @@ v0.15.0 (unreleased)
 v0.14.3 (unreleased)
 --------------------
 
+* Fixed compatibility with Numpy 1.16.x. [#1989]
+
 * Improve tab-completion of attribute names in Data to not include
   non-relevant items. [#1971]
 

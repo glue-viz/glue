@@ -54,8 +54,8 @@ def unique(array):
     """
     # numpy.unique doesn't handle mixed-types on python3,
     # so we use pandas
-    U, I = pd.factorize(array, sort=True)
-    return I, U
+    I, U = pd.factorize(array, sort=True)
+    return U.astype(array.dtype), I
 
 
 def shape_to_string(shape):

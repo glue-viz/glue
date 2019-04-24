@@ -25,6 +25,14 @@ def test_unique(before, ref_after, ref_indices):
     np.testing.assert_array_equal(indices, ref_indices)
 
 
+def test_unique_dtype():
+    # Regression test to make sure that when working with strings, we don't
+    # get an object array back from the unique function
+    array = np.array(['a', 'b', 'c'])
+    U, I = unique(array)
+    assert U.dtype.kind in 'SU'
+
+
 def test_shape_to_string():
     assert shape_to_string((1, 4, 3)) == "(1, 4, 3)"
 
