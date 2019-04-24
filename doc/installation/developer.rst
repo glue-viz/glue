@@ -65,7 +65,7 @@ version::
     conda install -c glueviz glueviz
     conda remove glueviz
 
-    git clone git://github.com/glue-viz/glue
+    git clone https://github.com/glue-viz/glue.git
     cd glue
     pip install .
     cd ..
@@ -82,7 +82,7 @@ the 3D viewers::
     conda install -c glueviz glue-vispy-viewers
     conda remove glue-vispy-viewers
 
-    git clone git://github.com/glue-viz/glue-vispy-viewers
+    git clone https://github.com/glue-viz/glue-vispy-viewers.git
     cd glue-vispy-viewers
     pip install .
     cd ..
@@ -100,7 +100,7 @@ From source (if you don't use conda)
 If you don't use conda, but use ``pip`` instead, then you can install the latest
 version of the glue core package using::
 
-    git clone git://github.com/glue-viz/glue
+    git clone https://github.com/glue-viz/glue.git
     cd glue
     pip install .
     cd ..
