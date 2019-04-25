@@ -1,3 +1,5 @@
+.. _linking-framework:
+
 The linking framework
 =====================
 
