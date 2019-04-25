@@ -127,6 +127,17 @@ User Interface
 .. automodapi:: glue.viewers.scatter.qt
    :no-inheritance-diagram:
 
+.. automodapi:: glue.viewers.profile.viewer
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.profile.state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.profile.qt
+  :no-inheritance-diagram:
+
 .. automodapi:: glue.viewers.image.viewer
    :no-inheritance-diagram:
    :inherited-members:

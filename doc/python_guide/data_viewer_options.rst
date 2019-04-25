@@ -53,6 +53,7 @@ Viewer              Viewer state              Data layer state        Subset lay
 |scatter_viewer|    |scatter_viewer_state|    |scatter_layer_state|   |scatter_layer_state|
 |image_viewer|      |image_viewer_state|      |image_data_state|      |image_subset_state|
 |histogram_viewer|  |histogram_viewer_state|  |histogram_layer_state| |histogram_layer_state|
+|profile_viewer|    |profile_viewer_state|    |profile_layer_state|   |profile_layer_state|
 =================== ========================= ======================= ========================
 
 .. |scatter_viewer| replace:: :class:`~glue.viewers.scatter.qt.ScatterViewer`
@@ -67,6 +68,10 @@ Viewer              Viewer state              Data layer state        Subset lay
 .. |histogram_viewer| replace:: :class:`~glue.viewers.histogram.qt.HistogramViewer`
 .. |histogram_viewer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramViewerState`
 .. |histogram_layer_state| replace:: :class:`~glue.viewers.histogram.state.HistogramLayerState`
+
+.. |profile_viewer| replace:: :class:`~glue.viewers.profile.qt.ProfileViewer`
+.. |profile_viewer_state| replace:: :class:`~glue.viewers.profile.state.ProfileViewerState`
+.. |profile_layer_state| replace:: :class:`~glue.viewers.profile.state.ProfileLayerState`
 
 Customizing Plots with Matplotlib
 =================================
