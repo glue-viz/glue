@@ -36,10 +36,12 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self._data = table_viewer.data
         self.show_coords = False
         self.order = np.arange(self._data.shape[0])
+        self._update_visible()
 
     def data_changed(self):
         top_left = self.index(0, 0)
         bottom_right = self.index(self.columnCount(), self.rowCount())
+        self._update_visible()
         self.dataChanged.emit(top_left, bottom_right)
         self.layoutChanged.emit()
 
@@ -55,7 +57,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, index=None):
         # Qt bug: Crashes on tables bigger than this
-        return min(self._data.size, 71582788)
+        return min(self.order_visible.size, 71582788)
 
     def headerData(self, section, orientation, role):
         if role != Qt.DisplayRole:
@@ -68,7 +70,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
                 column_name += "\n{0}".format(units)
             return column_name
         elif orientation == Qt.Vertical:
-            return str(self.order[section])
+            return str(self.order_visible[section])
 
     def data(self, index, role):
 
@@ -78,7 +80,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
 
             c = self.columns[index.column()]
-            idx = self.order[index.row()]
+            idx = self.order_visible[index.row()]
             comp = self._data[c]
             if isinstance(comp[idx], bytes):
                 return comp[idx].decode('ascii')
@@ -87,7 +89,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
 
         elif role == Qt.BackgroundRole:
 
-            idx = self.order[index.row()]
+            idx = self.order_visible[index.row()]
 
             # Find all subsets that this index is part of
             colors = []
@@ -116,7 +118,27 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.order = np.argsort(comp.data)
         if ascending == Qt.DescendingOrder:
             self.order = self.order[::-1]
+        self._update_visible()
         self.layoutChanged.emit()
+
+    def _update_visible(self):
+        """
+        Given which layers are visible or not, convert order to order_visible.
+        """
+
+        # First, if the data layer is visible, show all rows
+        for layer_artist in self._table_viewer.layers:
+            if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
+                self.order_visible = self.order
+                return
+
+        # If not then we need to show only the rows with visible subsets
+        visible = np.zeros(self.order.shape, dtype=bool)
+        for layer_artist in self._table_viewer.layers:
+            if layer_artist.visible:
+                visible |= layer_artist.layer.to_mask()
+
+        self.order_visible = self.order[visible]
 
 
 class TableLayerArtist(LayerArtist):
@@ -126,6 +148,7 @@ class TableLayerArtist(LayerArtist):
         super(TableLayerArtist, self).__init__(viewer_state,
                                                layer_state=layer_state,
                                                layer=layer)
+        self.redraw()
 
     def _refresh(self):
         self._table_viewer.model.data_changed()
@@ -221,7 +244,7 @@ class TableViewer(DataViewer):
 
     def finalize_selection(self, clear=True):
         model = self.ui.table.selectionModel()
-        selected_rows = [self.model.order[x.row()] for x in model.selectedRows()]
+        selected_rows = [self.model.order_visible[x.row()] for x in model.selectedRows()]
         subset_state = ElementSubsetState(indices=selected_rows, data=self.data)
         mode = self.session.edit_subset_mode
         mode.update(self._data, subset_state, focus_data=self.data)
@@ -264,15 +287,11 @@ class TableViewer(DataViewer):
         we swap out with a tiny data set before closing
         """
         super(TableViewer, self).closeEvent(event)
-        d = Data(x=[0])
-        self.ui.table.setModel(DataTableModel(d))
+        self.model._data = Data(x=[0])
         event.accept()
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
         return cls(self, self.state, layer=layer, layer_state=layer_state)
-
-    def layer_view(self):
-        return QtWidgets.QWidget()
 
     @staticmethod
     def update_viewer_state(rec, context):
