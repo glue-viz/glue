@@ -118,6 +118,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.order = np.argsort(comp.data)
         if ascending == Qt.DescendingOrder:
             self.order = self.order[::-1]
+        self._update_visible()
         self.layoutChanged.emit()
 
     def _update_visible(self):
@@ -147,6 +148,7 @@ class TableLayerArtist(LayerArtist):
         super(TableLayerArtist, self).__init__(viewer_state,
                                                layer_state=layer_state,
                                                layer=layer)
+        self.redraw()
 
     def _refresh(self):
         self._table_viewer.model.data_changed()

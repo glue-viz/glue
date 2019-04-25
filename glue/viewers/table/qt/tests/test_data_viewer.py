@@ -25,8 +25,16 @@ QT_LT_58 = LooseVersion(QT_VERSION) < LooseVersion('5.8')
 class TestDataTableModel():
 
     def setup_method(self, method):
+        self.gapp = GlueApplication()
+        self.viewer = self.gapp.new_data_viewer(TableViewer)
         self.data = Data(x=[1, 2, 3, 4], y=[2, 3, 4, 5])
-        self.model = DataTableModel(self.data)
+        self.gapp.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        self.model = DataTableModel(self.viewer)
+
+    def teardown_method(self, method):
+        self.gapp.close()
+        self.gapp = None
 
     def test_column_count(self):
         assert self.model.columnCount() == 2
