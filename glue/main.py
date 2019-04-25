@@ -173,8 +173,8 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     if gluefile is not None:
         with die_on_error("Error restoring Glue session"):
-            app = GlueApplication.restore_session(gluefile)
-        return app.start()
+            app = GlueApplication.restore_session(gluefile, show=False)
+        return app.start(maximized=maximized)
 
     if config is not None:
         glue.env = glue.config.load_configuration(search_path=[config])
