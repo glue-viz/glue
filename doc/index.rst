@@ -95,6 +95,7 @@ Customizing/Hacking Glue
    customizing_guide/configuration.rst
    customizing_guide/customization.rst
    customizing_guide/writing_plugin.rst
+   customizing_guide/coordinates.rst
    python_guide/data_viewer_options.rst
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
