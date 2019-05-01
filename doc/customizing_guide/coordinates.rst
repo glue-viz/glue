@@ -1,6 +1,9 @@
 Customizing the coordinate system of a data object
 ==================================================
 
+Background
+----------
+
 Data objects represented by the :class:`~glue.core.data.Data` class can have
 a coordinate system defined, for display and/or linking purposes. This
 coordinate system is defined in the ``.coords`` attribute of data objects::
@@ -21,11 +24,46 @@ and vice-versa::
 By default the ``coords`` object for :class:`~glue.core.data.Data` objects
 created manually is an instance of :class:`~glue.core.coordinates.Coordinates`
 which is an identity transform, as can be seen above. However, it is possible to
-define your own coordinate system instead.
+use other coordinate systems or define your own.
 
-To do this, you will need to either define a
-:class:`~glue.core.coordinates.Coordinates` subclass that defines the following
-methods::
+Affine coordinates
+------------------
+
+The most common cases of transformation between pixel and world coordinates are
+`affine transformations <https://en.wikipedia.org/wiki/Affine_transformation>`_,
+which can represent combinations of e.g. reflections, scaling, translations,
+rotations, and shear. A common way of representing an affine transformations is
+through an `augmented
+matrix <https://en.wikipedia.org/wiki/Affine_transformation>`_, which has shape
+N+1 x N+1, where N is the number of pixel and world dimensions.
+
+Glue provides a class for representing arbitrary affine transformations::
+
+     >>> from glue.core.coordinates import AffineCoordinates
+
+To initialize it, you will need to provide an augmented matrix, and optionally
+lists of units and axis names (as strings). For example, to construct an affine
+transformation where the x and y coordinates are each doubled, you would do::
+
+     >>> import numpy as np
+     >>> matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+     >>> affine_coords = AffineCoordinates(matrix, units=['m', 'm'], labels=['xw', 'yw'])
+
+To use a custom coordinate system, when creating a data object you should specify
+the coordinates object via the ``coords=`` keyword argument::
+
+   >>> data_double = Data(x=[1, 2, 3], coords=affine_coords)
+   >>> data_double.coords.pixel2world(2, 1)
+   [array(4.), array(2.)]
+   >>> data_double.coords.world2pixel(4.0, 2.0)
+   [array(2.), array(1.)]
+
+Custom coordinates
+------------------
+
+If you want to define a fully customized coordinate transformation, you will
+need to either define a :class:`~glue.core.coordinates.Coordinates` subclass
+with the following methods::
 
     from glue.core.coordinates import Coordinates
 
@@ -64,13 +102,15 @@ For example, let's consider a coordinate system where the world coordinates are
 simply scaled by a factor of two compared to the pixel coordinates. The minimal
 class implementing this would look like::
 
-    class DoubleCoordinates(Coordinates):
+    >>> from glue.core.coordinates import Coordinates
 
-        def pixel2world(self, *args):
-            return tuple([2.0 * x for x in args])
-
-        def world2pixel(self, *args):
-            return ([0.5 * x for x in args])
+    >>> class DoubleCoordinates(Coordinates):
+    ...
+    ...     def pixel2world(self, *args):
+    ...        return tuple([2.0 * x for x in args])
+    ...
+    ...     def world2pixel(self, *args):
+    ...        return ([0.5 * x for x in args])
 
 To use a custom coordinate system, when creating a data object you should specify
 the coordinates object via the ``coords=`` keyword argument::
@@ -79,4 +119,4 @@ the coordinates object via the ``coords=`` keyword argument::
     >>> data_double.coords.pixel2world(2)
     (4.0,)
     >>> data_double.coords.world2pixel(4.0)
-    (2.0,)
+    [2.0]
