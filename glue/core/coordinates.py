@@ -4,10 +4,12 @@ import logging
 
 import numpy as np
 
+from astropy.wcs import WCS
+
 from glue.utils import unbroadcast, broadcast_to, axis_correlation_matrix
 
 
-__all__ = ['Coordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
+__all__ = ['Coordinates', 'AffineCoordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
 
 
 class Coordinates(object):
@@ -231,7 +233,6 @@ class WCSCoordinates(Coordinates):
 
     def __init__(self, header=None, wcs=None):
         super(WCSCoordinates, self).__init__()
-        from astropy.wcs import WCS
 
         if header is None and wcs is None:
             raise ValueError('Must provide either FITS header or WCS or both')
@@ -345,6 +346,67 @@ class WCSCoordinates(Coordinates):
     def __setgluestate__(cls, rec, context):
         from astropy.io import fits
         return cls(fits.Header.fromstring(rec['header']))
+
+
+class AffineCoordinates(WCSCoordinates):
+    """
+    Coordinates determined via an affine transformation represented by an
+    augmented matrix of shape N+1 x N+1 matrix, where N is the number of pixel
+    and world coordinates. The last column of the matrix should be used for
+    the translation term, and the last row should be set to 0 except for the
+    last column which should be 1.
+
+    Note that the order of the dimensions in the matrix (x, y) should be the
+    opposite of the order of the order of dimensions of Numpy arrays (y, x).
+    """
+
+    # Note that for now the easiest way to implement this is to sub-class
+    # WCS, which means that this will automatically work with WCSAxes. In
+    # future it would be good to make this independent from WCS but it will
+    # require changes to WCSAxes.
+
+    def __init__(self, matrix, units=None, labels=None):
+
+        if matrix.ndim != 2:
+            raise ValueError("Affine matrix should be two-dimensional")
+
+        if matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("Affine matrix should be square")
+
+        if np.any(matrix[-1, :-1] != 0) or matrix[-1, -1] != 1:
+            raise ValueError("Last row of matrix should be zeros and a one")
+
+        if units is not None and len(units) != matrix.shape[0] - 1:
+            raise ValueError("Expected {0} units, got {1}".format(matrix.shape[0] - 1, len(units)))
+
+        if labels is not None and len(labels) != matrix.shape[0] - 1:
+            raise ValueError("Expected {0} labels, got {1}".format(matrix.shape[0] - 1, len(labels)))
+
+        self.matrix = matrix
+        self.units = units
+        self.labels = labels
+
+        wcs = WCS(naxis=self.matrix.shape[0] - 1)
+        wcs.wcs.cd = self.matrix[:-1, :-1]
+        wcs.wcs.crpix = np.ones(wcs.naxis)
+        wcs.wcs.crval = self.matrix[:-1, -1]
+        if labels is not None:
+            wcs.wcs.ctype = labels
+        if units is not None:
+            wcs.wcs.cunit = units
+
+        super(AffineCoordinates, self).__init__(wcs=wcs)
+
+    def __gluestate__(self, context):
+        return dict(matrix=context.do(self.matrix),
+                    labels=self.labels,
+                    units=self.units)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(context.object(rec['matrix']),
+                   units=rec['units'],
+                   labels=rec['labels'])
 
 
 def coordinates_from_header(header):
