@@ -4,6 +4,10 @@ Full changelog
 v0.15.0 (unreleased)
 --------------------
 
+* Added a new ``glue.core.coordinates.AffineCoordinates`` class for common
+  affine transformations, and also added documentation on defining custom
+  coordinates. [#1994]
+
 * Make it possible to view only a subset of data in the table
   viewer. [#1988]
 

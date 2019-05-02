@@ -6,10 +6,11 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
+from glue.core.tests.test_state import clone
 from glue.tests.helpers import requires_astropy
 
 from ..coordinates import (coordinates_from_header,
-                           WCSCoordinates,
+                           WCSCoordinates, AffineCoordinates,
                            Coordinates,
                            header_from_string)
 
@@ -370,3 +371,86 @@ def test_pixel2world_single_axis():
     assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=0), [1.21004705, 1.42012044, 1.63021455])
     assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=1), [1.24999002, 1.499947, 1.74985138])
     assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=2), [1.5, 1.5, 1.5])
+
+
+def test_affine():
+
+    matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])
+
+    coords = AffineCoordinates(matrix)
+
+    assert coords.axis_label(1) == 'World 1'
+    assert coords.axis_label(0) == 'World 0'
+
+    assert coords.world_axis_unit(1) == ''
+    assert coords.world_axis_unit(0) == ''
+
+    xp = np.array([1, 2, 3])
+    yp = np.array([2, 3, 4])
+
+    xw, yw = coords.pixel2world(xp, yp)
+
+    assert_allclose(xw, 2 * xp + 3 * yp - 1)
+    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    coords2 = clone(coords)
+
+    xw, yw = coords2.pixel2world(xp, yp)
+
+    assert_allclose(xw, 2 * xp + 3 * yp - 1)
+    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+
+def test_affine_labels_units():
+
+    matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])
+
+    coords = AffineCoordinates(matrix, units=['km', 'km'], labels=['xw', 'yw'])
+
+    assert coords.axis_label(1) == 'Xw'
+    assert coords.axis_label(0) == 'Yw'
+
+    assert coords.world_axis_unit(1) == 'km'
+    assert coords.world_axis_unit(0) == 'km'
+
+    xp = np.array([1, 2, 3])
+    yp = np.array([2, 3, 4])
+
+    xw, yw = coords.pixel2world(xp, yp)
+
+    assert_allclose(xw, 2 * xp + 3 * yp - 1)
+    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    coords2 = clone(coords)
+
+    xw, yw = coords2.pixel2world(xp, yp)
+
+    assert_allclose(xw, 2 * xp + 3 * yp - 1)
+    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+
+def test_affine_invalid():
+
+    matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])
+
+    with pytest.raises(ValueError) as exc:
+        AffineCoordinates(matrix[0])
+    assert exc.value.args[0] == 'Affine matrix should be two-dimensional'
+
+    with pytest.raises(ValueError) as exc:
+        AffineCoordinates(matrix[:-1])
+    assert exc.value.args[0] == 'Affine matrix should be square'
+
+    with pytest.raises(ValueError) as exc:
+        AffineCoordinates(matrix, labels=['a', 'b', 'c'])
+    assert exc.value.args[0] == 'Expected 2 labels, got 3'
+
+    with pytest.raises(ValueError) as exc:
+        AffineCoordinates(matrix, units=['km', 'km', 'km'])
+    assert exc.value.args[0] == 'Expected 2 units, got 3'
+
+    matrix[-1] = 1
+
+    with pytest.raises(ValueError) as exc:
+        AffineCoordinates(matrix)
+    assert exc.value.args[0] == 'Last row of matrix should be zeros and a one'
