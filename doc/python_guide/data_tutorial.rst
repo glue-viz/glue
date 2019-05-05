@@ -195,9 +195,9 @@ If you using the Glue application, you can then change the visual properties of 
 
     >>> subset_group.style.color = '#00ff00'
 
-..note:: ``subset_group`` is not technically a subset, but a group of subsets.
-         This is beyond the scope of this tutorial, and explained in more
-         detail in :ref:`dev_selection`
+.. note:: ``subset_group`` is not technically a subset, but a group of subsets.
+           This is beyond the scope of this tutorial, and explained in more
+           detail in :ref:`dev_selection`
 
 This method of creating subsets can be a powerful technique. For a demo of
 using sending Scikit-learn-identified clusters back into Glue as subsets, see
