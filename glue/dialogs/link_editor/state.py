@@ -98,6 +98,10 @@ class LinkEditorState(State):
 
         return links
 
+    def flip_data(self, *args):
+        with delay_callback(self, 'data1', 'data2'):
+            self.data1, self.data2 = self.data2, self.data1
+
     def _on_data1_change(self, *args):
         if self.data1 is self.data2 and self.data1 is not None:
             self.data2 = next(data for data in self.data_collection if data is not self.data1)
