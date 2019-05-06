@@ -7,7 +7,7 @@ try:
 except ImportError:  # Python 2.7
     from inspect import getargspec as getfullargspec
 
-# from glue.config import link_function, link_helper
+from glue.config import link_function
 
 from glue.core.component_link import ComponentLink
 from glue.core.link_helpers import LinkCollection
@@ -22,6 +22,8 @@ class LinkEditorState(State):
 
     data1 = SelectionCallbackProperty()
     data2 = SelectionCallbackProperty()
+    att1 = SelectionCallbackProperty()
+    att2 = SelectionCallbackProperty()
     current_link = SelectionCallbackProperty()
     link_type = SelectionCallbackProperty()
     restrict_to_suggested = CallbackProperty(False)
@@ -30,8 +32,19 @@ class LinkEditorState(State):
 
         super(LinkEditorState, self).__init__()
 
+        # Find identity function
+        for func in link_function:
+            if func.function.__name__ == 'identity':
+                self._identity = func
+                break
+        else:
+            raise ValueError("Could not find identity link function")
+
         self.data1_helper = DataCollectionComboHelper(self, 'data1', data_collection)
         self.data2_helper = DataCollectionComboHelper(self, 'data2', data_collection)
+
+        self.att1_helper = ComponentIDComboHelper(self, 'att1', pixel_coord=True, world_coord=True)
+        self.att2_helper = ComponentIDComboHelper(self, 'att2', pixel_coord=True, world_coord=True)
 
         # FIXME: We unregister the combo helpers straight away to avoid issues with
         # leftover references once the dialog is closed. This shouldn't happen
@@ -88,12 +101,14 @@ class LinkEditorState(State):
             self.data2 = next(data for data in self.data_collection if data is not self.data1)
         else:
             self._on_data_change()
+        self.att1_helper.set_multiple_data([] if self.data1 is None else [self.data1])
 
     def _on_data2_change(self, *args):
         if self.data2 is self.data1 and self.data2 is not None:
             self.data1 = next(data for data in self.data_collection if data is not self.data2)
         else:
             self._on_data_change()
+        self.att2_helper.set_multiple_data([] if self.data1 is None else [self.data1])
 
     def _on_data_change(self, *args):
 
@@ -108,6 +123,11 @@ class LinkEditorState(State):
             return str(link) + ' [Suggested]'
         else:
             return str(link)
+
+    def simple_link(self, *args):
+        self.new_link(self._identity)
+        self.current_link.x = self.att1
+        self.current_link.y = self.att2
 
     def new_link(self, function_or_helper):
 
@@ -261,7 +281,19 @@ class EditableLinkFunctionState(State):
                 setattr(self, name, cid)
 
     def __str__(self):
-        return self.display
+
+        if len(self.input_names) > 0 or len(self.output_names) > 0:
+
+            # Construct display of linked cids
+            cids1 = [str(getattr(self, cid)) for cid in self.input_names]
+            cids2 = [str(getattr(self, cid)) for cid in self.output_names]
+            cids = ','.join(cids1) + ' <-> ' + ','.join(cids2)
+
+            return '{0}({1})'.format(self.display, cids)
+
+        else:
+
+            return self.display
 
     @property
     def link(self):

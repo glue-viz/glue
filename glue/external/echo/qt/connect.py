@@ -406,23 +406,27 @@ def connect_list_selection(instance, prop, widget, display=str):
         items = [widget.item(idx) for idx in range(widget.count())]
         list_text = [item.text() for item in items]
         list_data = [item.data(Qt.UserRole) for item in items]
+        list_data = [d.data if d is not None else d for d in list_data]
 
         choices = getattr(type(instance), prop).get_choices(instance)
         choice_labels = getattr(type(instance), prop).get_choice_labels(instance)
 
-        try:
-            idx = choices.index(value)
-        except ValueError:
+        for idx in range(len(choices)):
+            if choices[idx] is value:
+                break
+        else:
             idx = -1
+
+        widget.blockSignals(True)
 
         if list_data == choices and list_text == choice_labels:
             choices_updated = False
         else:
 
-            widget.blockSignals(True)
             widget.clear()
 
             if len(choices) == 0:
+                widget.blockSignals(False)
                 return
 
             for index, (label, choice) in enumerate(zip(choice_labels, choices)):
@@ -435,7 +439,7 @@ def connect_list_selection(instance, prop, widget, display=str):
                 if isinstance(choice, ChoiceSeparator):
                     palette = widget.palette()
                     item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
-                    item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
+                    # item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
 
             choices_updated = True
 
@@ -445,6 +449,7 @@ def connect_list_selection(instance, prop, widget, display=str):
             current_index = items.index(widget.selectedItems()[0])
 
         if idx == current_index and not choices_updated:
+            widget.blockSignals(False)
             return
 
         widget.setCurrentItem(widget.item(idx))
