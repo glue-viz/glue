@@ -20,10 +20,6 @@ from glue.logger import logger
 __all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
 
 
-def identity(x):
-    return x
-
-
 def null(*args):
     return None
 
@@ -90,6 +86,7 @@ class ComponentLink(object):
                  input_names=None, output_name=None):
 
         from glue.core.data import ComponentID
+        from glue.core.link_helpers import identity
 
         self._from = comp_from
         self._to = comp_to

@@ -74,6 +74,8 @@ class LinkEditorState(State):
             self.data1 = self.data2 = None
 
         self._on_data_change()
+        self._on_data1_change()
+        self._on_data2_change()
 
         self.add_callback('data1', self._on_data1_change)
         self.add_callback('data2', self._on_data2_change)
@@ -108,7 +110,7 @@ class LinkEditorState(State):
             self.data1 = next(data for data in self.data_collection if data is not self.data2)
         else:
             self._on_data_change()
-        self.att2_helper.set_multiple_data([] if self.data1 is None else [self.data1])
+        self.att2_helper.set_multiple_data([] if self.data2 is None else [self.data2])
 
     def _on_data_change(self, *args):
 
