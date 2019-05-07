@@ -1,7 +1,7 @@
 import pytest
 
 from glue.core import Data, DataCollection
-from glue.core.component_link import identity
+from glue.core.link_helpers import identity
 from glue.dialogs.autolinker.qt.autolinker import AutoLinkPreview
 from glue.core.component_link import ComponentLink
 
