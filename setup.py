@@ -51,7 +51,6 @@ cmdclass = {}
 entry_points = """
 [glue.plugins]
 export_d3po = glue.plugins.export_d3po:setup
-export_plotly = glue.plugins.exporters.plotly.qt:setup
 pv_slicer = glue.plugins.tools.pv_slicer:setup
 coordinate_helpers = glue.plugins.coordinate_helpers:setup
 wcs_autolinking = glue.plugins.wcs_autolinking:setup
