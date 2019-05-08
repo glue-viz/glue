@@ -136,11 +136,16 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         index = 0
 
-        if len(link.input_names) > 0:
+        if link.data1 is self.state.data1:
+            data1_names = link.names1
+        else:
+            data1_names = link.names2
+
+        if len(data1_names) > 0:
 
             link_io.addWidget(QtWidgets.QLabel('<b>Dataset 1 attributes</b>'), 0, 0, 1, 2)
 
-            for input_name in link.input_names:
+            for input_name in data1_names:
                 index += 1
                 combo = QtWidgets.QComboBox(parent=self._ui)
                 combo.setMinimumContentsLength(10)
@@ -149,7 +154,12 @@ class LinkEditorWidget(QtWidgets.QWidget):
                 link_io.addWidget(combo, index, 1)
                 connect_combo_selection(link, input_name, combo)
 
-        if len(link.output_names) > 0:
+        if link.data1 is self.state.data2:
+            data2_names = link.names1
+        else:
+            data2_names = link.names2
+
+        if len(data2_names) > 0:
 
             index += 1
             link_io.addItem(QtWidgets.QSpacerItem(5, 20,
@@ -159,7 +169,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
             index += 1
             link_io.addWidget(QtWidgets.QLabel('<b>Dataset 2 attributes</b>'), index, 0, 1, 2)
 
-            for output_name in link.output_names:
+            for output_name in data2_names:
                 index += 1
                 combo = QtWidgets.QComboBox(parent=self._ui)
                 combo.setMinimumContentsLength(10)

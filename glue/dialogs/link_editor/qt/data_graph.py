@@ -162,8 +162,8 @@ class DataNode:
 def get_connections(dc_links):
     links = []
     for link in dc_links:
-        data1 = link.data_in
-        data2 = link.data_out
+        data1 = link.data1
+        data2 = link.data2
         if (data1, data2) not in links and (data2, data1) not in links:
             links.append((data1, data2))
 
