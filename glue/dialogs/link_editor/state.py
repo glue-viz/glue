@@ -175,7 +175,7 @@ class EditableLinkFunctionState(State):
                 display=None, description=None):
 
         if isinstance(function, ComponentLink):
-            names1 = function.names1
+            names1 = function.input_names
             names2 = [function.output_name]
         elif isinstance(function, LinkCollection):
             names1 = function.labels1
