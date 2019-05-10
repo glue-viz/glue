@@ -439,6 +439,8 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         # We now get the fixed resolution buffer
 
+        # TODO: need to be more robust to negative size in bounds
+
         if isinstance(self.layer, BaseData):
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
