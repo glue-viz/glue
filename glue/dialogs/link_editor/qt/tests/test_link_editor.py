@@ -3,11 +3,10 @@ from mock import patch
 from qtpy import QtWidgets
 from glue.utils.qt import process_events
 from glue.core import Data, DataCollection
-from glue.core.link_helpers import identity
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.core.component_link import ComponentLink
 from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5, ICRS_to_Galactic
-from glue.core.link_helpers import functional_link_collection
+from glue.core.link_helpers import identity, functional_link_collection
 
 
 def non_empty_rows_count(layout):
