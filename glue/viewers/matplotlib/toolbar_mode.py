@@ -240,9 +240,9 @@ class PathMode(ClickRoiMode):
         super(PathMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPathROI(self._axes)
 
-        self._roi_tool.plot_opts.update(edgecolor='#de2d26',
-                                        facecolor=None,
-                                        edgewidth=3,
+        self._roi_tool.plot_opts.update(color='#de2d26',
+                                        fill=False,
+                                        linewidth=3,
                                         alpha=0.4)
 
 

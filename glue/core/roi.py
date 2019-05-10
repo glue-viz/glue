@@ -1303,6 +1303,17 @@ class MplPathROI(MplPolygonalROI):
 
         self._patch = None
 
+    def start_selection(self, event):
+
+        if self._patch is not None:
+            self._patch.remove()
+            self._patch = None
+
+        self._background_cache = None
+        self._axes.figure.canvas.draw()
+
+        super(MplPathROI, self).start_selection(event)
+
     def _sync_patch(self):
 
         if self._patch is not None:
@@ -1312,14 +1323,16 @@ class MplPathROI(MplPolygonalROI):
         if self._roi.defined():
             x, y = self._roi.to_polygon()
             p = MplPath(np.column_stack((x, y)))
-            self._patch = PathPatch(p)
+            self._patch = PathPatch(p, transform=self._axes.transData)
             self._patch.set_visible(True)
             self._patch.set(**self.plot_opts)
+            self._axes.add_artist(self._patch)
 
     def finalize_selection(self, event):
         self._mid_selection = False
         if self._patch is not None:
-            self._patch.set_visible(False)
+            self._patch.remove()
+            self._patch = None
         self._draw()
 
 
