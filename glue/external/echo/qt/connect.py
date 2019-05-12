@@ -545,7 +545,12 @@ class connect_list_selection(BaseConnection):
         if len(self._widget.selectedItems()) == 0:
             current_index = -1
         else:
-            current_index = items.index(self._widget.selectedItems()[0])
+            selected_item = self._widget.selectedItems()[0]
+            for current_index, item in enumerate(items):
+                if item is selected_item:
+                    break
+            else:
+                current_index = -1
 
         if idx == current_index and choices_match:
             self._widget.blockSignals(False)
