@@ -89,6 +89,10 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
     objectNames can be easily set during the editing process.
     """
 
+    # We need a dictionary to store the returned connection handlers in cases
+    # where these are defined.
+    returned_handlers = {}
+
     for original_name in dir(widget):
         if original_name.startswith('_') or '_' not in original_name:
             continue
@@ -109,4 +113,6 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
             if hasattr(instance, wname):
                 if wtype in HANDLERS:
                     child = getattr(widget, original_name)
-                    HANDLERS[wtype](instance, wname, child, **kwargs)
+                    returned_handlers[wname] = HANDLERS[wtype](instance, wname, child, **kwargs)
+
+    return returned_handlers

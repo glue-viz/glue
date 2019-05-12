@@ -64,7 +64,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         self._ui = load_ui('link_editor_widget.ui', self,
                            directory=os.path.dirname(__file__))
-        autoconnect_callbacks_to_qt(self.state, self._ui)
+        self._handlers = autoconnect_callbacks_to_qt(self.state, self._ui)
 
         self._set_up_combos()
 
@@ -85,6 +85,8 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         self.state.add_callback('current_link', self._on_current_link_change)
         self._on_current_link_change()
+
+        self._watched_links = []
 
     def _add_link(self, action):
         self.state.new_link(action.data().data)
@@ -118,6 +120,11 @@ class LinkEditorWidget(QtWidgets.QWidget):
             self._ui.combos2.addWidget(combo_widget, combo_idx, 1)
 
     @avoid_circular
+    def _on_attribute_combo_change(self, *args, **kwargs):
+        # Force a re-sync of the choices
+        self._handlers['current_link'].update_widget(self.state.current_link, force=True)
+
+    @avoid_circular
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
         self.state.data2 = getattr(self._ui.graph_widget.selected_node2, 'data', None)
@@ -130,7 +137,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
         # This should always run even when the change comes from the graph
         enabled = self.state.data1 is not None and self.state.data2 is not None
         self._ui.button_add_link.setEnabled(enabled)
-        self._ui.button_remove_link.setEnabled(enabled)
+        self._ui.button_simple_link.setEnabled(enabled)
 
     def _on_current_link_change(self, *args):
 
@@ -143,12 +150,15 @@ class LinkEditorWidget(QtWidgets.QWidget):
         link = self.state.current_link
 
         if link is None:
+            self._ui.button_remove_link.setEnabled(False)
             self._ui.link_details.setText('')
             self._ui.combos1_header.hide()
             self._ui.combos2_header.hide()
             for widget in self.att_combos1 + self.att_names1 + self.att_combos2 + self.att_names2:
                 widget.hide()
             return
+
+        self._ui.button_remove_link.setEnabled(True)
 
         self._ui.link_details.setText(link.description)
 
@@ -194,6 +204,17 @@ class LinkEditorWidget(QtWidgets.QWidget):
             self._ui.combos2_header.show()
 
         self._ui.graph_widget.set_links(self.state.links)
+
+        # When the user changes one of the attributes, we need to update the
+        # main list of links to show the attributes being linked. This is
+        # actually tricker than it sounds, and to solve this we listen for
+        # changes in any of the link properties. We don't need to unsubscribe
+        # since there's no harm in keeping them connected, and we only need to
+        # subscribe to links that have been shown at least once as the other
+        # ones can't be changed by users.
+        if link not in self._watched_links:
+            link.add_global_callback(self._on_attribute_combo_change)
+            self._watched_links.append(link)
 
 
 class LinkEditor(QtWidgets.QDialog):

@@ -125,7 +125,7 @@
        <item>
         <widget class="QToolButton" name="button_simple_link">
          <property name="text">
-          <string>Link attributes</string>
+          <string>Glue attributes</string>
          </property>
         </widget>
        </item>
