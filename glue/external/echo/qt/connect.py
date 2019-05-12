@@ -11,7 +11,7 @@ from qtpy.QtCore import Qt
 
 import numpy as np
 
-from ..core import add_callback
+from ..core import add_callback, remove_callback
 from ..selection import SelectionCallbackProperty, ChoiceSeparator
 
 __all__ = ['connect_checkable_button', 'connect_text', 'connect_combo_data',
@@ -390,6 +390,12 @@ def connect_combo_selection(instance, prop, widget, display=str):
     widget.currentIndexChanged.connect(update_prop)
 
     update_widget(getattr(instance, prop))
+
+    def disconnect():
+        remove_callback(instance, prop, update_widget)
+        widget.currentIndexChanged.disconnect(update_prop)
+
+    return disconnect
 
 
 def connect_list_selection(instance, prop, widget, display=str):

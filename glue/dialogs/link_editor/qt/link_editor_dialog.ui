@@ -14,11 +14,11 @@
    <string>Link Editor</string>
   </property>
   <property name="sizeGripEnabled">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="sizeConstraint">
-    <enum>QLayout::SetFixedSize</enum>
+    <enum>QLayout::SetDefaultConstraint</enum>
    </property>
    <item>
     <widget class="QLabel" name="help_text">

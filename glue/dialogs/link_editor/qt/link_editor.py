@@ -13,6 +13,8 @@ from glue.dialogs.link_editor.state import LinkEditorState
 
 __all__ = ['LinkEditor', 'main']
 
+N_COMBO_MAX = 10
+
 
 def get_function_name(info):
     item = info[0]
@@ -58,9 +60,13 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         self.state = LinkEditorState(data_collection, suggested_links=suggested_links)
 
+        self._disconnectors = []
+
         self._ui = load_ui('link_editor_widget.ui', self,
                            directory=os.path.dirname(__file__))
         autoconnect_callbacks_to_qt(self.state, self._ui)
+
+        self._set_up_combos()
 
         self._ui.graph_widget.set_data_collection(data_collection, new_links=self.state.links)
         self._ui.graph_widget.selection_changed.connect(self._on_data_change_graph)
@@ -83,6 +89,34 @@ class LinkEditorWidget(QtWidgets.QWidget):
     def _add_link(self, action):
         self.state.new_link(action.data().data)
 
+    def _set_up_combos(self):
+
+        # Set up combo boxes - for now we hard-code the maximum number, but
+        # we could do this more smartly by checking existing links and all
+        # possible links in registry to figure out max number needed.
+
+        self.att_names1 = []
+        self.att_combos1 = []
+
+        for combo_idx in range(N_COMBO_MAX):
+            label_widget = QtWidgets.QLabel()
+            combo_widget = QtWidgets.QComboBox(parent=self._ui)
+            self.att_names1.append(label_widget)
+            self.att_combos1.append(combo_widget)
+            self._ui.combos1.addWidget(label_widget, combo_idx, 0)
+            self._ui.combos1.addWidget(combo_widget, combo_idx, 1)
+
+        self.att_names2 = []
+        self.att_combos2 = []
+
+        for combo_idx in range(N_COMBO_MAX):
+            label_widget = QtWidgets.QLabel()
+            combo_widget = QtWidgets.QComboBox(parent=self._ui)
+            self.att_names2.append(label_widget)
+            self.att_combos2.append(combo_widget)
+            self._ui.combos2.addWidget(label_widget, combo_idx, 0)
+            self._ui.combos2.addWidget(combo_widget, combo_idx, 1)
+
     @avoid_circular
     def _on_data_change_graph(self):
         self.state.data1 = getattr(self._ui.graph_widget.selected_node1, 'data', None)
@@ -102,87 +136,62 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         # We update the link details panel on the right
 
-        link_details = self._ui.link_details
-
-        link_io_widget = QtWidgets.QWidget()
-        link_io = QtWidgets.QGridLayout()
-        link_io_widget.setLayout(link_io)
-
-        link_io.setSizeConstraint(link_io.SetFixedSize)
-        link_io.setHorizontalSpacing(10)
-        link_io.setVerticalSpacing(5)
-        link_io.setContentsMargins(0, 0, 0, 0)
-
-        item = self._ui.link_io.itemAt(0)
-        if item is not None and item.widget() is not None:
-            widget = item.widget()
-            widget.setParent(None)
-            # NOTE: we need to also hide the widget otherwise it will still
-            # appear but floating in front of or behind the dialog.
-            widget.hide()
-
-        for row in range(link_io.rowCount()):
-            link_io.setRowStretch(row, 0.5)
-
-        link_io.setColumnStretch(1, 10)
+        for disconnect in self._disconnectors:
+            disconnect()
+        self._disconnectors = []
 
         link = self.state.current_link
 
         if link is None:
-            link_details.setText('')
+            self._ui.link_details.setText('')
+            self._ui.combos1_header.hide()
+            self._ui.combos2_header.hide()
+            for widget in self.att_combos1 + self.att_names1 + self.att_combos2 + self.att_names2:
+                widget.hide()
             return
 
-        link_details.setText(link.description)
-
-        index = 0
+        self._ui.link_details.setText(link.description)
 
         if link.data1 is self.state.data1:
             data1_names = link.names1
         else:
             data1_names = link.names2
 
-        if len(data1_names) > 0:
-
-            link_io.addWidget(QtWidgets.QLabel('<b>Dataset 1 attributes</b>'), 0, 0, 1, 2)
-
-            for input_name in data1_names:
-                index += 1
-                combo = QtWidgets.QComboBox(parent=self._ui)
-                combo.setMinimumContentsLength(10)
-                combo.setSizeAdjustPolicy(combo.AdjustToMinimumContentsLength)
-                link_io.addWidget(QtWidgets.QLabel(input_name), index, 0)
-                link_io.addWidget(combo, index, 1)
-                connect_combo_selection(link, input_name, combo)
+        for idx, (label, combo) in enumerate(zip(self.att_names1, self.att_combos1)):
+            if idx < len(data1_names):
+                combo.show()
+                label.show()
+                label.setText(data1_names[idx])
+                disconnector = connect_combo_selection(link, data1_names[idx], combo)
+                self._disconnectors.append(disconnector)
+            else:
+                label.hide()
+                combo.hide()
 
         if link.data1 is self.state.data2:
             data2_names = link.names1
         else:
             data2_names = link.names2
 
-        if len(data2_names) > 0:
+        for idx, (label, combo) in enumerate(zip(self.att_names2, self.att_combos2)):
+            if idx < len(data2_names):
+                combo.show()
+                label.show()
+                label.setText(data2_names[idx])
+                disconnector = connect_combo_selection(link, data2_names[idx], combo)
+                self._disconnectors.append(disconnector)
+            else:
+                label.hide()
+                combo.hide()
 
-            index += 1
-            link_io.addItem(QtWidgets.QSpacerItem(5, 20,
-                                                  QtWidgets.QSizePolicy.Fixed,
-                                                  QtWidgets.QSizePolicy.Fixed), index, 0)
-
-            index += 1
-            link_io.addWidget(QtWidgets.QLabel('<b>Dataset 2 attributes</b>'), index, 0, 1, 2)
-
-            for output_name in data2_names:
-                index += 1
-                combo = QtWidgets.QComboBox(parent=self._ui)
-                combo.setMinimumContentsLength(10)
-                combo.setSizeAdjustPolicy(combo.AdjustToMinimumContentsLength)
-                link_io.addWidget(QtWidgets.QLabel(output_name), index, 0)
-                link_io.addWidget(combo, index, 1)
-                connect_combo_selection(link, output_name, combo)
-
-        index += 1
-        link_io.addWidget(QtWidgets.QWidget(), index, 0)
-        link_io.setRowStretch(index, 10)
-
-        self._ui.link_io.addWidget(link_io_widget)
+        # Headers aren't needed if data2_names is 0 (legacy mode for old link
+        # helpers where all attributes are 'inputs')
+        if len(data2_names) == 0:
+            self._ui.combos1_header.hide()
+            self._ui.combos2_header.hide()
+        else:
+            self._ui.combos1_header.show()
+            self._ui.combos2_header.show()
 
         self._ui.graph_widget.set_links(self.state.links)
 

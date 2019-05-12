@@ -267,6 +267,8 @@ class EditableLinkFunctionState(State):
             helper = ComponentIDComboHelper(self, name,
                                             pixel_coord=True, world_coord=True)
             helper.append_data(data1)
+            if len(self.names2) == 0:  # legacy mode for old link helpers
+                helper.append_data(data2)
 
             setattr(self, '_' + name + '_helper', helper)
 
