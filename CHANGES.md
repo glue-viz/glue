@@ -27,7 +27,7 @@ v0.15.0 (unreleased)
 * Added initial infrastructure for developing auto-linking helpers
   and implement an initial astronomy WCS auto-linker. [#1933]
 
-* Improve the user interface for the link editor. [#1934]
+* Improve the user interface for the link editor. [#1934, #1998]
 
 * Added a new ``IndexedData`` class to represent a derived dataset produced
   by indexing a higher-dimensional dataset. [#1953]
