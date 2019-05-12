@@ -99,8 +99,13 @@ class LinkEditorState(State):
         return links
 
     def flip_data(self, *args):
+        # FIXME: since the links will be the same in the list of current links,
+        # we can make sure we reselect the same one as before - it would be
+        # better if this didn't change in the first place though.
+        _original_current_link = self.current_link
         with delay_callback(self, 'data1', 'data2'):
             self.data1, self.data2 = self.data2, self.data1
+        self.current_link = _original_current_link
 
     def _on_data1_change(self, *args):
         if self.data1 is self.data2 and self.data1 is not None:

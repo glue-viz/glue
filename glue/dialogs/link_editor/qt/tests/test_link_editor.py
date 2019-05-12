@@ -142,6 +142,15 @@ class TestLinkEditor:
         assert link_widget.combos1.itemAtPosition(2, 1).widget().currentText() == 'z'
         assert link_widget.combos2.itemAtPosition(0, 1).widget().currentText() == 'a'
 
+        # Try swapping the order of the data, the current link should stay the same
+        link_widget.state.flip_data()
+        assert link_widget.link_details.text() == 'Convert between linear measurements and volume'
+
+        # And flip it back
+        link_widget.state.flip_data()
+        assert link_widget.link_details.text() == 'Convert between linear measurements and volume'
+
+
         # Now switch back to the first link
         link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[0]
 
