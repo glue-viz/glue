@@ -61,7 +61,7 @@ class TestLinkEditor:
         link_widget.state.data2 = self.data1
 
         assert link_widget.button_add_link.isEnabled()
-        assert link_widget.button_remove_link.isEnabled()
+        assert not link_widget.button_remove_link.isEnabled()
 
         dialog.accept()
 
@@ -77,7 +77,7 @@ class TestLinkEditor:
         assert link_widget.state.data1 is self.data1
         assert link_widget.state.data2 is self.data2
         assert link_widget.button_add_link.isEnabled()
-        assert link_widget.button_remove_link.isEnabled()
+        assert not link_widget.button_remove_link.isEnabled()
         dialog.accept()
         assert len(self.data_collection.external_links) == 0
 
