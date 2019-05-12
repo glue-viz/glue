@@ -150,7 +150,6 @@ class TestLinkEditor:
         link_widget.state.flip_data()
         assert link_widget.link_details.text() == 'Convert between linear measurements and volume'
 
-
         # Now switch back to the first link
         link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[0]
 
