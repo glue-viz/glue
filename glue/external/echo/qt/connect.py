@@ -24,7 +24,16 @@ class UserDataWrapper(object):
         self.data = data
 
 
-def connect_checkable_button(instance, prop, widget):
+class BaseConnection(object):
+
+    def __init__(self, instance, prop, widget):
+
+        self._instance = instance
+        self._prop = prop
+        self._widget = widget
+
+
+class connect_checkable_button(BaseConnection):
     """
     Connect a boolean callback property with a Qt button widget.
 
@@ -38,12 +47,28 @@ def connect_checkable_button(instance, prop, widget):
         The Qt widget to connect. This should implement the ``setChecked``
         method and the ``toggled`` signal.
     """
-    add_callback(instance, prop, widget.setChecked)
-    widget.toggled.connect(partial(setattr, instance, prop))
-    widget.setChecked(getattr(instance, prop) or False)
+
+    def __init__(self, instance, prop, widget):
+        super(connect_checkable_button, self).__init__(instance, prop, widget)
+        self.connect()
+
+    def update_widget(self, value):
+        self._widget.setChecked(value)
+
+    def update_prop(self, value):
+        setattr(self._instance, self._prop, value)
+
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.toggled.connect(self.update_prop)
+        self._widget.setChecked(getattr(self._instance, self._prop) or False)
+
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.toggled.disconnect(self.update_prop)
 
 
-def connect_text(instance, prop, widget):
+class connect_text(BaseConnection):
     """
     Connect a string callback property with a Qt widget containing text.
 
@@ -58,30 +83,40 @@ def connect_text(instance, prop, widget):
         ``text`` methods as well optionally the ``editingFinished`` signal.
     """
 
-    def update_prop():
-        val = widget.text()
-        setattr(instance, prop, val)
+    def __init__(self, instance, prop, widget):
+        super(connect_text, self).__init__(instance, prop, widget)
+        self.connect()
 
-    def update_widget(val):
-        if hasattr(widget, 'editingFinished'):
-            widget.blockSignals(True)
-            widget.setText(val)
-            widget.blockSignals(False)
-            widget.editingFinished.emit()
+    def update_prop(self, value):
+        val = self._widget.text()
+        setattr(self._instance, self._prop, value)
+
+    def update_widget(self, value):
+        if hasattr(self._widget, 'editingFinished'):
+            self._widget.blockSignals(True)
+            self._widget.setText(value)
+            self._widget.blockSignals(False)
+            self._widget.editingFinished.emit()
         else:
-            widget.setText(val)
+            self._widget.setText(value)
 
-    add_callback(instance, prop, update_widget)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        try:
+            self._widget.editingFinished.connect(self.update_prop)
+        except AttributeError:
+            pass
+        self.update_widget(getattr(self._instance, self._prop))
 
-    try:
-        widget.editingFinished.connect(update_prop)
-    except AttributeError:
-        pass
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        try:
+            self._widget.editingFinished.disconnect(self.update_prop)
+        except AttributeError:
+            pass
 
-    update_widget(getattr(instance, prop))
 
-
-def connect_combo_data(instance, prop, widget):
+class connect_combo_data(BaseConnection):
     """
     Connect a callback property with a QComboBox widget based on the userData.
 
@@ -99,33 +134,41 @@ def connect_combo_data(instance, prop, widget):
     connect_combo_text: connect a callback property with a QComboBox widget based on the text.
     """
 
-    def update_widget(value):
+    def __init__(self, instance, prop, widget):
+        super(connect_combo_data, self).__init__(instance, prop, widget)
+        self.connect()
+
+    def update_widget(self, value):
         try:
-            idx = _find_combo_data(widget, value)
+            idx = _find_combo_data(self._widget, value)
         except ValueError:
             if value is None:
                 idx = -1
             else:
                 raise
-        widget.setCurrentIndex(idx)
+        self._widget.setCurrentIndex(idx)
 
-    def update_prop(idx):
+    def update_prop(self, idx):
         if idx == -1:
-            setattr(instance, prop, None)
+            setattr(self._instance, self._prop, None)
         else:
-            data_wrapper = widget.itemData(idx)
+            data_wrapper = self._widget.itemData(idx)
             if data_wrapper is None:
-                setattr(instance, prop, None)
+                setattr(self._instance, self._prop, None)
             else:
-                setattr(instance, prop, data_wrapper.data)
+                setattr(self._instance, self._prop, data_wrapper.data)
 
-    add_callback(instance, prop, update_widget)
-    widget.currentIndexChanged.connect(update_prop)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.connect(self.update_prop)
+        self.update_widget(getattr(self._instance, self._prop))
 
-    update_widget(getattr(instance, prop))
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.disconnect(self.update_prop)
 
 
-def connect_combo_text(instance, prop, widget):
+class connect_combo_text(BaseConnection):
     """
     Connect a callback property with a QComboBox widget based on the text.
 
@@ -143,29 +186,37 @@ def connect_combo_text(instance, prop, widget):
     connect_combo_data: connect a callback property with a QComboBox widget based on the userData.
     """
 
-    def update_widget(value):
+    def __init__(self, instance, prop, widget):
+        super(connect_combo_text, self).__init__(instance, prop, widget)
+        self.connect()
+
+    def update_widget(self, value):
         try:
-            idx = _find_combo_text(widget, value)
+            idx = _find_combo_text(self._widget, value)
         except ValueError:
             if value is None:
                 idx = -1
             else:
                 raise
-        widget.setCurrentIndex(idx)
+        self._widget.setCurrentIndex(idx)
 
-    def update_prop(idx):
+    def update_prop(self, idx):
         if idx == -1:
-            setattr(instance, prop, None)
+            setattr(self._instance, self._prop, None)
         else:
-            setattr(instance, prop, widget.itemText(idx))
+            setattr(self._instance, self._prop, self._widget.itemText(idx))
 
-    add_callback(instance, prop, update_widget)
-    widget.currentIndexChanged.connect(update_prop)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.connect(self.update_prop)
+        self.update_widget(getattr(self._instance, self._prop))
 
-    update_widget(getattr(instance, prop))
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.disconnect(self.update_prop)
 
 
-def connect_float_text(instance, prop, widget, fmt="{:g}"):
+class connect_float_text(BaseConnection):
     """
     Connect a numerical callback property with a Qt widget containing text.
 
@@ -183,42 +234,56 @@ def connect_float_text(instance, prop, widget, fmt="{:g}"):
         function that takes a number and returns a string.
     """
 
-    if callable(fmt):
-        format_func = fmt
-    else:
-        def format_func(x):
-            try:
-                return fmt.format(x)
-            except ValueError:
-                return str(x)
+    def __init__(self, instance, prop, widget, fmt="{:g}"):
 
-    def update_prop():
-        val = widget.text()
+        super(connect_float_text, self).__init__(instance, prop, widget)
+
+        if callable(fmt):
+            format_func = fmt
+        else:
+            def format_func(x):
+                try:
+                    return fmt.format(x)
+                except ValueError:
+                    return str(x)
+
+        self._format_func = format_func
+
+        self.connect()
+
+    def update_prop(self, value):
+        val = self._widget.text()
         try:
-            val = float(val)
+            val = float(value)
         except ValueError:
             try:
-                val = np.datetime64(val)
+                val = np.datetime64(value)
             except Exception:
                 val = 0
-        setattr(instance, prop, val)
+        setattr(self._instance, self._prop, value)
 
-    def update_widget(val):
-        if val is None:
-            val = 0.
-        widget.setText(format_func(val))
+    def update_widget(self, value):
+        if value is None:
+            value = 0.
+        self._widget.setText(self._format_func(value))
 
-    add_callback(instance, prop, update_widget)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        try:
+            self._widget.editingFinished.connect(self.update_prop)
+        except AttributeError:
+            pass
+        self.update_widget(getattr(self._instance, self._prop))
 
-    try:
-        widget.editingFinished.connect(update_prop)
-    except AttributeError:
-        pass
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        try:
+            self._widget.editingFinished.disconnect(self.update_prop)
+        except AttributeError:
+            pass
 
-    update_widget(getattr(instance, prop))
 
-
-def connect_value(instance, prop, widget, value_range=None, log=False):
+class connect_value(BaseConnection):
     """
     Connect a numerical callback property with a Qt widget representing a value.
 
@@ -239,39 +304,52 @@ def connect_value(instance, prop, widget, value_range=None, log=False):
         property.
     """
 
-    if log:
-        if value_range is None:
-            raise ValueError("log option can only be set if value_range is given")
+    def __init__(self, instance, prop, widget, value_range=None, log=False):
+
+        super(connect_value, self).__init__(instance, prop, widget)
+
+        if log:
+            if value_range is None:
+                raise ValueError("log option can only be set if value_range is given")
+            else:
+                self._value_range = math.log10(value_range[0]), math.log10(value_range[1])
         else:
-            value_range = math.log10(value_range[0]), math.log10(value_range[1])
+            self._value_range = value_range
+        self._log = log
 
-    def update_prop():
-        val = widget.value()
-        if value_range is not None:
-            imin, imax = widget.minimum(), widget.maximum()
-            val = (val - imin) / (imax - imin) * (value_range[1] - value_range[0]) + value_range[0]
-        if log:
+        self.connect()
+
+    def update_prop(self):
+        value = self._widget.value()
+        if self._value_range is not None:
+            imin, imax = self._widget.minimum(), self._widget.maximum()
+            val = (value - imin) / (imax - imin) * (self._value_range[1] - self._value_range[0]) + self._value_range[0]
+        if self._log:
             val = 10 ** val
-        setattr(instance, prop, val)
+        setattr(self._instance, self._prop, value)
 
-    def update_widget(val):
-        if val is None:
-            widget.setValue(0)
+    def update_widget(self, value):
+        if value is None:
+            self._widget.setValue(0)
             return
-        if log:
-            val = math.log10(val)
-        if value_range is not None:
-            imin, imax = widget.minimum(), widget.maximum()
-            val = (val - value_range[0]) / (value_range[1] - value_range[0]) * (imax - imin) + imin
-        widget.setValue(val)
+        if self._log:
+            val = math.log10(value)
+        if self._value_range is not None:
+            imin, imax = self._widget.minimum(), self._widget.maximum()
+            val = (val - self._value_range[0]) / (self._value_range[1] - self._value_range[0]) * (imax - imin) + imin
+        self._widget.setValue(value)
 
-    add_callback(instance, prop, update_widget)
-    widget.valueChanged.connect(update_prop)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.valueChanged.connect(self.update_prop)
+        self.update_widget(getattr(self._instance, self._prop))
 
-    update_widget(getattr(instance, prop))
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.valueChanged.disconnect(self.update_prop)
 
 
-def connect_button(instance, prop, widget):
+class connect_button(BaseConnection):
     """
     Connect a button with a callback method
 
@@ -284,7 +362,16 @@ def connect_button(instance, prop, widget):
     widget : QtWidget
         The Qt widget to connect. This should implement the ``clicked`` method
     """
-    widget.clicked.connect(getattr(instance, prop))
+
+    def __init__(self, instance, prop, widget):
+        super(connect_button, self).__init__(instance, prop, widget)
+        self.connect()
+
+    def connect(self):
+        self._widget.clicked.connect(getattr(self._instance, self._prop))
+
+    def disconnect(self):
+        self._widget.clicked.disconnect(self.update_prop)
 
 
 def _find_combo_data(widget, value):
@@ -320,41 +407,46 @@ def _find_combo_text(widget, value):
         return i
 
 
-def connect_combo_selection(instance, prop, widget, display=str):
+class connect_combo_selection(BaseConnection):
 
-    if not isinstance(getattr(type(instance), prop), SelectionCallbackProperty):
-        raise TypeError('connect_combo_selection requires a SelectionCallbackProperty')
+    def __init__(self, instance, prop, widget):
 
-    def update_widget(value):
+        if not isinstance(getattr(type(instance), prop), SelectionCallbackProperty):
+            raise TypeError('connect_combo_selection requires a SelectionCallbackProperty')
+
+        super(connect_combo_selection, self).__init__(instance, prop, widget)
+        self.connect()
+
+    def update_widget(self, value):
 
         # Update choices in the combo box
 
-        combo_data = [widget.itemData(idx) for idx in range(widget.count())]
-        combo_text = [widget.itemText(idx) for idx in range(widget.count())]
+        combo_data = [self._widget.itemData(idx) for idx in range(self._widget.count())]
+        combo_text = [self._widget.itemText(idx) for idx in range(self._widget.count())]
 
-        choices = getattr(type(instance), prop).get_choices(instance)
-        choice_labels = getattr(type(instance), prop).get_choice_labels(instance)
+        choices = getattr(type(self._instance), self._prop).get_choices(self._instance)
+        choice_labels = getattr(type(self._instance), self._prop).get_choice_labels(self._instance)
 
         if combo_data == choices and combo_text == choice_labels:
             choices_updated = False
         else:
 
-            widget.blockSignals(True)
-            widget.clear()
+            self._widget.blockSignals(True)
+            self._widget.clear()
 
             if len(choices) == 0:
                 return
 
-            combo_model = widget.model()
+            combo_model = self._widget.model()
 
             for index, (label, choice) in enumerate(zip(choice_labels, choices)):
 
-                widget.addItem(label, userData=UserDataWrapper(choice))
+                self._widget.addItem(label, userData=UserDataWrapper(choice))
 
                 # We interpret None data as being disabled rows (used for headers)
                 if isinstance(choice, ChoiceSeparator):
                     item = combo_model.item(index)
-                    palette = widget.palette()
+                    palette = self._widget.palette()
                     item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
                     item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
 
@@ -362,43 +454,41 @@ def connect_combo_selection(instance, prop, widget, display=str):
 
         # Update current selection
         try:
-            idx = _find_combo_data(widget, value)
+            idx = _find_combo_data(self._widget, value)
         except ValueError:
             if value is None:
                 idx = -1
             else:
                 raise
 
-        if idx == widget.currentIndex() and not choices_updated:
+        if idx == self._widget.currentIndex() and not choices_updated:
             return
 
-        widget.setCurrentIndex(idx)
-        widget.blockSignals(False)
-        widget.currentIndexChanged.emit(idx)
+        self._widget.setCurrentIndex(idx)
+        self._widget.blockSignals(False)
+        self._widget.currentIndexChanged.emit(idx)
 
-    def update_prop(idx):
+    def update_prop(self, idx):
         if idx == -1:
-            setattr(instance, prop, None)
+            setattr(self._instance, self._prop, None)
         else:
-            data_wrapper = widget.itemData(idx)
+            data_wrapper = self._widget.itemData(idx)
             if data_wrapper is None:
-                setattr(instance, prop, None)
+                setattr(self._instance, self._prop, None)
             else:
-                setattr(instance, prop, data_wrapper.data)
+                setattr(self._instance, self._prop, data_wrapper.data)
 
-    add_callback(instance, prop, update_widget)
-    widget.currentIndexChanged.connect(update_prop)
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.connect(self.update_prop)
+        self.update_widget(getattr(self._instance, self._prop))
 
-    update_widget(getattr(instance, prop))
-
-    def disconnect():
-        remove_callback(instance, prop, update_widget)
-        widget.currentIndexChanged.disconnect(update_prop)
-
-    return disconnect
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.currentIndexChanged.disconnect(self.update_prop)
 
 
-class connect_list_selection(object):
+class connect_list_selection(BaseConnection):
 
     def __init__(self, instance, prop, widget):
         """
@@ -409,18 +499,8 @@ class connect_list_selection(object):
         if not isinstance(getattr(type(instance), prop), SelectionCallbackProperty):
             raise TypeError('connect_list_selection requires a SelectionCallbackProperty')
 
-        self._instance = instance
-        self._prop = prop
-        self._widget = widget
-
-        add_callback(instance, prop, self.update_widget)
-        widget.itemSelectionChanged.connect(self.update_prop)
-
-        self.update_widget(getattr(instance, prop))
-
-    def disconnect(self):
-        remove_callback(self._instance, self._prop, self.update_widget)
-        self._widget.currentIndexChanged.disconnect(self.update_prop)
+        super(connect_list_selection, self).__init__(instance, prop, widget)
+        self.connect()
 
     def update_widget(self, value, force=False):
 
@@ -485,3 +565,12 @@ class connect_list_selection(object):
                 setattr(self._instance, self._prop, None)
             else:
                 setattr(self._instance, self._prop, data_wrapper.data)
+
+    def connect(self):
+        add_callback(self._instance, self._prop, self.update_widget)
+        self._widget.itemSelectionChanged.connect(self.update_prop)
+        self.update_widget(getattr(self._instance, self._prop))
+
+    def disconnect(self):
+        remove_callback(self._instance, self._prop, self.update_widget)
+        self._widget.itemSelectionChanged.disconnect(self.update_prop)

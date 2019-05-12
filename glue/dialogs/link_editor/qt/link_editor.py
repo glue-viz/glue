@@ -60,7 +60,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         self.state = LinkEditorState(data_collection, suggested_links=suggested_links)
 
-        self._disconnectors = []
+        self._connections = []
 
         self._ui = load_ui('link_editor_widget.ui', self,
                            directory=os.path.dirname(__file__))
@@ -143,9 +143,10 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         # We update the link details panel on the right
 
-        for disconnect in self._disconnectors:
-            disconnect()
-        self._disconnectors = []
+        for connnection in self._connections:
+            connnection.disconnect()
+
+        self._connections = []
 
         link = self.state.current_link
 
@@ -173,7 +174,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
                 label.show()
                 label.setText(data1_names[idx])
                 disconnector = connect_combo_selection(link, data1_names[idx], combo)
-                self._disconnectors.append(disconnector)
+                self._connections.append(disconnector)
             else:
                 label.hide()
                 combo.hide()
@@ -189,7 +190,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
                 label.show()
                 label.setText(data2_names[idx])
                 disconnector = connect_combo_selection(link, data2_names[idx], combo)
-                self._disconnectors.append(disconnector)
+                self._connections.append(disconnector)
             else:
                 label.hide()
                 combo.hide()
