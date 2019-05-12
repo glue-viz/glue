@@ -385,7 +385,7 @@ class BaseCustomOptionsWidget(QWidget):
         self.viewer_state = viewer_state
         self.session = session
 
-        autoconnect_callbacks_to_qt(self.viewer_state, self)
+        self._connections = autoconnect_callbacks_to_qt(self.viewer_state, self)
 
 
 @six.add_metaclass(CustomViewerMeta)

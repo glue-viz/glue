@@ -87,8 +87,8 @@ class connect_text(BaseConnection):
         super(connect_text, self).__init__(instance, prop, widget)
         self.connect()
 
-    def update_prop(self, value):
-        val = self._widget.text()
+    def update_prop(self):
+        value = self._widget.text()
         setattr(self._instance, self._prop, value)
 
     def update_widget(self, value):
@@ -251,15 +251,15 @@ class connect_float_text(BaseConnection):
 
         self.connect()
 
-    def update_prop(self, value):
-        val = self._widget.text()
+    def update_prop(self):
+        value = self._widget.text()
         try:
-            val = float(value)
+            value = float(value)
         except ValueError:
             try:
-                val = np.datetime64(value)
+                value = np.datetime64(value)
             except Exception:
-                val = 0
+                value = 0
         setattr(self._instance, self._prop, value)
 
     def update_widget(self, value):
@@ -323,9 +323,9 @@ class connect_value(BaseConnection):
         value = self._widget.value()
         if self._value_range is not None:
             imin, imax = self._widget.minimum(), self._widget.maximum()
-            val = (value - imin) / (imax - imin) * (self._value_range[1] - self._value_range[0]) + self._value_range[0]
+            value = (value - imin) / (imax - imin) * (self._value_range[1] - self._value_range[0]) + self._value_range[0]
         if self._log:
-            val = 10 ** val
+            value = 10 ** value
         setattr(self._instance, self._prop, value)
 
     def update_widget(self, value):
@@ -333,10 +333,10 @@ class connect_value(BaseConnection):
             self._widget.setValue(0)
             return
         if self._log:
-            val = math.log10(value)
+            value = math.log10(value)
         if self._value_range is not None:
             imin, imax = self._widget.minimum(), self._widget.maximum()
-            val = (val - self._value_range[0]) / (self._value_range[1] - self._value_range[0]) * (imax - imin) + imin
+            value = (value - self._value_range[0]) / (self._value_range[1] - self._value_range[0]) * (imax - imin) + imin
         self._widget.setValue(value)
 
     def connect(self):

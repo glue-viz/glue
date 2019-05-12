@@ -42,7 +42,7 @@ class SliceWidget(QtWidgets.QWidget):
         self.ui = load_ui('data_slice_widget.ui', self,
                           directory=os.path.dirname(__file__))
 
-        autoconnect_callbacks_to_qt(self.state, self.ui)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
 
         font = self.text_warning.font()
         font.setPointSize(font.pointSize() * 0.75)

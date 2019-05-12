@@ -19,7 +19,7 @@ class ProfileLayerStyleEditor(QtWidgets.QWidget):
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1))}
 
-        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
         self.viewer_state = layer.state.viewer_state
         self.viewer_state.add_callback('normalize', self._on_normalize_change)

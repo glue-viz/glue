@@ -65,7 +65,7 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
         # Populate data combo
         ArithmeticEditorWidget.data.set_choices(self, list(self.data_collection))
         ArithmeticEditorWidget.data.set_display_func(self, lambda x: x.label)
-        connect_combo_selection(self, 'data', self.ui.combosel_data)
+        self._connection = connect_combo_selection(self, 'data', self.ui.combosel_data)
 
         if initial_data is None:
             self.ui.combosel_data.setCurrentIndex(0)

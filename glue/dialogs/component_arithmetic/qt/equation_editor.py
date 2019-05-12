@@ -142,7 +142,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         # Populate component combo
         EquationEditorDialog.attribute.set_choices(self, list(self.references))
-        connect_combo_selection(self, 'attribute', self.ui.combosel_component)
+        self._connection = connect_combo_selection(self, 'attribute', self.ui.combosel_component)
 
         # Set up labels for auto-completion
         labels = ['{' + l + '}' for l in self.references]

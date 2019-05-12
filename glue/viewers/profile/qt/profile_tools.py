@@ -122,11 +122,11 @@ class ProfileTools(QtWidgets.QWidget):
 
         ProfileTools.fit_function.set_choices(self, list(fit_plugin))
         ProfileTools.fit_function.set_display_func(self, lambda fitter: fitter.label)
-        connect_combo_selection(self, 'fit_function', self.ui.combosel_fit_function)
+        self._connection_fit = connect_combo_selection(self, 'fit_function', self.ui.combosel_fit_function)
 
         ProfileTools.collapse_function.set_choices(self, list(COLLAPSE_FUNCS))
         ProfileTools.collapse_function.set_display_func(self, COLLAPSE_FUNCS.get)
-        connect_combo_selection(self, 'collapse_function', self.ui.combosel_collapse_function)
+        self._connection_collapse = connect_combo_selection(self, 'collapse_function', self.ui.combosel_collapse_function)
 
         self._toolbar_connected = False
 

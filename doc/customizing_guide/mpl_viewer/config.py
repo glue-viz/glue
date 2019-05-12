@@ -109,7 +109,7 @@ class TutorialViewerStateWidget(QWidget):
                           directory=os.path.dirname(__file__))
 
         self.viewer_state = viewer_state
-        autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
+        self._connections = autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
 
 
 class TutorialLayerStateWidget(QWidget):
