@@ -749,6 +749,23 @@ class AbstractMplRoi(object):
     def _store_background(self):
         self._background_cache = self._axes.figure.canvas.copy_from_bbox(self._axes.bbox)
 
+    def _reset_background(self):
+
+        # The purpose of this method is to provide a way to reset the background
+        # when the figure is changed (e.g. while panning/zooming) while the ROI
+        # is in the middle of being plotted (this is relevant for 'persistent'
+        # ROIs such as path selections or lasso selections).
+
+        if self._patch is None or not self._patch.get_visible():
+            return
+
+        self._background_cache = None
+        self._patch.set_visible(False)
+        self._axes.figure.canvas.draw()
+        self._store_background()
+        self._patch.set_visible(True)
+        self._axes.figure.canvas.draw_idle()
+
     def _restore_previous_roi(self):
         self._roi = self._previous_roi
 
@@ -1303,6 +1320,17 @@ class MplPathROI(MplPolygonalROI):
 
         self._patch = None
 
+    def start_selection(self, event):
+
+        if self._patch is not None:
+            self._patch.remove()
+            self._patch = None
+
+        self._background_cache = None
+        self._axes.figure.canvas.draw()
+
+        super(MplPathROI, self).start_selection(event)
+
     def _sync_patch(self):
 
         if self._patch is not None:
@@ -1312,14 +1340,16 @@ class MplPathROI(MplPolygonalROI):
         if self._roi.defined():
             x, y = self._roi.to_polygon()
             p = MplPath(np.column_stack((x, y)))
-            self._patch = PathPatch(p)
+            self._patch = PathPatch(p, transform=self._axes.transData)
             self._patch.set_visible(True)
             self._patch.set(**self.plot_opts)
+            self._axes.add_artist(self._patch)
 
     def finalize_selection(self, event):
         self._mid_selection = False
         if self._patch is not None:
-            self._patch.set_visible(False)
+            self._patch.remove()
+            self._patch = None
         self._draw()
 
 

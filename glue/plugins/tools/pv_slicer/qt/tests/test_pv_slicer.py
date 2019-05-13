@@ -5,8 +5,10 @@ from mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
-from glue.viewers.image.qt import StandaloneImageViewer
+from glue.viewers.image.qt import StandaloneImageViewer, ImageViewer
 from glue.tests.helpers import requires_astropy, requires_scipy
+from glue.app.qt import GlueApplication
+from glue.utils.qt import process_events
 
 from ..pv_slicer import _slice_from_path, _slice_label, _slice_index, PVSliceWidget
 
@@ -100,3 +102,44 @@ class TestPVSliceWidget(object):
 
     def test_basic(self):
         pass
+
+
+class TestPVSliceTool(object):
+
+    def setup_method(self, method):
+        self.cube = Data(label='cube', x=np.arange(1000).reshape((5, 10, 20)))
+        self.application = GlueApplication()
+        self.application.data_collection.append(self.cube)
+        self.viewer = self.application.new_data_viewer(ImageViewer)
+        self.viewer.add_data(self.cube)
+
+    def teardown_method(self, method):
+        self.viewer.close()
+        self.viewer = None
+        self.application.close()
+        self.application = None
+
+    @requires_astropy
+    @requires_scipy
+    def test_basic(self):
+
+        self.viewer.toolbar.active_tool = 'slice'
+
+        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[7.2, 6.6]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+
+        process_events()
+
+        assert len(self.application.tab().subWindowList()) == 1
+
+        self.viewer.axes.figure.canvas.key_press_event('enter')
+
+        process_events()
+
+        assert len(self.application.tab().subWindowList()) == 2
+
+        pv_widget = self.application.tab().subWindowList()[1].widget()
+        assert pv_widget._x.shape == (6,)
+        assert pv_widget._y.shape == (6,)

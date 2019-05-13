@@ -7,7 +7,7 @@ from mock import MagicMock
 # from glue.utils.qt import process_dialog
 
 from ..mouse_mode import MouseMode
-from ..toolbar_mode import RectangleMode, CircleMode, PolyMode, LassoMode
+from ..toolbar_mode import RectangleMode, CircleMode, PolyMode
 
 
 class Event(object):
@@ -194,12 +194,6 @@ class TestCircleMode(TestRoiMode):
 
     def mode_factory(self):
         return CircleMode
-
-
-class TestLassoMode(TestRoiMode):
-
-    def mode_factory(self):
-        return LassoMode
 
 
 class TestPolyMode(TestClickRoiMode):
