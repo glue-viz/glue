@@ -6,39 +6,63 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>312</width>
-    <height>542</height>
+    <width>359</width>
+    <height>411</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Subset Facet</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="5,0,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0">
    <property name="spacing">
     <number>4</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
     <number>4</number>
    </property>
    <item>
-    <widget class="ComponentSelector" name="component_selector" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>1</verstretch>
-      </sizepolicy>
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Datasets</string>
      </property>
-     <property name="baseSize">
-      <size>
-       <width>0</width>
-       <height>386</height>
-      </size>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="combosel_data">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLength</enum>
      </property>
-     <property name="styleSheet">
-      <string notr="true"/>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_6">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="text">
+      <string>Components</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listsel_att">
+     <property name="toolTip">
+      <string>The Component IDs associated with this data set</string>
      </property>
     </widget>
    </item>
@@ -52,7 +76,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="value_n_subsets">
+      <widget class="QSpinBox" name="value_steps">
        <property name="maximum">
         <number>100</number>
        </property>
@@ -66,39 +90,31 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Min</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="value_min"/>
-       </item>
-      </layout>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Min</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Max</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="value_max"/>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkbox_log">
-         <property name="text">
-          <string>Log spacing</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QLineEdit" name="valuetext_v_min"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Max</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="valuetext_v_max"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="bool_log">
+       <property name="text">
+        <string>Log spacing</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -112,7 +128,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="color_scale">
+      <widget class="QColormapCombo" name="combodata_cmap">
        <property name="sizeAdjustPolicy">
         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
        </property>
@@ -121,58 +137,48 @@
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_cancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_ok">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ComponentSelector</class>
-   <extends>QWidget</extends>
-   <header>glue.dialogs.common.qt.component_selector</header>
-   <container>1</container>
+   <class>QColormapCombo</class>
+   <extends>QComboBox</extends>
+   <header>glue.utils.qt.colors</header>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>SubsetFacet</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>SubsetFacet</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

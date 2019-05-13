@@ -236,7 +236,7 @@ class TestGlueApplication(object):
 
         act = self.app._layer_widget._actions['facet']
         self.app.data_collection.append(Data(x=[1, 2, 3]))
-        with patch('glue.dialogs.subset_facet.qt.SubsetFacet.exec_'):
+        with patch('glue.dialogs.subset_facet.qt.SubsetFacetDialog.exec_'):
             act._do_action()
 
     # FIXME: The following test fails and causes subsequent issues if run with

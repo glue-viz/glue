@@ -81,7 +81,7 @@ this to create a widget to control the viewer state::
              self.ui = load_ui('options_widget.ui', dirname=os.path.dirname(__file__))
 
              self.viewer_state = viewer_state
-             autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
+             self._connections = autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
 
 For :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` to work, you need
 to follow certain naming conventions for the UI elements in the ``.ui`` file. You

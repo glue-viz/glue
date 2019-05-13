@@ -8,6 +8,11 @@ v0.15.0 (unreleased)
   affine transformations, and also added documentation on defining custom
   coordinates. [#1994]
 
+* Rewrote ``SubsetFacet`` (now ``SubsetFacetDialog``), and updated the
+  available colormaps. [#1998]
+
+* Removed the ``ComponentSelector`` class. [#1998]
+
 * Make it possible to view only a subset of data in the table
   viewer. [#1988]
 
@@ -27,7 +32,7 @@ v0.15.0 (unreleased)
 * Added initial infrastructure for developing auto-linking helpers
   and implement an initial astronomy WCS auto-linker. [#1933]
 
-* Improve the user interface for the link editor. [#1934]
+* Improve the user interface for the link editor. [#1934, #1998]
 
 * Added a new ``IndexedData`` class to represent a derived dataset produced
   by indexing a higher-dimensional dataset. [#1953]

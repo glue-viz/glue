@@ -80,7 +80,7 @@ class SaveDataDialog(QDialog):
 
         self.ui = load_ui('save_data.ui', parent=self,
                           directory=os.path.dirname(__file__))
-        autoconnect_callbacks_to_qt(self.state, self.ui)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
 
         self.ui.button_cancel.clicked.connect(self.reject)
         self.ui.button_ok.clicked.connect(self.accept)

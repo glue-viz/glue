@@ -24,10 +24,10 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
                           'size_scaling': dict(value_range=(0.1, 10), log=True),
                           'density_contrast': dict(value_range=(0, 1)),
                           'vector_scaling': dict(value_range=(0.1, 10), log=True)}
-        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
-        connect_value(layer.state.viewer_state, 'dpi', self.ui.value_dpi,
-                      value_range=(12, 144), log=True)
+        self._connection_dpi = connect_value(layer.state.viewer_state, 'dpi', self.ui.value_dpi,
+                                             value_range=(12, 144), log=True)
 
         fix_tab_widget_fontsize(self.ui.tab_widget)
 

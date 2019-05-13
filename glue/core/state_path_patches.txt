@@ -24,5 +24,6 @@ glue.viewers.table.qt.viewer_widget.TableWidget -> glue.viewers.table.qt.TableVi
 glue_vispy_viewers.common.toolbar.PatchedElementSubsetState -> glue.core.subset.ElementSubsetState
 glue.plugins.dendro_viewer.qt.viewer_widget.DendroWidget -> glue.plugins.dendro_viewer.qt.DendrogramViewer
 glue.plugins.dendro_viewer.layer_artist.DendroLayerArtist -> glue.plugins.dendro_viewer.layer_artist.DendrogramLayerArtist
+glue.core.component_link.identity -> glue.core.link_helpers.identity
 builtins.builtin_function_or_method ->  types.BuiltinFunctionType
 __builtin__.builtin_function_or_method -> types.BuiltinFunctionType

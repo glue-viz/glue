@@ -21,7 +21,7 @@ class ImageLayerStyleEditor(QtWidgets.QWidget):
                           'contrast': dict(value_range=(0.1, 10), log=True),
                           'bias': dict(value_range=(1.5, -0.5))}
 
-        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
 
         layer._viewer_state.add_callback('color_mode', self._update_color_mode)
 

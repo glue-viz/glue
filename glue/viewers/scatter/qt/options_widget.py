@@ -22,8 +22,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
         fix_tab_widget_fontsize(self.ui.tab_widget)
 
-        autoconnect_callbacks_to_qt(viewer_state, self.ui)
-        autoconnect_callbacks_to_qt(viewer_state, self.ui.axes_editor.ui)
+        self._connections = autoconnect_callbacks_to_qt(viewer_state, self.ui)
+        self._connections_axes = autoconnect_callbacks_to_qt(viewer_state, self.ui.axes_editor.ui)
 
         self.viewer_state = viewer_state
 

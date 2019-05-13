@@ -18,7 +18,7 @@ from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
 from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.dialogs.component_manager.qt import ComponentManagerWidget
-from glue.dialogs.subset_facet.qt import SubsetFacet
+from glue.dialogs.subset_facet.qt import SubsetFacetDialog
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
 from glue.utils.decorators import avoid_circular
@@ -142,8 +142,8 @@ class FacetAction(LayerAction):
             default = layers[0].data
         except (AttributeError, TypeError, IndexError):
             default = None
-        SubsetFacet.facet(self._layer_tree.data_collection,
-                          parent=self._layer_tree, default=default)
+        SubsetFacetDialog.facet(self._layer_tree.data_collection,
+                                parent=self._layer_tree, default=default)
 
 
 class MetadataAction(LayerAction):

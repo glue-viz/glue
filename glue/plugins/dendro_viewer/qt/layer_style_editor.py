@@ -19,4 +19,4 @@ class DendrogramLayerStyleEditor(QtWidgets.QWidget):
 
         connect_kwargs = {'alpha': dict(value_range=(0, 1))}
 
-        autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
+        self._connections = autoconnect_callbacks_to_qt(layer.state, self.ui, connect_kwargs)
