@@ -119,6 +119,8 @@ class TestPVSliceTool(object):
         self.application.close()
         self.application = None
 
+    @requires_astropy
+    @requires_scipy
     def test_basic(self):
 
         self.viewer.toolbar.active_tool = 'slice'
