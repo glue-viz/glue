@@ -37,6 +37,9 @@ v0.15.0 (unreleased)
 * Added a new ``IndexedData`` class to represent a derived dataset produced
   by indexing a higher-dimensional dataset. [#1953]
 
+* Removed plot.ly export plugin - this is now part of the glue-plotly
+  package. [#1999]
+
 * Added a ``--faulthandler`` command-line flag to help debug segmentation
   faults. [#1974]
 
