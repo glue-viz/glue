@@ -39,7 +39,7 @@ class SubsetFacetState(State):
         self.add_callback('data', self._on_data_change)
         self._on_data_change()
 
-    def _on_data_change(self):
+    def _on_data_change(self, *args, **kwargs):
         self.att_helper.set_multiple_data([] if self.data is None else [self.data])
 
 
@@ -71,6 +71,9 @@ class SubsetFacetDialog(QtWidgets.QDialog):
             self.state.data = default
 
         self.state.cmap = cm.RdYlBu
+
+        self.ui.button_ok.clicked.connect(self.accept)
+        self.ui.button_cancel.clicked.connect(self.reject)
 
     def _apply(self):
 
