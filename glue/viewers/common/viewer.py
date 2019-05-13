@@ -138,7 +138,7 @@ class Viewer(BaseViewer):
     allow_duplicate_data = False
     allow_duplicate_subset = False
 
-    large_data_size = 0
+    large_data_size = None
 
     def __init__(self, session, state=None):
 

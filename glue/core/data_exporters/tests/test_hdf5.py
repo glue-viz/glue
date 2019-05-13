@@ -26,10 +26,10 @@ def test_hdf5_writer_data(tmpdir, dtype):
 
     f = File(filename)
     assert len(f) == 2
-    np.testing.assert_equal(f['x'].value, data['x'])
-    np.testing.assert_equal(f['y'].value, data['y'])
-    assert f['x'].value.dtype == dtype
-    assert f['y'].value.dtype == dtype
+    np.testing.assert_equal(f['x'][()], data['x'])
+    np.testing.assert_equal(f['y'][()], data['y'])
+    assert f['x'][()].dtype == dtype
+    assert f['y'][()].dtype == dtype
     f.close()
 
     # Only write out some components
@@ -40,7 +40,7 @@ def test_hdf5_writer_data(tmpdir, dtype):
 
     f = File(filename)
     assert len(f) == 1
-    np.testing.assert_equal(f['x'].value, data['x'])
+    np.testing.assert_equal(f['x'][()], data['x'])
     f.close()
 
 
@@ -63,14 +63,14 @@ def test_hdf5_writer_subset(tmpdir, dtype):
     f = File(filename)
 
     if np.dtype(dtype).kind == 'f':
-        assert np.all(np.isnan(f['x'].value[0]))
-        assert np.all(np.isnan(f['y'].value[0]))
+        assert np.all(np.isnan(f['x'][0]))
+        assert np.all(np.isnan(f['y'][0]))
     else:
-        np.testing.assert_equal(f['x'].value[0], 0)
-        np.testing.assert_equal(f['y'].value[0], 0)
+        np.testing.assert_equal(f['x'][0], 0)
+        np.testing.assert_equal(f['y'][0], 0)
 
-    np.testing.assert_equal(f['x'].value[1], data['x'][1])
-    np.testing.assert_equal(f['y'].value[1], data['y'][1])
-    assert f['x'].value.dtype == dtype
-    assert f['y'].value.dtype == dtype
+    np.testing.assert_equal(f['x'][1], data['x'][1])
+    np.testing.assert_equal(f['y'][1], data['y'][1])
+    assert f['x'][()].dtype == dtype
+    assert f['y'][()].dtype == dtype
     f.close()
