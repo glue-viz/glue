@@ -27,7 +27,7 @@ from .mouse_mode import MouseMode
 
 __all__ = ['ToolbarModeBase', 'RoiModeBase', 'RoiMode', 'PersistentRoiMode',
            'ClickRoiMode', 'RectangleMode', 'PathMode', 'CircleMode',
-           'PolyMode', 'LassoMode', 'HRangeMode', 'VRangeMode', 'PickMode']
+           'PolyMode', 'HRangeMode', 'VRangeMode', 'PickMode']
 
 
 class ToolbarModeBase(MouseMode, CheckableTool):
