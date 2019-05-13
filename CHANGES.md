@@ -8,6 +8,11 @@ v0.15.0 (unreleased)
   affine transformations, and also added documentation on defining custom
   coordinates. [#1994]
 
+* Rewrote ``SubsetFacet`` (now ``SubsetFacetDialog``), and updated the
+  available colormaps. [#1998]
+
+* Removed the ``ComponentSelector`` class. [#1998]
+
 * Make it possible to view only a subset of data in the table
   viewer. [#1988]
 

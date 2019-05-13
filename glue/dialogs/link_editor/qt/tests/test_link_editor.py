@@ -630,3 +630,20 @@ class TestLinkEditor:
 
         assert link_widget.state.data1 == self.data1
         assert link_widget.state.data2 == self.data2
+
+    def test_preexisting_links_twodata(self):
+
+        # Regression test for an issue that occurred specifically if there were
+        # exactly two datasets and pre-existing links (since this means that
+        # the window opens with a current_link selected by default)
+
+        data1 = Data(x=[1, 2, 3], y=[2, 3, 4], z=[6, 5, 4], label='data1')
+        data2 = Data(a=[2, 3, 4], b=[4, 5, 4], c=[3, 4, 1], label='data2')
+
+        data_collection = DataCollection([data1, data2])
+
+        link1 = ComponentLink([data1.id['x']], data2.id['c'])
+        data_collection.add_link(link1)
+
+        dialog = LinkEditor(data_collection)
+        dialog.show()

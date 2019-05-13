@@ -75,6 +75,8 @@ class LinkEditorWidget(QtWidgets.QWidget):
         self._menu.triggered.connect(self._add_link)
         self._ui.button_add_link.setMenu(self._menu)
 
+        self._watched_links = []
+
         self.state.add_callback('data1', self._on_data_change)
         self.state.add_callback('data2', self._on_data_change)
         self._on_data_change()
@@ -85,8 +87,6 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
         self.state.add_callback('current_link', self._on_current_link_change)
         self._on_current_link_change()
-
-        self._watched_links = []
 
     def _add_link(self, action):
         self.state.new_link(action.data().data)
