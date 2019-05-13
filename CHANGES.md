@@ -77,6 +77,9 @@ v0.14.3 (unreleased)
 
 * Fix bug that caused log parameter to be ignore for density plots. [#1963]
 
+* Fix bug that caused an error when using the profile collapse tool and
+  dragging from right to left. [#2002]
+
 v0.14.2 (2019-02-04)
 --------------------
 

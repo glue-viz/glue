@@ -325,6 +325,8 @@ class ProfileTools(QtWidgets.QWidget):
                 if isinstance(current_slice, AggregateSlice):
                     current_slice = current_slice.center
 
+                imin, imax = min(imin, imax), max(imin, imax)
+
                 slices[axis] = AggregateSlice(slice(imin, imax),
                                               current_slice,
                                               func)
