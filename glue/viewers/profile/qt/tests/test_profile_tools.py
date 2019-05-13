@@ -184,3 +184,35 @@ class TestProfileTools(object):
         assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
         assert image_viewer.state.slices[0].function is nanmean
+
+    def test_collapse_reverse(self, capsys):
+
+        # Regression test for a bug that caused collapsing to fail if selecting
+        # the range in the reverse direction.
+
+        self.viewer.add_data(self.data)
+
+        image_viewer = self.app.new_data_viewer(ImageViewer)
+        image_viewer.add_data(self.data)
+
+        self.profile_tools.ui.tabs.setCurrentIndex(2)
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
+        # Force events to be processed to make sure that the callback functions
+        # for the computation thread are executed (since they rely on signals)
+        self.viewer.layers[0].wait()
+        process_events()
+
+        x, y = self.viewer.axes.transData.transform([[15.1, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
+        self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
+        self.profile_tools.ui.button_collapse.click()
+        process_events()
+
+        #  We use capsys here because the # error is otherwise only apparent in stderr.
+        out, err = capsys.readouterr()
+        assert out.strip() == ""
+        assert err.strip() == ""

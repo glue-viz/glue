@@ -117,6 +117,10 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     if target_cid is not None and subset_state is not None:
         raise ValueError("Either target_cid or subset_state should be specified (not both)")
 
+    for bound in bounds:
+        if isinstance(bound, tuple) and bound[2] < 1:
+            raise ValueError("Number of steps in bounds should be >=1")
+
     # If cache_id is specified, we keep a cached version of the resulting array
     # indexed by cache_id as well as a hash formed of the call arguments to this
     # function. We then check if the resulting array already exists in the cache.
