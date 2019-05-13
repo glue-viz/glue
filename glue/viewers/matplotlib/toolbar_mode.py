@@ -74,6 +74,12 @@ class RoiModeBase(ToolbarModeBase):
         super(RoiModeBase, self).close()
 
     def activate(self):
+        # For persistent ROIs, the user might e.g. pan and zoom around before
+        # the selection is finalized. The Matplotlib ROIs cache the image
+        # background to make things more efficient, but if the user pans/zooms
+        # we need to make sure we reset the background.
+        if getattr(self._roi_tool, '_mid_selection', False):
+            self._roi_tool._reset_background()
         self._roi_tool._sync_patch()
         super(RoiModeBase, self).activate()
 
@@ -281,29 +287,6 @@ class PolyMode(ClickRoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(PolyMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplPolygonalROI(self._axes)
-
-
-# TODO: determine why LassoMode exists since it's the same as PolyMode?
-
-@viewer_tool
-class LassoMode(RoiMode):
-    """
-    Defines a Polygonal ROI, accessible via the :meth:`~LassoMode.roi` method
-    """
-
-    icon = 'glue_lasso'
-    tool_id = 'select:lasso'
-    action_text = 'Polygonal ROI'
-    tool_tip = ('Lasso a region of interest\n'
-                '  ENTER accepts the path\n'
-                '  ESCAPE clears the path')
-    status_tip = ('CLICK and DRAG (or CLICK multiple times) to define selection,'
-                  ' ENTER to finalize, ESC to cancel, CTRL-CLICK and DRAG to move selection')
-    shortcut = 'L'
-
-    def __init__(self, viewer, **kwargs):
-        super(LassoMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPolygonalROI(self._axes)
 
 

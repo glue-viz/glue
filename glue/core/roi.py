@@ -749,6 +749,23 @@ class AbstractMplRoi(object):
     def _store_background(self):
         self._background_cache = self._axes.figure.canvas.copy_from_bbox(self._axes.bbox)
 
+    def _reset_background(self):
+
+        # The purpose of this method is to provide a way to reset the background
+        # when the figure is changed (e.g. while panning/zooming) while the ROI
+        # is in the middle of being plotted (this is relevant for 'persistent'
+        # ROIs such as path selections or lasso selections).
+
+        if self._patch is None or not self._patch.get_visible():
+            return
+
+        self._background_cache = None
+        self._patch.set_visible(False)
+        self._axes.figure.canvas.draw()
+        self._store_background()
+        self._patch.set_visible(True)
+        self._axes.figure.canvas.draw_idle()
+
     def _restore_previous_roi(self):
         self._roi = self._previous_roi
 

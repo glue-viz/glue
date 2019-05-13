@@ -225,7 +225,6 @@ used in all viewers, click on each tool class name to find out more):
 Tool ID                 Class
 ======================  ========================================================
 ``'select:circle'``     :class:`~glue.viewers.matplotlib.toolbar_mode.CircleMode`
-``'select:lasso'``      :class:`~glue.viewers.matplotlib.toolbar_mode.LassoMode`
 ``'select:pick'``       :class:`~glue.viewers.matplotlib.toolbar_mode.PickMode`
 ``'select:polygon'``    :class:`~glue.viewers.matplotlib.toolbar_mode.PolyMode`
 ``'select:rectangle'``  :class:`~glue.viewers.matplotlib.toolbar_mode.RectangleMode`
