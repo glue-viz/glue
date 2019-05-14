@@ -19,8 +19,8 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml sphinx_rtd_theme qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck mpl-scatter-density"
-    - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly<3.8 objgraph pytest-qt pytest-faulthandler flake8"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck mpl-scatter-density"
+    - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly<3.8 objgraph pytest-qt pytest-faulthandler flake8 git+https://github.com/rtfd/sphinx_rtd_theme"
     - PIP_FALLBACK=false
     - REMOVE_INSTALL_REQUIRES=0
     - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
@@ -94,10 +94,10 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=2.1
-               PANDAS_VERSION=0.18
+               PANDAS_VERSION=0.20
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
-               NUMPY_VERSION=1.11
+               NUMPY_VERSION=1.12
 
         # Test with PySide2
 
@@ -226,16 +226,7 @@ script:
   # In the following, we use separate if statements for each line, to make
   # sure the exit code from each one is taken into account for the overall
   # exit code.
-  - if [ $DOC_TRIGGER ]; then cd doc; make html linkcheck 2> warnings.log; cd ..; fi
-  - if [ $DOC_TRIGGER ]; then cat doc/warnings.log; fi
-  - if [ $DOC_TRIGGER ]; then grep -v "numpy.dtype size changed" doc/warnings.log | grep -v "return f(\*args, \*\*kwds)" || true > doc/warnings_filt.log; fi
-  - if [ $DOC_TRIGGER ]; then cat doc/warnings_filt.log; fi
-  # make sure stderr was empty, i.e. no warnings
-  - if [ $DOC_TRIGGER ]; then test ! -s doc/warnings_filt.log; fi
-
-  # Check for any broken links, ignore 'redirected with Found'
-  - if [ $DOC_TRIGGER ]; then grep -v "redirected with Found" doc/_build/linkcheck/output.txt || true > doc/_build/linkcheck/output_no_found_redirect.txt; fi
-  - if [ $DOC_TRIGGER ]; then test ! -s doc/_build/linkcheck/output_no_found_redirect.txt; fi
+  - if [ $DOC_TRIGGER ]; then ./.test-docs.sh; fi
 
   # Check spelling
   # - if [ $DOC_TRIGGER ]; then make spelling; fi

@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
 import sys
 import pytest
 import numpy as np
@@ -196,10 +194,8 @@ def test_data_reload_no_file():
         d = df.load_data(fname)
 
     # file no longer exists
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(UserWarning, match='Could not reload'):
         d._load_log.reload()
-    assert len(w) == 1
-    assert str(w[0].message).startswith('Could not reload')
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
 
@@ -213,10 +209,8 @@ def test_data_reload_shape_change():
         with open(fname, 'w') as f2:
             f2.write('#a, b\n0, 0\n0, 0\n0, 0\n0, 0')
 
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(UserWarning, match='Cannot refresh data -- data shape changed'):
             d._load_log.reload()
-        assert len(w) == 1
-        assert str(w[0].message) == 'Cannot refresh data -- data shape changed'
 
     assert_array_equal(d['a'], [0, 2, 3, 5, 7])
     assert d.coords is coords_old
@@ -248,10 +242,8 @@ def test_file_watch_os_error():
     with make_file(b'test', 'csv') as fname:
         fw = df.FileWatcher(fname, cb)
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(UserWarning, match='Cannot access'):
         fw.check_for_changes()
-    assert len(w) == 1
-    assert str(w[0].message).startswith('Cannot access')
 
     assert cb.call_count == 0
 
@@ -277,11 +269,8 @@ def test_ambiguous_format(tmpdir):
     # Should raise a warning and pick the highest priority one in alphabetical
     # order
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(UserWarning, match="Multiple data factories matched the input: 'a', 'b'. Choosing 'a'."):
         factory = df.find_factory(filename)
-
-    assert len(w) == 1
-    assert str(w[0].message) == "Multiple data factories matched the input: 'a', 'b'. Choosing 'a'."
 
     assert factory is reader2
 

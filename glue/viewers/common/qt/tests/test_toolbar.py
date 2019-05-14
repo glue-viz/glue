@@ -2,8 +2,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-import warnings
-
+import pytest
 from glue.config import viewer_tool
 from glue.viewers.common.qt.data_viewer import DataViewer
 from glue.viewers.common.tool import Tool
@@ -40,8 +39,7 @@ class ExampleViewer2(DataViewer):
 
 def test_duplicate_shortcut():
     session = simple_session()
-    with warnings.catch_warnings(record=True) as w:
+    expected_warning = ("Tools 'TEST1' and 'TEST2' have the same "
+                        r"shortcut \('A'\). Ignoring shortcut for 'TEST2'")
+    with pytest.warns(UserWarning, match=expected_warning):
         ExampleViewer2(session)
-    assert len(w) == 1
-    assert str(w[0].message) == ("Tools 'TEST1' and 'TEST2' have the same "
-                                 "shortcut ('A'). Ignoring shortcut for 'TEST2'")

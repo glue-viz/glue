@@ -15,7 +15,7 @@ Quickly send data to Glue with qglue
 ------------------------------------
 
 The easiest way to send python variables to Glue is to use
-:func:`~glue.qglue.qglue`::
+:func:`~glue.qglue`::
 
     from glue import qglue
 
@@ -36,7 +36,7 @@ You can easily start up Glue with this data using::
 
 This will send this data to Glue, and label it ``xyz``.
 
-:func:`~glue.qglue.qglue` accepts many data types as inputs. Let's see some examples::
+:func:`~glue.qglue` accepts many data types as inputs. Let's see some examples::
 
     import numpy as np
     import pandas as pd
@@ -139,7 +139,7 @@ for example:
 Using qglue with the IPython/Jupyter Notebook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can call :func:`~glue.qglue.qglue` from the IPython/Jupyter notebook
+You can call :func:`~glue.qglue` from the IPython/Jupyter notebook
 normally. However, the default behavior is for Glue to block the execution of
 the notebook while the UI is running. If you would like to be able to use the
 notebook and Glue at the same time, run this cell before starting glue::

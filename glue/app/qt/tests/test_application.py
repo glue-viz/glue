@@ -96,11 +96,13 @@ class TestGlueApplication(object):
             self.app._terminal = term
 
             term.isVisible.return_value = False
-            self.app._button_ipython.click()
+            with pytest.warns(UserWarning, match='An unexpected error'):
+                self.app._button_ipython.click()
             assert term.show.call_count == 1
 
             term.isVisible.return_value = True
-            self.app._button_ipython.click()
+            with pytest.warns(UserWarning, match='An unexpected error'):
+                self.app._button_ipython.click()
             assert term.hide.call_count == 1
 
             term.reset_mock()

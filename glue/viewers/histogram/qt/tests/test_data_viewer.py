@@ -591,6 +591,7 @@ class TestHistogramViewer(object):
         for subset in client.count:
             assert client.count[subset] == 1
 
+    @pytest.mark.filterwarnings('ignore:elementwise')
     def test_datetime64_support(self, tmpdir):
 
         self.data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')

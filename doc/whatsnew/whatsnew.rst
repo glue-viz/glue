@@ -384,8 +384,8 @@ Custom startup actions
 It is now possible to define custom startup actions to execute when glue starts
 up by writing simple Python functions in a config.py file or in plugin packages.
 Startup actions are executed once glue is open and any data provided on the
-command-line (if any) has been opened. Find out more about `writing custom
-startup actions <custom_startup>`_.
+command-line (if any) has been opened. Find out more about :ref:`writing custom
+startup actions <custom_startup>`.
 
 Custom data/subset actions
 --------------------------
@@ -438,7 +438,7 @@ Experimental fixed layout/dashboards [advanced]
 By default, glue uses a free-form canvas to contain viewers, which gives you the
 ability to arrange the data viewers in any way you like. However, for certain
 applications, it can be helpful to defined tabs that contain data viewers in a
-predefined layout. `This is now possible <custom_fixed_layout>`_, although note
+predefined layout. :ref:`This is now possible <custom_fixed_layout>`, although note
 that this is still an experimental feature and requires some knowledge of how to
 set up Qt widgets. In future, we will make it possible to define layouts in a
 more intuitive way.

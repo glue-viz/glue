@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
 import numpy as np
 
 from matplotlib.colors import Normalize
@@ -157,11 +158,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         # Scatter density
         self.density_auto_limits = DensityMapLimits()
-        self.density_artist = GenericDensityArtist(self.axes, color='white',
-                                                   vmin=self.density_auto_limits.min,
-                                                   vmax=self.density_auto_limits.max,
-                                                   update_while_panning=False,
-                                                   histogram2d_func=self.state.compute_density_map)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message='All-NaN slice encountered')
+            self.density_artist = GenericDensityArtist(self.axes, color='white',
+                                                       vmin=self.density_auto_limits.min,
+                                                       vmax=self.density_auto_limits.max,
+                                                       update_while_panning=False,
+                                                       histogram2d_func=self.state.compute_density_map)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,

@@ -16,7 +16,8 @@ from ..selection import SelectionCallbackProperty, ChoiceSeparator
 
 __all__ = ['connect_checkable_button', 'connect_text', 'connect_combo_data',
            'connect_combo_text', 'connect_float_text', 'connect_value',
-           'connect_combo_selection', 'connect_list_selection']
+           'connect_combo_selection', 'connect_list_selection',
+           'BaseConnection']
 
 
 class UserDataWrapper(object):
