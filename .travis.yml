@@ -97,7 +97,7 @@ matrix:
                PANDAS_VERSION=0.18
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
-               NUMPY_VERSION=1.11
+               NUMPY_VERSION=1.12
 
         # Test with PySide2
 
