@@ -171,9 +171,6 @@ User Interface
 .. automodapi:: glue.app.qt.application
    :no-inheritance-diagram:
 
-.. automodapi:: glue.qglue
-   :no-inheritance-diagram:
-
 .. automodapi:: glue
    :no-inheritance-diagram:
 
