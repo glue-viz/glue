@@ -16,6 +16,7 @@ class MatplotlibHistogramMixin(object):
         self.state.add_callback('x_att', self._update_axes)
         self.state.add_callback('x_log', self._update_axes)
         self.state.add_callback('normalize', self._update_axes)
+        self._update_axes()
 
     def _update_axes(self, *args):
 
