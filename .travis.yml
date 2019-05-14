@@ -94,7 +94,7 @@ matrix:
           stage: Full
           env: PYTHON_VERSION=2.7
                MATPLOTLIB_VERSION=2.1
-               PANDAS_VERSION=0.18
+               PANDAS_VERSION=0.20
                SETUPTOOLS=1.0
                IPYTHON_VERSION=4
                NUMPY_VERSION=1.12
