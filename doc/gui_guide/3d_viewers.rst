@@ -15,7 +15,7 @@ installed, you should see the 3D viewers in the list:
    :width: 339
 
 If you don't see these in the list, then if you are using
-`Anaconda <https://www.anaconda.com/download/>`_ to manage your Python
+`Anaconda <https://www.anaconda.com/distribution/>`_ to manage your Python
 distribution, you can install the 3D viewers plugin using::
 
     conda install -c glueviz glue-vispy-viewers
