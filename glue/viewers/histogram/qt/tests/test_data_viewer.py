@@ -21,6 +21,7 @@ from glue.utils.qt import combo_as_string, process_events
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.tests.helpers import requires_matplotlib_ge_22
 
 from ..data_viewer import HistogramViewer
 
@@ -636,5 +637,33 @@ class TestHistogramViewer(object):
 
         assert options.valuetext_x_min.text() == '1970-04-14'
         assert options.valuetext_x_max.text() == '1971-02-05'
+
+        ga.close()
+
+    @requires_matplotlib_ge_22
+    def test_categorical_labels(self, tmpdir):
+
+        # Fix a bug that caused labels on histograms of categorical variables
+        # to not be restored correctly after saving and reloading session
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_att = self.data.id['y']
+
+        self.viewer.figure.canvas.draw()
+
+        assert [x.get_text() for x in self.viewer.axes.xaxis.get_ticklabels()] == ['', 'a', 'b', 'c', '']
+
+        # Make sure that everything works fine after saving/reloading
+        filename = tmpdir.join('test_categorical_labels.glu').strpath
+        self.session.application.save_session(filename)
+        with open(filename, 'r') as f:
+            session = f.read()
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
+        viewer = ga.viewers[0][0]
+
+        viewer.figure.canvas.draw()
+
+        assert [x.get_text() for x in viewer.axes.xaxis.get_ticklabels()] == ['', 'a', 'b', 'c', '']
 
         ga.close()
