@@ -21,6 +21,7 @@ from glue.utils.qt import combo_as_string, process_events
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.core.state import GlueUnSerializer
 from glue.app.qt.layer_tree_widget import LayerTreeWidget
+from glue.tests.helpers import requires_matplotlib_ge_22
 
 from ..data_viewer import HistogramViewer
 
@@ -639,6 +640,7 @@ class TestHistogramViewer(object):
 
         ga.close()
 
+    @requires_matplotlib_ge_22
     def test_categorical_labels(self, tmpdir):
 
         # Fix a bug that caused labels on histograms of categorical variables
