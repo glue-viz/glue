@@ -3,6 +3,7 @@ glue.clients.layer_artist.HistogramLayerArtist -> glue.viewers.histogram.qt.laye
 glue.viewers.histogram.layer_artist.HistogramLayerArtist -> glue.viewers.histogram.qt.layer_artist.QThreadedHistogramLayerArtist
 glue.clients.layer_artist.ImageLayerArtist -> glue.viewers.image.layer_artist.ImageLayerArtist
 glue.clients.layer_artist.ScatterLayerArtist -> glue.viewers.scatter.layer_artist.ScatterLayerArtist
+glue.viewers.profile.layer_artist.ProfileLayerArtist -> glue.viewers.profile.qt.layer_artist.QThreadedProfileLayerArtist
 glue.core.data_factories.gridded_data -> glue.core.data_factories.deprecated.gridded_data
 glue.core.data_factories.tables.astropy_tabular_data -> glue.core.data_factories.astropy_table.astropy_tabular_data
 glue.core.link_helpers.lb2dec -> glue.plugins.coordinate_helpers.deprecated.lb2dec

@@ -17,6 +17,7 @@ from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.core.tests.test_state import clone
+from glue.core.state import GlueUnSerializer
 
 from ..data_viewer import ProfileViewer
 
@@ -177,3 +178,72 @@ class TestProfileViewer(object):
 
         self.viewer.state.x_att = self.data.world_component_ids[2]
         assert self.viewer.options_widget().ui.text_warning.text() != ''
+
+    @pytest.mark.parametrize('protocol', [1])
+    def test_session_back_compat(self, protocol):
+
+        filename = os.path.join(DATA, 'profile_v{0}.glu'.format(protocol))
+
+        with open(filename, 'r') as f:
+            session = f.read()
+
+        state = GlueUnSerializer.loads(session)
+
+        ga = state.object('__main__')
+
+        dc = ga.session.data_collection
+
+        assert len(dc) == 1
+
+        assert dc[0].label == 'array'
+
+        viewer1 = ga.viewers[0][0]
+        assert len(viewer1.state.layers) == 3
+        assert viewer1.state.x_att_pixel is dc[0].pixel_component_ids[0]
+        assert_allclose(viewer1.state.x_min, -0.5)
+        assert_allclose(viewer1.state.x_max, 2.5)
+        assert_allclose(viewer1.state.y_min, 13)
+        assert_allclose(viewer1.state.y_max, 63)
+        assert viewer1.state.function == 'maximum'
+        assert not viewer1.state.normalize
+        assert viewer1.state.layers[0].visible
+        assert viewer1.state.layers[1].visible
+        assert viewer1.state.layers[2].visible
+
+        viewer2 = ga.viewers[0][1]
+        assert viewer2.state.x_att_pixel is dc[0].pixel_component_ids[1]
+        assert_allclose(viewer2.state.x_min, -0.5)
+        assert_allclose(viewer2.state.x_max, 3.5)
+        assert_allclose(viewer2.state.y_min, -0.1)
+        assert_allclose(viewer2.state.y_max, 1.1)
+        assert viewer2.state.function == 'maximum'
+        assert viewer2.state.normalize
+        assert viewer2.state.layers[0].visible
+        assert not viewer2.state.layers[1].visible
+        assert viewer2.state.layers[2].visible
+
+        viewer3 = ga.viewers[0][2]
+        assert viewer3.state.x_att_pixel is dc[0].pixel_component_ids[2]
+        assert_allclose(viewer3.state.x_min, -0.5)
+        assert_allclose(viewer3.state.x_max, 4.5)
+        assert_allclose(viewer3.state.y_min, -0.4)
+        assert_allclose(viewer3.state.y_max, 4.4)
+        assert viewer3.state.function == 'minimum'
+        assert not viewer3.state.normalize
+        assert viewer3.state.layers[0].visible
+        assert viewer3.state.layers[1].visible
+        assert not viewer3.state.layers[2].visible
+
+        viewer4 = ga.viewers[0][3]
+        assert viewer4.state.x_att_pixel is dc[0].pixel_component_ids[2]
+        assert_allclose(viewer4.state.x_min, -5.5)
+        assert_allclose(viewer4.state.x_max, 9.5)
+        assert_allclose(viewer4.state.y_min, 27.1)
+        assert_allclose(viewer4.state.y_max, 31.9)
+        assert viewer4.state.function == 'mean'
+        assert not viewer4.state.normalize
+        assert viewer4.state.layers[0].visible
+        assert not viewer4.state.layers[1].visible
+        assert not viewer4.state.layers[2].visible
+
+        ga.close()
