@@ -52,6 +52,9 @@ v0.15.0 (unreleased)
   and ``glue.viewers.common.qt.toolbar_mode`` to ``glue.viewers.matplotlib.toolbar_mode``
   and ``glue.viewers.matplotlib.qt.toolbar_mode``. [#1984]
 
+* Avoiding importing Qt when using the base histogram and profile layer artists.
+  [#2012]
+
 v0.14.3 (unreleased)
 --------------------
 
