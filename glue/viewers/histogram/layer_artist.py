@@ -15,14 +15,6 @@ from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 
-try:
-    import qtpy  # noqa
-except Exception:
-    QT_INSTALLED = False
-else:
-    QT_INSTALLED = True
-    from glue.viewers.matplotlib.qt.compute_worker import ComputeWorker
-
 
 class HistogramLayerArtist(MatplotlibLayerArtist):
 
@@ -39,52 +31,15 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_histogram)
         self.state.add_global_callback(self._update_histogram)
 
-        if QT_INSTALLED:
-            self.setup_thread()
-
-    def wait(self):
-        if QT_INSTALLED:
-            # Wait 0.5 seconds to make sure that the computation has properly started
-            time.sleep(0.5)
-            while self._worker.running:
-                time.sleep(1 / 25)
-            from glue.utils.qt import process_events
-            process_events()
-
-    def remove(self):
-        super(HistogramLayerArtist, self).remove()
-        if QT_INSTALLED and self._worker is not None:
-            self._worker.work_queue.put('stop')
-            self._worker.exit()
-            # Need to wait otherwise the thread will be destroyed while still
-            # running, causing a segmentation fault
-            self._worker.wait()
-            self._worker = None
-
-    @property
-    def is_computing(self):
-        if QT_INSTALLED:
-            return self._worker.running
-
-    def setup_thread(self):
-        self._worker = ComputeWorker(self._calculate_histogram_thread)
-        self._worker.compute_end.connect(self._calculate_histogram_postthread)
-        self._worker.compute_error.connect(self._calculate_histogram_error)
-        self._worker.compute_start.connect(self.notify_start_computation)
-        self._worker.start()
-
     @defer_draw
     def _calculate_histogram(self, reset=False):
-        if self.state.layer is not None and self.state.layer.size > 1e7 and QT_INSTALLED:
-            self._worker.work_queue.put(reset)
+        try:
+            self.notify_start_computation()
+            self._calculate_histogram_thread(reset=reset)
+        except Exception:
+            self._calculate_histogram_error(sys.exc_info())
         else:
-            try:
-                self.notify_start_computation()
-                self._calculate_histogram_thread(reset=reset)
-            except Exception:
-                self._calculate_histogram_error(sys.exc_info())
-            else:
-                self._calculate_histogram_postthread()
+            self._calculate_histogram_postthread()
 
     def _calculate_histogram_thread(self, reset=False):
         # We need to ignore any warnings that happen inside the thread
@@ -98,12 +53,6 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.state.update_histogram()
 
     def _calculate_histogram_postthread(self):
-
-        # If the worker has started running again, we should stop at this point
-        # since this function will get called again.
-        if QT_INSTALLED and self._worker.running:
-            return
-
         self.notify_end_computation()
         self._update_artists()
         self._update_visual_attributes()

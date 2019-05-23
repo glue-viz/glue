@@ -4,7 +4,7 @@ from glue.utils import defer_draw, decorate_all_methods
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.histogram.qt.layer_style_editor import HistogramLayerStyleEditor
 from glue.viewers.histogram.qt.options_widget import HistogramOptionsWidget
-from glue.viewers.histogram.layer_artist import HistogramLayerArtist
+from glue.viewers.histogram.qt.layer_artist import QThreadedHistogramLayerArtist
 from glue.viewers.histogram.state import HistogramViewerState
 
 from glue.viewers.histogram.viewer import MatplotlibHistogramMixin
@@ -21,8 +21,8 @@ class HistogramViewer(MatplotlibHistogramMixin, MatplotlibDataViewer):
     _options_cls = HistogramOptionsWidget
 
     _state_cls = HistogramViewerState
-    _data_artist_cls = HistogramLayerArtist
-    _subset_artist_cls = HistogramLayerArtist
+    _data_artist_cls = QThreadedHistogramLayerArtist
+    _subset_artist_cls = QThreadedHistogramLayerArtist
 
     large_data_size = 2e7
 
