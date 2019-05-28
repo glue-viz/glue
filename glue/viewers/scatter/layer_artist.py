@@ -11,7 +11,7 @@ from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.utils import defer_draw, broadcast_to, nanmax, categorical_ndarray
+from glue.utils import defer_draw, broadcast_to, nanmax, categorical_ndarray, ensure_numerical
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -57,13 +57,6 @@ class DensityMapLimits(object):
 
     def max(self, array):
         return 10. ** (np.log10(nanmax(array)) * self.contrast)
-
-
-def ensure_numerical(values):
-    if isinstance(values, categorical_ndarray):
-        return values.codes
-    else:
-        return values
 
 
 def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=None):

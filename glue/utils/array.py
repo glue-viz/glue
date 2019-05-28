@@ -16,7 +16,7 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
            'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
-           'categorical_ndarray', 'index_lookup']
+           'categorical_ndarray', 'index_lookup', 'ensure_numerical']
 
 
 def unbroadcast(array):
@@ -558,6 +558,13 @@ class categorical_ndarray(np.ndarray):
             self._jitter -= 0.5
         else:
             raise ValueError("method should be None or 'uniform'")
+
+
+def ensure_numerical(values):
+    if isinstance(values, categorical_ndarray):
+        return values.codes
+    else:
+        return values
 
 
 def index_lookup(data, items):
