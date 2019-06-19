@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
       - ruby
+      - enchant
 
 notifications:
   email: false
