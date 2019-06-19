@@ -19,6 +19,7 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
+    - PYTEST_VERSION=4.6
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck mpl-scatter-density"
     - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly<3.8 objgraph pytest-qt pytest-faulthandler flake8 git+https://github.com/rtfd/sphinx_rtd_theme"
     - PIP_FALLBACK=false
