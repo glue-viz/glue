@@ -58,7 +58,7 @@ class Roi(object):  # pragma: no cover
     A geometrical 2D region of interest.
 
     Glue uses Roi's to represent user-drawn regions on plots. There
-    are many specific subtypes of Roi, but they all have a ``contains``
+    are many specific sub-classes of Roi, but they all have a ``contains``
     method to test whether a collection of 2D points lies inside the region.
     """
 

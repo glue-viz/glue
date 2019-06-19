@@ -362,7 +362,7 @@ class PolynomialFitter(BaseFitter1D):
 
     def fit(self, x, y, dy, constraints, degree=2):
         """
-        Fit a ``degree``-th order polynomial to the data.
+        Fit a polynomial of order ``degree`` to the data.
         """
         w = self._sigma_to_weights(dy)
 

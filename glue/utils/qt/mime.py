@@ -10,7 +10,7 @@ class PyMimeData(QtCore.QMimeData):
     A custom MimeData object that stores live python objects
 
     Associate specific objects with a mime type by passing
-    mime type / object kev/value pairs to the __init__ method
+    mime type / object key/value pairs to the __init__ method
 
     If a single object is passed to the init method, that
     object is associated with the PyMimeData.MIME_TYPE mime type

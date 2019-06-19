@@ -22,7 +22,7 @@ class Hub(object):
     following protocol:
 
         * For each subscriber, it looks for a message class
-          subscription that is a superclass of the input message type
+          subscription that is a parent class of the input message type
           (if several are found, the most-subclassed one is chosen)
 
         * If one is found, it calls the subscriptions filter(message)

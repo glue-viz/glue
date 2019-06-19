@@ -1,6 +1,10 @@
 #!/bin/bash -x
 
 cd doc
+
+make spelling
+make clean
+
 make html linkcheck 2> warnings.log
 
 cat warnings.log

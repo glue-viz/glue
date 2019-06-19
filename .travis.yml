@@ -146,7 +146,7 @@ before_install:
   - if [[ $QT_PKG == pyqt5 ]]; then export CONDA_DEPENDENCIES="pyqt=5 "$CONDA_DEPENDENCIES; fi
 
   # Documentation dependencies
-  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi numpydoc requests "$PIP_DEPENDENCIES; fi
+  - if [ $DOC_TRIGGER ]; then export PIP_DEPENDENCIES="sphinx-automodapi sphinxcontrib-spelling numpydoc requests "$PIP_DEPENDENCIES; fi
 
   # Install ci-helpers and set up conda
   - git clone git://github.com/astropy/ci-helpers.git

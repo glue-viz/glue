@@ -348,7 +348,7 @@ class AutoLinkerRegistry(Registry):
 
 class ExporterRegistry(Registry):
 
-    """Stores functions which can export an applocation to an output file
+    """Stores functions which can export an application to an output file
 
     The members property is a list of exporters, each represented
     as a (label, save_function, can_save_function, outmode) tuple.

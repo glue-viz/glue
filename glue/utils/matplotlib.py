@@ -425,7 +425,7 @@ T0 = np.datetime64('0001-01-01T00:00:00').astype('datetime64[s]')
 def datetime64_to_mpl(d):
     """
     Convert `numpy.datetime64` or an ndarray of those types to Gregorian
-    date as UTC float.  Roundoff is via float64 precision.  Practically:
+    date as UTC float.  The precision is limited to float64 precision. Practically:
     microseconds for dates between 290301 BC, 294241 AD, milliseconds for
     larger dates (see `numpy.datetime64`).  Nanoseconds aren't possible
     because we do times compared to ``0001-01-01T00:00:00`` (plus one day).

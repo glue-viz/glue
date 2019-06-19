@@ -336,8 +336,8 @@ class Application(HubListener):
 
     @property
     def viewers(self):
-        """Return a tuple of tuples of viewers currently open
-        The i'th tuple stores the viewers in the i'th close_tab
+        """
+        Return a tuple of tuples of viewers currently open.
         """
         return []
 

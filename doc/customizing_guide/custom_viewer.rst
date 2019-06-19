@@ -14,7 +14,7 @@ need.
 
 There are several ways to do this - the tutorial on this page shows the easiest
 way for users to develop a new custom visualization, provided that it can be
-made using Matplotlib and tht you don't want do have to do any GUI programming.
+made using Matplotlib and that you don't want do have to do any GUI programming.
 If you are interested in building more advanced custom viewers, see
 :ref:`state-qt-viewer`.
 
