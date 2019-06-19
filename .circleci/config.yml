@@ -11,11 +11,6 @@ default_steps: &steps
         name: Install virtualenv
         command: pip install virtualenv
     - run:
-        name: Install missing dependencies
-        command: |
-          apt update
-          apt install -y python-tk python3-tk graphviz libxkbcommon-x11-0
-    - run:
         name: Flake8 checks
         command: |
           virtualenv flake8 --system-site-packages
@@ -41,52 +36,52 @@ jobs:
 
   py27_pyqt510:
     docker:
-      - image: glueviz/py27-pyqt510:1.1
+      - image: glueviz/py27-pyqt510:1.2
     <<: *steps
 
   py35_pyqt56:
     docker:
-      - image: glueviz/py35-pyqt56:1.1
+      - image: glueviz/py35-pyqt56:1.2
     <<: *steps
 
   py35_pyqt57:
     docker:
-      - image: glueviz/py35-pyqt57:1.1
+      - image: glueviz/py35-pyqt57:1.2
     <<: *steps
 
   py35_pyqt58:
     docker:
-      - image: glueviz/py35-pyqt58:1.1
+      - image: glueviz/py35-pyqt58:1.2
     <<: *steps
 
   py35_pyqt59:
     docker:
-      - image: glueviz/py35-pyqt59:1.1
+      - image: glueviz/py35-pyqt59:1.2
     <<: *steps
 
   py35_pyqt510:
     docker:
-      - image: glueviz/py35-pyqt510:1.1
+      - image: glueviz/py35-pyqt510:1.2
     <<: *steps
 
   py36_pyqt511:
     docker:
-      - image: glueviz/py36-pyqt511:1.1
+      - image: glueviz/py36-pyqt511:1.2
     <<: *steps
 
   py36_pyqt512:
     docker:
-      - image: glueviz/py36-pyqt512:1.1
+      - image: glueviz/py36-pyqt512:1.2
     <<: *steps
 
   py36_pyside511:
     docker:
-      - image: glueviz/py36-pyside511:1.1
+      - image: glueviz/py36-pyside511:1.2
     <<: *steps
 
   py36_pyside512:
     docker:
-      - image: glueviz/py36-pyside512:1.1
+      - image: glueviz/py36-pyside512:1.2
     <<: *steps
 
 
