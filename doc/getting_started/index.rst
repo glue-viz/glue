@@ -92,7 +92,7 @@ We can redefine this subset by dragging a new rectangle in the image, or we can
 also move around the current subset by pressing the 'control' key and clicking
 on the subset then dragging it. As long as **Subset 1** is selected in the data
 collection view in the top left, drawing selections will redefine **Subset 1**.
-If you un-select this subset and draw a new region, a new subset will be
+If you deselect this subset and draw a new region, a new subset will be
 created.
 
 You can edit the properties of a visualization layer (color, transparency, etc.)

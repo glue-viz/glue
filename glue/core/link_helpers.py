@@ -78,7 +78,7 @@ class LinkCollection(object):
         The second dataset being linked
     cids1 : list of `~glue.core.component_id.ComponentID`
         The set of `~glue.core.component_id.ComponentID` in ``data1`` which
-        can be used to parametrize the links. Note that the links can also
+        can be used to parameterize the links. Note that the links can also
         use other IDs, but the ones defined here are the ones that can be
         modified through e.g. the graphical link editor.
     cids2 : list of `~glue.core.component_id.ComponentID`
@@ -271,9 +271,9 @@ class MultiLink(BaseMultiLink):
     forwards : function
         Function that maps ``cids1`` to  ``cids2``. This should have
         the signature ``cids2 = forwards(*cids1)``, and is assumed
-        to return a tuple. If not specifed, no forward links are calculated.
+        to return a tuple. If not specified, no forward links are calculated.
     backwards : function
-        The inverse function to ``forwards``. If not specifed, no forward links
+        The inverse function to ``forwards``. If not specified, no forward links
         are calculated.
     labels1 : list of str
         The human-readable names of the inputs to the ``forwards`` function.

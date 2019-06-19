@@ -77,7 +77,7 @@ Customizing Plots with Matplotlib
 =================================
 
 If you want, you can directly manipulate the Matplotlib plot objects that
-underly Glue viewers. This can be useful if you want to create static plots with
+underlie Glue viewers. This can be useful if you want to create static plots with
 custom annotation, styles, etc.
 
 From the GUI

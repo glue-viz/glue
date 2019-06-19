@@ -1087,10 +1087,10 @@ class InvertState(CompositeSubsetState):
 
 class MultiOrState(SubsetState):
     """
-    A state for many states to be or'd together.
+    A state for many states to be combined together with an 'or' operation.
 
     This is meant to be used for cases where many subset states are meant to be
-    combined together and provides signficant performance enhancements compared
+    combined together and provides significant performance enhancements compared
     to chaining individual OrStates
     """
 

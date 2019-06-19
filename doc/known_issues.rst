@@ -44,8 +44,8 @@ PySide, or to use the PySide package from the ``conda-forge`` channel::
 
     conda install -c conda-forge pyside
 
-Undefined symbol: _ZNK7QSslKey9algorithmEv
-------------------------------------------
+Undefined symbol: ``_ZNK7QSslKey9algorithmEv``
+----------------------------------------------
 
 On certain Linux installations, when using Anaconda/conda to manage the Python
 installation you are using for glue, you may run into the following error when

@@ -35,7 +35,7 @@ class Worker(QtCore.QThread):
         Invoke the function. Upon successful completion, the result signal
         will be fired with the output of the function If an exception
         occurs, the error signal will be fired with the result form
-        sys.exc_info()
+        ``sys.exc_info()``.
         """
         try:
             self.running = True
