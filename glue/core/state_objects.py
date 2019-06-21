@@ -1,6 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from textwrap import indent
+import os
+
+try:
+    from textwrap import indent
+except ImportError:  # PY2
+    def indent(text, prefix):
+        return os.linesep.join([prefix + line for line in text.splitlines()])
+
 from collections import defaultdict
 
 import numpy as np
@@ -84,7 +91,9 @@ class State(HasCallbackProperties):
 
     def __str__(self):
         s = ""
-        for key, value in self.as_dict().items():
+        state_dict = self.as_dict()
+        for key in sorted(state_dict):
+            value = state_dict[key]
             if np.isscalar(value):
                 s += "{0}: {1}\n".format(key, value)
             else:
