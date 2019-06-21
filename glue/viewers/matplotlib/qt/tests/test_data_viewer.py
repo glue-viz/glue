@@ -560,7 +560,7 @@ class BaseTestMatplotlibDataViewer(object):
         # Resize events only work if widget is visible
         self.viewer.show()
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
 
         def limits(viewer):
             return (viewer.state.x_min, viewer.state.x_max,
@@ -569,13 +569,13 @@ class BaseTestMatplotlibDataViewer(object):
         # Set viewer to an initial size and save limits
         self.viewer.viewer_size = (800, 400)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         initial_limits = limits(self.viewer)
 
         # Change the viewer size, and make sure the limits are adjusted
         self.viewer.viewer_size = (400, 400)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         with pytest.raises(AssertionError):
             assert_allclose(limits(self.viewer), initial_limits)
 
@@ -583,23 +583,23 @@ class BaseTestMatplotlibDataViewer(object):
         # return to the original size, the limits match the initial ones.
         self.viewer.viewer_size = (350, 800)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         self.viewer.viewer_size = (900, 300)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         self.viewer.viewer_size = (600, 600)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         self.viewer.viewer_size = (800, 400)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         assert_allclose(limits(self.viewer), initial_limits)
 
         # Now check that the limits don't change in 'auto' mode
         self.viewer.state.aspect = 'auto'
         self.viewer.viewer_size = (900, 300)
         self.viewer.figure.canvas.draw()
-        process_events()
+        process_events(wait=0.1)
         assert_allclose(limits(self.viewer), initial_limits)
 
     def test_update_data_values(self):

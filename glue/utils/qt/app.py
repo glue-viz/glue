@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import time
 import platform
 from qtpy import QtCore, QtGui, QtWidgets
 
@@ -24,9 +25,14 @@ def __get_font_size_offset():
     return size_offset
 
 
-def process_events():
+def process_events(wait=None):
     app = get_qapp()
-    app.processEvents()
+    if wait is None:
+        app.processEvents()
+    else:
+        start = time.time()
+        while time.time() - start < wait:
+            app.processEvents()
 
 
 def get_qapp(icon_path=None):
