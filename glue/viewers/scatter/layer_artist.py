@@ -166,6 +166,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.errorbar_index = 2
         self.vector_index = 3
 
+        # NOTE: Matplotlib can't deal with NaN values in errorbar correctly, so
+        # we need to prefilter values - the following variable is used to store
+        # the mask for the values we keep, so that we can apply it to the color
+        # See also https://github.com/matplotlib/matplotlib/issues/13799
+        self._errorbar_keep = None
+
     @defer_draw
     def _update_data(self):
 
@@ -276,17 +282,28 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         if self.state.xerr_visible or self.state.yerr_visible:
 
+            keep = ~np.isnan(x) & ~np.isnan(y)
+
             if self.state.xerr_visible and self.state.xerr_att is not None:
-                xerr = ensure_numerical(self.layer[self.state.xerr_att].ravel())
+                xerr = ensure_numerical(self.layer[self.state.xerr_att].ravel()).copy()
+                keep &= ~np.isnan(xerr)
             else:
                 xerr = None
 
             if self.state.yerr_visible and self.state.yerr_att is not None:
-                yerr = ensure_numerical(self.layer[self.state.yerr_att].ravel())
+                yerr = ensure_numerical(self.layer[self.state.yerr_att].ravel()).copy()
+                keep &= ~np.isnan(yerr)
             else:
                 yerr = None
 
-            self.errorbar_artist = self.axes.errorbar(x, y, fmt='none',
+            if xerr is not None:
+                xerr = xerr[keep]
+            if yerr is not None:
+                yerr = yerr[keep]
+
+            self._errorbar_keep = keep
+
+            self.errorbar_artist = self.axes.errorbar(x[keep], y[keep], fmt='none',
                                                       xerr=xerr, yerr=yerr)
             self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
@@ -419,7 +436,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     if force or 'color' in changed or 'cmap_mode' in changed:
                         eartist.set_color(self.state.color)
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
-                    c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
+                    c = ensure_numerical(self.layer[self.state.cmap_att].ravel()).copy()
+                    c = c[self._errorbar_keep]
                     set_mpl_artist_cmap(eartist, c, self.state)
 
                 if force or 'alpha' in changed:

@@ -124,7 +124,7 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].vector_scaling = 1.5
         self.viewer.state.layers[0].color = 'teal'
         self.viewer.state.layers[0].alpha = 0.9
-        self.assert_same(tmpdir)
+        self.assert_same(tmpdir, tol=1)
 
     def test_vector_cartesian(self, tmpdir):
         self.viewer.state.layers[0].vector_mode = 'Cartesian'
