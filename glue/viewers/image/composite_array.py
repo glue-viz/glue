@@ -107,6 +107,7 @@ class CompositeArray(object):
                 scalar = False
 
             data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array)))
+            data[np.isnan(data)] = 0
 
             if isinstance(layer['color'], Colormap):
 
