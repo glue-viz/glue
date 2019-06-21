@@ -40,6 +40,9 @@ v0.15.0 (unreleased)
 * Removed plot.ly export plugin - this is now part of the glue-plotly
   package. [#1999]
 
+* Fix path to data bundle when exporting Python scripts to another directory
+  than the one glue was run from. [#2023]
+
 * Added a ``--faulthandler`` command-line flag to help debug segmentation
   faults. [#1974]
 
