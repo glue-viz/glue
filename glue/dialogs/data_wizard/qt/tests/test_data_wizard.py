@@ -23,6 +23,7 @@ class TestGlueDataDialog(object):
     def test_factory(self):
         """Factory method should always match with filter"""
         fd = GlueDataDialog()
+        fd._fd.show()
         assert len(fd.filters) > 0
         for k, v in fd.filters:
             fd._fd.selectNameFilter(v)
