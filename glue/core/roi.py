@@ -693,7 +693,7 @@ class AbstractMplRoi(object):
 
     def __init__(self, axes, roi=None):
         self._axes = axes
-        self._roi = self._roi_cls()
+        self._roi = roi or self._roi_cls()
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
