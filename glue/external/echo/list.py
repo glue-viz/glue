@@ -15,6 +15,9 @@ class CallbackList(list):
         super(CallbackList, self).__init__(*args, **kwargs)
         self.callback = callback
 
+    def __repr__(self):
+        return "<CallbackList with {0} elements>".format(len(self))
+
     def append(self, value):
         super(CallbackList, self).append(value)
         if isinstance(value, HasCallbackProperties):

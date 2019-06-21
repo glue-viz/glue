@@ -1,5 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
+try:
+    from textwrap import indent
+except ImportError:  # PY2
+    def indent(text, prefix):
+        return ''.join([prefix + line for line in text.splitlines(True)])
+
 from collections import defaultdict
 
 import numpy as np
@@ -80,6 +86,20 @@ class State(HasCallbackProperties):
             if not name.startswith('_') and self.is_callback_property(name):
                 properties[name] = getattr(self, name)
         return properties
+
+    def __str__(self):
+        s = ""
+        state_dict = self.as_dict()
+        for key in sorted(state_dict):
+            value = state_dict[key]
+            if np.isscalar(value):
+                s += "{0}: {1}\n".format(key, value)
+            else:
+                s += "{0}: {1}\n".format(key, repr(value))
+        return s.strip()
+
+    def __repr__(self):
+        return "<{0}\n{1}\n>".format(self.__class__.__name__, indent(str(self), '  '))
 
     def __gluestate__(self, context):
         return {'values': dict((key, context.id(value)) for key, value in self.as_dict().items())}
