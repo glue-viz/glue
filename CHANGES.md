@@ -56,13 +56,13 @@ v0.15.0 (unreleased)
   [#2012]
 
 * Fixed a bug that caused error bars to be colored incorrectly if NaN values
-  were present. [#8898]
+  were present. [#2020]
 
-* Fixed compatibility with the latest versions of Matplotlib and Astropy. [#8898]
+* Fixed compatibility with the latest versions of Matplotlib and Astropy. [#2020]
 
 * No longer suggest merging data by default whenever datasets are added to
   the session. Merging different datasets should now be done manually through
-  the GUI. [#8898]
+  the GUI. [#2020]
 
 v0.14.3 (unreleased)
 --------------------
