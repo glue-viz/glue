@@ -84,6 +84,20 @@ jobs:
       - image: glueviz/py36-pyside512:1.2
     <<: *steps
 
+  tox:
+    docker:
+      - image: glueviz/py36-pyqt512:1.2
+    steps:
+      - checkout
+      - run:
+          name: Start xvfb
+          command: start-xvfb
+      - run:
+          name: Install tox
+          command: pip install tox
+      - run:
+          name: Run tests
+          command: tox -e py36-test
 
 workflows:
   version: 2
@@ -98,3 +112,4 @@ workflows:
       - py36_pyqt512
       - py36_pyside511
       - py36_pyside512
+      - tox
