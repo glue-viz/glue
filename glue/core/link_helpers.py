@@ -217,6 +217,10 @@ class BaseMultiLink(LinkCollection):
     :meth:`~glue.core.link_helpers.BaseMultiLink.backwards` methods.
     """
 
+    # Some sub-classes take only data and don't need CIDs, so we have a flag
+    # for this in case other parts of glue need to know.
+    cid_independent = False
+
     # TODO: could add a metaclass to set labels1 and labels2 automatically
 
     def __init__(self, cids1=None, cids2=None, data1=None, data2=None):

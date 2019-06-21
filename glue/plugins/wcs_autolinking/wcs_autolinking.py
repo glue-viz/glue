@@ -37,9 +37,7 @@ class WCSLink(MultiLink):
     """
 
     display = 'WCS link'
-    description = ('This will automatically link the coordinates of the '
-                   'two datasets using the World Coordinate System (WCS) '
-                   'coordinates defined in the files.')
+    cid_independent = True
 
     def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
@@ -68,6 +66,9 @@ class WCSLink(MultiLink):
                                                                                    data1.pixel_component_ids,
                                                                                    data2.pixel_component_ids)
 
+            self._physical_types_1 = wcs1.world_axis_physical_types
+            self._physical_types_2 = wcs2.world_axis_physical_types
+
         else:
 
             # Try setting only a celestial link. We try and extract the celestial
@@ -94,6 +95,9 @@ class WCSLink(MultiLink):
             pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1_celestial, wcs2_celestial,
                                                                                    cids1_celestial, cids2_celestial)
 
+            self._physical_types_1 = wcs1_celestial.world_axis_physical_types
+            self._physical_types_2 = wcs2_celestial.world_axis_physical_types
+
         if pixel_cids1 is None:
             raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
 
@@ -114,6 +118,17 @@ class WCSLink(MultiLink):
         self = cls(context.object(rec['data1']),
                    context.object(rec['data2']))
         return self
+
+    @property
+    def description(self):
+        types1 = ''.join(['<li>' + phys_type for phys_type in self._physical_types_1])
+        types2 = ''.join(['<li>' + phys_type for phys_type in self._physical_types_2])
+        return ('This automatically links the coordinates of the '
+                'two datasets using the World Coordinate System (WCS) '
+                'coordinates defined in the files.<br><br>The physical types '
+                'of the coordinates linked in the first dataset are: '
+                '<ul>{0}</ul>and in the second dataset:<ul>{1}</ul>'
+                .format(types1, types2))
 
 
 @autolinker('Astronomy WCS')
