@@ -9,7 +9,7 @@ def python_export_scatter_layer(layer, *args):
         return [], None
 
     script = ""
-    imports = []
+    imports = ["import numpy as np"]
 
     script += "# Get main data values\n"
     script += "x = layer_data['{0}']\n".format(layer._viewer_state.x_att.label)
@@ -18,9 +18,10 @@ def python_export_scatter_layer(layer, *args):
     if layer.state.cmap_mode == 'Linear':
 
         script += "# Set up colors\n"
-        script += "colors = layer_data['{0}']\n".format(layer.state.cmap_att.label)
+        script += "colors = layer_data['{0}'].copy()\n".format(layer.state.cmap_att.label)
         script += "cmap_vmin = {0}\n".format(layer.state.cmap_vmin)
         script += "cmap_vmax = {0}\n".format(layer.state.cmap_vmax)
+        script += "colors[np.isnan(colors)] = cmap_vmin\n"
         script += "colors = plt.cm.{0}((colors - cmap_vmin) / (cmap_vmax - cmap_vmin))\n\n".format(layer.state.cmap.name)
 
     if layer.state.size_mode == 'Linear':
