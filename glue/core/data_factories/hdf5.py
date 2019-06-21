@@ -73,7 +73,7 @@ def is_hdf5(filename):
 
 
 @data_factory(label="HDF5 file", identifier=is_hdf5, priority=100)
-def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
+def hdf5_reader(filename, auto_merge=True, memmap=True, **kwargs):
     """
     Read in all datasets from an HDF5 file
 
@@ -81,6 +81,9 @@ def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
     ----------
     filename : str
         The filename of the HDF5 file
+    auto_merge : bool
+        If all datasets have the same shape, and are at the base of the file,
+        assume they are a column-based table and merge them into a single dataset.
     memmap : bool, optional
         Whether to use memory mapping
     """
@@ -95,9 +98,18 @@ def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
     if not label_base:
         label_base = os.path.basename(filename)
 
-    data_by_shape = {}
+    if len(datasets) == 0:
+        return
+
+    if not auto_merge or len(datasets) == 1 or any([isinstance(data, Table) for data in datasets.values()]):
+        merge_data = False
+    else:
+        reference_shape = list(datasets.values())[0].shape
+        merge_data = all([data.shape == reference_shape and key.count('/') == 1 for key, data in datasets.items()])
 
     groups = OrderedDict()
+
+    data = None
 
     for key in datasets:
         label = '{0}[{1}]'.format(label_base, key)
@@ -114,12 +126,12 @@ def hdf5_reader(filename, auto_merge=False, memmap=True, **kwargs):
                 else:
                     warnings.warn("HDF5: Ignoring vector column {0}".format(column_name))
         else:
-            if auto_merge and array.shape in data_by_shape:
-                data = data_by_shape[datasets[key].shape]
-            else:
+            if data is None and merge_data:
+                data = Data(label=label_base)
+                groups[label_base] = data
+            elif not merge_data:
                 data = Data(label=label)
-                data_by_shape[array.shape] = data
                 groups[label] = data
             data.add_component(component=datasets[key], label=key[1:])
 
-    return [groups[idx] for idx in groups]
+    return [groups[idx] for idx in sorted(groups)]

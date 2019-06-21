@@ -631,6 +631,8 @@ class TestLinkEditor:
         assert link_widget.state.data1 == self.data1
         assert link_widget.state.data2 == self.data2
 
+        dialog.accept()
+
     def test_preexisting_links_twodata(self):
 
         # Regression test for an issue that occurred specifically if there were
@@ -647,3 +649,5 @@ class TestLinkEditor:
 
         dialog = LinkEditor(data_collection)
         dialog.show()
+
+        dialog.accept()

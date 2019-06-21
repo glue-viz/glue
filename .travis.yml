@@ -100,20 +100,6 @@ matrix:
                IPYTHON_VERSION=4
                NUMPY_VERSION=1.12
 
-        # Test with PySide2
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-               QT_PKG=pyside2
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-               QT_PKG=pyside2
-
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
@@ -123,21 +109,7 @@ matrix:
                PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
-    allow_failures:
 
-      # For now PySide2 can give segfaults when the process terminates - see
-      # https://bugreports.qt.io/browse/PYSIDE-585
-      # We therefore need to mark these as allowed failures for now
-
-      - os: osx
-        env: PYTHON_VERSION=3.6
-             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-             QT_PKG=pyside2
-
-      - os: linux
-        env: PYTHON_VERSION=3.6
-             CONDA_CHANNELS="astropy-ci-extras astropy glueviz conda-forge"
-             QT_PKG=pyside2
 
 before_install:
 

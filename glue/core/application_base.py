@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import warnings
 import traceback
 from functools import wraps
 
@@ -183,7 +184,7 @@ class Application(HubListener):
             yield key, value
 
     @catch_error("Could not load data")
-    def load_data(self, paths, skip_merge=False, auto_merge=False):
+    def load_data(self, paths, auto_merge=False, **kwargs):
         """
         Given a path to a file, load the file as a Data object and add it to
         the current session.
@@ -203,7 +204,7 @@ class Application(HubListener):
                 datasets.extend(result)
 
         self.add_datasets(self.data_collection, datasets,
-                          skip_merge=skip_merge, auto_merge=auto_merge)
+                          auto_merge=auto_merge, **kwargs)
 
         if len(datasets) == 1:
             return datasets[0]
@@ -275,55 +276,53 @@ class Application(HubListener):
     def _update_undo_redo_enabled(self):
         raise NotImplementedError()
 
-    @classmethod
-    def add_datasets(cls, data_collection, datasets, skip_merge=False, auto_merge=False):
-        """ Utility method to interactively add datasets to a
-        data_collection
+    def add_datasets(self, *args, **kwargs):
+        """
+        Utility method to interactively add datasets to the data_collection.
 
         Parameters
         ----------
-        data_collection : :class:`~glue.core.data_collection.DataCollection`
         datasets : :class:`~glue.core.data.Data` or list of Data
-            One or more :class:`~glue.core.data.Data` instances
+            One or more :class:`~glue.core.data.Data` instances.
 
-        Adds datasets to the collection
+        Adds datasets to the collection in the application.
         """
+
+        if isinstance(args[0], DataCollection):
+            warnings.warn("Calling add_datasets with an explicit data "
+                          "collection is now deprecated. You should now call "
+                          "app.add_datasets(datasets).", UserWarning)
+            data_collection, datasets = args
+        else:
+            data_collection = self.data_collection
+            datasets = args[0]
+
+        if "skip_merge" in kwargs:
+            warnings.warn("The skip_merge= argument now no longer has any "
+                          "effect and is deprecated, since no merging is done "
+                          "by default", UserWarning)
+
+        auto_merge = kwargs.pop('auto_merge', False)
 
         datasets = as_flat_data_list(datasets)
         data_collection.extend(datasets)
 
-        # We now check whether any of the datasets can be merged. We need to
-        # make sure that datasets are only ever shown once, as we don't want
-        # to repeat the menu multiple times.
+        # We now automatically merge the datasets if requested. However, we only
+        # do this if all the datasets have the same shape to avoid confusion.
+        if auto_merge and len(datasets) > 1:
 
-        suggested = []
+            reference_shape = datasets[0].shape
 
-        for data in datasets:
-
-            # If the data was already suggested, we skip over it
-            if data in suggested:
-                continue
-
-            shp = data.shape
-            other = [d for d in data_collection
-                     if d.shape == shp and d is not data]
-
-            # If no other datasets have the same shape, we go to the next one
-            if not other or skip_merge:
-                continue
-
-            suggested_label = data_collection.suggest_merge_label(data, *other)
-
-            if auto_merge:
-                merges, label = [data] + other, suggested_label
+            if all([data.shape == reference_shape for data in datasets[1:]]):
+                suggested_label = data_collection.suggest_merge_label(*datasets)
+                return data_collection.merge(*datasets, label=suggested_label)
             else:
-                merges, label = cls._choose_merge(data, other, suggested_label)
+                raise ValueError("Can only auto-merge datasets if they all have "
+                                 " the same shape")
 
-            if merges:
-                data_collection.merge(*merges, label=label)
+        else:
 
-            suggested.append(data)
-            suggested.extend(other)
+            return datasets
 
     @staticmethod
     def _choose_merge(data, other, suggested_label):

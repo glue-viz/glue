@@ -60,5 +60,58 @@ def test_hdf5_loader_fromfile():
     assert datasets[1].label == 'data[/x]'
     assert_array_equal(datasets[1]['x'], [1, 2, 3])
 
-    # data = df.hdf5_reader(os.path.join(DATA, 'data.hdf5'), auto_merge=True)
-    # assert isinstance(data, Data)
+
+@requires_astropy
+@requires_h5py
+def test_hdf5_auto_merge(tmpdir):
+
+    filename1 = tmpdir.mkdir('test1').join('test.hdf5').strpath
+    filename2 = tmpdir.mkdir('test2').join('test.hdf5').strpath
+
+    import h5py
+
+    # When heterogeneous arrays are present, auto_merge is ignored
+
+    f = h5py.File(filename1, 'w')
+    f.create_dataset('a', data=np.array([[1, 2], [3, 4]]))
+    f.create_dataset('b', data=np.array([1, 2, 3]))
+    f.close()
+
+    for auto_merge in [False, True]:
+
+        datasets = df.hdf5_reader(filename1, auto_merge=auto_merge)
+
+        assert len(datasets) == 2
+
+        assert datasets[0].label == 'test[/a]'
+        assert_array_equal(datasets[0]['a'], [[1, 2], [3, 4]])
+
+        assert datasets[1].label == 'test[/b]'
+        assert_array_equal(datasets[1]['b'], [1, 2, 3])
+
+    # Check that the default is to merge if all arrays are homogeneous
+
+    f = h5py.File(filename2, 'w')
+    f.create_dataset('a', data=np.array([3, 4, 5]))
+    f.create_dataset('b', data=np.array([1, 2, 3]))
+    f.close()
+
+    datasets = df.hdf5_reader(filename2)
+
+    assert len(datasets) == 1
+
+    assert datasets[0].label == 'test'
+    assert_array_equal(datasets[0]['a'], [3, 4, 5])
+    assert_array_equal(datasets[0]['b'], [1, 2, 3])
+
+    # And check opt-out
+
+    datasets = df.hdf5_reader(filename2, auto_merge=False)
+
+    assert len(datasets) == 2
+
+    assert datasets[0].label == 'test[/a]'
+    assert_array_equal(datasets[0]['a'], [3, 4, 5])
+
+    assert datasets[1].label == 'test[/b]'
+    assert_array_equal(datasets[1]['b'], [1, 2, 3])

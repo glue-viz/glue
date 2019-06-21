@@ -42,4 +42,8 @@ def test_resample_on_zoom():
     image.axes.figure.canvas.motion_notify_event(400 * device_ratio, 210 * device_ratio)
     image.axes.figure.canvas.button_release_event(400 * device_ratio, 210 * device_ratio, 1)
 
-    return image.axes.figure
+    figure = image.axes.figure
+
+    image.close()
+
+    return figure

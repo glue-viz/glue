@@ -1390,10 +1390,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         image.save(filename)
         painter.end()
 
-    @classmethod
-    def add_datasets(cls, data_collection, *args, **kwargs):
-        result = super(GlueApplication, cls).add_datasets(data_collection, *args, **kwargs)
-        run_autolinker(data_collection)
+    def add_datasets(self, *args, **kwargs):
+        result = super(GlueApplication, self).add_datasets(*args, **kwargs)
+        run_autolinker(self.data_collection)
         return result
 
     def __gluestate__(self, context):

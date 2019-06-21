@@ -26,6 +26,20 @@ about glue in general, you can find information :ref:`here
 <help>` about contacting us and/or
 reporting issues.
 
+.. _whatsnew_015:
+
+What's new in glue v0.15?
+=========================
+
+No more merging suggestions
+---------------------------
+
+Glue will no longer prompt you to merge multiple datasets into a single one
+automatically - instead this is something that you should now do manually by
+selecting the datasets to merge, then right-clicking (or ctrl-clicking) and
+selecting **Merge datasets**. We decided to not suggest this by default anymore
+since links are the preferred way of using multiple datasets together.
+
 .. _whatsnew_014:
 
 What's new in glue v0.14?

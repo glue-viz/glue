@@ -335,7 +335,7 @@ class DataCollection(HubListener):
 
             self.remove(d)
 
-        return self
+        return master
 
     @property
     def subset_groups(self):

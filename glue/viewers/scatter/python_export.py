@@ -9,11 +9,12 @@ def python_export_scatter_layer(layer, *args):
         return [], None
 
     script = ""
-    imports = []
+    imports = ["import numpy as np"]
 
     script += "# Get main data values\n"
     script += "x = layer_data['{0}']\n".format(layer._viewer_state.x_att.label)
-    script += "y = layer_data['{0}']\n\n".format(layer._viewer_state.y_att.label)
+    script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
+    script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
 
     if layer.state.cmap_mode == 'Linear':
 
@@ -21,6 +22,7 @@ def python_export_scatter_layer(layer, *args):
         script += "colors = layer_data['{0}']\n".format(layer.state.cmap_att.label)
         script += "cmap_vmin = {0}\n".format(layer.state.cmap_vmin)
         script += "cmap_vmax = {0}\n".format(layer.state.cmap_vmax)
+        script += "keep &= ~np.isnan(colors)\n"
         script += "colors = plt.cm.{0}((colors - cmap_vmin) / (cmap_vmax - cmap_vmin))\n\n".format(layer.state.cmap.name)
 
     if layer.state.size_mode == 'Linear':
@@ -31,6 +33,7 @@ def python_export_scatter_layer(layer, *args):
         script += "sizes = layer_data['{0}']\n".format(layer.state.size_att.label)
         script += "size_vmin = {0}\n".format(layer.state.size_vmin)
         script += "size_vmax = {0}\n".format(layer.state.size_vmax)
+        script += "keep &= ~np.isnan(sizes)\n"
         script += "sizes = 30 * (np.clip((sizes - size_vmin) / (size_vmax - size_vmin), 0, 1) * 0.95 + 0.05) * {0}\n\n".format(layer.state.size_scaling)
 
     if layer.state.markers_visible:
@@ -71,7 +74,7 @@ def python_export_scatter_layer(layer, *args):
                     options['mec'] = 'none'
                 else:
                     options['mfc'] = 'none'
-                script += "ax.plot(x, y, 'o', {0})\n\n".format(serialize_options(options))
+                script += "ax.plot(x[keep], y[keep], 'o', {0})\n\n".format(serialize_options(options))
             else:
                 options = dict(alpha=layer.state.alpha,
                                zorder=layer.state.zorder)
@@ -79,19 +82,19 @@ def python_export_scatter_layer(layer, *args):
                 if layer.state.cmap_mode == 'Fixed':
                     options['facecolor'] = layer.state.color
                 else:
-                    options['c'] = code('colors')
+                    options['c'] = code('colors[keep]')
 
                 if layer.state.size_mode == 'Fixed':
                     options['s'] = code('{0} ** 2'.format(layer.state.size * layer.state.size_scaling))
                 else:
-                    options['s'] = code('sizes ** 2')
+                    options['s'] = code('sizes[keep] ** 2')
 
                 if layer.state.fill:
                     options['edgecolor'] = 'none'
                 else:
                     script += "s = "
 
-                script += "ax.scatter(x, y, {0})\n".format(serialize_options(options))
+                script += "ax.scatter(x[keep], y[keep], {0})\n".format(serialize_options(options))
 
                 if not layer.state.fill:
                     script += "s.set_edgecolors(s.get_facecolors())\n"
@@ -107,13 +110,13 @@ def python_export_scatter_layer(layer, *args):
 
             script += "# Get vector data\n"
             if layer.state.vector_mode == 'Polar':
-                script += "angle = layer_data['{0}']\n".format(layer.state.vx_att.label)
-                script += "length = layer_data['{0}']\n".format(layer.state.vy_att.label)
+                script += "angle = layer_data['{0}'][keep]\n".format(layer.state.vx_att.label)
+                script += "length = layer_data['{0}'][keep]\n".format(layer.state.vy_att.label)
                 script += "vx = length * np.cos(np.radians(angle))\n"
                 script += "vy = length * np.sin(np.radians(angle))\n"
             else:
-                script += "vx = layer_data['{0}']\n".format(layer.state.vx_att.label)
-                script += "vy = layer_data['{0}']\n".format(layer.state.vy_att.label)
+                script += "vx = layer_data['{0}'][keep]\n".format(layer.state.vx_att.label)
+                script += "vy = layer_data['{0}'][keep]\n".format(layer.state.vy_att.label)
 
         if layer.state.vector_arrowhead:
             hw = 3
@@ -138,19 +141,19 @@ def python_export_scatter_layer(layer, *args):
         if layer.state.cmap_mode == 'Fixed':
             options['color'] = layer.state.color
         else:
-            options['color'] = code('colors')
+            options['color'] = code('colors[keep]')
 
-        script += "ax.quiver(x, y, vx, vy, {0})\n\n".format(serialize_options(options))
+        script += "ax.quiver(x[keep], y[keep], vx, vy, {0})\n\n".format(serialize_options(options))
 
     if layer.state.xerr_visible or layer.state.yerr_visible:
 
         if layer.state.xerr_visible and layer.state.xerr_att is not None:
-            xerr = code("layer_data['{0}']".format(layer.state.xerr_att.label))
+            xerr = code("xerr[keep]")
         else:
             xerr = code("None")
 
         if layer.state.yerr_visible and layer.state.yerr_att is not None:
-            yerr = code("layer_data['{0}']".format(layer.state.yerr_att.label))
+            yerr = code("yerr[keep]")
         else:
             yerr = code("None")
 
@@ -160,9 +163,12 @@ def python_export_scatter_layer(layer, *args):
         if layer.state.cmap_mode == 'Fixed':
             options['ecolor'] = layer.state.color
         else:
-            options['ecolor'] = code('colors')
+            options['ecolor'] = code('colors[keep]')
 
-        script += "ax.errorbar(x, y, {0})\n\n".format(serialize_options(options))
+        script += "xerr = layer_data['{0}']\n".format(layer.state.xerr_att.label)
+        script += "yerr = layer_data['{0}']\n".format(layer.state.yerr_att.label)
+        script += "keep &= ~np.isnan(xerr) & ~np.isnan(yerr)\n"
+        script += "ax.errorbar(x[keep], y[keep], {0})\n\n".format(serialize_options(options))
 
     if layer.state.line_visible:
 
@@ -172,7 +178,7 @@ def python_export_scatter_layer(layer, *args):
                        alpha=layer.state.alpha,
                        zorder=layer.state.zorder)
         if layer.state.cmap_mode == 'Fixed':
-            script += "ax.plot(x, y, '-', {0})\n\n".format(serialize_options(options))
+            script += "ax.plot(x[keep], y[keep], '-', {0})\n\n".format(serialize_options(options))
         else:
             options['c'] = code('colors')
             imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
