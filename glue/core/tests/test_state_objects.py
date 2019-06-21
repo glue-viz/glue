@@ -64,6 +64,7 @@ EXPECTED_REPR = """
 >
 """
 
+
 def test_state_str_repr():
 
     state1 = SimpleTestState()
@@ -77,6 +78,7 @@ def test_state_str_repr():
 
     assert str(state1) == EXPECTED_STR.strip()
     assert repr(state1) == EXPECTED_REPR.strip()
+
 
 class TestStateAttributeLimitsHelper():
 
