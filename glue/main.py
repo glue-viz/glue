@@ -190,7 +190,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     if datafiles:
         with die_on_error("Error reading data file"):
             datasets = load_data_files(datafiles)
-        ga.add_datasets(data_collection, datasets, auto_merge=auto_merge)
+        ga.add_datasets(datasets, auto_merge=auto_merge)
 
     if startup_actions is not None:
         for name in startup_actions:
