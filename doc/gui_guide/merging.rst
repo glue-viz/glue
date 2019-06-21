@@ -37,11 +37,8 @@ linking keeps each dataset separate.
 How to merge datasets
 ---------------------
 
-Whenever you load a file whose shape matches a pre-existing dataset,
-Glue will ask you if you want to merge them into a single object.
-If you choose not to merge at this time, you can merge later
-by highlighting the relevant datasets in the left panel, right-clicking,
-and selecting ``Merge datasets``.
+You can merge datasets by highlighting the relevant datasets in the left panel,
+right-clicking, and selecting **Merge datasets**.
 
 To merge datasets programmatically, use the :meth:`DataCollection.merge
 <glue.core.data_collection.DataCollection.merge>` method.
