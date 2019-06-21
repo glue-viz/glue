@@ -53,8 +53,10 @@ class AutoLinkPreview(QtWidgets.QDialog):
 
         if visible:
             self._ui.button_details.setText('Hide Details')
+            self.setFixedHeight(800)
         else:
             self._ui.button_details.setText('Show Details')
+            self.setFixedHeight(150)
 
         # Make sure the dialog is centered on the screen
         screen = QtWidgets.QApplication.desktop().screenGeometry(0)
