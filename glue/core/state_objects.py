@@ -6,7 +6,7 @@ try:
     from textwrap import indent
 except ImportError:  # PY2
     def indent(text, prefix):
-        return os.linesep.join([prefix + line for line in text.splitlines()])
+        return ''.join([prefix + line for line in text.splitlines(True)])
 
 from collections import defaultdict
 
