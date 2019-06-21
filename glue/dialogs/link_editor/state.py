@@ -148,6 +148,11 @@ class LinkEditorState(State):
                                              names2=function_or_helper.output_labels,
                                              description=function_or_helper.info,
                                              display=function_or_helper.function.__name__)
+        elif function_or_helper.helper.cid_independent:
+            # This shortcut is needed for e.g. the WCS auto-linker, which has a dynamic
+            # description but doesn't need to take any component IDs.
+            link = EditableLinkFunctionState(function_or_helper.helper(data1=self.data1,
+                                                                       data2=self.data2))
         else:
             link = EditableLinkFunctionState(function_or_helper.helper,
                                              data1=self.data1, data2=self.data2)
@@ -185,11 +190,9 @@ class EditableLinkFunctionState(State):
         elif isinstance(function, LinkCollection):
             names1 = function.labels1
             names2 = function.labels2
-            description = function.description
         elif type(function) is type and issubclass(function, LinkCollection):
             names1 = function.labels1
             names2 = function.labels2
-            description = function.description
 
         class CustomizedStateClass(EditableLinkFunctionState):
             pass

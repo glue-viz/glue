@@ -285,6 +285,10 @@ class MultiLink(BaseMultiLink):
         Additional arguments are passed
     """
 
+    # Some sub-classes take only data and don't need CIDs, so we have a flag
+    # for this in case other parts of glue need to know.
+    cid_independent = True
+
     def __init__(self, cids1=None, cids2=None, forwards=None, backwards=None, labels1=None, labels2=None, **kwargs):
 
         # NOTE: we explicitly specify ``cids1`` and ``cids2`` as the two first
