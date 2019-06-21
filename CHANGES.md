@@ -52,6 +52,8 @@ v0.15.0 (unreleased)
   and ``glue.viewers.common.qt.toolbar_mode`` to ``glue.viewers.matplotlib.toolbar_mode``
   and ``glue.viewers.matplotlib.qt.toolbar_mode``. [#1984]
 
+* Implement a human-readable str/repr for State objects. [#2021]
+
 * Avoiding importing Qt when using the base histogram and profile layer artists.
   [#2012]
 

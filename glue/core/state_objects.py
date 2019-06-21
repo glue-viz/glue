@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+from textwrap import indent
 from collections import defaultdict
 
 import numpy as np
@@ -80,6 +81,18 @@ class State(HasCallbackProperties):
             if not name.startswith('_') and self.is_callback_property(name):
                 properties[name] = getattr(self, name)
         return properties
+
+    def __str__(self):
+        s = ""
+        for key, value in self.as_dict().items():
+            if np.isscalar(value):
+                s += "{0}: {1}\n".format(key, value)
+            else:
+                s += "{0}: {1}\n".format(key, repr(value))
+        return s.strip()
+
+    def __repr__(self):
+        return "<{0}\n{1}\n>".format(self.__class__.__name__, indent(str(self), '  '))
 
     def __gluestate__(self, context):
         return {'values': dict((key, context.id(value)) for key, value in self.as_dict().items())}

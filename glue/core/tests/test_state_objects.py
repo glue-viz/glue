@@ -48,6 +48,36 @@ def test_state_serialization():
     assert state2.nested[2].nested == []
 
 
+EXPECTED_STR = """
+a: 2
+b: hello
+flat: <CallbackList with 3 elements>
+nested: <CallbackList with 3 elements>
+"""
+
+EXPECTED_REPR = """
+<SimpleTestState
+  a: 2
+  b: hello
+  flat: <CallbackList with 3 elements>
+  nested: <CallbackList with 3 elements>
+>
+"""
+
+def test_state_str_repr():
+
+    state1 = SimpleTestState()
+    state1.a = 2
+    state1.b = 'hello'
+    state1.flat = [1, 3, 4]
+
+    sub_state = SimpleTestState()
+
+    state1.nested = [1, 3, sub_state]
+
+    assert str(state1) == EXPECTED_STR.strip()
+    assert repr(state1) == EXPECTED_REPR.strip()
+
 class TestStateAttributeLimitsHelper():
 
     def setup_method(self, method):
