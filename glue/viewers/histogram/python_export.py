@@ -1,7 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+from distutils.version import LooseVersion
+
+from matplotlib import __version__
+
 from glue.viewers.common.python_export import code, serialize_options
 from glue.utils import nanmin, nanmax
+
+MATPLOTLIB_GE_30 = LooseVersion(__version__) > '3'
 
 
 def python_export_histogram_layer(layer, *args):
@@ -48,7 +54,10 @@ def python_export_histogram_layer(layer, *args):
         options['bins'] = code('hist_n_bin')
 
     if layer._viewer_state.normalize:
-        options['normed'] = True
+        if MATPLOTLIB_GE_30:
+            options['density'] = True
+        else:
+            options['normed'] = True
 
     if layer._viewer_state.cumulative:
         options['cumulative'] = True
