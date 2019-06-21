@@ -171,7 +171,7 @@ class EquationEditorDialog(QtWidgets.QDialog):
 
         if self.ui.text_label.text() == "":
             self.ui.label_status.setStyleSheet('color: red')
-            self.ui.label_status.setText("Component name not set")
+            self.ui.label_status.setText("Attribute name not set")
             self.ui.button_ok.setEnabled(False)
         elif self._get_raw_command() == "":
             self.ui.label_status.setText("")

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Organize data components</string>
+   <string>Organize data attributes</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
