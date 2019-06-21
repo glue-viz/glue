@@ -437,7 +437,7 @@ class Viewer(BaseViewer):
 
         imports = os.linesep.join(sorted(set(imports)))
 
-        script = TEMPLATE_SCRIPT.format(data=data_filename,
+        script = TEMPLATE_SCRIPT.format(data=os.path.basename(data_filename),
                                         imports=imports.strip(),
                                         header=header.strip(),
                                         layers=layers.strip(),
