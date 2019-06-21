@@ -545,6 +545,9 @@ class BaseTestMatplotlibDataViewer(object):
         # This test works with Matplotlib 2.0 and 2.2 but not 2.1, hence we
         # skip it with Matplotlib 2.1 above.
 
+        # Note that we need to explicitly call draw() below because otherwise
+        # draw_idle is used, which has no guarantee of being effective.
+
         # Set initial limits to deterministic values
         self.viewer.state.aspect = 'auto'
         self.viewer.state.x_min = 0.
@@ -556,6 +559,7 @@ class BaseTestMatplotlibDataViewer(object):
 
         # Resize events only work if widget is visible
         self.viewer.show()
+        self.viewer.figure.canvas.draw()
         process_events()
 
         def limits(viewer):
@@ -564,11 +568,13 @@ class BaseTestMatplotlibDataViewer(object):
 
         # Set viewer to an initial size and save limits
         self.viewer.viewer_size = (800, 400)
+        self.viewer.figure.canvas.draw()
         process_events()
         initial_limits = limits(self.viewer)
 
         # Change the viewer size, and make sure the limits are adjusted
         self.viewer.viewer_size = (400, 400)
+        self.viewer.figure.canvas.draw()
         process_events()
         with pytest.raises(AssertionError):
             assert_allclose(limits(self.viewer), initial_limits)
@@ -576,18 +582,24 @@ class BaseTestMatplotlibDataViewer(object):
         # Now change the viewer size a number of times and make sure if we
         # return to the original size, the limits match the initial ones.
         self.viewer.viewer_size = (350, 800)
+        self.viewer.figure.canvas.draw()
         process_events()
         self.viewer.viewer_size = (900, 300)
+        self.viewer.figure.canvas.draw()
         process_events()
         self.viewer.viewer_size = (600, 600)
+        self.viewer.figure.canvas.draw()
         process_events()
         self.viewer.viewer_size = (800, 400)
+        self.viewer.figure.canvas.draw()
         process_events()
         assert_allclose(limits(self.viewer), initial_limits)
 
         # Now check that the limits don't change in 'auto' mode
         self.viewer.state.aspect = 'auto'
         self.viewer.viewer_size = (900, 300)
+        self.viewer.figure.canvas.draw()
+        process_events()
         assert_allclose(limits(self.viewer), initial_limits)
 
     def test_update_data_values(self):
