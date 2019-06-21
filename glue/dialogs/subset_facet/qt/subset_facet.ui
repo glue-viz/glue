@@ -52,7 +52,7 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="text">
-      <string>Components</string>
+      <string>Attributes</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -62,7 +62,7 @@
    <item>
     <widget class="QListWidget" name="listsel_att">
      <property name="toolTip">
-      <string>The Component IDs associated with this data set</string>
+      <string>The attributes associated with this data set</string>
      </property>
     </widget>
    </item>

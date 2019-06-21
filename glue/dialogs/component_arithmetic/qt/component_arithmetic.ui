@@ -110,7 +110,7 @@
       </font>
      </property>
      <property name="text">
-      <string>In this dialog you can define data attributes/components based on other attributes using arithmetic operations. First, select the dataset above, then you will be able to create/edit arithmetic attributes for that dataset below.</string>
+      <string>In this dialog you can define data attributes based on other attributes using arithmetic operations. First, select the dataset above, then you will be able to create/edit arithmetic attributes for that dataset below.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignJustify|Qt::AlignVCenter</set>

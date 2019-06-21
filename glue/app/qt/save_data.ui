@@ -155,7 +155,7 @@
    <item row="0" column="0" colspan="5">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Choose the dataset and component you want to save:</string>
+      <string>Choose the dataset and attribute you want to save:</string>
      </property>
     </widget>
    </item>

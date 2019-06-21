@@ -53,7 +53,7 @@ class TestEquationEditor:
         self.dialog.ui.text_label.setText('')
         self.dialog.expression.insertPlainText('1 + {x}')
         assert not self.dialog.ui.button_ok.isEnabled()
-        assert self.dialog.ui.label_status.text() == 'Component name not set'
+        assert self.dialog.ui.label_status.text() == 'Attribute name not set'
 
     def test_typing(self):
 

@@ -61,8 +61,8 @@ Glue lets you create custom data loader functions,
 to use from within the GUI.
 
 Here's a quick example: the default image loader in Glue reads each color in
-an RGB image into 3 two-dimensional components. Perhaps you want to be able
-to load these images into a single 3-dimensional component called ``cube``.
+an RGB image into 3 two-dimensional attributes. Perhaps you want to be able
+to load these images into a single 3-dimensional attribute called ``cube``.
 Here's how you could do this::
 
  from glue.config import data_factory
