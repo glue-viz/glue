@@ -65,20 +65,21 @@ def test_hdf5_loader_fromfile():
 @requires_h5py
 def test_hdf5_auto_merge(tmpdir):
 
-    filename = tmpdir.join('test.hdf5').strpath
+    filename1 = tmpdir.mkdir('test1').join('test.hdf5').strpath
+    filename2 = tmpdir.mkdir('test2').join('test.hdf5').strpath
 
     import h5py
 
     # When heterogeneous arrays are present, auto_merge is ignored
 
-    f = h5py.File(filename, 'w')
+    f = h5py.File(filename1, 'w')
     f.create_dataset('a', data=np.array([[1, 2], [3, 4]]))
     f.create_dataset('b', data=np.array([1, 2, 3]))
     f.close()
 
     for auto_merge in [False, True]:
 
-        datasets = df.hdf5_reader(filename, auto_merge=auto_merge)
+        datasets = df.hdf5_reader(filename1, auto_merge=auto_merge)
 
         assert len(datasets) == 2
 
@@ -90,12 +91,12 @@ def test_hdf5_auto_merge(tmpdir):
 
     # Check that the default is to merge if all arrays are homogeneous
 
-    f = h5py.File(filename, 'w')
+    f = h5py.File(filename2, 'w')
     f.create_dataset('a', data=np.array([3, 4, 5]))
     f.create_dataset('b', data=np.array([1, 2, 3]))
     f.close()
 
-    datasets = df.hdf5_reader(filename)
+    datasets = df.hdf5_reader(filename2)
 
     assert len(datasets) == 1
 
@@ -105,7 +106,7 @@ def test_hdf5_auto_merge(tmpdir):
 
     # And check opt-out
 
-    datasets = df.hdf5_reader(filename, auto_merge=False)
+    datasets = df.hdf5_reader(filename2, auto_merge=False)
 
     assert len(datasets) == 2
 
