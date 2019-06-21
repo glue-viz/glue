@@ -630,10 +630,8 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
     def _load_data(self):
         """ Interactively loads data from a data set. Adds
         as new layer """
-        from glue.app.qt import GlueApplication
-
         layers = data_wizard()
-        GlueApplication.add_datasets(self.data_collection, layers)
+        self.data_collection.extend(layers)
 
     def __getitem__(self, key):
         raise NotImplementedError()
