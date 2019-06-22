@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import warnings
 import numpy as np
 
 from glue.core.data_factories.helpers import has_extension
@@ -63,7 +64,9 @@ def astropy_tabular_data(*args, **kwargs):
 
     result = Data()
 
-    table = astropy_table_read(*args, **kwargs)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        table = astropy_table_read(*args, **kwargs)
 
     result.meta = table.meta
 
