@@ -69,9 +69,6 @@ v0.15.0 (unreleased)
   the session. Merging different datasets should now be done manually through
   the GUI. [#2020]
 
-v0.14.3 (unreleased)
---------------------
-
 * Fixed compatibility with Numpy 1.16.x. [#1989]
 
 * Improve tab-completion of attribute names in Data to not include
