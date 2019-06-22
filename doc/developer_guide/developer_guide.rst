@@ -23,4 +23,3 @@ The following pages provide logistical information about the layout of the code,
    qt_development.rst
    coding_guidelines.rst
    testing.rst
-   app_building.rst

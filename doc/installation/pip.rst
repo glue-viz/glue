@@ -3,14 +3,8 @@ Installing with pip
 
 **Platforms:** MacOS X, Linux, and Windows
 
-Installing glue with `pip <https://pip.pypa.io/en/stable/>`__ is possible, although you
-will need to first make sure that you install Qt and either `PyQt
-<https://riverbankcomputing.com/software/pyqt/intro>`__ or `PySide
-<https://wiki.qt.io/PySide>`__, since these cannot be automatically installed with the
-``pip`` command. See the section on :ref:`installing-qt` for more details.
-
-Assuming that you have either PyQt or PySide installed, you can install glue
-along with **all** :ref:`required and optional dependencies <glue-deps>` using::
+You can install glue along with **all** :ref:`required and optional dependencies
+<glue-deps>` with `pip <https://pip.pypa.io/en/stable/>`__ using::
 
     pip install glueviz[all]
 
@@ -25,3 +19,9 @@ And finally, if you don't want to install optional dependencies at all::
     pip install glueviz
 
 Note that this will still installed required dependencies.
+
+If you are using Python 2.7, you will need to also make sure you install Qt and
+either `PyQt5 <https://riverbankcomputing.com/software/pyqt/intro>`__ or `PySide2
+<https://wiki.qt.io/Qt_for_Python>`__, since these cannot be automatically installed
+with the ``pip`` command unless you are using Python 3.x. See the section on
+:ref:`installing-qt` for more details.

@@ -102,7 +102,5 @@ version of the glue core package using::
 
     git clone https://github.com/glue-viz/glue.git
     cd glue
-    pip install .
+    pip install -e .
     cd ..
-
-or with ``python setup.py develop`` instead of ``pip install .``.
