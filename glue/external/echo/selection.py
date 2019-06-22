@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import random
 from weakref import WeakKeyDictionary
 
+import numpy as np
+
 from .core import CallbackProperty
 
 __all__ = ['ChoiceSeparator', 'SelectionCallbackProperty']
@@ -26,8 +28,14 @@ class SelectionCallbackProperty(CallbackProperty):
         self._force_next_sync = WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        if value is not None and value not in self.get_choices(instance):
-            raise ValueError('value {0} is not in valid choices'.format(value))
+        if value is not None:
+            choices = self.get_choices(instance)
+            # For built-in scalar types we use ==, and for other types we use
+            # is, otherwise e.g. ComponentID returns something that evaluates
+            # to true when using ==.
+            if ((np.isscalar(value) and not any(value == x for x in choices)) or
+                    (not np.isscalar(value) and not any(value is x for x in choices))):
+                raise ValueError('value {0} is not in valid choices: {1}'.format(value, choices))
         super(SelectionCallbackProperty, self).__set__(instance, value)
 
     def force_next_sync(self, instance):
