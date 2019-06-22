@@ -8,6 +8,7 @@ Glue has the following required dependencies:
 * Python 2.7, or 3.3 and higher
 * `Numpy <https://www.numpy.org>`_ 1.9 or later
 * `Matplotlib <https://matplotlib.org/>`_ 2.1 or later
+* `SciPy <https://www.scipy.org>`_ 1.0 or later
 * `Pandas <https://pandas.pydata.org/>`_ 0.14 or later
 * `Astropy <https://www.astropy.org>`_ 2.0 or higher
 * `setuptools <https://setuptools.readthedocs.io>`_ 1.0 or later
