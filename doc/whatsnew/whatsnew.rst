@@ -34,9 +34,13 @@ What's new in glue v0.15?
 New and improved link editor
 ----------------------------
 
-The link editor has now been re-written to make it easier to edit existing
-links, and significantly improves the interface for links more complex than
-identity links.
+The bottom panel of the link editor has now been re-written to make it easier to
+edit existing links, and significantly improves the interface for links more
+complex than identity links.
+
+.. image:: images/v0.15/complex_links.png
+   :align: center
+   :width: 600
 
 No more merging suggestions
 ---------------------------
@@ -97,7 +101,19 @@ returns a list of links, e.g.::
 
 When adding datasets, glue will then automatically check whether links can be
 added between datasets and show a dialog to ask whether to apply the
-suggestions. For more information, see :ref:`custom-auto-link`.
+suggestions:
+
+.. image:: images/v0.15/autolink.png
+   :align: center
+   :width: 600
+
+with the option to see the details:
+
+.. image:: images/v0.15/autolink_details.png
+   :align: center
+   :width: 600
+
+For more information, see :ref:`custom-auto-link`.
 
 .. _whatsnew_014:
 

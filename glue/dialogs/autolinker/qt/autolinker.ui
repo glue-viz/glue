@@ -37,7 +37,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_viz">
      <property name="text">
       <string>The suggested links are shown as lines in the following visualization. Hover over the lines to see more details about the links, then decide whether or not to proceed with the link suggestions.</string>
      </property>
