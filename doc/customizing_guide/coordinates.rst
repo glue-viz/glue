@@ -1,3 +1,5 @@
+.. _coordinates:
+
 Customizing the coordinate system of a data object
 ==================================================
 
@@ -25,6 +27,8 @@ By default the ``coords`` object for :class:`~glue.core.data.Data` objects
 created manually is an instance of :class:`~glue.core.coordinates.Coordinates`
 which is an identity transform, as can be seen above. However, it is possible to
 use other coordinate systems or define your own.
+
+.. _affine-coordinates:
 
 Affine coordinates
 ------------------

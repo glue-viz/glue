@@ -11,7 +11,7 @@ from glue.dialogs.link_editor.qt.link_editor import LinkEditorWidget
 
 __all__ = ['run_autolinker']
 
-DESCRIPTION = "The auto-linking plugin '{0}' has identified {1} links between your datasets"
+DESCRIPTION = "The auto-linking plugin '{0}' has identified {1} links between your datasets - click on 'More Details' below to find out more about the suggested links."
 
 
 class AutoLinkPreview(QtWidgets.QDialog):
@@ -50,13 +50,14 @@ class AutoLinkPreview(QtWidgets.QDialog):
         self._details_visible = visible
 
         self.link_widget.setVisible(visible)
+        self.label_viz.setVisible(visible)
 
         if visible:
             self._ui.button_details.setText('Hide Details')
             self.setFixedHeight(800)
         else:
             self._ui.button_details.setText('Show Details')
-            self.setFixedHeight(150)
+            self.setFixedHeight(100)
 
         # Make sure the dialog is centered on the screen
         screen = QtWidgets.QApplication.desktop().screenGeometry(0)

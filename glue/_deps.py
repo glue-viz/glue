@@ -8,9 +8,6 @@ from __future__ import absolute_import, division, print_function
 import os
 from collections import OrderedDict
 
-# Unfortunately, we can't rely on setuptools' install_requires
-# keyword, because matplotlib doesn't properly install its dependencies
-from subprocess import check_call, CalledProcessError
 import sys
 import importlib
 
@@ -46,17 +43,6 @@ class Dependency(object):
                 return module.__VERSION__
             except AttributeError:
                 return 'unknown version'
-
-    def install(self):
-        if self.installed:
-            return
-
-        print("-> Installing {0} with pip".format(self.module))
-
-        try:
-            check_call(['pip', 'install', self.package])
-        except CalledProcessError:
-            self.failed = True
 
     def help(self):
         result = """
@@ -95,9 +81,6 @@ class Python(Dependency):
 
 
 class QtDependency(Dependency):
-
-    def install(self):
-        print("-> Cannot install {0} automatically - skipping".format(self.module))
 
     def __str__(self):
         if self.installed:
@@ -251,48 +234,25 @@ def show_status():
     print(get_status())
 
 
-def install_all():
-    for category, deps in categories:
-        for dep in deps:
-            dep.install()
+USAGE = """usage:
+#show all dependencies
+glue-deps list
 
-
-def install_selected(modules):
-    modules = set(m.lower() for m in modules)
-
-    for category, deps in categories:
-        for dep in deps:
-            if dep.installed:
-                continue
-            if dep.module.lower() in modules or category.lower() in modules:
-                dep.install()
+#display information about a dependency
+glue-deps info astropy
+"""
 
 
 def main(argv=None):
     argv = argv or sys.argv
 
-    usage = """usage:
-    #install all dependencies
-    %s install
-
-    #show all dependencies
-    %s list
-
-    #install a specific dependency or category
-    %s install astropy
-    %s install astronomy
-
-    #display information about a dependency
-    %s info astropy
-""" % ('glue-deps', 'glue-deps', 'glue-deps', 'glue-deps', 'glue-deps')
-
-    if len(argv) < 2 or argv[1] not in ['install', 'list', 'info']:
-        sys.stderr.write(usage)
+    if len(argv) < 2 or argv[1] not in ['list', 'info']:
+        sys.stderr.write(USAGE)
         sys.exit(1)
 
     if argv[1] == 'info':
         if len(argv) != 3:
-            sys.stderr.write(usage)
+            sys.stderr.write(USAGE)
             sys.stderr.write("Please specify a dependency\n")
             sys.exit(1)
 
@@ -308,15 +268,6 @@ def main(argv=None):
     if argv[1] == 'list':
         show_status()
         sys.exit(0)
-
-    # argv[1] == 'install'
-    if len(argv) == 2:
-        install_all()
-        show_status()
-        sys.exit(0)
-
-    install_selected(argv[2:])
-    show_status()
 
 
 if __name__ == "__main__":

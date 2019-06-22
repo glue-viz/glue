@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 
 from astropy import units as u
-from astropy.extern import six
+from glue.external import six
 from astropy.io.fits import PrimaryHDU, ImageHDU, Header
 
 from .utils.wcs_utils import get_spatial_scale, sanitize_wcs

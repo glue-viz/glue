@@ -150,7 +150,10 @@ class GlueLogger(QtWidgets.QWidget):
         """
         Interface for sys.excepthook
         """
-        self._stderr_original.write(message)
+        # On Windows, sys.stderr can sometimes be None, in which case we only
+        # show the warnings/errors in the graphical glue logger.
+        if self._stderr_original is not None:
+            self._stderr_original.write(message)
         self._text.moveCursor(QtGui.QTextCursor.End)
         self._text.insertPlainText(message)
         self._set_console_button(attention=True)

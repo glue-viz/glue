@@ -21,7 +21,7 @@ For more demos, check out the :ref:`videos <demo_videos>` page. You can also
 `follow us on Twitter <https://twitter.com/glueviz>`_ for previews of upcoming
 functionality!
 
-**The latest version of glue is v0.14** - find out :ref:`what's new in glue! <whatsnew>`
+**The latest version of glue is v0.15** - find out :ref:`what's new in glue! <whatsnew>`
 
 Getting started
 ---------------

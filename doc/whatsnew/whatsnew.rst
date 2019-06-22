@@ -15,7 +15,7 @@ interested.
 Before we get started, here's a reminder on how to install/update glue. You can
 easily update glue if you are using Anaconda/Miniconda by doing::
 
-    conda install -c glueviz glueviz=0.14
+    conda install -c glueviz glueviz=0.15
 
 If instead you installed glue with pip, you can update with::
 
@@ -31,14 +31,89 @@ reporting issues.
 What's new in glue v0.15?
 =========================
 
+New and improved link editor
+----------------------------
+
+The bottom panel of the link editor has now been re-written to make it easier to
+edit existing links, and significantly improves the interface for links more
+complex than identity links.
+
+.. image:: images/v0.15/complex_links.png
+   :align: center
+   :width: 600
+
 No more merging suggestions
 ---------------------------
 
 Glue will no longer prompt you to merge multiple datasets into a single one
 automatically - instead this is something that you should now do manually by
-selecting the datasets to merge, then right-clicking (or ctrl-clicking) and
+selecting the datasets to merge, then right-clicking (or control-clicking) and
 selecting **Merge datasets**. We decided to not suggest this by default anymore
 since links are the preferred way of using multiple datasets together.
+
+Improvements to Table viewer
+----------------------------
+
+When using the table viewer, you can now choose to show only one or more
+subsets of the data in the viewer without having to show the full table. You
+can control this by using the checkboxes in the layer list as for other
+viewers.
+
+Improvements when showing multiple images in the image viewer
+-------------------------------------------------------------
+
+When showing multiple datasets in the image viewer, the images are now no
+longer downsampled to the resolution of the reference data and clipped to its
+field of view. The reference data is still used to define the coordinate system
+in which to show the data, but all datasets are now resampled to the resolution
+of the screen.
+
+New coordinate class for affine transformations
+-----------------------------------------------
+
+We have now written a page on :ref:`coordinates` and have added a new class
+to deal with common affine transformations::
+
+  >>> import numpy as np
+  >>> from glue.core import Data
+  >>> from glue.core.coordinates import AffineCoordinates
+  >>> matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+  >>> affine_coords = AffineCoordinates(matrix, units=['m', 'm'], labels=['xw', 'yw'])
+  >>> data = Data(x=[1, 2, 3], coords=affine_coords)
+
+You can read more about this in :ref:`affine-coordinates`.
+
+New auto-linking functionality
+------------------------------
+
+We have now set up an infrastructure to make it possible to define plugins that
+can automatically suggest links, and have included such a plugin for linking
+astronomical images and higher dimensional datasets. To write such a plugin, you
+will need to define a Python function that takes a data collection and then
+returns a list of links, e.g.::
+
+    from glue.config import autolinker
+
+    @autolinker('Auto-linker name')
+    def my_autolinker(data_collection):
+        ...
+        return links
+
+When adding datasets, glue will then automatically check whether links can be
+added between datasets and show a dialog to ask whether to apply the
+suggestions:
+
+.. image:: images/v0.15/autolink.png
+   :align: center
+   :width: 600
+
+with the option to see the details:
+
+.. image:: images/v0.15/autolink_details.png
+   :align: center
+   :width: 600
+
+For more information, see :ref:`custom-auto-link`.
 
 .. _whatsnew_014:
 
