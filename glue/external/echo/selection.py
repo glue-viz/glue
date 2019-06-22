@@ -26,12 +26,13 @@ class SelectionCallbackProperty(CallbackProperty):
         self._force_next_sync = WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        choices = self.get_choices(instance)
-        # We do the 'any' call in the following because 'value in choices'
-        # actually compares equality not identity and component IDs don't return
-        # booleans with equality comparisons
-        if value is not None and not any(value is x for x in choices):
-            raise ValueError('value {0} is not in valid choices: {1}'.format(value, choices))
+        if value is not None:
+            choices = self.get_choices(instance)
+            # We do the 'any' call in the following because 'value in choices'
+            # actually compares equality not identity and component IDs don't return
+            # booleans with equality comparisons
+            if not any(value is x for x in choices):
+                raise ValueError('value {0} is not in valid choices: {1}'.format(value, choices))
         super(SelectionCallbackProperty, self).__set__(instance, value)
 
     def force_next_sync(self, instance):
