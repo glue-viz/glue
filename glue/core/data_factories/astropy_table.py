@@ -75,7 +75,7 @@ def astropy_tabular_data(*args, **kwargs):
         c = table[column_name]
         u = c.unit if hasattr(c, 'unit') else c.units
 
-        if table.masked:
+        if hasattr(c, 'mask'):
             # fill array for now
             try:
                 c = c.filled(fill_value=np.nan)
