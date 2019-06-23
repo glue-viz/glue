@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.15.0 (unreleased)
+v0.15.0 (2019-06-23)
 --------------------
 
 * Added a new ``glue.core.coordinates.AffineCoordinates`` class for common
