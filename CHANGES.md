@@ -6,6 +6,16 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
+v0.15.1 (unreleased)
+--------------------
+
+* Fixed __version__ variable. [#2031]
+
+* Fixed tox configuration. [#2031]
+
+* Improve error message if loading a session file that uses WCS auto-linking
+  but the installed version of astropy is too old. [#2031]
+
 v0.15.0 (2019-06-23)
 --------------------
 
