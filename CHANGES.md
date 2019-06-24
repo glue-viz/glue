@@ -6,7 +6,7 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
-v0.15.1 (unreleased)
+v0.15.1 (2019-06-24)
 --------------------
 
 * Fixed __version__ variable. [#2031]
