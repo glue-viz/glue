@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.15.1 (unreleased)
+v0.15.1 (2019-06-24)
 --------------------
 
 * Fixed __version__ variable. [#2031]
