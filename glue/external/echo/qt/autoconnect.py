@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from qtpy import QtWidgets
-
 from .connect import (connect_checkable_button,
                       connect_value,
                       connect_combo_data,
@@ -113,6 +111,8 @@ def autoconnect_callbacks_to_qt(instance, widget, connect_kwargs={}):
             if hasattr(instance, wname):
                 if wtype in HANDLERS:
                     child = getattr(widget, original_name)
-                    returned_handlers[wname] = HANDLERS[wtype](instance, wname, child, **kwargs)
+                    # NOTE: we need to use original_name here since we need a
+                    # unique key, and some wname values might be duplicate.
+                    returned_handlers[original_name] = HANDLERS[wtype](instance, wname, child, **kwargs)
 
     return returned_handlers
