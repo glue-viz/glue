@@ -88,9 +88,10 @@ New auto-linking functionality
 
 We have now set up an infrastructure to make it possible to define plugins that
 can automatically suggest links, and have included such a plugin for linking
-astronomical images and higher dimensional datasets. To write such a plugin, you
-will need to define a Python function that takes a data collection and then
-returns a list of links, e.g.::
+astronomical images and higher dimensional datasets (note that this
+functionality requires astropy 3.1 or later). To write such a plugin, you will
+need to define a Python function that takes a data collection and then returns a
+list of links, e.g.::
 
     from glue.config import autolinker
 
