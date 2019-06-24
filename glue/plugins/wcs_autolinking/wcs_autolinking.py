@@ -1,3 +1,5 @@
+from glue.plugins.wcs_autolinking import ASTROPY_GE_31
+
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 from glue.core.coordinates import WCSCoordinates
@@ -115,6 +117,9 @@ class WCSLink(MultiLink):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
+        if not ASTROPY_GE_31:
+            raise ValueError("Loading this session file requires Astropy 3.1 "
+                             "or later to be installed")
         self = cls(context.object(rec['data1']),
                    context.object(rec['data2']))
         return self

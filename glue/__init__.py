@@ -5,6 +5,14 @@ __all__ = ['custom_viewer', 'qglue', 'test']
 import os
 
 import sys
+
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    __version__ = get_distribution('glue-core').version
+except DistributionNotFound:
+    __version__ = 'undefined'
+
 from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
 
@@ -15,8 +23,6 @@ from .config import load_configuration
 env = load_configuration()
 
 from .qglue import qglue
-
-from .version import __version__  # noqa
 
 from .main import load_plugins  # noqa
 
