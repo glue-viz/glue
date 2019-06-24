@@ -6,6 +6,13 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
+v0.15.2 (unreleased)
+--------------------
+
+* Fixed a bug in ``autoconnect_callbacks_to_qt`` which caused some widgets
+  to not stay connect to state callback properties if a callback property
+  was linked to multiple widgets. [#2032]
+
 v0.15.1 (2019-06-24)
 --------------------
 
