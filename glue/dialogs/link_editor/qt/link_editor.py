@@ -122,7 +122,7 @@ class LinkEditorWidget(QtWidgets.QWidget):
     @avoid_circular
     def _on_attribute_combo_change(self, *args, **kwargs):
         # Force a re-sync of the choices
-        self._handlers['current_link'].update_widget(self.state.current_link, force=True)
+        self._handlers['listsel_current_link'].update_widget(self.state.current_link, force=True)
 
     @avoid_circular
     def _on_data_change_graph(self):
