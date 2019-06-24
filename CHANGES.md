@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.15.2 (unreleased)
+v0.15.2 (2019-06-24)
 --------------------
 
 * Fixed a bug in ``autoconnect_callbacks_to_qt`` which caused some widgets
