@@ -1,6 +1,14 @@
 Full changelog
 ==============
 
+v0.15.3 (unreleased)
+--------------------
+
+* Fixed bugs related to the preferences dialog - first, the dialog would
+  not open if no auto-linkers were present, and second, the preferences
+  dialog would sometimes get sent behind the main application when editing
+  the color. [#2034]
+
 v0.15.2 (2019-06-24)
 --------------------
 

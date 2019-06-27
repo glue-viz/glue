@@ -37,19 +37,22 @@ class AutolinkPreferencesPane(QtWidgets.QWidget):
 
         self.combos = {}
 
-        for i, (label, _) in enumerate(autolinker):
-            combo = QtWidgets.QComboBox()
-            for short, display in AUTOLINK_OPTIONS.items():
-                combo.addItem(display, userData=short)
-            if label in settings.AUTOLINK:
-                index = list(AUTOLINK_OPTIONS.keys()).index(settings.AUTOLINK[label])
-            else:
-                index = 0
-            combo.setCurrentIndex(index)
-            layout.addWidget(QtWidgets.QLabel(label), i, 0)
-            layout.addWidget(combo, i, 1)
-            self.combos[label] = combo
-        layout.addWidget(QtWidgets.QWidget(), i + 1, 0)
+        if len(autolinker) > 0:
+
+            for i, (label, _) in enumerate(autolinker):
+                combo = QtWidgets.QComboBox()
+                for short, display in AUTOLINK_OPTIONS.items():
+                    combo.addItem(display, userData=short)
+                if label in settings.AUTOLINK:
+                    index = list(AUTOLINK_OPTIONS.keys()).index(settings.AUTOLINK[label])
+                else:
+                    index = 0
+                combo.setCurrentIndex(index)
+                layout.addWidget(QtWidgets.QLabel(label), i, 0)
+                layout.addWidget(combo, i, 1)
+                self.combos[label] = combo
+
+            layout.addWidget(QtWidgets.QWidget(), i + 1, 0)
 
         self.setLayout(layout)
 
