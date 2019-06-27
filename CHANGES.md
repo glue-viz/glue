@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.15.3 (unreleased)
+v0.15.3 (2019-06-27)
 --------------------
 
 * Fixed bugs related to the preferences dialog - first, the dialog would
