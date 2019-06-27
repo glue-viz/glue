@@ -6,7 +6,7 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
-v0.15.3 (unreleased)
+v0.15.3 (2019-06-27)
 --------------------
 
 * Fixed bugs related to the preferences dialog - first, the dialog would
