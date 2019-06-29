@@ -42,6 +42,14 @@ complex than identity links.
    :align: center
    :width: 600
 
+Reprojection of raster data in 3-d volume viewer
+------------------------------------------------
+
+The 3-d volume viewer now supports on-the-fly reprojection of raster data in
+the same way as the 2-d image viewer. This means that if two 3-d datasets are
+linked, they can be shown at the same time in the 3-d volume viewer even if they
+are not defined on the same pixel grid.
+
 No more merging suggestions
 ---------------------------
 
