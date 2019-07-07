@@ -224,6 +224,7 @@ class TableViewer(DataViewer):
         hdr = self.ui.table.verticalHeader()
         hdr.setSectionResizeMode(hdr.Interactive)
 
+        self.data = None
         self.model = None
 
         self.ui.table.selection_changed.connect(self.selection_changed)
@@ -272,6 +273,17 @@ class TableViewer(DataViewer):
         with self._layer_artist_container.ignore_empty():
             self.state.layers[:] = []
             return super(TableViewer, self).add_data(data)
+
+    @messagebox_on_error("Failed to add subset")
+    def add_subset(self, subset):
+
+        if self.data is None:
+            self.add_data(subset.data)
+            self.state.layers[0].visible = False
+        elif subset.data != self.data:
+            raise ValueError("subset parent data does not match existing table data")
+
+        return super(TableViewer, self).add_subset(subset)
 
     @property
     def window_title(self):
