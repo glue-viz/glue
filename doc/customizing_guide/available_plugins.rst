@@ -49,6 +49,33 @@ lab - this is not quite ready yet for general use, but if you are interested
 in following on or helping with the development, the GitHub repository for this
 plugin is at https://github.com/glue-viz/glue-jupyter.
 
+glue-plotly: plotly exporter for glue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We are currently developing a plugin to make it easy to export plots made in
+glue to standalone interactive figures using `plotly <https://plot.ly/>`_. If
+you are interested in trying this out, you can install it with::
+
+    conda install -c glueviz glue-plotly
+
+or if you don't use conda::
+
+    pip install glue-plotly
+
+Once installed, you will have the ability to export some of the viewers to
+HTML pages powered by plotly by selecting **Save Plotly HTML page** from the
+dropdown menu for the save icon:
+
+.. image:: images/plugin_plotly.png
+   :align: center
+   :width: 350px
+
+Note that at this time, not all viewers have a plotly exporter available.
+
+If you run into issues or have requests related to this plugin, or if you would
+like to contribute to the development, the GitHub repository for this plugin is
+at https://github.com/glue-viz/glue-plotly.
+
 Plugin for Medical imaging
 --------------------------
 
