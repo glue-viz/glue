@@ -367,3 +367,47 @@ def test_table_title():
     viewer.add_data(data2)
 
     assert viewer.windowTitle() == 'Table: test2'
+
+
+def test_add_subset():
+
+    # Regression test for a bug that occurred when adding a subset
+    # directly to the table viewer.
+
+    data1 = Data(a=[1, 2, 3, 4, 5], label='test1')
+    data2 = Data(a=[1, 2, 3, 4, 5], label='test2')
+    dc = DataCollection([data1, data2])
+    dc.new_subset_group('test subset 1', data1.id['a'] > 2)
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableViewer)
+    viewer.add_subset(data1.subsets[0])
+
+    assert len(viewer.state.layers) == 2
+    assert not viewer.state.layers[0].visible
+    assert viewer.state.layers[1].visible
+
+    dc.new_subset_group('test subset 2', data1.id['a'] <= 2)
+
+    assert len(viewer.state.layers) == 3
+    assert not viewer.state.layers[0].visible
+    assert viewer.state.layers[1].visible
+    assert viewer.state.layers[2].visible
+
+    viewer.remove_subset(data1.subsets[1])
+
+    assert len(viewer.state.layers) == 2
+    assert not viewer.state.layers[0].visible
+    assert viewer.state.layers[1].visible
+
+    viewer.add_subset(data1.subsets[1])
+
+    assert len(viewer.state.layers) == 3
+    assert not viewer.state.layers[0].visible
+    assert viewer.state.layers[1].visible
+    assert viewer.state.layers[2].visible
+
+    with pytest.raises(ValueError) as exc:
+        viewer.add_subset(data2.subsets[1])
+    assert exc.value.args[0] == 'subset parent data does not match existing table data'

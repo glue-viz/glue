@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v0.15.4 (unreleased)
+--------------------
+
+* Fixed bug that occurred when trying to add a subset to a new table
+  viewer (without the parent data).
+
 v0.15.3 (2019-06-27)
 --------------------
 
