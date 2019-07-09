@@ -45,6 +45,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state.add_callback('density_map', self._update_size_mode)
         self.layer_state.add_callback('density_map', self._update_warnings)
+        self.layer_state.add_callback('density_map', self._update_checkboxes)
 
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -57,6 +58,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self._update_size_mode()
         self._update_vector_mode()
         self._update_cmap_mode()
+
+        self._update_checkboxes()
 
         self._update_warnings()
 
@@ -136,6 +139,16 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.label_size_scaling.setEnabled(self.layer_state.markers_visible)
         self.ui.combosel_points_mode.setEnabled(self.layer_state.markers_visible)
         self.ui.value_density_contrast.setEnabled(self.layer_state.markers_visible)
+
+    def _update_checkboxes(self, *args):
+        for checkbox in [self.ui.bool_line_visible, self.ui.bool_xerr_visible,
+                         self.ui.bool_yerr_visible, self.ui.bool_vector_visible]:
+            if self.layer_state.density_map:
+                checkbox.setEnabled(False)
+                checkbox.setToolTip('Not available with density map')
+            else:
+                checkbox.setEnabled(True)
+                checkbox.setToolTip('')
 
     def _update_line_visible(self, *args):
         self.ui.value_linewidth.setEnabled(self.layer_state.line_visible)

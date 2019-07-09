@@ -13,6 +13,8 @@ v0.15.5 (unreleased)
 
 * Fixed bug with incompatible subsets and density maps. [#2041]
 
+* Make sure that lines/errors/vectors are disabled when in density map mode. [#2041]
+
 v0.15.4 (unreleased)
 --------------------
 

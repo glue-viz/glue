@@ -263,6 +263,7 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.points_mode.set_display_func(self, points_mode_display.get)
 
         self.add_callback('points_mode', self._update_density_map_mode)
+        self.add_callback('density_map', self._on_density_map_change, priority=10000)
 
         ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -341,6 +342,21 @@ class ScatterLayerState(MatplotlibLayerState):
             self.density_map = True
         else:
             self.density_map = False
+
+    def _on_density_map_change(self, *args):
+        # If the density map mode is used, we should disable the lines/errors/vectors
+        if self.density_map:
+            with delay_callback(self,
+                                'line_visible', 'xerr_visible',
+                                'yerr_visible', 'vector_visible'):
+                if self.line_visible:
+                    self.line_visible = False
+                if self.xerr_visible:
+                    self.xerr_visible = False
+                if self.yerr_visible:
+                    self.yerr_visible = False
+                if self.vector_visible:
+                    self.vector_visible = False
 
     def flip_cmap(self):
         """

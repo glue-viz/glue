@@ -623,3 +623,23 @@ class TestScatterViewer(object):
         assert not self.viewer.layers[1].enabled
         assert self.viewer.layers[2].enabled
         assert not self.viewer.layers[3].enabled
+
+    def test_density_map_line_error_vector(self, capsys):
+
+        # Make sure that we don't allow/show lines/errors/vectors
+        # if in density map mode.
+
+        self.viewer.add_data(self.data)
+
+        self.viewer.state.layers[0].line_visible = True
+        self.viewer.state.layers[0].xerr_visible = True
+        self.viewer.state.layers[0].yerr_visible = True
+        self.viewer.state.layers[0].vector_visible = True
+
+        # Setting density_map to True resets the visibility of
+        # lines/errors/vectors.
+        self.viewer.state.layers[0].density_map = True
+        assert not self.viewer.state.layers[0].line_visible
+        assert not self.viewer.state.layers[0].xerr_visible
+        assert not self.viewer.state.layers[0].yerr_visible
+        assert not self.viewer.state.layers[0].vector_visible
