@@ -177,3 +177,13 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].cmap_mode = 'Linear'
         self.viewer.state.layers[0].cmap_mode = 'Fixed'
         self.assert_same(tmpdir)
+
+    def test_density_map_change(self, tmpdir):
+        # Regression test for a bug that caused the density map to still
+        # be visible if using color-coding with the density map then
+        # switching to markers.
+        self.viewer.state.layers[0].density_map = True
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap = plt.cm.BuGn
+        self.viewer.state.layers[0].density_map = False
+        self.assert_same(tmpdir)

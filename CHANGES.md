@@ -6,11 +6,16 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
+v0.15.5 (unreleased)
+--------------------
+
+* Fixed bug with density map visibility when using color-coding. [#2041]
+
 v0.15.4 (unreleased)
 --------------------
 
 * Fixed bug that occurred when trying to add a subset to a new table
-  viewer (without the parent data).
+  viewer (without the parent data). [#2038]
 
 v0.15.3 (2019-06-27)
 --------------------

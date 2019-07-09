@@ -463,7 +463,15 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 artist.set_zorder(self.state.zorder)
 
             if force or 'visible' in changed:
-                artist.set_visible(self.state.visible)
+                # We need to hide the density artist if it is not needed because
+                # otherwise it might still show even if there is no data as the
+                # neutral/zero color might not be white.
+                if artist is self.density_artist:
+                    artist.set_visible(self.state.visible and
+                                       self.state.density_map and
+                                       self.state.markers_visible)
+                else:
+                    artist.set_visible(self.state.visible)
 
         self.redraw()
 
