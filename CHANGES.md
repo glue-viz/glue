@@ -11,6 +11,8 @@ v0.15.5 (unreleased)
 
 * Fixed bug with density map visibility when using color-coding. [#2041]
 
+* Fixed bug with incompatible subsets and density maps. [#2041]
+
 v0.15.4 (unreleased)
 --------------------
 

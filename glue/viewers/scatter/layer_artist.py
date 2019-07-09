@@ -157,7 +157,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                        vmin=self.density_auto_limits.min,
                                                        vmax=self.density_auto_limits.max,
                                                        update_while_panning=False,
-                                                       histogram2d_func=self.state.compute_density_map)
+                                                       histogram2d_func=self.compute_density_map)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -171,6 +171,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # the mask for the values we keep, so that we can apply it to the color
         # See also https://github.com/matplotlib/matplotlib/issues/13799
         self._errorbar_keep = None
+
+    def compute_density_map(self, *args, **kwargs):
+        try:
+            density_map = self.state.compute_density_map(*args, **kwargs)
+        except IncompatibleAttribute:
+            self.disable_invalid_attributes(self._viewer_state.x_att,
+                                            self._viewer_state.y_att)
+            return np.array([[np.nan]])
+        else:
+            self.enable()
+        return density_map
 
     @defer_draw
     def _update_data(self):

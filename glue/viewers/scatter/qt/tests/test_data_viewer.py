@@ -598,3 +598,28 @@ class TestScatterViewer(object):
         assert options.valuetext_y_max.text() == '3.512'
 
         ga.close()
+
+    def test_density_map_incompatible_subset(self, capsys):
+
+        # Regression test for a bug that caused the scatter viewer to crash
+        # if subset for density map was incompatible.
+
+        data2 = Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
+
+        self.data_collection.append(data2)
+
+        self.viewer.add_data(self.data)
+        self.viewer.add_data(data2)
+
+        self.data_collection.new_subset_group('test', self.data.id['x'] > 1)
+
+        for layer in self.viewer.state.layers:
+            layer.density_map = True
+
+        self.viewer.figure.canvas.draw()
+        process_events()
+
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
+        assert self.viewer.layers[2].enabled
+        assert not self.viewer.layers[3].enabled
