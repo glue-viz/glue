@@ -6,7 +6,7 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
-v0.15.5 (unreleased)
+v0.15.5 (2019-07-09)
 --------------------
 
 * Fixed bug with density map visibility when using color-coding. [#2041]
@@ -15,7 +15,7 @@ v0.15.5 (unreleased)
 
 * Make sure that lines/errors/vectors are disabled when in density map mode. [#2041]
 
-v0.15.4 (unreleased)
+v0.15.4 (2019-07-08)
 --------------------
 
 * Fixed bug that occurred when trying to add a subset to a new table
