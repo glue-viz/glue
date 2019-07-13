@@ -26,7 +26,14 @@ Installation
 ------------
 
 For installation documentation, visit
-`glueviz.org <http://glueviz.org>`__
+`glueviz.org <http://glueviz.org>`__.
+
+Contributing
+------------
+
+If you are interested in contributing to ``glue``, please read our `Code of
+Conduct <CODE_OF_CONDUCT.md>`_ and `Contribution Guidelines <CONTRIBUTING
+.md>`_.
 
 Support
 -------
@@ -38,7 +45,7 @@ License
 -------
 
 Glue is licensed under the `BSD
-License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
+License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__.
 
 .. |Travis Status| image:: https://travis-ci.org/glue-viz/glue.svg?branch=master
    :target: https://travis-ci.org/glue-viz/glue
