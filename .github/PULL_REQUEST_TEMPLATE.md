@@ -1,4 +1,4 @@
-# Pull Request Template (adapted from [`embeddedartistry`](https://github.com/embeddedartistry/templates/blob/master/oss_docs/PULL_REQUEST_TEMPLATE.md))
+# Pull Request Template 
 
 ## Description
 
@@ -14,28 +14,12 @@ Fixes # (issue)
 - [ ] Documentation update (please include `[docs only]` in commit message)
 - [ ] This change requires a documentation update
 
-## How Has This Been Tested?
-
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
-
-- [ ] Test A
-- [ ] Test B
-
-**Test Configuration**:
-* Firmware version:
-* Hardware:
-* Toolchain:
-* SDK:
 
 ## Checklist (As relevant):
 
 - [ ] I have read the [Code of Conduct](CODE_OF_CONDUCT.md)
 - [ ] I have read the [Contribution Guidelines](CONTRIBUTING.md)
-- [ ] My code follows the [`astropy` style guidelines](http://docs.astropy.org/en/latest/development/codeguide.html) used for this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+- [ ] My code follows the [`astropy` style guidelines](http://docs.astropy.org/en/latest/development/codeguide.html), used for this project
+
+&nbsp;
+###### (adapted from [`embeddedartistry`](https://github.com/embeddedartistry/templates/blob/master/oss_docs/PULL_REQUEST_TEMPLATE.md))

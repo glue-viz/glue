@@ -1,5 +1,5 @@
-Contributing to `glue` (Adapted from [`astropy`](https://github.com/astropy/astropy))
-================================================
+Contributing to `glue` 
+======================
 
 Reporting Issues
 ----------------
@@ -190,3 +190,6 @@ package.
 **`glue` requirements**
   * Do all the Travis CI, AppVeyor, and CircleCI tests pass?
   * Can you check out the pull request and repeat the examples and tests?
+  
+&nbsp;  
+###### These Contribution Guidelines were adapted from [`astropy`](https://github.com/astropy/astropy)
