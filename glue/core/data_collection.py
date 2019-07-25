@@ -10,7 +10,7 @@ from glue.core.link_manager import LinkManager
 from glue.core.data import Data, BaseCartesianData
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
-from glue.config import settings
+from glue.config import settings, data_translator
 from glue.utils import as_list, common_prefix
 
 
@@ -348,7 +348,40 @@ class DataCollection(HubListener):
         return obj in self._data or obj in self.subset_groups
 
     def __getitem__(self, key):
-        return self._data[key]
+        if isinstance(key, str):
+            matches = [data for data in self._data if data.label == key]
+            if len(matches) == 0:
+                raise ValueError("No data found with the label {0}".format(key))
+            elif len(matches) > 1:
+                raise ValueError("Several datasets were found with the label {0}".format(key))
+            else:
+                return matches[0]
+        else:
+            return self._data[key]
+
+    def __setitem__(self, key, data):
+        """
+        Add a dataset to the data collection.
+
+        This can be either a :class:`~glue.core.data.Data` object, which will
+        then have its label set to the specified key, or another kind of
+        object which will be automatically translated into a
+        :class:`~glue.core.data.Data` object.
+        """
+
+        if not isinstance(key, str):
+            raise TypeError("item key should be a string, but got {0}".format(type(key)))
+
+        if not isinstance(data, Data):
+
+            handler, preferred = data_translator.get_handler_for(data)
+
+            data = handler.to_data(data)
+            data._preferred_translation = preferred
+
+        data.label = key
+
+        self.append(data)
 
     def __iter__(self):
         return iter(self._data)
@@ -377,3 +410,61 @@ class DataCollection(HubListener):
 
     def __nonzero__(self):
         return True
+
+    def get_object(self, key, cls=None):
+        """
+        Get data represented as a non-glue object, using the translation
+        machinery.
+
+        Parameters
+        ----------
+        key : str
+            The name or index of the dataset to retrieve.
+        cls : type, optional
+            The class to use for representing the data object. If a non-glue
+            data object was added to the data collection, it should automatically
+            be returned using the same class as it was provided in, and this
+            argument shouldn't be needed.
+        """
+
+        data = self[key]
+
+        if cls is None:
+            if hasattr(data, '_preferred_translation'):
+                cls = data._preferred_translation
+            else:
+                raise ValueError('Specify the object class to use with cls=')
+
+        handler, _ = data_translator.get_handler_for(cls)
+
+        return handler.to_object(data)
+
+    def get_subset_object(self, label, subset_id=None, cls=None):
+        """
+        Get subset represented as a non-glue object, using the translation
+        machinery.
+
+        Parameters
+        ----------
+        key : str
+            The name or index of the dataset to retrieve.
+        cls : type, optional
+            The class to use for representing the data object. If a non-glue
+            data object was added to the data collection, it should automatically
+            be returned using the same class as it was provided in, and this
+            argument shouldn't be needed.
+        """
+
+        data = self[label]
+
+        if cls is None:
+            if hasattr(data, '_preferred_class'):
+                cls = data._preferred_class
+            else:
+                raise ValueError('Specify the object class to use with cls=')
+
+        subset = data.subsets[subset_id]
+
+        handler, _ = data_translator.get_handler_for(cls)
+
+        return handler.to_object(subset)

@@ -22,7 +22,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
            'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
-           'autolinker']
+           'autolinker',
+           'DataTranslatorRegistry', 'data_translator']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -521,6 +522,42 @@ class SubsetMaskImporterRegistry(DataExporterRegistry):
     item = namedtuple('SubsetMaskImporter', 'function label extension')
 
 
+class DataTranslatorRegistry(Registry):
+    """
+    Stores data translators, which are classes that define methods to translate
+    between :class:`~glue.core.core.Data` objects and other kinds of data
+    containers.
+    """
+
+    item = namedtuple('DataTranslatorRegistry', 'target_cls handler priority')
+
+    def __call__(self, target_cls, priority=0):
+        def adder(handler_cls):
+            self.add(self.item(target_cls, handler_cls(), priority))
+            return handler_cls
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+    def get_handler_for(self, data_or_class):
+        for translator in self:
+            if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_clss:
+                handler = translator.handler
+                preferred = translator.target_cls
+                break
+        else:
+            if isinstance(data_or_class, type):
+                raise TypeError("Could not find a class to translate objects of "
+                                "type {0} to Data".format(data_or_class))
+            else:
+                raise TypeError("Could not find a class to translate objects of "
+                                "type {0} to Data".format(type(data_or_class)))
+        return handler, preferred
+
+
+
 class QtClientRegistry(Registry):
     """
     Stores QT widgets to visualize data.
@@ -854,6 +891,7 @@ data_factory = DataFactoryRegistry()
 data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
+data_translator = DataTranslatorRegistry()
 
 # Backward-compatibility
 single_subset_action = layer_action
