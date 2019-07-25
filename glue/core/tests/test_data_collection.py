@@ -17,6 +17,7 @@ from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMes
                        DataCollectionDeleteMessage, DataAddComponentMessage,
                        ComponentsChangedMessage, PixelAlignedDataChangedMessage)
 from ..exceptions import IncompatibleAttribute
+from ...config import data_translator
 
 from .test_state import clone
 
@@ -528,3 +529,93 @@ class TestDataCollection(object):
         dc.append(v)
 
         assert dc.suggest_merge_label(x, w) == 'Merged data [2]'
+
+
+class FakeDataObject:
+    array = None
+    name = None
+
+
+class AnotherFakeDataObject:
+    pass
+
+
+class TestDataTranslation:
+
+    def setup_method(self, method):
+
+        self.dc = DataCollection()
+
+        @data_translator(FakeDataObject)
+        class FakeDataObjectHandler:
+
+            def to_data(self, obj):
+                data = Data()
+                data[obj.name] = obj.array
+                return data
+
+            def to_object(self, data_or_subset):
+                cid = data_or_subset.main_components[0]
+                obj = FakeDataObject()
+                obj.array = data_or_subset[cid]
+                obj.name = cid.label
+                return obj
+
+    def teardown_method(self, method):
+        data_translator.remove(FakeDataObject)
+
+    def test_basic(self):
+
+        obj = FakeDataObject()
+        obj.array = np.arange(10)
+        obj.name = 'spam'
+
+        assert len(self.dc) == 0
+        self.dc['myobj'] = obj
+        assert len(self.dc) == 1
+        assert self.dc['myobj'] is self.dc[0]
+
+        data = self.dc['myobj']
+        assert isinstance(data, Data)
+        assert_equal(data['spam'], np.arange(10))
+
+        obj_out = self.dc.get_object('myobj')
+        assert isinstance(obj_out, FakeDataObject)
+        assert obj_out is not obj
+        assert_equal(obj_out.array, np.arange(10))
+        assert_equal(obj_out.name, 'spam')
+
+    def test_invalid_set_object(self):
+
+        obj = AnotherFakeDataObject()
+
+        with pytest.raises(TypeError) as exc:
+            self.dc['myobj'] = obj
+        assert exc.value.args[0] == 'Could not find a class to translate objects of type AnotherFakeDataObject to Data'
+
+    def test_invalid_get_object(self):
+
+        self.dc.append(Data(x=np.arange(10), label='test'))
+
+        with pytest.raises(TypeError) as exc:
+            self.dc.get_object('test', cls=AnotherFakeDataObject)
+        assert exc.value.args[0] == 'Could not find a class to translate objects of type Data to AnotherFakeDataObject'
+
+    def test_subset(self):
+
+        obj = FakeDataObject()
+        obj.array = np.arange(10)
+        obj.name = 'spam'
+
+        self.dc['myobj'] = obj
+        self.dc.new_subset_group(subset_state=self.dc['myobj'].id['spam'] > 4.5,
+                                 label='subset 1')
+
+        # Check that the following three are equivalent
+        for subset_id in [None, 0, 'subset 1']:
+
+            subset = self.dc.get_subset_object('myobj')
+
+            assert isinstance(subset, FakeDataObject)
+            assert_equal(subset.array, np.arange(5, 10))
+            assert subset.name == 'spam'

@@ -541,21 +541,25 @@ class DataTranslatorRegistry(Registry):
         for member in sorted(self.members, key=lambda x: -x.priority):
             yield member
 
+    def remove(self, target_cls):
+        for member in self.members[:]:
+            if member.target_cls is target_cls:
+                self.members.remove(member)
+
     def get_handler_for(self, data_or_class):
         for translator in self:
-            if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_clss:
+            if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_cls:
                 handler = translator.handler
                 preferred = translator.target_cls
                 break
         else:
             if isinstance(data_or_class, type):
                 raise TypeError("Could not find a class to translate objects of "
-                                "type {0} to Data".format(data_or_class))
+                                "type Data to {0}".format(data_or_class.__name__))
             else:
                 raise TypeError("Could not find a class to translate objects of "
-                                "type {0} to Data".format(type(data_or_class)))
+                                "type {0} to Data".format(data_or_class.__class__.__name__))
         return handler, preferred
-
 
 
 class QtClientRegistry(Registry):

@@ -458,12 +458,23 @@ class DataCollection(HubListener):
         data = self[label]
 
         if cls is None:
-            if hasattr(data, '_preferred_class'):
-                cls = data._preferred_class
+            if hasattr(data, '_preferred_translation'):
+                cls = data._preferred_translation
             else:
                 raise ValueError('Specify the object class to use with cls=')
 
-        subset = data.subsets[subset_id]
+        if subset_id is None and len(data.subsets) == 1:
+            subset = data.subsets[0]
+        elif isinstance(subset_id, str):
+            matches = [subset for subset in data.subsets if subset.label == subset_id]
+            if len(matches) == 0:
+                raise ValueError("No subset found with the label {0}".format(subset_id))
+            elif len(matches) > 1:
+                raise ValueError("Several subsets were found with the label {0}".format(subset_id))
+            else:
+                subset = matches[0]
+        else:
+            subset = data.subsets[subset_id]
 
         handler, _ = data_translator.get_handler_for(cls)
 
