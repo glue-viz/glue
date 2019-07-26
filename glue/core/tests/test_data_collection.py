@@ -585,15 +585,17 @@ class TestTranslation:
                 return obj
 
         @subset_state_translator('my_subset_translator')
-        class FakeSubsetStateTranslator:
+        class FakeSubsetDefinitionTranslator:
             """
-            A simple subset state translator that only knows how to handle
+            A simple subset translator that only knows how to handle
             InequalitySubsetState and translates it to a custom serialization.
             We include a keyword argument for the translation to make sure it
             gets passed through.
             """
 
-            def to_object(self, subset_state):
+            def to_object(self, subset):
+
+                subset_state = subset.subset_state
 
                 if isinstance(subset_state, InequalitySubsetState):
 
@@ -742,7 +744,7 @@ class TestTranslation:
         # Check that the following three are equivalent
         for subset_id in [None, 0, 'subset 1']:
 
-            result = self.dc.get_selection_definition(subset_id, format='my_subset_translator')
+            result = self.dc.get_selection_definition(subset_id=subset_id, format='my_subset_translator')
 
             assert isinstance(result, CustomSelectionObject)
             assert result.serialized == '{x} gt 1'
@@ -755,20 +757,20 @@ class TestTranslation:
                                  label='subset 1')
 
         with pytest.raises(TypeError) as exc:
-            self.dc.get_selection_definition(0, format='my_subset_translator')
+            self.dc.get_selection_definition(subset_id=0, format='my_subset_translator')
         assert exc.value.args[0] == 'my_subset_translator could not translate subset state of type AndState'
 
         with pytest.raises(ValueError) as exc:
-            self.dc.get_selection_definition(0, format='invalid_translator')
+            self.dc.get_selection_definition(subset_id=0, format='invalid_translator')
         assert exc.value.args[0] == 'No subset state handler found with the format name invalid_translator'
 
         self.dc.new_subset_group(subset_state=(data.id['x'] > 1) & (data.id['x'] < 3),
                                  label='subset 1')
 
         with pytest.raises(ValueError) as exc:
-            self.dc.get_selection_definition('subset 2', format='invalid_translator')
+            self.dc.get_selection_definition(subset_id='subset 2', format='invalid_translator')
         assert exc.value.args[0] == "No subset found with the label 'subset 2'"
 
         with pytest.raises(ValueError) as exc:
-            self.dc.get_selection_definition('subset 1', format='invalid_translator')
+            self.dc.get_selection_definition(subset_id='subset 1', format='invalid_translator')
         assert exc.value.args[0] == "Several subsets were found with the label 'subset 1', use a numerical index instead"

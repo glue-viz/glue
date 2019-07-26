@@ -411,14 +411,14 @@ class DataCollection(HubListener):
     def __nonzero__(self):
         return True
 
-    def get_object(self, key, cls=None):
+    def get_object(self, data_label, cls=None):
         """
         Get data represented as a non-glue object, using the translation
         machinery.
 
         Parameters
         ----------
-        key : str
+        data_label : str
             The name or index of the dataset to retrieve.
         cls : type, optional
             The class to use for representing the data object. If a non-glue
@@ -427,7 +427,17 @@ class DataCollection(HubListener):
             argument shouldn't be needed.
         """
 
-        data = self[key]
+        if len(self) == 0:
+            raise ValueError("No datasets are present in the data collection")
+
+        if data_label is None:
+            if len(self) == 1:
+                data = self[0]
+            else:
+                raise ValueError("Multiple datasets are present in the data collection, "
+                                 "use the data_label argument to specify which one to retrieve.")
+        else:
+            data = self[data_label]
 
         if cls is None:
             if hasattr(data, '_preferred_translation'):
@@ -439,14 +449,14 @@ class DataCollection(HubListener):
 
         return handler.to_object(data)
 
-    def get_subset_object(self, label, subset_id=None, cls=None):
+    def get_subset_object(self, data_label=None, subset_id=None, cls=None):
         """
         Get subset represented as a non-glue object, using the translation
         machinery.
 
         Parameters
         ----------
-        key : str
+        data_label : str
             The name or index of the dataset to retrieve.
         subset_id : str or int, optional
             The name or index of the subset to retrieve.
@@ -457,7 +467,17 @@ class DataCollection(HubListener):
             argument shouldn't be needed.
         """
 
-        data = self[label]
+        if len(self) == 0:
+            raise ValueError("No datasets are present in the data collection")
+
+        if data_label is None:
+            if len(self) == 1:
+                data = self[0]
+            else:
+                raise ValueError("Multiple datasets are present in the data collection, "
+                                 "use the data_label argument to specify which one to retrieve.")
+        else:
+            data = self[data_label]
 
         if cls is None:
             if hasattr(data, '_preferred_translation'):
@@ -482,21 +502,35 @@ class DataCollection(HubListener):
 
         return handler.to_object(subset)
 
-    def get_selection_definition(self, subset_id=None, format=None):
+    def get_selection_definition(self, data_label=None, subset_id=None, format=None):
         """
         Get subset state represented as a non-glue object, using the translation
         machinery.
 
         Parameters
         ----------
+        data_label : str, optional
+            The name or index of the dataset to retrieve the subset for.
         subset_id : str or int, optional
             The name or index of the subset to retrieve.
         format : str, optional
             The format to translate the subset state to.
         """
 
-        if subset_id is None and len(self.subset_groups) == 1:
-            subset_state = self.subset_groups[0].subset_state
+        if len(self) == 0:
+            raise ValueError("No datasets are present in the data collection")
+
+        if data_label is None:
+            if len(self) == 1:
+                data = self[0]
+            else:
+                raise ValueError("Multiple datasets are present in the data collection, "
+                                 "use the data_label argument to specify which one to retrieve.")
+        else:
+            data = self[data_label]
+
+        if subset_id is None and len(data.subsets) == 1:
+            subset = data.subsets[0]
         elif isinstance(subset_id, str):
             matches = [subset for subset in self.subset_groups if subset.label == subset_id]
             if len(matches) == 0:
@@ -504,10 +538,10 @@ class DataCollection(HubListener):
             elif len(matches) > 1:
                 raise ValueError("Several subsets were found with the label '{0}', use a numerical index instead".format(subset_id))
             else:
-                subset_state = matches[0].subset_state
+                subset = matches[0]
         else:
-            subset_state = self.subset_groups[subset_id].subset_state
+            subset = data.subsets[subset_id]
 
         handler = subset_state_translator.get_handler_for(format)
 
-        return handler.to_object(subset_state)
+        return handler.to_object(subset)

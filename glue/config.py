@@ -24,7 +24,7 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
            'autolinker',
            'DataTranslatorRegistry', 'data_translator',
-           'SubsetStateTranslatorRegistry', 'subset_state_translator']
+           'SubsetDefinitionTranslatorRegistry', 'subset_state_translator']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -563,14 +563,14 @@ class DataTranslatorRegistry(Registry):
         return handler, preferred
 
 
-class SubsetStateTranslatorRegistry(Registry):
+class SubsetDefinitionTranslatorRegistry(Registry):
     """
     Stores subset state translators, which are classes that define methods to
     translate between :class:`~glue.core.subset.SubsetState` objects and other
     kinds of selection representations.
     """
 
-    item = namedtuple('SubsetStateTranslator', 'format handler priority')
+    item = namedtuple('SubsetDefinitionTranslator', 'format handler priority')
 
     def __call__(self, format, priority=0):
         def adder(handler_cls):
@@ -929,7 +929,7 @@ data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
 data_translator = DataTranslatorRegistry()
-subset_state_translator = SubsetStateTranslatorRegistry()
+subset_state_translator = SubsetDefinitionTranslatorRegistry()
 
 # Backward-compatibility
 single_subset_action = layer_action
