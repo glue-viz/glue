@@ -23,7 +23,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
            'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
            'autolinker',
-           'DataTranslatorRegistry', 'data_translator']
+           'DataTranslatorRegistry', 'data_translator',
+           'SubsetStateTranslatorRegistry', 'subset_state_translator']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -529,7 +530,7 @@ class DataTranslatorRegistry(Registry):
     containers.
     """
 
-    item = namedtuple('DataTranslatorRegistry', 'target_cls handler priority')
+    item = namedtuple('DataTranslator', 'target_cls handler priority')
 
     def __call__(self, target_cls, priority=0):
         def adder(handler_cls):
@@ -560,6 +561,38 @@ class DataTranslatorRegistry(Registry):
                 raise TypeError("Could not find a class to translate objects of "
                                 "type {0} to Data".format(data_or_class.__class__.__name__))
         return handler, preferred
+
+
+class SubsetStateTranslatorRegistry(Registry):
+    """
+    Stores subset state translators, which are classes that define methods to
+    translate between :class:`~glue.core.subset.SubsetState` objects and other
+    kinds of selection representations.
+    """
+
+    item = namedtuple('SubsetStateTranslator', 'format handler priority')
+
+    def __call__(self, format, priority=0):
+        def adder(handler_cls):
+            self.add(self.item(format, handler_cls(), priority))
+            return handler_cls
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+    def remove(self, format):
+        for member in self.members[:]:
+            if member.format is format:
+                self.members.remove(member)
+
+    def get_handler_for(self, format):
+        for translator in self:
+            if translator.format == format:
+                return translator.handler
+        raise ValueError("No subset state handler found with the format "
+                         "name {0}".format(format))
 
 
 class QtClientRegistry(Registry):
@@ -896,6 +929,7 @@ data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
 data_translator = DataTranslatorRegistry()
+subset_state_translator = SubsetStateTranslatorRegistry()
 
 # Backward-compatibility
 single_subset_action = layer_action

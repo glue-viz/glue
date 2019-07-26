@@ -10,7 +10,7 @@ from glue.core.link_manager import LinkManager
 from glue.core.data import Data, BaseCartesianData
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
-from glue.config import settings, data_translator
+from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import as_list, common_prefix
 
 
@@ -351,9 +351,9 @@ class DataCollection(HubListener):
         if isinstance(key, str):
             matches = [data for data in self._data if data.label == key]
             if len(matches) == 0:
-                raise ValueError("No data found with the label {0}".format(key))
+                raise ValueError("No data found with the label '{0}'".format(key))
             elif len(matches) > 1:
-                raise ValueError("Several datasets were found with the label {0}".format(key))
+                raise ValueError("Several datasets were found with the label '{0}'".format(key))
             else:
                 return matches[0]
         else:
@@ -448,6 +448,8 @@ class DataCollection(HubListener):
         ----------
         key : str
             The name or index of the dataset to retrieve.
+        subset_id : str or int, optional
+            The name or index of the subset to retrieve.
         cls : type, optional
             The class to use for representing the data object. If a non-glue
             data object was added to the data collection, it should automatically
@@ -468,9 +470,9 @@ class DataCollection(HubListener):
         elif isinstance(subset_id, str):
             matches = [subset for subset in data.subsets if subset.label == subset_id]
             if len(matches) == 0:
-                raise ValueError("No subset found with the label {0}".format(subset_id))
+                raise ValueError("No subset found with the label '{0}'".format(subset_id))
             elif len(matches) > 1:
-                raise ValueError("Several subsets were found with the label {0}".format(subset_id))
+                raise ValueError("Several subsets were found with the label '{0}', use a numerical index instead".format(subset_id))
             else:
                 subset = matches[0]
         else:
@@ -479,3 +481,33 @@ class DataCollection(HubListener):
         handler, _ = data_translator.get_handler_for(cls)
 
         return handler.to_object(subset)
+
+    def get_selection_definition(self, subset_id=None, format=None):
+        """
+        Get subset state represented as a non-glue object, using the translation
+        machinery.
+
+        Parameters
+        ----------
+        subset_id : str or int, optional
+            The name or index of the subset to retrieve.
+        format : str, optional
+            The format to translate the subset state to.
+        """
+
+        if subset_id is None and len(self.subset_groups) == 1:
+            subset_state = self.subset_groups[0].subset_state
+        elif isinstance(subset_id, str):
+            matches = [subset for subset in self.subset_groups if subset.label == subset_id]
+            if len(matches) == 0:
+                raise ValueError("No subset found with the label '{0}'".format(subset_id))
+            elif len(matches) > 1:
+                raise ValueError("Several subsets were found with the label '{0}', use a numerical index instead".format(subset_id))
+            else:
+                subset_state = matches[0].subset_state
+        else:
+            subset_state = self.subset_groups[subset_id].subset_state
+
+        handler = subset_state_translator.get_handler_for(format)
+
+        return handler.to_object(subset_state)

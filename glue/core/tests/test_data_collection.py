@@ -17,7 +17,8 @@ from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMes
                        DataCollectionDeleteMessage, DataAddComponentMessage,
                        ComponentsChangedMessage, PixelAlignedDataChangedMessage)
 from ..exceptions import IncompatibleAttribute
-from ...config import data_translator
+from ..subset import InequalitySubsetState
+from ...config import data_translator, subset_state_translator
 
 from .test_state import clone
 
@@ -122,6 +123,24 @@ class TestDataCollection(object):
     def test_get_item(self):
         self.dc.append(self.data)
         assert self.dc[0] is self.data
+
+    def test_get_item_str(self):
+
+        data = Data(label='test')
+        self.dc.append(data)
+
+        assert self.dc['test'] is data
+
+        with pytest.raises(ValueError) as exc:
+            self.dc['spam']
+        assert exc.value.args[0] == "No data found with the label 'spam'"
+
+        data2 = Data(label='test')
+        self.dc.append(data2)
+
+        with pytest.raises(ValueError) as exc:
+            self.dc['test']
+        assert exc.value.args[0] == "Several datasets were found with the label 'test'"
 
     def test_iter(self):
         self.dc.append(self.data)
@@ -540,7 +559,11 @@ class AnotherFakeDataObject:
     pass
 
 
-class TestDataTranslation:
+class CustomSelectionObject:
+    serialized = None
+
+
+class TestTranslation:
 
     def setup_method(self, method):
 
@@ -561,10 +584,43 @@ class TestDataTranslation:
                 obj.name = cid.label
                 return obj
 
+        @subset_state_translator('my_subset_translator')
+        class FakeSubsetStateTranslator:
+            """
+            A simple subset state translator that only knows how to handle
+            InequalitySubsetState and translates it to a custom serialization.
+            We include a keyword argument for the translation to make sure it
+            gets passed through.
+            """
+
+            def to_object(self, subset_state):
+
+                if isinstance(subset_state, InequalitySubsetState):
+
+                    if isinstance(subset_state.left, ComponentID):
+                        left = '{' + subset_state.left.label + '}'
+                    else:
+                        left = subset_state.left
+
+                    if isinstance(subset_state.right, ComponentID):
+                        right = '{' + subset_state.right.label + '}'
+                    else:
+                        right = subset_state.right
+
+                    c = CustomSelectionObject()
+                    c.serialized = '{0} {1} {2}'.format(left, subset_state.operator.__name__, right)
+
+                    return c
+
+                else:
+                    raise TypeError("my_subset_translator could not translate "
+                                    "subset state of type {0}".format(subset_state.__class__.__name__))
+
     def teardown_method(self, method):
         data_translator.remove(FakeDataObject)
+        subset_state_translator.remove('my_subset_translator')
 
-    def test_basic(self):
+    def test_get_object_basic(self):
 
         obj = FakeDataObject()
         obj.array = np.arange(10)
@@ -585,7 +641,7 @@ class TestDataTranslation:
         assert_equal(obj_out.array, np.arange(10))
         assert_equal(obj_out.name, 'spam')
 
-    def test_invalid_set_object(self):
+    def test_set_object_invalid(self):
 
         obj = AnotherFakeDataObject()
 
@@ -593,7 +649,7 @@ class TestDataTranslation:
             self.dc['myobj'] = obj
         assert exc.value.args[0] == 'Could not find a class to translate objects of type AnotherFakeDataObject to Data'
 
-    def test_invalid_get_object(self):
+    def test_get_object_invalid(self):
 
         self.dc.append(Data(x=np.arange(10), label='test'))
 
@@ -601,7 +657,21 @@ class TestDataTranslation:
             self.dc.get_object('test', cls=AnotherFakeDataObject)
         assert exc.value.args[0] == 'Could not find a class to translate objects of type Data to AnotherFakeDataObject'
 
-    def test_subset(self):
+    def test_get_object_explicit_class(self):
+
+        data = Data(x=[1, 2, 3], label='myobj')
+        self.dc.append(data)
+
+        with pytest.raises(ValueError) as exc:
+            obj_out = self.dc.get_object('myobj')
+        assert exc.value.args[0] == 'Specify the object class to use with cls='
+
+        obj_out = self.dc.get_object('myobj', cls=FakeDataObject)
+        assert isinstance(obj_out, FakeDataObject)
+        assert_equal(obj_out.array, [1, 2, 3])
+        assert_equal(obj_out.name, 'x')
+
+    def test_get_object_subset(self):
 
         obj = FakeDataObject()
         obj.array = np.arange(10)
@@ -614,8 +684,91 @@ class TestDataTranslation:
         # Check that the following three are equivalent
         for subset_id in [None, 0, 'subset 1']:
 
-            subset = self.dc.get_subset_object('myobj')
+            subset = self.dc.get_subset_object('myobj', subset_id=subset_id)
 
             assert isinstance(subset, FakeDataObject)
             assert_equal(subset.array, np.arange(5, 10))
             assert subset.name == 'spam'
+
+    def test_get_object_subset_explicit_class(self):
+
+        data = Data(x=np.arange(10), label='myobj')
+        self.dc.append(data)
+
+        self.dc.new_subset_group(subset_state=data.id['x'] > 4.5,
+                                 label='subset 1')
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_subset_object('myobj', subset_id=0)
+        assert exc.value.args[0] == 'Specify the object class to use with cls='
+
+        subset = self.dc.get_subset_object('myobj', subset_id=0, cls=FakeDataObject)
+
+        assert isinstance(subset, FakeDataObject)
+        assert_equal(subset.array, np.arange(5, 10))
+        assert subset.name == 'x'
+
+    def test_get_object_subset_invalid(self):
+
+        data = Data(x=np.arange(10), label='myobj')
+        self.dc.append(data)
+
+        self.dc.new_subset_group(subset_state=data.id['x'] > 4.5,
+                                 label='subset 1')
+        self.dc.new_subset_group(subset_state=data.id['x'] > 3.5,
+                                 label='subset 1')
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_subset_object('myobj', subset_id='subset 2', cls=FakeDataObject)
+        assert exc.value.args[0] == "No subset found with the label 'subset 2'"
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_subset_object('myobj', subset_id='subset 1', cls=FakeDataObject)
+        assert exc.value.args[0] == "Several subsets were found with the label 'subset 1', use a numerical index instead"
+
+        subset = self.dc.get_subset_object('myobj', subset_id=0, cls=FakeDataObject)
+
+        assert isinstance(subset, FakeDataObject)
+        assert_equal(subset.array, np.arange(5, 10))
+        assert subset.name == 'x'
+
+    def test_get_selection_basic(self):
+
+        data = Data(x=[1, 2, 3], label='basic')
+        self.dc.append(data)
+        self.dc.new_subset_group(subset_state=data.id['x'] > 1,
+                                 label='subset 1')
+
+        # Check that the following three are equivalent
+        for subset_id in [None, 0, 'subset 1']:
+
+            result = self.dc.get_selection_definition(subset_id, format='my_subset_translator')
+
+            assert isinstance(result, CustomSelectionObject)
+            assert result.serialized == '{x} gt 1'
+
+    def test_get_selection_invalid(self):
+
+        data = Data(x=[1, 2, 3], label='basic')
+        self.dc.append(data)
+        self.dc.new_subset_group(subset_state=(data.id['x'] > 1) & (data.id['x'] < 3),
+                                 label='subset 1')
+
+        with pytest.raises(TypeError) as exc:
+            self.dc.get_selection_definition(0, format='my_subset_translator')
+        assert exc.value.args[0] == 'my_subset_translator could not translate subset state of type AndState'
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_selection_definition(0, format='invalid_translator')
+        assert exc.value.args[0] == 'No subset state handler found with the format name invalid_translator'
+
+        self.dc.new_subset_group(subset_state=(data.id['x'] > 1) & (data.id['x'] < 3),
+                                 label='subset 1')
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_selection_definition('subset 2', format='invalid_translator')
+        assert exc.value.args[0] == "No subset found with the label 'subset 2'"
+
+        with pytest.raises(ValueError) as exc:
+            self.dc.get_selection_definition('subset 1', format='invalid_translator')
+        assert exc.value.args[0] == "Several subsets were found with the label 'subset 1', use a numerical index instead"
