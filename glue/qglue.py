@@ -182,6 +182,7 @@ def qglue(**kwargs):
     """
     from glue.core import DataCollection
     from glue.app.qt import GlueApplication
+    from glue.dialogs.autolinker.qt import run_autolinker
 
     links = kwargs.pop('links', None)
 
@@ -194,6 +195,7 @@ def qglue(**kwargs):
 
     with restore_io():
         ga = GlueApplication(dc)
+        run_autolinker(dc)
         ga.start()
 
     return ga
