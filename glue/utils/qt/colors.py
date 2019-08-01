@@ -194,7 +194,7 @@ class QColormapCombo(QtWidgets.QComboBox):
     def __init__(self, *args, **kwargs):
         super(QColormapCombo, self).__init__(*args, **kwargs)
         for label, cmap in config.colormaps:
-            self.addItem("", userData=UserDataWrapper(cmap))
+            self.addItem(label, userData=UserDataWrapper(cmap))
         self._update_icons()
 
     def _update_icons(self):
