@@ -1532,9 +1532,9 @@ class Data(BaseCartesianData):
         if random_subset and data.size > random_subset:
             if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
                 self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
-            data = data.ravel()[self._random_subset_indices[1]]
+            data = data.ravel(order="K")[self._random_subset_indices[1]]
             if mask is not None:
-                mask = mask.ravel()[self._random_subset_indices[1]]
+                mask = mask.ravel(order="K")[self._random_subset_indices[1]]
 
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)
