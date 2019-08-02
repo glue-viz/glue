@@ -80,11 +80,17 @@ class WCSLink(MultiLink):
 
             cids1 = data1.pixel_component_ids
             cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
-                                     cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
+                               cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
+
+            if wcs1_celestial.wcs.lng > wcs1_celestial.wcs.lat:
+                cids1_celestial = cids1_celestial[::-1]
 
             cids2 = data2.pixel_component_ids
             cids2_celestial = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1],
-                                     cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
+                               cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
+
+            if wcs2_celestial.wcs.lng > wcs2_celestial.wcs.lat:
+                cids2_celestial = cids2_celestial[::-1]
 
             pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1_celestial, wcs2_celestial,
                                                                                    cids1_celestial, cids2_celestial)
