@@ -359,7 +359,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         else:
             return view_shape(shape_slice, view)
 
-    def get_sliced_data(self, view=None):
+    def get_sliced_data(self, view=None, use_cache=True):
 
         # Getting the sliced data can be computationally expensive in some cases
         # in particular when reprojecting data/subsets. To avoid recomputing
@@ -384,7 +384,7 @@ class BaseImageLayerState(MatplotlibLayerState):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
 
-        if self._image_cache is not None:
+        if self._image_cache is not None and use_cache:
             if view == self._image_cache['view']:
                 return self._image_cache['image']
 
