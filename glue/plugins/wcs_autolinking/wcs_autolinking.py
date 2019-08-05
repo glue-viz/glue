@@ -58,8 +58,8 @@ class WCSLink(MultiLink):
                 # not do premature optimization.
 
                 pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1, wcs2,
-                                                                                       data1.pixel_component_ids,
-                                                                                       data2.pixel_component_ids)
+                                                                                       data1.pixel_component_ids[::-1],
+                                                                                       data2.pixel_component_ids[::-1])
 
                 self._physical_types_1 = wcs1.world_axis_physical_types
                 self._physical_types_2 = wcs2.world_axis_physical_types

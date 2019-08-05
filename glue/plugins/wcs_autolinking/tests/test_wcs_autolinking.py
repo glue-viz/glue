@@ -97,18 +97,18 @@ def test_wcs_autolink_spectral_cube():
     link = links[0]
     assert isinstance(link, MultiLink)
     assert len(link) == 6
-    assert link[0].get_to_id() == pz2
-    assert link[0].get_from_ids() == [pz1, py1, px1]
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [px1, py1, pz1]
     assert link[1].get_to_id() == py2
-    assert link[1].get_from_ids() == [pz1, py1, px1]
-    assert link[2].get_to_id() == px2
-    assert link[2].get_from_ids() == [pz1, py1, px1]
-    assert link[3].get_to_id() == pz1
-    assert link[3].get_from_ids() == [pz2, py2, px2]
+    assert link[1].get_from_ids() == [px1, py1, pz1]
+    assert link[2].get_to_id() == pz2
+    assert link[2].get_from_ids() == [px1, py1, pz1]
+    assert link[3].get_to_id() == px1
+    assert link[3].get_from_ids() == [px2, py2, pz2]
     assert link[4].get_to_id() == py1
-    assert link[4].get_from_ids() == [pz2, py2, px2]
-    assert link[5].get_to_id() == px1
-    assert link[5].get_from_ids() == [pz2, py2, px2]
+    assert link[4].get_from_ids() == [px2, py2, pz2]
+    assert link[5].get_to_id() == pz1
+    assert link[5].get_from_ids() == [px2, py2, pz2]
 
 
 def test_wcs_autolink_image_and_spectral_cube():
@@ -140,12 +140,12 @@ def test_wcs_autolink_image_and_spectral_cube():
     assert isinstance(link, MultiLink)
     assert len(link) == 4
     assert link[0].get_to_id() == px2
-    assert link[0].get_from_ids() == [py1, px1]
+    assert link[0].get_from_ids() == [px1, py1]
     assert link[1].get_to_id() == pz2
-    assert link[1].get_from_ids() == [py1, px1]
-    assert link[2].get_to_id() == py1
+    assert link[1].get_from_ids() == [px1, py1]
+    assert link[2].get_to_id() == px1
     assert link[2].get_from_ids() == [px2, pz2]
-    assert link[3].get_to_id() == px1
+    assert link[3].get_to_id() == py1
     assert link[3].get_from_ids() == [px2, pz2]
 
 
