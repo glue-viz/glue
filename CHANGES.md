@@ -22,6 +22,8 @@ v0.15.6 (unreleased)
 
 * Fixed a deprecation warning related to ``add_datasets``. [#2052]
 
+* Fixed compatibility with Python 3.7.4. [#2052]
+
 v0.15.5 (2019-07-09)
 --------------------
 
