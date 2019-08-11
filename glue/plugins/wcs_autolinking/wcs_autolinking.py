@@ -65,6 +65,7 @@ class WCSLink(MultiLink):
                 self._physical_types_2 = wcs2.world_axis_physical_types
 
         if not forwards or not backwards:
+
             # Try setting only a celestial link. We try and extract the celestial
             # WCS, which will only work if the celestial coordinates are separable.
             # TODO: find a more generalized APE 14-compatible way to do this.

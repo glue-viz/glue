@@ -24,7 +24,7 @@ class PixelSubsetState(SliceSubsetState):
 
             if data is not self.reference_data:
                 pix_coord_out = self._to_linked_pixel_coords(data)
-                pix_coord_out = tuple([slice(None) if p is None else slice(p, p+1) for p in pix_coord_out])
+                pix_coord_out = tuple([slice(None) if p is None else slice(p, p + 1) for p in pix_coord_out])
                 return data[att, pix_coord_out]
 
         raise IncompatibleAttribute()

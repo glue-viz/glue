@@ -6,6 +6,20 @@ v0.16.0 (unreleased)
 
 * No changes yet.
 
+v0.15.6 (unreleased)
+--------------------
+
+* Fixed bugs related to auto-linking of astronomical data with WCS information. In
+  particular, links between datasets with celestial coordinates in a different order
+  or links between some higher dimensional datasets with celestial axes did not
+  always work correctly. [#2052]
+
+* Fixed a bug that caused the auto-linking framework to not run when opening glue from
+  the ``qglue()`` function. [#2052]
+
+* Fixed a limitation that caused pixel selections to not propagate to other datasets.
+  [#2052]
+
 v0.15.5 (2019-07-09)
 --------------------
 
