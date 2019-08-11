@@ -20,6 +20,8 @@ v0.15.6 (unreleased)
 * Fixed a limitation that caused pixel selections to not propagate to other datasets.
   [#2052]
 
+* Fixed a deprecation warning related to ``add_datasets``. [#2052]
+
 v0.15.5 (2019-07-09)
 --------------------
 

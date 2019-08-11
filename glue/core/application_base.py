@@ -203,8 +203,7 @@ class Application(HubListener):
             else:
                 datasets.extend(result)
 
-        self.add_datasets(self.data_collection, datasets,
-                          auto_merge=auto_merge, **kwargs)
+        self.add_datasets(datasets, auto_merge=auto_merge, **kwargs)
 
         if len(datasets) == 1:
             return datasets[0]
@@ -238,7 +237,7 @@ class Application(HubListener):
         for label, data in kwargs.items():
             datasets.extend(parse_data(data, label))
 
-        self.add_datasets(self.data_collection, datasets)
+        self.add_datasets(datasets)
 
         if links is not None:
             self.data_collection.add_link(parse_links(self.data_collection, links))

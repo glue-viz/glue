@@ -246,7 +246,7 @@ class ImportHelper(object):
             return
 
         if data_importer is None:
-            app.add_datasets(app.data_collection, data_wizard())
+            app.add_datasets(data_wizard())
         else:
             data = data_importer()
             if not isinstance(data, list):
@@ -256,7 +256,7 @@ class ImportHelper(object):
                 if not isinstance(item, BaseData):
                     raise TypeError("Data loader should return list of "
                                     "Data objects")
-            app.add_datasets(app.data_collection, data)
+            app.add_datasets(data)
 
 
 class GlueApplication(Application, QtWidgets.QMainWindow):
