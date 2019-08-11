@@ -139,7 +139,8 @@ class WCSLink(MultiLink):
 def wcs_autolink(data_collection):
 
     # Find subset of datasets with WCS coordinates
-    wcs_datasets = [data for data in data_collection if isinstance(data.coords, WCSCoordinates)]
+    wcs_datasets = [data for data in data_collection
+                    if hasattr(data, 'coords') and isinstance(data.coords, WCSCoordinates)]
 
     # Only continue if there are at least two such datasets
     if len(wcs_datasets) < 2:
