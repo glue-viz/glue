@@ -72,12 +72,13 @@ class ProfileTools(QtWidgets.QWidget):
 
         super(ProfileTools, self).__init__(parent=parent)
 
+        self._viewer = weakref.ref(parent)
+
         self.ui = load_ui('profile_tools.ui', self,
                           directory=os.path.dirname(__file__))
 
         fix_tab_widget_fontsize(self.ui.tabs)
 
-        self._viewer = weakref.ref(parent)
         self.image_viewer = None
 
     @property
