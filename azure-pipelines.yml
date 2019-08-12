@@ -3,7 +3,20 @@ jobs:
 - template: azure-template.yml
   parameters:
     envs:
-    - linux: py36_test_pyqt511
-    - linux: py36_test_pyqt512
-    - macosx: py36_test_pyqt59
+    - linux: py36_test_pyqt56
+    - linux: py36_test_pyqt57
+    - linux: py36_test_pyqt58
+    - linux: py36_test_pyqt59
+    - linux: py37_test_pyqt510
+    - linux: py37_test_pyqt511
+    - linux: py37_test_pyqt512
+    - linux: py37_test_pyqt513
+    - linux: py27_test_pyside511
+    - linux: py36_test_pyside512
+    - linux: py37_test_pyside513
+    - macosx: py36_test_pyqt513
+    - macosx: py37_test_pyqt513
+    - macosx: py37_test_pyside513
     - windows: py36_test_pyqt510
+    - windows: py37_test_pyqt510
+    - windows: py37_test_pyside513
