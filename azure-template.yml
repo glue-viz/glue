@@ -1,0 +1,49 @@
+parameters:
+  tox_pre: ''
+  tox_test_env: ''
+  envs: []
+
+jobs:
+- ${{ each env in parameters.envs }}:
+
+  - job: ${{ parameters.name }}_${{ env }}
+    pool:
+      ${{ if eq(parameters.os, 'macosx') }}:
+        vmImage: macOS 10.13
+      ${{ if eq(parameters.os, 'linux') }}:
+        vmImage: Ubuntu 16.04
+      ${{ if eq(parameters.os, 'windows') }}:
+        vmImage: vs2017-win2016
+
+    steps:
+
+    - ${{ if eq(parameters.os, 'linux') }}:
+      - bash: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+                                  --make-pidfile --background --exec /usr/bin/Xvfb \
+                                  -- :99 -screen 0 1920x1200x24 -ac \
+                                  +extension GLX +render -noreset
+        displayName: Starting Xvfb
+
+      - bash: sudo apt-get install -y libxkbcommon-x11-0
+        displayName: Installing xcb
+
+    - task: UsePythonVersion@0
+      inputs:
+        ${{ if or(eq(env, 'py27'), startsWith(env, 'py27_')) }}:
+          versionSpec: '2.7'
+        ${{ if or(eq(env, 'py36'), startsWith(env, 'py36_')) }}:
+          versionSpec: '3.6'
+        ${{ if or(eq(env, 'py37'), startsWith(env, 'py37_')) }}:
+          versionSpec: '3.7'
+        architecture: 'x64'
+
+    - bash: python -m pip install tox
+      displayName: Installing tox
+
+    - bash: |
+        env_name=${{ env }}
+        python -m tox -e ${env_name//_/-}
+      displayName: Running tox
+      env:
+        DISPLAY: :99.0

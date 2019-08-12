@@ -1,0 +1,23 @@
+jobs:
+
+- template: azure-template.yml
+  parameters:
+    name: Linux
+    os: linux
+    envs:
+    - py36_test_pyqt511
+    - py36_test_pyqt512
+
+- template: azure-template.yml
+  parameters:
+    name: MacOSX
+    os: macosx
+    envs:
+    - py36_test_pyqt59
+
+- template: azure-template.yml
+  parameters:
+    name: Windows
+    os: windows
+    envs:
+    - py36_test_pyqt510
