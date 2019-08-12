@@ -4,19 +4,19 @@ jobs:
   parameters:
     envs:
     - linux: pep8
-    - linux: py36_test_pyqt57
+    - linux: py36_test_pyqt57_all
     - linux: py36_test_pyqt58
-    - linux: py36_test_pyqt59
+    - linux: py36_test_pyqt59_all
     - linux: py37_test_pyqt510
-    - linux: py37_test_pyqt511
+    - linux: py37_test_pyqt511_all
     - linux: py37_test_pyqt512
-    - linux: py37_test_pyqt513
-    - linux: py27_test_pyside511
+    - linux: py37_test_pyqt513_all
     - linux: py36_test_pyside512
-    - linux: py37_test_pyside513
+    - linux: py37_test_pyside513_all
+    - linux: py37_test_pyside513_dev_all
     - macosx: py36_test_pyqt513
-    - macosx: py37_test_pyqt513
+    - macosx: py37_test_pyqt513_all
     - macosx: py37_test_pyside513
     - windows: py36_test_pyqt510
     - windows: py37_test_pyqt510
-    - windows: py37_test_pyside513
+    - windows: py37_test_pyside513_all
