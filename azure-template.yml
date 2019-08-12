@@ -48,3 +48,12 @@ jobs:
         displayName: Running tox
         env:
           DISPLAY: :99.0
+
+      - bash: |
+          # Note that we use coverage combine below rather than moving the file, so that .coveragerc
+          # gets taken into account.
+          python -m pip install coverage codecov
+          coverage combine .tmp/*/.coverage
+          coverage report
+          python -m codecov --name ${{ pair.key }}_${{ pair.value }} -t $(codecov.token)
+        displayName: Uploading results to codecov

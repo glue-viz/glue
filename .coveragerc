@@ -7,6 +7,12 @@ omit =
   glue/external/*
   */site-packages/*
 
+[paths]
+source =
+    glue/
+    */site-packages/glue
+    *\site-packages\glue
+
 [report]
 omit =
   glue/*tests/*

@@ -139,9 +139,9 @@ gui_framework = (
 )
 
 required = (
-    QtPy('qtpy', 'Required', min_version='1.2'),
+    QtPy('qtpy', 'Required', min_version='1.3'),
     Dependency('setuptools', 'Required', min_version='1.0'),
-    Dependency('numpy', 'Required', min_version='1.9'),
+    Dependency('numpy', 'Required', min_version='1.11'),
     Dependency('bottleneck', 'Required', min_version='1.2'),
     Dependency('matplotlib', 'Required for plotting', min_version='2.1'),
     Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),

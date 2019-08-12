@@ -40,66 +40,6 @@ matrix:
 
     include:
 
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=2.7
-
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=3.6
-
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=3.7
-               NUMPY_VERSION=1.14
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=2.7
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=3.6
-
-        # Astropy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               ASTROPY_VERSION=dev
-
-        # Numpy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               NUMPY_VERSION=dev
-
-        # The following configuration tests that glue functions with minimal
-        # dependencies.
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole bottleneck mpl-scatter-density"
-               PIP_DEPENDENCIES="pytest-cov codecov flake8"
-               REMOVE_INSTALL_REQUIRES=1
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               DOC_TRIGGER=1
-               PYTEST_ARGS="--no-optional-skip"
-               NO_CFG_FILES=true
-
-        # Test with older package versions:
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=2.1
-               PANDAS_VERSION=0.20
-               SETUPTOOLS=1.0
-               IPYTHON_VERSION=4
-               NUMPY_VERSION=1.12
-
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
@@ -108,8 +48,6 @@ matrix:
           env: PYTHON_VERSION=3.6
                PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
-
-
 
 before_install:
 
