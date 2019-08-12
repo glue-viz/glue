@@ -3,7 +3,7 @@ jobs:
 - template: azure-template.yml
   parameters:
     envs:
-    - linux: py36_test_pyqt56
+    - linux: pep8
     - linux: py36_test_pyqt57
     - linux: py36_test_pyqt58
     - linux: py36_test_pyqt59
