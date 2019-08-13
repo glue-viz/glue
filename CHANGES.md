@@ -17,7 +17,9 @@ v0.15.6 (unreleased)
 
 * Fixed a deprecation warning related to ``add_datasets``. [#2052]
 
-* Fixed compatibility with Python 3.7.4. [#2052]
+* Fixed compatibility with Python 3.7.4. [#2060]
+
+* Fixed performance issue with arrays that were not in native C order. [#2056]
 
 v0.15.5 (2019-07-09)
 --------------------
