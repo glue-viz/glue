@@ -44,7 +44,7 @@ jobs:
 
       - bash: |
           env_name=${{ pair.value }}
-          python -m tox -e ${env_name//_/-} --cov-report= --junitxml=test-results.xml
+          python -m tox -e ${env_name//_/-} -- --cov-report= --junitxml=test-results.xml
         displayName: Running tox
         env:
           DISPLAY: :99.0
