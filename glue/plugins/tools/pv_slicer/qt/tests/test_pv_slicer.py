@@ -125,6 +125,9 @@ class TestPVSliceTool(object):
 
         self.viewer.toolbar.active_tool = 'slice'
 
+        self.viewer.axes.figure.canvas.draw()
+        process_events()
+
         x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
         self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
         x, y = self.viewer.axes.transData.transform([[7.2, 6.6]])[0]
