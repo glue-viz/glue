@@ -22,7 +22,6 @@ jobs:
     - linux: py37_test_pyside513_dev_all
 
     # Test a few configurations on MacOS X
-    - macosx: py27_test_pyside511_legacy
     - macosx: py36_test_pyqt513
     - macosx: py37_test_pyqt513_all
     - macosx: py37_test_pyside513
