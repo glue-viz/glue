@@ -1,5 +1,4 @@
-|Travis Status| |AppVeyor status| |Coverage Status| |DOI| |User mailing
-list| |Developer mailing list|
+|Azure Status| |Coverage Status| |DOI| |User mailing list| |Developer mailing list|
 
 Glue
 ====
@@ -40,10 +39,8 @@ License
 Glue is licensed under the `BSD
 License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
 
-.. |Travis Status| image:: https://travis-ci.org/glue-viz/glue.svg?branch=master
-   :target: https://travis-ci.org/glue-viz/glue
-.. |AppVeyor status| image:: https://img.shields.io/appveyor/ci/glue-viz/glue/master.svg
-   :target: https://ci.appveyor.com/project/glue-viz/glue/branch/master
+.. |Azure Status| image:: https://dev.azure.com/glue-viz/glue/_apis/build/status/glue-viz.glue?branchName=master
+   :target: https://dev.azure.com/glue-viz/glue/_build/latest?definitionId=4&branchName=master
 .. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/glue-viz/glue
 .. |DOI| image:: https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg
