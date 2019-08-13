@@ -44,7 +44,7 @@ jobs:
 
       - bash: |
           env_name=${{ pair.value }}
-          python -m tox -e ${env_name//_/-}
+          python -m tox -e ${env_name//_/-} --cov-report= --junitxml=test-results.xml
         displayName: Running tox
         env:
           DISPLAY: :99.0
@@ -57,3 +57,9 @@ jobs:
           coverage report
           python -m codecov --name ${{ pair.key }}_${{ pair.value }} -t $(codecov.token)
         displayName: Uploading results to codecov
+
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFiles: '**/test-results.xml'
+          testRunTitle: 'Publish test results for ${{ pair.key }}_${{ pair.value }}'
