@@ -8,8 +8,8 @@ jobs:
     - linux: pep8
 
     # Linux builds - test on all supported PyQt5 versions, and include all dependencies in some builds
-    - linux: py36_test_pyqt57_all
-    - linux: py36_test_pyqt58
+    - linux: py35_test_pyqt57_all
+    - linux: py35_test_pyqt58
     - linux: py36_test_pyqt59_all
     - linux: py37_test_pyqt510
     - linux: py37_test_pyqt511_all
