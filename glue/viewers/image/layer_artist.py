@@ -273,13 +273,18 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
     @defer_draw
     def _update_data(self):
         if isinstance(self.state.layer.subset_state, PixelSubsetState):
-            slices = self.state.layer.subset_state.slices
-            x = slices[self._viewer_state.x_att.axis].start
-            y = slices[self._viewer_state.y_att.axis].start
-            self._line_x.set_data([x, x], [0, 1])
-            self._line_x.set_visible(True)
-            self._line_y.set_data([0, 1], [y, y])
-            self._line_y.set_visible(True)
+            try:
+                x, y = self.state.layer.subset_state.get_xy(self.layer.data,
+                                                            self._viewer_state.x_att.axis,
+                                                            self._viewer_state.y_att.axis)
+            except IncompatibleAttribute:
+                self._line_x.set_visible(False)
+                self._line_y.set_visible(False)
+            else:
+                self._line_x.set_data([x, x], [0, 1])
+                self._line_x.set_visible(True)
+                self._line_y.set_data([0, 1], [y, y])
+                self._line_y.set_visible(True)
         else:
             self._line_x.set_visible(False)
             self._line_y.set_visible(False)

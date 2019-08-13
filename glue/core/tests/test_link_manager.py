@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 from itertools import product
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from ..component_link import ComponentLink
 from ..data import ComponentID, DerivedComponent, Data, Component
@@ -12,8 +13,8 @@ from ..coordinates import Coordinates
 from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
                             find_dependents, is_convertible_to_single_pixel_cid,
-                            equivalent_pixel_cids)
-from ..link_helpers import LinkSame
+                            equivalent_pixel_cids, pixel_cid_to_pixel_cid_matrix)
+from ..link_helpers import LinkSame, MultiLink
 
 comp = Component(data=np.array([1, 2, 3]))
 
@@ -209,10 +210,8 @@ class TestLinkManager(object):
             d1.world_component_ids[1], d2.world_component_ids[1]))
 
         # and then retrieve pixel coordinates
-        np.testing.assert_array_equal(
-            d2[d1.pixel_component_ids[0]], [[0, 0], [1, 1]])
-        np.testing.assert_array_equal(
-            d1[d2.pixel_component_ids[1]], [[0, 1], [0, 1]])
+        assert_array_equal(d2[d1.pixel_component_ids[0]], [[0, 0], [1, 1]])
+        assert_array_equal(d1[d2.pixel_component_ids[1]], [[0, 1], [0, 1]])
 
     def test_binary_links_correct_with_mergers(self):
         """Regression test. BinaryComponentLinks should work after mergers"""
@@ -226,7 +225,7 @@ class TestLinkManager(object):
         dc = DataCollection([d1, d2])
         dc.add_link(LinkSame(d2.id['u'], d1.id['x']))
 
-        np.testing.assert_array_equal(d1['z'], [3, 5, 7])
+        assert_array_equal(d1['z'], [3, 5, 7])
 
     def test_complex_links_correct_with_mergers(self):
         """Regression test. multi-level links should work after mergers"""
@@ -245,7 +244,7 @@ class TestLinkManager(object):
         #       following assert is no longer True
         # assert x not in d1.components
 
-        np.testing.assert_array_equal(d1['z'], [8, 10, 12])
+        assert_array_equal(d1['z'], [8, 10, 12])
 
     def test_remove_data_removes_links(self):
 
@@ -422,3 +421,69 @@ def test_equivalent_pixel_cids():
     assert equivalent_pixel_cids(data3, data1) is None
     assert equivalent_pixel_cids(data2, data3) == [2, 1]
     assert equivalent_pixel_cids(data3, data2) is None
+
+
+def test_pixel_cid_to_pixel_cid_matrix():
+
+    # This tests the pixel_cid_to_pixel_cid_matrix function which returns
+    # a correlation matrix between the pixel components from two dataset.
+
+    data1 = Data(x=np.ones((2, 4, 3)))
+    data2 = Data(y=np.ones((4, 3, 2)))
+    data3 = Data(z=np.ones((2, 3)))
+
+    dc = DataCollection([data1, data2, data3])
+
+    # Checking data against itself should give an identity matrix
+
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data1, data1), np.identity(3))
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data2, data2), np.identity(3))
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data3, data3), np.identity(2))
+
+    # Checking data against unlinked data should give None
+
+    for d1, d2 in product(dc, dc):
+        if d1 is not d2:
+            assert_array_equal(pixel_cid_to_pixel_cid_matrix(d1, d2),
+                               np.zeros((d1.ndim, d2.ndim)))
+
+    # Add one set of links
+
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data2.pixel_component_ids[2]))
+    dc.add_link(LinkSame(data1.pixel_component_ids[0], data3.pixel_component_ids[0]))
+
+    expected = np.array([[0, 0, 1], [0, 0, 0], [0, 0, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data1, data2), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data2, data1), expected.T)
+
+    expected = np.array([[1, 0], [0, 0], [0, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data1, data3), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data3, data1), expected.T)
+
+    expected = np.array([[0, 0], [0, 0], [1, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data2, data3), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data3, data2), expected.T)
+
+    # Add links with multiple components, in this case linking two cids with two cids
+
+    def forwards(x, y):
+        return x + y, x - y
+
+    def backwards(x, y):
+        return 0.5 * (x + y), 0.5 * (x - y)
+
+    dc.add_link(MultiLink(data1.pixel_component_ids[1:],
+                          data2.pixel_component_ids[:2],
+                          forwards=forwards, backwards=backwards))
+
+    expected = np.array([[0, 0, 1], [1, 1, 0], [1, 1, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data1, data2), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data2, data1), expected.T)
+
+    expected = np.array([[1, 0], [0, 0], [0, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data1, data3), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data3, data1), expected.T)
+
+    expected = np.array([[0, 0], [0, 0], [1, 0]], dtype=bool)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data2, data3), expected)
+    assert_array_equal(pixel_cid_to_pixel_cid_matrix(data3, data2), expected.T)
