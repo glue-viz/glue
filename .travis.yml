@@ -23,15 +23,6 @@ env:
     - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck mpl-scatter-density"
     - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly<3.8 objgraph pytest-qt flake8 git+https://github.com/rtfd/sphinx_rtd_theme"
     - PIP_FALLBACK=false
-    - REMOVE_INSTALL_REQUIRES=0
-    - secure: NvQVc3XmmjXNVKrmaD31IgltsOImlnt3frAl4wU0pM223iejr7V57hz/V5Isx6sTANWEiRBMG27v2T8e5IiB7DQTxFUleZk3DWXQV1grw/GarEGUawXAgwDWpF0AE/7BRVJYqo2Elgaqf28+Jkun8ewvfPCiEROD2jWEpnZj+IQ=
-    - secure: "SU9BYH8d9eNigypG3lC83s0NY6Mq9AHGKXyEGeXDtz1npJIC1KHdzPMP1v1K3dzCgl1p6ReMXPjZMCENyfNkad/xvzTzGk0Nu/4BjihrUPV6+ratVeLpv0JLm8ikh8q+sZURkdtzUOlds+Hfn5ku4LdpT87tcKHY9TINAGA34ZM="
-    - AWS_ACCESS_KEY_ID: AKIAI2ERWDHLW3W24X3A
-    - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_KEY_ID
-
-stages:
-    - name: Initial
-    - name: Full
 
 matrix:
 
@@ -40,76 +31,17 @@ matrix:
 
     include:
 
+        # Test on Python 2.7
         - os: linux
-          stage: Initial
           env: PYTHON_VERSION=2.7
-
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=3.6
-
-        - os: linux
-          stage: Initial
-          env: PYTHON_VERSION=3.7
-               NUMPY_VERSION=1.14
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=2.7
-
-        - os: osx
-          stage: Full
-          env: PYTHON_VERSION=3.6
-
-        # Astropy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               ASTROPY_VERSION=dev
-
-        # Numpy dev
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               NUMPY_VERSION=dev
-
-        # The following configuration tests that glue functions with minimal
-        # dependencies.
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               CONDA_DEPENDENCIES="pip setuptools pandas mock matplotlib qtpy ipython ipykernel qtconsole bottleneck mpl-scatter-density"
-               PIP_DEPENDENCIES="pytest-cov codecov flake8"
-               REMOVE_INSTALL_REQUIRES=1
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=3.6
-               DOC_TRIGGER=1
-               PYTEST_ARGS="--no-optional-skip"
-               NO_CFG_FILES=true
-
-        # Test with older package versions:
-
-        - os: linux
-          stage: Full
-          env: PYTHON_VERSION=2.7
-               MATPLOTLIB_VERSION=2.1
-               PANDAS_VERSION=0.20
-               SETUPTOOLS=1.0
-               IPYTHON_VERSION=4
-               NUMPY_VERSION=1.12
 
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
         - os: linux
-          stage: Full
           env: PYTHON_VERSION=3.6
                PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
-
-
 
 before_install:
 
@@ -159,15 +91,6 @@ install:
   # since we don't want glue to appear in the list of packages for the
   # environment.
   - conda env export
-
-  # If REMOVE_INSTALL_REQUIRES is set, then we need to get rid of the
-  # install_requires section in setup.py. This is used for the absolute
-  # minimal build to make sure that things still work. In practice,
-  # glue could never be run with such a restrictive set of dependencies
-  # because install_requires will not be empty for users, but it ensures
-  # that if we change some of the dependencies from required to optional
-  # in future (apart from a core few), things will still work.
-  - if [[ $REMOVE_INSTALL_REQUIRES == 1 ]]; then sed -i.bak s/install_requires=install_requires/install_requires=[]/g setup.py; fi
 
   # We need to install glue in order to make sure that the entry points are
   # installed.

@@ -40,3 +40,5 @@ glue/qt/glue_qt_resources.py
 .eggs
 .hypothesis
 .pytest_cache
+.tox
+.vscode

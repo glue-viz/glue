@@ -1,0 +1,37 @@
+jobs:
+
+- template: azure-template.yml
+  parameters:
+    envs:
+
+    # PEP8 checks
+    - linux: pep8
+
+    # Linux builds - test on all supported PyQt5 versions, and include all dependencies in some builds
+    - linux: py35_test_pyqt57_all
+    - linux: py35_test_pyqt58
+    - linux: py36_test_pyqt59_all
+    - linux: py37_test_pyqt510
+    - linux: py37_test_pyqt511_all
+    - linux: py37_test_pyqt512
+    - linux: py37_test_pyqt513_all
+    - linux: py36_test_pyside512
+    - linux: py37_test_pyside513_all
+
+    # Test against latest developer versions of some packages
+    - linux: py37_test_pyside513_dev_all
+
+    # Test a few configurations on MacOS X
+    - macosx: py36_test_pyqt513
+    - macosx: py37_test_pyqt513_all
+    - macosx: py37_test_pyside513
+
+    # Test a few configurations on Windows
+    - windows: py36_test_pyqt510
+    - windows: py37_test_pyqt510
+    - windows: py37_test_pyside513_all
+
+    # Try out documentation build on Linux and Windows
+    - linux: py37_docs_pyqt513
+    - macosx: py37_docs_pyqt513
+    - windows: py37_docs_pyqt513

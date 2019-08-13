@@ -1,0 +1,65 @@
+parameters:
+  tox_pre: ''
+  tox_test_env: ''
+  envs: []
+
+jobs:
+- ${{ each env in parameters.envs }}:
+  - ${{ each pair in env }}:
+
+    - job: ${{ pair.key }}_${{ pair.value }}
+      pool:
+        ${{ if eq(pair.key, 'macosx') }}:
+          vmImage: macOS 10.13
+        ${{ if eq(pair.key, 'linux') }}:
+          vmImage: Ubuntu 16.04
+        ${{ if eq(pair.key, 'windows') }}:
+          vmImage: vs2017-win2016
+
+      steps:
+
+      - ${{ if eq(pair.key, 'linux') }}:
+        - bash: |
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+                                    --make-pidfile --background --exec /usr/bin/Xvfb \
+                                    -- :99 -screen 0 1920x1200x24 -ac \
+                                    +extension GLX +render -noreset
+          displayName: Starting Xvfb
+
+        - bash: sudo apt-get install -y libxkbcommon-x11-0
+          displayName: Installing xcb
+
+      - task: UsePythonVersion@0
+        inputs:
+          ${{ if or(eq(pair.value, 'py27'), startsWith(pair.value, 'py27_')) }}:
+            versionSpec: '2.7'
+          ${{ if or(eq(pair.value, 'py36'), startsWith(pair.value, 'py36_')) }}:
+            versionSpec: '3.6'
+          ${{ if or(eq(pair.value, 'py37'), startsWith(pair.value, 'py37_')) }}:
+            versionSpec: '3.7'
+          architecture: 'x64'
+
+      - bash: python -m pip install tox
+        displayName: Installing tox
+
+      - bash: |
+          env_name=${{ pair.value }}
+          python -m tox -e ${env_name//_/-} -- --cov-report= --junitxml=test-results.xml
+        displayName: Running tox
+        env:
+          DISPLAY: :99.0
+
+      - bash: |
+          # Note that we use coverage combine below rather than moving the file, so that .coveragerc
+          # gets taken into account.
+          python -m pip install coverage codecov
+          coverage combine .tmp/*/.coverage
+          coverage report
+          python -m codecov --name ${{ pair.key }}_${{ pair.value }} -t $(codecov.token)
+        displayName: Uploading results to codecov
+
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFiles: '**/test-results.xml'
+          testRunTitle: 'Publish test results for ${{ pair.key }}_${{ pair.value }}'
