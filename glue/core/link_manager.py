@@ -19,6 +19,8 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 
+import numpy as np
+
 from glue.external import six
 from glue.core.hub import HubListener
 from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMessage
@@ -29,9 +31,10 @@ from glue.core.data import Data
 from glue.core.component import DerivedComponent
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
+from glue.utils import unbroadcast
 
 __all__ = ['accessible_links', 'discover_links', 'find_dependents',
-           'LinkManager', 'is_equivalent_cid']
+           'LinkManager', 'is_equivalent_cid', 'pixel_cid_to_pixel_cid_matrix']
 
 
 def accessible_links(cids, links):
@@ -399,3 +402,26 @@ def equivalent_pixel_cids(reference, target):
         else:
             return None
     return order
+
+
+def pixel_cid_to_pixel_cid_matrix(data1, data2):
+    """
+    Given two datasets, return a boolean matrix indicating which of the pixel
+    components are linked.
+
+    The returned matrix has the shape (data1.ndim, data2.ndim).
+    """
+
+    # For simplicity, and to avoid code used elsewhere, we rely on the fact
+    # that independent coordinates are broadcasted during conversions.
+
+    matrix = np.zeros((data1.ndim, data2.ndim), dtype=bool)
+
+    for idim, pix_cid in enumerate(data1.pixel_component_ids):
+        try:
+            pix_coords = unbroadcast(data2[pix_cid, [slice(2)] * data2.ndim])
+            matrix[idim] = np.array(pix_coords.shape) == 2
+        except IncompatibleAttribute:
+            pass
+
+    return matrix

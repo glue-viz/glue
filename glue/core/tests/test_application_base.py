@@ -78,7 +78,7 @@ def test_nested_data():
 
     app = Application()
 
-    app.add_datasets(app.data_collection, datasets)
+    app.add_datasets(datasets)
 
     assert x in app.data_collection
     assert y in app.data_collection

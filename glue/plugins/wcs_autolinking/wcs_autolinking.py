@@ -47,31 +47,24 @@ class WCSLink(MultiLink):
         # have the new Astropy APE 14 interface.
         wcs1, wcs2 = data1.coords.wcs, data2.coords.wcs
 
-        # Only check for links if the WCSes have well defined physical types
-        if (wcs1.world_axis_physical_types.count(None) > 0 or
-                wcs2.world_axis_physical_types.count(None) > 0):
-            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
-
-        # For now, we treat the WCS as non-separable, but in future we could
-        # consider iterating over the separated components of the WCS for
-        # performance as well as to be able to link e.g. the celestial part of a
-        # 3D WCS with a 2D WCS. So for now we require the number of pixel/world
-        # coordinates to match
+        forwards = backwards = None
         if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
+            if (wcs1.world_axis_physical_types.count(None) == 0 and
+                    wcs2.world_axis_physical_types.count(None) == 0):
 
-            # The easiest way to check if the WCSes are compatible is to simply try and
-            # see if values can be transformed for a single pixel. In future we might
-            # find that this requires optimization performance-wise, but for now let's
-            # not do premature optimization.
+                # The easiest way to check if the WCSes are compatible is to simply try and
+                # see if values can be transformed for a single pixel. In future we might
+                # find that this requires optimization performance-wise, but for now let's
+                # not do premature optimization.
 
-            pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1, wcs2,
-                                                                                   data1.pixel_component_ids,
-                                                                                   data2.pixel_component_ids)
+                pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1, wcs2,
+                                                                                       data1.pixel_component_ids[::-1],
+                                                                                       data2.pixel_component_ids[::-1])
 
-            self._physical_types_1 = wcs1.world_axis_physical_types
-            self._physical_types_2 = wcs2.world_axis_physical_types
+                self._physical_types_1 = wcs1.world_axis_physical_types
+                self._physical_types_2 = wcs2.world_axis_physical_types
 
-        else:
+        if not forwards or not backwards:
 
             # Try setting only a celestial link. We try and extract the celestial
             # WCS, which will only work if the celestial coordinates are separable.
@@ -88,11 +81,17 @@ class WCSLink(MultiLink):
 
             cids1 = data1.pixel_component_ids
             cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
-                                     cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
+                               cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
+
+            if wcs1_celestial.wcs.lng > wcs1_celestial.wcs.lat:
+                cids1_celestial = cids1_celestial[::-1]
 
             cids2 = data2.pixel_component_ids
             cids2_celestial = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1],
-                                     cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
+                               cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
+
+            if wcs2_celestial.wcs.lng > wcs2_celestial.wcs.lat:
+                cids2_celestial = cids2_celestial[::-1]
 
             pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1_celestial, wcs2_celestial,
                                                                                    cids1_celestial, cids2_celestial)
@@ -140,7 +139,8 @@ class WCSLink(MultiLink):
 def wcs_autolink(data_collection):
 
     # Find subset of datasets with WCS coordinates
-    wcs_datasets = [data for data in data_collection if isinstance(data.coords, WCSCoordinates)]
+    wcs_datasets = [data for data in data_collection
+                    if hasattr(data, 'coords') and isinstance(data.coords, WCSCoordinates)]
 
     # Only continue if there are at least two such datasets
     if len(wcs_datasets) < 2:

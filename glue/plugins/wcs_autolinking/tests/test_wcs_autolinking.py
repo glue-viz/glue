@@ -97,18 +97,18 @@ def test_wcs_autolink_spectral_cube():
     link = links[0]
     assert isinstance(link, MultiLink)
     assert len(link) == 6
-    assert link[0].get_to_id() == pz2
-    assert link[0].get_from_ids() == [pz1, py1, px1]
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [px1, py1, pz1]
     assert link[1].get_to_id() == py2
-    assert link[1].get_from_ids() == [pz1, py1, px1]
-    assert link[2].get_to_id() == px2
-    assert link[2].get_from_ids() == [pz1, py1, px1]
-    assert link[3].get_to_id() == pz1
-    assert link[3].get_from_ids() == [pz2, py2, px2]
+    assert link[1].get_from_ids() == [px1, py1, pz1]
+    assert link[2].get_to_id() == pz2
+    assert link[2].get_from_ids() == [px1, py1, pz1]
+    assert link[3].get_to_id() == px1
+    assert link[3].get_from_ids() == [px2, py2, pz2]
     assert link[4].get_to_id() == py1
-    assert link[4].get_from_ids() == [pz2, py2, px2]
-    assert link[5].get_to_id() == px1
-    assert link[5].get_from_ids() == [pz2, py2, px2]
+    assert link[4].get_from_ids() == [px2, py2, pz2]
+    assert link[5].get_to_id() == pz1
+    assert link[5].get_from_ids() == [px2, py2, pz2]
 
 
 def test_wcs_autolink_image_and_spectral_cube():
@@ -140,12 +140,12 @@ def test_wcs_autolink_image_and_spectral_cube():
     assert isinstance(link, MultiLink)
     assert len(link) == 4
     assert link[0].get_to_id() == px2
-    assert link[0].get_from_ids() == [py1, px1]
+    assert link[0].get_from_ids() == [px1, py1]
     assert link[1].get_to_id() == pz2
-    assert link[1].get_from_ids() == [py1, px1]
-    assert link[2].get_to_id() == py1
+    assert link[1].get_from_ids() == [px1, py1]
+    assert link[2].get_to_id() == px1
     assert link[2].get_from_ids() == [px2, pz2]
-    assert link[3].get_to_id() == px1
+    assert link[3].get_to_id() == py1
     assert link[3].get_from_ids() == [px2, pz2]
 
 
@@ -206,3 +206,43 @@ def test_link_editor():
     assert isinstance(link2, WCSLink)
     assert link2.data1.label == 'Data 1'
     assert link2.data2.label == 'Data 2'
+
+
+def test_celestial_with_unknown_axes():
+
+    # Regression test for a bug that caused n-d datasets with celestial axes
+    # and axes with unknown physical types to not even be linked by celestial
+    # axes.
+
+    wcs1 = WCS(naxis=3)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN', 'SPAM'
+    wcs1.wcs.set()
+
+    data1 = Data()
+    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1['x'] = np.ones((2, 3, 4))
+    pz1, py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=3)
+    wcs2.wcs.ctype = 'GLON-CAR', 'FREQ', 'GLAT-CAR'
+    wcs2.wcs.set()
+
+    data2 = Data()
+    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2['x'] = np.ones((2, 3, 4))
+    pz2, py2, px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 4
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [px1, py1]
+    assert link[1].get_to_id() == pz2
+    assert link[1].get_from_ids() == [px1, py1]
+    assert link[2].get_to_id() == px1
+    assert link[2].get_from_ids() == [px2, pz2]
+    assert link[3].get_to_id() == py1
+    assert link[3].get_from_ids() == [px2, pz2]
