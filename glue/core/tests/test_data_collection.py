@@ -17,8 +17,6 @@ from ..message import (Message, DataCollectionAddMessage, DataRemoveComponentMes
                        DataCollectionDeleteMessage, DataAddComponentMessage,
                        ComponentsChangedMessage, PixelAlignedDataChangedMessage)
 from ..exceptions import IncompatibleAttribute
-from ..subset import InequalitySubsetState
-from ...config import data_translator, subset_state_translator
 
 from .test_state import clone
 

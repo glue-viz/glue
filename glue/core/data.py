@@ -335,8 +335,7 @@ class BaseData(object):
         format : str, optional
             The format to translate the subset state to.
         """
-        
-        print(self.subsets)
+
         if subset_id is None and len(self.subsets) == 1:
             subset = self.subsets[0]
         elif isinstance(subset_id, str):
