@@ -29,7 +29,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core.visual import VisualAttributes
 from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
-from glue.config import settings
+from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, broadcast_to, categorical_ndarray)
 
@@ -201,7 +201,7 @@ class BaseData(object):
         return new_subset
 
     @contract(subset='inst($Subset, $SubsetState)')
-    def add_subset(self, subset):
+    def add_subset(self, subset, label=None):
         """Assign a pre-existing subset to this data object.
 
         :param subset: A :class:`~glue.core.subset.Subset` or
@@ -223,6 +223,8 @@ class BaseData(object):
             state = subset
             subset = Subset(None)
             subset.subset_state = state
+            if label:
+                subset.label = label
 
         self._subsets.append(subset)
 
@@ -256,6 +258,101 @@ class BaseData(object):
         Tuple of subsets attached to this dataset
         """
         return tuple(self._subsets)
+
+    def get_object(self, cls=None):
+        """
+        Get the dataset represented as a non-glue object, using the translation
+        infrastructure.
+
+        Parameters
+        ----------
+        cls : type, optional
+            The class to use for representing the data object. If a non-glue
+            data object was added to the glue data collection, it should
+            automatically be returned using the same class as it was provided
+            in, and this argument shouldn't be needed.
+        """
+
+        if cls is None:
+            if hasattr(self, '_preferred_translation'):
+                cls = self._preferred_translation
+            else:
+                raise ValueError('Specify the object class to use with cls=')
+
+        handler, _ = data_translator.get_handler_for(cls)
+
+        return handler.to_object(self)
+
+    def get_subset_object(self, subset_id=None, cls=None):
+        """
+        Get a subset represented as a non-glue object, using the translation
+        infrastructure.
+
+        Parameters
+        ----------
+        subset_id : str or int, optional
+            The name or index of the subset to retrieve.
+        cls : type, optional
+            The class to use for representing the data object. If a non-glue
+            data object was added to the data collection, the subset should
+            automatically be returned using the same class as it was provided
+            in, and this argument shouldn't be needed.
+        """
+
+        if cls is None:
+            if hasattr(self, '_preferred_translation'):
+                cls = self._preferred_translation
+            else:
+                raise ValueError('Specify the object class to use with cls=')
+
+        if subset_id is None and len(self.subsets) == 1:
+            subset = self.subsets[0]
+        elif isinstance(subset_id, str):
+            matches = [subset for subset in self.subsets if subset.label == subset_id]
+            print(matches)
+            if len(matches) == 0:
+                raise ValueError("No subset found with the label '{0}'".format(subset_id))
+            elif len(matches) > 1:
+                raise ValueError("Several subsets were found with the label '{0}', use a numerical index instead".format(subset_id))
+            else:
+                subset = matches[0]
+        else:
+            subset = self.subsets[subset_id]
+
+        handler, _ = data_translator.get_handler_for(cls)
+
+        return handler.to_object(subset)
+
+    def get_selection_definition(self, subset_id=None, format=None):
+        """
+        Get subset state represented as a non-glue object, using the
+        translation infrastructure.
+
+        Parameters
+        ----------
+        subset_id : str or int, optional
+            The name or index of the subset to retrieve.
+        format : str, optional
+            The format to translate the subset state to.
+        """
+        
+        print(self.subsets)
+        if subset_id is None and len(self.subsets) == 1:
+            subset = self.subsets[0]
+        elif isinstance(subset_id, str):
+            matches = [subset for subset in self.subsets if subset.label == subset_id]
+            if len(matches) == 0:
+                raise ValueError("No subset found with the label '{0}'".format(subset_id))
+            elif len(matches) > 1:
+                raise ValueError("Several subsets were found with the label '{0}', use a numerical index instead".format(subset_id))
+            else:
+                subset = matches[0]
+        else:
+            subset = self.subsets[subset_id]
+
+        handler = subset_state_translator.get_handler_for(format)
+
+        return handler.to_object(subset)
 
 
 @six.add_metaclass(abc.ABCMeta)

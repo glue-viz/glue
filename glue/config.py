@@ -592,7 +592,7 @@ class SubsetDefinitionTranslatorRegistry(Registry):
             if translator.format == format:
                 return translator.handler
         raise ValueError("No subset state handler found with the format "
-                         "name {0}".format(format))
+                         "name '{0}'".format(format))
 
 
 class QtClientRegistry(Registry):
