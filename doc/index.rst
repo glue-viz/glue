@@ -1,4 +1,3 @@
-
 Glue Documentation
 ==================
 
