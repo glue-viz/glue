@@ -259,7 +259,7 @@ class BaseData(object):
         """
         return tuple(self._subsets)
 
-    def get_object(self, cls=None):
+    def get_object(self, cls=None, **kwargs):
         """
         Get the dataset represented as a non-glue object, using the translation
         infrastructure.
@@ -281,9 +281,9 @@ class BaseData(object):
 
         handler, _ = data_translator.get_handler_for(cls)
 
-        return handler.to_object(self)
+        return handler.to_object(self, **kwargs)
 
-    def get_subset_object(self, subset_id=None, cls=None):
+    def get_subset_object(self, subset_id=None, cls=None, **kwargs):
         """
         Get a subset represented as a non-glue object, using the translation
         infrastructure.
@@ -321,9 +321,9 @@ class BaseData(object):
 
         handler, _ = data_translator.get_handler_for(cls)
 
-        return handler.to_object(subset)
+        return handler.to_object(subset, **kwargs)
 
-    def get_selection_definition(self, subset_id=None, format=None):
+    def get_selection_definition(self, subset_id=None, format=None, **kwargs):
         """
         Get subset state represented as a non-glue object, using the
         translation infrastructure.
@@ -351,7 +351,7 @@ class BaseData(object):
 
         handler = subset_state_translator.get_handler_for(format)
 
-        return handler.to_object(subset)
+        return handler.to_object(subset, **kwargs)
 
 
 @six.add_metaclass(abc.ABCMeta)
