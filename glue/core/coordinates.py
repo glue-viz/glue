@@ -210,8 +210,16 @@ class Coordinates(object):
 
 
 class IdentityCoordinates(Coordinates):
+
     def __init__(self, ndim):
-        pass
+        self.ndim = ndim
+
+    def __gluestate__(self, context):
+        return {'ndim': self.ndim}
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(ndim=rec['ndim'])
 
 
 class WCSCoordinates(Coordinates):

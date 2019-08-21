@@ -7,7 +7,7 @@ from glue.core import Data, DataCollection
 from glue.core.component_id import ComponentID
 from glue.external.echo.selection import SelectionCallbackProperty
 from glue.core.state_objects import State
-from glue.core.coordinates import Coordinates
+from glue.core.coordinates import IdentityCoordinates
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
                                  DataCollectionComboHelper)
@@ -40,7 +40,8 @@ def test_component_id_combo_helper():
 
     assert selection_choices(state, 'combo') == "x:y"
 
-    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2', coords=Coordinates())
+    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2',
+                 coords=IdentityCoordinates(ndim=1))
 
     dc.append(data2)
     helper.append_data(data2)

@@ -15,7 +15,7 @@ from glue.utils import broadcast_to
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
 from ..component_link import ComponentLink, CoordinateComponentLink, BinaryComponentLink
-from ..coordinates import Coordinates
+from ..coordinates import Coordinates, IdentityCoordinates
 from ..data import Data, pixel_label
 from ..link_helpers import LinkSame
 from ..data_collection import DataCollection
@@ -413,7 +413,8 @@ class TestData(object):
 
     def test_links_property(self):
 
-        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1', coords=Coordinates())
+        data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1',
+                    coords=IdentityCoordinates(ndim=1))
 
         assert len(data.links) == 2
         assert isinstance(data.links[0], CoordinateComponentLink)
@@ -609,8 +610,8 @@ def test_foreign_pixel_components_not_in_visible():
 
     # currently, this is trivially satisfied since all coordinates are hidden
 
-    d1 = Data(x=[1], y=[2], coords=Coordinates())
-    d2 = Data(w=[3], v=[4], coords=Coordinates())
+    d1 = Data(x=[1], y=[2], coords=IdentityCoordinates(ndim=1))
+    d2 = Data(w=[3], v=[4], coords=IdentityCoordinates(ndim=1))
     dc = DataCollection([d1, d2])
     dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
 
@@ -793,13 +794,13 @@ def test_update_coords():
     # Make sure that when overriding coords, the world coordinate components
     # are updated.
 
-    data1 = Data(x=[1, 2, 3], coords=Coordinates())
+    data1 = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
 
     assert len(data1.components) == 3
 
     assert_equal(data1[data1.world_component_ids[0]], [0, 1, 2])
 
-    data2 = Data(x=[1, 2, 3], coords=Coordinates())
+    data2 = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
 
     assert len(data1.links) == 2
     assert len(data2.links) == 2
