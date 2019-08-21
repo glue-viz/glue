@@ -875,14 +875,8 @@ def _load_data(rec, context):
     # we override this function. This is pretty ugly
     result._create_pixel_and_world_components = lambda ndim: None
 
-    comps = []
-    for cid, comp in rec['components']:
-        comps.append([context.object(cid), context.object(comp)])
-
-    # comps = [list(map(context.object, [cid, comp]))
-    #          ]
-    # comps = [list(map(context.object, [cid, comp]))
-    #          for cid, comp in rec['components']]
+    comps = [list(map(context.object, [cid, comp]))
+             for cid, comp in rec['components']]
 
     for icomp, (cid, comp) in enumerate(comps):
         if isinstance(comp, CoordinateComponent):
@@ -916,8 +910,6 @@ def _load_data(rec, context):
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
-
-    print(result)
 
     return result
 
