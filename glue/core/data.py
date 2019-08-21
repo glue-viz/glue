@@ -27,7 +27,6 @@ from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.visual import VisualAttributes
-from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings

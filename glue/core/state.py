@@ -846,7 +846,7 @@ def _save_data(data, context):
 
     state = dict(components=[(context.id(c),
                              context.id(data.get_component(c)))
-                            for c in data._components],
+                             for c in data._components],
                  subsets=[context.id(s) for s in data.subsets],
                  label=data.label)
 
