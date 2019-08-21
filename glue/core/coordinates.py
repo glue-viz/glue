@@ -9,7 +9,7 @@ from astropy.wcs import WCS
 from glue.utils import unbroadcast, broadcast_to, axis_correlation_matrix
 
 
-__all__ = ['Coordinates', 'AffineCoordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
+__all__ = ['Coordinates', 'IdentityCoordinates', 'AffineCoordinates', 'WCSCoordinates', 'coordinates_from_header', 'coordinates_from_wcs']
 
 
 class Coordinates(object):
@@ -207,6 +207,11 @@ class Coordinates(object):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls()
+
+
+class IdentityCoordinates(Coordinates):
+    def __init__(self, ndim):
+        pass
 
 
 class WCSCoordinates(Coordinates):
