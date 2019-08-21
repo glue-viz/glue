@@ -41,7 +41,7 @@ class TestDataTableModel():
 
     def test_column_count_hidden(self):
         self.model.show_coords = True
-        assert self.model.columnCount() == 4
+        assert self.model.columnCount() == 3
 
     def test_header_data(self):
         for i, c in enumerate(self.data.main_components):

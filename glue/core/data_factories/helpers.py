@@ -28,6 +28,7 @@ import os
 import warnings
 
 from glue.core.contracts import contract
+from glue.core.coordinates import IdentityCoordinates
 from glue.core.data import Component, BaseData, Data
 from glue.config import auto_refresh, data_factory
 from glue.backends import get_timer
@@ -159,13 +160,14 @@ class LoadLog(object):
         return dict(path=path,
                     factory=context.do(self.factory),
                     kwargs=[list(self.kwargs.items())],
-                    _protocol=1)
+                    _protocol=2)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         fac = context.object(rec['factory'])
         kwargs = dict(*rec['kwargs'])
         kwargs['coord_first'] = rec.get('_protocol', 0) >= 1
+        kwargs['force_coords'] = rec.get('_protocol', 0) < 2
         d = load_data(rec['path'], factory=fac, **kwargs)
         return as_list(d)[0]._load_log
 
@@ -230,6 +232,7 @@ def load_data(path, factory=None, **kwargs):
     from glue.qglue import parse_data
 
     coord_first = kwargs.pop('coord_first', True)
+    force_coords = kwargs.pop('force_coords', False)
 
     def as_data_objects(ds, lbl):
         # pack other container types like astropy tables
@@ -258,6 +261,9 @@ def load_data(path, factory=None, **kwargs):
         # objects in mind and not more general data classes.
         if not isinstance(item, Data):
             continue
+
+        if item.coords is None and force_coords:
+            item.coords = IdentityCoordinates(ndim=item.ndim)
 
         if not item.label:
             item.label = lbl

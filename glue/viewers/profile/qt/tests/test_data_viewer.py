@@ -15,6 +15,7 @@ from glue.core.subset import SliceSubsetState
 from glue.app.qt import GlueApplication
 from glue.core.component_link import ComponentLink
 from glue.viewers.matplotlib.qt.tests.test_data_viewer import BaseTestMatplotlibDataViewer
+from glue.core.coordinates import IdentityCoordinates
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.core.tests.test_state import clone
 from glue.core.state import GlueUnSerializer
@@ -101,7 +102,8 @@ class TestProfileViewer(object):
 
     def test_enabled_layers(self):
 
-        data2 = Data(label='d1', y=np.arange(24).reshape((3, 4, 2)))
+        data2 = Data(label='d1', y=np.arange(24).reshape((3, 4, 2)),
+                     coords=IdentityCoordinates(ndim=3))
         self.data_collection.append(data2)
 
         self.viewer.add_data(self.data)

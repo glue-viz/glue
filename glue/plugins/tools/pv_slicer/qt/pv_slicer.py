@@ -266,4 +266,7 @@ def _slice_label(data, slc):
                 was defined
     """
     idx = _slice_index(data, slc)
-    return data.world_component_ids[idx].label
+    if getattr(data, 'coords') is None:
+        return data.pixel_component_ids[idx].label
+    else:
+        return data.coords.axis_label(idx)

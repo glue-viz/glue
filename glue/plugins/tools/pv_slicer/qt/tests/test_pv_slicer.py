@@ -5,6 +5,7 @@ from mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
+from glue.core.coordinates import IdentityCoordinates
 from glue.viewers.image.qt import StandaloneImageViewer, ImageViewer
 from glue.tests.helpers import requires_astropy, requires_scipy
 from glue.app.qt import GlueApplication
@@ -46,10 +47,17 @@ class TestSliceExtraction(object):
 
 
 def test_slice_label():
-    d = Data(x=np.zeros((2, 3, 4)))
+    d = Data(x=np.zeros((2, 3, 4)), coords=IdentityCoordinates(ndim=3))
     assert _slice_label(d, (0, 'y', 'x')) == 'World 0'
     assert _slice_label(d, ('y', 0, 'x')) == 'World 1'
     assert _slice_label(d, ('y', 'x', 0)) == 'World 2'
+
+
+def test_slice_label_nocoords():
+    d = Data(x=np.zeros((2, 3, 4)))
+    assert _slice_label(d, (0, 'y', 'x')) == 'Pixel Axis 0 [z]'
+    assert _slice_label(d, ('y', 0, 'x')) == 'Pixel Axis 1 [y]'
+    assert _slice_label(d, ('y', 'x', 0)) == 'Pixel Axis 2 [x]'
 
 
 def test_slice_index():

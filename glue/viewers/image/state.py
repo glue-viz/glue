@@ -259,7 +259,10 @@ class ImageViewerState(MatplotlibDataViewerState):
             with delay_callback(self, 'y_att_world', 'x_att'):
 
                 if self.x_att_world == self.y_att_world:
-                    world_ids = self.reference_data.world_component_ids
+                    if self._display_world:
+                        world_ids = self.reference_data.world_component_ids
+                    else:
+                        world_ids = self.reference_data.pixel_component_ids
                     if self.x_att_world == world_ids[-1]:
                         self.y_att_world = world_ids[-2]
                     else:
@@ -279,7 +282,10 @@ class ImageViewerState(MatplotlibDataViewerState):
             with delay_callback(self, 'x_att_world', 'y_att'):
 
                 if self.y_att_world == self.x_att_world:
-                    world_ids = self.reference_data.world_component_ids
+                    if self._display_world:
+                        world_ids = self.reference_data.world_component_ids
+                    else:
+                        world_ids = self.reference_data.pixel_component_ids
                     if self.y_att_world == world_ids[-1]:
                         self.x_att_world = world_ids[-2]
                     else:

@@ -865,6 +865,7 @@ def _save_data_2(data, context):
 
 @loader(Data)
 def _load_data(rec, context):
+
     label = rec['label']
     result = Data(label=label)
     if 'coords' in rec:
@@ -874,8 +875,14 @@ def _load_data(rec, context):
     # we override this function. This is pretty ugly
     result._create_pixel_and_world_components = lambda ndim: None
 
-    comps = [list(map(context.object, [cid, comp]))
-             for cid, comp in rec['components']]
+    comps = []
+    for cid, comp in rec['components']:
+        comps.append([context.object(cid), context.object(comp)])
+
+    # comps = [list(map(context.object, [cid, comp]))
+    #          ]
+    # comps = [list(map(context.object, [cid, comp]))
+    #          for cid, comp in rec['components']]
 
     for icomp, (cid, comp) in enumerate(comps):
         if isinstance(comp, CoordinateComponent):
@@ -896,7 +903,7 @@ def _load_data(rec, context):
     coord = [c for c in comps if isinstance(c[1], CoordinateComponent)]
     coord = [x[0] for x in sorted(coord, key=lambda x: x[1])]
 
-    if 'coords' in rec:
+    if getattr(result, 'coords') is not None:
         assert len(coord) == result.ndim * 2
         result._world_component_ids = coord[:len(coord) // 2]
         result._pixel_component_ids = coord[len(coord) // 2:]
@@ -909,6 +916,8 @@ def _load_data(rec, context):
 
     for s in rec['subsets']:
         result.add_subset(context.object(s))
+
+    print(result)
 
     return result
 
