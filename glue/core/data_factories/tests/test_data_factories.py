@@ -184,7 +184,6 @@ def test_data_reload():
 
     assert_array_equal(d['a'], [0, 0, 0, 0, 0])
     assert_array_equal(d['b'], [0, 0, 0, 0, 0])
-    assert d.coords is not coords_old
 
 
 @pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')

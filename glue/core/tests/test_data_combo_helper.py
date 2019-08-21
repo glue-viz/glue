@@ -7,6 +7,7 @@ from glue.core import Data, DataCollection
 from glue.core.component_id import ComponentID
 from glue.external.echo.selection import SelectionCallbackProperty
 from glue.core.state_objects import State
+from glue.core.coordinates import Coordinates
 
 from ..data_combo_helper import (ComponentIDComboHelper, ManualDataComboHelper,
                                  DataCollectionComboHelper)
@@ -39,7 +40,7 @@ def test_component_id_combo_helper():
 
     assert selection_choices(state, 'combo') == "x:y"
 
-    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2')
+    data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2', coords=Coordinates())
 
     dc.append(data2)
     helper.append_data(data2)
@@ -61,10 +62,10 @@ def test_component_id_combo_helper():
     assert selection_choices(state, 'combo') == "data1:main:x:y:coord:Pixel Axis 0 [x]:data2:main:a:b:coord:Pixel Axis 0 [x]"
 
     helper.world_coord = True
-    assert selection_choices(state, 'combo') == "data1:main:x:y:coord:Pixel Axis 0 [x]:World 0:data2:main:a:b:coord:Pixel Axis 0 [x]:World 0"
+    assert selection_choices(state, 'combo') == "data1:main:x:y:coord:Pixel Axis 0 [x]:data2:main:a:b:coord:Pixel Axis 0 [x]:World 0"
 
     helper.pixel_coord = False
-    assert selection_choices(state, 'combo') == "data1:main:x:y:coord:World 0:data2:main:a:b:coord:World 0"
+    assert selection_choices(state, 'combo') == "data1:main:x:y:data2:main:a:b:coord:World 0"
 
     helper.world_coord = False
 

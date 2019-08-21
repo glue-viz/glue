@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 
 from glue.utils import unbroadcast
 
+from ..coordinates import Coordinates
 from ..component import DerivedComponent
 from ..component_link import ComponentLink, BinaryComponentLink
 from ..data import ComponentID, Data, Component
@@ -301,7 +302,7 @@ def test_efficiency():
         # Make sure we don't benefit from broadcasting here
         return x.copy() + y.copy()
 
-    data = Data(x=np.ones((2, 3, 4, 5)), y=np.ones((2, 3, 4, 5)))
+    data = Data(x=np.ones((2, 3, 4, 5)), y=np.ones((2, 3, 4, 5)), coords=Coordinates())
 
     for i, from_ids in enumerate(([data.id['x'], data.id['y']],
                                   data.world_component_ids[:2],

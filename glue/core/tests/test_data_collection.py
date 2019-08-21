@@ -279,7 +279,7 @@ class TestDataCollection(object):
         dc.merge(x, y)
         merged = dc[0]
 
-        assert len(merged.coordinate_components) == 2
+        assert len(merged.coordinate_components) == 1
         assert y.pixel_component_ids[0] not in merged.components
 
     def test_merge_forbids_single_argument(self):
@@ -424,8 +424,8 @@ class TestDataCollection(object):
         # This tests that the separation of internal vs external links is
         # preserved in session files.
 
-        d1 = Data(a=[1, 2, 3])
-        d2 = Data(b=[2, 3, 4])
+        d1 = Data(a=[1, 2, 3], coords=Coordinates())
+        d2 = Data(b=[2, 3, 4], coords=Coordinates())
 
         dc = DataCollection([d1, d2])
         dc.add_link(ComponentLink([d2.id['b']], d1.id['a']))
