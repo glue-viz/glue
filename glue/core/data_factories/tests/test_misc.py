@@ -14,4 +14,4 @@ def test_load_vot():
     # This checks that we can load a VO table which incidentally is a subset of
     # the one included in the tutorial.
     d_set = df.load_data(os.path.join(DATA, 'w5_subset.vot'))
-    assert len(d_set.components) == 16
+    assert len(d_set.components) == 15

@@ -1,13 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
 import numpy as np
 import pandas as pd
 from mock import MagicMock
 from pandas.util.testing import (assert_series_equal,
                                  assert_frame_equal)
 
-from ...external.six import PY3
 from ..component import Component, DerivedComponent, CategoricalComponent
 from ..data import Data
 
@@ -56,14 +54,8 @@ class TestPandasConversion(object):
         d.add_component(deriv_comp, 'd')
         order = [comp.label for comp in d.components]
 
-        if sys.platform.startswith('win') and PY3:
-            world_0_dtype = np.int32
-        else:
-            world_0_dtype = np.int64
-
         frame = pd.DataFrame()
         frame['Pixel Axis 0 [x]'] = np.ogrid[0:4]
-        frame['World 0'] = np.arange(4).astype(world_0_dtype)
         frame['n'] = np.array([4, 5, 6, 7])
         frame['c'] = ['a', 'b', 'c', 'd']
         frame['d'] = np.arange(4)

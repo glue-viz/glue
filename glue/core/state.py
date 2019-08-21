@@ -844,12 +844,16 @@ def _load_data_collection_4(rec, context):
 @saver(Data)
 def _save_data(data, context):
 
-    return dict(components=[(context.id(c),
+    state = dict(components=[(context.id(c),
                              context.id(data.get_component(c)))
-                            for c in data._components],
-                subsets=[context.id(s) for s in data.subsets],
-                label=data.label,
-                coords=context.id(data.coords))
+                             for c in data._components],
+                 subsets=[context.id(s) for s in data.subsets],
+                 label=data.label)
+
+    if data.coords is not None:
+        state['coords'] = context.id(data.coords)
+
+    return state
 
 
 @saver(Data, version=2)
@@ -861,9 +865,11 @@ def _save_data_2(data, context):
 
 @loader(Data)
 def _load_data(rec, context):
+
     label = rec['label']
     result = Data(label=label)
-    result.coords = context.object(rec['coords'])
+    if 'coords' in rec:
+        result.coords = context.object(rec['coords'])
 
     # we manually rebuild pixel/world components, so
     # we override this function. This is pretty ugly
@@ -891,10 +897,13 @@ def _load_data(rec, context):
     coord = [c for c in comps if isinstance(c[1], CoordinateComponent)]
     coord = [x[0] for x in sorted(coord, key=lambda x: x[1])]
 
-    assert len(coord) == result.ndim * 2
-
-    result._world_component_ids = coord[:len(coord) // 2]
-    result._pixel_component_ids = coord[len(coord) // 2:]
+    if getattr(result, 'coords') is not None:
+        assert len(coord) == result.ndim * 2
+        result._world_component_ids = coord[:len(coord) // 2]
+        result._pixel_component_ids = coord[len(coord) // 2:]
+    else:
+        assert len(coord) == result.ndim
+        result._pixel_component_ids = coord
 
     # We can now re-generate the coordinate links
     result._set_up_coordinate_component_links(result.ndim)

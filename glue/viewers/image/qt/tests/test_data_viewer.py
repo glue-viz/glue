@@ -126,17 +126,17 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.image1)
 
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1'
-        assert combo_as_string(self.options_widget.ui.combosel_y_att_world) == 'Coordinate components:World 0:World 1'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:Pixel Axis 0 [y]:Pixel Axis 1 [x]'
+        assert combo_as_string(self.options_widget.ui.combosel_y_att_world) == 'Coordinate components:Pixel Axis 0 [y]:Pixel Axis 1 [x]'
 
-        assert self.viewer.axes.get_xlabel() == 'World 1'
-        assert self.viewer.state.x_att_world is self.image1.id['World 1']
+        assert self.viewer.axes.get_xlabel() == 'Pixel Axis 1 [x]'
+        assert self.viewer.state.x_att_world is self.image1.id['Pixel Axis 1 [x]']
         assert self.viewer.state.x_att is self.image1.pixel_component_ids[1]
         assert_allclose(self.viewer.state.x_min, -0.8419913419913423)
         assert_allclose(self.viewer.state.x_max, +1.8419913419913423)
 
-        assert self.viewer.axes.get_ylabel() == 'World 0'
-        assert self.viewer.state.y_att_world is self.image1.id['World 0']
+        assert self.viewer.axes.get_ylabel() == 'Pixel Axis 0 [y]'
+        assert self.viewer.state.y_att_world is self.image1.id['Pixel Axis 0 [y]']
         assert self.viewer.state.y_att is self.image1.pixel_component_ids[0]
         assert self.viewer.state.y_min == -0.5
         assert self.viewer.state.y_max == +1.5
@@ -185,8 +185,8 @@ class TestImageViewer(object):
     def test_combo_updates_with_component_add(self):
         self.viewer.add_data(self.image1)
         self.image1.add_component([[9, 9], [8, 8]], 'z')
-        assert self.viewer.state.x_att_world is self.image1.id['World 1']
-        assert self.viewer.state.y_att_world is self.image1.id['World 0']
+        assert self.viewer.state.x_att_world is self.image1.id['Pixel Axis 1 [x]']
+        assert self.viewer.state.y_att_world is self.image1.id['Pixel Axis 0 [y]']
         # TODO: there should be an easier way to do this
         layer_style_editor = self.viewer._view.layout_style_widgets[self.viewer.layers[0]]
         assert combo_as_string(layer_style_editor.ui.combosel_attribute) == 'x:y:z'
@@ -276,17 +276,17 @@ class TestImageViewer(object):
 
         self.viewer.add_data(self.hypercube)
 
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1:World 2:World 3'
-        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:World 0:World 1:World 2:World 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:Pixel Axis 0:Pixel Axis 1:Pixel Axis 2:Pixel Axis 3'
+        assert combo_as_string(self.options_widget.ui.combosel_x_att_world) == 'Coordinate components:Pixel Axis 0:Pixel Axis 1:Pixel Axis 2:Pixel Axis 3'
 
-        assert self.viewer.axes.get_xlabel() == 'World 3'
-        assert self.viewer.state.x_att_world is self.hypercube.id['World 3']
+        assert self.viewer.axes.get_xlabel() == 'Pixel Axis 3'
+        assert self.viewer.state.x_att_world is self.hypercube.id['Pixel Axis 3']
         assert self.viewer.state.x_att is self.hypercube.pixel_component_ids[3]
         assert_allclose(self.viewer.state.x_min, -0.6839826839826846)
         assert_allclose(self.viewer.state.x_max, +4.6839826839826846)
 
-        assert self.viewer.axes.get_ylabel() == 'World 2'
-        assert self.viewer.state.y_att_world is self.hypercube.id['World 2']
+        assert self.viewer.axes.get_ylabel() == 'Pixel Axis 2'
+        assert self.viewer.state.y_att_world is self.hypercube.id['Pixel Axis 2']
         assert self.viewer.state.y_att is self.hypercube.pixel_component_ids[2]
         assert self.viewer.state.y_min == -0.5
         assert self.viewer.state.y_max == +3.5
@@ -445,8 +445,8 @@ class TestImageViewer(object):
         self.viewer.add_data(self.image2)
 
         assert self.viewer.state.reference_data is self.image1
-        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
-        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att_world is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.pixel_component_ids[-2]
         assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
         assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
 
@@ -461,8 +461,8 @@ class TestImageViewer(object):
         self.viewer.state.reference_data = self.image1
 
         assert self.viewer.state.reference_data is self.image1
-        assert self.viewer.state.x_att_world is self.image1.world_component_ids[-1]
-        assert self.viewer.state.y_att_world is self.image1.world_component_ids[-2]
+        assert self.viewer.state.x_att_world is self.image1.pixel_component_ids[-1]
+        assert self.viewer.state.y_att_world is self.image1.pixel_component_ids[-2]
         assert self.viewer.state.x_att is self.image1.pixel_component_ids[-1]
         assert self.viewer.state.y_att is self.image1.pixel_component_ids[-2]
 
@@ -492,24 +492,36 @@ class TestImageViewer(object):
         self.viewer.add_data(second)
 
         assert self.viewer.state.reference_data is first
-        assert self.viewer.state.x_att_world is first.world_component_ids[-1]
-        assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        if wcs:
+            assert self.viewer.state.x_att_world is first.world_component_ids[-1]
+            assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        else:
+            assert self.viewer.state.x_att_world is first.pixel_component_ids[-1]
+            assert self.viewer.state.y_att_world is first.pixel_component_ids[-2]
         assert self.viewer.state.x_att is first.pixel_component_ids[-1]
         assert self.viewer.state.y_att is first.pixel_component_ids[-2]
 
         self.viewer.state.reference_data = second
 
         assert self.viewer.state.reference_data is second
-        assert self.viewer.state.x_att_world is second.world_component_ids[-1]
-        assert self.viewer.state.y_att_world is second.world_component_ids[-2]
+        if wcs:
+            assert self.viewer.state.x_att_world is second.world_component_ids[-1]
+            assert self.viewer.state.y_att_world is second.world_component_ids[-2]
+        else:
+            assert self.viewer.state.x_att_world is second.pixel_component_ids[-1]
+            assert self.viewer.state.y_att_world is second.pixel_component_ids[-2]
         assert self.viewer.state.x_att is second.pixel_component_ids[-1]
         assert self.viewer.state.y_att is second.pixel_component_ids[-2]
 
         self.viewer.state.reference_data = first
 
         assert self.viewer.state.reference_data is first
-        assert self.viewer.state.x_att_world is first.world_component_ids[-1]
-        assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        if wcs:
+            assert self.viewer.state.x_att_world is first.world_component_ids[-1]
+            assert self.viewer.state.y_att_world is first.world_component_ids[-2]
+        else:
+            assert self.viewer.state.x_att_world is first.pixel_component_ids[-1]
+            assert self.viewer.state.y_att_world is first.pixel_component_ids[-2]
         assert self.viewer.state.x_att is first.pixel_component_ids[-1]
         assert self.viewer.state.y_att is first.pixel_component_ids[-2]
 
@@ -577,8 +589,8 @@ class TestImageViewer(object):
         self.viewer.add_data(self.catalog)
         self.catalog.add_component([4, 5, 6], 'e')
 
-        link1 = LinkSame(self.catalog.id['c'], self.image1.world_component_ids[0])
-        link2 = LinkSame(self.catalog.id['d'], self.image1.world_component_ids[1])
+        link1 = LinkSame(self.catalog.id['c'], self.image1.pixel_component_ids[0])
+        link2 = LinkSame(self.catalog.id['d'], self.image1.pixel_component_ids[1])
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
 
@@ -622,8 +634,8 @@ class TestImageViewer(object):
         assert not self.viewer.layers[2].enabled  # image subset
         assert not self.viewer.layers[3].enabled  # scatter subset
 
-        link1 = LinkSame(self.catalog.id['c'], self.image1.world_component_ids[0])
-        link2 = LinkSame(self.catalog.id['d'], self.image1.world_component_ids[1])
+        link1 = LinkSame(self.catalog.id['c'], self.image1.pixel_component_ids[0])
+        link2 = LinkSame(self.catalog.id['d'], self.image1.pixel_component_ids[1])
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
 

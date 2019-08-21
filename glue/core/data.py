@@ -27,7 +27,6 @@ from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.visual import VisualAttributes
-from glue.core.coordinates import Coordinates
 from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings
@@ -499,7 +498,7 @@ class Data(BaseCartesianData):
         self._world_component_ids = ComponentIDList()
 
         # Coordinate conversion object
-        self.coords = coords or Coordinates()
+        self.coords = coords
 
         self.id = ComponentIDDict(self)
 
@@ -995,6 +994,9 @@ class Data(BaseCartesianData):
                 self._set_up_coordinate_component_links(ndim)
 
     def _set_up_coordinate_component_links(self, ndim):
+
+        if self.coords is None:
+            return
 
         def make_toworld_func(i):
             def pix2world(*args):

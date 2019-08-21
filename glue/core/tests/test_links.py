@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from numpy.random import random as r
 
+from glue.core.coordinates import IdentityCoordinates
+
 from .. import Data, DataCollection
 from ..link_helpers import LinkSame
 
@@ -13,7 +15,7 @@ from ..link_helpers import LinkSame
 def test_1d_world_link():
     x, y = r(10), r(10)
     d1 = Data(label='d1', x=x)
-    d2 = Data(label='d2', y=y)
+    d2 = Data(label='d2', y=y, coords=IdentityCoordinates(ndim=1))
     dc = DataCollection([d1, d2])
 
     dc.add_link(LinkSame(d2.world_component_ids[0], d1.id['x']))
@@ -27,7 +29,7 @@ def test_3d_world_link():
     """Should be able to grab pixel coords after linking world"""
     x, y, z = r(10), r(10), r(10)
     cat = Data(label='cat', x=x, y=y, z=z)
-    im = Data(label='im', inten=r((3, 3, 3)))
+    im = Data(label='im', inten=r((3, 3, 3)), coords=IdentityCoordinates(ndim=3))
 
     dc = DataCollection([cat, im])
 
@@ -45,7 +47,7 @@ def test_2d_world_link():
 
     x, y = r(10), r(10)
     cat = Data(label='cat', x=x, y=y)
-    im = Data(label='im', inten=r((3, 3)))
+    im = Data(label='im', inten=r((3, 3)), coords=IdentityCoordinates(ndim=2))
 
     dc = DataCollection([cat, im])
 

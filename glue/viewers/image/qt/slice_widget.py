@@ -89,7 +89,7 @@ class MultiSliceWidgetHelper(object):
                 # but we will need to generalize this in future. We deliberately
                 # check the type of data.coords here since we want to treat
                 # subclasses differently.
-                if hasattr(self.data, 'coords') and type(self.data.coords) != Coordinates:
+                if getattr(self.data, 'coords') is not None and type(self.data.coords) != Coordinates:
                     world = self.data.coords.world_axis(self.data, i)
                     world_unit = self.data.coords.world_axis_unit(i)
                     world_warning = len(self.data.coords.dependent_axes(i)) > 1

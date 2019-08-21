@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_equal
 
 from glue.core import Data, DataCollection
-from glue.core.coordinates import Coordinates
+from glue.core.coordinates import Coordinates, IdentityCoordinates
 from glue.core.link_helpers import LinkSame
 from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 
@@ -35,7 +35,8 @@ class TestImageViewerState(object):
 
     def test_pixel_world_linking(self):
 
-        data = Data(label='data', x=[[1, 2], [3, 4]], y=[[5, 6], [7, 8]])
+        data = Data(label='data', x=[[1, 2], [3, 4]], y=[[5, 6], [7, 8]],
+                    coords=IdentityCoordinates(ndim=2))
         layer_state = ImageLayerState(layer=data, viewer_state=self.state)
         self.state.layers.append(layer_state)
 
@@ -143,7 +144,7 @@ class TestReprojection():
         self.array = np.arange(3024).reshape((6, 7, 8, 9))
 
         # The reference dataset. Shape is (6, 7, 8, 9).
-        self.data1 = Data(x=self.array)
+        self.data1 = Data(x=self.array, coords=IdentityCoordinates(ndim=4))
         self.data_collection.append(self.data1)
 
         # A dataset with the same shape but not linked. Shape is (6, 7, 8, 9).
