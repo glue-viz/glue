@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.15.6 (unreleased)
+v0.15.6 (2019-08-22)
 --------------------
 
 * Fixed bugs related to auto-linking of astronomical data with WCS information. In
