@@ -1,6 +1,14 @@
+resources:
+  repositories:
+  - repository: glue
+    type: github
+    endpoint: glue-viz
+    name: glue-viz/azure-pipelines-templates
+    ref: master
+
 jobs:
 
-- template: azure-template.yml
+- template: run-tox-env.yml@glue
   parameters:
     envs:
 
