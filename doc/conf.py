@@ -347,6 +347,6 @@ WidgetProperty.__get__ = lambda self, *args, **kwargs: self
 
 viewcode_follow_imported_members = False
 
-linkcheck_ignore = [r'https://www.glueviz.org.s3']
+linkcheck_ignore = [r'https://s3.amazonaws.com']
 linkcheck_retries = 5
 linkcheck_timeout = 10
