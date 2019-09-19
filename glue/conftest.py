@@ -20,6 +20,8 @@ ON_APPVEYOR = os.environ.get('APPVEYOR', 'False') == 'True'
 
 def pytest_runtest_teardown(item, nextitem):
     sys.stderr = STDERR_ORIGINAL
+    global start_dir
+    os.chdir(start_dir)
 
 
 def pytest_addoption(parser):
@@ -27,7 +29,13 @@ def pytest_addoption(parser):
                      help="don't skip any tests with optional dependencies")
 
 
+start_dir = None
+
+
 def pytest_configure(config):
+
+    global start_dir
+    start_dir = os.path.abspath('.')
 
     os.environ['GLUE_TESTING'] = 'True'
 
