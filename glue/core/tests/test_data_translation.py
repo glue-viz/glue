@@ -265,3 +265,25 @@ class TestTranslationDataCollection:
         assert isinstance(subset, FakeDataObject)
         assert_equal(subset.array, np.arange(5, 10))
         assert subset.name == 'spam'
+
+    def test_set_duplicate(self):
+
+        # Make sure data gets replaced when re-using a data collection key
+
+        assert len(self.dc) == 0
+        self.dc['myobj'] = Data(x=[1, 2, 3])
+        assert len(self.dc) == 1
+        assert_equal(self.dc[0]['x'], [1, 2, 3])
+        self.dc['myobj'] = Data(x=[4, 5, 6])
+        assert len(self.dc) == 1
+        assert_equal(self.dc[0]['x'], [4, 5, 6])
+
+        # And make sure if there are multiple datasets with the key
+        # pre-existing then we get rid of them all
+
+        self.dc.append(Data(x=[7, 8, 9], label='myobj'))
+        assert len(self.dc) == 2
+        self.dc['myobj'] = Data(x=[1, 2, 3])
+        assert len(self.dc) == 1
+        assert_equal(self.dc[0]['x'], [1, 2, 3])
+

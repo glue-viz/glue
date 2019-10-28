@@ -345,7 +345,9 @@ class DataCollection(HubListener):
         return tuple(self._subset_groups)
 
     def __contains__(self, obj):
-        return obj in self._data or obj in self.subset_groups
+        return (obj in self._data or
+                    obj in self.subset_groups or
+                    any([data.label == obj for data in self._data]))
 
     def __getitem__(self, key):
         if isinstance(key, str):
@@ -380,6 +382,10 @@ class DataCollection(HubListener):
             data._preferred_translation = preferred
 
         data.label = key
+
+        for existing_data in self._data[:]:
+            if existing_data.label == key:
+                self.remove(existing_data)
 
         self.append(data)
 
