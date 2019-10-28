@@ -3,14 +3,13 @@ from __future__ import print_function
 import sys
 
 import numpy as np
+
 from astropy.wcs import WCSSUB_CELESTIAL
+from astropy.wcs.utils import wcs_to_celestial_frame
+from astropy.coordinates import BaseCoordinateFrame
 
-try:
-    from astropy.coordinates import BaseCoordinateFrame
-except ImportError:  # astropy <= 0.3
-    from astropy.coordinates import SphericalCoordinatesBase as BaseCoordinateFrame
+from ..utils.wcs_utils import get_spatial_scale
 
-from ..utils.wcs_utils import get_wcs_system_frame, get_spatial_scale
 
 class Polygon(object):
     def __init__(self, x, y):
@@ -89,7 +88,8 @@ class Path(object):
         positions, the width should be given (if passed) as a floating-point
         value in pixels. If ``coords`` is a coordinate object, the width
         should be passed as a :class:`~astropy.units.Quantity` instance with
-        units of angle.
+        units of angle. If None, interpolation is used at the position of the
+        path.
     """
 
     def __init__(self, xy_or_coords, width=None):
@@ -155,16 +155,11 @@ class Path(object):
                 wcs_sky = wcs.sub([WCSSUB_CELESTIAL])
 
                 # Find the astropy name for the coordinates
-                # TODO: return a frame class with Astropy 0.4, since that can
-                # also contain equinox/epoch info.
-                celestial_system = get_wcs_system_frame(wcs_sky)
+                celestial_system = wcs_to_celestial_frame(wcs_sky)
 
                 world_coords = self._coords.transform_to(celestial_system)
 
-                try:
-                    xw, yw = world_coords.spherical.lon.degree, world_coords.spherical.lat.degree
-                except AttributeError:  # astropy <= 0.3
-                    xw, yw = world_coords.lonangle.degree, world_coords.latangle.degree
+                xw, yw = world_coords.spherical.lon.degree, world_coords.spherical.lat.degree
 
                 return list(zip(*wcs_sky.wcs_world2pix(xw, yw, 0)))
 
@@ -229,15 +224,15 @@ class Path(object):
 
         polygons = []
 
-        x_beg = x_sampled - dx * spacing * 0.5
-        x_end = x_sampled + dx * spacing * 0.5
+        x_beg = x_sampled
+        x_end = x_sampled + dx * spacing
 
-        y_beg = y_sampled - dy * spacing * 0.5
-        y_end = y_sampled + dy * spacing * 0.5
+        y_beg = y_sampled
+        y_end = y_sampled + dy * spacing
 
         if hasattr(self.width, 'unit'):
             scale = get_spatial_scale(wcs)
-            width = (self.width / scale).decompose()
+            width = (self.width / scale).decompose().value
         else:
             width = self.width
 
@@ -259,9 +254,9 @@ class Path(object):
 
         return polygons
 
-    def to_patches(self, spacing, **kwargs):
+    def to_patches(self, spacing, wcs=None, **kwargs):
         from matplotlib.patches import Polygon as MPLPolygon
         patches = []
-        for poly in self.sample_polygons(spacing):
-            patches.append(MPLPolygon(zip(poly.x, poly.y), **kwargs))
+        for poly in self.sample_polygons(spacing, wcs=wcs):
+            patches.append(MPLPolygon(list(zip(poly.x, poly.y)), **kwargs))
         return patches

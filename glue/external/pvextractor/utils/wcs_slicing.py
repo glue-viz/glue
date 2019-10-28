@@ -35,7 +35,9 @@ def slice_wcs(wcs, spatial_scale):
     wcs_slice.wcs.cunit[0] = 'deg'
     # Not clear why this is needed, but apparently sub with 0 sets pc[1,0] = 1,
     # which is incorrect
-    if hasattr(wcs_slice.wcs, 'pc'):
-        wcs_slice.wcs.pc[1, 0] = wcs_slice.wcs.pc[0, 1] = 0
+    try:
+        wcs_slice.wcs.pc[1,0] = wcs_slice.wcs.pc[0,1] = 0
+    except AttributeError:
+        pass
 
     return wcs_slice

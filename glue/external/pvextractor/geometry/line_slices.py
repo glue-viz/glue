@@ -56,7 +56,8 @@ def extract_line_slice(cube, x, y, order=3, respect_nan=True):
             # map_coordinates does not deal well with NaN values so we have
             # to remove the NaN values then re-mask the final slice.
 
-            total_slice = map_coordinates(np.nan_to_num(cube), [zi,yi,xi], order=order, cval=np.nan)
+            total_slice = map_coordinates(np.nan_to_num(cube), [zi,yi,xi],
+                                          order=order, cval=np.nan)
 
             slice_bad = map_coordinates(np.nan_to_num(np.isnan(cube).astype(int)),
                                         [zi,yi,xi], order=order)
