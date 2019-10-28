@@ -20,8 +20,8 @@ env:
     - NO_CFG_FILES=false
     - QT_PKG=pyqt5
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock coverage pyyaml qtpy traitlets ipykernel qtconsole spectral-cube pytest-cov bottleneck mpl-scatter-density"
-    - PIP_DEPENDENCIES="codecov pyavm astrodendro plotly<3.8 objgraph pytest-qt flake8 git+https://github.com/rtfd/sphinx_rtd_theme"
+    - CONDA_DEPENDENCIES="pip dill ipython matplotlib scipy cython h5py pygments pyzmq scikit-image pandas sphinx xlrd pillow pytest mock pyyaml qtpy traitlets ipykernel qtconsole spectral-cube bottleneck mpl-scatter-density"
+    - PIP_DEPENDENCIES="pyavm astrodendro plotly<3.8 objgraph pytest-qt flake8 git+https://github.com/rtfd/sphinx_rtd_theme"
     - PIP_FALLBACK=false
 
 matrix:
@@ -40,7 +40,7 @@ matrix:
         # any dependence on Qt code.
         - os: linux
           env: PYTHON_VERSION=3.6
-               PIP_DEPENDENCIES="codecov pyavm astrodendro plotly objgraph flake8"
+               PIP_DEPENDENCIES="pyavm astrodendro plotly objgraph flake8"
                QT_PKG=False
 
 before_install:
@@ -120,7 +120,7 @@ script:
   # Do style checks
   - flake8 --max-line-length=100 --exclude=external glue
 
-  - pytest --cov glue --durations=20 -vs $PYTEST_ARGS glue
+  - pytest --durations=20 -vs $PYTEST_ARGS glue
 
   # In the following, we use separate if statements for each line, to make
   # sure the exit code from each one is taken into account for the overall
@@ -129,8 +129,3 @@ script:
 
   # Check spelling
   # - if [ $DOC_TRIGGER ]; then make spelling; fi
-
-after_success:
-
-  # Coverage testing
-  - if [[ $QT_PKG != False ]]; then codecov; fi
