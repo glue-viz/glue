@@ -1,12 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from distutils.version import LooseVersion
-
 import pytest
 import numpy as np
 from mock import MagicMock
 
-from qtpy import QT_VERSION
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt
 
@@ -18,8 +15,6 @@ from glue.app.qt import GlueApplication
 from ..data_viewer import DataTableModel, TableViewer
 
 from glue.core.edit_subset_mode import AndNotMode, OrMode, ReplaceMode
-
-QT_LT_58 = LooseVersion(QT_VERSION) < LooseVersion('5.8')
 
 
 class TestDataTableModel():
@@ -301,11 +296,10 @@ def test_table_widget_session_no_subset(tmpdir):
     gapp2.viewers[0][0]
 
 
-@pytest.mark.skipif('QT_LT_58')
 def test_change_components():
 
     # Regression test for a bug that caused table viewers to not update when
-    # adding/removing components. For now, this does not work with Qt 5.7.
+    # adding/removing components.
 
     app = get_qapp()  # noqa
 
