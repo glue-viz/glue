@@ -177,7 +177,7 @@ class Path(object):
 
         # Figure out the number of points to sample, and stop short of the
         # last point.
-        n_points = np.floor(d[-1] / spacing)
+        n_points = int(np.floor(d[-1] / spacing))
 
         if n_points == 0:
             raise ValueError("Path is shorter than spacing")
