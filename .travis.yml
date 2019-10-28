@@ -86,6 +86,9 @@ install:
   # but it avoids having Matplotlib default to the osx backend on MacOS X
   - export MPLBACKEND='Agg';
 
+  # On Python 2.7 we need to downgrade attrs
+  - if [ $PYTHON_VERSION == 2.7 ]; then conda install attrs=17.2.0; fi
+
   # List installed packages - use the export command so as to be able to
   # reproduce the exact environment locally. Do this before installing glue
   # since we don't want glue to appear in the list of packages for the
