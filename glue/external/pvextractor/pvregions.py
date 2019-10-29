@@ -105,10 +105,18 @@ def line_to_path(region):
 
     for x in region.coord_list:
         if l is None:
-            l = x.to(u.deg).value
+            if hasattr(x,'unit'):
+                l = x.to(u.deg).value
+            else:
+                l = x
         else:
-            b = x.to(u.deg).value
+            if hasattr(x,'unit'):
+                b = x.to(u.deg).value
+            else:
+                b = x
             if l is not None and b is not None:
+                if hasattr(b,'unit') or hasattr(l,'unit'):
+                    raise TypeError("Can't work with a list of quantities")
                 endpoints.append((l,b))
                 l,b = None,None
             else:
@@ -137,10 +145,10 @@ def vector_to_path(vector_region):
     C1 = csystems[vector_region.coord_format](x, y)
     dx,dy = length * np.cos(angle), length * np.sin(angle)
     # -dx because we're in the flippy coordsys
-    C2 = csystems[vector_region.coord_format](C1.lonangle - dx, C1.latangle + dy)
+    C2 = csystems[vector_region.coord_format](C1.spherical.lon - dx, C1.spherical.lat + dy)
 
-    C = csystems[vector_region.coord_format]([C1.lonangle,C2.lonangle],
-                                             [C1.latangle,C2.latangle])
+    C = csystems[vector_region.coord_format]([C1.spherical.lon.deg,C2.spherical.lon.deg]*u.deg,
+                                             [C1.spherical.lat.deg,C2.spherical.lat.deg]*u.deg)
 
     p = path.Path(C)
 

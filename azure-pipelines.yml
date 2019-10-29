@@ -1,45 +1,52 @@
 resources:
   repositories:
-  - repository: glue
+  - repository: OpenAstronomy
     type: github
     endpoint: glue-viz
-    name: glue-viz/azure-pipelines-templates
+    name: OpenAstronomy/azure-pipelines-templates
     ref: master
 
 jobs:
 
-- template: run-tox-env.yml@glue
+- template: run-tox-env.yml@OpenAstronomy
   parameters:
+
+    xvfb: true
+    coverage: codecov
+    libraries:
+      apt:
+        - libxkbcommon-x11-0
+
     envs:
 
     # PEP8 checks
     - linux: pep8
+      libraries: {}
+      coverage: 'false'
 
     # Linux builds - test on all supported PyQt5 versions, and include all dependencies in some builds
-    - linux: py35_test_pyqt57_all
-    - linux: py35_test_pyqt58
-    - linux: py36_test_pyqt59_all
-    - linux: py37_test_pyqt510
-    - linux: py37_test_pyqt511_all
-    - linux: py37_test_pyqt512
-    - linux: py37_test_pyqt513_all
-    - linux: py36_test_pyside512
-    - linux: py37_test_pyside513_all
+    - linux: py36-test-pyqt59-all
+    - linux: py37-test-pyqt510
+    - linux: py37-test-pyqt511-all
+    - linux: py37-test-pyqt512
+    - linux: py37-test-pyqt513-all
+    - linux: py36-test-pyside512
+    - linux: py37-test-pyside513-all
 
     # Test against latest developer versions of some packages
-    - linux: py37_test_pyside513_dev_all
+    - linux: py37-test-pyside513-dev-all
 
     # Test a few configurations on MacOS X
-    - macosx: py36_test_pyqt513
-    - macosx: py37_test_pyqt513_all
-    - macosx: py37_test_pyside513
+    - macosx: py36-test-pyqt513
+    - macosx: py37-test-pyqt513-all
+    - macosx: py37-test-pyside513
 
     # Test a few configurations on Windows
-    - windows: py36_test_pyqt510
-    - windows: py37_test_pyqt510
-    - windows: py37_test_pyside513_all
+    - windows: py36-test-pyqt510
+    - windows: py37-test-pyqt510
+    - windows: py37-test-pyside513-all
 
     # Try out documentation build on Linux and Windows
-    - linux: py37_docs_pyqt513
-    - macosx: py37_docs_pyqt513
-    - windows: py37_docs_pyqt513
+    - linux: py37-docs-pyqt513
+    - macosx: py37-docs-pyqt513
+    - windows: py37-docs-pyqt513

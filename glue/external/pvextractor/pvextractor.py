@@ -1,9 +1,10 @@
 from __future__ import print_function
 
 import numpy as np
+import six
+import warnings
 
 from astropy import units as u
-from glue.external import six
 from astropy.io.fits import PrimaryHDU, ImageHDU, Header
 
 from .utils.wcs_utils import get_spatial_scale, sanitize_wcs
@@ -109,7 +110,10 @@ def extract_pv_slice(cube, path, wcs=None, spacing=1.0, order=3,
 
 def _is_spectral_cube(obj):
     try:
-        from spectral_cube import SpectralCube
-        return isinstance(obj, SpectralCube)
+        from spectral_cube.spectral_cube import BaseSpectralCube
+        return isinstance(obj, BaseSpectralCube)
     except ImportError:
+        if 'SpectralCube' in str(obj.__class__):
+            warnings.warn("Object appears to be a SpectralCube, but"
+                          " the spectral_cube module could not be loaded")
         return False

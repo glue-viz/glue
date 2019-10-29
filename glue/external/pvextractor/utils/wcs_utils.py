@@ -71,14 +71,3 @@ def sanitize_wcs(mywcs):
     return mywcs
 
 
-def get_wcs_system_frame(wcs):
-    """TODO: move to astropy.wcs.utils"""
-    ct = wcs.sub([WCSSUB_CELESTIAL]).wcs.ctype
-    if 'GLON' in ct[0]:
-        from astropy.coordinates import Galactic
-        return Galactic
-    elif 'RA' in ct[0]:
-        from astropy.coordinates import ICRS
-        return ICRS
-    else:
-        raise ValueError("Unrecognized coordinate system")

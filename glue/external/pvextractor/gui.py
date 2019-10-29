@@ -50,7 +50,6 @@ class MovableSliceBox(object):
         self.show_poly = False
         self.cidpress = self.box.figure.canvas.mpl_connect('draw_event', self.draw_slicer)
 
-
     def connect(self):
         self.cidpress = self.box.figure.canvas.mpl_connect('key_press_event', self.key_press)
         self.cidpress = self.box.figure.canvas.mpl_connect('button_press_event', self.on_press)
@@ -124,8 +123,6 @@ class MovableSliceBox(object):
         # now redraw just the lineangle
         axes.draw_artist(self.box)
 
-        canvas.blit(axes.bbox)
-
     def key_press(self, event):
 
         if self.box.figure.canvas.toolbar.mode != '':
@@ -156,7 +153,7 @@ class MovableSliceBox(object):
         axes = self.box.axes
         canvas.restore_region(self.background)
 
-        if event.inaxes != self.box.axes:
+        if event.inaxes != axes:
             return
 
         if self.mode == 0:
@@ -170,8 +167,7 @@ class MovableSliceBox(object):
         # redraw just the current lineangle
         axes.draw_artist(self.box)
 
-        # blit just the redrawn area
-        canvas.blit(axes.bbox)
+        canvas.blit()
 
     def disconnect(self):
         self.box.figure.canvas.mpl_disconnect(self.cidpress)
@@ -192,77 +188,117 @@ class SliceCurve(LineCollection):
 
     def _update_segments(self):
 
-        if not self.x:
+        if not self.x or self.width is None or len(self.x) < 2:
             return
-
-        x1, y1, x2, y2 = get_endpoints(self.x, self.y, self.width)
 
         # Find central line
         line = zip(self.x, self.y)
 
-        # Find bounding rectangle
-        rect = zip(np.hstack([x1,x2[::-1], x1[0]]),
-                   np.hstack([y1,y2[::-1], y1[0]]))
+        if self.width:
 
-        self.set_segments((list(line), list(rect)))
-        self.set_linestyles(('solid', 'dashed'))
-        self.set_linewidths((2, 1))
+            x1, y1, x2, y2 = get_endpoints(self.x, self.y, self.width)
+
+            # Find bounding rectangle
+            rect = zip(np.hstack([x1,x2[::-1], x1[0]]),
+                       np.hstack([y1,y2[::-1], y1[0]]))
+
+            self.set_segments([list(line), list(rect)])
+            self.set_linestyles(['solid', 'dashed'])
+            self.set_linewidths([2, 1])
+
+        else:
+
+            self.set_segments([list(line)])
+            self.set_linestyles(['solid'])
+            self.set_linewidths([2,])
+
+
+def unitless(x):
+    if hasattr(x, 'unit'):
+        return x.value
+    else:
+        return x
 
 
 class PVSlicer(object):
 
-    def __init__(self, filename, backend="Qt4Agg", clim=None):
-
-        self.filename = filename
+    def __init__(self, filename_or_cube, backend=None, clim=None, cmap=None):
 
         try:
             from spectral_cube import SpectralCube
-            cube = SpectralCube.read(filename, format='fits')
-            self.array = cube._data
-        except:
+            if isinstance(filename_or_cube, SpectralCube):
+                cube = filename_or_cube
+            else:
+                cube = SpectralCube.read(filename_or_cube, format='fits')
+            self.cube = cube
+            self.array = self.cube
+            self.shape = cube.shape
+        except ImportError:
             warnings.warn("spectral_cube package is not available - using astropy.io.fits directly")
             from astropy.io import fits
-            self.array = fits.getdata(filename)
+            self.array = fits.getdata(filename_or_cube)
+            self.shape = array.shape
+            self.ok_mask = np.isfinite(self.array)
             if self.array.ndim != 3:
                 raise ValueError("dataset does not have 3 dimensions (install the spectral_cube package to avoid this error)")
 
-        self.backend = backend
-
         import matplotlib as mpl
-        mpl.use(self.backend)
+
+        # We reset the rc parameters to the default values to make sure we use
+        # the default interactive backend and to make sure that the UI is
+        # consistent.
+        mpl.rcdefaults()
+
+        if backend is not None:
+            mpl.use(backend)
+
         import matplotlib.pyplot as plt
 
-        self.fig = plt.figure(figsize=(14, 8))
+        self.fig = plt.figure(figsize=(8, 5))
 
-        self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7])
+        self.backend = mpl.get_backend()
+        print("Using Matplotlib backend: {0}".format(self.backend))
+
+        self.cmap = cmap
+
+        self.ax1 = self.fig.add_axes([0.1, 0.1, 0.4, 0.7], aspect='equal', adjustable='datalim')
 
         if clim is None:
             warnings.warn("clim not defined and will be determined from the data")
             # To work with large arrays, sub-sample the data
             # (but don't do it for small arrays)
-            n1 = max(self.array.shape[0] / 10, 1)
-            n2 = max(self.array.shape[1] / 10, 1)
-            n3 = max(self.array.shape[2] / 10, 1)
-            sub_array = self.array[::n1,::n2,::n3]
-            cmin = np.min(sub_array[~np.isnan(sub_array) & ~np.isinf(sub_array)])
-            cmax = np.max(sub_array[~np.isnan(sub_array) & ~np.isinf(sub_array)])
+            n1 = int(np.round(max(self.shape[0] / 10, 1)))
+            n2 = int(np.round(max(self.shape[1] / 10, 1)))
+            n3 = int(np.round(max(self.shape[2] / 10, 1)))
+            if hasattr(self,'cube'):
+                sub_cube = self.cube[::n1,::n2,::n3]
+                cmin = sub_cube.min().value
+                cmax = sub_cube.max().value
+            else:
+                sub_array = self.array[::n1,::n2,::n3]
+                sub_mask = self.ok_mask[::n1,::n2,::n3]
+                cmin = sub_array[sub_mask].min()
+                cmax = sub_array[sub_mask].max()
             crange = cmax - cmin
             self._clim = (cmin - crange, cmax + crange)
         else:
             self._clim = clim
 
-        self.slice = int(round(self.array.shape[0] / 2.))
+        self.slice = int(round(self.shape[0] / 2.))
 
         from matplotlib.widgets import Slider
 
         self.slice_slider_ax = self.fig.add_axes([0.1, 0.95, 0.4, 0.03])
         self.slice_slider_ax.set_xticklabels("")
         self.slice_slider_ax.set_yticklabels("")
-        self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.array.shape[0], valinit=self.slice, valfmt="%i")
+        self.slice_slider = Slider(self.slice_slider_ax, "3-d slice", 0, self.shape[0]-1, valinit=self.slice, valfmt="%i")
         self.slice_slider.on_changed(self.update_slice)
         self.slice_slider.drawon = False
 
-        self.image = self.ax1.imshow(self.array[self.slice, :,:], origin='lower', interpolation='nearest', vmin=self._clim[0], vmax=self._clim[1], cmap=plt.cm.gray)
+        self.image = self.ax1.imshow(unitless(self.array[self.slice, :,:]),
+                                     origin='lower', interpolation='nearest',
+                                     vmin=self._clim[0], vmax=self._clim[1],
+                                     cmap=self.cmap)
 
         self.vmin_slider_ax = self.fig.add_axes([0.1, 0.90, 0.4, 0.03])
         self.vmin_slider_ax.set_xticklabels("")
@@ -324,22 +360,24 @@ class PVSlicer(object):
 
     def save_fits(self, *args, **kwargs):
 
-        self.set_file_status('instructions')
-
-        print("Enter filename: ", end='')
-        try:
-            plot_name = raw_input()
-        except NameError:
-            plot_name = input()
-
         if self.pv_slice is None:
             return
 
-        try:
-            self.pv_slice.writeto(plot_name, overwrite=True)
-        except TypeError:
-            self.pv_slice.writeto(plot_name, clobber=True)
+        # When using Qt, we need to use a proper Qt save dialog since input()
+        # does not play nicely with the Qt event loop.
+        if self.backend.lower().startswith('qt'):
+            from qtpy.compat import getsavefilename
+            plot_name, _ = getsavefilename()
+            if not plot_name:
+                return
+        else:
+            self.set_file_status('instructions')
 
+            print("Enter filename: ", end='')
+            plot_name = str(input())
+
+        from astropy.io import fits
+        self.pv_slice.writeto(plot_name, overwrite=True)
         print("Saved file to: ", plot_name)
 
         self.set_file_status('saved', filename=plot_name)
@@ -352,7 +390,8 @@ class PVSlicer(object):
         self.pv_slice = extract_pv_slice(self.array, path)
 
         self.ax2.cla()
-        self.ax2.imshow(self.pv_slice.data, origin='lower', aspect='auto', interpolation='nearest')
+        self.ax2.imshow(self.pv_slice.data, origin='lower', aspect='auto',
+                        interpolation='nearest', cmap=self.cmap)
 
         self.fig.canvas.draw()
 
@@ -363,10 +402,10 @@ class PVSlicer(object):
     def update_slice(self, pos=None):
 
         if self.array.ndim == 2:
-            self.image.set_array(self.array)
+            self.image.set_array(unitless(self.array))
         else:
             self.slice = int(round(pos))
-            self.image.set_array(self.array[self.slice, :, :])
+            self.image.set_array(unitless(self.array[self.slice, :, :]))
 
         self.fig.canvas.draw()
 
@@ -385,3 +424,7 @@ class PVSlicer(object):
             self._clim = (self._clim[0], vmax)
         self.image.set_clim(*self._clim)
         self.fig.canvas.draw()
+
+    def close(self):
+        import matplotlib.pyplot as plt
+        plt.close(self.fig)
