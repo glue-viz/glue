@@ -16,16 +16,16 @@ from glue.config import data_translator, subset_state_translator
 from ..subset import InequalitySubsetState
 
 
-class FakeDataObject:
+class FakeDataObject(object):
     array = None
     name = None
 
 
-class AnotherFakeDataObject:
+class AnotherFakeDataObject(object):
     pass
 
 
-class CustomSelectionObject:
+class CustomSelectionObject(object):
     serialized = None
 
 
