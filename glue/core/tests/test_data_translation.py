@@ -286,4 +286,3 @@ class TestTranslationDataCollection:
         self.dc['myobj'] = Data(x=[1, 2, 3])
         assert len(self.dc) == 1
         assert_equal(self.dc[0]['x'], [1, 2, 3])
-
