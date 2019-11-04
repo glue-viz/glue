@@ -239,5 +239,3 @@ def format_choices(options, index=False):
         return "\n\n" + '\n'.join(['* {0} or \'{1}\''.format(index, option) for index, option in enumerate(options)])
     else:
         return "\n\n" + '\n'.join(['* \'{0}\''.format(option) for option in options])
-
-
