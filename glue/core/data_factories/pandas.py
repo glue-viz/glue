@@ -112,5 +112,5 @@ class PandasTranslator:
         coords = data_or_subset.coordinate_components
         for cid in data_or_subset.components:
             if cid not in coords:
-                df[cid.label] =  data_or_subset[cid]
+                df[cid.label] = data_or_subset[cid]
         return df

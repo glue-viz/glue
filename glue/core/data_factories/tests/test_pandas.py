@@ -54,7 +54,6 @@ def test_translator_from_data():
     assert_equal(df['c'].values, ['r', 'd', 'w', 'q'])
 
 
-
 def test_translator_from_subset():
 
     # Case where we convert a subset to a DataFrame
@@ -92,4 +91,3 @@ def test_translator_from_data_with_derived():
 
 
 # TODO: Case where we convert from a BaseData object
-
