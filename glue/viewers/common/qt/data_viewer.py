@@ -79,7 +79,7 @@ class DataViewer(Viewer, BaseQtViewerWidget):
 
     def __init__(self, session, state=None, parent=None):
         """
-        :type session: :class:`~glue.core.Session`
+        :type session: :class:`~glue.core.session.Session`
         """
 
         BaseQtViewerWidget.__init__(self, parent)

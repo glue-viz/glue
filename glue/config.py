@@ -528,7 +528,7 @@ class SubsetMaskImporterRegistry(DataExporterRegistry):
 class DataTranslatorRegistry(Registry):
     """
     Stores data translators, which are classes that define methods to translate
-    between :class:`~glue.core.core.Data` objects and other kinds of data
+    between :class:`~glue.core.data.Data` objects and other kinds of data
     containers.
     """
 

@@ -30,7 +30,7 @@ this, we use a pandas :class:`~pandas.DataFrame` as an example::
     1  3.4  q
     2  2.9  s
 
-We now create a glue :class:`~glue.core.DataCollection` object (note that if you
+We now create a glue :class:`~glue.core.data_collection.DataCollection` object (note that if you
 are already using an active glue application, you do not need to do this, and
 instead you can access the data collection using the ``.data_collection``
 attribute of the application::
@@ -49,7 +49,7 @@ item with the label you want to give the dataset::
     	  0: dataframe
 
 Note that ``dc.append`` won't work here because it only works with glue
-:class:`~glue.core.Data` objects. We can see that the data collection now has
+:class:`~glue.core.data.Data` objects. We can see that the data collection now has
 one dataset. We can access this data either by index::
 
     >>> dc[0]
@@ -60,7 +60,7 @@ or by label::
     >>> dc['dataframe']
     Data (label: dataframe)
 
-Note that in both cases, this returns a glue :class:`~glue.core.Data` object::
+Note that in both cases, this returns a glue :class:`~glue.core.data.Data` object::
 
     >>> print(dc['dataframe'])
     Data Set: dataframe
@@ -73,7 +73,7 @@ Note that in both cases, this returns a glue :class:`~glue.core.Data` object::
      - Pixel Axis 0 [x]
 
 To get back the kind of object that you put in, you need to call the
-:meth:`~glue.core.Data.to_object` method::
+:meth:`~glue.core.data.BaseData.get_object` method::
 
     >>> df2 = dc['dataframe'].get_object()
     >>> type(df2)
@@ -103,7 +103,7 @@ or to convert a glue data object that was not initially created from a
     2  56
 
 To see what data classes are currently supported for the translation, you can
-call :meth:`~glue.core.Data.get_object` with no arguments:
+call :meth:`~glue.core.data.BaseData.get_object` with no arguments:
 
     >>> data.get_object()
     Traceback (most recent call last):
@@ -140,7 +140,7 @@ viewers)::
     <glue.core.subset_group.SubsetGroup object at ...>
 
 Now that the subset has been created, you can retrieve it as a :class:`~pandas.DataFrame`
-using the :meth:`~glue.core.Data.get_subset_object` method::
+using the :meth:`~glue.core.data.BaseData.get_subset_object` method::
 
     >>> dfsub1 = dc['dataframe'].get_subset_object()
     >>> type(dfsub1)
@@ -186,7 +186,7 @@ but the more abtract representation of the selection. The core glue package does
 include any formats to translate these selections to currently, but if you have a
 glue plugin installed that does, or if you have defined one yourself as described
 in :ref:`custom-subset-translation`, you should be able to call the
-:meth:`~glue.core.Data.get_selection_definition` method which takes a ``format=``
+:meth:`~glue.core.data.BaseData.get_selection_definition` method which takes a ``format=``
 keyword argument that specifies the translator to use (leaving this out will
 show a list of available of translation functions available as for subsets)::
 

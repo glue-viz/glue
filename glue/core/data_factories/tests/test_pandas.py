@@ -89,3 +89,7 @@ def test_translator_from_data_with_derived():
     assert_equal(list(df.columns), ['a', 'b'])
     assert_equal(df['a'].values, [3, 5, 6, 7])
     assert_equal(df['b'].values, [4, 6, 7, 8])
+
+
+# TODO: Case where we convert from a BaseData object
+
