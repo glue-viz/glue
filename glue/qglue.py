@@ -88,7 +88,25 @@ def _parse_data_path(path, label):
 
 
 def parse_data(data, label):
+
+    # First try new data translation layer
+
+    from glue.config import data_translator
+
+    try:
+        handler, preferred = data_translator.get_handler_for(data)
+    except TypeError:
+        pass
+    else:
+        data = handler.to_data(data)
+        data.label = label
+        data._preferred_translation = preferred
+        return [data]
+
+    # Then try legacy 'qglue_parser' infrastructure
+
     for item in qglue_parser:
+
         data_class = item.data_class
         parser = item.parser
         if isinstance(data, data_class):

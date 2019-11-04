@@ -6,6 +6,8 @@ import sys
 import warnings
 from collections import namedtuple
 
+from glue.utils import format_choices
+
 """
 Objects used to configure Glue at runtime.
 """
@@ -591,8 +593,11 @@ class SubsetDefinitionTranslatorRegistry(Registry):
         for translator in self:
             if translator.format == format:
                 return translator.handler
-        raise ValueError("No subset state handler found with the format "
-                         "name '{0}'".format(format))
+        all_formats = [translator.format for translator in self]
+        if format is None:
+            raise ValueError("Subset state handler format not set - should be one of:" + format_choices(all_formats))
+        else:
+            raise ValueError("Invalid subset state handler format '{0}' - should be one of:".format(format) + format_choices(all_formats))
 
 
 class QtClientRegistry(Registry):

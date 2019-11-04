@@ -153,12 +153,21 @@ class TestTranslationData:
     def test_get_subset_object_invalid(self):
 
         data = Data(x=np.arange(10), label='myobj')
+
+        with pytest.raises(ValueError) as exc:
+            data.get_subset_object(subset_id='subset 2', cls=FakeDataObject)
+        assert exc.value.args[0] == "Dataset does not contain any subsets"
+
         data.add_subset(data.id['x'] > 4.5, label='subset 1')
         data.add_subset(data.id['x'] > 3.5, label='subset 1')
 
         with pytest.raises(ValueError) as exc:
             data.get_subset_object(subset_id='subset 2', cls=FakeDataObject)
         assert exc.value.args[0] == "No subset found with the label 'subset 2'"
+
+        with pytest.raises(ValueError) as exc:
+            data.get_subset_object(cls=FakeDataObject)
+        assert exc.value.args[0] == "Several subsets are present, specify which one to retrieve with subset_id= - valid options are:\n\n* 0 or 'subset 1'\n* 1 or 'subset 1_01'"
 
         # FIXME: currently we disambiguate subset names, but would maybe be
         # better to just raise an error. In any case the test below never
@@ -190,6 +199,11 @@ class TestTranslationData:
     def test_get_selection_invalid(self):
 
         data = Data(x=[1, 2, 3], label='basic')
+
+        with pytest.raises(ValueError) as exc:
+            data.get_selection_definition(subset_id=0)
+        assert exc.value.args[0] == "Dataset does not contain any subsets"
+
         data.add_subset((data.id['x'] > 1) & (data.id['x'] < 3), label='subset 1')
 
         with pytest.raises(TypeError) as exc:
@@ -197,14 +211,27 @@ class TestTranslationData:
         assert exc.value.args[0] == 'my_subset_translator could not translate subset state of type AndState'
 
         with pytest.raises(ValueError) as exc:
+            data.get_selection_definition(subset_id=0)
+        assert exc.value.args[0] == ("Subset state handler format not set - should be one "
+                                     "of:\n\n* 'astropy-regions'\n* 'my_subset_translator'")
+
+        with pytest.raises(ValueError) as exc:
             data.get_selection_definition(subset_id=0, format='invalid_translator')
-        assert exc.value.args[0] == "No subset state handler found with the format name 'invalid_translator'"
+        assert exc.value.args[0] == ("Invalid subset state handler format 'invalid_translator' "
+                                     "- should be one of:\n\n* 'astropy-regions'\n* 'my_subset_translator'")
 
         data.add_subset((data.id['x'] > 1) & (data.id['x'] < 3), label='subset 1')
+        data.add_subset((data.id['x'] > 1) & (data.id['x'] < 3), label='subset 3')
 
         with pytest.raises(ValueError) as exc:
             data.get_selection_definition(subset_id='subset 2', format='invalid_translator')
         assert exc.value.args[0] == "No subset found with the label 'subset 2'"
+
+        with pytest.raises(ValueError) as exc:
+            data.get_selection_definition(format='invalid_translator')
+        assert exc.value.args[0] == ("Several subsets are present, specify which "
+                                     "one to retrieve with subset_id= - valid options "
+                                     "are:\n\n* 0 or 'subset 1'\n* 1 or 'subset 1_01'\n* 2 or 'subset 3'")
 
         # with pytest.raises(ValueError) as exc:
         #     data.get_selection_definition(subset_id='subset 1', format='invalid_translator')

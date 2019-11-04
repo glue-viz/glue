@@ -11,7 +11,7 @@ from glue.external.six.moves import reduce
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
            'as_list', 'file_format', 'CallbackMixin', 'PropertySetMixin',
-           'Pointer', 'common_prefix', 'queue_to_list']
+           'Pointer', 'common_prefix', 'queue_to_list', 'format_choices']
 
 
 class DeferredMethod(object):
@@ -224,3 +224,20 @@ def queue_to_list(q):
             l.append(q.get_nowait())
         except queue.Empty:
             return l
+
+
+def format_choices(options, index=False):
+    """
+    Return a string with an error message formatted as:
+
+    * option 1
+    * option 2
+
+    This can be preprended to existing error messages.
+    """
+    if index:
+        return "\n\n" + '\n'.join(['* {0} or \'{1}\''.format(index, option) for index, option in enumerate(options)])
+    else:
+        return "\n\n" + '\n'.join(['* \'{0}\''.format(option) for option in options])
+
+

@@ -31,7 +31,8 @@ from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to, categorical_ndarray)
+                        datetime64_to_mpl, broadcast_to, categorical_ndarray,
+                        format_choices)
 
 
 # Note: leave all the following imports for component and component_id since
@@ -283,6 +284,10 @@ class BaseData(object):
 
         return handler.to_object(self, **kwargs)
 
+    @property
+    def _subset_labels(self):
+        return [subset.label for subset in self.subsets]
+
     def get_subset_object(self, subset_id=None, cls=None, **kwargs):
         """
         Get a subset represented as a non-glue object, using the translation
@@ -305,11 +310,15 @@ class BaseData(object):
             else:
                 raise ValueError('Specify the object class to use with cls=')
 
-        if subset_id is None and len(self.subsets) == 1:
-            subset = self.subsets[0]
+        if len(self.subsets) == 0:
+            raise ValueError("Dataset does not contain any subsets")
+        elif subset_id is None:
+            if len(self.subsets) == 1:
+                subset = self.subsets[0]
+            else:
+                raise ValueError("Several subsets are present, specify which one to retrieve with subset_id= - valid options are:" + format_choices(self._subset_labels, index=True))
         elif isinstance(subset_id, str):
             matches = [subset for subset in self.subsets if subset.label == subset_id]
-            print(matches)
             if len(matches) == 0:
                 raise ValueError("No subset found with the label '{0}'".format(subset_id))
             elif len(matches) > 1:
@@ -336,8 +345,13 @@ class BaseData(object):
             The format to translate the subset state to.
         """
 
-        if subset_id is None and len(self.subsets) == 1:
-            subset = self.subsets[0]
+        if len(self.subsets) == 0:
+            raise ValueError("Dataset does not contain any subsets")
+        elif subset_id is None:
+            if len(self.subsets) == 1:
+                subset = self.subsets[0]
+            else:
+                raise ValueError("Several subsets are present, specify which one to retrieve with subset_id= - valid options are:" + format_choices(self._subset_labels, index=True))
         elif isinstance(subset_id, str):
             matches = [subset for subset in self.subsets if subset.label == subset_id]
             if len(matches) == 0:
