@@ -433,6 +433,8 @@ user when new data are added. Note that it is your responsibility to ensure
 that links that currently exist (and are in ``data_collection.external_links``)
 are not suggested.
 
+.. _custom-data-translation:
+
 Custom translation to native data objects
 -----------------------------------------
 
@@ -473,6 +475,8 @@ With this defined, you should then be able to add objects of type
     >>> data.get_subset_object(subset_id=0)
     MyDataClass(...)
 
+.. _custom-subset-translation:
+
 Custom translation of subset definitions to native data objects
 ---------------------------------------------------------------
 
@@ -504,7 +508,7 @@ decorator, e.g.::
 
 
 With this defined, you should then be able to extract subsets with this converter
-using 
+using
 :meth:`~glue.core.data.BaseData.get_selection_definition`, e.g.::
 
     >>> data.get_selection_definition(subset_id='subset 1',
