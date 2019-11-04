@@ -244,6 +244,6 @@ def format_choices(options, index=False):
         else:
             updated_options.append(option)
     if index:
-        return "\n\n" + '\n'.join(['* {0} or {1}'.format(index, option) for index, option in enumerate(updated_options)])
+        return "\n\n" + '\n'.join(['* {0} or {1}'.format(idx, option) for idx, option in enumerate(updated_options)])
     else:
         return "\n\n" + '\n'.join(['* {0}'.format(option) for option in updated_options])
