@@ -235,7 +235,15 @@ def format_choices(options, index=False):
 
     This can be preprended to existing error messages.
     """
+    updated_options = []
+    for option in options:
+        if isinstance(option, str):
+            updated_options.append("'{0}'".format(option))
+        elif isinstance(option, type):
+            updated_options.append(str(option.__module__) + '.' + option.__name__)
+        else:
+            updated_options.append(option)
     if index:
-        return "\n\n" + '\n'.join(['* {0} or \'{1}\''.format(index, option) for index, option in enumerate(options)])
+        return "\n\n" + '\n'.join(['* {0} or {1}'.format(index, option) for index, option in enumerate(updated_options)])
     else:
-        return "\n\n" + '\n'.join(['* \'{0}\''.format(option) for option in options])
+        return "\n\n" + '\n'.join(['* {0}'.format(option) for option in updated_options])

@@ -365,6 +365,10 @@ class Subset(object):
         return self.data.components
 
     @property
+    def coordinate_components(self):
+        return self.data.coordinate_components
+
+    @property
     def derived_components(self):
         return self.data.derived_components
 

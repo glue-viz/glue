@@ -278,7 +278,8 @@ class BaseData(object):
             if hasattr(self, '_preferred_translation'):
                 cls = self._preferred_translation
             else:
-                raise ValueError('Specify the object class to use with cls=')
+                raise ValueError('Specify the object class to use with cls= - supported '
+                                 'classes are:' + format_choices(data_translator.supported_classes))
 
         handler, _ = data_translator.get_handler_for(cls)
 
@@ -308,7 +309,8 @@ class BaseData(object):
             if hasattr(self, '_preferred_translation'):
                 cls = self._preferred_translation
             else:
-                raise ValueError('Specify the object class to use with cls=')
+                raise ValueError('Specify the object class to use with cls= - supported '
+                                 'classes are:' + format_choices(data_translator.supported_classes))
 
         if len(self.subsets) == 0:
             raise ValueError("Dataset does not contain any subsets")

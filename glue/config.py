@@ -549,6 +549,10 @@ class DataTranslatorRegistry(Registry):
             if member.target_cls is target_cls:
                 self.members.remove(member)
 
+    @property
+    def supported_classes(self):
+        return [tr.target_cls for tr in self]
+
     def get_handler_for(self, data_or_class):
         for translator in self:
             if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_cls:
@@ -588,6 +592,10 @@ class SubsetDefinitionTranslatorRegistry(Registry):
         for member in self.members[:]:
             if member.format is format:
                 self.members.remove(member)
+
+    @property
+    def supported_classes(self):
+        return [tr.target_cls for tr in self]
 
     def get_handler_for(self, format):
         for translator in self:
