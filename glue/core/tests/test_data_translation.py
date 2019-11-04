@@ -213,12 +213,12 @@ class TestTranslationData:
         with pytest.raises(ValueError) as exc:
             data.get_selection_definition(subset_id=0)
         assert exc.value.args[0] == ("Subset state handler format not set - should be one "
-                                     "of:\n\n* 'astropy-regions'\n* 'my_subset_translator'")
+                                     "of:\n\n* 'my_subset_translator'")
 
         with pytest.raises(ValueError) as exc:
             data.get_selection_definition(subset_id=0, format='invalid_translator')
         assert exc.value.args[0] == ("Invalid subset state handler format 'invalid_translator' "
-                                     "- should be one of:\n\n* 'astropy-regions'\n* 'my_subset_translator'")
+                                     "- should be one of:\n\n* 'my_subset_translator'")
 
         data.add_subset((data.id['x'] > 1) & (data.id['x'] < 3), label='subset 1')
         data.add_subset((data.id['x'] > 1) & (data.id['x'] < 3), label='subset 3')
