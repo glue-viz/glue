@@ -25,7 +25,14 @@ Installation
 ------------
 
 For installation documentation, visit
-`glueviz.org <http://glueviz.org>`__
+`glueviz.org <http://glueviz.org>`__.
+
+Contributing
+------------
+
+If you are interested in contributing to ``glue``, please read our
+`Code of Conduct <https://github.com/glue-viz/.github/blob/master/CODE_OF_CONDUCT.md>`_
+and `Contribution Guidelines <https://github.com/glue-viz/.github/blob/master/CONTRIBUTING.md>`_.
 
 Support
 -------
@@ -37,7 +44,7 @@ License
 -------
 
 Glue is licensed under the `BSD
-License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__
+License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__.
 
 .. |Azure Status| image:: https://dev.azure.com/glue-viz/glue/_apis/build/status/glue-viz.glue?branchName=master
    :target: https://dev.azure.com/glue-viz/glue/_build/latest?definitionId=4&branchName=master
