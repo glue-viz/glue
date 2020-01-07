@@ -30,23 +30,27 @@ jobs:
     - linux: py37-test-pyqt511-all
     - linux: py37-test-pyqt512
     - linux: py37-test-pyqt513-all
+    - linux: py38-test-pyqt514
     - linux: py36-test-pyside512
     - linux: py37-test-pyside513-all
+    - linux: py38-test-pyside514
 
     # Test against latest developer versions of some packages
     - linux: py37-test-pyside513-dev-all
 
     # Test a few configurations on MacOS X
     - macosx: py36-test-pyqt513
-    - macosx: py37-test-pyqt513-all
+    - macosx: py37-test-pyqt513
+    - macosx: py38-test-pyqt514-all
     - macosx: py37-test-pyside513
 
     # Test a few configurations on Windows
     - windows: py36-test-pyqt510
     - windows: py37-test-pyqt510
+    - windows: py38-test-pyqt514-all
     - windows: py37-test-pyside513-all
 
     # Try out documentation build on Linux and Windows
-    - linux: py37-docs-pyqt513
+    - linux: py36-docs-pyqt513
     - macosx: py37-docs-pyqt513
-    - windows: py37-docs-pyqt513
+    - windows: py38-docs-pyqt513
