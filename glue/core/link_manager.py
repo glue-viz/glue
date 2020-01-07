@@ -15,13 +15,10 @@ The LinkManager autocreates a link from D1.id['x'] to D3.id['z']
 by chaining x2y and y2z.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import logging
 
 import numpy as np
 
-from glue.external import six
 from glue.core.hub import HubListener
 from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMessage
 from glue.core.contracts import contract
@@ -238,7 +235,7 @@ class LinkManager(HubListener):
         for data in data_collection:
             links = discover_links(data, self._links | self._inverse_links)
             comps = {}
-            for cid, link in six.iteritems(links):
+            for cid, link in links.items():
                 d = DerivedComponent(data, link)
                 comps[cid] = d
             data._set_externally_derivable_components(comps)

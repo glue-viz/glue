@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import warnings
 
 import numpy as np
@@ -7,10 +5,6 @@ from numpy.lib.stride_tricks import as_strided
 
 import pandas as pd
 import bottleneck as bt
-
-from glue.external.six import string_types
-from glue.external.six.moves import range
-
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
@@ -92,7 +86,7 @@ def stack_view(shape, *views):
     shp = tuple(slice(0, s, 1) for s in shape)
     result = np.broadcast_arrays(*np.ogrid[shp])
     for v in views:
-        if isinstance(v, string_types) and v == 'transpose':
+        if isinstance(v, str) and v == 'transpose':
             result = [r.T for r in result]
             continue
 

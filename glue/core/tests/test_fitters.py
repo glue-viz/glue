@@ -1,10 +1,8 @@
 
 
-from __future__ import absolute_import, division, print_function
-
 import pytest
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue.tests.helpers import requires_scipy, requires_astropy, ASTROPY_INSTALLED
 

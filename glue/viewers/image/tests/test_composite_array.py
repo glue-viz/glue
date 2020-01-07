@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 import numpy as np
 from numpy.testing import assert_allclose
 from matplotlib.pyplot import cm

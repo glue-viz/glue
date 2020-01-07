@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 from contextlib import contextmanager
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue import core
 from glue.core.application_base import Application

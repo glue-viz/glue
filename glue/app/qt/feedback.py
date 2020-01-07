@@ -1,13 +1,11 @@
 """
 Widgets for sending feedback reports
 """
-from __future__ import absolute_import, division, print_function
-
 import os
 
 from qtpy import QtGui, QtWidgets
-from glue.external.six.moves.urllib.parse import urlencode
-from glue.external.six.moves.urllib.request import Request, urlopen
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 from glue.utils.qt import load_ui
 from glue._deps import get_status_as_odict
 

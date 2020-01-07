@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import gzip
 import warnings
 from os.path import basename
@@ -8,7 +6,6 @@ from collections import OrderedDict
 from glue.core.coordinates import coordinates_from_header, WCSCoordinates
 from glue.core.data import Component, Data
 from glue.config import data_factory, qglue_parser
-from glue.external.six import string_types
 
 __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 
@@ -114,7 +111,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                     data.meta[key] = [str(value)]
                 else:
                     data.meta[key].append(str(value))
-            elif isinstance(value, string_types) or isinstance(value, (int, float, bool)):
+            elif isinstance(value, str) or isinstance(value, (int, float, bool)):
                 data.meta[key] = value
             else:
                 data.meta[key] = str(value)

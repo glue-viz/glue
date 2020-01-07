@@ -1,7 +1,5 @@
 # Define decorators that can be used for pytest tests
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import zlib
 import tempfile

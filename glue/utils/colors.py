@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from matplotlib.colors import ColorConverter
 
 __all__ = ['alpha_blend_colors']

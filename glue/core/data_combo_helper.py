@@ -1,8 +1,6 @@
 # Combo helpers independent of GUI framework - these operate on
 # SelectionCallbackProperty objects.
 
-from __future__ import absolute_import, division, print_function
-
 import weakref
 
 from glue.core import BaseData, Subset
@@ -14,7 +12,6 @@ from glue.core.message import (DataReorderComponentMessage,
                                DataUpdateMessage,
                                DataRenameComponentMessage)
 from glue.external.echo import delay_callback, ChoiceSeparator
-from glue.external.six import string_types
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper', 'ComboHelper', 'BaseDataComboHelper']
@@ -162,7 +159,7 @@ class ComponentIDComboHelper(ComboHelper):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
 
-        if isinstance(none, string_types):
+        if isinstance(none, str):
             self._none = True
             self._none_label = none
         else:
@@ -257,7 +254,7 @@ class ComponentIDComboHelper(ComboHelper):
 
     @none.setter
     def none(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             self._none = True
             self._none_label = value
         else:
@@ -304,15 +301,10 @@ class ComponentIDComboHelper(ComboHelper):
         datasets : list
             The list of :class:`~glue.core.data.Data` objects to add
         """
-
         if self._manual_data:
             raise Exception("Cannot change data in ComponentIDComboHelper "
                             "initialized from a single dataset")
-
-        try:
-            self._data.clear()
-        except AttributeError:  # PY2
-            self._data[:] = []
+        self._data.clear()
         for data in unique_data_iter(datasets):
             self.append_data(data, refresh=False)
         self.refresh()
@@ -511,11 +503,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
         datasets : list
             The list of :class:`~glue.core.data.Data` objects to add
         """
-
-        try:
-            self._datasets.clear()
-        except AttributeError:  # PY2
-            self._datasets[:] = []
+        self._datasets.clear()
         for data in unique_data_iter(datasets):
             self.append_data(data, refresh=False)
         self.refresh()

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import weakref
 from itertools import chain
 from weakref import WeakKeyDictionary

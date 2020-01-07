@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import time
 
 from glue.viewers.profile.layer_artist import ProfileLayerArtist

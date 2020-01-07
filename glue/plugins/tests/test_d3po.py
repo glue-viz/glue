@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 from shutil import rmtree
 from tempfile import mkdtemp

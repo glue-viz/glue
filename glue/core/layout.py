@@ -3,11 +3,7 @@ This module provides some routines for performing layout
 calculations to organize rectangular windows in a larger canvas
 """
 
-from __future__ import absolute_import, division, print_function
-
 from collections import Counter
-
-from glue.external import six
 
 
 class Rectangle(object):
@@ -31,9 +27,8 @@ class Rectangle(object):
                 self.w == other.w and
                 self.h == other.h)
 
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
+    # If __eq__ is defined, then __hash__ has to be re-defined
+    __hash__ = object.__hash__
 
     def __str__(self):
         return repr(self)

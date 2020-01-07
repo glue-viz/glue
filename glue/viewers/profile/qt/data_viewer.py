@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.utils import defer_draw, decorate_all_methods
 
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer

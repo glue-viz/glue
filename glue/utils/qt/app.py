@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import time
 import platform
 from qtpy import QtCore, QtGui, QtWidgets
@@ -64,7 +62,7 @@ def get_qapp(icon_path=None):
             save_settings()
 
         point_size = settings.FONT_SIZE
-        font.setPointSize(point_size - size_offset)
+        font.setPointSize(int(point_size - size_offset))
         qapp.setFont(font)
 
     # Make sure we use high resolution icons for HDPI displays.

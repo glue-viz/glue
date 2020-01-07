@@ -1,8 +1,6 @@
 # This artist can be used to deal with the sampling of the data as well as any
 # RGB blending.
 
-from __future__ import absolute_import
-
 import numpy as np
 
 from matplotlib.colors import ColorConverter, Colormap

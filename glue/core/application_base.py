@@ -1,12 +1,9 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import warnings
 import traceback
 from functools import wraps
 
 from glue.core.data import Subset
-from glue.external.six import string_types
 from glue.core.session import Session
 from glue.core.hub import HubListener
 from glue.core import BaseData
@@ -192,7 +189,7 @@ class Application(HubListener):
         This returns the added `Data` object.
         """
 
-        if isinstance(paths, string_types):
+        if isinstance(paths, str):
             paths = [paths]
 
         datasets = []

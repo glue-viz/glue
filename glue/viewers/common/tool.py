@@ -1,8 +1,6 @@
 # The classes in this file define toolbar tools. Mouse modes specifically
 # are defined in mouse_modes.py
 
-from __future__ import absolute_import, division, print_function
-
 from glue.core.callback_property import CallbackProperty
 
 __all__ = ['Tool', 'CheckableTool', 'DropdownTool', 'SimpleToolMenu']

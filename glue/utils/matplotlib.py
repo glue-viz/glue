@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import warnings
 from functools import wraps
@@ -23,7 +21,7 @@ __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
 
 def renderless_figure():
     # Matplotlib figure that skips the render step, for test speed
-    from mock import MagicMock
+    from unittest.mock import MagicMock
     import matplotlib.pyplot as plt
     fig = plt.figure()
     fig.canvas.draw = MagicMock()

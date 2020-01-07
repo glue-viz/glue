@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
 

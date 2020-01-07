@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import sys
 import time
+import queue
 
-from glue.external.six.moves import queue
 from glue.utils import queue_to_list
 from qtpy.QtCore import Signal, QThread
 

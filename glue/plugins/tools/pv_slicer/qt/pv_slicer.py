@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 
 from glue.viewers.matplotlib.toolbar_mode import PathMode

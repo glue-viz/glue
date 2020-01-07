@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import sys
 import pytest
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 from numpy.testing import assert_allclose, assert_array_equal
 
 from glue.core.component import CategoricalComponent

@@ -51,8 +51,6 @@ serialization protocols. Versions must be sequential integers,
 starting from 1.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import json
 import uuid
@@ -68,7 +66,6 @@ import numpy as np
 from matplotlib.colors import Colormap
 from matplotlib import cm
 
-from glue.external import six
 from glue import core
 from glue.core.data import Data
 from glue.core.component_id import ComponentID, PixelComponentID
@@ -86,11 +83,6 @@ from glue.utils import lookup_class
 
 
 literals = tuple([type(None), float, int, bytes, bool])
-
-if six.PY2:
-    literals += (long,)  # noqa
-
-
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
 
 builtin_iterables = (tuple, list, set)
@@ -108,9 +100,10 @@ if not os.path.exists(PATCH_FILE) and 'site-packages.zip' in PATCH_FILE:
     PATCH_FILE = PATCH_FILE.replace('site-packages.zip', 'glue')
 
 PATH_PATCHES = {}
-for line in open(PATCH_FILE):
-    before, after = line.strip().split(' -> ')
-    PATH_PATCHES[before.strip()] = after.strip()
+with open(PATCH_FILE) as fp:
+    for line in fp:
+        before, after = line.strip().split(' -> ')
+        PATH_PATCHES[before.strip()] = after.strip()
 
 
 def save(filename, obj):
@@ -289,7 +282,7 @@ class GlueSerializer(object):
         Return a unique name for an object, and add it to the ID registry
         if necessary.
         """
-        if isinstance(obj, six.string_types):
+        if isinstance(obj, str):
             return 'st__%s' % obj
 
         if type(obj) in literals:
@@ -333,7 +326,7 @@ class GlueSerializer(object):
         Serialize an object, but do not add it to
         the ID registry
         """
-        if isinstance(obj, six.string_types):
+        if isinstance(obj, str):
             return 'st__' + obj
 
         if type(obj) in literals:
@@ -484,7 +477,7 @@ class GlueUnSerializer(object):
     @core.registry.disable
     def object(self, obj_id):
 
-        if isinstance(obj_id, six.string_types):
+        if isinstance(obj_id, str):
 
             if obj_id.startswith('st__'):  # a string literal
                 return obj_id[4:]
@@ -521,7 +514,7 @@ class GlueUnSerializer(object):
             if isgeneratorfunction(func):
                 gen, obj = obj, next(obj)  # get the partially-constructed value...
 
-            if isinstance(obj_id, six.string_types):  # ... add it to the registry ...
+            if isinstance(obj_id, str):  # ... add it to the registry ...
                 self._objs[obj_id] = obj
                 self._working.remove(obj_id)
 
@@ -535,7 +528,7 @@ class GlueUnSerializer(object):
             # obj_id from te list of IDs we are currently working on, as we
             # may want to try again (this happens when using the callbacks below)
 
-            if isinstance(obj_id, six.string_types) and obj_id in self._working:
+            if isinstance(obj_id, str) and obj_id in self._working:
                 self._working.remove(obj_id)
 
         self._try_callbacks()

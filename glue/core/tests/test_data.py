@@ -1,14 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103,R0903,R0904
 
-from __future__ import absolute_import, division, print_function
-
 import pytest
 import numpy as np
 from numpy.testing import assert_equal, assert_allclose
-from mock import MagicMock
+from unittest.mock import MagicMock
 from astropy.utils import NumpyRNGContext
 
-from glue.external import six
 from glue import core
 from glue.utils import broadcast_to
 
@@ -96,12 +93,8 @@ class TestData(object):
         comp.data.shape = (3, 2)
         with pytest.raises(TypeError) as exc:
             self.data.add_component(comp("junk label"))
-        if six.PY3:
-            assert exc.value.args[0] == ("add_component() missing 1 required "
-                                         "positional argument: 'label'")
-        else:
-            assert exc.value.args[0] == ("add_component() takes exactly 3 "
-                                         "arguments (2 given)")
+        assert exc.value.args[0] == ("add_component() missing 1 required "
+                                        "positional argument: 'label'")
 
     def test_get_getitem_incompatible_attribute(self):
         cid = ComponentID('bad')

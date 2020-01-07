@@ -1,12 +1,9 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import warnings
 
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 
-from glue.external import six
 from glue.core.callback_property import add_callback
 from glue.viewers.common.tool import CheckableTool, DropdownTool
 from glue.icons.qt import get_icon
@@ -48,7 +45,7 @@ class BasicToolbar(QtWidgets.QToolBar):
     @active_tool.setter
     def active_tool(self, new_tool):
 
-        if isinstance(new_tool, six.string_types):
+        if isinstance(new_tool, str):
             if new_tool in self.tools:
                 new_tool = self.tools[new_tool]
             else:
@@ -110,7 +107,7 @@ class BasicToolbar(QtWidgets.QToolBar):
 
         parent = QtWidgets.QToolBar.parent(self)
 
-        if isinstance(tool.icon, six.string_types):
+        if isinstance(tool.icon, str):
             if os.path.exists(tool.icon):
                 icon = QtGui.QIcon(tool.icon)
             else:

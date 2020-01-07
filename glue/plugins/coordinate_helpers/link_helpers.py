@@ -3,8 +3,6 @@
 
 # Coordinate transforms (requires Astropy>)
 
-from __future__ import absolute_import, division, print_function
-
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric
 

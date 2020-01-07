@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from .autocomplete_widget import *  # noqa
 from .dialogs import *  # noqa
 from .colors import *  # noqa

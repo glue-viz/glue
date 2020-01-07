@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import json
 from io import BytesIO
 
@@ -7,7 +5,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_equal
 
-from glue.external import six
 from glue import core
 from glue.core.component import CategoricalComponent, DateTimeComponent
 from glue.tests.helpers import requires_astropy, make_file
@@ -35,7 +32,7 @@ def containers_equal(c1, c2):
     """Check that two container-like items have the same contents,
     ignoring differences relating to the type of container
     """
-    if isinstance(c1, six.string_types):
+    if isinstance(c1, str):
         return c1 == c2
 
     try:

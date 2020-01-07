@@ -6,8 +6,6 @@ See the guide on :ref:`writing custom fit plugins <custom-fitting>` for
 help with using custom fitting utilities in Glue.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 
 from glue.core.simpleforms import IntOption, Option

@@ -9,8 +9,6 @@ these layers, and provides GUI access to the model
 """
 # pylint: disable=I0011, W0613, R0913, R0904, W0611
 
-from __future__ import absolute_import, division, print_function
-
 import textwrap
 from weakref import WeakKeyDictionary
 

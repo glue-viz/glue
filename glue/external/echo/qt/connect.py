@@ -1,8 +1,6 @@
 # The functions in this module are used to connect callback properties to Qt
 # widgets.
 
-from __future__ import absolute_import, division, print_function
-
 import math
 from functools import partial
 

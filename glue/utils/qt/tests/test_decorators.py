@@ -1,7 +1,5 @@
-from __future__ import absolute_import, division, print_function
-
 import os
-from mock import patch
+from unittest.mock import patch
 
 from ..decorators import messagebox_on_error, die_on_error
 

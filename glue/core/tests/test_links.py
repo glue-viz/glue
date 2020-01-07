@@ -1,8 +1,6 @@
 """This file contains tests concerning linking data and accessing
 linked components"""
 
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 from numpy.random import random as r
 

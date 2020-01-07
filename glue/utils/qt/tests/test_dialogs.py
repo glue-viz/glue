@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-import mock
+from unittest import mock
 
 from ..dialogs import pick_item, pick_class, get_text
 

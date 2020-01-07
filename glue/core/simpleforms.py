@@ -9,8 +9,6 @@ these classes, an :class:`Option` behaves like a normal instance attribute.
 See :ref:`custom-fitting` for example usage.
 """
 
-from __future__ import absolute_import, division, print_function
-
 
 class Option(object):
     """

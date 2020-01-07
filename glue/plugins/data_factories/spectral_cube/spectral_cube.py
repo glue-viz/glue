@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from spectral_cube import SpectralCube, StokesSpectralCube
 
 from glue.core import Data

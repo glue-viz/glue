@@ -6,8 +6,6 @@
 # evaluated at compile time rather than at runtime, so the patched version
 # wouldn't be used.
 
-from __future__ import absolute_import, division, print_function
-
 import os
 from collections import defaultdict
 
@@ -39,7 +37,7 @@ class PluginConfig(object):
 
         plugin_cfg = os.path.join(cfg_dir, 'plugins.cfg')
 
-        from glue.external.six.moves import configparser
+        import configparser
 
         config = configparser.ConfigParser()
         read = config.read(plugin_cfg)
@@ -64,7 +62,7 @@ class PluginConfig(object):
 
         plugin_cfg = os.path.join(cfg_dir, 'plugins.cfg')
 
-        from glue.external.six.moves import configparser
+        import configparser
 
         config = configparser.ConfigParser()
         config.add_section('plugins')

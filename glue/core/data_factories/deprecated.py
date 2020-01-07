@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.core.data_factories.hdf5 import is_hdf5, extract_hdf5_datasets
 from glue.core.data_factories.fits import is_fits, is_image_hdu
 from glue.core.coordinates import coordinates_from_header

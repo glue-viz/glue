@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 
 import numpy as np
@@ -56,9 +54,7 @@ class Coordinates(object):
     def default_world_coords(self, ndim):
         return np.zeros(ndim, dtype=float)
 
-    # PY3: pixel2world_single_axis(self, *pixel, axis=None)
-
-    def pixel2world_single_axis(self, *pixel, **kwargs):
+    def pixel2world_single_axis(self, *pixel, axis=None):
         """
         Convert pixel to world coordinates, preserving input type/shape.
 
@@ -79,9 +75,6 @@ class Coordinates(object):
         world : `numpy.ndarray`
             The world coordinates for the requested axis
         """
-
-        # PY3: the following is needed for Python 2
-        axis = kwargs.get('axis', None)
 
         if axis is None:
             raise ValueError("axis needs to be set")
@@ -106,7 +99,7 @@ class Coordinates(object):
 
         return broadcast_to(result[axis], original_shape)
 
-    def world2pixel_single_axis(self, *world, **kwargs):
+    def world2pixel_single_axis(self, *world, axis=None):
         """
         Convert world to pixel coordinates, preserving input type/shape.
 
@@ -127,9 +120,6 @@ class Coordinates(object):
         pixel : `numpy.ndarray`
             The pixel coordinates for the requested axis
         """
-
-        # PY3: the following is needed for Python 2
-        axis = kwargs.get('axis', None)
 
         if axis is None:
             raise ValueError("axis needs to be set")
@@ -309,18 +299,16 @@ class WCSCoordinates(Coordinates):
         self._wcs = WCS(self._header, naxis=naxis)
 
     def pixel2world(self, *pixel):
-        # PY3: can just do pix2world(*pixel, 0)
         if np.size(pixel[0]) == 0:
             return tuple(np.array([], dtype=float) for p in pixel)
         else:
-            return self._wcs.wcs_pix2world(*(tuple(pixel) + (0,)))
+            return self._wcs.wcs_pix2world(*pixel, 0)
 
     def world2pixel(self, *world):
-        # PY3: can just do world2pix(*world, 0)
         if np.size(world[0]) == 0:
             return tuple(np.array([], dtype=float) for w in world)
         else:
-            return self._wcs.wcs_world2pix(*(tuple(world) + (0,)))
+            return self._wcs.wcs_world2pix(*world, 0)
 
     def default_world_coords(self, ndim):
         if ndim != self._wcs.naxis:

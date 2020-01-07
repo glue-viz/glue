@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtCore, QtWidgets
 from glue.core.edit_subset_mode import (NewMode, OrMode,
                                         AndNotMode, AndMode, XorMode,
@@ -9,7 +7,6 @@ from glue.utils import nonpartial, avoid_circular
 from glue.utils.qt import update_combobox
 from glue.core.message import EditSubsetMessage, SubsetMessage
 from glue.core.hub import HubListener
-from glue.external.six import string_types
 from glue.icons.qt import layer_icon
 
 
@@ -189,7 +186,7 @@ class EditSubsetModeToolBar(QtWidgets.QToolBar, HubListener):
                 if isinstance(act, QtWidgets.QAction):
                     act.setChecked(False)
             return
-        elif isinstance(mode, string_types):
+        elif isinstance(mode, str):
             try:
                 mode = self._modes[mode]  # label to mode class
             except KeyError:

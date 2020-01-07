@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 from matplotlib.colors import ColorConverter
 
 from glue.config import settings
 from glue.external.echo import callback_property, HasCallbackProperties
-from glue.external import six
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
@@ -55,9 +52,8 @@ class VisualAttributes(HasCallbackProperties):
         else:
             return all(getattr(self, a) == getattr(other, a) for a in self._atts)
 
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
+    # If __eq__ is defined, then __hash__ has to be re-defined
+    __hash__ = object.__hash__
 
     def set(self, other):
         """
@@ -93,7 +89,7 @@ class VisualAttributes(HasCallbackProperties):
 
     @color.setter
     def color(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             self._color = value.lower()
         else:
             self._color = value

@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import pytest
-from mock import patch
+from unittest.mock import patch
 
 from glue.tests.helpers import requires_qt
 

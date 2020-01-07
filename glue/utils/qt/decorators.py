@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import sys
 import traceback
@@ -43,8 +41,8 @@ def set_cursor_cm(shape):
         app.restoreOverrideCursor()
 
 
-# Once we drop support for Python 2.7, we'll be able to avoid defining these as
-# classes and defining __call__ below, by using contextmanager.
+# TODO: We should be able to avoid defining these as classes and defining
+# __call__ below, by using contextmanager.
 
 class messagebox_on_error(object):
 

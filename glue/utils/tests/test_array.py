@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from itertools import product
 
 import pytest
@@ -7,7 +5,6 @@ import numpy as np
 from numpy.testing import assert_equal, assert_allclose
 
 from glue.tests.helpers import HYPOTHESIS_INSTALLED
-from glue.external.six import string_types, PY2  # noqa
 
 from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
@@ -41,12 +38,6 @@ def test_unique_dtype():
 
 def test_shape_to_string():
     assert shape_to_string((1, 4, 3)) == "(1, 4, 3)"
-
-
-@pytest.mark.skipif("not PY2")
-def test_shape_to_string_long():
-    # Shape includes long ints on Windows
-    assert shape_to_string((long(1), long(4), long(3))) == "(1, 4, 3)"  # noqa
 
 
 def test_view_shape():
@@ -85,7 +76,7 @@ def test_stack_view(shape, views):
     x = np.random.random(shape)
     exp = x
     for v in views:
-        if isinstance(v, string_types) and v == 'transpose':
+        if isinstance(v, str) and v == 'transpose':
             exp = exp.T
         else:
             exp = exp[v]

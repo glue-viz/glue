@@ -1,11 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 from types import FunctionType, MethodType
 
-try:
-    from inspect import getfullargspec
-except ImportError:  # Python 2.7
-    from inspect import getargspec as getfullargspec
+from inspect import getfullargspec
 
 from glue.config import link_function
 

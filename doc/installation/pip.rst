@@ -21,9 +21,3 @@ already have PyQt5 or PySide2 installed, you can do::
     pip install glueviz
 
 Note that this will still installed required dependencies.
-
-If you are using Python 2.7, you will need to also make sure you install Qt and
-either `PyQt5 <https://riverbankcomputing.com/software/pyqt/intro>`__ or `PySide2
-<https://wiki.qt.io/Qt_for_Python>`__, since these cannot be automatically installed
-with the ``pip`` command unless you are using Python 3.x. See the section on
-:ref:`installing-qt` for more details.

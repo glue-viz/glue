@@ -1,7 +1,5 @@
 # pylint: disable=E1101,F0401
 
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from glue.core.hub import HubListener

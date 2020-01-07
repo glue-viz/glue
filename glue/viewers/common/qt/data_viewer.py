@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import set_cursor, messagebox_on_error
-from glue.external import six
 from glue.core.qt.dialogs import warn
 from glue.utils.noconflict import classmaker
 from glue.config import viewer_tool
@@ -48,8 +45,8 @@ class SaveTool(SimpleToolMenu):
 
 # Note: we need to use classmaker here because otherwise we run into issues when
 # trying to use the meta-class with the Qt class.
-@six.add_metaclass(classmaker(left_metas=(ToolbarInitializer,)))
-class DataViewer(Viewer, BaseQtViewerWidget):
+class DataViewer(Viewer, BaseQtViewerWidget,
+                 metaclass=classmaker(left_metas=(ToolbarInitializer,))):
     """
     Base class for all Qt DataViewer widgets.
 

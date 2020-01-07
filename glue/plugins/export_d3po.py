@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import json
 
@@ -216,8 +214,8 @@ def launch_d3po(path):
 
     :param path: The TLD of the bundle
     """
-    from glue.external.six.moves.socketserver import TCPServer
-    from glue.external.six.moves.SimpleHTTPServer import SimpleHTTPRequestHandler
+    from socketserver import TCPServer
+    from http.server import SimpleHTTPRequestHandler
     from random import randrange
     from socket import error
     import webbrowser

@@ -3,14 +3,11 @@
 Script used to create template config.py files for Glue
 """
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import sys
 from shutil import copyfile
 
 import glue
-from glue.external.six.moves import input
 
 
 def get_clobber():

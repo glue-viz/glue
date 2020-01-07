@@ -1,10 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-try:
-    from textwrap import indent
-except ImportError:  # PY2
-    def indent(text, prefix):
-        return ''.join([prefix + line for line in text.splitlines(True)])
+from textwrap import indent
 
 from collections import defaultdict
 

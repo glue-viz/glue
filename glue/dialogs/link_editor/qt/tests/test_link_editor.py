@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 
 from qtpy import QtWidgets
 from glue.utils.qt import process_events

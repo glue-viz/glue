@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.external.echo import keep_in_sync, CallbackProperty
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.common.state import LayerState

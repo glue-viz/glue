@@ -1,7 +1,5 @@
 # Make sure that session files can be read in a backward-compatible manner
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import pytest
 import numpy as np

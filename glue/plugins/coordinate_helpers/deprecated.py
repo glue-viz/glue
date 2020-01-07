@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from astropy import units as u
 from astropy.coordinates import FK5, Galactic
 

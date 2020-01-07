@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from collections import namedtuple
 from glue.core import Data
 

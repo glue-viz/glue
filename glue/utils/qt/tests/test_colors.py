@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue.external.echo import CallbackProperty
 from qtpy import QtGui
