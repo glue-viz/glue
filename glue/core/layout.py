@@ -6,7 +6,6 @@ calculations to organize rectangular windows in a larger canvas
 from collections import Counter
 
 
-
 class Rectangle(object):
 
     def __init__(self, x, y, w, h):
