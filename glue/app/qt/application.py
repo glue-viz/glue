@@ -523,11 +523,11 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _tweak_geometry(self):
         """Maximize window by default."""
-        self._ui.main_splitter.setStretchFactor(0, 0.1)
-        self._ui.main_splitter.setStretchFactor(1, 0.9)
-        self._ui.data_plot_splitter.setStretchFactor(0, 0.25)
-        self._ui.data_plot_splitter.setStretchFactor(1, 0.5)
-        self._ui.data_plot_splitter.setStretchFactor(2, 0.25)
+        self._ui.main_splitter.setStretchFactor(0, 1)
+        self._ui.main_splitter.setStretchFactor(1, 9)
+        self._ui.data_plot_splitter.setStretchFactor(0, 1)
+        self._ui.data_plot_splitter.setStretchFactor(1, 2)
+        self._ui.data_plot_splitter.setStretchFactor(2, 1)
 
     @property
     def tab_widget(self):

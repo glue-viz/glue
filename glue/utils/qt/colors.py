@@ -37,7 +37,7 @@ def mpl_to_qt_color(color, alpha=None):
     r, g, b, a = cc.to_rgba(color)
     if alpha is not None:
         a = alpha
-    return QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
+    return QtGui.QColor(int(r * 255), int(g * 255), int(b * 255), int(a * 255))
 
 
 def qt_to_mpl_color(qcolor):
