@@ -31,9 +31,9 @@ For installation documentation, visit
 Contributing
 ------------
 
-If you are interested in contributing to ``glue``, please read our `Code of
-Conduct <CODE_OF_CONDUCT.md>`_ and `Contribution Guidelines <CONTRIBUTING
-.md>`_.
+If you are interested in contributing to ``glue``, please read our
+`Code of Conduct <https://github.com/glue-viz/.github/blob/master/CODE_OF_CONDUCT.md>`_
+and `Contribution Guidelines <https://github.com/glue-viz/.github/blob/master/CONTRIBUTING.md>`_.
 
 Support
 -------
