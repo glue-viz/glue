@@ -3,8 +3,6 @@
 Guide users through installing Glue's dependencies
 """
 
-from __future__ import absolute_import, division, print_function
-
 import os
 from collections import OrderedDict
 

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.config import viewer_tool
 from glue.viewers.common.tool import Tool
 from glue.core.qt.dialogs import info, warn

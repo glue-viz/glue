@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import pytest
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt

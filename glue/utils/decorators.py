@@ -1,9 +1,5 @@
-from __future__ import absolute_import, division, print_function
-
 import inspect
 import traceback
-
-from glue.external.six import PY2
 
 __all__ = ['die_on_error', 'avoid_circular', 'decorate_all_methods']
 
@@ -42,13 +38,8 @@ def avoid_circular(meth):
 def decorate_all_methods(decorator):
 
     def decorate(cls):
-        if PY2:
-            for name, value in inspect.getmembers(cls, inspect.ismethod):
-                if value.__self__ is None:  # avoid class methods
-                    setattr(cls, name, decorator(value))
-        else:
-            for name, value in inspect.getmembers(cls, inspect.isfunction):
-                setattr(cls, name, decorator(value))
+        for name, value in inspect.getmembers(cls, inspect.isfunction):
+            setattr(cls, name, decorator(value))
         return cls
 
     return decorate

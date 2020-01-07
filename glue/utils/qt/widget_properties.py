@@ -17,12 +17,10 @@ Example Use::
     assert f.bar == True
 """
 
-from __future__ import absolute_import, division, print_function
-
 import math
+from functools import reduce
 
 from glue.logger import logger
-from glue.external.six.moves import reduce
 from glue.utils.array import pretty_number
 
 from glue.external.echo.qt.connect import _find_combo_data, UserDataWrapper

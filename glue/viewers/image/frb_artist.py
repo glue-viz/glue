@@ -2,8 +2,6 @@
 Matplotlib artist for fixed resolution buffers.
 """
 
-from __future__ import print_function, division
-
 from mpl_scatter_density.base_image_artist import BaseImageArtist
 
 import numpy as np

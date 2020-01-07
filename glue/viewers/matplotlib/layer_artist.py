@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 from glue.viewers.common.layer_artist import LayerArtist

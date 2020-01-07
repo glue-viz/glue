@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import time
 from glue.utils import defer_draw
 from glue.viewers.histogram.layer_artist import HistogramLayerArtist

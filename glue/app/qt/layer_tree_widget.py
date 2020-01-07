@@ -3,8 +3,6 @@ Class which embellishes the DataCollectionView with buttons and actions for
 editing the data collection
 """
 
-from __future__ import absolute_import, division, print_function
-
 import os
 import weakref
 

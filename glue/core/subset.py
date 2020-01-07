@@ -1,13 +1,9 @@
-from __future__ import absolute_import, division, print_function
-
 import uuid
 import numbers
 import operator
 
 import numpy as np
 
-from glue.external import six
-from glue.external.six import PY3
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
                            YRangeROI, RectangularROI)
 from glue.core.contracts import contract
@@ -346,13 +342,8 @@ class Subset(object):
         cids = self.data.pixel_component_ids
         return MaskSubsetState(m, cids)
 
-    # In Python 2 we need to do this explicitly
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if PY3:
-        __hash__ = object.__hash__
+    # If __eq__ is defined, then __hash__ has to be re-defined
+    __hash__ = object.__hash__
 
     # Provide convenient access to Data methods/properties that make sense
     # here too.
@@ -1510,12 +1501,12 @@ class InequalitySubsetState(SubsetState):
         if operator not in VALID_INEQUALTIY_OPS:
             raise TypeError("Invalid boolean operator: %s" % operator)
         if not isinstance(left, (ComponentID, numbers.Number,
-                                 ComponentLink, six.string_types)):
+                                 ComponentLink, str)):
             raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(left))
 
         if not isinstance(right, (ComponentID, numbers.Number,
-                                  ComponentLink, six.string_types)):
+                                  ComponentLink, str)):
             raise TypeError("Input must be ComponentID or NumberType or string: %s"
                             % type(right))
         self._left = left
@@ -1564,12 +1555,12 @@ class InequalitySubsetState(SubsetState):
         if view is None:
             view = Ellipsis
 
-        if isinstance(self._left, (numbers.Number, six.string_types)):
+        if isinstance(self._left, (numbers.Number, str)):
             left = self._left
         else:
             left = data[self._left, view]
 
-        if isinstance(self._right, (numbers.Number, six.string_types)):
+        if isinstance(self._right, (numbers.Number, str)):
             right = self._right
         else:
             right = data[self._right, view]

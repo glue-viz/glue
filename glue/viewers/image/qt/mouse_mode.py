@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QMenu, QAction
 

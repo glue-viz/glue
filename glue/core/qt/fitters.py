@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtWidgets, QtGui
 
 from glue.core.qt.simpleforms import build_form_item

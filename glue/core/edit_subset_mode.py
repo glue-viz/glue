@@ -3,8 +3,6 @@ These classes define the behavior of how new subset states affect the
 edit_subset of a Data object.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import logging
 
 from glue.core.contracts import contract

@@ -1,6 +1,3 @@
-from __future__ import print_function, division
-
-from glue.external import six
 from glue.external.echo import CallbackProperty, SelectionCallbackProperty
 
 from qtpy.QtWidgets import (QSlider, QLineEdit, QComboBox, QWidget,
@@ -126,7 +123,7 @@ class NumberElement(FormElement):
         try:
             if len(params) not in [2, 3]:
                 return False
-            return all(isinstance(p, six.integer_types + (float,)) for p in params)
+            return all(isinstance(p, (int, float)) for p in params)
         except TypeError:
             return False
 
@@ -223,10 +220,10 @@ class ChoiceElement(FormElement):
 
     @classmethod
     def recognizes(cls, params):
-        if isinstance(params, six.string_types):
+        if isinstance(params, str):
             return False
         try:
-            return all(isinstance(p, six.string_types) for p in params)
+            return all(isinstance(p, str) for p in params)
         except TypeError:
             return False
 

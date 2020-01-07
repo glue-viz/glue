@@ -5,8 +5,6 @@ The file where keyboard shortcuts are created. In the future, many of these
 values will be populated using a GUI.
 """
 
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtCore
 from glue.config import keyboard_shortcut
 from glue.config import viewer_tool

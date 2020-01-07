@@ -1,8 +1,6 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from __future__ import absolute_import, division, print_function
-
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from qtpy import QtWidgets
 from glue import core

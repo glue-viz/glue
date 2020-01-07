@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 
 import pandas as pd
 
-from glue.external import six
 from glue.core.data_factories.helpers import has_extension
 from glue.core.component import Component, CategoricalComponent
 from glue.core.data import Data
@@ -42,7 +39,7 @@ def panda_process(indf):
         # convert header to string - in some cases if the first row contains
         # numbers, these are cast to numerical types, so we want to change that
         # here.
-        if not isinstance(name, six.string_types):
+        if not isinstance(name, str):
             name = str(name)
 
         # strip off leading #

@@ -1,10 +1,8 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
 import pytest
 import numpy as np
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from matplotlib.colors import ColorConverter
 
 from glue import custom_viewer

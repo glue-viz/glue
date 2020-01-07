@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import json
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from .. import Data
 from ..application_base import Application

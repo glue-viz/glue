@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 from glue.qglue import parse_data
 from glue.tests.helpers import requires_spectral_cube

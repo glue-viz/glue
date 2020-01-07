@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from collections import OrderedDict
 
 import abc
@@ -12,7 +10,6 @@ import pandas as pd
 
 from fast_histogram import histogram1d, histogram2d
 
-from glue.external import six
 from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
                                DataAddComponentMessage, NumericalDataChangedMessage,
                                SubsetCreateMessage, ComponentsChangedMessage,
@@ -43,8 +40,7 @@ from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentI
 __all__ = ['Data', 'BaseCartesianData', 'BaseData']
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseData(object):
+class BaseData(object, metaclass=abc.ABCMeta):
     """
     Base class for any glue data object which indicates which methods should be
     provided at a minimum.
@@ -258,8 +254,7 @@ class BaseData(object):
         return tuple(self._subsets)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseCartesianData(BaseData):
+class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     """
     Base class for any glue data object which indicates which methods should be
     provided at a minimum.
@@ -434,7 +429,7 @@ class BaseCartesianData(BaseData):
         # subclasses.
 
         key, view = split_component_view(key)
-        if isinstance(key, six.string_types):
+        if isinstance(key, str):
             _k = key
             key = self.find_component_id(key)
             if key is None:
@@ -751,9 +746,9 @@ class Data(BaseCartesianData):
         """
 
         # To make things easier, we transform all component inputs to a tuple
-        if isinstance(cid, six.string_types) or isinstance(cid, ComponentID):
+        if isinstance(cid, str) or isinstance(cid, ComponentID):
             cid = (cid,)
-        if isinstance(cid_other, six.string_types) or isinstance(cid_other, ComponentID):
+        if isinstance(cid_other, str) or isinstance(cid_other, ComponentID):
             cid_other = (cid_other,)
 
         if len(cid) > 1 and len(cid_other) > 1 and len(cid) != len(cid_other):
@@ -1264,7 +1259,7 @@ class Data(BaseCartesianData):
         if component_id is None:
             raise IncompatibleAttribute()
 
-        if isinstance(component_id, six.string_types):
+        if isinstance(component_id, str):
             component_id = self.id[component_id]
 
         if component_id in self._components:
@@ -1312,8 +1307,7 @@ class Data(BaseCartesianData):
             # If we get here then the suggested order is the same as the existing one
             return
 
-        # PY3: once we drop support for Python 2 we could sort in-place using
-        # the move_to_end method on OrderedDict
+        # TODO: We could instead sort in-place using the move_to_end method on OrderedDict
         self._components = OrderedDict((key, self._components[key]) for key in component_ids)
 
         if self.hub:

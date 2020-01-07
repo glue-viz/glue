@@ -12,8 +12,6 @@ Usage:
    new_widget = glue_terminal(**kwargs)
 """
 
-from __future__ import absolute_import, division, print_function
-
 # must import these first, to set up Qt properly
 from qtpy import QtWidgets
 

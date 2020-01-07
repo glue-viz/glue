@@ -31,10 +31,6 @@ matrix:
 
     include:
 
-        # Test on Python 2.7
-        - os: linux
-          env: PYTHON_VERSION=2.7
-
         # Test without any Qt installation, which will also cause all qt
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
@@ -85,9 +81,6 @@ install:
   # Set MPLBACKEND to Agg by default - this will get overriden if Qt is present,
   # but it avoids having Matplotlib default to the osx backend on MacOS X
   - export MPLBACKEND='Agg';
-
-  # On Python 2.7 we need to downgrade attrs
-  - if [ $PYTHON_VERSION == 2.7 ]; then conda install attrs=17.2.0; fi
 
   # List installed packages - use the export command so as to be able to
   # reproduce the exact environment locally. Do this before installing glue

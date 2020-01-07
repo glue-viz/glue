@@ -62,15 +62,10 @@ The end user typically interacts with this code via :func:`glue.custom_viewer`
 #  deal with the logic in (2). The metaclass deals with registering
 #  UDFs when they are overridden in a subclass.
 
-from __future__ import print_function, division
-
 from inspect import getmodule
 from functools import partial
 
-try:
-    from inspect import getfullargspec
-except ImportError:  # Python 2.7
-    from inspect import getargspec as getfullargspec
+from inspect import getfullargspec
 
 from types import FunctionType, MethodType
 
@@ -78,7 +73,6 @@ import numpy as np
 
 from qtpy.QtWidgets import QWidget, QGridLayout, QLabel
 
-from glue.external import six
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 
 from glue.config import qt_client
@@ -388,8 +382,7 @@ class BaseCustomOptionsWidget(QWidget):
         self._connections = autoconnect_callbacks_to_qt(self.viewer_state, self)
 
 
-@six.add_metaclass(CustomViewerMeta)
-class CustomViewer(object):
+class CustomViewer(object, metaclass=CustomViewerMeta):
 
     """
     Base class for custom data viewers.

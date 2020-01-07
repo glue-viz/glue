@@ -4,8 +4,6 @@ Load files created by the astrodendro package.
 astrodendro must be installed in order to use this loader
 """
 
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 from astrodendro import Dendrogram
 

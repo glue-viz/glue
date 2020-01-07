@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtWidgets
 
 __all__ = ['pick_item', 'pick_class', 'get_text', 'CenteredDialog']

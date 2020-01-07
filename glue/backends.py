@@ -3,8 +3,6 @@ A common interface for accessing backend UI functionality.
 
 At the moment, the only backend is Qt
 """
-from __future__ import absolute_import, division, print_function
-
 from abc import abstractmethod
 _backend = None
 

@@ -7,19 +7,13 @@ multiple ComponentLinks easily. They are meant to be passed to
 :meth:`~glue.core.data_collection.DataCollection.add_link()`
 """
 
-from __future__ import absolute_import, division, print_function
-
 import types
 
 from glue.config import link_function
-from glue.external import six
 from glue.core.data import ComponentID
 from glue.core.component_link import ComponentLink
 
-try:
-    from inspect import getfullargspec
-except ImportError:  # Python 2.7
-    from inspect import getargspec as getfullargspec
+from inspect import getfullargspec
 
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
@@ -60,7 +54,7 @@ def _toid(arg):
     """Coerce the input to a ComponentID, if possible"""
     if isinstance(arg, ComponentID):
         return arg
-    elif isinstance(arg, six.string_types):
+    elif isinstance(arg, str):
         return ComponentID(arg)
     else:
         raise TypeError('Cannot be cast to a ComponentID: %s' % arg)
@@ -454,10 +448,7 @@ def functional_link_collection(function, labels1=None, labels2=None,
                      cids1=None, cids2=None):
             super(FunctionalLinkCollection, self).__init__(data1=data1, data2=data2,
                                                            cids1=cids1, cids2=cids2)
-            # PY3 only
-            # self._links[:] = function(*self.cids1, *self.cids2)
-            cids = self.cids1 + self.cids2
-            self._links[:] = function(*cids)
+            self._links[:] = function(*self.cids1, *self.cids2)
 
     FunctionalLinkCollection.labels1 = labels1 or []
     FunctionalLinkCollection.labels2 = labels2 or []

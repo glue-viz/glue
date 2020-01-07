@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import pytest
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 
-from glue.external.six.moves import range as xrange
 from glue import core
 
 from .. import command as c
@@ -64,7 +61,7 @@ class TestCommandStack(object):
         assert c1.undo.call_count == 0
 
     def test_max_undo(self):
-        cmds = [self.make_command() for _ in xrange(c.MAX_UNDO + 1)]
+        cmds = [self.make_command() for _ in range(c.MAX_UNDO + 1)]
 
         for cmd in cmds:
             self.stack.do(cmd)

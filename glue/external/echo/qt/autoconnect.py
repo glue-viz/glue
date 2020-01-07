@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from .connect import (connect_checkable_button,
                       connect_value,
                       connect_combo_data,

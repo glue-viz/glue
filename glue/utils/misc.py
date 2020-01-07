@@ -1,12 +1,8 @@
-from __future__ import absolute_import, division, print_function
-
-from glue.external.six.moves import queue
+import queue
 import string
-from functools import partial
+from functools import partial, reduce
 
 from glue.external.echo.callback_container import CallbackContainer
-from glue.external.six import PY2
-from glue.external.six.moves import reduce
 
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',
@@ -71,9 +67,7 @@ def lookup_class(ref):
         The module string
     """
 
-    if PY2 and ref.startswith('builtins'):
-        ref = '.'.join(['__builtin__'] + ref.split('.')[1:])
-    elif not PY2 and ref.startswith('__builtin__'):
+    if ref.startswith('__builtin__'):
         ref = '.'.join(['builtins'] + ref.split('.')[1:])
 
     mod = ref.rsplit('.', 1)[0]

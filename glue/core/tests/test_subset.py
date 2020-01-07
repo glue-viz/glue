@@ -1,7 +1,5 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from __future__ import absolute_import, division, print_function
-
 import tempfile
 import operator as op
 
@@ -9,7 +7,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_equal, assert_allclose
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue.tests.helpers import requires_astropy, requires_scipy, SCIPY_INSTALLED
 from ..exceptions import IncompatibleAttribute

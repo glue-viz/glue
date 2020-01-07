@@ -17,8 +17,6 @@ The basic usage pattern is thus:
 All the mouse modes and tools in this file are Matplotlib-specific.
 """
 
-from __future__ import absolute_import, division, print_function
-
 from glue.core import roi
 from glue.viewers.common.tool import CheckableTool
 from glue.config import viewer_tool

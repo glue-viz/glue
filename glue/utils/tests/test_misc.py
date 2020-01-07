@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import pytest
 
 from ..misc import (as_variable_name, file_format, DeferredMethod, nonpartial,

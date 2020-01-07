@@ -4,19 +4,10 @@
 #
 # The code at the above URL was released under the PSF license.
 
-from __future__ import absolute_import, division, print_function
-
 import inspect
-import types
+import builtins  # noqa
 
-from glue.external import six
-
-if six.PY2:
-    import __builtin__  # noqa
-    CLASS_TYPE = types.ClassType
-else:
-    import builtins  # noqa
-    CLASS_TYPE = type
+CLASS_TYPE = type
 
 __all__ = ['classmaker']
 

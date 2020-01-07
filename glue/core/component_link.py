@@ -1,16 +1,10 @@
-from __future__ import absolute_import, division, print_function
-
 import numbers
 import operator
 
-try:
-    from inspect import getfullargspec
-except ImportError:  # Python 2.7
-    from inspect import getargspec as getfullargspec
+from inspect import getfullargspec
 
 import numpy as np
 
-from glue.external.six import add_metaclass
 from glue.core.contracts import contract, ContractsMeta
 from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
@@ -29,8 +23,7 @@ OPSYM = {operator.add: '+', operator.sub: '-',
          operator.pow: '**'}
 
 
-@add_metaclass(ContractsMeta)
-class ComponentLink(object):
+class ComponentLink(object, metaclass=ContractsMeta):
     """
     ComponentLinks represent transformation logic between ComponentIDs
 

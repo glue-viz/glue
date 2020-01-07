@@ -1,7 +1,5 @@
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data

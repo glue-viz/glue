@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from qtpy import QtCore, QtWidgets
 from glue.core.simpleforms import IntOption, FloatOption, BoolOption
 from glue.utils import nonpartial

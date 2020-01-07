@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.utils import NumpyRNGContext
 
-from glue.external.six import PY2
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
 from glue.viewers.image.qt import ImageViewer
@@ -35,8 +32,7 @@ class TestExportPython(BaseTestExportPython):
         self.app = None
 
     def assert_same(self, tmpdir):
-        # Due to numerical issues, the tests are not pixel perfect on Python 2
-        BaseTestExportPython.assert_same(self, tmpdir, tol=5 if PY2 else 0.1)
+        BaseTestExportPython.assert_same(self, tmpdir, tol=0.1)
 
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)

@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from glue.core import Data
 from glue.config import data_factory

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.external.echo import CallbackProperty, delay_callback
 from glue.core.state_objects import State
 from glue.viewers.matplotlib.mouse_mode import MouseMode

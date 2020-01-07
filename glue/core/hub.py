@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 from contextlib import contextmanager
 from weakref import WeakKeyDictionary

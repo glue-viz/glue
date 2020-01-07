@@ -10,8 +10,6 @@ each Data or Subset to view.
 LayerArtists contain the bulk of the logic for actually rendering things
 """
 
-from __future__ import absolute_import, division, print_function
-
 import os
 from contextlib import contextmanager
 from abc import ABCMeta
@@ -19,7 +17,6 @@ from abc import ABCMeta
 import numpy as np
 
 from glue.external.echo.callback_container import CallbackContainer
-from glue.external import six
 from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
 from glue.core.message import LayerArtistEnabledMessage, LayerArtistDisabledMessage
@@ -61,8 +58,7 @@ class ChangedTrigger(object):
             inst._changed = True
 
 
-@six.add_metaclass(ABCMeta)
-class LayerArtistBase(PropertySetMixin):
+class LayerArtistBase(PropertySetMixin, metaclass=ABCMeta):
     _property_set = ['zorder', 'visible', 'layer']
 
     # the order of this layer in the visualizations. High-zorder
@@ -292,10 +288,7 @@ class LayerArtistContainer(object):
         """
         for artist in self.artists:
             artist.remove()
-        if six.PY2:
-            self.artists[:] = []
-        else:
-            self.artists.clear()
+        self.artists.clear()
 
     def clear_callbacks(self):
         """

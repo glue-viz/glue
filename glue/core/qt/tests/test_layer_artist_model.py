@@ -1,6 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from qtpy.QtCore import Qt
 from glue.core import Data, Hub

@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist

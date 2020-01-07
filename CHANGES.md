@@ -4,7 +4,7 @@ Full changelog
 v0.16.0 (unreleased)
 --------------------
 
-* No changes yet.
+* Python 2.7 and 3.5 are no longer supported. [#2075]
 
 v0.15.6 (2019-08-22)
 --------------------

@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import uuid
 import operator
 import numbers
 
-from glue.external import six
 from glue.core.component_link import BinaryComponentLink
 from glue.core.subset import InequalitySubsetState
 from glue.core.message import DataRenameComponentMessage
@@ -18,7 +15,7 @@ __all__ = ['ComponentID', 'PixelComponentID', 'ComponentIDDict', 'ComponentIDLis
 class ComponentIDList(list):
 
     def __contains__(self, cid):
-        if isinstance(cid, six.string_types):
+        if isinstance(cid, str):
             for c in self:
                 if cid == c.label:
                     return True
@@ -100,16 +97,15 @@ class ComponentID(object):
             return "<font color='#777777'>[{1}]</font>.{0}".format(self._label, self.parent._label)
 
     def __eq__(self, other):
-        if isinstance(other, (numbers.Number, six.string_types)):
+        if isinstance(other, (numbers.Number, str)):
             return InequalitySubsetState(self, other, operator.eq)
         return other is self
 
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
+    # If __eq__ is defined, then __hash__ has to be re-defined
+    __hash__ = object.__hash__
 
     def __ne__(self, other):
-        if isinstance(other, (numbers.Number, six.string_types)):
+        if isinstance(other, (numbers.Number, str)):
             return InequalitySubsetState(self, other, operator.ne)
         return other is not self
 

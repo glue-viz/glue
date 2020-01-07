@@ -1,14 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from __future__ import absolute_import, division, print_function
-
 import operator
 
 import pytest
 import numpy as np
-from mock import MagicMock
+from unittest.mock import MagicMock
 
-from glue.external import six
 from glue import core
 from glue.tests.helpers import requires_astropy
 
@@ -323,11 +320,11 @@ def test_units():
 
     comp = Component([1, 2, 3], units='m')
     assert comp.units == 'm'
-    assert isinstance(comp.units, six.string_types)
+    assert isinstance(comp.units, str)
 
     comp = Component([1, 2, 3], units=u.m)
     assert comp.units == 'm'
-    assert isinstance(comp.units, six.string_types)
+    assert isinstance(comp.units, str)
 
 
 def test_scalar_derived():

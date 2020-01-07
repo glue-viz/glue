@@ -13,11 +13,8 @@ Client code should *only* create Subset Groups via
 DataCollection.new_subset_group. It should *not* call Data.add_subset
 or Data.new_subset directly
 """
-from __future__ import absolute_import, division, print_function
-
 from warnings import warn
 
-from glue.external import six
 from glue.core.contracts import contract
 from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage)
@@ -73,9 +70,8 @@ class GroupedSubset(Subset):
     def __eq__(self, other):
         return other is self
 
-    # In Python 3, if __eq__ is defined, then __hash__ has to be re-defined
-    if six.PY3:
-        __hash__ = object.__hash__
+    # If __eq__ is defined, then __hash__ has to be re-defined
+    __hash__ = object.__hash__
 
     def __gluestate__(self, context):
         return dict(group=context.id(self.group),

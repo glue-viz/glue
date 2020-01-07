@@ -16,12 +16,9 @@ Glue code should only import contract through this module,
 and never directly from the contracts package.
 """
 
-from __future__ import absolute_import, division, print_function
-
 from pandas import Series
 from numpy import ndarray, s_
 
-from glue.external.six import string_types
 from glue.config import enable_contracts
 
 
@@ -37,7 +34,7 @@ def _build_custom_contracts():
         Value is a ComponentID or a string
         """
         from glue.core import ComponentID
-        return isinstance(value, (ComponentID, string_types))
+        return isinstance(value, (ComponentID, str))
 
     @new_contract
     def component_like(value):

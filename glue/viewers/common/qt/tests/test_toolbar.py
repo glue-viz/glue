@@ -1,7 +1,5 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
-from __future__ import absolute_import, division, print_function
-
 import pytest
 from glue.config import viewer_tool
 from glue.viewers.common.qt.data_viewer import DataViewer

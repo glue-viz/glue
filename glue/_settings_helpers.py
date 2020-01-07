@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import json
 
-from glue.external.six.moves import configparser
+import configparser
 from glue.logger import logger
 
 
