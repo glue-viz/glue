@@ -47,7 +47,8 @@ jobs:
     # Test a few configurations on Windows
     - windows: py36-test-pyqt510
     - windows: py37-test-pyqt510
-    - windows: py38-test-pyqt514-all
+    # The following fails due to https://github.com/jupyter/qtconsole/issues/400
+    # - windows: py38-test-pyqt514-all
     - windows: py37-test-pyside513-all
 
     # Try out documentation build on Linux and Windows
