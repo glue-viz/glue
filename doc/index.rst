@@ -1,4 +1,3 @@
-
 Glue Documentation
 ==================
 
@@ -75,6 +74,7 @@ Interacting with data from Python
    python_guide/ipython_terminal.rst
    python_guide/data_tutorial.rst
    python_guide/glue_from_python.rst
+   python_guide/data_translation.rst
 
 Domain-specific guides
 ----------------------

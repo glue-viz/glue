@@ -22,7 +22,7 @@ class BaseQtViewerWidget(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
         """
-        :type session: :class:`~glue.core.Session`
+        :type session: :class:`~glue.core.session.Session`
         """
 
         super(BaseQtViewerWidget, self).__init__(parent)

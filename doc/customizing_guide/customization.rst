@@ -433,6 +433,88 @@ user when new data are added. Note that it is your responsibility to ensure
 that links that currently exist (and are in ``data_collection.external_links``)
 are not suggested.
 
+.. _custom-data-translation:
+
+Custom translation to native data objects
+-----------------------------------------
+
+Glue includes infrastructure to make it easy to convert between glue
+:class:`~glue.core.data.Data` objects and non-glue-specific data containers,
+such as pandas DataFrame. You can define your own converter
+by writing a class that has ``to_data`` and ``to_object`` methods, and
+register this class with ``@data_translator``, e.g.::
+
+    from glue.config import data_translator
+
+    @data_translator(MyDataClass)
+    class MyDataClassHandler:
+
+        def to_data(self, obj):
+            # This should take a MyDataClass object 'obj' and convert it to a
+            # glue Data object.
+            ...
+            return data
+
+        def to_object(self, data):
+            # This should take a glue Data or Subset object and convert it to
+            # a MyDataClass object.
+            ...
+            return obj
+
+With this defined, you should then be able to add objects of type
+``MyDataClass`` to the data collection and get them back using
+:meth:`~glue.core.data.BaseData.get_object` and
+:meth:`~glue.core.data.BaseData.get_subset_object`, e.g.::
+
+    >>> data_collection['mydata'] = MyDataClass(...)
+    >>> data = data_collection['mydata']
+    >>> data
+    Data(...)
+    >>> data.get_object()
+    MyDataClass(...)
+    >>> data.get_subset_object(subset_id=0)
+    MyDataClass(...)
+
+.. _custom-subset-translation:
+
+Custom translation of subset definitions to native data objects
+---------------------------------------------------------------
+
+In the above section, we showed how
+:meth:`~glue.core.data.BaseData.get_subset_object` can be used to get non-glue data
+objects for a given subset - that is, a dataset with just the relevant subset of
+values. However in some cases you may also want to have ways of converting the
+conceptual definition of subsets to non-glue objects or to string
+serializations. To do this, you should write a class that has a ``to_object``
+method and register the class using the ``@subset_definition_translator``
+decorator, e.g.::
+
+    from glue.config import subset_definition_translator
+
+    @subset_definition_translator('my-serialized-format')
+    class SimpleSerializer:
+
+        def to_object(self, subset):
+
+            # This should take a glue subset and translate the subset state,
+            # which is accessible from subset.subset_state, to a non-glue
+            # object that represents the selection - this could either be
+            # a string or bytes serialization, or a different kind of
+            # object that represents selections.
+
+            ...
+
+            return selection_definition
+
+
+With this defined, you should then be able to extract subsets with this converter
+using
+:meth:`~glue.core.data.BaseData.get_selection_definition`, e.g.::
+
+    >>> data.get_selection_definition(subset_id='subset 1',
+                                      format='my-serialized-format')
+    "a > 3"
+
 Complete list of registries
 ---------------------------
 
@@ -441,9 +523,9 @@ registries are listed below. All can be imported from ``glue.config`` - each
 registry is an instance of a class, given in the second column, and which
 provides more information about what the registry is and how it can be used.
 
-========================== =======================================================
+=========================== =========================================================
 Registry name                  Registry class
-========================== =======================================================
+=========================== =========================================================
 ``qt_client``                :class:`glue.config.QtClientRegistry`
 ``qt_fixed_layout_tab``      :class:`glue.config.QtFixedLayoutTabRegistry`
 ``viewer_tool``              :class:`glue.config.ViewerToolRegistry`
@@ -461,7 +543,9 @@ Registry name                  Registry class
 ``layer_action``             :class:`glue.config.LayerActionRegistry`
 ``startup_action``           :class:`glue.config.StartupActionRegistry`
 ``autolinker``               :class:`glue.config.AutoLinkerRegistry`
-========================== =======================================================
+``data_translator``          :class:`glue.config.DataTranslatorRegistry`
+``subset_state_translator``  :class:`glue.config.SubsetDefinitionTranslatorRegistry`
+=========================== =========================================================
 
 .. _lazy_load_plugin:
 

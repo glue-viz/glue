@@ -120,6 +120,24 @@ class TestDataCollection(object):
         self.dc.append(self.data)
         assert self.dc[0] is self.data
 
+    def test_get_item_str(self):
+
+        data = Data(label='test')
+        self.dc.append(data)
+
+        assert self.dc['test'] is data
+
+        with pytest.raises(ValueError) as exc:
+            self.dc['spam']
+        assert exc.value.args[0] == "No data found with the label 'spam'"
+
+        data2 = Data(label='test')
+        self.dc.append(data2)
+
+        with pytest.raises(ValueError) as exc:
+            self.dc['test']
+        assert exc.value.args[0] == "Several datasets were found with the label 'test'"
+
     def test_iter(self):
         self.dc.append(self.data)
         assert set(self.dc) == set([self.data])

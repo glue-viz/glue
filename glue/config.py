@@ -4,6 +4,8 @@ import sys
 import warnings
 from collections import namedtuple
 
+from glue.utils import format_choices
+
 """
 Objects used to configure Glue at runtime.
 """
@@ -20,7 +22,9 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
            'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
-           'autolinker']
+           'autolinker',
+           'DataTranslatorRegistry', 'data_translator',
+           'SubsetDefinitionTranslatorRegistry', 'subset_state_translator']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -519,6 +523,89 @@ class SubsetMaskImporterRegistry(DataExporterRegistry):
     item = namedtuple('SubsetMaskImporter', 'function label extension')
 
 
+class DataTranslatorRegistry(Registry):
+    """
+    Stores data translators, which are classes that define methods to translate
+    between :class:`~glue.core.data.Data` objects and other kinds of data
+    containers.
+    """
+
+    item = namedtuple('DataTranslator', 'target_cls handler priority')
+
+    def __call__(self, target_cls, priority=0):
+        def adder(handler_cls):
+            self.add(self.item(target_cls, handler_cls(), priority))
+            return handler_cls
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+    def remove(self, target_cls):
+        for member in self.members[:]:
+            if member.target_cls is target_cls:
+                self.members.remove(member)
+
+    @property
+    def supported_classes(self):
+        return [tr.target_cls for tr in self]
+
+    def get_handler_for(self, data_or_class):
+        for translator in self:
+            if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_cls:
+                handler = translator.handler
+                preferred = translator.target_cls
+                break
+        else:
+            if isinstance(data_or_class, type):
+                raise TypeError("Could not find a class to translate objects of "
+                                "type Data to {0}".format(data_or_class.__name__))
+            else:
+                raise TypeError("Could not find a class to translate objects of "
+                                "type {0} to Data".format(data_or_class.__class__.__name__))
+        return handler, preferred
+
+
+class SubsetDefinitionTranslatorRegistry(Registry):
+    """
+    Stores subset state translators, which are classes that define methods to
+    translate between :class:`~glue.core.subset.SubsetState` objects and other
+    kinds of selection representations.
+    """
+
+    item = namedtuple('SubsetDefinitionTranslator', 'format handler priority')
+
+    def __call__(self, format, priority=0):
+        def adder(handler_cls):
+            self.add(self.item(format, handler_cls(), priority))
+            return handler_cls
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+    def remove(self, format):
+        for member in self.members[:]:
+            if member.format is format:
+                self.members.remove(member)
+
+    @property
+    def supported_classes(self):
+        return [tr.target_cls for tr in self]
+
+    def get_handler_for(self, format):
+        for translator in self:
+            if translator.format == format:
+                return translator.handler
+        all_formats = [translator.format for translator in self]
+        if format is None:
+            raise ValueError("Subset state handler format not set - should be one of:" + format_choices(all_formats))
+        else:
+            raise ValueError("Invalid subset state handler format '{0}' - should be one of:".format(format) + format_choices(all_formats))
+
+
 class QtClientRegistry(Registry):
     """
     Stores QT widgets to visualize data.
@@ -852,6 +939,8 @@ data_factory = DataFactoryRegistry()
 data_exporter = DataExporterRegistry()
 subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
+data_translator = DataTranslatorRegistry()
+subset_state_translator = SubsetDefinitionTranslatorRegistry()
 
 # Backward-compatibility
 single_subset_action = layer_action

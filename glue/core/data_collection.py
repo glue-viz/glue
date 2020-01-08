@@ -8,7 +8,7 @@ from glue.core.link_manager import LinkManager
 from glue.core.data import Data, BaseCartesianData
 from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
-from glue.config import settings
+from glue.config import settings, data_translator
 from glue.utils import as_list, common_prefix
 
 
@@ -343,10 +343,49 @@ class DataCollection(HubListener):
         return tuple(self._subset_groups)
 
     def __contains__(self, obj):
-        return obj in self._data or obj in self.subset_groups
+        return (obj in self._data or
+                    obj in self.subset_groups or
+                    any([data.label == obj for data in self._data]))
 
     def __getitem__(self, key):
-        return self._data[key]
+        if isinstance(key, str):
+            matches = [data for data in self._data if data.label == key]
+            if len(matches) == 0:
+                raise ValueError("No data found with the label '{0}'".format(key))
+            elif len(matches) > 1:
+                raise ValueError("Several datasets were found with the label '{0}'".format(key))
+            else:
+                return matches[0]
+        else:
+            return self._data[key]
+
+    def __setitem__(self, key, data):
+        """
+        Add a dataset to the data collection.
+
+        This can be either a :class:`~glue.core.data.Data` object, which will
+        then have its label set to the specified key, or another kind of
+        object which will be automatically translated into a
+        :class:`~glue.core.data.Data` object.
+        """
+
+        if not isinstance(key, str):
+            raise TypeError("item key should be a string, but got {0}".format(type(key)))
+
+        if not isinstance(data, Data):
+
+            handler, preferred = data_translator.get_handler_for(data)
+
+            data = handler.to_data(data)
+            data._preferred_translation = preferred
+
+        data.label = key
+
+        for existing_data in self._data[:]:
+            if existing_data.label == key:
+                self.remove(existing_data)
+
+        self.append(data)
 
     def __iter__(self):
         return iter(self._data)
