@@ -11,6 +11,8 @@ v0.16.0 (unreleased)
 
 * Updated the data loader to be able to select directories. [#2077]
 
+* Move spectral-cube data loader to glue-astronomy plugin package. [#2077]
+
 v0.15.6 (2019-08-22)
 --------------------
 
