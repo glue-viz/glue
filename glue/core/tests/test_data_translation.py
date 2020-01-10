@@ -1,8 +1,6 @@
 # Tests for the translation infrastrcture between glue Data/Subset/SubsetState
 # objects and other data containers registered with glue.
 
-from __future__ import absolute_import, division, print_function
-
 import pytest
 import numpy as np
 from numpy.testing import assert_equal

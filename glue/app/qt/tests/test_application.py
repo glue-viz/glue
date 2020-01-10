@@ -63,11 +63,7 @@ class TestGlueApplication(object):
     def test_choose_save_session_ioerror(self):
         """should show box on ioerror"""
         with patch('qtpy.compat.getsavefilename') as fd:
-            if sys.version_info[0] == 2:
-                mock_open = '__builtin__.open'
-            else:
-                mock_open = 'builtins.open'
-            with patch(mock_open) as op:
+            with patch('builtins.open') as op:
                 op.side_effect = IOError
                 fd.return_value = '/tmp/junk', '/tmp/junk'
                 with patch('qtpy.QtWidgets.QMessageBox') as mb:
