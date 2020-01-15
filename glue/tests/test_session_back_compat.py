@@ -311,3 +311,23 @@ def test_load_resave_coords(tmp_path):
     ga = state.object('__main__')
     dc = ga.session.data_collection
     assert len(dc) == 1
+
+
+
+@requires_qt
+@requires_astropy
+def test_load_resave_coords_intermediate(tmp_path):
+
+    # Load in a file create with glue 0.15.* which includes a world component
+    # even though Data.coords is the default identity transform
+    with open(os.path.join(DATA, 'simple_table_resaved.glu'), 'r') as f:
+        template = f.read()
+
+    content = template.replace('{DATA_PATH}', (DATA + os.sep).replace('\\', '\\\\'))
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+    dc = ga.session.data_collection
+    assert len(dc) == 1
+    ga.save_session(tmp_path / 'test.glu')
+    ga.close()
