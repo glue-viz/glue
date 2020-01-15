@@ -183,18 +183,32 @@ class TestProfileViewer(object):
         self.viewer.state.x_att = self.data.world_component_ids[2]
         assert self.viewer.options_widget().ui.text_warning.text() != ''
 
-    def test_multiple_data(self):
+    def test_multiple_data(self, tmpdir):
 
         # Regression test for issues when multiple datasets are present
-        # and the reference data is not the default one
+        # and the reference data is not the default one.
 
         self.viewer.add_data(self.data)
         self.viewer.add_data(self.data2)
         assert self.viewer.layers[0].enabled
         assert not self.viewer.layers[1].enabled
+
+        # Make sure that when changing the reference data, which layer
+        # is enabled changes.
         self.viewer.state.reference_data = self.data2
         assert not self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled
+
+        # Make sure that everything works fine after saving/reloading
+        filename = tmpdir.join('test_multiple_data.glu').strpath
+        self.session.application.save_session(filename)
+        with open(filename, 'r') as f:
+            session = f.read()
+        state = GlueUnSerializer.loads(session)
+        ga = state.object('__main__')
+        viewer = ga.viewers[0][0]
+        assert not viewer.layers[0].enabled
+        assert viewer.layers[1].enabled
 
     @pytest.mark.parametrize('protocol', [1])
     def test_session_back_compat(self, protocol):

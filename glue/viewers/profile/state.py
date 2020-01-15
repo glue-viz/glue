@@ -162,6 +162,17 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
                 self._update_att()
 
+    def _update_priority(self, name):
+        if name == 'layers':
+            return 2
+        elif name == 'reference_data':
+            return 1.5
+        elif name.endswith(('_min', '_max')):
+            return 0
+        else:
+            return 1
+
+
 class ProfileLayerState(MatplotlibLayerState):
     """
     A state class that includes all the attributes for layers in a Profile plot.
