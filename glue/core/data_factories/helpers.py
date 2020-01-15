@@ -165,6 +165,8 @@ class LoadLog(object):
                         if isinstance(comp, CoordinateComponent)])
         if n_coords == self.components[0].ndim * 2:
             force_coords = True
+        else:
+            force_coords = False
 
         return dict(path=path,
                     factory=context.do(self.factory),
