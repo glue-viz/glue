@@ -143,8 +143,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _update_profile(self, force=False, **kwargs):
 
-        # TODO: we need to factor the following code into a common method.
-
         if (self._viewer_state.x_att is None or
                 self.state.attribute is None or
                 self.state.layer is None):

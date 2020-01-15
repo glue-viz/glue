@@ -44,12 +44,16 @@ class TestProfileViewer(object):
         self.data.coords = SimpleCoordinates()
         self.data['x'] = np.arange(24).reshape((3, 4, 2))
 
+        self.data2 = Data(label='d2')
+        self.data2['y'] = np.arange(24).reshape((3, 4, 2))
+
         self.app = GlueApplication()
         self.session = self.app.session
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
+        self.data_collection.append(self.data2)
 
         self.viewer = self.app.new_data_viewer(ProfileViewer)
 
@@ -178,6 +182,19 @@ class TestProfileViewer(object):
 
         self.viewer.state.x_att = self.data.world_component_ids[2]
         assert self.viewer.options_widget().ui.text_warning.text() != ''
+
+    def test_multiple_data(self):
+
+        # Regression test for issues when multiple datasets are present
+        # and the reference data is not the default one
+
+        self.viewer.add_data(self.data)
+        self.viewer.add_data(self.data2)
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
+        self.viewer.state.reference_data = self.data2
+        assert not self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
 
     @pytest.mark.parametrize('protocol', [1])
     def test_session_back_compat(self, protocol):
