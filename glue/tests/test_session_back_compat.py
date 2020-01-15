@@ -276,3 +276,38 @@ def test_load_coordinate_link_helpers_013():
     data2[data1.id['y']]
 
     ga.close()
+
+
+@requires_qt
+@requires_astropy
+def test_load_resave_coords(tmp_path):
+
+    # This is a regression test for a bug that caused issues when creating a
+    # session file with a dataset without any world coordinates (e.g. a table)
+    # in glue 0.15, then loading and re-saving the session in glue 0.16. The
+    # issue is that the glue 0.16 file will use LoadLog with protocol 2, but
+    # since the file was originally created in glue 0.15, it will include a
+    # fake world coordinate column. LoadLog with protocol 2 was incorrectly
+    # assumed to never have these world coordinates.
+
+    # Load in a file create with glue 0.15.* which includes a world component
+    # even though Data.coords is the default identity transform
+    with open(os.path.join(DATA, 'simple_table_015.glu'), 'r') as f:
+        template = f.read()
+
+    content = template.replace('{DATA_PATH}', (DATA + os.sep).replace('\\', '\\\\'))
+    state = GlueUnSerializer.loads(content)
+
+    ga = state.object('__main__')
+    dc = ga.session.data_collection
+    assert len(dc) == 1
+    ga.save_session(tmp_path / 'test.glu')
+    ga.close()
+
+    with open(tmp_path / 'test.glu', 'r') as f:
+        content = f.read()
+
+    state = GlueUnSerializer.loads(content)
+    ga = state.object('__main__')
+    dc = ga.session.data_collection
+    assert len(dc) == 1
