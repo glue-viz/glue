@@ -313,7 +313,6 @@ def test_load_resave_coords(tmp_path):
     assert len(dc) == 1
 
 
-
 @requires_qt
 @requires_astropy
 def test_load_resave_coords_intermediate(tmp_path):
