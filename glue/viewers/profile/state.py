@@ -138,22 +138,39 @@ class ProfileViewerState(MatplotlibDataViewerState):
     @defer_draw
     def _reference_data_changed(self, *args):
 
+        for layer in self.layers:
+            layer.reset_cache()
+
         # This signal can get emitted if just the choices but not the actual
         # reference data change, so we check here that the reference data has
         # actually changed
         if self.reference_data is not getattr(self, '_last_reference_data', None):
             self._last_reference_data = self.reference_data
 
-            if self.reference_data is None:
-                self.x_att_helper.set_multiple_data([])
-            else:
-                self.x_att_helper.set_multiple_data([self.reference_data])
-                if self._display_world:
-                    self.x_att_helper.world_coord = True
-                    self.x_att = self.reference_data.world_component_ids[0]
+            with delay_callback(self, 'x_att'):
+
+                if self.reference_data is None:
+                    self.x_att_helper.set_multiple_data([])
                 else:
-                    self.x_att_helper.world_coord = False
-                    self.x_att = self.reference_data.pixel_component_ids[0]
+                    self.x_att_helper.set_multiple_data([self.reference_data])
+                    if self._display_world:
+                        self.x_att_helper.world_coord = True
+                        self.x_att = self.reference_data.world_component_ids[0]
+                    else:
+                        self.x_att_helper.world_coord = False
+                        self.x_att = self.reference_data.pixel_component_ids[0]
+
+                self._update_att()
+
+    def _update_priority(self, name):
+        if name == 'layers':
+            return 2
+        elif name == 'reference_data':
+            return 1.5
+        elif name.endswith(('_min', '_max')):
+            return 0
+        else:
+            return 1
 
 
 class ProfileLayerState(MatplotlibLayerState):

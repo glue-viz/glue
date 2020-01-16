@@ -103,8 +103,6 @@ def test_session_paths(tmpdir):
 
         for absolute in (True, False):
 
-            print(save_dir, absolute)
-
             session_file = tmpdir.join(save_dir).join('test.glu').strpath
 
             app.save_session(session_file, absolute_paths=absolute)

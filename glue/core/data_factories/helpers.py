@@ -27,6 +27,7 @@ import warnings
 
 from glue.core.contracts import contract
 from glue.core.coordinates import IdentityCoordinates
+from glue.core.component import CoordinateComponent
 from glue.core.data import Component, BaseData, Data
 from glue.config import auto_refresh, data_factory
 from glue.backends import get_timer
@@ -155,9 +156,22 @@ class LoadLog(object):
             path = os.path.abspath(self.path)
         else:
             path = os.path.relpath(self.path)
+
+        # If there are twice as many world coordinates as number of dimensions
+        # and Data.coords is set to Coordinates or None, we need to set
+        # force_coords to True to make sure that we always restore world
+        # coordinate components even if the transform is an identity transform.
+        n_coords = len([comp for comp in self.components
+                        if isinstance(comp, CoordinateComponent)])
+        if n_coords == self.components[0].ndim * 2:
+            force_coords = True
+        else:
+            force_coords = False
+
         return dict(path=path,
                     factory=context.do(self.factory),
                     kwargs=[list(self.kwargs.items())],
+                    force_coords=force_coords,
                     _protocol=2)
 
     @classmethod
@@ -165,7 +179,7 @@ class LoadLog(object):
         fac = context.object(rec['factory'])
         kwargs = dict(*rec['kwargs'])
         kwargs['coord_first'] = rec.get('_protocol', 0) >= 1
-        kwargs['force_coords'] = rec.get('_protocol', 0) < 2
+        kwargs['force_coords'] = rec.get('_protocol', 0) < 2 or rec.get('force_coords')
         d = load_data(rec['path'], factory=fac, **kwargs)
         return as_list(d)[0]._load_log
 

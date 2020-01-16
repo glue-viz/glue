@@ -434,6 +434,7 @@ class GlueUnSerializer(object):
         self._working = set()
         self._rec = json.loads(string) if string else json.load(fobj)
         self._callbacks = []
+        apply_inplace_patches(self._rec)
 
     @classmethod
     def loads(cls, string):
@@ -1200,3 +1201,28 @@ def _save_datetime64(dt, context):
 @loader(np.datetime64)
 def _load_datetime64(rec, context):
     return np.datetime64(rec['datetime64'])
+
+
+def apply_inplace_patches(rec):
+    """
+    Apply in-place patches to a loaded session file. Ideally this should be
+    empty but we use this to fix session files that need fixing to be
+    interpretable by the current version of glue.
+    """
+
+    # The following is a patch for session files made with glue 0.15.* or
+    # earlier that were read in with a developer version of glue for part of
+    # the 0.16 development cycle, and re-saved. Essentially, if coords is set
+    # to the default identity Coordinates class, we need to make sure we
+    # always preserve the world coordinate components, and we do that by
+    # setting force_coords to True.
+    for key, value in rec.items():
+        if value['_type'] == 'glue.core.data.Data':
+            if 'coords' in value and value['coords'] is not None:
+                coords = rec[value['coords']]
+                if coords['_type'] == 'glue.core.coordinates.Coordinates':
+                    for cid, comp in value['components']:
+                        if 'log' in rec[comp]:
+                            load_log = rec[rec[comp]['log']]
+                            if 'force_coords' not in load_log:
+                                load_log['force_coords'] = True
