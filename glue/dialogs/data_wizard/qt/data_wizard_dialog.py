@@ -48,7 +48,6 @@ class GlueDataDialog(object):
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
-        self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         self._curfile = ''
         try:
             self._fd.setOption(
