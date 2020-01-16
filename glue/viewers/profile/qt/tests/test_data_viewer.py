@@ -209,6 +209,7 @@ class TestProfileViewer(object):
         viewer = ga.viewers[0][0]
         assert not viewer.layers[0].enabled
         assert viewer.layers[1].enabled
+        ga.close()
 
     @pytest.mark.parametrize('protocol', [1])
     def test_session_back_compat(self, protocol):

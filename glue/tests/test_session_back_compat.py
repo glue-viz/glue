@@ -311,6 +311,7 @@ def test_load_resave_coords(tmp_path):
     ga = state.object('__main__')
     dc = ga.session.data_collection
     assert len(dc) == 1
+    ga.close()
 
 
 @requires_qt
