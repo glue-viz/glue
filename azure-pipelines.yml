@@ -39,10 +39,10 @@ jobs:
     - linux: py37-test-pyside513-dev-all
 
     # Test a few configurations on MacOS X
-    - macosx: py36-test-pyqt513
-    - macosx: py37-test-pyqt513
-    - macosx: py38-test-pyqt514-all
-    - macosx: py37-test-pyside513
+    - macos: py36-test-pyqt513
+    - macos: py37-test-pyqt513
+    - macos: py38-test-pyqt514-all
+    - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
     - windows: py36-test-pyqt510
@@ -53,5 +53,5 @@ jobs:
 
     # Try out documentation build on Linux and Windows
     - linux: py36-docs-pyqt513
-    - macosx: py37-docs-pyqt513
+    - macos: py37-docs-pyqt513
     - windows: py38-docs-pyqt513
