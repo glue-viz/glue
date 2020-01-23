@@ -176,7 +176,7 @@ def is_table_hdu(hdu):
 def has_wcs(coords):
     return (isinstance(coords, WCSCoordinates) and
             any(axis['coordinate_type'] is not None
-                for axis in coords.wcs.get_axis_types()))
+                for axis in coords.get_axis_types()))
 
 
 def is_casalike(filename, **kwargs):

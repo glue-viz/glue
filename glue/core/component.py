@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import (shape_to_string, coerce_numeric,
                         broadcast_to, categorical_ndarray)
 
@@ -256,7 +257,7 @@ class CoordinateComponent(Component):
                     optimize_view = True
 
             pix_coords = []
-            dep_coords = self._data.coords.dependent_axes(self.axis)
+            dep_coords = dependent_axes(self._data.coords, self.axis)
 
             final_slice = []
             final_shape = []

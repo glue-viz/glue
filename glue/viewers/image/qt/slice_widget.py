@@ -1,6 +1,7 @@
 import numpy as np
 
 from glue.core.coordinates import Coordinates
+from glue.core.coordinate_helpers import dependent_axes
 from glue.viewers.common.qt.data_slice_widget import SliceWidget
 from glue.viewers.image.state import AggregateSlice
 from glue.utils.decorators import avoid_circular
@@ -90,7 +91,7 @@ class MultiSliceWidgetHelper(object):
                 if getattr(self.data, 'coords') is not None and type(self.data.coords) != Coordinates:
                     world = self.data.coords.world_axis(self.data, i)
                     world_unit = self.data.coords.world_axis_unit(i)
-                    world_warning = len(self.data.coords.dependent_axes(i)) > 1
+                    world_warning = len(dependent_axes(self.data.coords, i)) > 1
                     world_label = self.data.world_component_ids[i].label
                 else:
                     world = None

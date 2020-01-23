@@ -6,6 +6,7 @@ from inspect import getfullargspec
 import numpy as np
 
 from glue.core.contracts import contract, ContractsMeta
+from glue.core.coordinate_helpers import dependent_axes
 from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
 from glue.utils import unbroadcast, broadcast_to
@@ -359,7 +360,7 @@ class CoordinateComponentLink(ComponentLink):
         # to compute a given world coord, and vice versa
         # (e.g., spectral data cubes)
         self.ndim = len(comp_from)
-        self.from_needed = coords.dependent_axes(index)
+        self.from_needed = dependent_axes(coords, index)
         self._from_all = comp_from
 
         comp_from = [comp_from[i] for i in self.from_needed]

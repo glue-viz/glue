@@ -1,6 +1,7 @@
 import numpy as np
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.component import CoordinateComponent
+from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import unbroadcast, broadcast_to
 
 # TODO: cache needs to be updated when links are removed/changed
@@ -59,7 +60,7 @@ def translate_pixel(data, pixel_coords, target_cid):
         return link._using(*values_all), dimensions_all
     elif isinstance(component, CoordinateComponent):
         # FIXME: Hack for now - if we pass arrays in the view, it's interpreted
-        return component._calculate(view=pixel_coords), data.coords.dependent_axes(component.axis)
+        return component._calculate(view=pixel_coords), dependent_axes(data.coords, component.axis)
     else:
         raise Exception("Dependency on non-pixel component", target_cid)
 

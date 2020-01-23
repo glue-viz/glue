@@ -30,6 +30,7 @@ from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, broadcast_to, categorical_ndarray,
                         format_choices)
+from glue.core.coordinate_helpers import axis_label
 
 
 # Note: leave all the following imports for component and component_id since
@@ -1095,7 +1096,7 @@ class Data(BaseCartesianData):
             if self.coords:
                 for i in range(ndim):
                     comp = CoordinateComponent(self, i, world=True)
-                    label = self.coords.axis_label(i)
+                    label = axis_label(self.coords, i)
                     cid = self.add_component(comp, label)
                     self._world_component_ids.append(cid)
                 self._set_up_coordinate_component_links(ndim)

@@ -2,6 +2,7 @@ import os
 
 from qtpy import QtWidgets
 
+from glue.core.coordinate_helpers import dependent_axes
 from glue.external.echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 
@@ -42,8 +43,8 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
             self.ui.text_warning.hide()
             return
 
-        world_warning = len(self.viewer_state.reference_data.coords
-                            .dependent_axes(self.viewer_state.x_att_pixel.axis)) > 1
+        world_warning = len(dependent_axes(self.viewer_state.reference_data.coords,
+                                           self.viewer_state.x_att_pixel.axis)) > 1
 
         if world_warning:
             self.ui.text_warning.show()

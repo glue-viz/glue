@@ -71,11 +71,11 @@ class TestDependentAxes(object):
 
     def test_base(self):
         d = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
-        assert d.coords.dependent_axes(0) == (0,)
+        assert dependent_axes(d.coords, 0) == (0,)
 
         d = Data(x=[[1, 2], [3, 4]], coords=IdentityCoordinates(ndim=2))
-        assert d.coords.dependent_axes(0) == (0,)
-        assert d.coords.dependent_axes(1) == (1,)
+        assert dependent_axes(d.coords, 0) == (0,)
+        assert dependent_axes(d.coords, 1) == (1,)
 
     def header2(self, proj='SIN'):
         result = fits.Header()
@@ -135,9 +135,9 @@ class TestDependentAxes(object):
         d.coords = coordinates_from_header(header)
         d.add_component(np.zeros((3, 2, 1)), label='test')
 
-        assert d.coords.dependent_axes(0) == (0,)
-        assert d.coords.dependent_axes(1) == (1, 2)
-        assert d.coords.dependent_axes(2) == (1, 2)
+        assert dependent_axes(d.coords, 0) == (0,)
+        assert dependent_axes(d.coords, 1) == (1, 2)
+        assert dependent_axes(d.coords, 2) == (1, 2)
 
     def test_wcs_alma(self):
         header = self.header4()
@@ -146,10 +146,10 @@ class TestDependentAxes(object):
         d.coords = coordinates_from_header(header)
         d.add_component(np.zeros((3, 2, 1, 1)), label='test')
 
-        assert d.coords.dependent_axes(0) == (0,)
-        assert d.coords.dependent_axes(1) == (1,)
-        assert d.coords.dependent_axes(2) == (2, 3)
-        assert d.coords.dependent_axes(3) == (2, 3)
+        assert dependent_axes(d.coords, 0) == (0,)
+        assert dependent_axes(d.coords, 1) == (1,)
+        assert dependent_axes(d.coords, 2) == (2, 3)
+        assert dependent_axes(d.coords, 3) == (2, 3)
 
     def test_wcs_nan(self):
 

@@ -4,6 +4,7 @@ from astropy.wcs import WCS
 
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import Coordinates
+from glue.core.coordinate_helpers import dependent_axes
 
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
@@ -123,8 +124,8 @@ class MatplotlibImageMixin(object):
         else:
             ix = self.state.x_att.axis
             iy = self.state.y_att.axis
-            x_dep = list(ref_coords.dependent_axes(ix))
-            y_dep = list(ref_coords.dependent_axes(iy))
+            x_dep = list(dependent_axes(ref_coords, ix))
+            y_dep = list(dependent_axes(ref_coords, iy))
             if ix in x_dep:
                 x_dep.remove(ix)
             if iy in x_dep:
