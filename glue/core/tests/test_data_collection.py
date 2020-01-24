@@ -375,8 +375,8 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4])
         dc = DataCollection([x, y])
 
-        x.coords = Coordinates()
-        y.coords = Coordinates()
+        x.coords = IdentityCoordinates(n_dim=1)
+        y.coords = IdentityCoordinates(n_dim=1)
 
         dc.merge(x, y)
 
@@ -392,8 +392,9 @@ class TestDataCollection(object):
         dc = DataCollection([x, y])
 
         class CustomCoordinates(IdentityCoordinates):
-            def axis_label(self, axis):
-                return 'Custom {0}'.format(axis)
+            @property
+            def world_axis_names(self):
+                return ['Custom {0}'.format(axis) for axis in range(self.world_n_dim)]
 
         x.coords = CustomCoordinates(n_dim=1)
         y.coords = CustomCoordinates(n_dim=1)

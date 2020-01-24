@@ -1,8 +1,9 @@
 import numpy as np
 
+from astropy.wcs import WCS
+
 from glue.core import Subset, Data
 from glue.config import data_exporter
-from glue.core.coordinates import WCSCoordinates
 
 __all__ = []
 
@@ -48,7 +49,7 @@ def fits_writer(filename, data, components=None):
     else:
         mask = None
 
-    data_header = data.coords.header if isinstance(data.coords, WCSCoordinates) else fits.Header()
+    data_header = data.coords.to_header() if isinstance(data.coords, WCS) else fits.Header()
 
     hdus = fits.HDUList()
 

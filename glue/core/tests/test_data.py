@@ -811,9 +811,12 @@ def test_update_coords():
 
     class CustomCoordinates(Coordinates):
 
+        def __init__(self):
+            super().__init__(pixel_n_dim=1, world_n_dim=1)
+
         @property
         def world_axis_names(self):
-            return 'Custom {0}'.format(axis)
+            return ['Custom {0}'.format(axis) for axis in range(3)]
 
         def world_to_pixel_values(self, *world):
             return tuple([0.4 * w for w in world])

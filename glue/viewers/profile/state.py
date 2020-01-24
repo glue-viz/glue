@@ -2,7 +2,8 @@ from collections import OrderedDict
 
 import numpy as np
 
-from glue.core import Subset, Coordinates
+from glue.core import Subset
+from glue.core.coordinates import LegacyCoordinates
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -76,8 +77,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @property
     def _display_world(self):
-        return (isinstance(getattr(self.reference_data, 'coords', None), Coordinates) and
-                type(self.reference_data.coords) != Coordinates)
+        return getattr(self.reference_data, 'coords', None) is not None
 
     @defer_draw
     def _update_att(self, *args):

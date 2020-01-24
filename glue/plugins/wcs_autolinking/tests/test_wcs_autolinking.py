@@ -31,11 +31,11 @@ def test_wcs_autolink_emptywcs():
     # physical types.
 
     data1 = Data()
-    data1.coords = WCSCoordinates(wcs=WCS(naxis=1))
+    data1.coords = WCS(naxis=1)
     data1['x'] = [1, 2, 3]
 
     data2 = Data()
-    data2.coords = WCSCoordinates(wcs=WCS(naxis=1))
+    data2.coords = WCS(naxis=1)
     data2['x'] = [4, 5, 6]
 
     dc = DataCollection([data1, data2])
@@ -53,7 +53,7 @@ def test_wcs_autolink_dimensional_mismatch():
     wcs1.wcs.set()
 
     data1 = Data()
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = [1, 2, 3]
 
     wcs2 = WCS(naxis=3)
@@ -61,7 +61,7 @@ def test_wcs_autolink_dimensional_mismatch():
     wcs2.wcs.set()
 
     data2 = Data()
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
 
     dc = DataCollection([data1, data2])
@@ -78,7 +78,7 @@ def test_wcs_autolink_spectral_cube():
     wcs1.wcs.set()
 
     data1 = Data()
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = np.ones((2, 3, 4))
     pz1, py1, px1 = data1.pixel_component_ids
 
@@ -87,7 +87,7 @@ def test_wcs_autolink_spectral_cube():
     wcs2.wcs.set()
 
     data2 = Data()
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
     pz2, py2, px2 = data2.pixel_component_ids
 
@@ -120,7 +120,7 @@ def test_wcs_autolink_image_and_spectral_cube():
     wcs1.wcs.set()
 
     data1 = Data()
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = np.ones((2, 3))
     py1, px1 = data1.pixel_component_ids
 
@@ -129,7 +129,7 @@ def test_wcs_autolink_image_and_spectral_cube():
     wcs2.wcs.set()
 
     data2 = Data()
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
     pz2, py2, px2 = data2.pixel_component_ids
 
@@ -158,7 +158,7 @@ def test_clone_wcs_link():
     wcs1.wcs.set()
 
     data1 = Data(label='Data 1')
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = np.ones((2, 3))
 
     wcs2 = WCS(naxis=3)
@@ -166,7 +166,7 @@ def test_clone_wcs_link():
     wcs2.wcs.set()
 
     data2 = Data(label='Data 2')
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
 
     link1 = WCSLink(data1, data2)
@@ -188,7 +188,7 @@ def test_link_editor():
     wcs1.wcs.set()
 
     data1 = Data(label='Data 1')
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = np.ones((2, 3))
 
     wcs2 = WCS(naxis=3)
@@ -196,7 +196,7 @@ def test_link_editor():
     wcs2.wcs.set()
 
     data2 = Data(label='Data 2')
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
 
     link1 = WCSLink(data1, data2)
@@ -219,7 +219,7 @@ def test_celestial_with_unknown_axes():
     wcs1.wcs.set()
 
     data1 = Data()
-    data1.coords = WCSCoordinates(wcs=wcs1)
+    data1.coords = wcs1
     data1['x'] = np.ones((2, 3, 4))
     pz1, py1, px1 = data1.pixel_component_ids
 
@@ -228,7 +228,7 @@ def test_celestial_with_unknown_axes():
     wcs2.wcs.set()
 
     data2 = Data()
-    data2.coords = WCSCoordinates(wcs=wcs2)
+    data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
     pz2, py2, px2 = data2.pixel_component_ids
 

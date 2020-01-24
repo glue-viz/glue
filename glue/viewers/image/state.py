@@ -1,7 +1,8 @@
 import uuid
 from collections import defaultdict
 
-from glue.core import BaseData, Coordinates
+from glue.core import BaseData
+from glue.core.coordinates import LegacyCoordinates
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -147,7 +148,7 @@ class ImageViewerState(MatplotlibDataViewerState):
 
     @property
     def _display_world(self):
-        return isinstance(getattr(self.reference_data, 'coords', None), Coordinates)
+        return getattr(self.reference_data, 'coords', None) is not None
 
     def _reference_data_changed(self, *args):
         # This signal can get emitted if just the choices but not the actual

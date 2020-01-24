@@ -10,17 +10,21 @@ from ..state import ProfileViewerState, ProfileLayerState
 
 class SimpleCoordinates(Coordinates):
 
-    def world2pixel(self, *world):
-        return tuple([0.5 * w for w in world])
+    def __init__(self):
+        super().__init__(pixel_n_dim=3, world_n_dim=3)
 
-    def pixel2world(self, *pixel):
-        return tuple([2 * p for p in pixel])
+    def pixel_to_world_values(self, *args):
+        return tuple([2.0 * p for p in args])
 
-    def dependent_axes(self, axis):
-        if axis == 0:
-            return [0]
-        else:
-            return [1, 2]
+    def world_to_pixel_values(self, *args):
+        return tuple([0.5 * w for w in args])
+
+    @property
+    def axis_correlation_matrix(self):
+        matrix = np.zeros((self.world_n_dim, self.pixel_n_dim), dtype=bool)
+        matrix[2, 2] = True
+        matrix[0:2, 0:2] = True
+        return matrix
 
 
 class TestProfileViewerState:

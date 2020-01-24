@@ -2,6 +2,7 @@ import numpy as np
 from astropy.wcs import WCS
 
 from glue.utils import unbroadcast, broadcast_to
+from glue.core.coordinates import LegacyCoordinates
 
 
 def default_world_coords(wcs):
@@ -145,6 +146,8 @@ def dependent_axes(wcs, axis):
     The axis index is given in numpy ordering convention (note that
     opposite the fits convention)
     """
+    if isinstance(wcs, LegacyCoordinates):
+        return (axis,)
     matrix = wcs.axis_correlation_matrix[::-1, ::-1]
     world_dep = matrix[:, axis:axis + 1]
     return tuple(np.nonzero((world_dep & matrix).any(axis=0))[0])
@@ -159,6 +162,10 @@ def _get_ndim(header):
 
 
 def axis_label(wcs, axis):
+
+    if wcs.world_axis_names[axis] != '':
+        return wcs.world_axis_names[axis]
+
     if isinstance(wcs, WCS):
         header = wcs.to_header()
         num = _get_ndim(header) - axis  # number orientation reversed

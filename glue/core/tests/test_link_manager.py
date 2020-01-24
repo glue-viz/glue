@@ -313,15 +313,17 @@ def test_is_convertible_to_single_pixel_cid():
     # itself is irrelevant since for this function to work we only care about
     # whether or not an axis is independent.
 
-    class CustomCoordinates(Coordinates):
-        def dependent_axes(self, axis):
-            if axis == 0:
-                return (0,)
-            else:
-                return (1, 2)
+    class CustomCoordinates(IdentityCoordinates):
+
+        @property
+        def axis_correlation_matrix(self):
+            matrix = np.zeros((self.world_n_dim, self.pixel_n_dim), dtype=bool)
+            matrix[2, 2] = True
+            matrix[0:2, 0:2] = True
+            return matrix
 
     data1 = Data()
-    data1.coords = CustomCoordinates()
+    data1.coords = CustomCoordinates(n_dim=3)
     data1['x'] = np.ones((4, 3, 4))
     px1, py1, pz1 = data1.pixel_component_ids
     wx1, wy1, wz1 = data1.world_component_ids

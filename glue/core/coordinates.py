@@ -94,6 +94,18 @@ class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
         return self.world_axis_units[self.world_n_dim - axis - 1]
 
 
+class LegacyCoordinates(Coordinates):
+
+    def __init__(self):
+        super().__init__(pixel_n_dim=10, world_n_dim=10)
+
+    def pixel_to_world_values(self, *pixel):
+        return pixel
+
+    def world_to_pixel_values(self, *world):
+        return world
+
+
 class IdentityCoordinates(Coordinates):
 
     def __init__(self, n_dim=None):
@@ -114,7 +126,7 @@ class IdentityCoordinates(Coordinates):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(ndim=rec['ndim'])
+        return cls(n_dim=rec['ndim'])
 
 
 class WCSCoordinates(WCS):
