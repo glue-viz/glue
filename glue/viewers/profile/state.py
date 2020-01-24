@@ -3,7 +3,6 @@ from collections import OrderedDict
 import numpy as np
 
 from glue.core import Subset
-from glue.core.coordinates import LegacyCoordinates
 from glue.external.echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,

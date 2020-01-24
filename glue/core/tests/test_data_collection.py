@@ -5,7 +5,7 @@ import numpy as np
 from unittest.mock import MagicMock
 from numpy.testing import assert_array_equal, assert_equal
 
-from ..coordinates import Coordinates, IdentityCoordinates
+from ..coordinates import IdentityCoordinates
 from ..component_link import ComponentLink
 from ..link_helpers import LinkSame
 from ..data import Data, Component, ComponentID, DerivedComponent

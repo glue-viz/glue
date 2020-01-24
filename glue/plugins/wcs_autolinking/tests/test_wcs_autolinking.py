@@ -4,7 +4,6 @@ import numpy as np
 from astropy.wcs import WCS
 from glue.core import Data, DataCollection
 from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink, WCSLink
-from glue.core.coordinates import WCSCoordinates
 from glue.core.link_helpers import MultiLink
 from glue.core.tests.test_state import clone
 from glue.dialogs.link_editor.state import EditableLinkFunctionState

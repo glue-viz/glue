@@ -11,7 +11,6 @@ from ..coordinate_helpers import (axis_label, world_axis,
                                   pixel2world_single_axis, dependent_axes)
 from ..coordinates import (coordinates_from_header, IdentityCoordinates,
                            WCSCoordinates, AffineCoordinates,
-                           Coordinates,
                            header_from_string)
 
 
@@ -331,8 +330,6 @@ def test_dependent_axes_non_diagonal_pc():
     # were returned as dependent axes even if this wasn't
     # the case.
 
-    from astropy.wcs import WCS
-
     coord = WCSCoordinates(naxis=3)
     coord.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
     coord.wcs.crval = 1, 1, 1
@@ -350,8 +347,6 @@ def test_pixel2world_single_axis():
 
     # Regression test for a bug in pixel2world_single_axis which was due to
     # incorrect indexing order (WCS vs Numpy)
-
-    from astropy.wcs import WCS
 
     coord = WCSCoordinates(naxis=3)
     coord.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'

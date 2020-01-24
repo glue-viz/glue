@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal
 
 from ..component_link import ComponentLink
 from ..data import ComponentID, DerivedComponent, Data, Component
-from ..coordinates import Coordinates, IdentityCoordinates
+from ..coordinates import IdentityCoordinates
 from ..data_collection import DataCollection
 from ..link_manager import (LinkManager, accessible_links, discover_links,
                             find_dependents, is_convertible_to_single_pixel_cid,

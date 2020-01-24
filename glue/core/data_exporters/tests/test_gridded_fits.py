@@ -3,7 +3,6 @@ import numpy as np
 from glue.core import Data
 from glue.core.coordinates import WCSCoordinates
 from astropy.io import fits
-from astropy.wcs import WCS
 
 from ..gridded_fits import fits_writer
 
