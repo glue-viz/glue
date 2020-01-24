@@ -34,7 +34,7 @@ class TestImageViewerState(object):
     def test_pixel_world_linking(self):
 
         data = Data(label='data', x=[[1, 2], [3, 4]], y=[[5, 6], [7, 8]],
-                    coords=IdentityCoordinates(ndim=2))
+                    coords=IdentityCoordinates(n_dim=2))
         layer_state = ImageLayerState(layer=data, viewer_state=self.state)
         self.state.layers.append(layer_state)
 
@@ -142,7 +142,7 @@ class TestReprojection():
         self.array = np.arange(3024).reshape((6, 7, 8, 9))
 
         # The reference dataset. Shape is (6, 7, 8, 9).
-        self.data1 = Data(x=self.array, coords=IdentityCoordinates(ndim=4))
+        self.data1 = Data(x=self.array, coords=IdentityCoordinates(n_dim=4))
         self.data_collection.append(self.data1)
 
         # A dataset with the same shape but not linked. Shape is (6, 7, 8, 9).

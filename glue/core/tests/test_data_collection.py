@@ -391,12 +391,12 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4])
         dc = DataCollection([x, y])
 
-        class CustomCoordinates(Coordinates):
+        class CustomCoordinates(IdentityCoordinates):
             def axis_label(self, axis):
                 return 'Custom {0}'.format(axis)
 
-        x.coords = CustomCoordinates()
-        y.coords = CustomCoordinates()
+        x.coords = CustomCoordinates(n_dim=1)
+        y.coords = CustomCoordinates(n_dim=1)
 
         dc.merge(x, y)
 
@@ -440,8 +440,8 @@ class TestDataCollection(object):
         # This tests that the separation of internal vs external links is
         # preserved in session files.
 
-        d1 = Data(a=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
-        d2 = Data(b=[2, 3, 4], coords=IdentityCoordinates(ndim=1))
+        d1 = Data(a=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
+        d2 = Data(b=[2, 3, 4], coords=IdentityCoordinates(n_dim=1))
 
         dc = DataCollection([d1, d2])
         dc.add_link(ComponentLink([d2.id['b']], d1.id['a']))

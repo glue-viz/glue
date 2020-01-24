@@ -30,10 +30,13 @@ from .test_state import clone
 
 class _TestCoordinates(Coordinates):
 
-    def pixel2world(self, *args):
+    def __init__(self):
+        super().__init__(pixel_n_dim=2, world_n_dim=2)
+
+    def pixel_to_world_values(self, *args):
         return [(i + 2.) * a for i, a in enumerate(args)]
 
-    def world2pixel(self, *args):
+    def world_to_pixel_values(self, *args):
         return [a / (i + 2.) for i, a in enumerate(args)]
 
 
@@ -407,7 +410,7 @@ class TestData(object):
     def test_links_property(self):
 
         data = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1',
-                    coords=IdentityCoordinates(ndim=1))
+                    coords=IdentityCoordinates(n_dim=1))
 
         assert len(data.links) == 2
         assert isinstance(data.links[0], CoordinateComponentLink)
@@ -603,8 +606,8 @@ def test_foreign_pixel_components_not_in_visible():
 
     # currently, this is trivially satisfied since all coordinates are hidden
 
-    d1 = Data(x=[1], y=[2], coords=IdentityCoordinates(ndim=1))
-    d2 = Data(w=[3], v=[4], coords=IdentityCoordinates(ndim=1))
+    d1 = Data(x=[1], y=[2], coords=IdentityCoordinates(n_dim=1))
+    d2 = Data(w=[3], v=[4], coords=IdentityCoordinates(n_dim=1))
     dc = DataCollection([d1, d2])
     dc.add_link(LinkSame(d1.id['x'], d2.id['w']))
 
@@ -787,13 +790,13 @@ def test_update_coords():
     # Make sure that when overriding coords, the world coordinate components
     # are updated.
 
-    data1 = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
+    data1 = Data(x=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
 
     assert len(data1.components) == 3
 
     assert_equal(data1[data1.world_component_ids[0]], [0, 1, 2])
 
-    data2 = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
+    data2 = Data(x=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
 
     assert len(data1.links) == 2
     assert len(data2.links) == 2
@@ -808,13 +811,14 @@ def test_update_coords():
 
     class CustomCoordinates(Coordinates):
 
-        def axis_label(self, axis):
+        @property
+        def world_axis_names(self):
             return 'Custom {0}'.format(axis)
 
-        def world2pixel(self, *world):
+        def world_to_pixel_values(self, *world):
             return tuple([0.4 * w for w in world])
 
-        def pixel2world(self, *pixel):
+        def pixel_to_world_values(self, *pixel):
             return tuple([2.5 * p for p in pixel])
 
     data1.coords = CustomCoordinates()

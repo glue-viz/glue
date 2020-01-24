@@ -196,8 +196,8 @@ class TestLinkManager(object):
         """When the link manager merges components, links that depend on the
         merged components remain functional"""
 
-        d1 = Data(x=[[1, 2], [3, 4]], coords=IdentityCoordinates(ndim=2))
-        d2 = Data(u=[[5, 6], [7, 8]], coords=IdentityCoordinates(ndim=2))
+        d1 = Data(x=[[1, 2], [3, 4]], coords=IdentityCoordinates(n_dim=2))
+        d2 = Data(u=[[5, 6], [7, 8]], coords=IdentityCoordinates(n_dim=2))
 
         dc = DataCollection([d1, d2])
 
@@ -246,8 +246,8 @@ class TestLinkManager(object):
 
     def test_remove_data_removes_links(self):
 
-        d1 = Data(x=[[1, 2], [3, 4]], label='image', coords=IdentityCoordinates(ndim=2))
-        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog', coords=IdentityCoordinates(ndim=3))
+        d1 = Data(x=[[1, 2], [3, 4]], label='image', coords=IdentityCoordinates(n_dim=2))
+        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog', coords=IdentityCoordinates(n_dim=3))
 
         dc = DataCollection([d1, d2])
 
@@ -263,8 +263,8 @@ class TestLinkManager(object):
 
     def test_remove_component_removes_links(self):
 
-        d1 = Data(x=[[1, 2], [3, 4]], label='image', coords=IdentityCoordinates(ndim=2))
-        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog', coords=IdentityCoordinates(ndim=3))
+        d1 = Data(x=[[1, 2], [3, 4]], label='image', coords=IdentityCoordinates(n_dim=2))
+        d2 = Data(a=[1, 2, 3], b=[4, 5, 6], label='catalog', coords=IdentityCoordinates(n_dim=3))
 
         dc = DataCollection([d1, d2])
 

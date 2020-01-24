@@ -6,6 +6,7 @@ from glue.tests.helpers import requires_astropy, ASTROPY_INSTALLED
 from .. import Data, DataCollection
 from ..coordinates import IdentityCoordinates, coordinates_from_header
 from ..link_helpers import LinkSame
+from glue.core.coordinate_helpers import dependent_axes
 from glue.tests.helpers import make_file
 
 if ASTROPY_INSTALLED:
@@ -70,10 +71,10 @@ def test_link_velocity():
 class TestDependentAxes(object):
 
     def test_base(self):
-        d = Data(x=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
+        d = Data(x=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
         assert dependent_axes(d.coords, 0) == (0,)
 
-        d = Data(x=[[1, 2], [3, 4]], coords=IdentityCoordinates(ndim=2))
+        d = Data(x=[[1, 2], [3, 4]], coords=IdentityCoordinates(n_dim=2))
         assert dependent_axes(d.coords, 0) == (0,)
         assert dependent_axes(d.coords, 1) == (1,)
 

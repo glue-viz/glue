@@ -1,8 +1,10 @@
 import abc
+import uuid
 import logging
 
 import numpy as np
 
+from astropy.units import Quantity
 from astropy.wcs import WCS
 from astropy.wcs.wcsapi import BaseLowLevelWCS
 
@@ -29,6 +31,50 @@ class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
     Base class for coordinate transformation
     """
 
+    def __init__(self, pixel_n_dim=None, world_n_dim=None):
+        self._pixel_n_dim = pixel_n_dim
+        self._world_n_dim = world_n_dim
+        self._world_uuids = [str(uuid.uuid4()) for i in range(world_n_dim)]
+
+    @property
+    def pixel_n_dim(self):
+        return self._pixel_n_dim
+
+    @property
+    def world_n_dim(self):
+        return self._world_n_dim
+
+    @property
+    def world_axis_physical_types(self):
+        return [None] * self._world_n_dim
+
+    @property
+    def world_axis_units(self):
+        return [''] * self._world_n_dim
+
+    def array_index_to_world_values(self, *index_arrays):
+        return self.pixel_to_world_values(*index_arrays[::-1])
+
+    def world_to_array_index_values(self, *world_arrays):
+        # Compatibility code, remove once we require Astropy 4.1 or later
+        pixel_arrays = self.world_to_pixel_values(*world_arrays)
+        if self.pixel_n_dim == 1:
+            pixel_arrays = (pixel_arrays,)
+        else:
+            pixel_arrays = pixel_arrays[::-1]
+        array_indices = tuple(np.asarray(np.floor(pixel + 0.5), dtype=np.int_) for pixel in pixel_arrays)
+        return array_indices[0] if self.pixel_n_dim == 1 else array_indices
+
+    @property
+    def world_axis_object_components(self):
+        return [(uid, 0, 'value') for uid in self._world_uuids]
+
+    @property
+    def world_axis_object_classes(self):
+        return {self._world_uuids[idx]: (Quantity, (),
+                                         {'unit': self.world_axis_units[idx]})
+                for idx in range(self._world_n_dim)}
+
     def __gluestate__(self, context):
         return {}  # no state
 
@@ -48,7 +94,32 @@ class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
         return self.world_axis_units[self.world_n_dim - axis - 1]
 
 
+class IdentityCoordinates(Coordinates):
+
+    def __init__(self, n_dim=None):
+        super().__init__(pixel_n_dim=n_dim, world_n_dim=n_dim)
+
+    def pixel_to_world_values(self, *pixel):
+        return pixel
+
+    def world_to_pixel_values(self, *world):
+        return world
+
+    @property
+    def axis_correlation_matrix(self):
+        return np.identity(self.pixel_n_dim).astype(bool)
+
+    def __gluestate__(self, context):
+        return {'ndim': self.pixel_n_dim}
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(ndim=rec['ndim'])
+
+
 class WCSCoordinates(WCS):
+
+    # Kept for backward-compatibility
 
     def pixel2world(self, *args):
         return self.pixel_to_world_values(*args)
@@ -58,19 +129,6 @@ class WCSCoordinates(WCS):
 
     def world_axis_unit(self, axis):
         return self.world_axis_units[self.world_n_dim - axis - 1]
-
-
-class IdentityCoordinates(WCSCoordinates):
-
-    def __init__(self, ndim):
-        super().__init__(naxis=ndim)
-
-    def __gluestate__(self, context):
-        return {'ndim': self.pixel_n_dim}
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        return cls(ndim=rec['ndim'])
 
 
 class AffineCoordinates(WCSCoordinates):
