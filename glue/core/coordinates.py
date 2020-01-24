@@ -82,17 +82,6 @@ class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
     def __setgluestate__(cls, rec, context):
         return cls()
 
-    # Kept for backward-compatibility
-
-    def pixel2world(self, *args):
-        return self.pixel_to_world_values(*args)
-
-    def world2pixel(self, *args):
-        return self.world_to_pixel_values(*args)
-
-    def world_axis_unit(self, axis):
-        return self.world_axis_units[self.world_n_dim - axis - 1]
-
 
 class LegacyCoordinates(Coordinates):
 
@@ -130,17 +119,8 @@ class IdentityCoordinates(Coordinates):
 
 
 class WCSCoordinates(WCS):
-
     # Kept for backward-compatibility
-
-    def pixel2world(self, *args):
-        return self.pixel_to_world_values(*args)
-
-    def world2pixel(self, *args):
-        return self.world_to_pixel_values(*args)
-
-    def world_axis_unit(self, axis):
-        return self.world_axis_units[self.world_n_dim - axis - 1]
+    pass
 
 
 class AffineCoordinates(WCSCoordinates):

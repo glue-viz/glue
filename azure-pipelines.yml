@@ -20,7 +20,7 @@ jobs:
     envs:
 
     # PEP8 checks
-    - linux: pep8
+    - linux: codestyle
       libraries: {}
       coverage: 'false'
 

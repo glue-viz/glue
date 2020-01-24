@@ -39,7 +39,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = 250., 187.5
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
@@ -49,7 +49,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = 250, 187.5
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
@@ -59,7 +59,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = [250, 250], [187.5, 187.5]
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = ([359.9832692105993601, 359.9832692105993601],
                     [5.0166664867400375, 5.0166664867400375])
 
@@ -72,7 +72,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = np.array([250, 250]), np.array([187.5, 187.5])
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = (np.array([359.9832692105993601, 359.9832692105993601]),
                     np.array([5.0166664867400375, 5.0166664867400375]))
 
@@ -87,7 +87,7 @@ class TestWcsCoordinates(object):
         expected = (np.array([249.0000000000000284, 249.0000000000000284]),
                     np.array([-114.2632689899972434, -114.2632689899972434]))
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         np.testing.assert_array_almost_equal(result[0], expected[0], 3)
         np.testing.assert_array_almost_equal(result[1], expected[1], 3)
 
@@ -99,7 +99,7 @@ class TestWcsCoordinates(object):
         expected = ([249.0000000000000284, 249.0000000000000284],
                     [-114.2632689899972434, -114.2632689899972434])
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
                 assert_allclose(r, e)
@@ -111,25 +111,25 @@ class TestWcsCoordinates(object):
         expected = 249.0000000000000284, -114.2632689899972434
         x, y = 0, 0
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         assert_allclose(result[0], expected[0], 3)
         assert_allclose(result[1], expected[1], 3)
 
     def test_world2pixel_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
         x, y = 0., [0.]
-        expected = coord.world2pixel(x, y[0])
+        expected = coord.world_to_pixel_values(x, y[0])
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
 
     def test_pixel2world_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
         x, y = [250.], 187.5
-        expected = coord.pixel2world(x[0], y)
+        expected = coord.pixel_to_world_values(x[0], y)
 
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
 
@@ -257,28 +257,28 @@ def test_coords_preserve_shape_2d():
     coord = coordinates_from_header(header_from_string(HDR_2D_VALID))
     x = np.zeros(12)
     y = np.zeros(12)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (4, 3)
     y.shape = (4, 3)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (2, 2, 3)
     y.shape = (2, 2, 3)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
@@ -289,30 +289,30 @@ def test_coords_preserve_shape_3d():
     x = np.zeros(12)
     y = np.zeros(12)
     z = np.zeros(12)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (4, 3)
     y.shape = (4, 3)
     z.shape = (4, 3)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (2, 2, 3)
     y.shape = (2, 2, 3)
     z.shape = (2, 2, 3)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
@@ -383,14 +383,14 @@ def test_affine():
     xp = np.array([1, 2, 3])
     yp = np.array([2, 3, 4])
 
-    xw, yw = coords.pixel2world(xp, yp)
+    xw, yw = coords.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
 
     coords2 = clone(coords)
 
-    xw, yw = coords2.pixel2world(xp, yp)
+    xw, yw = coords2.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
@@ -411,14 +411,14 @@ def test_affine_labels_units():
     xp = np.array([1, 2, 3])
     yp = np.array([2, 3, 4])
 
-    xw, yw = coords.pixel2world(xp, yp)
+    xw, yw = coords.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
 
     coords2 = clone(coords)
 
-    xw, yw = coords2.pixel2world(xp, yp)
+    xw, yw = coords2.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
