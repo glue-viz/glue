@@ -164,7 +164,7 @@ def _get_ndim(header):
 def axis_label(wcs, axis):
 
     if wcs.world_axis_names[axis] != '':
-        return wcs.world_axis_names[axis]
+        return wcs.world_axis_names[wcs.world_n_dim - 1 - axis].title()
 
     if isinstance(wcs, WCS):
         header = wcs.to_header()

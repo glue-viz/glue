@@ -123,7 +123,7 @@ class WCSCoordinates(WCS):
     pass
 
 
-class AffineCoordinates(WCSCoordinates):
+class AffineCoordinates(Coordinates):
     """
     Coordinates determined via an affine transformation represented by an
     augmented matrix of shape N+1 x N+1 matrix, where N is the number of pixel
@@ -134,11 +134,6 @@ class AffineCoordinates(WCSCoordinates):
     Note that the order of the dimensions in the matrix (x, y) should be the
     opposite of the order of the order of dimensions of Numpy arrays (y, x).
     """
-
-    # Note that for now the easiest way to implement this is to sub-class
-    # WCS, which means that this will automatically work with WCSAxes. In
-    # future it would be good to make this independent from WCS but it will
-    # require changes to WCSAxes.
 
     def __init__(self, matrix, units=None, labels=None):
 
@@ -157,23 +152,41 @@ class AffineCoordinates(WCSCoordinates):
         if labels is not None and len(labels) != matrix.shape[0] - 1:
             raise ValueError("Expected {0} labels, got {1}".format(matrix.shape[0] - 1, len(labels)))
 
-        self.matrix = matrix
-        self.units = units
-        self.labels = labels
+        matrix = matrix.T
 
-        super().__init__(naxis=self.matrix.shape[0] - 1)
-        self.wcs.cd = self.matrix[:-1, :-1]
-        self.wcs.crpix = np.ones(self.naxis)
-        self.wcs.crval = self.matrix[:-1, -1]
-        if labels is not None:
-            self.wcs.ctype = labels
-        if units is not None:
-            self.wcs.cunit = units
+        self._matrix = matrix
+        self._matrix_inv = np.linalg.inv(matrix)
+        self._units = units
+        self._labels = labels
+
+        super().__init__(pixel_n_dim=self._matrix.shape[0] - 1,
+                         world_n_dim=self._matrix.shape[0] - 1)
+
+    def pixel_to_world_values(self, *pixel):
+        pixel = np.vstack(np.broadcast_arrays(*(list(pixel) + [np.ones(pixel[0].shape)])))
+        pixel = np.moveaxis(pixel, 0, -1)
+        world = np.matmul(pixel, self._matrix)
+        world = tuple(np.moveaxis(world, -1, 0))[:-1]
+        return world
+
+    def world_to_pixel_values(self, *world):
+        world = np.dstack(np.broadcast_arrays(*(list(world) + [1.])))
+        pixel = np.matmul(world, self._matrix)
+        pixel = tuple(np.moveaxis(pixel, -1, 0))[:-1]
+        return pixel
+
+    @property
+    def world_axis_names(self):
+        return self._labels or [''] * self.world_n_dim
+
+    @property
+    def world_axis_units(self):
+        return self._units or [''] * self.world_n_dim
 
     def __gluestate__(self, context):
-        return dict(matrix=context.do(self.matrix),
-                    labels=self.labels,
-                    units=self.units)
+        return dict(matrix=context.do(self._matrix.T),
+                    labels=self._labels,
+                    units=self._units)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
