@@ -1,9 +1,6 @@
-from glue.plugins.wcs_autolinking import ASTROPY_GE_31
-
-from astropy.wcs import WCS
+from astropy.wcs import WCS, pixel_to_pixel
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
-from glue.utils import efficient_pixel_to_pixel
 
 __all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
 
@@ -15,10 +12,10 @@ class IncompatibleWCS(Exception):
 def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
 
     def forwards(*pixel_input):
-        return efficient_pixel_to_pixel(wcs1, wcs2, *pixel_input)
+        return pixel_to_pixel(wcs1, wcs2, *pixel_input)
 
     def backwards(*pixel_input):
-        return efficient_pixel_to_pixel(wcs2, wcs1, *pixel_input)
+        return pixel_to_pixel(wcs2, wcs1, *pixel_input)
 
     pixel_input = (0,) * len(pixel_cids1)
 
@@ -114,9 +111,6 @@ class WCSLink(MultiLink):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        if not ASTROPY_GE_31:
-            raise ValueError("Loading this session file requires Astropy 3.1 "
-                             "or later to be installed")
         self = cls(context.object(rec['data1']),
                    context.object(rec['data2']))
         return self

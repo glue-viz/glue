@@ -1,7 +1,4 @@
 # A plugin to enable link helpers for Astronomical coordinate conversions.
-# This requires Astropy >= 0.4.
-
-# Coordinate transforms (requires Astropy>)
 
 from astropy import units as u
 from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric

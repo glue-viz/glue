@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 
 from astropy.wcs import WCS
@@ -7,10 +6,6 @@ from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink, WCSLink
 from glue.core.link_helpers import MultiLink
 from glue.core.tests.test_state import clone
 from glue.dialogs.link_editor.state import EditableLinkFunctionState
-
-# The autolinking functionality requires the APE 14 WCS implementation in
-# Astropy 3.1.
-pytest.importorskip("astropy", minversion="3.1")
 
 
 def test_wcs_autolink_nowcs():
