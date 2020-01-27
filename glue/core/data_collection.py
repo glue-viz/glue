@@ -112,6 +112,11 @@ class DataCollection(HubListener):
             msg = DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
 
+    def clear(self):
+        with self._no_sync_link_manager():
+            for data in list(self):
+                self.remove(data)
+
     def _sync_link_manager(self):
         """ update the LinkManager, so all the DerivedComponents
         for each data set are up-to-date

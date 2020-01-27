@@ -18,6 +18,8 @@ v0.16.0 (unreleased)
 
 * Update minimum required version of Astropy to 4.0. [#2079]
 
+* Added a ``DataCollection.clear()`` method to remove all datasets. [#2079]
+
 v0.15.6 (2019-08-22)
 --------------------
 

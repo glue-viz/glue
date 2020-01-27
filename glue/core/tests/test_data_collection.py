@@ -89,6 +89,11 @@ class TestDataCollection(object):
         self.dc.remove(self.data)
         assert self.data not in self.dc
 
+    def test_clear(self):
+        self.dc.append(self.data)
+        self.dc.clear()
+        assert self.data not in self.dc
+
     def test_ignore_multi_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
