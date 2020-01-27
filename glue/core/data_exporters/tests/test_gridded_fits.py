@@ -3,7 +3,6 @@ import numpy as np
 from glue.core import Data
 from glue.core.coordinates import WCSCoordinates
 from astropy.io import fits
-from astropy.wcs import WCS
 
 from ..gridded_fits import fits_writer
 
@@ -54,8 +53,7 @@ def test_component_unit_header(tmpdir):
                 y=(np.arange(6) * 2).reshape(2, 3),
                 z=(np.arange(6) * 2).reshape(2, 3))
 
-    wcs = WCS()
-    data.coords = WCSCoordinates(wcs=wcs)
+    data.coords = WCSCoordinates()
 
     unit1 = data.get_component("x").units = u.m / u.s
     unit2 = data.get_component("y").units = u.Jy

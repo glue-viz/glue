@@ -4,6 +4,7 @@ from glue.viewers.matplotlib.toolbar_mode import PathMode
 from glue.viewers.image.qt import StandaloneImageViewer
 from glue.config import viewer_tool
 from glue.utils import defer_draw
+from glue.core.coordinate_helpers import axis_label
 
 
 @viewer_tool
@@ -267,4 +268,4 @@ def _slice_label(data, slc):
     if getattr(data, 'coords') is None:
         return data.pixel_component_ids[idx].label
     else:
-        return data.coords.axis_label(idx)
+        return axis_label(data.coords, idx)

@@ -13,17 +13,21 @@ from ..state import ImageViewerState, ImageLayerState, AggregateSlice
 
 class SimpleCoordinates(Coordinates):
 
-    def world2pixel(self, *world):
-        return tuple([0.4 * w for w in world])
+    def __init__(self):
+        super().__init__(pixel_n_dim=3, world_n_dim=3)
 
-    def pixel2world(self, *pixel):
-        return tuple([2.5 * p for p in pixel])
+    def pixel_to_world_values(self, *args):
+        return tuple([2.5 * p for p in args])
 
-    def dependent_axes(self, axis):
-        if axis in (1, 2):
-            return (1, 2)
-        else:
-            return (axis,)
+    def world_to_pixel_values(self, *args):
+        return tuple([0.4 * w for w in args])
+
+    @property
+    def axis_correlation_matrix(self):
+        matrix = np.zeros((self.world_n_dim, self.pixel_n_dim), dtype=bool)
+        matrix[2, 2] = True
+        matrix[0:2, 0:2] = True
+        return matrix
 
 
 class TestImageViewerState(object):
@@ -34,7 +38,7 @@ class TestImageViewerState(object):
     def test_pixel_world_linking(self):
 
         data = Data(label='data', x=[[1, 2], [3, 4]], y=[[5, 6], [7, 8]],
-                    coords=IdentityCoordinates(ndim=2))
+                    coords=IdentityCoordinates(n_dim=2))
         layer_state = ImageLayerState(layer=data, viewer_state=self.state)
         self.state.layers.append(layer_state)
 
@@ -142,7 +146,7 @@ class TestReprojection():
         self.array = np.arange(3024).reshape((6, 7, 8, 9))
 
         # The reference dataset. Shape is (6, 7, 8, 9).
-        self.data1 = Data(x=self.array, coords=IdentityCoordinates(ndim=4))
+        self.data1 = Data(x=self.array, coords=IdentityCoordinates(n_dim=4))
         self.data_collection.append(self.data1)
 
         # A dataset with the same shape but not linked. Shape is (6, 7, 8, 9).

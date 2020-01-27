@@ -39,7 +39,7 @@ def test_component_id_combo_helper():
     assert selection_choices(state, 'combo') == "x:y"
 
     data2 = Data(a=[1, 2, 3], b=['a', 'b', 'c'], label='data2',
-                 coords=IdentityCoordinates(ndim=1))
+                 coords=IdentityCoordinates(n_dim=1))
 
     dc.append(data2)
     helper.append_data(data2)

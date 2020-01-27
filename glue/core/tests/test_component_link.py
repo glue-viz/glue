@@ -301,7 +301,7 @@ def test_efficiency():
         return x.copy() + y.copy()
 
     data = Data(x=np.ones((2, 3, 4, 5)), y=np.ones((2, 3, 4, 5)),
-                coords=IdentityCoordinates(ndim=4))
+                coords=IdentityCoordinates(n_dim=4))
 
     for i, from_ids in enumerate(([data.id['x'], data.id['y']],
                                   data.world_component_ids[:2],

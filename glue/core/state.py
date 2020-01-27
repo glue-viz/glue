@@ -65,6 +65,7 @@ from inspect import isgeneratorfunction
 import numpy as np
 from matplotlib.colors import Colormap
 from matplotlib import cm
+from astropy.wcs import WCS
 
 from glue import core
 from glue.core.data import Data
@@ -606,6 +607,17 @@ def _save_slice(slc, context):
 @loader(slice)
 def _load_slice(rec, context):
     return slice(rec['start'], rec['stop'], rec['step'])
+
+
+@saver(WCS)
+def _save_wcs(wcs, context):
+    return dict(header=wcs.to_header_string())
+
+
+@loader(WCS)
+def _load_wcs(rec, context):
+    from astropy.io import fits
+    return WCS(fits.Header.fromstring(rec['header']))
 
 
 @saver(CompositeSubsetState)

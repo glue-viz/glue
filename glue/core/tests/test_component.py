@@ -189,11 +189,18 @@ class TestCoordinateComponent(object):
 
         class TestCoords(Coordinates):
 
-            def pixel2world(self, *args):
+            def __init__(self):
+                super().__init__(pixel_n_dim=3, world_n_dim=3)
+
+            def pixel_to_world_values(self, *args):
                 return [a * (i + 1) for i, a in enumerate(args)]
 
-            def dependent_axes(self, axis):
-                return (axis,)
+            def world_to_pixel_values(self, *args):
+                return [a / (i + 1) for i, a in enumerate(args)]
+
+            @property
+            def axis_correlation_matrix(self):
+                return np.identity(3).astype(bool)
 
         data = core.Data()
         data.add_component(Component(np.zeros((3, 3, 3))), 'test')

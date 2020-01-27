@@ -45,7 +45,7 @@ class TestSliceExtraction(object):
 
 
 def test_slice_label():
-    d = Data(x=np.zeros((2, 3, 4)), coords=IdentityCoordinates(ndim=3))
+    d = Data(x=np.zeros((2, 3, 4)), coords=IdentityCoordinates(n_dim=3))
     assert _slice_label(d, (0, 'y', 'x')) == 'World 0'
     assert _slice_label(d, ('y', 0, 'x')) == 'World 1'
     assert _slice_label(d, ('y', 'x', 0)) == 'World 2'

@@ -3,7 +3,8 @@ import os
 from astropy.wcs import WCS
 
 from glue.core.subset import roi_to_subset_state
-from glue.core.coordinates import Coordinates
+from glue.core.coordinates import Coordinates, LegacyCoordinates
+from glue.core.coordinate_helpers import dependent_axes
 
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
@@ -96,13 +97,11 @@ class MatplotlibImageMixin(object):
 
         ref_coords = getattr(self.state.reference_data, 'coords', None)
 
-        if hasattr(ref_coords, 'wcs'):
-            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords.wcs)
-        elif hasattr(ref_coords, 'wcsaxes_dict'):
-            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, **ref_coords.wcsaxes_dict)
-        else:
+        if ref_coords is None or isinstance(ref_coords, LegacyCoordinates):
             self.axes.reset_wcs(slices=self.state.wcsaxes_slice,
                                 wcs=get_identity_wcs(self.state.reference_data.ndim))
+        else:
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords)
 
         # Reset the axis labels to match the fact that the new axes have no labels
         self.state.x_axislabel = ''
@@ -123,8 +122,8 @@ class MatplotlibImageMixin(object):
         else:
             ix = self.state.x_att.axis
             iy = self.state.y_att.axis
-            x_dep = list(ref_coords.dependent_axes(ix))
-            y_dep = list(ref_coords.dependent_axes(iy))
+            x_dep = list(dependent_axes(ref_coords, ix))
+            y_dep = list(dependent_axes(ref_coords, iy))
             if ix in x_dep:
                 x_dep.remove(ix)
             if iy in x_dep:

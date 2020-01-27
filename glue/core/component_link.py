@@ -6,6 +6,9 @@ from inspect import getfullargspec
 import numpy as np
 
 from glue.core.contracts import contract, ContractsMeta
+from glue.core.coordinate_helpers import (dependent_axes, default_world_coords,
+                                          pixel2world_single_axis,
+                                          world2pixel_single_axis)
 from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
 from glue.utils import unbroadcast, broadcast_to
@@ -359,7 +362,7 @@ class CoordinateComponentLink(ComponentLink):
         # to compute a given world coord, and vice versa
         # (e.g., spectral data cubes)
         self.ndim = len(comp_from)
-        self.from_needed = coords.dependent_axes(index)
+        self.from_needed = dependent_axes(coords, index)
         self._from_all = comp_from
 
         comp_from = [comp_from[i] for i in self.from_needed]
@@ -368,15 +371,12 @@ class CoordinateComponentLink(ComponentLink):
 
     def using(self, *args):
 
-        attr = 'pixel2world_single_axis' if self.pixel2world else 'world2pixel_single_axis'
-        func = getattr(self.coords, attr)
-
         # NOTE: in the past, we set any non-specified arguemnts to 0 for the
         # input coordinates, but this caused issues because in astropy.wcs
         # if one specifies e.g. (0, 0, 3000.) for (ra, dec, velocity), and if
         # (0, 0) for RA/Dec would return (nan, nan) normally, the velocity
         # is also NaN even though it is decoupled from the other coordinates.
-        default = self.coords.default_world_coords(self.ndim)
+        default = default_world_coords(self.coords)
 
         args2 = [None] * self.ndim
         for f, a in zip(self.from_needed, args):
@@ -386,7 +386,10 @@ class CoordinateComponentLink(ComponentLink):
                 args2[i] = broadcast_to(default[self.ndim - 1 - i], args[0].shape)
         args2 = tuple(args2)
 
-        return func(*args2[::-1], axis=self.ndim - 1 - self.index)
+        if self.pixel2world:
+            return pixel2world_single_axis(self.coords, *args2[::-1], world_axis=self.ndim - 1 - self.index)
+        else:
+            return world2pixel_single_axis(self.coords, *args2[::-1], pixel_axis=self.ndim - 1 - self.index)
 
     def __str__(self):
         rep = 'pix2world' if self.pixel2world else 'world2pix'

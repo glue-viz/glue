@@ -12,7 +12,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from glue.viewers.image.frb_artist import FRBArtist
-from glue.core.coordinates import Coordinates, WCSCoordinates
+from glue.core.coordinates import IdentityCoordinates
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI
@@ -61,9 +61,14 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
         assert self.draw_count == 1
 
 
-class MyCoords(Coordinates):
-    def axis_label(self, i):
-        return ['Banana', 'Apple'][i]
+class MyCoords(IdentityCoordinates):
+
+    def __init__(self, n_dim=2):
+        super().__init__(n_dim=n_dim)
+
+    @property
+    def world_axis_names(self):
+        return ['Apple', 'Banana']
 
 
 class TestImageViewer(object):
@@ -79,9 +84,9 @@ class TestImageViewer(object):
 
         # Create data versions with WCS coordinates
         self.image1_wcs = Data(label='image1_wcs', x=self.image1['x'],
-                               coords=WCSCoordinates(wcs=WCS(naxis=2)))
+                               coords=WCS(naxis=2))
         self.hypercube_wcs = Data(label='hypercube_wcs', x=self.hypercube['x'],
-                                  coords=WCSCoordinates(wcs=WCS(naxis=4)))
+                                  coords=WCS(naxis=4))
 
         self.application = GlueApplication()
 
@@ -300,7 +305,7 @@ class TestImageViewer(object):
 
         wcs = WCS(naxis=4)
         hypercube2 = Data()
-        hypercube2.coords = WCSCoordinates(wcs=wcs)
+        hypercube2.coords = wcs
         hypercube2.add_component(np.random.random((2, 3, 4, 5)), 'a')
 
         self.data_collection.append(hypercube2)

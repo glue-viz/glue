@@ -1,9 +1,7 @@
-from glue.plugins.wcs_autolinking import ASTROPY_GE_31
-
+from astropy.wcs import WCS
+from astropy.wcs.utils import pixel_to_pixel
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
-from glue.core.coordinates import WCSCoordinates
-from glue.utils import efficient_pixel_to_pixel
 
 __all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
 
@@ -15,10 +13,10 @@ class IncompatibleWCS(Exception):
 def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
 
     def forwards(*pixel_input):
-        return efficient_pixel_to_pixel(wcs1, wcs2, *pixel_input)
+        return pixel_to_pixel(wcs1, wcs2, *pixel_input)
 
     def backwards(*pixel_input):
-        return efficient_pixel_to_pixel(wcs2, wcs1, *pixel_input)
+        return pixel_to_pixel(wcs2, wcs1, *pixel_input)
 
     pixel_input = (0,) * len(pixel_cids1)
 
@@ -43,9 +41,7 @@ class WCSLink(MultiLink):
 
     def __init__(self, data1=None, data2=None, cids1=None, cids2=None):
 
-        # Extract WCS objects - from here onwards, we assume that these objects
-        # have the new Astropy APE 14 interface.
-        wcs1, wcs2 = data1.coords.wcs, data2.coords.wcs
+        wcs1, wcs2 = data1.coords, data2.coords
 
         forwards = backwards = None
         if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
@@ -116,9 +112,6 @@ class WCSLink(MultiLink):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        if not ASTROPY_GE_31:
-            raise ValueError("Loading this session file requires Astropy 3.1 "
-                             "or later to be installed")
         self = cls(context.object(rec['data1']),
                    context.object(rec['data2']))
         return self
@@ -140,7 +133,7 @@ def wcs_autolink(data_collection):
 
     # Find subset of datasets with WCS coordinates
     wcs_datasets = [data for data in data_collection
-                    if hasattr(data, 'coords') and isinstance(data.coords, WCSCoordinates)]
+                    if hasattr(data, 'coords') and isinstance(data.coords, WCS)]
 
     # Only continue if there are at least two such datasets
     if len(wcs_datasets) < 2:

@@ -275,7 +275,7 @@ def load_data(path, factory=None, **kwargs):
             continue
 
         if item.coords is None and force_coords:
-            item.coords = IdentityCoordinates(ndim=item.ndim)
+            item.coords = IdentityCoordinates(n_dim=item.ndim)
 
         if not item.label:
             item.label = lbl

@@ -7,9 +7,10 @@ from numpy.testing import assert_allclose, assert_equal
 from glue.core.tests.test_state import clone
 from glue.tests.helpers import requires_astropy
 
-from ..coordinates import (coordinates_from_header,
+from ..coordinate_helpers import (axis_label, world_axis,
+                                  pixel2world_single_axis, dependent_axes)
+from ..coordinates import (coordinates_from_header, IdentityCoordinates,
                            WCSCoordinates, AffineCoordinates,
-                           Coordinates,
                            header_from_string)
 
 
@@ -37,7 +38,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = 250., 187.5
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
@@ -47,7 +48,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = 250, 187.5
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = 359.9832692105993601, 5.0166664867400375
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
@@ -57,7 +58,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = [250, 250], [187.5, 187.5]
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = ([359.9832692105993601, 359.9832692105993601],
                     [5.0166664867400375, 5.0166664867400375])
 
@@ -70,7 +71,7 @@ class TestWcsCoordinates(object):
         coord = WCSCoordinates(hdr)
 
         x, y = np.array([250, 250]), np.array([187.5, 187.5])
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         expected = (np.array([359.9832692105993601, 359.9832692105993601]),
                     np.array([5.0166664867400375, 5.0166664867400375]))
 
@@ -85,7 +86,7 @@ class TestWcsCoordinates(object):
         expected = (np.array([249.0000000000000284, 249.0000000000000284]),
                     np.array([-114.2632689899972434, -114.2632689899972434]))
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         np.testing.assert_array_almost_equal(result[0], expected[0], 3)
         np.testing.assert_array_almost_equal(result[1], expected[1], 3)
 
@@ -97,7 +98,7 @@ class TestWcsCoordinates(object):
         expected = ([249.0000000000000284, 249.0000000000000284],
                     [-114.2632689899972434, -114.2632689899972434])
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         for i in range(0, 1):
             for r, e in zip(result[i], expected[i]):
                 assert_allclose(r, e)
@@ -109,42 +110,34 @@ class TestWcsCoordinates(object):
         expected = 249.0000000000000284, -114.2632689899972434
         x, y = 0, 0
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         assert_allclose(result[0], expected[0], 3)
         assert_allclose(result[1], expected[1], 3)
 
     def test_world2pixel_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
         x, y = 0., [0.]
-        expected = coord.world2pixel(x, y[0])
+        expected = coord.world_to_pixel_values(x, y[0])
 
-        result = coord.world2pixel(x, y)
+        result = coord.world_to_pixel_values(x, y)
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
 
     def test_pixel2world_mismatched_input(self):
         coord = WCSCoordinates(self.default_header())
         x, y = [250.], 187.5
-        expected = coord.pixel2world(x[0], y)
+        expected = coord.pixel_to_world_values(x[0], y)
 
-        result = coord.pixel2world(x, y)
+        result = coord.pixel_to_world_values(x, y)
         assert_allclose(result[0], expected[0])
         assert_allclose(result[1], expected[1])
-
-    def test_pixel2world_invalid_input(self):
-        with pytest.raises(ValueError):
-            WCSCoordinates(None)
-
-    def test_world2pixel_invalid_input(self):
-        with pytest.raises(ValueError):
-            WCSCoordinates(None)
 
     def test_axis_label(self):
         hdr = self.default_header()
         coord = WCSCoordinates(hdr)
 
-        assert coord.axis_label(0) == 'Galactic Latitude'
-        assert coord.axis_label(1) == 'Galactic Longitude'
+        assert axis_label(coord, 0) == 'Galactic Latitude'
+        assert axis_label(coord, 1) == 'Galactic Longitude'
 
 
 @requires_astropy
@@ -167,8 +160,9 @@ def test_world_axis_wcs():
 
     data = np.ones((3, 4))
     coord = WCSCoordinates(hdr)
-    assert_allclose(coord.world_axis(data, 0), [5, 7, 9])
-    assert_allclose(coord.world_axis(data, 1), [2, 0, -2, -4])
+    # pixel_axis and world_axis are in WCS order
+    assert_allclose(world_axis(coord, data, pixel_axis=0, world_axis=0), [2, 0, -2, -4])
+    assert_allclose(world_axis(coord, data, pixel_axis=1, world_axis=1), [5, 7, 9])
 
 
 class TestCoordinatesFromHeader(object):
@@ -176,7 +170,9 @@ class TestCoordinatesFromHeader(object):
     def test_2d_nowcs(self):
         hdr = {"NAXIS": 2}
         coord = coordinates_from_header(hdr)
-        assert type(coord) == Coordinates
+        assert type(coord) == IdentityCoordinates
+        assert coord.pixel_n_dim == 2
+        assert coord.world_n_dim == 2
 
     def test_2d(self):
         hdr = header_from_string(HDR_2D_VALID)
@@ -185,8 +181,10 @@ class TestCoordinatesFromHeader(object):
 
     def test_3d_nowcs(self):
         hdr = HDR_3D_VALID_NOWCS
-        coord = coordinates_from_header(hdr)
-        assert type(coord) == Coordinates
+        coord = coordinates_from_header(header_from_string(hdr))
+        assert type(coord) == IdentityCoordinates
+        assert coord.pixel_n_dim == 3
+        assert coord.world_n_dim == 3
 
     def test_3d(self):
         hdr = header_from_string(HDR_3D_VALID_WCS)
@@ -196,7 +194,7 @@ class TestCoordinatesFromHeader(object):
     def test_nod(self):
         hdr = 0
         coord = coordinates_from_header(hdr)
-        assert type(coord) == Coordinates
+        assert type(coord) == IdentityCoordinates
 
 
 HDR_2D_VALID = """
@@ -258,28 +256,28 @@ def test_coords_preserve_shape_2d():
     coord = coordinates_from_header(header_from_string(HDR_2D_VALID))
     x = np.zeros(12)
     y = np.zeros(12)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (4, 3)
     y.shape = (4, 3)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (2, 2, 3)
     y.shape = (2, 2, 3)
-    result = coord.pixel2world(x, y)
+    result = coord.pixel_to_world_values(x, y)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y)
+    result = coord.world_to_pixel_values(x, y)
     for r in result:
         assert r.shape == x.shape
 
@@ -290,39 +288,39 @@ def test_coords_preserve_shape_3d():
     x = np.zeros(12)
     y = np.zeros(12)
     z = np.zeros(12)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (4, 3)
     y.shape = (4, 3)
     z.shape = (4, 3)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
     x.shape = (2, 2, 3)
     y.shape = (2, 2, 3)
     z.shape = (2, 2, 3)
-    result = coord.pixel2world(x, y, z)
+    result = coord.pixel_to_world_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
-    result = coord.world2pixel(x, y, z)
+    result = coord.world_to_pixel_values(x, y, z)
     for r in result:
         assert r.shape == x.shape
 
 
-def test_world_axis_unit():
+def test_world_axis_units():
     coord = coordinates_from_header(header_from_string(HDR_3D_VALID_WCS))
-    assert coord.world_axis_unit(0) == 'm / s'
-    assert coord.world_axis_unit(1) == 'deg'
-    assert coord.world_axis_unit(2) == 'deg'
+    assert coord.world_axis_units[0] == 'deg'
+    assert coord.world_axis_units[1] == 'deg'
+    assert coord.world_axis_units[2] == 'm s-1'
 
 
 def test_dependent_axes_non_diagonal_pc():
@@ -332,20 +330,17 @@ def test_dependent_axes_non_diagonal_pc():
     # were returned as dependent axes even if this wasn't
     # the case.
 
-    from astropy.wcs import WCS
-
-    wcs = WCS(naxis=3)
-    wcs.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
-    wcs.wcs.crval = 1, 1, 1
-    wcs.wcs.crpix = 1, 1, 1
-    wcs.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
+    coord = WCSCoordinates(naxis=3)
+    coord.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
+    coord.wcs.crval = 1, 1, 1
+    coord.wcs.crpix = 1, 1, 1
+    coord.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
 
     # Remember that the axes numbers below are reversed compared
     # to the WCS order above.
-    coord = WCSCoordinates(wcs=wcs)
-    assert_equal(coord.dependent_axes(0), [0])
-    assert_equal(coord.dependent_axes(1), [1, 2])
-    assert_equal(coord.dependent_axes(2), [1, 2])
+    assert_equal(dependent_axes(coord, 0), [0])
+    assert_equal(dependent_axes(coord, 1), [1, 2])
+    assert_equal(dependent_axes(coord, 2), [1, 2])
 
 
 def test_pixel2world_single_axis():
@@ -353,22 +348,19 @@ def test_pixel2world_single_axis():
     # Regression test for a bug in pixel2world_single_axis which was due to
     # incorrect indexing order (WCS vs Numpy)
 
-    from astropy.wcs import WCS
-
-    wcs = WCS(naxis=3)
-    wcs.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
-    wcs.wcs.crval = 1, 1, 1
-    wcs.wcs.crpix = 1, 1, 1
-    wcs.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
+    coord = WCSCoordinates(naxis=3)
+    coord.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'Time'
+    coord.wcs.crval = 1, 1, 1
+    coord.wcs.crpix = 1, 1, 1
+    coord.wcs.cd = [[0.9, 0.1, 0], [-0.1, 0.9, 0], [0, 0, 1]]
 
     x = np.array([0.2, 0.4, 0.6])
     y = np.array([0.3, 0.6, 0.9])
     z = np.array([0.5, 0.5, 0.5])
 
-    coord = WCSCoordinates(wcs=wcs)
-    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=0), [1.21004705, 1.42012044, 1.63021455])
-    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=1), [1.24999002, 1.499947, 1.74985138])
-    assert_allclose(coord.pixel2world_single_axis(x, y, z, axis=2), [1.5, 1.5, 1.5])
+    assert_allclose(pixel2world_single_axis(coord, x, y, z, world_axis=0), [1.21004705, 1.42012044, 1.63021455])
+    assert_allclose(pixel2world_single_axis(coord, x, y, z, world_axis=1), [1.24999002, 1.499947, 1.74985138])
+    assert_allclose(pixel2world_single_axis(coord, x, y, z, world_axis=2), [1.5, 1.5, 1.5])
 
 
 def test_affine():
@@ -377,26 +369,60 @@ def test_affine():
 
     coords = AffineCoordinates(matrix)
 
-    assert coords.axis_label(1) == 'World 1'
-    assert coords.axis_label(0) == 'World 0'
+    assert axis_label(coords, 1) == 'World 1'
+    assert axis_label(coords, 0) == 'World 0'
 
-    assert coords.world_axis_unit(1) == ''
-    assert coords.world_axis_unit(0) == ''
+    assert coords.world_axis_units[1] == ''
+    assert coords.world_axis_units[0] == ''
+
+    # First the scalar case
+
+    xp, yp = 1, 2
+
+    xw, yw = coords.pixel_to_world_values(xp, yp)
+
+    assert_allclose(xw, 2 * 1 + 3 * 2 - 1)
+    assert_allclose(yw, 1 * 1 + 2 * 2 + 2)
+
+    assert np.ndim(xw) == 0
+    assert np.ndim(yw) == 0
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, 1)
+    assert_allclose(ypc, 2)
+
+    assert np.ndim(xpc) == 0
+    assert np.ndim(ypc) == 0
+
+    # Next the array case
 
     xp = np.array([1, 2, 3])
     yp = np.array([2, 3, 4])
 
-    xw, yw = coords.pixel2world(xp, yp)
+    xw, yw = coords.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
+
+    # Check that serialization/deserialization works
 
     coords2 = clone(coords)
 
-    xw, yw = coords2.pixel2world(xp, yp)
+    xw, yw = coords2.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
 
 
 def test_affine_labels_units():
@@ -405,26 +431,19 @@ def test_affine_labels_units():
 
     coords = AffineCoordinates(matrix, units=['km', 'km'], labels=['xw', 'yw'])
 
-    assert coords.axis_label(1) == 'Xw'
-    assert coords.axis_label(0) == 'Yw'
+    assert axis_label(coords, 1) == 'Xw'
+    assert axis_label(coords, 0) == 'Yw'
 
-    assert coords.world_axis_unit(1) == 'km'
-    assert coords.world_axis_unit(0) == 'km'
-
-    xp = np.array([1, 2, 3])
-    yp = np.array([2, 3, 4])
-
-    xw, yw = coords.pixel2world(xp, yp)
-
-    assert_allclose(xw, 2 * xp + 3 * yp - 1)
-    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+    assert coords.world_axis_units[1] == 'km'
+    assert coords.world_axis_units[0] == 'km'
 
     coords2 = clone(coords)
 
-    xw, yw = coords2.pixel2world(xp, yp)
+    assert axis_label(coords2, 1) == 'Xw'
+    assert axis_label(coords2, 0) == 'Yw'
 
-    assert_allclose(xw, 2 * xp + 3 * yp - 1)
-    assert_allclose(yw, 1 * xp + 2 * yp + 2)
+    assert coords2.world_axis_units[1] == 'km'
+    assert coords2.world_axis_units[0] == 'km'
 
 
 def test_affine_invalid():

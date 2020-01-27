@@ -29,6 +29,7 @@ from glue.core.component import DerivedComponent
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
 from glue.utils import unbroadcast
+from glue.core.coordinate_helpers import dependent_axes
 
 __all__ = ['accessible_links', 'discover_links', 'find_dependents',
            'LinkManager', 'is_equivalent_cid', 'pixel_cid_to_pixel_cid_matrix']
@@ -352,7 +353,7 @@ def is_convertible_to_single_pixel_cid(data, cid):
         except IncompatibleAttribute:
             return None
         if cid in data.world_component_ids:
-            if len(data.coords.dependent_axes(target_comp.axis)) == 1:
+            if len(dependent_axes(data.coords, target_comp.axis)) == 1:
                 return data.pixel_component_ids[target_comp.axis]
             else:
                 return None

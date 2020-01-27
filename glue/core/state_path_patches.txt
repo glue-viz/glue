@@ -29,3 +29,4 @@ glue.plugins.dendro_viewer.layer_artist.DendroLayerArtist -> glue.plugins.dendro
 glue.core.component_link.identity -> glue.core.link_helpers.identity
 builtins.builtin_function_or_method ->  types.BuiltinFunctionType
 __builtin__.builtin_function_or_method -> types.BuiltinFunctionType
+glue.core.coordinates.Coordinates -> glue.core.coordinates.LegacyCoordinates

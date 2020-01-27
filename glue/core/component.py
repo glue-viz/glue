@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from glue.core.coordinate_helpers import dependent_axes, pixel2world_single_axis
 from glue.utils import (shape_to_string, coerce_numeric,
                         broadcast_to, categorical_ndarray)
 
@@ -234,7 +235,8 @@ class CoordinateComponent(Component):
             # of the pixel coordinates are the pixel coordinates themselves.
             if isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray):
                 axis = self._data.ndim - 1 - self.axis
-                return self._data.coords.pixel2world_single_axis(*view[::-1], axis=axis)
+                return pixel2world_single_axis(self._data.coords, *view[::-1],
+                                               world_axis=axis)
 
             # For 1D arrays, slice can be given as a single slice but we need
             # to wrap it in a list to make the following code work correctly,
@@ -256,7 +258,7 @@ class CoordinateComponent(Component):
                     optimize_view = True
 
             pix_coords = []
-            dep_coords = self._data.coords.dependent_axes(self.axis)
+            dep_coords = dependent_axes(self._data.coords, self.axis)
 
             final_slice = []
             final_shape = []
@@ -293,8 +295,9 @@ class CoordinateComponent(Component):
 
             # Finally we convert these to world coordinates
             axis = self._data.ndim - 1 - self.axis
-            world_coords = self._data.coords.pixel2world_single_axis(*pix_coords[::-1],
-                                                                     axis=axis)
+            world_coords = pixel2world_single_axis(self._data.coords,
+                                                   *pix_coords[::-1],
+                                                   world_axis=axis)
 
             # We get rid of any dimension for which using the view should get
             # rid of that dimension.

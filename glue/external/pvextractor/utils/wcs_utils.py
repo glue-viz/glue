@@ -69,5 +69,3 @@ def sanitize_wcs(mywcs):
         else:
             raise ValueError("Cube axes not in expected orientation: PPV")
     return mywcs
-
-

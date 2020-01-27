@@ -5,7 +5,7 @@ import numpy as np
 from unittest.mock import MagicMock
 from numpy.testing import assert_array_equal, assert_equal
 
-from ..coordinates import Coordinates, IdentityCoordinates
+from ..coordinates import IdentityCoordinates
 from ..component_link import ComponentLink
 from ..link_helpers import LinkSame
 from ..data import Data, Component, ComponentID, DerivedComponent
@@ -87,6 +87,11 @@ class TestDataCollection(object):
     def test_remove(self):
         self.dc.append(self.data)
         self.dc.remove(self.data)
+        assert self.data not in self.dc
+
+    def test_clear(self):
+        self.dc.append(self.data)
+        self.dc.clear()
         assert self.data not in self.dc
 
     def test_ignore_multi_remove(self):
@@ -375,8 +380,8 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4])
         dc = DataCollection([x, y])
 
-        x.coords = Coordinates()
-        y.coords = Coordinates()
+        x.coords = IdentityCoordinates(n_dim=1)
+        y.coords = IdentityCoordinates(n_dim=1)
 
         dc.merge(x, y)
 
@@ -391,12 +396,13 @@ class TestDataCollection(object):
         y = Data(y=[2, 3, 4])
         dc = DataCollection([x, y])
 
-        class CustomCoordinates(Coordinates):
-            def axis_label(self, axis):
-                return 'Custom {0}'.format(axis)
+        class CustomCoordinates(IdentityCoordinates):
+            @property
+            def world_axis_names(self):
+                return ['Custom {0}'.format(axis) for axis in range(self.world_n_dim)]
 
-        x.coords = CustomCoordinates()
-        y.coords = CustomCoordinates()
+        x.coords = CustomCoordinates(n_dim=1)
+        y.coords = CustomCoordinates(n_dim=1)
 
         dc.merge(x, y)
 
@@ -440,8 +446,8 @@ class TestDataCollection(object):
         # This tests that the separation of internal vs external links is
         # preserved in session files.
 
-        d1 = Data(a=[1, 2, 3], coords=IdentityCoordinates(ndim=1))
-        d2 = Data(b=[2, 3, 4], coords=IdentityCoordinates(ndim=1))
+        d1 = Data(a=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
+        d2 = Data(b=[2, 3, 4], coords=IdentityCoordinates(n_dim=1))
 
         dc = DataCollection([d1, d2])
         dc.add_link(ComponentLink([d2.id['b']], d1.id['a']))
