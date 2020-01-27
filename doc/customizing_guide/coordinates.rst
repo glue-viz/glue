@@ -115,7 +115,7 @@ are the following::
             # in your dataset) and assume these are 0-based pixel coordinates,
             # then return N world coordinates with the same shape as the input.
 
-        def world_to_pixel_coordinates(self, *args):
+        def world_to_pixel_values(self, *args):
             # This should take N arguments (where N is the number of dimensions
             # in your dataset) and assume these are 0-based pixel coordinates,
             # then return N world coordinates with the same shape as the input.
