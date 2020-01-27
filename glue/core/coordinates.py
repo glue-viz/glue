@@ -118,11 +118,6 @@ class IdentityCoordinates(Coordinates):
         return cls(n_dim=rec['ndim'])
 
 
-class WCSCoordinates(WCS):
-    # Kept for backward-compatibility
-    pass
-
-
 class AffineCoordinates(Coordinates):
     """
     Coordinates determined via an affine transformation represented by an
@@ -192,6 +187,10 @@ class AffineCoordinates(Coordinates):
         return cls(context.object(rec['matrix']),
                    units=rec['units'],
                    labels=rec['labels'])
+
+
+# Kept for backward-compatibility
+WCSCoordinates = WCS
 
 
 def coordinates_from_header(header):
