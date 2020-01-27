@@ -10,9 +10,9 @@ Data objects represented by the :class:`~glue.core.data.Data` class can have
 a coordinate system defined, for display and/or linking purposes. This
 coordinate system is defined in the ``.coords`` attribute of data objects.
 By default the ``coords`` object for :class:`~glue.core.data.Data` objects
-created manually is `None` unless you explicitly specify ``coords=`` when
+created manually is :obj:`None` unless you explicitly specify ``coords=`` when
 creating the data object. For data objects returned by data loaders, whether
-``coords`` is set or not will depend on the particular file. For example
+``coords`` is set or not will depend on the particular file format. For example
 if we use the glue loaders to read in an example file:
 
     >>> from glue.core.data_factories import load_data
@@ -21,7 +21,7 @@ if we use the glue loaders to read in an example file:
     Successfully downloaded data file to w5.fits
     >>> data = load_data('w5.fits')
 
-The resulting ``coords`` object has methods to convert between pixel coordinates
+the resulting ``coords`` object has methods to convert between pixel coordinates
 and so-called 'world' or 'physical' coordinates:
 
     >>> data.coords.pixel_to_world_values(2, 3)  # doctest: +FLOAT_CMP
@@ -29,15 +29,18 @@ and so-called 'world' or 'physical' coordinates:
     >>> data.coords.world_to_pixel_values(46.3, 58.9)  # doctest: +FLOAT_CMP
     (array(10.39880029), array(16.44193896))
 
-If not `None`, the ``coords`` attribute will be an object exposing the two above
-methods as well as other useful methods and properties related to coordinate
-transformations. The programmatic interface we have adopted is the `common
-interface defined by the Astropy project <https://docs.astropy.org/en/stable/wcs/wcsapi.html>`_
-which is very general and not astronomy-specific. Any object implementing that
-API can be used as a coordinate object and will integrate with the rest of glue.
+If not :obj:`None`, the ``coords`` attribute will be an object exposing the two
+above methods as well as other useful methods and properties related to
+coordinate transformations. The programmatic interface we have adopted for
+``coords`` objects is described in `A shared Python interface for World Coordinate Systems
+<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_ (while originally
+defined by the Astropy project, this is very general and not astronomy-specific).
+Any object implementing that API can be used as a coordinate object and will
+integrate with the rest of glue.
 
-A number of convenience coordinate classes are available in glue for common cases,
-and it is also possible to define your own.
+A number of convenience coordinate classes are available in glue for common
+cases, and it is also possible to define your own (both options are described in
+the next sections).
 
 .. _affine-coordinates:
 
@@ -52,7 +55,7 @@ through an `augmented
 matrix <https://en.wikipedia.org/wiki/Affine_transformation>`_, which has shape
 N+1 x N+1, where N is the number of pixel and world dimensions.
 
-Glue provides an :class:`glue.core.coordinates.AffineCoordinates` class for
+Glue provides an :class:`~glue.core.coordinates.AffineCoordinates` class for
 representing arbitrary affine transformations::
 
      >>> from glue.core.coordinates import AffineCoordinates
@@ -80,13 +83,14 @@ Identity coordinates
 
 A special/simple case of coordinate transformation is the identity transform,
 where world coordinates are the same as pixel coordinates. Glue provides an
-:class:`glue.core.coordinates.IdentityCoordinates` class for representing
+:class:`~glue.core.coordinates.IdentityCoordinates` class for representing
 this transformation::
 
      >>> from glue.core.coordinates import IdentityCoordinates
 
 To initialize it, you will need to specify the number of dimensions in the
 data::
+
    >>> data_ident = Data(x=[1, 2, 3], coords=IdentityCoordinates(n_dim=1))
    >>> data_ident.coords.pixel_to_world_values(2, 1)
    (2, 1)
@@ -141,17 +145,16 @@ class implementing this would look like::
     ...        return tuple([2.0 * x for x in args])
     ...
     ...     def world_to_pixel_values(self, *args):
-    ...        return ([0.5 * x for x in args])
+    ...        return tuple([0.5 * x for x in args])
 
 To use a custom coordinate system, when creating a data object you should specify
 the coordinates object via the ``coords=`` keyword argument::
 
-    >>> data_double = Data(x=[1, 2, 3],
-    ...                    coords=DoubleCoordinates(n_dim=1))
+    >>> data_double = Data(x=[1, 2, 3], coords=DoubleCoordinates(n_dim=1))
     >>> data_double.coords.pixel_to_world_values(2)
     (4.0,)
     >>> data_double.coords.world_to_pixel_values(4.0)
-    [2.0]
+    (2.0,)
 
 Note that the ``n_dim=`` argument needs to be passed to give the number of
 dimensions in the data.
@@ -159,6 +162,6 @@ dimensions in the data.
 In fact you do not need to start from our :class:`~glue.core.coordinates.Coordinates`
 class - any class that conforms to the API described in
 `A shared Python interface for World Coordinate Systems
- <https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_ is valid. If
+<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_ is valid. If
 you want full control over your coordinate transformations, we recomment you
 take a look at that document.
