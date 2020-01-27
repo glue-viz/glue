@@ -152,8 +152,6 @@ class AffineCoordinates(Coordinates):
         if labels is not None and len(labels) != matrix.shape[0] - 1:
             raise ValueError("Expected {0} labels, got {1}".format(matrix.shape[0] - 1, len(labels)))
 
-        matrix = matrix.T
-
         self._matrix = matrix
         self._matrix_inv = np.linalg.inv(matrix)
         self._units = units
@@ -165,13 +163,14 @@ class AffineCoordinates(Coordinates):
     def pixel_to_world_values(self, *pixel):
         pixel = np.vstack(np.broadcast_arrays(*(list(pixel) + [np.ones(pixel[0].shape)])))
         pixel = np.moveaxis(pixel, 0, -1)
-        world = np.matmul(pixel, self._matrix)
+        world = np.matmul(pixel, self._matrix.T)
         world = tuple(np.moveaxis(world, -1, 0))[:-1]
         return world
 
     def world_to_pixel_values(self, *world):
-        world = np.dstack(np.broadcast_arrays(*(list(world) + [1.])))
-        pixel = np.matmul(world, self._matrix)
+        world = np.vstack(np.broadcast_arrays(*(list(world) + [np.ones(world[0].shape)])))
+        world = np.moveaxis(world, 0, -1)
+        pixel = np.matmul(world, self._matrix_inv.T)
         pixel = tuple(np.moveaxis(pixel, -1, 0))[:-1]
         return pixel
 
@@ -184,7 +183,7 @@ class AffineCoordinates(Coordinates):
         return self._units or [''] * self.world_n_dim
 
     def __gluestate__(self, context):
-        return dict(matrix=context.do(self._matrix.T),
+        return dict(matrix=context.do(self._matrix),
                     labels=self._labels,
                     units=self._units)
 

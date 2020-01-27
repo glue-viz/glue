@@ -411,12 +411,22 @@ def test_affine_labels_units():
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
 
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
+
     coords2 = clone(coords)
 
     xw, yw = coords2.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
 
 
 def test_affine_invalid():
