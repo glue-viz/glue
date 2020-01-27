@@ -1106,16 +1106,6 @@ class Data(BaseCartesianData):
         if self.coords is None:
             return
 
-        def make_toworld_func(i):
-            def pix2world(*args):
-                return self.coords.pixel2world_single_axis(*args[::-1], axis=ndim - 1 - i)
-            return pix2world
-
-        def make_topixel_func(i):
-            def world2pix(*args):
-                return self.coords.world2pixel_single_axis(*args[::-1], axis=ndim - 1 - i)
-            return world2pix
-
         result = []
         for i in range(ndim):
             link = CoordinateComponentLink(self._pixel_component_ids,
