@@ -26,6 +26,24 @@ about glue in general, you can find information :ref:`here
 <help>` about contacting us and/or
 reporting issues.
 
+.. _whatsnew_016:
+
+What's new in glue v0.16?
+=========================
+
+Changes to coordinate classes
+-----------------------------
+
+The infrastructure to handle world coordinates has been refactored - while this
+should make no difference for users using exclusively the GUI, if you have written
+custom code that makes use of ``Data.coords`` you may need to update your code. The
+biggest change is that the ``pixel2world`` and ``world2pixel`` methods have now been
+renamed to ``pixel_to_world_values`` and ``world_to_pixel_values``. The latest changes
+were to bring the glue API in line with the recommended API for world coordinate systems
+described in `A shared Python interface for World Coordinate Systems
+<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object conforming
+to that API can now be used directly as a ``Data.coords`` object.
+
 .. _whatsnew_015:
 
 What's new in glue v0.15?
