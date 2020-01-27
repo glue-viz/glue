@@ -1,4 +1,5 @@
-from astropy.wcs import WCS, pixel_to_pixel
+from astropy.wcs import WCS
+from astropy.wcs.utils import pixel_to_pixel
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 

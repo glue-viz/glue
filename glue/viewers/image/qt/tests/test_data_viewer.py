@@ -68,7 +68,7 @@ class MyCoords(IdentityCoordinates):
 
     @property
     def world_axis_names(self):
-        return ['Banana', 'Apple']
+        return ['Apple', 'Banana']
 
 
 class TestImageViewer(object):
