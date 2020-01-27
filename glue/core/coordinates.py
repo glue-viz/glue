@@ -23,7 +23,8 @@ def default_world_coords(wcs):
 # coordinates (and vice-versa). Rather than re-invent a new API, we adopt the
 # one from the Astropy project which is generic and not specific to astronomy,
 # which then allows us to make use of visualization tools (e.g. WCSAxes) built
-# around this API.
+# around this API. The API is defined/described in
+# https://github.com/astropy/astropy-APEs/blob/master/APE14.rst
 
 
 class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
