@@ -375,6 +375,28 @@ def test_affine():
     assert coords.world_axis_units[1] == ''
     assert coords.world_axis_units[0] == ''
 
+    # First the scalar case
+
+    xp, yp = 1, 2
+
+    xw, yw = coords.pixel_to_world_values(xp, yp)
+
+    assert_allclose(xw, 2 * 1 + 3 * 2 - 1)
+    assert_allclose(yw, 1 * 1 + 2 * 2 + 2)
+
+    assert np.ndim(xw) == 0
+    assert np.ndim(yw) == 0
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, 1)
+    assert_allclose(ypc, 2)
+
+    assert np.ndim(xpc) == 0
+    assert np.ndim(ypc) == 0
+
+    # Next the array case
+
     xp = np.array([1, 2, 3])
     yp = np.array([2, 3, 4])
 
@@ -383,12 +405,24 @@ def test_affine():
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
 
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
+
+    # Check that serialization/deserialization works
+
     coords2 = clone(coords)
 
     xw, yw = coords2.pixel_to_world_values(xp, yp)
 
     assert_allclose(xw, 2 * xp + 3 * yp - 1)
     assert_allclose(yw, 1 * xp + 2 * yp + 2)
+
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xpc, [1, 2, 3])
+    assert_allclose(ypc, [2, 3, 4])
 
 
 def test_affine_labels_units():
@@ -403,30 +437,13 @@ def test_affine_labels_units():
     assert coords.world_axis_units[1] == 'km'
     assert coords.world_axis_units[0] == 'km'
 
-    xp = np.array([1, 2, 3])
-    yp = np.array([2, 3, 4])
-
-    xw, yw = coords.pixel_to_world_values(xp, yp)
-
-    assert_allclose(xw, 2 * xp + 3 * yp - 1)
-    assert_allclose(yw, 1 * xp + 2 * yp + 2)
-
-    xpc, ypc = coords.world_to_pixel_values(xw, yw)
-
-    assert_allclose(xpc, [1, 2, 3])
-    assert_allclose(ypc, [2, 3, 4])
-
     coords2 = clone(coords)
 
-    xw, yw = coords2.pixel_to_world_values(xp, yp)
+    assert axis_label(coords2, 1) == 'Xw'
+    assert axis_label(coords2, 0) == 'Yw'
 
-    assert_allclose(xw, 2 * xp + 3 * yp - 1)
-    assert_allclose(yw, 1 * xp + 2 * yp + 2)
-
-    xpc, ypc = coords.world_to_pixel_values(xw, yw)
-
-    assert_allclose(xpc, [1, 2, 3])
-    assert_allclose(ypc, [2, 3, 4])
+    assert coords2.world_axis_units[1] == 'km'
+    assert coords2.world_axis_units[0] == 'km'
 
 
 def test_affine_invalid():

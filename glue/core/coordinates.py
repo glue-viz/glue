@@ -31,10 +31,10 @@ class Coordinates(BaseLowLevelWCS, metaclass=abc.ABCMeta):
     Base class for coordinate transformation
     """
 
-    def __init__(self, pixel_n_dim=None, world_n_dim=None):
-        self._pixel_n_dim = pixel_n_dim
-        self._world_n_dim = world_n_dim
-        self._world_uuids = [str(uuid.uuid4()) for i in range(world_n_dim)]
+    def __init__(self, n_dim=None, pixel_n_dim=None, world_n_dim=None):
+        self._pixel_n_dim = n_dim or pixel_n_dim
+        self._world_n_dim = n_dim or world_n_dim
+        self._world_uuids = [str(uuid.uuid4()) for i in range(self._world_n_dim)]
 
     @property
     def pixel_n_dim(self):
@@ -156,18 +156,26 @@ class AffineCoordinates(Coordinates):
                          world_n_dim=self._matrix.shape[0] - 1)
 
     def pixel_to_world_values(self, *pixel):
-        pixel = np.vstack(np.broadcast_arrays(*(list(pixel) + [np.ones(pixel[0].shape)])))
+        scalar = np.all([np.isscalar(p) for p in pixel])
+        pixel = np.vstack(np.broadcast_arrays(*(list(pixel) + [np.ones(np.shape(pixel[0]))])))
         pixel = np.moveaxis(pixel, 0, -1)
         world = np.matmul(pixel, self._matrix.T)
         world = tuple(np.moveaxis(world, -1, 0))[:-1]
-        return world
+        if scalar:
+            return tuple(w[0] for w in world)
+        else:
+            return world
 
     def world_to_pixel_values(self, *world):
-        world = np.vstack(np.broadcast_arrays(*(list(world) + [np.ones(world[0].shape)])))
+        scalar = np.all([np.isscalar(w) for w in world])
+        world = np.vstack(np.broadcast_arrays(*(list(world) + [np.ones(np.shape(world[0]))])))
         world = np.moveaxis(world, 0, -1)
         pixel = np.matmul(world, self._matrix_inv.T)
         pixel = tuple(np.moveaxis(pixel, -1, 0))[:-1]
-        return pixel
+        if scalar:
+            return tuple(p[0] for p in pixel)
+        else:
+            return pixel
 
     @property
     def world_axis_names(self):
