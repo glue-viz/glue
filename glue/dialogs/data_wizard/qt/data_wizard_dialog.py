@@ -5,12 +5,19 @@ from glue.utils.qt import set_cursor_cm
 __all__ = ['data_wizard', 'GlueDataDialog']
 
 
-def data_wizard():
-    """ QT Dialog to load a file into a new data object
+def data_wizard(mode='files'):
+    """
+    Qt Dialog to load a file into a new data object
 
-    Returns:
-       A list of new data objects. Returns an empty list if
-       selection is canceled.
+    Parameters
+    ----------
+    mode : {'files', 'directories'}
+        Whether to allow the user to select files or directories.
+
+    Returns
+    -------
+    A list of new data objects. Returns an empty list if
+    selection is canceled.
     """
     def report_error(error, factory, curfile):
         import traceback
@@ -29,7 +36,7 @@ def data_wizard():
         return ok == retry
 
     while True:
-        gdd = GlueDataDialog()
+        gdd = GlueDataDialog(mode=mode)
         try:
             result = gdd.load_data()
             break
@@ -42,12 +49,18 @@ def data_wizard():
 
 class GlueDataDialog(object):
 
-    def __init__(self, parent=None):
+    def __init__(self, mode='files', parent=None):
         self._fd = QtWidgets.QFileDialog(parent)
         from glue.config import data_factory
         self.filters = [(f, self._filter(f))
                         for f in data_factory.members if not f.deprecated]
         self.setNameFilter()
+        if mode == 'files':
+            self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+        else:
+            self._fd.setFileMode(QtWidgets.QFileDialog.Directory)
+            self._fd.setOption(QtWidgets.QFileDialog.Option.ShowDirsOnly, True)
+
         self._curfile = ''
         try:
             self._fd.setOption(
