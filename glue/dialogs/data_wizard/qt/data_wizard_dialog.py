@@ -59,7 +59,7 @@ class GlueDataDialog(object):
             self._fd.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         else:
             self._fd.setFileMode(QtWidgets.QFileDialog.Directory)
-            self._fd.setOption(QtWidgets.QFileDialog.Option.ShowDirsOnly, True)
+            self._fd.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
 
         self._curfile = ''
         try:
