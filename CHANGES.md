@@ -9,7 +9,7 @@ v0.16.0 (unreleased)
 * Fixed bugs in the profile viewer that occurred when using the profile viewer and
   setting reference_data to a different value than the default one. [#2078]
 
-* Updated the data loader to be able to select directories. [#2077]
+* Updated the data loader to be able to select directories. [#2077,#2080]
 
 * Move spectral-cube data loader to glue-astronomy plugin package. [#2077]
 

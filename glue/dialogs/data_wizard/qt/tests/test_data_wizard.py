@@ -59,6 +59,10 @@ class TestGlueDataDialog(object):
             assert d.label == label
             assert d.made_with_dummy_factory is True
 
+    def test_directories(self):
+        fd = GlueDataDialog(mode='directories')
+        fd._fd.show()
+
 
 def mock_file_exec(fd, cancel=False, path='junk',
                    factory=dummy_factory_member):
