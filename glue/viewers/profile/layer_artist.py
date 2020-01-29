@@ -8,11 +8,13 @@ from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
+from glue.viewers.profile.python_export import python_export_profile_layer
 
 
 class ProfileLayerArtist(MatplotlibLayerArtist):
 
     _layer_state_cls = ProfileLayerState
+    _python_exporter = python_export_profile_layer
 
     def __init__(self, axes, viewer_state, layer_state=None, layer=None):
 
