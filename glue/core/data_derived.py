@@ -10,9 +10,6 @@ from glue.core.message import NumericalDataChangedMessage
 from glue.core.subset import SliceSubsetState
 from glue.core.component_id import ComponentID
 
-from glue.core.component import CoordinateComponent
-from glue.core.coordinate_helpers import axis_label
-
 from astropy.wcs.wcsapi import SlicedLowLevelWCS
 
 
