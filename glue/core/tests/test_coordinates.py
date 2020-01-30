@@ -471,3 +471,20 @@ def test_affine_invalid():
     with pytest.raises(ValueError) as exc:
         AffineCoordinates(matrix)
     assert exc.value.args[0] == 'Last row of matrix should be zeros and a one'
+
+
+def test_affine_highd():
+
+    # Test AffineCoordinates when higher dimensional objects are transformed
+
+    matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])
+    coords = AffineCoordinates(matrix)
+
+    xp = np.ones((2, 4, 1, 2, 5))
+    yp = np.ones((2, 4, 1, 2, 5))
+
+    xw, yw = coords.pixel_to_world_values(xp, yp)
+    xpc, ypc = coords.world_to_pixel_values(xw, yw)
+
+    assert_allclose(xp, xpc)
+    assert_allclose(yp, ypc)

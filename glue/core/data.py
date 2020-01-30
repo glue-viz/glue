@@ -381,8 +381,16 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     at.
     """
 
-    def __init__(self):
+    def __init__(self, coords=None):
         super(BaseCartesianData, self).__init__()
+        self._coords = coords
+
+    @property
+    def coords(self):
+        """
+        The coordinates object for the data.
+        """
+        return self._coords
 
     @abc.abstractproperty
     def shape(self):
@@ -565,7 +573,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         A list of :class:`~glue.core.component_id.ComponentID` giving all
         world coordinate component IDs in the data
         """
-        if not hasattr(self, '_world_component_ids'):
+        if self.coords is None:
+            return []
+        elif not hasattr(self, '_world_component_ids'):
             self._world_component_ids = []
             self._world_components = {}
             for i in range(self.ndim):

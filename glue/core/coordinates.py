@@ -158,25 +158,17 @@ class AffineCoordinates(Coordinates):
 
     def pixel_to_world_values(self, *pixel):
         scalar = np.all([np.isscalar(p) for p in pixel])
-        pixel = np.vstack(np.broadcast_arrays(*(list(pixel) + [np.ones(np.shape(pixel[0]))])))
+        pixel = np.array(np.broadcast_arrays(*(list(pixel) + [np.ones(np.shape(pixel[0]))])))
         pixel = np.moveaxis(pixel, 0, -1)
         world = np.matmul(pixel, self._matrix.T)
-        world = tuple(np.moveaxis(world, -1, 0))[:-1]
-        if scalar:
-            return tuple(w[0] for w in world)
-        else:
-            return world
+        return tuple(np.moveaxis(world, -1, 0))[:-1]
 
     def world_to_pixel_values(self, *world):
         scalar = np.all([np.isscalar(w) for w in world])
-        world = np.vstack(np.broadcast_arrays(*(list(world) + [np.ones(np.shape(world[0]))])))
+        world = np.array(np.broadcast_arrays(*(list(world) + [np.ones(np.shape(world[0]))])))
         world = np.moveaxis(world, 0, -1)
         pixel = np.matmul(world, self._matrix_inv.T)
-        pixel = tuple(np.moveaxis(pixel, -1, 0))[:-1]
-        if scalar:
-            return tuple(p[0] for p in pixel)
-        else:
-            return pixel
+        return tuple(np.moveaxis(pixel, -1, 0))[:-1]
 
     @property
     def world_axis_names(self):

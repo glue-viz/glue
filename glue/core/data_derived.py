@@ -47,18 +47,17 @@ class IndexedData(BaseCartesianData, HubListener):
             raise ValueError("The 'indices' tuple should have length {0}"
                              .format(original_data.ndim))
 
-        self._original_data = original_data
-        self.indices = indices
-        self._cid_to_original_cid = {}
-        self._original_cid_to_cid = {}
-
-        slices = [slice(None) if idx is None else idx for idx in indices]
-
         if hasattr(original_data, 'coords'):
             if original_data.coords is None:
-                self.coords = None
+                self._coords = None
             else:
-                self.coords = SlicedLowLevelWCS(original_data.coords, slices)
+                slices = [slice(None) if idx is None else idx for idx in indices]
+                self._coords = SlicedLowLevelWCS(original_data.coords, slices)
+
+        self._original_data = original_data
+        self._cid_to_original_cid = {}
+        self._original_cid_to_cid = {}
+        self.indices = indices
 
     @property
     def indices(self):
@@ -96,6 +95,15 @@ class IndexedData(BaseCartesianData, HubListener):
         for idim in range(self._original_data.ndim):
             if self._indices[idim] is None:
                 self._original_pixel_cids.append(self._original_data.pixel_component_ids[idim])
+
+        # Construct a list of original world component IDs
+        self._original_world_cids = []
+        if len(self._original_data.world_component_ids) > 0:
+            idim_new = 0
+            for idim in range(self._original_data.ndim):
+                if self._indices[idim] is None:
+                    self._cid_to_original_cid[self.world_component_ids[idim_new]] = self._original_data.world_component_ids[idim]
+                    idim_new += 1
 
         # Tell glue that the data has changed
         if changed and self.hub is not None:
