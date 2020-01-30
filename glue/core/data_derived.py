@@ -10,6 +10,11 @@ from glue.core.message import NumericalDataChangedMessage
 from glue.core.subset import SliceSubsetState
 from glue.core.component_id import ComponentID
 
+from glue.core.component import CoordinateComponent
+from glue.core.coordinate_helpers import axis_label
+
+from astropy.wcs.wcsapi import SlicedLowLevelWCS
+
 
 class DerivedData(BaseCartesianData):
     """
@@ -46,6 +51,14 @@ class IndexedData(BaseCartesianData, HubListener):
         self.indices = indices
         self._cid_to_original_cid = {}
         self._original_cid_to_cid = {}
+
+        slices = [slice(None) if idx is None else idx for idx in indices]
+
+        if hasattr(original_data, 'coords'):
+            if original_data.coords is None:
+                self.coords = None
+            else:
+                self.coords = SlicedLowLevelWCS(original_data.coords, slices)
 
     @property
     def indices(self):
