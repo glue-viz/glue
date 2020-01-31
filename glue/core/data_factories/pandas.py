@@ -59,12 +59,15 @@ def pandas_read_table(path, **kwargs):
     :returns: :class:`glue.core.data.Data` object
     """
     try:
-        from pandas.io.common import CParserError
-    except ImportError:  # pragma: no cover
+        from pandas.errors import ParserError
+    except ImportError:
         try:
-            from pandas.parser import CParserError
+            from pandas.io.common import CParserError as ParserError
         except ImportError:  # pragma: no cover
-            from pandas._parser import CParserError
+            try:
+                from pandas.parser import CParserError as ParserError
+            except ImportError:  # pragma: no cover
+                from pandas._parser import CParserError as ParserError
 
     # iterate over common delimiters to search for best option
     delimiters = kwargs.pop('delimiter', [None] + list(',|\t '))
@@ -87,7 +90,7 @@ def pandas_read_table(path, **kwargs):
 
             return panda_process(indf)
 
-        except CParserError:
+        except ParserError:
             continue
 
     if fallback is not None:

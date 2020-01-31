@@ -381,8 +381,16 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     at.
     """
 
-    def __init__(self):
+    def __init__(self, coords=None):
         super(BaseCartesianData, self).__init__()
+        self._coords = coords
+
+    @property
+    def coords(self):
+        """
+        The coordinates object for the data.
+        """
+        return self._coords
 
     @abc.abstractproperty
     def shape(self):
@@ -421,6 +429,12 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
             pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
             return broadcast_to(pix, self.shape)[view]
+        elif cid in self.world_component_ids:
+            comp = self.world_components[cid]
+            if view is not None:
+                result = comp[view]
+            else:
+                result = comp.data
         else:
             raise IncompatibleAttribute(cid)
 
@@ -552,6 +566,25 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
 
     def _ipython_key_completions_(self):
         return [cid.label for cid in self.components]
+
+    @property
+    def world_component_ids(self):
+        """
+        A list of :class:`~glue.core.component_id.ComponentID` giving all
+        world coordinate component IDs in the data
+        """
+        if self.coords is None:
+            return []
+        elif not hasattr(self, '_world_component_ids'):
+            self._world_component_ids = []
+            self._world_components = {}
+            for i in range(self.ndim):
+                comp = CoordinateComponent(self, i, world=True)
+                label = axis_label(self.coords, i)
+                cid = ComponentID(label, parent=self)
+                self._world_component_ids.append(cid)
+                self._world_components[cid] = comp
+        return self._world_component_ids
 
 
 class Data(BaseCartesianData):

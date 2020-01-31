@@ -20,6 +20,8 @@ v0.16.0 (unreleased)
 
 * Added a ``DataCollection.clear()`` method to remove all datasets. [#2079]
 
+* Improved ``IndexedData`` so that world coordinates can now be shown. [#2081]
+
 v0.15.6 (2019-08-22)
 --------------------
 

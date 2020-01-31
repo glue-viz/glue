@@ -8,6 +8,7 @@ from glue.core.message import NumericalDataChangedMessage
 from glue.core.data import Data
 from glue.core.data_collection import DataCollection
 from glue.core.data_derived import IndexedData
+from glue.core.coordinates import AffineCoordinates
 
 
 class TestIndexedData:
@@ -19,6 +20,11 @@ class TestIndexedData:
 
         self.data = Data(x=x, y=y, label='Test data')
         self.x_id, self.y_id = self.data.main_components
+
+        matrix = np.random.random((6, 6)) - 0.5
+        matrix[-1] = [0, 0, 0, 0, 0, 1]
+        self.data_with_coords = Data(x=x, y=y, label='Test data',
+                                     coords=AffineCoordinates(matrix=matrix))
 
         self.subset_state = self.x_id >= 1200
 
@@ -153,3 +159,16 @@ class TestIndexedData:
         derived = IndexedData(self.data, (None, 2, None, 4, None))
         assert_equal(derived.get_data(derived.pixel_component_ids[1]),
                      self.data.get_data(self.data.pixel_component_ids[2])[:, 2, :, 4, :])
+
+    def test_world_component_ids(self):
+
+        derived = IndexedData(self.data, (None, 2, None, 4, None))
+        assert derived.world_component_ids == []
+
+        derived_with_coords = IndexedData(self.data_with_coords, (None, 2, None, 4, None))
+        assert_equal(derived_with_coords.get_data(derived_with_coords.world_component_ids[0]),
+                     self.data_with_coords.get_data(self.data_with_coords.world_component_ids[0])[:, 2, :, 4, :])
+        assert_equal(derived_with_coords.get_data(derived_with_coords.world_component_ids[1]),
+                     self.data_with_coords.get_data(self.data_with_coords.world_component_ids[2])[:, 2, :, 4, :])
+        assert_equal(derived_with_coords.get_data(derived_with_coords.world_component_ids[2]),
+                     self.data_with_coords.get_data(self.data_with_coords.world_component_ids[4])[:, 2, :, 4, :])

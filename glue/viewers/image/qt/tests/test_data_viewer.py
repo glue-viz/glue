@@ -26,6 +26,7 @@ from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState, Agg
 from glue.core.link_helpers import LinkSame
 from glue.app.qt import GlueApplication
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+from glue.core.data_derived import IndexedData
 
 from ..data_viewer import ImageViewer
 
@@ -868,3 +869,45 @@ class TestSessions(object):
         assert layer_state.color == 'b'
 
         ga.close()
+
+
+def test_indexed_data(capsys):
+
+    # Make sure that the image viewer works properly with IndexedData objects
+
+    data_4d = Data(label='hypercube_wcs',
+                   x=np.random.random((3, 5, 4, 3)),
+                   coords=WCS(naxis=4))
+
+    data_2d = IndexedData(data_4d, (2, None, 3, None))
+
+    application = GlueApplication()
+
+    session = application.session
+
+    hub = session.hub
+
+    data_collection = session.data_collection
+    data_collection.append(data_4d)
+    data_collection.append(data_2d)
+
+    viewer = application.new_data_viewer(ImageViewer)
+    viewer.add_data(data_2d)
+
+    assert viewer.state.x_att is data_2d.pixel_component_ids[1]
+    assert viewer.state.y_att is data_2d.pixel_component_ids[0]
+    assert viewer.state.x_att_world is data_2d.world_component_ids[1]
+    assert viewer.state.y_att_world is data_2d.world_component_ids[0]
+
+    process_events()
+
+    application.close()
+
+    # Some exceptions used to happen during callbacks, and these show up
+    # in stderr but don't interrupt the code, so we make sure here that
+    # nothing was printed to stdout nor stderr.
+
+    out, err = capsys.readouterr()
+
+    assert out.strip() == ""
+    assert err.strip() == ""
