@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from numpy.testing import assert_allclose
 
 from glue.core import Data
+from glue.core.coordinates import IdentityCoordinates
 from glue.app.qt import GlueApplication
 from glue.tests.helpers import requires_astropy, requires_scipy
 from glue.viewers.image.qt.data_viewer import ImageViewer

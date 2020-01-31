@@ -3,9 +3,9 @@ import numpy as np
 from glue.core import Data
 from glue.core.coordinates import coordinates_from_wcs
 from glue.core.coordinate_helpers import axis_label
-from glue.viewers.common.qt.toolbar_mode import PathMode
+from glue.viewers.matplotlib.toolbar_mode import PathMode
 from glue.config import viewer_tool
-from glue.viewers.common.qt.toolbar_mode import ToolbarModeBase
+from glue.viewers.matplotlib.toolbar_mode import ToolbarModeBase
 from glue.viewers.image.qt import ImageViewer
 
 
