@@ -528,7 +528,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def compute_fixed_resolution_buffer(self, bounds, target_data=None, target_cid=None,
-                                        subset_state=None, broadcast=True):
+                                        subset_state=None, broadcast=True, cache_id=None):
         """
         Get a fixed-resolution buffer.
 

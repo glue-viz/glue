@@ -7,13 +7,7 @@ from glue.viewers.matplotlib.toolbar_mode import PathMode
 from glue.config import viewer_tool
 from glue.viewers.matplotlib.toolbar_mode import ToolbarModeBase
 from glue.viewers.image.qt import ImageViewer
-
-
-class PVSliceData(Data):
-    parent_data = None
-    parent_data_x = None
-    parent_data_y = None
-    parent_viewer = None
+from glue.plugins.tools.pv_slicer.pv_sliced_data import PVSlicedData
 
 
 @viewer_tool
@@ -49,28 +43,14 @@ class PVSlicerMode(PathMode):
 
         vx, vy = mode.roi().to_polygon()
 
-        pv_slice, x, y, wcs = _slice_from_path(vx, vy, self.viewer.state.reference_data,
-                                               self.viewer.state.layers[0].attribute,
-                                               self.viewer.state.wcsaxes_slice[::-1])
-
-        xlabel = "Position along path"
-        if wcs is None:
-            ylabel = "Cube slice index"
-        else:
-            ylabel = _slice_label(self.viewer.state.reference_data,
-                                  self.viewer.state.wcsaxes_slice[::-1])
-
-        wcs.wcs.ctype = [xlabel, ylabel]
-
-        data = PVSliceData(label=self.viewer.state.reference_data.label + " [slice]")
-        data.coords = coordinates_from_wcs(wcs)
-        data[self.viewer.state.layers[0].attribute] = pv_slice
-
         selected = self.viewer.session.application.selected_layers()
 
-        if len(selected) == 1 and isinstance(selected[0], PVSliceData):
-            selected[0].update_values_from_data(data)
+        if len(selected) == 1 and isinstance(selected[0], PVSlicedData):
             data = selected[0]
+            data.original_data = self.viewer.state.reference_data
+            data.x_att = self.viewer.state.x_att
+            data.y_att = self.viewer.state.y_att
+            data.set_xy(vx, vy)
             open_viewer = True
             for tab in self.viewer.session.application.viewers:
                 for viewer in tab:
@@ -80,14 +60,13 @@ class PVSlicerMode(PathMode):
                 if not open_viewer:
                     break
         else:
+            data = PVSlicedData(self.viewer.state.reference_data,
+                                self.viewer.state.x_att, vx,
+                                self.viewer.state.y_att, vy,
+                                label=self.viewer.state.reference_data.label + " [slice]")
+            data.parent_viewer = self.viewer
             self.viewer.session.data_collection.append(data)
             open_viewer = True
-
-        # TODO: use weak references
-        data.parent_data = self.viewer.state.reference_data
-        data.parent_data_x = x
-        data.parent_data_y = y
-        data.parent_viewer = self.viewer
 
         if open_viewer:
             viewer = self.viewer.session.application.new_data_viewer(ImageViewer, data=data)
@@ -114,7 +93,7 @@ class PVLinkCursorMode(ToolbarModeBase):
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
 
     def _on_reference_data_change(self, reference_data):
-        self.enabled = isinstance(reference_data, PVSliceData)
+        self.enabled = isinstance(reference_data, PVSlicedData)
         self.data = reference_data
 
     def _on_move(self, mode):
@@ -122,14 +101,17 @@ class PVLinkCursorMode(ToolbarModeBase):
         # Find position of click in the image viewer
         xdata, ydata = self._event_xdata, self._event_ydata
 
+        if xdata is None or ydata is None:
+            return
+
         # TODO: Make this robust in case the axes have been swapped
 
         # Find position slice where cursor is
         ind = int(round(np.clip(xdata, 0, self.data.shape[1] - 1)))
 
         # Find pixel coordinate in input image for this slice
-        x = self.data.parent_data_x[ind]
-        y = self.data.parent_data_y[ind]
+        x = self.data.x[ind]
+        y = self.data.y[ind]
 
         # The 3-rd coordinate in the input WCS is simply the second
         # coordinate in the PV slice.
@@ -140,74 +122,6 @@ class PVLinkCursorMode(ToolbarModeBase):
         s = list(self.data.parent_viewer.state.wcsaxes_slice[::-1])
         s[_slice_index(self.data.parent_viewer.state.reference_data, s)] = int(z)
         self.data.parent_viewer.state.slices = tuple(s)
-
-
-def _slice_from_path(x, y, data, attribute, slc):
-    """
-    Extract a PV-like slice from a cube
-
-    :param x: An array of x values to extract (pixel units)
-    :param y: An array of y values to extract (pixel units)
-    :param data: :class:`~glue.core.data.Data`
-    :param attribute: :claass:`~glue.core.data.Component`
-    :param slc: orientation of the image widget that `pts` are defined on
-
-    :returns: (slice, x, y)
-              slice is a 2D Numpy array, corresponding to a "PV ribbon"
-              cutout from the cube
-              x and y are the resampled points along which the
-              ribbon is extracted
-
-    :note: For >3D cubes, the "V-axis" of the PV slice is the longest
-           cube axis ignoring the x/y axes of `slc`
-    """
-    from pvextractor import Path, extract_pv_slice
-    p = Path(list(zip(x, y)))
-
-    cube = data[attribute]
-    dims = list(range(data.ndim))
-    s = list(slc)
-    ind = _slice_index(data, slc)
-
-    from astropy.wcs import WCS
-
-    if isinstance(data.coords, WCS):
-        cube_wcs = data.coords
-    else:
-        cube_wcs = None
-
-    # transpose cube to (z, y, x, <whatever>)
-    def _swap(x, s, i, j):
-        x[i], x[j] = x[j], x[i]
-        s[i], s[j] = s[j], s[i]
-
-    _swap(dims, s, ind, 0)
-    _swap(dims, s, s.index('y'), 1)
-    _swap(dims, s, s.index('x'), 2)
-
-    cube = cube.transpose(dims)
-
-    if cube_wcs is not None:
-        cube_wcs = cube_wcs.sub([data.ndim - nx for nx in dims[::-1]])
-
-    # slice down from >3D to 3D if needed
-    s = tuple([slice(None)] * 3 + [slc[d] for d in dims[3:]])
-    cube = cube[s]
-
-    # sample cube
-    spacing = 1  # pixel
-    x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
-
-    try:
-        result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
-        wcs = WCS(result.header)
-    except Exception:  # sometimes pvextractor complains due to wcs. Try to recover
-        result = extract_pv_slice(cube, path=p, wcs=None, order=0)
-        wcs = None
-
-    data = result.data
-
-    return data, x, y, wcs
 
 
 def _slice_index(data, slc):
