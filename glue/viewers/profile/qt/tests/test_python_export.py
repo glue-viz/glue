@@ -1,5 +1,3 @@
-import numpy as np
-import matplotlib.pyplot as plt
 from astropy.utils import NumpyRNGContext
 
 from glue.core import Data, DataCollection
@@ -16,8 +14,8 @@ class TestExportPython(BaseTestExportPython):
         self.data = Data(label='d1')
         self.data.coords = SimpleCoordinates()
         with NumpyRNGContext(12345):
-            self.data['x'] = random_with_nan(48,5).reshape((6, 4, 2))
-            self.data['y'] = random_with_nan(48,12).reshape((6, 4, 2))
+            self.data['x'] = random_with_nan(48, 5).reshape((6, 4, 2))
+            self.data['y'] = random_with_nan(48, 12).reshape((6, 4, 2))
         self.data_collection = DataCollection([self.data])
         self.app = GlueApplication(self.data_collection)
         self.viewer = self.app.new_data_viewer(ProfileViewer)

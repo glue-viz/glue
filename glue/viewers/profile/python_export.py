@@ -1,5 +1,6 @@
-from glue.viewers.common.python_export import code, serialize_options
+from glue.viewers.common.python_export import serialize_options
 from glue.core import Subset
+
 
 def python_export_profile_layer(layer, *args):
 
@@ -9,7 +10,6 @@ def python_export_profile_layer(layer, *args):
     script = ""
     imports = ["import numpy as np"]
 
-
     script += "# Calculate the profile of the data\n"
     script += "profile_axis = {0}\n".format(layer._viewer_state.x_att_pixel.axis)
     script += "collapsed_axes = tuple(i for i in range(layer_data.ndim) if i != profile_axis)\n"
@@ -17,7 +17,7 @@ def python_export_profile_layer(layer, *args):
         script += "base_data = layer_data.data\n"
         script += "cid = base_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
         script += "profile_values = base_data.compute_statistic('{0}', cid, axis=collapsed_axes, subset_state=layer_data.subset_state)\n\n".format(layer._viewer_state.function)
-    else :
+    else:
         script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
         script += "profile_values = layer_data.compute_statistic('{0}', cid, axis=collapsed_axes)\n\n".format(layer._viewer_state.function)
 
