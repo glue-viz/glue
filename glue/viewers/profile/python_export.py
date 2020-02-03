@@ -1,5 +1,5 @@
 from glue.viewers.common.python_export import code, serialize_options
-
+from glue.core import Subset
 
 def python_export_profile_layer(layer, *args):
 
@@ -12,9 +12,14 @@ def python_export_profile_layer(layer, *args):
 
     script += "# Calculate the profile of the data\n"
     script += "profile_axis = {0}\n".format(layer._viewer_state.x_att_pixel.axis)
-    script += "summing_axes = tuple(i for i in range(layer_data.ndim) if i != profile_axis)\n"
-    script += "profile_values = layer_data.compute_statistic('{0}', layer_data.find_component_id('{1}'), axis=summing_axes)\n\n".format(
-        layer._viewer_state.function, layer.state.attribute.label)
+    script += "collapsed_axes = tuple(i for i in range(layer_data.ndim) if i != profile_axis)\n"
+    if isinstance(layer.state.layer, Subset):
+        script += "base_data = layer_data.data\n"
+        script += "cid = base_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+        script += "profile_values = base_data.compute_statistic('{0}', cid, axis=collapsed_axes, subset_state=layer_data.subset_state)\n\n".format(layer._viewer_state.function)
+    else :
+        script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+        script += "profile_values = layer_data.compute_statistic('{0}', cid, axis=collapsed_axes)\n\n".format(layer._viewer_state.function)
 
     script += "# Extract the values for the x-axis\n"
     script += "axis_view = [0] * layer_data.ndim\n"
@@ -32,7 +37,8 @@ def python_export_profile_layer(layer, *args):
     plot_options = dict(color=layer.state.color,
                         linewidth=layer.state.linewidth,
                         alpha=layer.state.alpha,
-                        zorder=layer.state.zorder)
+                        zorder=layer.state.zorder,
+                        drawstyle='steps-mid')
 
     script += "ax.plot(profile_x_values[keep], profile_values[keep], '-', {0})\n\n".format(serialize_options(plot_options))
 
