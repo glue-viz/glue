@@ -62,7 +62,7 @@ class PVSlicedData(DerivedData):
 
     @property
     def shape(self):
-        return self._without_sliced(self.original_data.shape) + [len(self.x)]
+        return tuple(self._without_sliced(self.original_data.shape) + [len(self.x)])
 
     @property
     def main_components(self):

@@ -39,7 +39,7 @@ class TestPVSlicerMode(object):
         tool._extract_callback(mode)
 
         assert len(self.data_collection) == 2
-        assert self.data_collection[1].shape == (10, 16)
+        assert self.data_collection[1].shape == (10, 17)
 
         # If we do it again it should just update the existing slice dataset in-place
 
