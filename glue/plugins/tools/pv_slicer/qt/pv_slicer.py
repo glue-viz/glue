@@ -1,5 +1,7 @@
 import numpy as np
 
+from matplotlib.lines import Line2D
+
 from glue.core import Data
 from glue.core.coordinates import coordinates_from_wcs
 from glue.core.coordinate_helpers import axis_label
@@ -81,22 +83,52 @@ class PVLinkCursorMode(ToolbarModeBase):
     Selects pixel under mouse cursor.
     """
 
-    icon = "glue_point"
+    icon = "glue_path"
     tool_id = 'pv:crosshair'
+    action_text = 'Show position on original path'
+    tool_tip = 'Click and drag to show position of cursor on original slice.'
+    status_tip = 'Click and drag to show position of cursor on original slice.'
 
     _pressed = False
 
     def __init__(self, *args, **kwargs):
         super(PVLinkCursorMode, self).__init__(*args, **kwargs)
         self._move_callback = self._on_move
-        self._press_callback = self._on_move
+        self._press_callback = self._on_press
+        self._release_callback = self._on_release
+        self._active = False
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
 
     def _on_reference_data_change(self, reference_data):
         self.enabled = isinstance(reference_data, PVSlicedData)
         self.data = reference_data
 
+    def activate(self):
+        self._line = Line2D(self.data.x, self.data.y, zorder=1000, color='#669dff',
+                            alpha=0.6, lw=2)
+        self.data.parent_viewer.axes.add_line(self._line)
+        self._crosshair = self.data.parent_viewer.axes.plot([], [], '+', ms=12,
+                                                            mfc='none', mec='#669dff',
+                                                            mew=1, zorder=100)[0]
+        self.data.parent_viewer.figure.canvas.draw()
+        super().activate()
+
+    def deactivate(self):
+        self._line.remove()
+        self._crosshair.remove()
+        self.data.parent_viewer.figure.canvas.draw()
+        super().deactivate()
+
+    def _on_press(self, mode):
+        self._active = True
+
+    def _on_release(self, mode):
+        self._active = False
+
     def _on_move(self, mode):
+
+        if not self._active:
+            return
 
         # Find position of click in the image viewer
         xdata, ydata = self._event_xdata, self._event_ydata
@@ -117,7 +149,9 @@ class PVLinkCursorMode(ToolbarModeBase):
         # coordinate in the PV slice.
         z = ydata
 
-        self.data.parent_viewer.show_crosshairs(x, y)
+        self._crosshair.set_xdata([x])
+        self._crosshair.set_ydata([y])
+        self.data.parent_viewer.figure.canvas.draw()
 
         s = list(self.data.parent_viewer.state.wcsaxes_slice[::-1])
         s[_slice_index(self.data.parent_viewer.state.reference_data, s)] = int(z)
