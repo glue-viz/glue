@@ -3,7 +3,7 @@
 for input in *.svg
 do
     output=${input/svg/png}
-    inkscape --without-gui --export-png=$PWD/$output --export-width=125 --export-height=125 $PWD/$input
+    inkscape --without-gui --export-file=$PWD/$output --export-type=png --export-width=125 --export-height=125 $PWD/$input
 done
 
 convert -flop playback_forw.png playback_back.png
