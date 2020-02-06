@@ -71,10 +71,7 @@ class PVSlicedData(DerivedData):
     def get_kind(self, cid):
         return self.original_data.get_kind(cid)
 
-    def get_data(self, cid, view=None):
-
-        if cid in self.pixel_component_ids:
-            return super().get_data(cid, view)
+    def _get_pix_coords(self, view=None):
 
         pix_coords = []
 
@@ -96,16 +93,11 @@ class PVSlicedData(DerivedData):
 
             if view is not None and len(view) > idim_current:
                 pix = pix[view[idim_current]]
-                print("DONE")
-
-            print(idim, idim_current, pix.shape)
 
             pix_coords.append(pix)
 
         if not advanced_indexing:
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
-
-        print(pix_coords[0].shape)
 
         shape = pix_coords[0].shape
 
@@ -115,21 +107,33 @@ class PVSlicedData(DerivedData):
 
         pix_coords = [x[keep].astype(int) for x in pix_coords]
 
-        result = np.zeros(shape)
+        return pix_coords, keep, shape
 
+    def get_data(self, cid, view=None):
+
+        if cid in self.pixel_component_ids:
+            return super().get_data(cid, view)
+
+        pix_coords, keep, shape = self._get_pix_coords(view=view)
+        result = np.zeros(shape)
         result[keep] = self.original_data.get_data(cid, view=pix_coords)
 
         return result
 
     def get_mask(self, subset_state, view=None):
-        # Optimize by getting pixel coordinates of  original data in new
-        # frame of reference and getting the mask for these indices
+
         if view is None:
             view = Ellipsis
-        return self.callable(self.original_data.get_mask(subset_state))[view]
 
-    def compute_statistic(self, *args, **kwargs):
-        return self.original_data.compute_statistic(*args, **kwargs)
+        pix_coords, keep, shape = self._get_pix_coords(view=view)
+        result = np.zeros(shape)
+        result[keep] = self.original_data.get_mask(subset_state, view=pix_coords)
+
+        return result
+
+    def compute_statistic(self, *args, view=None, **kwargs):
+        pix_coords, _, _ = self._get_pix_coords(view=view)
+        return self.original_data.compute_statistic(*args, view=pix_coords, **kwargs)
 
     def compute_histogram(self, *args, **kwargs):
         return self.original_data.compute_histogram(*args, **kwargs)
