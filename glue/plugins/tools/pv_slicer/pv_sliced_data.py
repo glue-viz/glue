@@ -138,7 +138,70 @@ class PVSlicedData(DerivedData):
     def compute_histogram(self, *args, **kwargs):
         return self.original_data.compute_histogram(*args, **kwargs)
 
-    def compute_fixed_resolution_buffer(self, *args, **kwargs):
+    def compute_fixed_resolution_buffer(self, bounds, target_data=None, target_cid=None,
+                                        subset_state=None, broadcast=True, cache_id=None):
+
         from glue.core.fixed_resolution_buffer import compute_fixed_resolution_buffer
-        print(args, kwargs)
-        return compute_fixed_resolution_buffer(self, *args, **kwargs)
+
+        # First check that the target data is also a PVSlicedData
+        # TODO: also check it's actually for the same path
+
+        if not isinstance(target_data, PVSlicedData):
+            raise TypeError('target_data has to be a PVSlicedData')
+
+        if len(bounds) != len(self.shape):
+            raise ValueError('bounds should have {0} elements'.format(len(self.shape)))
+
+        # Now translate the bounds so that we replace the path with the
+        # pixel coordinates in the target dataset
+
+
+        # The last item of bounds is the pixel offset in the target PV slice
+        path_pixel_offset_target = np.linspace(*bounds[-1])
+
+        # Translate this to a relative offset along the path
+        path_pixel_offset_target_relative = path_pixel_offset_target / self.shape[-1]
+
+        # Find the pixel coordinates in the current dataset
+        x = np.interp(path_pixel_offset_target_relative,
+                      np.linspace(0., 1., len(self.x)),
+                      self.x)
+        y = np.interp(path_pixel_offset_target_relative,
+                      np.linspace(0., 1., len(self.y)),
+                      self.y)
+
+        # Create new bouds list
+
+        new_bounds = []
+        idim_current = 0
+
+        slices = []
+
+        for idim in range(self.original_data.ndim):
+
+            if idim == self.cid_x.axis:
+                ixmax = np.ceil(np.max(x))
+                bound = (0, ixmax, ixmax + 1)
+                slices.append(np.round(x).astype(int))
+            elif idim == self.cid_y.axis:
+                iymax = np.ceil(np.max(y))
+                bound = (0, iymax, iymax + 1)
+                slices.append(np.round(x).astype(int))
+            else:
+                bound = bounds[idim_current]
+                idim_current += 1
+                slices.append(slice(None))
+
+            new_bounds.append(bound)
+
+        # TODO: For now we extract a cube and then slice it, but it would be
+        # more efficient if bounds could include 1-d arrays.
+
+        # Now compute the fixed resolution buffer using the original datasets
+        result = compute_fixed_resolution_buffer(self.original_data, new_bounds,
+                                                 target_data=target_data.original_data,
+                                                 target_cid=target_cid)
+
+        result = result[slices]
+
+        return result

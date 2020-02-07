@@ -29,6 +29,7 @@ class PVSlicerMode(PathMode):
         self._roi_callback = self._extract_callback
         self._slice_widget = None
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+        # self._sliced_data = []
 
     def _on_reference_data_change(self, reference_data):
         if reference_data is not None:
@@ -47,31 +48,41 @@ class PVSlicerMode(PathMode):
 
         selected = self.viewer.session.application.selected_layers()
 
-        if len(selected) == 1 and isinstance(selected[0], PVSlicedData):
-            data = selected[0]
-            data.original_data = self.viewer.state.reference_data
-            data.x_att = self.viewer.state.x_att
-            data.y_att = self.viewer.state.y_att
-            data.set_xy(vx, vy)
-            open_viewer = True
-            for tab in self.viewer.session.application.viewers:
-                for viewer in tab:
-                    if data in viewer._layer_artist_container:
-                        open_viewer = False
-                        break
-                if not open_viewer:
-                    break
-        else:
-            data = PVSlicedData(self.viewer.state.reference_data,
-                                self.viewer.state.x_att, vx,
-                                self.viewer.state.y_att, vy,
-                                label=self.viewer.state.reference_data.label + " [slice]")
-            data.parent_viewer = self.viewer
-            self.viewer.session.data_collection.append(data)
-            open_viewer = True
+        open_viewer = False
+
+        all_pvdata = []
+
+        for data in self.viewer.state.layers_data:
+            if isinstance(data, Data):
+
+                for pvdata in self.viewer.session.data_collection:
+                    if isinstance(pvdata, PVSlicedData):
+                        if pvdata.original_data is data:
+                            break
+                else:
+                    pvdata = None
+
+            if pvdata is None:
+                pvdata = PVSlicedData(data,
+                                      self.viewer.state.x_att, vx,
+                                      self.viewer.state.y_att, vy,
+                                      label=data.label + " [slice]")
+                data.parent_viewer = self.viewer
+                self.viewer.session.data_collection.append(pvdata)
+                open_viewer = True
+            else:
+                data = pvdata
+                data.original_data = self.viewer.state.reference_data
+                data.x_att = self.viewer.state.x_att
+                data.y_att = self.viewer.state.y_att
+                data.set_xy(vx, vy)
+
+            all_pvdata.append(pvdata)
 
         if open_viewer:
-            viewer = self.viewer.session.application.new_data_viewer(ImageViewer, data=data)
+            viewer = self.viewer.session.application.new_data_viewer(ImageViewer)
+            for pvdata in all_pvdata:
+                viewer.add_data(pvdata)
 
         viewer.state.aspect = 'auto'
         viewer.state.reset_limits()
