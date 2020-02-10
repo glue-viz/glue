@@ -1,6 +1,7 @@
 import numpy as np
 
 from glue.core.data_derived import DerivedData
+from glue.core.message import NumericalDataChangedMessage
 
 __all__ = ['PVSlicedData']
 
@@ -52,6 +53,9 @@ class PVSlicedData(DerivedData):
         x, y = sample_points(x, y)
         self.x = x
         self.y = y
+        if self.original_data.hub:
+            msg = NumericalDataChangedMessage(self)
+            self.original_data.hub.broadcast(msg)
 
     @property
     def label(self):
@@ -186,7 +190,7 @@ class PVSlicedData(DerivedData):
             elif idim == self.cid_y.axis:
                 iymax = np.ceil(np.max(y))
                 bound = (0, iymax, iymax + 1)
-                slices.append(np.round(x).astype(int))
+                slices.append(np.round(y).astype(int))
             else:
                 bound = bounds[idim_current]
                 idim_current += 1
@@ -202,6 +206,6 @@ class PVSlicedData(DerivedData):
                                                  target_data=target_data.original_data,
                                                  target_cid=target_cid)
 
-        result = result[slices]
+        result = result[tuple(slices)]
 
         return result

@@ -29,11 +29,11 @@ class PVSlicerMode(PathMode):
         self._roi_callback = self._extract_callback
         self._slice_widget = None
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
-        # self._sliced_data = []
+        self._on_reference_data_change()
 
-    def _on_reference_data_change(self, reference_data):
-        if reference_data is not None:
-            self.enabled = reference_data.ndim == 3
+    def _on_reference_data_change(self, *args):
+        if self.viewer.state.reference_data is not None:
+            self.enabled = self.viewer.state.reference_data.ndim == 3
 
     def _clear_path(self):
         self.viewer.hide_crosshairs()
@@ -67,7 +67,7 @@ class PVSlicerMode(PathMode):
                                       self.viewer.state.x_att, vx,
                                       self.viewer.state.y_att, vy,
                                       label=data.label + " [slice]")
-                data.parent_viewer = self.viewer
+                pvdata.parent_viewer = self.viewer
                 self.viewer.session.data_collection.append(pvdata)
                 open_viewer = True
             else:
@@ -84,8 +84,8 @@ class PVSlicerMode(PathMode):
             for pvdata in all_pvdata:
                 viewer.add_data(pvdata)
 
-        viewer.state.aspect = 'auto'
-        viewer.state.reset_limits()
+            viewer.state.aspect = 'auto'
+            viewer.state.reset_limits()
 
 
 @viewer_tool
@@ -109,10 +109,11 @@ class PVLinkCursorMode(ToolbarModeBase):
         self._release_callback = self._on_release
         self._active = False
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+        self._on_reference_data_change()
 
-    def _on_reference_data_change(self, reference_data):
-        self.enabled = isinstance(reference_data, PVSlicedData)
-        self.data = reference_data
+    def _on_reference_data_change(self, *args):
+        self.enabled = isinstance(self.viewer.state.reference_data, PVSlicedData)
+        self.data = self.viewer.state.reference_data
 
     def activate(self):
         self._line = Line2D(self.data.x, self.data.y, zorder=1000, color='#669dff',

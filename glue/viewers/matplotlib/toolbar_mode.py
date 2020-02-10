@@ -84,7 +84,8 @@ class RoiModeBase(ToolbarModeBase):
     def deactivate(self):
         self._roi_tool.reset()
         self.clear()
-        self.viewer.figure.canvas.draw()
+        if self.viewer is not None:
+            self.viewer.figure.canvas.draw()
         super(RoiModeBase, self).deactivate()
 
     def roi(self):

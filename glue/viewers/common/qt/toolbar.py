@@ -201,6 +201,7 @@ class BasicToolbar(QtWidgets.QToolBar):
             action.setEnabled(state)
 
         add_callback(tool, 'enabled', toggle)
+        toggle(tool.enabled)
 
         self.tools[tool.tool_id] = tool
 
