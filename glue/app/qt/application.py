@@ -292,7 +292,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # in case glue was started directly by initializing this class.
         load_plugins()
 
-        self.setWindowTitle("Glue")
+        self.set_window_title()
         self.setWindowIcon(icon)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self._actions = {}
@@ -1012,6 +1012,18 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             viewer.show()
         return viewer
 
+    def set_window_title(self, detail=None):
+        """Set the window title"""
+        if detail is None:
+            title = "Glue"
+        else:
+            title = "Glue ("+detail+")"
+        self.setWindowTitle(title)
+
+    def _on_session_changed(self, name):
+        """Call when the session is changed"""
+        self.set_window_title(name)
+
     def _choose_save_session(self, *args):
         """ Save the data collection and hub to file.
 
@@ -1042,6 +1054,9 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self.save_session(outfile,
                               include_data="including data" in file_filter,
                               absolute_paths="absolute" in file_filter)
+        self._on_session_changed(outfile)
+
+
 
     @messagebox_on_error("Failed to restore session")
     def _restore_session(self, *args):
@@ -1053,6 +1068,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return
 
         ga = self.restore_session_and_close(file_name)
+        ga._on_session_changed(file_name)
         return ga
 
     @property
@@ -1258,6 +1274,8 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._new_application = app
 
             self.close()
+
+        return app
 
     def closeEvent(self, event):
         """Emit a message to hub before closing."""
