@@ -67,7 +67,8 @@ def python_export_scatter_layer(layer, *args):
                 options = dict(color=layer.state.color,
                                markersize=layer.state.size * layer.state.size_scaling,
                                alpha=layer.state.alpha,
-                               zorder=layer.state.zorder)
+                               zorder=layer.state.zorder,
+                               label=layer.layer.label)
                 if layer.state.fill:
                     options['mec'] = 'none'
                 else:
@@ -174,7 +175,8 @@ def python_export_scatter_layer(layer, *args):
                        linewidth=layer.state.linewidth,
                        linestyle=layer.state.linestyle,
                        alpha=layer.state.alpha,
-                       zorder=layer.state.zorder)
+                       zorder=layer.state.zorder,
+                       label=layer.layer.label)
         if layer.state.cmap_mode == 'Fixed':
             script += "ax.plot(x[keep], y[keep], '-', {0})\n\n".format(serialize_options(options))
         else:

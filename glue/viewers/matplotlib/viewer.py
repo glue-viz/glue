@@ -31,6 +31,9 @@ ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_
 ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={x_ticklabel_size})
 
+# Uncomment to draw the legend
+# plt.legend()
+
 # For manual edition of the plot
 #  - Uncomment the next code line (plt.show)
 #  - Also change the matplotlib backend to qt5Agg
