@@ -433,7 +433,12 @@ class Viewer(BaseViewer):
         imports_footer, footer = self._script_footer()
         imports.extend(imports_footer)
 
-        imports = os.linesep.join(sorted(set(imports)))
+        imports = os.linesep.join(sorted(set(imports),
+                                         key=lambda s: s.strip('# ')))
+        # The sorting key is added keep together similar but commented imports
+        # Typical ex:
+        #    matplotlib.use('Agg')
+        #    # matplotlib.use('qt5Agg')
 
         script = TEMPLATE_SCRIPT.format(data=os.path.basename(data_filename),
                                         imports=imports.strip(),

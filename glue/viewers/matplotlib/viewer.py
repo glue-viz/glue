@@ -31,6 +31,12 @@ ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_
 ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={x_ticklabel_size})
 
+# For manual edition of the plot
+#  - Uncomment the next code line (plt.show)
+#  - Also change the matplotlib backend to qt5Agg
+#  - And comment the "plt.close" line
+# plt.show()
+
 # Save figure
 fig.savefig('glue_plot.png')
 plt.close(fig)
@@ -217,7 +223,10 @@ class MatplotlibViewerMixin(object):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
-        return ['import matplotlib', "matplotlib.use('Agg')", 'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
+        return ['import matplotlib',
+                "matplotlib.use('Agg')",
+                "# matplotlib.use('qt5Agg')",
+                'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         state_dict = self.state.as_dict()
