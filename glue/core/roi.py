@@ -492,8 +492,6 @@ class EllipticalROI(Roi):
             x = np.asarray(x)
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
-        print(x - self.xc, self.radius_x)
-        print(y - self.yc, self.radius_y)
         return (((x - self.xc) ** 2 / self.radius_x ** 2 +
                  (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
 
