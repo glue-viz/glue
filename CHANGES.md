@@ -40,6 +40,9 @@ v0.15.7 (2020-03-12)
 * Fixed a bug that caused issues when saving and re-loading sessions that were
   originally created using Excel data with string columns. [#2101]
 
+* Avoid converting circular selections in Matplotlib plots to polygons if
+  it can be avoided. [#2094]
+
 v0.15.6 (2019-08-22)
 --------------------
 
