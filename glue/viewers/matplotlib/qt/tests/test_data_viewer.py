@@ -617,6 +617,7 @@ class BaseTestMatplotlibDataViewer(object):
 
         self.data.update_values_from_data(data)
 
+<<<<<<< HEAD
     def test_legend(self):
         viewer_state = self.viewer.state
 
@@ -668,7 +669,7 @@ class BaseTestMatplotlibDataViewer(object):
         self.data.update_values_from_data(data)
         assert self.draw_count == 2
 
-    def test_hide_axis(self):
+    def test_hide_axes(self):
         assert self.viewer.axes.axison
 
         self.viewer.state.show_axes = False
