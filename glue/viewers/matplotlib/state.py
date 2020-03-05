@@ -244,6 +244,7 @@ class MatplotlibDataViewerState(ViewerState):
         self.y_ticklabel_size = state.y_ticklabel_size
         # legend
         self.legend.update_axes_settings_from(state.legend)
+        self.show_axes = state.show_axes
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):
