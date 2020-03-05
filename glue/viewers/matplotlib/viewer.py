@@ -117,6 +117,7 @@ class MatplotlibViewerMixin(object):
 
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
+        self.state.add_callback('show_axes', self.update_axes_visibility)
 
         self.state.legend.add_callback('visible', self.draw_legend)
         self.state.legend.add_callback('location', self.draw_legend)
@@ -205,6 +206,14 @@ class MatplotlibViewerMixin(object):
             legend = self.axes.get_legend()
             if legend is not None:
                 legend.remove()
+        self.redraw()
+
+    def update_axes_visibility(self, *event):
+        if self.state.show_axes:
+            self.axes.set_axis_on()
+        else:
+            self.axes.set_axis_off()
+            self.axes.set_axis_off()
         self.redraw()
 
     def redraw(self):
