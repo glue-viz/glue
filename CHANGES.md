@@ -20,6 +20,9 @@ v0.16.0 (unreleased)
 
 * Added a ``DataCollection.clear()`` method to remove all datasets. [#2079]
 
+* Fixed a bug that caused profiles of subsets to not be hidden if an
+  existing subset was emptied. [#2095]
+
 * Improved ``IndexedData`` so that world coordinates can now be shown. [#2081]
 
 v0.15.6 (2019-08-22)
