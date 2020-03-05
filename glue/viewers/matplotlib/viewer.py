@@ -31,6 +31,9 @@ ax.set_ylim({y_min}, {y_max})
 ax.set_xscale('{x_log_str}')
 ax.set_yscale('{y_log_str}')
 
+# Enable or disable the drawing of axes
+ax.set_axis_{show_axes}()
+
 # Set axis label properties
 ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
 ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size})
@@ -321,6 +324,7 @@ class MatplotlibViewerMixin(object):
         state_dict = self.state.as_dict()
         state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
         state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
+        state_dict['show_axes'] = 'on' if self.state.show_axes else 'off'
         return [], SCRIPT_FOOTER.format(**state_dict)
 
     def _script_legend(self):
