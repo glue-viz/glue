@@ -50,3 +50,7 @@ class BaseTestExportPython:
                 print(b64encode(f.read()).decode())
 
             pytest.fail(msg, pytrace=False)
+
+    def test_hide_axes(self, tmpdir):
+        self.viewer.state.show_axis = False
+        self.assert_same(tmpdir)

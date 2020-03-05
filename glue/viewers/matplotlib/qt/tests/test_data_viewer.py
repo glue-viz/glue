@@ -667,3 +667,12 @@ class BaseTestMatplotlibDataViewer(object):
                 data.add_component(self.data[cid], cid.label)
         self.data.update_values_from_data(data)
         assert self.draw_count == 2
+
+    def test_hide_axis(self):
+        assert self.viewer.axes.axison
+
+        self.viewer.state.show_axes = False
+        assert not self.viewer.axes.axison
+
+        self.viewer.state.show_axes = True
+        assert self.viewer.axes.axison
