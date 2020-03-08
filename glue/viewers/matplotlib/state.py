@@ -66,6 +66,8 @@ class MatplotlibDataViewerState(ViewerState):
     x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
+    legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
+
     def __init__(self, *args, **kwargs):
 
         self._axes_aspect_ratio = None

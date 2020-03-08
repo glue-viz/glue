@@ -221,6 +221,7 @@ class ScatterLayerState(MatplotlibLayerState):
     vector_origin = DDSCProperty(default_index=1, docstring="Whether to place the vector so that the origin is at the tail, middle, or tip")
     vector_scaling = DDCProperty(1, docstring="The relative scaling of the arrow length")
 
+
     def __init__(self, viewer_state=None, layer=None, **kwargs):
 
         super(ScatterLayerState, self).__init__(viewer_state=viewer_state, layer=layer)

@@ -100,10 +100,13 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
+        self.state.add_callback('legend', self.toggle_legend)
+
         self.update_x_axislabel()
         self.update_y_axislabel()
         self.update_x_ticklabel()
         self.update_y_ticklabel()
+        self.toggle_legend()
 
     def _update_computation(self, message=None):
         pass
@@ -128,6 +131,16 @@ class MatplotlibViewerMixin(object):
     def update_y_ticklabel(self, *event):
         self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
         self.axes.yaxis.get_offset_text().set_fontsize(self.state.y_ticklabel_size)
+        self.redraw()
+
+    def toggle_legend(self, *args):
+        if self.state.legend:
+            handles, labels = self.get_handles_legend()
+            self.axes.legend(handles, labels)
+        else:
+            legend = self.axes.get_legend()
+            if legend is not None:
+                legend.remove()
         self.redraw()
 
     def redraw(self):

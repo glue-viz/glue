@@ -15,6 +15,9 @@ from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 
+from matplotlib.lines import Line2D
+
+
 STRETCHES = {'linear': LinearStretch,
              'sqrt': SqrtStretch,
              'arcsinh': AsinhStretch,
@@ -523,3 +526,15 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # Clean up the density artist to avoid circular references to do a
         # reference to the self.histogram2d method in density artist.
         self.density_artist = None
+
+
+    def get_handle_legend(self):
+        if not self.state.line_visible:
+            linestyle="none"
+        else:
+            linestyle=self.state.linestyle
+
+        return Line2D([0],[0],marker="o",
+                      ms=self.state.size, alpha=self.state.alpha,
+                      linestyle=linestyle, linewidth=self.state.linewidth,
+                      color=self.get_layer_color()), self.layer.label
