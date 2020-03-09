@@ -258,7 +258,7 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
 
         self.image_artist = imshow(self.axes, self.subset_array,
                                    origin='lower', interpolation='nearest',
-                                   vmin=0, vmax=1, aspect=self._viewer_state.aspect)
+                                   vmin=0, vmax=1, aspect='auto')
 
         self._line_x = self.axes.axvline(0)
         self._line_x.set_visible(False)
