@@ -75,7 +75,4 @@ script:
 
   - if [[ $QT_PKG == False ]]; then glue --version; fi
 
-  # Do style checks
-  - flake8 --max-line-length=100 --exclude=external glue
-
   - pytest --durations=20 -vs $PYTEST_ARGS glue
