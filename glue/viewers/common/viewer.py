@@ -158,7 +158,7 @@ class Viewer(BaseViewer):
 
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
-        self.state.add_callback('layers', self._sync_layer_artist_container)
+        self.state.add_callback('layers', self._sync_layer_artist_container, priority=10000)
 
     def _sync_state_layers(self, *args):
         # Remove layer state objects that no longer have a matching layer
