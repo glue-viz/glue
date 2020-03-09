@@ -22,11 +22,16 @@ class MatplotlibDrawCounter(object):
 
     def __init__(self, figure):
         self.figure = figure
+        # For recent versions of Matplotlib it seems that we need
+        # to process events at least twice to really flush out any
+        # unprocessed events
+        process_events()
         process_events()
         self.start = self.figure.canvas._draw_count
 
     @property
     def draw_count(self):
+        process_events()
         process_events()
         return self.figure.canvas._draw_count - self.start
 

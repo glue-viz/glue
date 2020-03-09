@@ -16,6 +16,8 @@ jobs:
     libraries:
       apt:
         - libxkbcommon-x11-0
+      brew:
+        - enchant
 
     envs:
 
