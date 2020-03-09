@@ -95,10 +95,11 @@ class ImageLayerArtist(BaseImageLayerArtist):
             self.composite_image.invalidate_cache()
         ARRAY_CACHE.pop(self.state.uuid, None)
         PIXEL_CACHE.pop(self.state.uuid, None)
+        self.uuid = None
 
     def get_image_shape(self):
 
-        if self._viewer_state.reference_data is None or self._viewer_state.x_att is None or self._viewer_state.y_att is None:
+        if self.uuid is None or self._viewer_state.reference_data is None or self._viewer_state.x_att is None or self._viewer_state.y_att is None:
             return None
 
         x_axis = self._viewer_state.x_att.axis
@@ -109,6 +110,9 @@ class ImageLayerArtist(BaseImageLayerArtist):
         return full_shape[y_axis], full_shape[x_axis]
 
     def get_image_data(self, bounds=None):
+
+        if self.uuid is None:
+            return None
 
         try:
             image = self.state.get_sliced_data(bounds=bounds)
@@ -153,7 +157,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
     @defer_draw
     def _update_image(self, force=False, **kwargs):
 
-        if self.state.attribute is None or self.state.layer is None:
+        if self.uuid is None or self.state.attribute is None or self.state.layer is None:
             return
 
         changed = set() if force else self.pop_changed_properties()
