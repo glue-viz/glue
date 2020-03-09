@@ -54,4 +54,6 @@ jobs:
     # Try out documentation build on Linux and Windows
     - linux: py36-docs-pyqt513
     - macos: py37-docs-pyqt513
+      libraries:
+        brew: enchant
     - windows: py38-docs-pyqt513
