@@ -91,7 +91,7 @@ install:
   - pip install . --no-deps --verbose
 
   # Check that all the plugins load correctly
-  - python -c 'from glue.logger import logger; logger.setLevel("DEBUG"); from glue.main import load_plugins; load_plugins()'
+  - python3 -c 'from glue.logger import logger; logger.setLevel("DEBUG"); from glue.main import load_plugins; load_plugins()'
 
   # List installed packages again - just to check if any packages got installed
   # in the previous step.
