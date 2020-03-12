@@ -291,9 +291,10 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
         ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
 
-        self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
-        self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
-        self._on_xy_change()
+        if self.viewer_state is not None:
+            self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
+            self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            self._on_xy_change()
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -317,8 +318,15 @@ class ScatterLayerState(MatplotlibLayerState):
         else:
             layer = self.layer.data
 
-        x_datetime = layer.get_kind(self.viewer_state.x_att) == 'datetime'
-        y_datetime = layer.get_kind(self.viewer_state.y_att) == 'datetime'
+        try:
+            x_datetime = layer.get_kind(self.viewer_state.x_att) == 'datetime'
+        except IncompatibleAttribute:
+            x_datetime = False
+
+        try:
+            y_datetime = layer.get_kind(self.viewer_state.y_att) == 'datetime'
+        except IncompatibleAttribute:
+            y_datetime = False
 
         with delay_callback(self, 'xerr_visible', 'yerr_visible', 'vector_visible'):
             if x_datetime:

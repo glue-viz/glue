@@ -9,7 +9,7 @@ from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.utils import defer_draw, broadcast_to, nanmax, ensure_numerical
+from glue.utils import defer_draw, broadcast_to, nanmax, ensure_numerical, datetime64_to_mpl
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -191,6 +191,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         try:
             if not self.state.density_map:
                 x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+                if x.dtype.kind == 'M':
+                    x = datetime64_to_mpl(x)
+
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -201,6 +204,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         try:
             if not self.state.density_map:
                 y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+                if y.dtype.kind == 'M':
+                    y = datetime64_to_mpl(y)
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
@@ -209,6 +214,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         if self.state.markers_visible:
+
             if self.state.density_map:
                 # We don't use x, y here because we actually make use of the
                 # ability of the density artist to call a custom histogram
@@ -224,7 +230,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     self.scatter_artist.set_offsets(np.zeros((0, 2)))
                 else:
                     self.plot_artist.set_data([], [])
-                    self.scatter_artist.set_offsets([x, y])
+                    offsets = np.vstack((x, y)).transpose()
+                    self.scatter_artist.set_offsets(offsets)
         else:
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))
