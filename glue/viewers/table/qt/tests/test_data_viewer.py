@@ -403,3 +403,32 @@ def test_add_subset():
     with pytest.raises(ValueError) as exc:
         viewer.add_subset(data2.subsets[1])
     assert exc.value.args[0] == 'subset parent data does not match existing table data'
+
+
+def test_graceful_close_after_invalid(capsys):
+
+    # Regression test for a bug that caused an error if an invalid dataset
+    # was added to the viewer after the user had acknowledged the error.
+
+    d = Data(a=[[1, 2], [3, 4]], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableViewer)
+    gapp.show()
+
+    process_events()
+
+    with pytest.raises(ValueError, match='Can only use Table widget for 1D data'):
+        viewer.add_data(d)
+
+    viewer.close()
+
+    process_events()
+
+    #  We use capsys here because the # error is otherwise only apparent in stderr.
+    out, err = capsys.readouterr()
+    assert out.strip() == ""
+    assert err.strip() == ""

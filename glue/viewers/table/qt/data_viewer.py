@@ -297,7 +297,8 @@ class TableViewer(DataViewer):
         we swap out with a tiny data set before closing
         """
         super(TableViewer, self).closeEvent(event)
-        self.model._data = Data(x=[0])
+        if self.model is not None:
+            self.model._data = Data(x=[0])
         event.accept()
 
     def get_layer_artist(self, cls, layer=None, layer_state=None):
