@@ -308,10 +308,18 @@ class ScatterLayerState(MatplotlibLayerState):
         self.update_from_dict(kwargs)
 
     def _on_xy_change(self, *event):
+
         if self.viewer_state.x_att is None or self.viewer_state.y_att is None:
             return
-        x_datetime = self.layer.get_kind(self.viewer_state.x_att) == 'datetime'
-        y_datetime = self.layer.get_kind(self.viewer_state.y_att) == 'datetime'
+
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+
+        x_datetime = layer.get_kind(self.viewer_state.x_att) == 'datetime'
+        y_datetime = layer.get_kind(self.viewer_state.y_att) == 'datetime'
+
         with delay_callback(self, 'xerr_visible', 'yerr_visible', 'vector_visible'):
             if x_datetime:
                 self.xerr_visible = False
