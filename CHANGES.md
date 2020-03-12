@@ -34,6 +34,9 @@ v0.15.7 (2020-03-12)
 * Fixed a bug that caused session files that were saved with LinkCollection to
   not work correctly when re-loaded. [#2100]
 
+* Fixed a bug that caused issues when saving and re-loading sessions that were
+  originally created using Excel data with string columns. [#2101]
+
 v0.15.6 (2019-08-22)
 --------------------
 
