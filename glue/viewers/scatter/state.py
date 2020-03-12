@@ -236,22 +236,22 @@ class ScatterLayerState(MatplotlibLayerState):
                                                           limits_cache=self.limits_cache)
 
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att',
-                                                    numeric=True, categorical=False)
+                                                    numeric=True, datetime=False, categorical=False)
 
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
-                                                    numeric=True, categorical=False)
+                                                    numeric=True, datetime=False, categorical=False)
 
         points_mode_display = {'auto': 'Density map or markers (auto)',
                                'markers': 'Markers',
@@ -291,6 +291,11 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
         ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
 
+        if self.viewer_state is not None:
+            self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
+            self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            self._on_xy_change()
+
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
@@ -302,6 +307,34 @@ class ScatterLayerState(MatplotlibLayerState):
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
 
         self.update_from_dict(kwargs)
+
+    def _on_xy_change(self, *event):
+
+        if self.viewer_state.x_att is None or self.viewer_state.y_att is None:
+            return
+
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+
+        try:
+            x_datetime = layer.get_kind(self.viewer_state.x_att) == 'datetime'
+        except IncompatibleAttribute:
+            x_datetime = False
+
+        try:
+            y_datetime = layer.get_kind(self.viewer_state.y_att) == 'datetime'
+        except IncompatibleAttribute:
+            y_datetime = False
+
+        with delay_callback(self, 'xerr_visible', 'yerr_visible', 'vector_visible'):
+            if x_datetime:
+                self.xerr_visible = False
+            if y_datetime:
+                self.yerr_visible = False
+            if x_datetime or y_datetime:
+                self.vector_visible = False
 
     def _on_layer_change(self, layer=None):
 

@@ -106,10 +106,10 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
         self.xw_att_helper = ComponentIDComboHelper(self, 'x_att_world',
-                                                    numeric=False, categorical=False)
+                                                    numeric=False, datetime=False, categorical=False)
 
         self.yw_att_helper = ComponentIDComboHelper(self, 'y_att_world',
-                                                    numeric=False, categorical=False)
+                                                    numeric=False, datetime=False, categorical=False)
 
         self.add_callback('reference_data', self._reference_data_changed, priority=1000)
         self.add_callback('layers', self._layers_changed, priority=1000)

@@ -138,6 +138,8 @@ class ComponentIDComboHelper(ComboHelper):
         datasets to be added/removed
     numeric : bool, optional
         Show numeric components
+    datetime : bool, optional
+        Show datetime components
     categorical : bool, optional
         Show categorical components
     pixel_coord : bool, optional
@@ -154,7 +156,7 @@ class ComponentIDComboHelper(ComboHelper):
 
     def __init__(self, state, selection_property,
                  data_collection=None, data=None,
-                 numeric=True, categorical=True,
+                 numeric=True, datetime=True, categorical=True,
                  pixel_coord=False, world_coord=False, derived=True, none=False):
 
         super(ComponentIDComboHelper, self).__init__(state, selection_property)
@@ -175,6 +177,7 @@ class ComponentIDComboHelper(ComboHelper):
         self.display = display_func_label
 
         self._numeric = numeric
+        self._datetime = datetime
         self._categorical = categorical
         self._pixel_coord = pixel_coord
         self._world_coord = world_coord
@@ -210,6 +213,15 @@ class ComponentIDComboHelper(ComboHelper):
     @numeric.setter
     def numeric(self, value):
         self._numeric = value
+        self.refresh()
+
+    @property
+    def datetime(self):
+        return self._datetime
+
+    @datetime.setter
+    def datetime(self, value):
+        self._datetime = value
         self.refresh()
 
     @property
@@ -338,7 +350,8 @@ class ComponentIDComboHelper(ComboHelper):
 
             cids = [ChoiceSeparator('Main components')]
             for cid in data.main_components:
-                if ((data.get_kind(cid) in ('numerical', 'datetime') and self.numeric) or
+                if ((data.get_kind(cid) == 'numerical' and self.numeric) or
+                        (data.get_kind(cid) == 'datetime' and self.datetime) or
                         (data.get_kind(cid) == 'categorical' and self.categorical)):
                     cids.append(cid)
             if len(cids) > 1:

@@ -5,8 +5,10 @@ import numpy as np
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
+from glue.core import BaseData
 from glue.external.echo.qt import autoconnect_callbacks_to_qt, connect_value
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
+from glue.core.exceptions import IncompatibleAttribute
 
 
 class ScatterLayerStyleEditor(QtWidgets.QWidget):
@@ -44,6 +46,9 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state.add_callback('density_map', self._update_size_mode)
         self.layer_state.add_callback('density_map', self._update_warnings)
         self.layer_state.add_callback('density_map', self._update_checkboxes)
+
+        self.layer_state.viewer_state.add_callback('x_att', self._update_checkboxes)
+        self.layer_state.viewer_state.add_callback('y_att', self._update_checkboxes)
 
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -139,14 +144,35 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.value_density_contrast.setEnabled(self.layer_state.markers_visible)
 
     def _update_checkboxes(self, *args):
+
+        if isinstance(self.layer_state.layer, BaseData):
+            layer = self.layer_state.layer
+        else:
+            layer = self.layer_state.layer.data
+
+        try:
+            x_datetime = layer.get_kind(self.layer_state.viewer_state.x_att) == 'datetime'
+        except IncompatibleAttribute:
+            x_datetime = False
+
+        try:
+            y_datetime = layer.get_kind(self.layer_state.viewer_state.y_att) == 'datetime'
+        except IncompatibleAttribute:
+            y_datetime = False
+
         for checkbox in [self.ui.bool_line_visible, self.ui.bool_xerr_visible,
                          self.ui.bool_yerr_visible, self.ui.bool_vector_visible]:
             if self.layer_state.density_map:
                 checkbox.setEnabled(False)
                 checkbox.setToolTip('Not available with density map')
             else:
-                checkbox.setEnabled(True)
-                checkbox.setToolTip('')
+                if ((x_datetime and checkbox in (self.ui.bool_xerr_visible, self.ui.bool_vector_visible)) or
+                       (y_datetime and checkbox in (self.ui.bool_yerr_visible, self.ui.bool_vector_visible))):
+                    checkbox.setEnabled(False)
+                    checkbox.setToolTip('Not available when using datetime attribute')
+                else:
+                    checkbox.setEnabled(True)
+                    checkbox.setToolTip('')
 
     def _update_line_visible(self, *args):
         self.ui.value_linewidth.setEnabled(self.layer_state.line_visible)
