@@ -3,7 +3,7 @@ import numpy as np
 
 pytest.importorskip('astropy')
 
-from glue.core import ComponentID
+from glue.core import ComponentID, Data, DataCollection
 from glue.core.tests.test_link_helpers import check_link, check_using
 from glue.core.tests.test_state import clone
 
@@ -109,3 +109,37 @@ def test_galactocentric():
     check_using(clone(result[3]), ref, -6.30046229834067)
     check_using(clone(result[4]), ref, 0.03489758558640843)
     check_using(clone(result[5]), ref, 0.055403498825152414)
+
+
+@pytest.mark.parametrize(('conv_class', 'expected'), list(EXPECTED.items()))
+def test_cid_parent(conv_class, expected):
+
+    # Regression test for a bug that caused CIDs in the links in a restored
+    # session to not be set. This was due to the list serializer using
+    # 'do' instead of 'id' which caused ComponentIDs to be reserialized even
+    # if they were already serialized elsewhere in the session file.
+
+    data1 = Data(x=[1, 2, 3], y=[2, 3, 4], label='test1')
+    data2 = Data(a=[1, 2, 3], b=[2, 3, 4], label='test2')
+
+    result = conv_class([data1.id['x'], data1.id['x']],
+                        [data2.id['a'], data2.id['b']])
+
+    dc = DataCollection([data1, data2])
+    dc.add_link(result)
+
+    dc2 = clone(dc)
+
+    assert dc2[0].id['x'].parent is dc2[0]
+    assert dc2[0].id['y'].parent is dc2[0]
+    assert dc2[1].id['a'].parent is dc2[1]
+    assert dc2[1].id['b'].parent is dc2[1]
+
+    el = dc2._link_manager._external_links[0]
+
+    for link in dc2.links:
+        for cid in link.get_from_ids() + link.get_to_ids():
+            if cid.label in ('x', 'y'):
+                assert cid.parent is dc2[0]
+            else:
+                assert cid.parent is dc2[1]
