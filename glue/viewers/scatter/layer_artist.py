@@ -224,8 +224,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     self.scatter_artist.set_offsets(np.zeros((0, 2)))
                 else:
                     self.plot_artist.set_data([], [])
-                    offsets = np.vstack((x, y)).transpose()
-                    self.scatter_artist.set_offsets(offsets)
+                    self.scatter_artist.set_offsets([x, y])
         else:
             self.plot_artist.set_data([], [])
             self.scatter_artist.set_offsets(np.zeros((0, 2)))

@@ -605,16 +605,25 @@ class TestScatterViewer(object):
         data = Data(label='test')
         data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')
         data.add_component(np.array([200, 300, 400, 500], dtype='M8[D]'), 't2')
-        data.add_component(np.array([200, 300, 400, 500]), 'x')
-        data.add_component(np.array([200, 300, 400, 500]), 'y')
+        data.add_component(np.array([200., 300., 400., 500.]), 'x')
+        data.add_component(np.array([200., 300., 400., 500.]), 'y')
         self.data_collection.append(data)
 
         self.viewer.add_data(data)
+        self.viewer.state.x_att = data.id['x']
+        self.viewer.state.y_att = data.id['y']
         self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_att = data.id['x']
         self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].size_att = data.id['y']
         self.viewer.state.layers[0].vector_visible = True
         self.viewer.state.layers[0].xerr_visible = True
         self.viewer.state.layers[0].yerr_visible = True
+
+        process_events()
+
+        self.viewer.state.x_att = data.id['t1']
+        self.viewer.state.y_att = data.id['t2']
 
         process_events()
 

@@ -291,6 +291,10 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
         ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
 
+        self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
+        self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+        self._on_xy_change()
+
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
             self._on_layer_change()
@@ -302,6 +306,19 @@ class ScatterLayerState(MatplotlibLayerState):
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
 
         self.update_from_dict(kwargs)
+
+    def _on_xy_change(self, *event):
+        if self.viewer_state.x_att is None or self.viewer_state.y_att is None:
+            return
+        x_datetime = self.layer.get_kind(self.viewer_state.x_att) == 'datetime'
+        y_datetime = self.layer.get_kind(self.viewer_state.y_att) == 'datetime'
+        with delay_callback(self, 'xerr_visible', 'yerr_visible', 'vector_visible'):
+            if x_datetime:
+                self.xerr_visible = False
+            if y_datetime:
+                self.yerr_visible = False
+            if x_datetime or y_datetime:
+                self.vector_visible = False
 
     def _on_layer_change(self, layer=None):
 

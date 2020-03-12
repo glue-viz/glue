@@ -45,6 +45,9 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.layer_state.add_callback('density_map', self._update_warnings)
         self.layer_state.add_callback('density_map', self._update_checkboxes)
 
+        self.layer_state.viewer_state.add_callback('x_att', self._update_checkboxes)
+        self.layer_state.viewer_state.add_callback('y_att', self._update_checkboxes)
+
         self.layer_state.add_callback('layer', self._update_warnings)
 
         self._update_markers_visible()
@@ -139,14 +142,21 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.value_density_contrast.setEnabled(self.layer_state.markers_visible)
 
     def _update_checkboxes(self, *args):
+        x_datetime = self.layer_state.layer.get_kind(self.layer_state.viewer_state.x_att) == 'datetime'
+        y_datetime = self.layer_state.layer.get_kind(self.layer_state.viewer_state.y_att) == 'datetime'
         for checkbox in [self.ui.bool_line_visible, self.ui.bool_xerr_visible,
                          self.ui.bool_yerr_visible, self.ui.bool_vector_visible]:
             if self.layer_state.density_map:
                 checkbox.setEnabled(False)
                 checkbox.setToolTip('Not available with density map')
             else:
-                checkbox.setEnabled(True)
-                checkbox.setToolTip('')
+                if ((x_datetime and checkbox in (self.ui.bool_xerr_visible, self.ui.bool_vector_visible)) or
+                       (y_datetime and checkbox in (self.ui.bool_yerr_visible, self.ui.bool_vector_visible))):
+                    checkbox.setEnabled(False)
+                    checkbox.setToolTip('Not available when using datetime attribute')
+                else:
+                    checkbox.setEnabled(True)
+                    checkbox.setToolTip('')
 
     def _update_line_visible(self, *args):
         self.ui.value_linewidth.setEnabled(self.layer_state.line_visible)
