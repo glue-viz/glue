@@ -25,6 +25,9 @@ v0.16.0 (unreleased)
 v0.15.7 (2020-03-12)
 --------------------
 
+* Fixed a bug that caused an error when an invalid data was added to the table
+  viewer and the table viewer was then automatically closed. [#2103]
+
 * Fixed a bug that caused session files that were saved with LinkCollection to
   not work correctly when re-loaded. [#2100]
 
