@@ -19,6 +19,10 @@ class SimpleTestState(State):
     nested = ListCallbackProperty()
 
 
+class SubState(State):
+    c = CallbackProperty()
+
+
 def test_state_serialization():
 
     state1 = SimpleTestState()
@@ -511,3 +515,15 @@ def test_percentile_no_log():
                                         percentile='scale')
 
     state.scale = 90
+
+
+def test_update_from_dict():
+
+    state = SimpleTestState()
+    state.flat.append(SubState())
+
+    state.update_from_dict({'a': 1})
+    assert state.a == 1
+
+    state.update_from_dict({'flat': {0: {'c': 2}}})
+    assert state.flat[0].c == 2

@@ -69,7 +69,13 @@ class State(HasCallbackProperties):
         for priority in sorted(groups, reverse=True):
             with delay_callback(self, *groups[priority]):
                 for name in groups[priority]:
-                    setattr(self, name, properties[name])
+                    if isinstance(getattr(self, name), CallbackList):
+                        cblist = getattr(self, name)
+                        for i in range(len(cblist)):
+                            if i in properties[name]:
+                                cblist[i].update_from_dict(properties[name][i])
+                    else:
+                        setattr(self, name, properties[name])
 
     def as_dict(self):
         """
