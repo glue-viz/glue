@@ -610,6 +610,8 @@ class TestScatterViewer(object):
         self.data_collection.append(data)
 
         self.viewer.add_data(data)
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].size_mode = 'Linear'
         self.viewer.state.layers[0].vector_visible = True
         self.viewer.state.layers[0].xerr_visible = True
         self.viewer.state.layers[0].yerr_visible = True
