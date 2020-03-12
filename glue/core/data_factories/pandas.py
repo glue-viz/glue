@@ -18,6 +18,7 @@ def panda_process(indf):
     """
     result = Data()
     for name, column in indf.iteritems():
+
         if (column.dtype == np.object) | (column.dtype == np.bool):
 
             # try to salvage numerical data
@@ -31,7 +32,7 @@ def panda_process(indf):
             else:
                 # pandas has a 'special' nan implementation and this doesn't
                 # play well with np.unique
-                c = CategoricalComponent(column.fillna(''))
+                c = CategoricalComponent(np.array(column.fillna(''), dtype='U'))
         else:
             c = Component.autotyped(column.values)
 

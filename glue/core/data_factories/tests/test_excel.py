@@ -48,7 +48,9 @@ def test_excel_single():
     d = panda_read_excel(os.path.join(DATA, 'simple_data.xlsx'), sheet='Data2')[0]
 
     assert_array_equal(d['1'], [2, 3, 4, 5])
+    assert d['1'].dtype.kind == 'i'
     assert_array_equal(d['a'], ['b', 'c', 'd', 'e'])
+    assert d['a'].dtype.kind == 'U'
 
     assert d.label == 'simple_data:Data2'
 
@@ -67,5 +69,8 @@ def test_excel_datetime():
     expected = np.array(['2019-01-01', '2019-02-01', '2019-03-01', '2019-04-01'], dtype='datetime64[ns]')
 
     assert_array_equal(d['date'], expected)
+    assert d['date'].dtype.kind == 'M'
     assert_allclose(d['a'], [61.35, 44.06, 83.02, 66.15])
+    assert d['a'].dtype.kind == 'f'
     assert_allclose(d['b'], [79.34, 15.66, 84.30, 61.53])
+    assert d['b'].dtype.kind == 'f'
