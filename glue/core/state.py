@@ -581,7 +581,7 @@ def _load_tuple(rec, context):
 
 @saver(list)
 def _save_list(state, context):
-    return dict(contents=[context.do(item) for item in state])
+    return dict(contents=[context.id(item) for item in state])
 
 
 @loader(list)

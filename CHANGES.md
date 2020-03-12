@@ -22,6 +22,12 @@ v0.16.0 (unreleased)
 
 * Improved ``IndexedData`` so that world coordinates can now be shown. [#2081]
 
+v0.15.7 (2020-03-12)
+--------------------
+
+* Fixed a bug that caused session files that were saved with LinkCollection to
+  not work correctly when re-loaded. [#2100]
+
 v0.15.6 (2019-08-22)
 --------------------
 
