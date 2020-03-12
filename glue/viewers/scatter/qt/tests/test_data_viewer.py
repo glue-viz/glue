@@ -597,6 +597,30 @@ class TestScatterViewer(object):
 
         ga.close()
 
+    def test_datetime64_disabled(self, capsys):
+
+        # Make sure that datetime components aren't options for the vector and
+        # error markers.
+
+        data = Data(label='test')
+        data.add_component(np.array([100, 200, 300, 400], dtype='M8[D]'), 't1')
+        data.add_component(np.array([200, 300, 400, 500], dtype='M8[D]'), 't2')
+        data.add_component(np.array([200, 300, 400, 500]), 'x')
+        data.add_component(np.array([200, 300, 400, 500]), 'y')
+        self.data_collection.append(data)
+
+        self.viewer.add_data(data)
+        self.viewer.state.layers[0].vector_visible = True
+        self.viewer.state.layers[0].xerr_visible = True
+        self.viewer.state.layers[0].yerr_visible = True
+
+        process_events()
+
+        #  We use capsys here because the # error is otherwise only apparent in stderr.
+        out, err = capsys.readouterr()
+        assert out.strip() == ""
+        assert err.strip() == ""
+
     def test_density_map_incompatible_subset(self, capsys):
 
         # Regression test for a bug that caused the scatter viewer to crash

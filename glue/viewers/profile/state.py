@@ -58,7 +58,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('normalize', self._reset_y_limits)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
-                                                   numeric=False, categorical=False,
+                                                   numeric=False, datetime=False, categorical=False,
                                                    pixel_coord=True)
 
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))

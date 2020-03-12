@@ -242,16 +242,16 @@ class ScatterLayerState(MatplotlibLayerState):
                                                       numeric=True, categorical=False)
 
         self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att',
-                                                      numeric=True, categorical=False)
+                                                      numeric=True, datetime=False, categorical=False)
 
         self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att',
-                                                    numeric=True, categorical=False)
+                                                    numeric=True, datetime=False, categorical=False)
 
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
-                                                    numeric=True, categorical=False)
+                                                    numeric=True, datetime=False, categorical=False)
 
         points_mode_display = {'auto': 'Density map or markers (auto)',
                                'markers': 'Markers',
