@@ -70,11 +70,11 @@ class LayerArtistModel(PythonListModel):
                 result = (result | Qt.ItemIsEditable | Qt.ItemIsDragEnabled |
                           Qt.ItemIsUserCheckable)
             else:
-                result = (result & Qt.ItemIsUserCheckable) ^ result
+                result = int(result & Qt.ItemIsUserCheckable) ^ int(result)
         else:  # only drop between rows, where index isn't valid
             result = result | Qt.ItemIsDropEnabled
 
-        return result
+        return Qt.ItemFlags(int(result))
 
     def setData(self, index, value, role):
         if not index.isValid():
