@@ -336,7 +336,10 @@ class connect_value(BaseConnection):
         if self._value_range is not None:
             imin, imax = self._widget.minimum(), self._widget.maximum()
             value = (value - self._value_range[0]) / (self._value_range[1] - self._value_range[0]) * (imax - imin) + imin
-        self._widget.setValue(value)
+        if isinstance(self._widget, QtWidgets.QSlider):
+            self._widget.setValue(int(value))
+        else:
+            self._widget.setValue(value)
 
     def connect(self):
         add_callback(self._instance, self._prop, self.update_widget)
@@ -446,7 +449,7 @@ class connect_combo_selection(BaseConnection):
                 if isinstance(choice, ChoiceSeparator):
                     item = combo_model.item(index)
                     palette = self._widget.palette()
-                    item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
+                    item.setFlags(Qt.ItemFlags(int(item.flags()) & int(~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))))
                     item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
 
             choices_updated = True
@@ -538,7 +541,7 @@ class connect_list_selection(BaseConnection):
                 # We interpret None data as being disabled rows (used for headers)
                 if isinstance(choice, ChoiceSeparator):
                     palette = self._widget.palette()
-                    item.setFlags(item.flags() & ~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))
+                    item.setFlags(Qt.ItemFlags(int(item.flags()) & int(~(Qt.ItemIsSelectable | Qt.ItemIsEnabled))))
                     # item.setData(palette.color(QtGui.QPalette.Disabled, QtGui.QPalette.Text))
 
         if len(self._widget.selectedItems()) == 0:
