@@ -25,6 +25,9 @@ v0.16.0 (unreleased)
 v0.15.7 (2020-03-12)
 --------------------
 
+* Fix bug that caused an infinite loop in the table viewer and caused glue to
+  hang if too many incompatible subsets were in a table viewer. [#2105]
+
 * Fixed a bug that caused an error when an invalid data was added to the table
   viewer and the table viewer was then automatically closed. [#2103]
 

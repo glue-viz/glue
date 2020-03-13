@@ -100,7 +100,11 @@ class DataTableModel(QtCore.QAbstractTableModel):
                         if subset.to_mask(view=slice(idx, idx + 1))[0]:
                             colors.append(subset.style.color)
                     except IncompatibleAttribute as exc:
-                        layer_artist.disable_invalid_attributes(*exc.args)
+                        # Only disable the layer if enabled, as otherwise we
+                        # will recursively call clear and _refresh, causing
+                        # an infinite loop and performance issues.
+                        if layer_artist.enabled:
+                            layer_artist.disable_invalid_attributes(*exc.args)
                     else:
                         layer_artist.enabled = True
 
