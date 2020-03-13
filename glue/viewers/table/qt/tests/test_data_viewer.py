@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt
@@ -432,3 +432,29 @@ def test_graceful_close_after_invalid(capsys):
     out, err = capsys.readouterr()
     assert out.strip() == ""
     assert err.strip() == ""
+
+
+def test_incompatible_subset():
+
+    # Regression test for a bug that caused the table to be refreshed in an
+    # infinite loop if incompatible subsets were present.
+
+    data1 = Data(a=[1, 2, 3, 4, 5], label='test1')
+    data2 = Data(a=[1, 2, 3, 4, 5], label='test2')
+    dc = DataCollection([data1, data2])
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableViewer)
+    viewer.add_data(data1)
+
+    dc.new_subset_group('test subset', data2.id['a'] > 2)
+    gapp.show()
+    process_events()
+
+    with patch.object(viewer.layers[0], '_refresh') as refresh1:
+        with patch.object(viewer.layers[1], '_refresh') as refresh2:
+            process_events(0.5)
+
+    assert refresh1.call_count == 0
+    assert refresh2.call_count == 0
