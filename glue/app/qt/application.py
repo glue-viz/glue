@@ -1017,7 +1017,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if detail is None:
             title = "Glue"
         else:
-            title = "Glue ("+detail+")"
+            title = "Glue (" + detail + ")"
         self.setWindowTitle(title)
 
     def _on_session_changed(self, name):
@@ -1055,8 +1055,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
                               include_data="including data" in file_filter,
                               absolute_paths="absolute" in file_filter)
         self._on_session_changed(outfile)
-
-
 
     @messagebox_on_error("Failed to restore session")
     def _restore_session(self, *args):
