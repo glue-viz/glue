@@ -5,6 +5,8 @@ from functools import wraps
 import numpy as np
 import matplotlib.units as units
 import matplotlib.dates as dates
+from matplotlib.legend_handler import HandlerBase
+from matplotlib.patches import Rectangle
 
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
@@ -330,6 +332,41 @@ def cache_axes(axes, toolbar):
     toolbar.pan_end.connect(cache.disable)
     return cache
 
+
+class ColormapPatchHandler(HandlerBase):
+    def __init__(self, cmap, nb_subpatch=10, xpad=0.0, ypad=0.0):
+        """
+        A custom legend handler to represent 2D dataset coded in colormaps
+
+        Parameters
+        ----------
+        cmap : `~matplotlib.colors.colormap`
+            The matplotlib colormap to use
+        nb_subpatch : int, optional
+            The number of stripes to use to represent the colormap.
+            The default is 10.
+        xpad : float, optional
+            Padding in the x direction. The default is 0.0.
+        ypad : float, optional
+            Padding in the y direction. The default is 0.0.
+
+        """
+        super().__init__(xpad, ypad)
+        self.nb_subpatch = nb_subpatch
+        self.cmap = cmap
+
+    def create_artists(self, legend, orig_handle,
+                       xdescent, ydescent, width, height, fontsize,
+                       trans):
+        collection = []
+        for i in range(self.nb_subpatch):
+            width_sub = width / self.nb_subpatch
+            x = xdescent + i * width_sub
+            collection.append(
+                Rectangle((x, ydescent), width_sub, height, transform=trans,
+                          facecolor=self.cmap(i / (self.nb_subpatch - 1)),
+                          edgecolor="none"))
+        return collection
 
 # In Matplotlib < 2.2, there is no datetime64 support, so we register a converter
 # here to deal with it with older versions.
