@@ -527,14 +527,18 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # reference to the self.histogram2d method in density artist.
         self.density_artist = None
 
-
     def get_handle_legend(self):
-        if not self.state.line_visible:
-            linestyle="none"
-        else:
-            linestyle=self.state.linestyle
+        if self.state.visible:
+            if not self.state.line_visible:
+                linestyle = "none"
+            else:
+                linestyle = self.state.linestyle
 
-        return Line2D([0],[0],marker="o",
-                      ms=self.state.size, alpha=self.state.alpha,
-                      linestyle=linestyle, linewidth=self.state.linewidth,
-                      color=self.get_layer_color()), self.layer.label
+            handle = Line2D([0], [0], marker="o",
+                            ms=self.state.size, alpha=self.state.alpha,
+                            linestyle=linestyle, linewidth=self.state.linewidth,
+                            color=self.get_layer_color())
+
+            return handle, self.layer.label, None
+        else:
+            return None, None, None

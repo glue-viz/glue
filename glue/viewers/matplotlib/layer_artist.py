@@ -63,7 +63,12 @@ class MatplotlibLayerArtist(LayerArtist):
         return self.state.color
 
     def get_handle_legend(self):
-        return mpatches.Patch(color=self.get_layer_color()), self.layer.label
+        # The default legend handle for matplotlib viewer
+        if self.state.visible:
+            handle = mpatches.Patch(color=self.get_layer_color())
+            return handle, self.layer.label, None
+        else:
+            return None, None, None
 
     def redraw(self):
         self.axes.figure.canvas.draw_idle()
