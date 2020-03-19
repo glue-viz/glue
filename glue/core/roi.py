@@ -447,6 +447,10 @@ class CircularROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
+    def move_to(self, xdelta, ydelta):
+        self.xc += xdelta
+        self.yc += ydelta
+
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
                     yc=context.do(self.yc),
@@ -522,6 +526,10 @@ class EllipticalROI(Roi):
 
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
+
+    def move_to(self, xdelta, ydelta):
+        self.xc += xdelta
+        self.yc += ydelta
 
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
