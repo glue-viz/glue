@@ -850,73 +850,6 @@ class TestYRangeMpl(TestMpl):
         assert_almost_equal(roi._roi.max, 10.0)
 
 
-class TestCircleMpl(TestMpl):
-
-    def _roi_factory(self):
-        return MplCircularROI(self.axes)
-
-    def setup_method(self, method):
-        super(TestCircleMpl, self).setup_method(method)
-        self.pixel_to_data = r.pixel_to_data
-        self.data_to_pixel = r.data_to_pixel
-
-        r.pixel_to_data = lambda x, y, z: np.column_stack((y, z))
-        r.data_to_pixel = lambda x, y, z: np.column_stack((y, z))
-
-    def teardown_method(self, method):
-        # restore methods
-        r.pixel_to_data = self.pixel_to_data
-        r.data_to_pixel = self.data_to_pixel
-
-    def test_proper_roi(self):
-        assert isinstance(self.roi._roi, CircularROI)
-
-    def test_to_polygon_undefined(self):
-        """to_polygon() result should be undefined before defining polygon"""
-        roi = self.roi.roi()
-        assert not roi.defined()
-
-    def test_roi_defined_correctly(self):
-        ev0 = DummyEvent(0, 0, inaxes=self.axes)
-        ev1 = DummyEvent(5, 0, inaxes=self.axes)
-        self.roi.start_selection(ev0)
-        self.roi.update_selection(ev1)
-        self.roi.finalize_selection(ev1)
-        self.assert_roi_correct(0, 0, 5)
-
-    def assert_roi_correct(self, x, y, r):
-        roi = self.roi.roi()
-        assert roi.defined()
-        assert roi.contains(x, y)
-        assert roi.contains(x + .95 * r, y)
-        assert not roi.contains(x + 1.05 * r, y)
-        assert not roi.contains(x + .8 * r, y + .8 * r)
-
-    def test_scrub(self):
-
-        roi = self.scrub()
-
-        assert roi._roi.xc == 6
-        assert roi._roi.yc == 7
-        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
-
-    def test_abort(self):
-
-        roi = self.scrub(abort=True)
-
-        assert roi._roi.xc == 5
-        assert roi._roi.yc == 5
-        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
-
-    def test_outside(self):
-
-        roi = self.scrub(outside=True)
-
-        assert roi._roi.xc == 5
-        assert roi._roi.yc == 5
-        assert_almost_equal(roi._roi.radius, 7.0, decimal=0)
-
-
 def test_circular_roi_representation():
 
     # Test cases where drawn circular ROIs are converted to circles, ellipses,
@@ -977,7 +910,6 @@ def test_circular_roi_representation():
     assert_allclose(roi.xc, 50)
     assert_allclose(roi.yc, 1)
     assert_allclose(roi.radius, 30)
-
 
 
 class TestCircleMpl(TestMpl):
