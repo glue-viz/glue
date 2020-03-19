@@ -16,7 +16,7 @@ __all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
            'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase',
-           'CategoricalROI']
+           'CategoricalROI', 'EllipticalROI']
 
 PATCH_COLOR = '#FFFF00'
 SCRUBBING_KEY = 'control'
@@ -447,6 +447,10 @@ class CircularROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
+    def move_to(self, xdelta, ydelta):
+        self.xc += xdelta
+        self.yc += ydelta
+
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
                     yc=context.do(self.yc),
@@ -455,6 +459,88 @@ class CircularROI(Roi):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xc=rec['xc'], yc=rec['yc'], radius=rec['radius'])
+
+
+class EllipticalROI(Roi):
+    """
+    A 2D elliptical region of interest.
+    """
+
+    def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
+        super(EllipticalROI, self).__init__()
+        if theta is not None:
+            raise NotImplementedError("Rotated ellipses are not yet supported")
+        self.xc = xc
+        self.yc = yc
+        self.radius_x = radius_x
+        self.radius_y = radius_y
+
+    def contains(self, x, y):
+        """
+        Test whether a set of (x,y) points falls within
+        the region of interest
+
+        :param x: A list of x points
+        :param y: A list of y points
+
+        *Returns*
+
+           A list of True/False values, for whether each (x,y)
+           point falls within the ROI
+
+        """
+        if not self.defined():
+            raise UndefinedROI
+
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
+        return (((x - self.xc) ** 2 / self.radius_x ** 2 +
+                 (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
+
+    def reset(self):
+        """
+        Reset the rectangular region.
+        """
+        self.xc = None
+        self.yc = None
+        self.radius_x = 0.
+        self.radius_y = 0.
+
+    def defined(self):
+        """ Returns True if the ROI is defined """
+        return (self.xc is not None and
+                self.yc is not None and
+                self.radius_x is not None and
+                self.radius_y is not None)
+
+    def to_polygon(self):
+        """ Returns x, y, where each is a list of points """
+        if not self.defined():
+            return [], []
+        theta = np.linspace(0, 2 * np.pi, num=20)
+        x = self.xc + self.radius_x * np.cos(theta)
+        y = self.yc + self.radius_y * np.sin(theta)
+        return x, y
+
+    def transformed(self, xfunc=None, yfunc=None):
+        return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
+
+    def move_to(self, xdelta, ydelta):
+        self.xc += xdelta
+        self.yc += ydelta
+
+    def __gluestate__(self, context):
+        return dict(xc=context.do(self.xc),
+                    yc=context.do(self.yc),
+                    radius_x=context.do(self.radius_x),
+                    radius_y=context.do(self.radius_y))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(xc=rec['xc'], yc=rec['yc'],
+                   radius_x=rec['radius_x'], radius_y=rec['radius_y'])
 
 
 class VertexROIBase(Roi):
@@ -1187,15 +1273,35 @@ class MplCircularROI(AbstractMplRoi):
     def roi(self):
         if not self._roi.defined():
             return PolygonalROI()
-        theta = np.linspace(0, 2 * np.pi, num=200)
+
+        # Get the circular ROI parameters in pixel units
         xy_center = self._roi.get_center()
         rad = self._roi.get_radius()
-        x = xy_center[0] + rad * np.cos(theta)
-        y = xy_center[1] + rad * np.sin(theta)
-        xy_data = pixel_to_data(self._axes, x, y)
-        vx = xy_data[:, 0].ravel().tolist()
-        vy = xy_data[:, 1].ravel().tolist()
-        result = PolygonalROI(vx, vy)
+
+        # At this point, if one of the axes is not linear, we convert to a polygon
+        if self._axes.get_xscale() != 'linear' or self._axes.get_yscale() != 'linear':
+            theta = np.linspace(0, 2 * np.pi, num=200)
+            x = xy_center[0] + rad * np.cos(theta)
+            y = xy_center[1] + rad * np.sin(theta)
+            xy_data = pixel_to_data(self._axes, x, y)
+            vx = xy_data[:, 0].ravel().tolist()
+            vy = xy_data[:, 1].ravel().tolist()
+            result = PolygonalROI(vx, vy)
+        else:
+            # We should now check if the radius in data coordinates is the same
+            # along x and y, as if so then we can return a circle, otherwise we
+            # should return an ellipse.
+            x = xy_center[0] + np.array([0, 0, rad])
+            y = xy_center[1] + np.array([0, rad, rad])
+            xy_data = pixel_to_data(self._axes, x, y)
+            rx = xy_data[2, 0] - xy_data[0, 0]
+            ry = xy_data[1, 1] - xy_data[0, 1]
+            xc, yc = xy_data[0, :]
+            if np.allclose(rx, ry):
+                return CircularROI(xc=xc, yc=yc, radius=rx)
+            else:
+                return EllipticalROI(xc=xc, yc=yc, radius_x=rx, radius_y=ry)
+
         return result
 
     def finalize_selection(self, event):

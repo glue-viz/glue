@@ -1,7 +1,11 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
+from collections import namedtuple
+
 import pytest
 import numpy as np
+from numpy.testing import assert_allclose
+import matplotlib.pyplot as plt
 from unittest.mock import MagicMock
 from matplotlib.figure import Figure
 from numpy.testing import assert_almost_equal
@@ -10,7 +14,8 @@ from .. import roi as r
 from ..component import CategoricalComponent
 from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalROI,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
-                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI, Projected3dROI)
+                   XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI, Projected3dROI,
+                   EllipticalROI)
 
 
 FIG = Figure()
@@ -272,6 +277,78 @@ class TestCircle(object):
         y = np.array([-.1, -.2, -.3, -.4]).reshape(2, 2)
         assert self.roi.contains(x, y).all()
         assert not self.roi.contains(x + 1, y).any()
+        assert self.roi.contains(x, y).shape == (2, 2)
+
+
+class TestEllipse(object):
+
+    def setup_method(self, method):
+        self.roi_empty = EllipticalROI()
+        self.roi = EllipticalROI(1, 2, 3, 4)
+
+    def test_undefined_on_creation(self):
+        assert not self.roi_empty.defined()
+        assert self.roi.defined()
+
+    def test_contains_on_undefined_contains_raises(self):
+        with pytest.raises(UndefinedROI):
+            self.roi_empty.contains(1, 1)
+        self.roi.contains(1, 1)
+
+    def test_set_center(self):
+        assert self.roi.contains(0, 0)
+        assert not self.roi.contains(12, 12)
+        self.roi.xc = 11
+        self.roi.yc = 12
+        assert not self.roi.contains(0, 0)
+        assert self.roi.contains(12, 12)
+
+    def test_set_radius(self):
+        assert self.roi.contains(0, 0)
+        assert not self.roi.contains(12, 12)
+        self.roi.radius_y = 100
+        assert self.roi.contains(0, 0)
+        assert not self.roi.contains(12, 12)
+        self.roi.radius_x = 100
+        assert self.roi.contains(0, 0)
+        assert self.roi.contains(12, 12)
+
+    def test_contains_many(self):
+        x = [0, 0, 0, 0, 0]
+        y = [0, 0, 0, 0, 0]
+        assert all(self.roi.contains(x, y))
+        assert all(self.roi.contains(np.asarray(x), np.asarray(y)))
+        assert not any(self.roi.contains(np.asarray(x) + 10, y))
+
+    def test_poly(self):
+        x, y = self.roi.to_polygon()
+        poly = PolygonalROI(vx=x, vy=y)
+        assert poly.contains(0, 0)
+        assert not poly.contains(10, 0)
+
+    def test_poly_undefined(self):
+        x, y = self.roi_empty.to_polygon()
+        assert x == []
+        assert y == []
+
+    def test_reset(self):
+        assert not self.roi_empty.defined()
+        self.roi_empty.xc = 1
+        assert not self.roi_empty.defined()
+        self.roi_empty.yc = 2
+        assert not self.roi_empty.defined()
+        self.roi_empty.radius_x = 3
+        assert not self.roi_empty.defined()
+        self.roi_empty.radius_y = 4
+        assert self.roi_empty.defined()
+        self.roi_empty.reset()
+        assert not self.roi_empty.defined()
+
+    def test_multidim(self):
+        x = np.array([.1, .2, .3, .4]).reshape(2, 2)
+        y = np.array([-.1, -.2, -.3, -.4]).reshape(2, 2)
+        assert self.roi.contains(x, y).all()
+        assert not self.roi.contains(x + 10, y).any()
         assert self.roi.contains(x, y).shape == (2, 2)
 
 
@@ -771,6 +848,68 @@ class TestYRangeMpl(TestMpl):
 
         assert_almost_equal(roi._roi.min, 5.0)
         assert_almost_equal(roi._roi.max, 10.0)
+
+
+def test_circular_roi_representation():
+
+    # Test cases where drawn circular ROIs are converted to circles, ellipses,
+    # and polygons. Here we don't override pixel_to_data and data_to_pixel
+    # since these are important.
+
+    event = namedtuple('Event', ['inaxes', 'xdata', 'ydata', 'key'])
+
+    fig = plt.figure(figsize=(6, 4))
+    ax = fig.add_subplot(1, 1, 1)
+
+    # Case 1: log-linear axes
+
+    ax.set_xlim(10, 100)
+    ax.set_ylim(-2, 5)
+    ax.set_xscale('log')
+    ax.set_yscale('linear')
+
+    fig.canvas.draw()
+
+    mpl_roi = MplCircularROI(ax)
+    mpl_roi.start_selection(event(inaxes=ax, xdata=50, ydata=1, key=None))
+    mpl_roi.update_selection(event(inaxes=ax, xdata=100, ydata=1, key=None))
+    roi = mpl_roi.roi()
+    assert isinstance(roi, PolygonalROI)
+
+    # Case 2: linear-linear axes with non-square aspect ratio
+
+    ax.set_xlim(-40, 100)
+    ax.set_ylim(-2, 5)
+    ax.set_xscale('linear')
+    ax.set_yscale('linear')
+
+    fig.canvas.draw()
+
+    mpl_roi = MplCircularROI(ax)
+    mpl_roi.start_selection(event(inaxes=ax, xdata=30, ydata=1, key=None))
+    mpl_roi.update_selection(event(inaxes=ax, xdata=80, ydata=1, key=None))
+    roi = mpl_roi.roi()
+    assert isinstance(roi, EllipticalROI)
+    assert_allclose(roi.xc, 30)
+    assert_allclose(roi.yc, 1)
+    assert_allclose(roi.radius_x, 50)
+    assert_allclose(roi.radius_y, 5.871212)
+
+    # Case 3: linear-linear axes with square aspect ratio
+
+    ax.set_aspect('equal')
+    ax.set_xlim(-40, 100)
+
+    fig.canvas.draw()
+
+    mpl_roi = MplCircularROI(ax)
+    mpl_roi.start_selection(event(inaxes=ax, xdata=50, ydata=1, key=None))
+    mpl_roi.update_selection(event(inaxes=ax, xdata=80, ydata=1, key=None))
+    roi = mpl_roi.roi()
+    assert isinstance(roi, CircularROI)
+    assert_allclose(roi.xc, 50)
+    assert_allclose(roi.yc, 1)
+    assert_allclose(roi.radius, 30)
 
 
 class TestCircleMpl(TestMpl):
