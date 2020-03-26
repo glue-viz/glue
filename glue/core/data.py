@@ -454,15 +454,15 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
+    def compute_statistic(self, statistic, cid=None, subset_state=None,
                           finite=True, positive=False, percentile=None, view=None,
-                          random_subset=None):
+                          bin_by=None, shape=None, limits=None, log=False):
         """
         Compute a statistic for the data.
 
         Parameters
         ----------
-        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile', 'count'}
             The statistic to compute
         cid : `ComponentID` or str
             The component ID to compute the statistic on - if given as a string
@@ -484,10 +484,26 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             If ``statistic`` is ``'percentile'``, the ``percentile`` argument
             should be given and specify the percentile to calculate in the
             range [0:100]
-        random_subset : int, optional
-            If specified, this should be an integer giving the number of values
-            to use for the statistic. This can only be used if ``axis`` is `None`
+        bin_by : `ComponentID` or str or list of `ComponentID` or str
+            If not specified, the statistic is evaluated as a scalar over the
+            whole data. If specified, the statistic is evaluated in bins along
+            the specified component.
+        log : bool or list of bool
+            Whether to bin in log space (can be controlled on an axis by axis basis)
+        shape : int or tuple, optional
+            If ``bin_by`` is specified, this specifies the number of bins in each
+            dimension. If ``bin_by`` consists of `PixelComponentID` objects,
+            this defaults to the shape of the underlying pixel dimensions, otherwise
+            it should be explicitly specified. If `bin_by` includes a mix of
+            `PixelComponentID` and normal `ComponentID`, a `None` can be used
+            for the shape of the pixel dimension in order to make it default to
+            the underlying data shape.
+        limits : tuple or list of tuple
+            If ``bin_by`` is specified, this gives the limits to use for the
+            binning. For `PixelComponentID` objects, this defaults to the pixel
+            range of the dataset. For other kinds of `ComponentID`, this should
         """
+
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -1557,25 +1573,24 @@ class Data(BaseCartesianData):
     # The following are methods for accessing the data in various ways that
     # can be overriden by subclasses that want to improve performance.
 
-    def compute_statistic(self, statistic, cid, subset_state=None, axis=None,
+    def compute_statistic(self, statistic, cid=None, subset_state=None,
                           finite=True, positive=False, percentile=None, view=None,
-                          random_subset=None, n_chunk_max=40000000):
+                          bin_by=None, shape=None, limits=None, log=False):
         """
         Compute a statistic for the data.
 
         Parameters
         ----------
-        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
+        statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile', 'count'}
             The statistic to compute
-        cid : `ComponentID` or str
+        cid : `ComponentID` or str, optional
             The component ID to compute the statistic on - if given as a string
             this will be assumed to be for the component belonging to the dataset
-            (not external links).
+            (not external links). Not needed if computing 'count' since ``bin_by``
+            is what will matter.
         subset_state : `SubsetState`
             If specified, the statistic will only include the values that are in
             the subset specified by this subset state.
-        axis : None or int or tuple of int
-            If specified, the axis/axes to compute the statistic over.
         finite : bool, optional
             Whether to include only finite values in the statistic. This should
             be `True` to ignore NaN/Inf values
@@ -1587,89 +1602,95 @@ class Data(BaseCartesianData):
             If ``statistic`` is ``'percentile'``, the ``percentile`` argument
             should be given and specify the percentile to calculate in the
             range [0:100]
-        random_subset : int, optional
-            If specified, this should be an integer giving the number of values
-            to use for the statistic. This can only be used if ``axis`` is `None`
-        n_chunk_max : int, optional
-            If there are more elements in the array than this value, operate in
-            chunks with at most this size.
+        bin_by : `ComponentID` or str or list of `ComponentID` or str
+            If not specified, the statistic is evaluated as a scalar over the
+            whole data. If specified, the statistic is evaluated in bins along
+            the specified component.
+        log : bool or list of bool
+            Whether to bin in log space (can be controlled on an axis by axis basis)
+        shape : int or tuple, optional
+            If ``bin_by`` is specified, this specifies the number of bins in each
+            dimension. If ``bin_by`` consists of `PixelComponentID` objects,
+            this defaults to the shape of the underlying pixel dimensions, otherwise
+            it should be explicitly specified. If `bin_by` includes a mix of
+            `PixelComponentID` and normal `ComponentID`, a `None` can be used
+            for the shape of the pixel dimension in order to make it default to
+            the underlying data shape.
+        limits : tuple or list of tuple
+            If ``bin_by`` is specified, this gives the limits to use for the
+            binning. For `PixelComponentID` objects, this defaults to the pixel
+            range of the dataset. For other kinds of `ComponentID`, this should
         """
 
-        # TODO: generalize chunking to more types of axis
+        if bin_by and not isinstance(bin_by, list):
+            bin_by = [bin_by,]
+        if log is not None and not isintance(log, list):
+            log = [log,]
+        if shape and not isinstance(shape, tuple):
+            shape = (shape,)
+        if limits and not isinstance(limits, list):
+            limits = [limits, ]
 
-        if (view is None and
-                isinstance(axis, tuple) and
-                len(axis) > 0 and
-                len(axis) == self.ndim - 1 and
-                self.size > n_chunk_max and
-                not isinstance(subset_state, SliceSubsetState)):
+        keep = None
+        is_slice_subset = isinstance(subset_state, SliceSubsetState)
+        if subset_state and not  is_slice_subset:
+            keep = subset_state.to_mask(self)
 
-            # We operate in chunks here to avoid memory issues.
-
-            # TODO: there are cases where the code below is not optimized
-            # because the mask may be computable for a single slice and
-            # broadcastable to all slices - normally ROISubsetState takes care
-            # of that but if we call it once per view it won't. In the future we
-            # could ask a SubsetState whether it is broadcasted along
-            # axis_index.
-
-            axis_index = [a for a in range(self.ndim) if a not in axis][0]
-
-            result = np.zeros(self.shape[axis_index])
-
-            chunk_shape = list(self.shape)
-
-            # Deliberately leave n_chunks as float to not round twice
-            n_chunks = self.size / n_chunk_max
-
-            chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
-
-            for chunk_view in iterate_chunks(self.shape, chunk_shape=chunk_shape):
-                values = self.compute_statistic(statistic, cid, subset_state=subset_state,
-                                                axis=axis, finite=finite, positive=positive,
-                                                percentile=percentile, view=chunk_view)
-                result[chunk_view[axis_index]] = values
-
-            return result
-
-        if subset_state:
-            if isinstance(subset_state, SliceSubsetState) and view is None:
-                mask = None
-                data = subset_state.to_array(self, cid)
-            else:
-                mask = subset_state.to_mask(self, view)
-                if np.any(unbroadcast(mask)):
-                    data = self.get_data(cid, view)
+        num_total_bins = 1
+        bins_per_dim = []
+        bin_ids = None
+        for i, bin_by_cid in enumerate(bin_by):
+            if isinstance(bin_by_cid, string):
+                bin_by_cid = self.id[bin_by_cid]
+            if bin_by_cid not in self.pixel_component_ids:
+                bins_along_dim = shape[i]
+                if log and log[i]:
+                    bin_lims = np.logspace(limits[i][0], limits[i][1], bins_along_dim+1)
                 else:
-                    if axis is None:
-                        return np.nan
-                    else:
-                        if isinstance(axis, int):
-                            axis = [axis]
-                        final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
-                        return broadcast_to(np.nan, final_shape)
-        else:
-            data = self.get_data(cid, view=view)
-            mask = None
+                    bin_lims = np.linspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
 
-        if isinstance(data, categorical_ndarray):
-            data = data.codes
+                if is_slice_subset:
+                    data = subset_state.to_array(self, cid)
+                else:
+                    data = self.get_data(bin_by_cid)
 
-        if axis is None and mask is None:
-            # Since we are just finding overall statistics, not along axes, we
-            # can remove any broadcasted dimension since these should not affect
-            # the statistics.
-            data = unbroadcast(data)
+                digit = np.digitize(data, bin_lims)
+                #Mask elements outside of limit
+                if keep:
+                    keep &= digit > 0 & digit <= bin_lims.size
+                else:
+                    keep = digit > 0 & digit <= bin_lims.size
 
-        if random_subset and data.size > random_subset:
-            if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
-                self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
-            data = data.ravel(order="K")[self._random_subset_indices[1]]
-            if mask is not None:
-                mask = mask.ravel(order="K")[self._random_subset_indices[1]]
+                digit -= 1
 
-        return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
-                                 positive=positive, percentile=percentile)
+            else:
+                axis = bin_by_cid.axis
+                bins_along_dim = self.shape[axis]
+                digit = np.arange(bins_along_dim)
+                #Reshape to leverage broadcasting
+                digit_dims = [digit.size if i == axis else 1 for i in range(data.ndim)]
+                digit = digit.reshape(digit_dims)
+
+            bins_per_dim.append(bins_on_dim)
+            num_total_bins *= bins_along_dim
+            if bin_ids:
+                bin_ids = bin_ids*bins_along_dim+digit
+            else:
+                bin_ids = digit
+        res = np.zeros((num_total_bins,))
+        for i in range(num_total_bins):
+            tmp_mask = keep & bin_ids == i
+            if statistic == 'count':
+                res[i] = np.count_nonzero(tmp_mask)
+            else:
+                data = self.get_data(cid)
+                res[i] = compute_statistic(statistc=statistic, data=data, mask=tmp_mask,
+                                           positive=positive, percentile=percentile)
+        res.reshape(bins_per_dim)
+        return res
+
+
 
     def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
