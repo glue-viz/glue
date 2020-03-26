@@ -290,7 +290,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
         # Even though we loaded the plugins in start_glue, we re-load them here
         # in case glue was started directly by initializing this class.
-        load_plugins()
+        load_plugins(require_qt_plugins=True)
 
         self.setWindowTitle("Glue")
         self.setWindowIcon(icon)
