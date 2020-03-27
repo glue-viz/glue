@@ -22,6 +22,10 @@ v0.16.0 (unreleased)
 
 * Improved ``IndexedData`` so that world coordinates can now be shown. [#2081]
 
+* Make loading Qt plugins optional when calling ``load_plugins``. [#2112]
+
+* Preserve ``RectangularROI`` rather than converting them to ``PolygonalROI``. [#2112]
+
 v0.15.7 (2020-03-12)
 --------------------
 

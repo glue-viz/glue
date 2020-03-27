@@ -153,7 +153,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
     # Start off by loading plugins. We need to do this before restoring
     # the session or loading the configuration since these may use existing
     # plugins.
-    load_plugins(splash=splash)
+    load_plugins(splash=splash, require_qt_plugins=True)
 
     from glue.app.qt import GlueApplication
 
@@ -262,17 +262,19 @@ def main(argv=sys.argv):
 _loaded_plugins = set()
 _installed_plugins = set()
 
-REQUIRED_PLUGINS = ['glue.plugins.tools.pv_slicer',
-                    'glue.plugins.coordinate_helpers',
-                    'glue.viewers.image',
-                    'glue.viewers.scatter',
-                    'glue.viewers.histogram',
-                    'glue.viewers.table',
+REQUIRED_PLUGINS = ['glue.plugins.coordinate_helpers',
                     'glue.core.data_exporters',
                     'glue.io.formats.fits']
 
 
-def load_plugins(splash=None):
+REQUIRED_PLUGINS_QT = ['glue.plugins.tools.pv_slicer.qt',
+                       'glue.viewers.image.qt',
+                       'glue.viewers.scatter.qt',
+                       'glue.viewers.histogram.qt',
+                       'glue.viewers.table.qt']
+
+
+def load_plugins(splash=None, require_qt_plugins=False):
 
     # Search for plugins installed via entry_points. Basically, any package can
     # define plugins for glue, and needs to define an entry point using the
@@ -331,6 +333,8 @@ def load_plugins(splash=None):
             # Here we check that some of the 'core' plugins load well and
             # raise an actual exception if not.
             if item.module_name in REQUIRED_PLUGINS:
+                raise
+            elif item.module_name in REQUIRED_PLUGINS_QT and require_qt_plugins:
                 raise
             else:
                 logger.info("Loading plugin {0} failed "

@@ -1949,7 +1949,7 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_catego
 
         # The selection is polygon-like and components are numerical
 
-        if not isinstance(roi, (PolygonalROI, CircularROI, EllipticalROI)):
+        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI)):
             roi = PolygonalROI(*roi.to_polygon())
 
         subset_state = RoiSubsetState()

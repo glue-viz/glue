@@ -270,8 +270,8 @@ class RectangularROI(Roi):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(xmin=rec['xmin'], xmax=rec['xmax'],
-                   ymin=rec['ymin'], ymax=rec['ymax'])
+        return cls(xmin=context.object(rec['xmin']), xmax=context.object(rec['xmax']),
+                   ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']))
 
 
 class RangeROI(Roi):
