@@ -260,10 +260,6 @@ class ProfileLayerState(MatplotlibLayerState):
         if pix_cid is None:
             raise IncompatibleDataException()
 
-        # If we get here, then x_att does correspond to a single pixel axis in
-        # the cube, so we now prepare a list of axes to collapse over.
-        axes = tuple(i for i in range(self.layer.ndim) if i != pix_cid.axis)
-
         # We now get the y values for the data
 
         # TODO: in future we should optimize the case where the mask is much
@@ -277,7 +273,7 @@ class ProfileLayerState(MatplotlibLayerState):
             data = self.layer
             subset_state = None
 
-        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
+        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, bin_by=pix_cid, subset_state=subset_state)
 
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
