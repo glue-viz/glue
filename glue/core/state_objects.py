@@ -340,17 +340,17 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if percentile == 100:
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    )
                 upper = self.data.compute_statistic('maximum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    random_subset=self.random_subset)
+                                                  )
             else:
                 lower = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=exclude, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    )
                 upper = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=100 - exclude, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    )
 
             if not isinstance(lower, np.datetime64) and np.isnan(lower):
                 lower, upper = 0, 1
@@ -474,9 +474,9 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
                     n_bin = self._common_n_bin
 
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
-                                                    finite=True, random_subset=self.random_subset)
+                                                    finite=True)
                 upper = self.data.compute_statistic('maximum', cid=self.component_id,
-                                                    finite=True, random_subset=self.random_subset)
+                                                    finite=True)
 
                 if not isinstance(lower, np.datetime64) and np.isnan(lower):
                     lower, upper = 0, 1

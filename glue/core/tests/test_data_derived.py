@@ -54,8 +54,8 @@ class TestIndexedData:
         assert_equal(derived.compute_statistic('mean', self.x_id),
                      self.data.compute_statistic('mean', self.x_id))
 
-        assert_equal(derived.compute_statistic('mean', self.x_id, axis=2),
-                     self.data.compute_statistic('mean', self.x_id, axis=2))
+        assert_equal(derived.compute_statistic('mean', self.x_id, bin_by=derived.pixel_component_ids[2]),
+                     self.data.compute_statistic('mean', self.x_id, bin_by=self.data.pixel_component_ids[2]))
 
         assert_equal(derived.compute_statistic('mean', self.x_id, subset_state=self.subset_state),
                      self.data.compute_statistic('mean', self.x_id, subset_state=self.subset_state))
@@ -75,6 +75,7 @@ class TestIndexedData:
         manual = Data()
         manual.add_component(self.data[self.x_id][:, 2, :, 4, :], label=self.x_id)
         manual.add_component(self.data[self.y_id][:, 2, :, 4, :], label=self.y_id)
+
 
         assert derived.label == 'Test data[:,2,:,4,:]'
         assert derived.shape == manual.shape
@@ -96,8 +97,10 @@ class TestIndexedData:
         assert_equal(derived.compute_statistic('mean', self.x_id),
                      manual.compute_statistic('mean', self.x_id))
 
-        assert_equal(derived.compute_statistic('mean', self.x_id, axis=2),
-                     manual.compute_statistic('mean', self.x_id, axis=2))
+        dir_bin_dims = [derived.pixel_component_ids[0], derived.pixel_component_ids[2]]
+        man_bin_dims = [manual.pixel_component_ids[0], manual.pixel_component_ids[2]]
+        assert_equal(derived.compute_statistic('mean', self.x_id, bin_by=dir_bin_dims),
+                     manual.compute_statistic('mean', self.x_id, bin_by=man_bin_dims))
 
         assert_equal(derived.compute_statistic('mean', self.x_id, subset_state=self.subset_state),
                      manual.compute_statistic('mean', self.x_id, subset_state=self.subset_state))

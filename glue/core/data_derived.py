@@ -186,6 +186,13 @@ class IndexedData(BaseCartesianData, HubListener):
     def compute_statistic(self, statistic, cid, **kwargs):
         cid = self._translate_cid(cid)
         kwargs['view'] = self._to_original_view(kwargs.get('view'))
+        bin_by = kwargs.get('bin_by')
+        if isinstance(bin_by, list):
+            for i in range(len(bin_by)):
+                bin_by[i] = self._translate_cid(bin_by[i])
+        elif bin_by is not None:
+            bin_by = self._translate_cid(bin_by)
+        kwargs['bin_by'] = bin_by
         return self._original_data.compute_statistic(statistic, cid, **kwargs)
 
     def compute_histogram(self, *args, **kwargs):

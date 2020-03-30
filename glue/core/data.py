@@ -1624,7 +1624,7 @@ class Data(BaseCartesianData):
 
         if bin_by and not isinstance(bin_by, list):
             bin_by = [bin_by,]
-        if log is not None and not isintance(log, list):
+        if log is not None and not isinstance(log, list):
             log = [log,]
         if shape and not isinstance(shape, tuple):
             shape = (shape,)
@@ -1634,61 +1634,107 @@ class Data(BaseCartesianData):
         keep = None
         is_slice_subset = isinstance(subset_state, SliceSubsetState)
         if subset_state and not  is_slice_subset:
-            keep = subset_state.to_mask(self)
+            keep = subset_state.to_mask(self, view=view)
 
         num_total_bins = 1
         bins_per_dim = []
         bin_ids = None
-        for i, bin_by_cid in enumerate(bin_by):
-            if isinstance(bin_by_cid, string):
-                bin_by_cid = self.id[bin_by_cid]
-            if bin_by_cid not in self.pixel_component_ids:
-                bins_along_dim = shape[i]
-                if log and log[i]:
-                    bin_lims = np.logspace(limits[i][0], limits[i][1], bins_along_dim+1)
+        if view is None:
+            data_shape = self.shape
+        else:
+            data_shape = (np.broadcast_to(1,self.shape)[view]).shape
+            axis_map = []
+            view_axis = 0
+            for base_axis in range(self.ndim):
+                if isinstance(view[base_axis], int):
+                    axis_map.append(-1)
                 else:
-                    bin_lims = np.linspace(limits[i][0], limits[i][1], bins_along_dim+1)
-                bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
+                    axis_map.append(view_axis)
+                    view_axis += 1
 
-                if is_slice_subset:
-                    data = subset_state.to_array(self, cid)
+        if bin_by:
+            for i, bin_by_cid in enumerate(bin_by):
+                if isinstance(bin_by_cid, str):
+                    bin_by_cid = self.id[bin_by_cid]
+                if bin_by_cid not in self.pixel_component_ids:
+                    bins_along_dim = shape[i]
+                    if log and log[i]:
+                        bin_lims = np.logspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                    else:
+                        bin_lims = np.linspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                    bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
+
+                    if is_slice_subset:
+                        data = subset_state.to_array(self, cid)[view]
+                    else:
+                        data = self.get_data(bin_by_cid, view=view)
+                    if isinstance(data, categorical_ndarray):
+                        data = data.codes
+
+                    digit = np.digitize(data, bin_lims)
+                    #Mask elements outside of limit
+                    if keep:
+                        keep &= digit > 0 & digit <= bin_lims.size
+                    else:
+                        keep = digit > 0 & digit <= bin_lims.size
+
+                    digit -= 1
+
                 else:
-                    data = self.get_data(bin_by_cid)
+                    if view:
+                        axis = axis_map[bin_by_cid.axis]
+                    else:
+                        axis = bin_by_cid.axis
+                    if axis == -1:
+                        bins_along_dim = 1
+                    else:
+                        bins_along_dim = data_shape[axis]
+                    digit = np.arange(bins_along_dim)
+                    #Reshape to leverage broadcasting
+                    digit_dims = [digit.size if i == axis else 1 for i in range(len(data_shape))]
+                    digit = digit.reshape(digit_dims)
 
-                digit = np.digitize(data, bin_lims)
-                #Mask elements outside of limit
-                if keep:
-                    keep &= digit > 0 & digit <= bin_lims.size
+                bins_per_dim.append(bins_along_dim)
+                num_total_bins *= bins_along_dim
+                if bin_ids is not None:
+                    bin_ids = bin_ids*bins_along_dim+digit
                 else:
-                    keep = digit > 0 & digit <= bin_lims.size
+                    bin_ids = digit
 
-                digit -= 1
+            if (bin_ids.shape != data_shape):
+                bin_ids = np.broadcast_to(bin_ids, data_shape)
 
-            else:
-                axis = bin_by_cid.axis
-                bins_along_dim = self.shape[axis]
-                digit = np.arange(bins_along_dim)
-                #Reshape to leverage broadcasting
-                digit_dims = [digit.size if i == axis else 1 for i in range(data.ndim)]
-                digit = digit.reshape(digit_dims)
+            res = np.zeros((num_total_bins,))
+            for i in range(num_total_bins):
+                if keep is not None:
+                    tmp_mask = keep & (bin_ids == i)
+                else:
+                    tmp_mask = bin_ids == i
+                if statistic == 'count':
+                    res[i] = np.count_nonzero(tmp_mask)
+                else:
+                    if is_slice_subset:
+                        data = subset_state.to_array(self, cid)
+                    else:
+                        data = self.get_data(cid, view=view)
+                    if isinstance(data, categorical_ndarray):
+                        data = data.codes
+                    res[i] = compute_statistic(statistic=statistic, data=data, mask=tmp_mask,
+                                           positive=positive, percentile=percentile, finite=finite)
+            return res.reshape(bins_per_dim)
 
-            bins_per_dim.append(bins_on_dim)
-            num_total_bins *= bins_along_dim
-            if bin_ids:
-                bin_ids = bin_ids*bins_along_dim+digit
+        else:
+            if is_slice_subset:
+                data = subset_state.to_array(self, cid)
             else:
-                bin_ids = digit
-        res = np.zeros((num_total_bins,))
-        for i in range(num_total_bins):
-            tmp_mask = keep & bin_ids == i
-            if statistic == 'count':
-                res[i] = np.count_nonzero(tmp_mask)
+                data = self.get_data(cid, view=view)
+            if isinstance(data, categorical_ndarray):
+                data = data.codes
+            if statistic == 'coumt':
+                return data.size
             else:
-                data = self.get_data(cid)
-                res[i] = compute_statistic(statistc=statistic, data=data, mask=tmp_mask,
-                                           positive=positive, percentile=percentile)
-        res.reshape(bins_per_dim)
-        return res
+                return compute_statistic(statistic=statistic, data=data, mask=keep, positive=positive,
+                                         percentile=percentile,finite=finite)
 
 
 
