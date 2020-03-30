@@ -471,8 +471,6 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         subset_state : `SubsetState`
             If specified, the statistic will only include the values that are in
             the subset specified by this subset state.
-        axis : None or int or tuple of int
-            If specified, the axis/axes to compute the statistic over.
         finite : bool, optional
             Whether to include only finite values in the statistic. This should
             be `True` to ignore NaN/Inf values
@@ -1659,7 +1657,7 @@ class Data(BaseCartesianData):
                 if bin_by_cid not in self.pixel_component_ids:
                     bins_along_dim = shape[i]
                     if log and log[i]:
-                        bin_lims = np.logspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                        bin_lims = np.genomspace(limits[i][0], limits[i][1], bins_along_dim+1)
                     else:
                         bin_lims = np.linspace(limits[i][0], limits[i][1], bins_along_dim+1)
                     bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
@@ -1704,7 +1702,7 @@ class Data(BaseCartesianData):
             if (bin_ids.shape != data_shape):
                 bin_ids = np.broadcast_to(bin_ids, data_shape)
 
-            res = np.zeros((num_total_bins,))
+            res = np.zeros((num_total_bins,), dtype=float)
             for i in range(num_total_bins):
                 if keep is not None:
                     tmp_mask = keep & (bin_ids == i)
@@ -1731,7 +1729,7 @@ class Data(BaseCartesianData):
             if isinstance(data, categorical_ndarray):
                 data = data.codes
             if statistic == 'coumt':
-                return data.size
+                return float(data.size)
             else:
                 return compute_statistic(statistic=statistic, data=data, mask=keep, positive=positive,
                                          percentile=percentile,finite=finite)

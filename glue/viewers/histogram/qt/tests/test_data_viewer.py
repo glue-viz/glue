@@ -61,7 +61,7 @@ class TestHistogramViewer(object):
         self.viewer.add_data(self.data)
 
         assert combo_as_string(self.viewer.options_widget().ui.combosel_x_att) == 'Main components:x:y:Coordinate components:Pixel Axis 0 [x]'
-
+        print(viewer_state)
         assert viewer_state.x_att is self.data.id['x']
         assert viewer_state.x_min == -1.1
         assert viewer_state.x_max == 3.4

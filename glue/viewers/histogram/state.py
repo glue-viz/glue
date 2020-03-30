@@ -247,9 +247,10 @@ class HistogramLayerState(MatplotlibLayerState):
 
         range = sorted((self.viewer_state.hist_x_min, self.viewer_state.hist_x_max))
 
-        hist_values = data.compute_histogram([self._viewer_state.x_att],
-                                             range=[range],
-                                             bins=[self._viewer_state.hist_n_bin],
+        hist_values = data.compute_statistic(statistic='count',
+                                             bin_by=[self._viewer_state.x_att],
+                                             limits=[range],
+                                             shape=[self._viewer_state.hist_n_bin],
                                              log=[self._viewer_state.x_log],
                                              subset_state=subset_state)
 
