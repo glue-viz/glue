@@ -416,21 +416,20 @@ class ScatterLayerState(MatplotlibLayerState):
         else:
             data = self.layer
             subset_state = None
-
-        count = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
-                                        subset_state=subset_state, bins=bins,
-                                        log=(self.viewer_state.y_log, self.viewer_state.x_log),
-                                        range=range)
-
         if self.cmap_mode == 'Fixed':
-            return count
+            return data.compute_statistic(statistic='count',
+                                          bin_by=[self.viewer_state.y_att, self.viewer_state.x_att],
+                                          subset_state=subset_state,
+                                          shape=bins,
+                                          log=(self.viewer_state.y_log, self.viewer_state.x_log),
+                                          limits=range)
         else:
-            total = data.compute_histogram([self.viewer_state.y_att, self.viewer_state.x_att],
-                                            subset_state=subset_state, bins=bins,
-                                            weights=self.cmap_att,
-                                            log=(self.viewer_state.y_log, self.viewer_state.x_log),
-                                            range=range)
-            return total / count
+            return data.compute_statistic(statistic='mean',
+                                          cid=self.cmap_att,
+                                          bin_by=[self.viewer_state.y_att, self.viewer_state.x_att],
+                                          subset_state=subset_state, shape=bins,
+                                          log=(self.viewer_state.y_log, self.viewer_state.x_log),
+                                          limits=range)
 
     @classmethod
     def __setgluestate__(cls, rec, context):

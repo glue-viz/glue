@@ -39,6 +39,7 @@ from glue.core.coordinate_helpers import axis_label
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
+
 __all__ = ['Data', 'BaseCartesianData', 'BaseData']
 
 
@@ -1570,7 +1571,6 @@ class Data(BaseCartesianData):
 
     # The following are methods for accessing the data in various ways that
     # can be overriden by subclasses that want to improve performance.
-
     def compute_statistic(self, statistic, cid=None, subset_state=None,
                           finite=True, positive=False, percentile=None, view=None,
                           bin_by=None, shape=None, limits=None, log=False):
@@ -1619,15 +1619,17 @@ class Data(BaseCartesianData):
             binning. For `PixelComponentID` objects, this defaults to the pixel
             range of the dataset. For other kinds of `ComponentID`, this should
         """
-
-        if bin_by and not isinstance(bin_by, list):
+        if bin_by and (isinstance(bin_by, str) or isinstance(bin_by,ComponentID)):
             bin_by = [bin_by,]
-        if log is not None and not isinstance(log, list):
+        if isinstance(log, bool):
             log = [log,]
-        if shape and not isinstance(shape, tuple):
-            shape = (shape,)
-        if limits and not isinstance(limits, list):
-            limits = [limits, ]
+        if shape and isinstance(shape, int):
+            shape = [shape,]
+        if limits:
+            try:
+                limits[0][0]
+            except TypeError:
+                limits = [limits, ]
 
         keep = None
         is_slice_subset = isinstance(subset_state, SliceSubsetState)
@@ -1657,9 +1659,9 @@ class Data(BaseCartesianData):
                 if bin_by_cid not in self.pixel_component_ids:
                     bins_along_dim = shape[i]
                     if log and log[i]:
-                        bin_lims = np.genomspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                        bin_lims = np.geomspace(limits[i][0], limits[i][1], bins_along_dim+1)
                     else:
-                        bin_lims = np.linspace(limits[i][0], limits[i][1], bins_along_dim+1)
+                        bin_lims = np.linspace(limits[i][0], limits[i][1], num=bins_along_dim+1)
                     bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
 
                     if is_slice_subset:
@@ -1671,11 +1673,10 @@ class Data(BaseCartesianData):
 
                     digit = np.digitize(data, bin_lims)
                     #Mask elements outside of limit
-                    if keep:
-                        keep &= digit > 0 & digit <= bin_lims.size
+                    if keep is not None:
+                        keep &= (digit > 0) & (digit < bin_lims.size)
                     else:
-                        keep = digit > 0 & digit <= bin_lims.size
-
+                        keep = (digit > 0) & (digit < bin_lims.size)
                     digit -= 1
 
                 else:
@@ -1691,7 +1692,6 @@ class Data(BaseCartesianData):
                     #Reshape to leverage broadcasting
                     digit_dims = [digit.size if i == axis else 1 for i in range(len(data_shape))]
                     digit = digit.reshape(digit_dims)
-
                 bins_per_dim.append(bins_along_dim)
                 num_total_bins *= bins_along_dim
                 if bin_ids is not None:
@@ -1728,7 +1728,7 @@ class Data(BaseCartesianData):
                 data = self.get_data(cid, view=view)
             if isinstance(data, categorical_ndarray):
                 data = data.codes
-            if statistic == 'coumt':
+            if statistic == 'count':
                 return float(data.size)
             else:
                 return compute_statistic(statistic=statistic, data=data, mask=keep, positive=positive,
