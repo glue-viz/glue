@@ -1606,31 +1606,43 @@ class Data(BaseCartesianData):
 
             # We operate in chunks here to avoid memory issues.
 
-            # TODO: there are cases where the code below is not optimized
-            # because the mask may be computable for a single slice and
-            # broadcastable to all slices - normally ROISubsetState takes care
-            # of that but if we call it once per view it won't. In the future we
-            # could ask a SubsetState whether it is broadcasted along
-            # axis_index.
-
             axis_index = [a for a in range(self.ndim) if a not in axis][0]
 
-            result = np.zeros(self.shape[axis_index])
+            # In the specific case where the subset state depends only on pixel
+            # component IDs but not the one for the chunk iteration axis used
+            # here, we should not need to chunk.
+            efficient_subset_state = False
+            if subset_state is not None:
+                from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
+                for att in subset_state.attributes:
+                    # TODO: in principle we cold still deal with non-pixel
+                    # componnet IDs, so this should be fixed.
+                    if not isinstance(att, PixelComponentID):
+                        break
+                    matrix = pixel_cid_to_pixel_cid_matrix(att.parent, self)
+                    if matrix[att.axis, axis_index]:
+                        break
+                else:
+                    efficient_subset_state = True
 
-            chunk_shape = list(self.shape)
+            if not efficient_subset_state:
 
-            # Deliberately leave n_chunks as float to not round twice
-            n_chunks = self.size / n_chunk_max
+                result = np.zeros(self.shape[axis_index])
 
-            chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
+                chunk_shape = list(self.shape)
 
-            for chunk_view in iterate_chunks(self.shape, chunk_shape=chunk_shape):
-                values = self.compute_statistic(statistic, cid, subset_state=subset_state,
-                                                axis=axis, finite=finite, positive=positive,
-                                                percentile=percentile, view=chunk_view)
-                result[chunk_view[axis_index]] = values
+                # Deliberately leave n_chunks as float to not round twice
+                n_chunks = self.size / n_chunk_max
 
-            return result
+                chunk_shape[axis_index] = max(1, int(chunk_shape[axis_index] / n_chunks))
+
+                for chunk_view in iterate_chunks(self.shape, chunk_shape=chunk_shape):
+                    values = self.compute_statistic(statistic, cid, subset_state=subset_state,
+                                                    axis=axis, finite=finite, positive=positive,
+                                                    percentile=percentile, view=chunk_view)
+                    result[chunk_view[axis_index]] = values
+
+                return result
 
         if subset_state:
             if isinstance(subset_state, SliceSubsetState) and view is None:
