@@ -10,7 +10,8 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
            'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
-           'categorical_ndarray', 'index_lookup', 'ensure_numerical']
+           'categorical_ndarray', 'index_lookup', 'ensure_numerical',
+           'broadcast_arrays_minimal']
 
 
 def unbroadcast(array):
@@ -27,6 +28,13 @@ def unbroadcast(array):
 
     new_shape = np.where(np.array(array.strides) == 0, 1, array.shape)
     return as_strided(array, shape=new_shape)
+
+
+def broadcast_arrays_minimal(*arrays):
+    """
+    Unbroadcast arrays then broadcast to smallest common shape.
+    """
+    return np.broadcast_arrays(*[unbroadcast(array) for array in arrays])
 
 
 def unique(array):

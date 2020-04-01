@@ -10,7 +10,7 @@ from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_t
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
                      iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
                      nanmin, nanmax, format_minimal, compute_statistic, categorical_ndarray,
-                     index_lookup)
+                     index_lookup, broadcast_arrays_minimal)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -126,6 +126,19 @@ def test_unbroadcast():
     z = unbroadcast(y)
     assert z.shape == (1, 1, 3)
     np.testing.assert_allclose(z[0, 0], x)
+
+
+def test_broadcast_arrays_minimal():
+
+    a = np.array([1, 2, 3])
+    b = broadcast_to(a, (2, 4, 3))
+
+    c = np.ones((2, 1, 1))
+    d = broadcast_to(c, (2, 4, 3))
+
+    e, f = broadcast_arrays_minimal(b, d)
+    assert e.shape == (2, 1, 3)
+    assert f.shape == (2, 1, 3)
 
 
 @pytest.mark.parametrize(('chunk_shape', 'n_max'),
