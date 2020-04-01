@@ -63,10 +63,13 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         except Exception:
             return
 
+        self.enable()
+
+        # The following can happen if self.state.visible is None - in this case
+        # we just terminate early. If the visible property is changed, it will
+        # trigger the _calculate_profile code to re-run.
         if visible_data is None:
             return
-
-        self.enable()
 
         x, y = visible_data
 
@@ -150,10 +153,10 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         changed = set() if force else self.pop_changed_properties()
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max')):
+        if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max', 'visible')):
             self._calculate_profile(reset=force)
 
-        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible', 'linewidth')):
+        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth')):
             self._update_visual_attributes()
 
     @defer_draw

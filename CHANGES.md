@@ -29,6 +29,8 @@ v0.16.0 (unreleased)
 * Significantly improve performance of ``compute_fixed_resolution_buffer`` when
   using linked datasets with some axes uncorrelated. [#2115]
 
+* Improve performance of profile viewer when not all layers are visible. [#2115]
+
 v0.15.7 (2020-03-12)
 --------------------
 
