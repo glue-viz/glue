@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 from glue.utils import CallbackMixin
 from glue.core.data_factories import load_data
+from glue.core.edit_subset_mode import ReplaceMode
 
 MAX_UNDO = 50
 """
@@ -298,6 +299,12 @@ class ApplySubsetState(Command):
 
         mode = session.edit_subset_mode
         override_mode = self.extra.get('override_mode')
+        # when creating a new subset the creation mode is replace mode
+        # fix bug #1931
+        if override_mode is None:
+            if len(mode._edit_subset) == 0:
+                override_mode = ReplaceMode
+
         mode.update(self.data_collection, self.subset_state, override_mode=override_mode)
 
     def undo(self, session):

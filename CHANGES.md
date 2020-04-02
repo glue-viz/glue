@@ -8,6 +8,8 @@ v0.16.0 (unreleased)
 
 * Python 2.7 and 3.5 are no longer supported. [#2075]
 
+* Always use replace mode when creating a new subset. [#2090]
+
 * Fixed bugs in the profile viewer that occurred when using the profile viewer and
   setting reference_data to a different value than the default one. [#2078]
 
