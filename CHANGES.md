@@ -13,6 +13,8 @@ v0.16.0 (unreleased)
 
 * Move spectral-cube data loader to glue-astronomy plugin package. [#2077]
 
+* Show session filename path in window title. [#2096]
+
 * Change ``Data.coords`` API to now rely on the API described in
   https://github.com/astropy/astropy-APEs/blob/master/APE14.rst [#2079]
 
