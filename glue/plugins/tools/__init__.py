@@ -16,3 +16,7 @@ def setup():
     from glue.viewers.scatter.qt.data_viewer import ScatterViewer
     ScatterViewer.subtools = deepcopy(ScatterViewer.subtools)
     ScatterViewer.subtools['save'].append('save:python')
+
+    from glue.viewers.profile.qt.data_viewer import ProfileViewer
+    ProfileViewer.subtools = deepcopy(ProfileViewer.subtools)
+    ProfileViewer.subtools['save'].append('save:python')
