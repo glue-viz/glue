@@ -493,9 +493,9 @@ class ImageLayerState(BaseImageLayerState):
     stretch = DDSCProperty(docstring='The stretch used to render the layer, '
                                      'which should be one of ``linear``, '
                                      '``sqrt``, ``log``, or ``arcsinh``')
-    global_sync = DDCProperty(True, docstring='Whether the color and transparency '
-                                              'should be synced with the global '
-                                              'color and transparency for the data')
+    global_sync = DDCProperty(False, docstring='Whether the color and transparency '
+                                               'should be synced with the global '
+                                               'color and transparency for the data')
 
     def __init__(self, layer=None, viewer_state=None, **kwargs):
 
