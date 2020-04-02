@@ -244,6 +244,9 @@ class ProfileLayerState(MatplotlibLayerState):
         if self._profile_cache is not None:
             return self._profile_cache
 
+        if not self.visible:
+            return
+
         if not self._viewer_callbacks_set:
             self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)

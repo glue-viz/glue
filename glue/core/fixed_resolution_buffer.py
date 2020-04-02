@@ -2,7 +2,7 @@ import numpy as np
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.component import CoordinateComponent
 from glue.core.coordinate_helpers import dependent_axes
-from glue.utils import unbroadcast, broadcast_to
+from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
 
 # TODO: cache needs to be updated when links are removed/changed
 
@@ -57,7 +57,15 @@ def translate_pixel(data, pixel_coords, target_cid):
             values, dimensions = translate_pixel(data, pixel_coords, cid)
             values_all.append(values)
             dimensions_all.extend(dimensions)
-        return link._using(*values_all), dimensions_all
+        # Unbroadcast arrays to smallest common shape for performance
+        if len(values_all) > 0:
+            shape = values_all[0].shape
+            values_all = broadcast_arrays_minimal(*values_all)
+            results = link._using(*values_all)
+            result = broadcast_to(results, shape)
+        else:
+            result = None
+        return result, sorted(set(dimensions_all))
     elif isinstance(component, CoordinateComponent):
         # FIXME: Hack for now - if we pass arrays in the view, it's interpreted
         return component._calculate(view=pixel_coords), dependent_axes(data.coords, component.axis)
