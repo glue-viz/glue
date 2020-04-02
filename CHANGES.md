@@ -4,6 +4,8 @@ Full changelog
 v0.16.0 (unreleased)
 --------------------
 
+* Don't sync color and transparency of image layers by default. [#2116]
+
 * Python 2.7 and 3.5 are no longer supported. [#2075]
 
 * Fixed bugs in the profile viewer that occurred when using the profile viewer and

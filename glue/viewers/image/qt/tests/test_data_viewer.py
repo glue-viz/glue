@@ -44,6 +44,19 @@ class TestImageCommon(BaseTestMatplotlibDataViewer):
     def test_double_add_ignored(self):
         pass
 
+    def test_update_data_processed_if_data_present(self):
+
+        # Patch for the main test of the same name - we need to explicilty set
+        # global_sync to True here for things to work correctly.
+
+        self.init_draw_count()
+        self.data_collection.append(self.data)
+        self.viewer.add_data(self.data)
+        ct0 = self.draw_count
+        self.viewer.state.layers[0].global_sync = True
+        self.data.style.color = 'blue'
+        assert self.draw_count > ct0
+
     def test_slice_change_single_draw(self):
 
         # Regression test for a bug that caused Matplotlib to draw once per
