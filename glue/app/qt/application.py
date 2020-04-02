@@ -1066,7 +1066,6 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             return
 
         ga = self.restore_session_and_close(file_name)
-        ga._on_session_changed(file_name)
         return ga
 
     @property
@@ -1133,6 +1132,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         ga = Application.restore_session(path)
         if show:
             ga.start(block=False)
+        ga._on_session_changed(path)
         return ga
 
     def has_terminal(self, create_if_not=True):
