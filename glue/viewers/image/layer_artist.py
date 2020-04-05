@@ -88,7 +88,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return self.state.cmap
 
     def get_handle_legend(self):
-        if self.state.visible:
+        if self.enabled and self.state.visible:
             # a fancier patch drawing the colormap
             color = self.get_layer_color()
             label = self.layer.label
@@ -97,7 +97,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
                 # actual color of the handle is not important
                 handler = ColormapPatchHandler(color)
             else:
-                handle = mpatches.Patch(color=color)
+                handle = mpatches.Patch(color=color, alpha=self.layer.style.alpha)
                 handler = None  # default handler is good enough
             return handle, label, handler
         else:

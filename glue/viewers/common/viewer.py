@@ -338,6 +338,11 @@ class Viewer(BaseViewer):
                       self._update_computation,
                       filter=self._has_layer_artist)
 
+        hub.subscribe(self, msg.LayerArtistDisabledMessage,
+                      self.draw_legend,
+                      filter=self._has_layer_artist)
+
+
     def _has_layer_artist(self, message):
         return message.layer_artist in self.layers
 

@@ -64,8 +64,8 @@ class MatplotlibLayerArtist(LayerArtist):
 
     def get_handle_legend(self):
         # The default legend handle for matplotlib viewer
-        if self.state.visible:
-            handle = mpatches.Patch(color=self.get_layer_color())
+        if self.enabled and self.state.visible:
+            handle = mpatches.Patch(color=self.get_layer_color(), alpha=self.layer.style.alpha)
             return handle, self.layer.label, None
         else:
             return None, None, None

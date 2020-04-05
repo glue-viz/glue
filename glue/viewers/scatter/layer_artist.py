@@ -528,7 +528,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.density_artist = None
 
     def get_handle_legend(self):
-        if self.state.visible:
+        if self.enabled and self.state.visible:
             if not self.state.line_visible:
                 linestyle = "none"
             else:
