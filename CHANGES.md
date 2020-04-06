@@ -40,6 +40,8 @@ v0.16.0 (unreleased)
 
 * Improve performance of profile viewer when not all layers are visible. [#2115]
 
+* Fixed missing .units on ``CoordinateComponent``. [#2117]
+
 v0.15.7 (2020-03-12)
 --------------------
 
