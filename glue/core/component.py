@@ -197,7 +197,6 @@ class CoordinateComponent(Component):
     """
 
     def __init__(self, data, axis, world=False):
-        super(CoordinateComponent, self).__init__(None, None)
         self.world = world
         self._data = data
         self.axis = axis
@@ -205,6 +204,13 @@ class CoordinateComponent(Component):
     @property
     def data(self):
         return self._calculate()
+
+    @property
+    def units(self):
+        if self.world:
+            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis]
+        else:
+            return ''
 
     def _calculate(self, view=None):
 

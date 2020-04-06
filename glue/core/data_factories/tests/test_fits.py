@@ -212,3 +212,19 @@ def test_save_meta():
     from glue.core.tests.test_state import clone
     data = df.load_data(os.path.join(DATA, 'comment.fits'))
     clone(data)
+
+
+@requires_astropy
+def test_coordinate_component_units():
+    # Regression test for a bug that caused units to be missing from coordinate
+    # components.
+    d = df.load_data(os.path.join(DATA, 'casalike.fits'), factory=df.casalike_cube)
+    wid = d.world_component_ids
+    assert wid[0].label == 'Stokes'
+    assert d.get_component(wid[0]).units == ''
+    assert wid[1].label == 'Vopt'
+    assert d.get_component(wid[1]).units == 'm s-1'
+    assert wid[2].label == 'Declination'
+    assert d.get_component(wid[2]).units == 'deg'
+    assert wid[3].label == 'Right Ascension'
+    assert d.get_component(wid[3]).units == 'deg'
