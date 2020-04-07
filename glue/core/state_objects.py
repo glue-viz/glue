@@ -6,7 +6,8 @@ import numpy as np
 
 from glue.core import Subset
 from glue.external.echo import (delay_callback, CallbackProperty,
-                                HasCallbackProperties, CallbackList)
+                                HasCallbackProperties, CallbackList,
+                                CallbackDict)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
 
@@ -22,6 +23,17 @@ def _save_callback_list(items, context):
 @loader(CallbackList)
 def _load_callback_list(rec, context):
     return [context.object(obj) for obj in rec['values']]
+
+
+@saver(CallbackDict)
+def _save_callback_dict(items, context):
+    return {'values': [context.id(item) for item in items.items()]}
+
+
+@loader(CallbackDict)
+def _load_callback_dict(rec, context):
+    return {context.object(obj)[0]: context.object(obj)[1]
+            for obj in rec['values']}
 
 
 class State(HasCallbackProperties):
