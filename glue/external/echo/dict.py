@@ -60,11 +60,6 @@ class CallbackDict(dict):
 
         return result
 
-    def __setattr__(self, *args, **kwargs):
-        super().__setattr__(*args, **kwargs)
-
-        self.callback()
-
     def __delattr__(self, *args):
         super().__delattr__(*args)
 
