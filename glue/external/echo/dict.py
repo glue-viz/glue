@@ -80,7 +80,7 @@ class DictCallbackProperty(CallbackProperty):
     """
     def _default_getter(self, instance, owner=None):
         if instance not in self._values:
-            self._default_setter(instance, [])
+            self._default_setter(instance, {})
         return super()._default_getter(instance, owner)
 
     def _default_setter(self, instance, value):
