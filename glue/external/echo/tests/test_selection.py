@@ -1,5 +1,5 @@
 import pytest
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from ..core import HasCallbackProperties, delay_callback
 from ..selection import SelectionCallbackProperty, ChoiceSeparator

@@ -1,5 +1,5 @@
 import pytest
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue.external.echo import (CallbackProperty, add_callback,
                                 remove_callback, delay_callback,

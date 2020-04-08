@@ -1,6 +1,6 @@
 import sys
 import pytest
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from glue.external.echo import CallbackProperty, ListCallbackProperty, HasCallbackProperties
 
