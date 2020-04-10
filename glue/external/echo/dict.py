@@ -8,6 +8,7 @@ class CallbackDict(dict):
     The first argument should be the callback function (which takes no
     arguments), and subsequent arguments are passed to `dict`.
     """
+
     def __init__(self, callback, *args, **kwargs):
         super(CallbackDict, self).__init__(*args, **kwargs)
 
@@ -60,6 +61,11 @@ class CallbackDict(dict):
 
         return result
 
+    def __setitem__(self, k, v):
+        super().__setitem__(k, v)
+
+        self.callback()
+
     def __delattr__(self, *args):
         super().__delattr__(*args)
 
@@ -84,8 +90,8 @@ class DictCallbackProperty(CallbackProperty):
             raise TypeError("Callback property should be a dictionary.")
 
         def callback(*args, **kwargs):
-            self.notify(instance, wrapped_list, wrapped_list)
+            self.notify(instance, wrapped_dict, wrapped_dict)
 
-        wrapped_list = CallbackDict(callback, value)
+        wrapped_dict = CallbackDict(callback, value)
 
-        super()._default_setter(instance, wrapped_list)
+        super()._default_setter(instance, wrapped_dict)
