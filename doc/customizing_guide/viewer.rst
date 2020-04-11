@@ -54,7 +54,7 @@ To create a viewer, we import the base
 :class:`~glue.external.echo.CallbackProperty` class::
 
     from glue.viewers.common.state import ViewerState
-    from glue.external.echo import CallbackProperty
+    from echo import CallbackProperty
 
 The latter is used to define properties on the state class and we can attach
 callback functions to them (more on this soon). Let's now imagine we want to

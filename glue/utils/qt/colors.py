@@ -3,7 +3,7 @@ from matplotlib.colors import ColorConverter
 
 from glue import config
 from qtpy import QtCore, QtWidgets, QtGui
-from glue.external.echo import add_callback
+from echo import add_callback
 from glue.utils import nonpartial
 from glue.utils.qt.widget_properties import WidgetProperty
 
@@ -141,7 +141,7 @@ def connect_color(client, prop, widget):
     update_widget(getattr(client, prop))
 
 
-from glue.external.echo.qt.autoconnect import HANDLERS
+from echo.qt.autoconnect import HANDLERS
 HANDLERS['color'] = connect_color
 
 
@@ -184,7 +184,7 @@ class QColorBox(QtWidgets.QLabel):
         self.setPixmap(pixmap)
 
 
-from glue.external.echo.qt.connect import UserDataWrapper
+from echo.qt.connect import UserDataWrapper
 
 
 class QColormapCombo(QtWidgets.QComboBox):

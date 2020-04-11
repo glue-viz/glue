@@ -1,4 +1,4 @@
-from glue.external.echo import CallbackProperty, ListCallbackProperty
+from echo import CallbackProperty, ListCallbackProperty
 
 from glue.core.state_objects import State
 

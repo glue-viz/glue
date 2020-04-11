@@ -1,4 +1,4 @@
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty
+from echo import CallbackProperty, SelectionCallbackProperty
 
 from qtpy.QtWidgets import (QSlider, QLineEdit, QComboBox, QWidget,
                             QLabel, QHBoxLayout, QCheckBox)

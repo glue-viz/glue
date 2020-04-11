@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 from glue.core import Data, DataCollection
 from glue.core.component_id import ComponentID
-from glue.external.echo.selection import SelectionCallbackProperty
+from echo.selection import SelectionCallbackProperty
 from glue.core.state_objects import State
 from glue.core.coordinates import IdentityCoordinates
 

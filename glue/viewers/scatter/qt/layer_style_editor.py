@@ -6,7 +6,7 @@ from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
 from glue.core import BaseData
-from glue.external.echo.qt import autoconnect_callbacks_to_qt, connect_value
+from echo.qt import autoconnect_callbacks_to_qt, connect_value
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.core.exceptions import IncompatibleAttribute
 

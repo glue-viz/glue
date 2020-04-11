@@ -213,11 +213,3 @@ Utilities
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:
 
-Bundled third-party packages
-============================
-
-.. automodapi:: glue.external.echo
-   :no-inheritance-diagram:
-
-.. automodapi:: glue.external.echo.qt
-  :no-inheritance-diagram:

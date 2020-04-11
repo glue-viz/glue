@@ -4,8 +4,8 @@ from collections import deque, OrderedDict
 from qtpy import QtWidgets, QtCore
 from qtpy.QtCore import Qt
 
-from glue.external.echo import SelectionCallbackProperty
-from glue.external.echo.qt import connect_combo_selection
+from echo import SelectionCallbackProperty
+from echo.qt import connect_combo_selection
 from glue.core.parse import InvalidTagError, ParsedCommand, TAG_RE
 from glue.utils.qt import load_ui, CompletionTextEdit
 

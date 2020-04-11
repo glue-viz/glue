@@ -5,8 +5,8 @@ from qtpy import QtWidgets
 from glue.config import link_function, link_helper
 from glue.utils.decorators import avoid_circular
 from glue.utils.qt import load_ui
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
-from glue.external.echo.qt.connect import UserDataWrapper, connect_combo_selection
+from echo.qt import autoconnect_callbacks_to_qt
+from echo.qt.connect import UserDataWrapper, connect_combo_selection
 from glue.dialogs.link_editor.state import LinkEditorState
 
 __all__ = ['LinkEditor', 'main']

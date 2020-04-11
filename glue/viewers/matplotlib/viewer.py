@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.patches import Rectangle
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
-from glue.external.echo import delay_callback
+from echo import delay_callback
 from glue.utils import mpl_to_datetime64
 
 __all__ = ['MatplotlibViewerMixin']

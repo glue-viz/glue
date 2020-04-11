@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw, view_shape
-from glue.external.echo import delay_callback
+from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 

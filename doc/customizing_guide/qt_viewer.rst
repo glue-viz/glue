@@ -36,7 +36,7 @@ will likely be changed to the layer state), but beyond this, you can implement
 the widgets any way you like. Let's take the simple layer state example above
 with the ``fill`` option. You could implement a layer options widget by doing::
 
-    from glue.external.echo.qt import connect_checkable_button
+    from echo.qt import connect_checkable_button
     from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 
     class TutorialLayerStateWidget(QWidget):
@@ -66,7 +66,7 @@ state properties using the
 :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` function. Let's use
 this to create a widget to control the viewer state::
 
-    from glue.external.echo.qt import autoconnect_callbacks_to_qt
+    from echo.qt import autoconnect_callbacks_to_qt
     from qtpy.QtWidgets import QWidget
     from glue.utils.qt import load_ui
 

@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     from glue.core import Data
     from glue.utils.qt import get_qapp
-    from glue.external.echo import CallbackProperty
+    from echo import CallbackProperty
     from glue.core.state_objects import State
 
     app = get_qapp()

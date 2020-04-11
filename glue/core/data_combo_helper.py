@@ -11,7 +11,7 @@ from glue.core.message import (DataReorderComponentMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
                                DataRenameComponentMessage)
-from glue.external.echo import delay_callback, ChoiceSeparator
+from echo import delay_callback, ChoiceSeparator
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper', 'ComboHelper', 'BaseDataComboHelper']

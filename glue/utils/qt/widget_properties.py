@@ -23,10 +23,10 @@ from functools import reduce
 from glue.logger import logger
 from glue.utils.array import pretty_number
 
-from glue.external.echo.qt.connect import _find_combo_data, UserDataWrapper
+from echo.qt.connect import _find_combo_data, UserDataWrapper
 
 # Backward-compatibility
-from glue.external.echo.qt import (connect_checkable_button as connect_bool_button,  # noqa
+from echo.qt import (connect_checkable_button as connect_bool_button,  # noqa
                                    connect_combo_data as connect_current_combo,  # noqa
                                    connect_combo_text as connect_current_combo_text,  # noqa
                                    connect_float_text as connect_float_edit,  # noqa

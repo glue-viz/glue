@@ -7,7 +7,7 @@ from glue.config import link_function
 from glue.core.component_link import ComponentLink
 from glue.core.link_helpers import LinkCollection
 from glue.core.state_objects import State
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty, delay_callback
+from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
 
 __all__ = ['LinkEditorState', 'EditableLinkFunctionState']

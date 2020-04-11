@@ -1,6 +1,6 @@
 # New contrast/bias mode that operates on viewers with state objects
 
-from glue.external.echo import delay_callback
+from echo import delay_callback
 from glue.config import viewer_tool
 from glue.viewers.matplotlib.toolbar_mode import ToolbarModeBase
 
