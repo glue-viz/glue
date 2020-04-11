@@ -164,9 +164,9 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:mod', 'glue.viewers.common.qt.mouse_mode'),
                   ('py:mod', 'glue.viewers.common.qt.toolbar_mode'),
                   ('py:mod', 'glue.dialogs.custom_component'),
-                  ('py:class', 'glue.external.echo.core.HasCallbackProperties'),
-                  ('py:class', 'glue.external.echo.core.CallbackProperty'),
-                  ('py:class', 'glue.external.echo.selection.SelectionCallbackProperty'),
+                  ('py:class', 'echo.core.HasCallbackProperties'),
+                  ('py:class', 'echo.core.CallbackProperty'),
+                  ('py:class', 'echo.selection.SelectionCallbackProperty'),
                   ('py:class', 'glue.viewers.image.state.BaseImageLayerState'),
                   ('py:class', 'glue.viewers.common.qt.data_viewer_with_state.DataViewerWithState')
               ]

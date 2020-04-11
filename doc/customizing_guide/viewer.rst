@@ -51,7 +51,7 @@ Viewer state
 
 To create a viewer, we import the base
 :class:`~glue.viewers.common.state.ViewerState` class, as well as the
-:class:`~glue.external.echo.CallbackProperty` class::
+:class:`~echo.CallbackProperty` class::
 
     from glue.viewers.common.state import ViewerState
     from echo import CallbackProperty
@@ -130,7 +130,7 @@ so you can define it using::
     class TutorialLayerState(LayerState):
         fill = CallbackProperty(False, docstring='Whether to show the markers as filled or not')
 
-The optional first value in :class:`~glue.external.echo.CallbackProperty` is the
+The optional first value in :class:`~echo.CallbackProperty` is the
 default value that the property should be set to.
 
 Multi-choice properties
@@ -140,7 +140,7 @@ In some cases, you might want the properties on the state classes to be a
 selection from a fixed set of values -- for instance line style, or as
 demonstrated in `Viewer State`_, the attribute to show on an axis (since
 it should be chosen from the existing data attributes). This can be
-done by using the :class:`~glue.external.echo.SelectionCallbackProperty` class,
+done by using the :class:`~echo.SelectionCallbackProperty` class,
 which should be used as follows::
 
     class TutorialViewerState(ViewerState):
@@ -158,7 +158,7 @@ so that they can automatically  populate combo/selection boxes for example.
 For the specific case of selecting attributes from the data, we also provide a
 class :class:`~glue.core.data_combo_helper.ComponentIDComboHelper` that can
 automatically keep the attributes for datasets in sync with the choices in a
-:class:`~glue.external.echo.SelectionCallbackProperty` class. Here's an example
+:class:`~echo.SelectionCallbackProperty` class. Here's an example
 of how to use it::
 
     class TutorialViewerState(ViewerState):

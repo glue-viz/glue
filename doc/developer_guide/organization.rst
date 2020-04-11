@@ -18,11 +18,9 @@ top-level sub-packages (starting with some of the easy ones):
 This is a sub-package that you should never have to edit directly. It contains
 files and modules edited in other repositories that have been bundled with
 Glue. If you do need to make any changes to them, you should first edit those
-other repositories, and then port over the changes to Glue. One of the main
-examples is ``glue.external.echo``, which is a bundled version of the `echo
-<https://github.com/glue-viz/echo>`_ library, which makes it easy to attach
-callback functions to class properties. In general, it's useful to know these
-bundled modules are available, but you will likely not need to edit them.
+other repositories, and then port over the changes to Glue. In general, it's
+useful to know these bundled modules are available, but you will likely not
+need to edit them.
 
 ``glue.utils``
 ^^^^^^^^^^^^^^
