@@ -100,7 +100,7 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
-        self.state.add_callback('legend', self.draw_legend)
+        self.state.add_callback('show_legend', self.draw_legend)
 
         self.update_x_axislabel()
         self.update_y_axislabel()
@@ -134,7 +134,7 @@ class MatplotlibViewerMixin(object):
         self.redraw()
 
     def draw_legend(self, *args):
-        if self.state.legend:
+        if self.state.show_legend:
             handles, labels, handler_map = self.get_handles_legend()
             self.axes.legend(handles, labels, handler_map=handler_map)
         else:

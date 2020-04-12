@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>272</width>
-    <height>260</height>
+    <height>286</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,7 +207,7 @@
     </widget>
    </item>
    <item row="3" column="1" colspan="2">
-    <widget class="QCheckBox" name="bool_legend_">
+    <widget class="QCheckBox" name="bool_show_legend">
      <property name="text">
       <string>toggle legend</string>
      </property>

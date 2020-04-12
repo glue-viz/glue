@@ -66,7 +66,7 @@ class MatplotlibDataViewerState(ViewerState):
     x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
-    legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
+    show_legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
 
     def __init__(self, *args, **kwargs):
 
@@ -176,6 +176,7 @@ class MatplotlibDataViewerState(ViewerState):
         self.y_axislabel_weight = state.y_axislabel_weight
         self.x_ticklabel_size = state.x_ticklabel_size
         self.y_ticklabel_size = state.y_ticklabel_size
+        self.show_legend = state.show_legend
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):
