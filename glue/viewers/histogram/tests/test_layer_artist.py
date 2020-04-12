@@ -102,3 +102,7 @@ class TestHistogramLayerArtist(object):
         self.subset.style.color = '#00ff00'
         # assert self.call_counter['_calculate_histogram'] == 5
         assert self.call_counter['_update_artists'] == 8
+
+        # legend -- no call
+        self.viewer_state.show_legend = True
+        assert self.call_counter['_update_artists'] == 8

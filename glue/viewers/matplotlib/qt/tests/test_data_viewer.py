@@ -616,3 +616,54 @@ class BaseTestMatplotlibDataViewer(object):
         self.data_collection.append(data)
 
         self.data.update_values_from_data(data)
+
+    def test_legend(self):
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+
+        # no legend by default
+        assert self.viewer.axes.get_legend() is None
+
+        self.viewer.state.show_legend = True
+
+        # a legend appears
+        legend = self.viewer.axes.get_legend()
+        assert not (legend is None)
+
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 1
+        assert labels[0] == self.data.label
+
+        self.init_subset()
+        assert len(viewer_state.layers) == 2
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 2
+        assert labels[1] == 'subset 1'
+
+    # The next set of test check that the legend does not create extra draws !
+    def test_legend_single_draw(self):
+        # Make sure that the number of draws is kept to a minimum
+        self.viewer.show_legend = True
+        self.init_draw_count()
+        self.init_subset()
+        assert self.draw_count == 0
+        self.viewer.add_data(self.data)
+        assert self.draw_count == 1
+
+    def test_legend_numerical_data_changed(self):
+        self.viewer.show_legend = True
+        self.init_draw_count()
+        self.init_subset()
+        assert self.draw_count == 0
+        self.viewer.add_data(self.data)
+        assert self.draw_count == 1
+        data = Data(label=self.data.label)
+        data.coords = self.data.coords
+        for cid in self.data.main_components:
+            if self.data.get_kind(cid) == 'numerical':
+                data.add_component(self.data[cid] * 2, cid.label)
+            else:
+                data.add_component(self.data[cid], cid.label)
+        self.data.update_values_from_data(data)
+        assert self.draw_count == 2

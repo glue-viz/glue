@@ -676,3 +676,32 @@ class TestScatterViewer(object):
         assert not self.viewer.state.layers[0].xerr_visible
         assert not self.viewer.state.layers[0].yerr_visible
         assert not self.viewer.state.layers[0].vector_visible
+
+    def test_legend(self):
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.show_legend = True
+
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 1
+        assert labels[0] == 'd1'
+
+        self.data_collection.new_subset_group('test', self.data.id['x'] > 1)
+        assert len(viewer_state.layers) == 2
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 2
+        assert labels[1] == 'test'
+
+        assert handles[1].get_color() == viewer_state.layers[1].color
+
+        # Add a non visible layer
+        data2 = Data(label='d2', x=[3.4, 2.3, -1.1, 0.3], y=[3.2, 3.3, 3.4, 3.5])
+        self.data_collection.append(data2)
+
+        self.viewer.add_data(data2)
+        assert len(viewer_state.layers) == 4
+
+        # 'd2' is not enabled (no linked component)
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 2

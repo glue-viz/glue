@@ -665,3 +665,23 @@ class TestHistogramViewer(object):
         assert [x.get_text() for x in viewer.axes.xaxis.get_ticklabels()] == ['', 'a', 'b', 'c', '']
 
         ga.close()
+
+    def test_legend(self):
+        from matplotlib.colors import to_hex
+
+        viewer_state = self.viewer.state
+
+        self.viewer.add_data(self.data)
+        self.viewer.state.show_legend = True
+
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 1
+        assert labels[0] == 'd1'
+
+        self.data_collection.new_subset_group('test', self.data.id['x'] > 1)
+        assert len(viewer_state.layers) == 2
+        handles, labels, handler_dict = self.viewer.get_handles_legend()
+        assert len(handles) == 2
+        assert labels[1] == 'test'
+
+        assert to_hex(handles[1].get_facecolor()) == viewer_state.layers[1].color
