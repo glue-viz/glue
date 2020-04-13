@@ -337,7 +337,6 @@ class Viewer(BaseViewer):
                       self.draw_legend,
                       filter=self._has_layer_artist)
 
-
     def _has_layer_artist(self, message):
         return message.layer_artist in self.layers
 
@@ -372,6 +371,7 @@ class Viewer(BaseViewer):
                 layer_state.viewer_state = viewer.state
                 viewer._layer_artist_container.append(layer_artist)
 
+        viewer.draw_legend()  # need to be called here because callbacks are ignored in previous step
         return viewer
 
     def cleanup(self):
