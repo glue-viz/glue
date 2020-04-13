@@ -223,7 +223,6 @@ class Viewer(BaseViewer):
                 else:
                     if layer_state.layer.data is data:
                         self.state.layers.remove(layer_state)
-            self.draw_legend()
 
     def get_data_layer_artist(self, layer=None, layer_state=None):
         return self.get_layer_artist(self._data_artist_cls, layer=layer, layer_state=layer_state)
@@ -249,14 +248,12 @@ class Viewer(BaseViewer):
 
         self._layer_artist_container.append(layer)
         layer.update()
-        self.draw_legend()
 
         return True
 
     def remove_subset(self, subset):
         if subset in self._layer_artist_container:
             self._layer_artist_container.pop(subset)
-        self.draw_legend()
 
     def _add_subset(self, message):
         self.add_subset(message.subset)
@@ -270,7 +267,6 @@ class Viewer(BaseViewer):
                 else:
                     if layer_artist.layer is message.data:
                         layer_artist.update()
-        self.draw_legend()
 
     def _update_subset(self, message):
         if message.attribute == 'style':
@@ -278,7 +274,6 @@ class Viewer(BaseViewer):
         if message.subset in self._layer_artist_container:
             for layer_artist in self._layer_artist_container[message.subset]:
                 layer_artist.update()
-        self.draw_legend()
 
     def _remove_subset(self, message):
         self.remove_subset(message.subset)
