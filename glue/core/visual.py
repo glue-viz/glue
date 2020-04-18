@@ -1,7 +1,7 @@
 from matplotlib.colors import ColorConverter
 
 from glue.config import settings
-from glue.external.echo import callback_property, HasCallbackProperties
+from echo import callback_property, HasCallbackProperties
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']

@@ -5,7 +5,7 @@ from collections import defaultdict
 import numpy as np
 
 from glue.core import Subset
-from glue.external.echo import (delay_callback, CallbackProperty,
+from echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID

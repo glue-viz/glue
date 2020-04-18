@@ -127,7 +127,7 @@ def load_ui(path, parent=None, directory=None):
 
     Returns
     -------
-    w : QtWidgets.QWidget
+    w
         The new widget
     """
 

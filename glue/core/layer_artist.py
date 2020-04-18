@@ -16,7 +16,7 @@ from abc import ABCMeta
 
 import numpy as np
 
-from glue.external.echo.callback_container import CallbackContainer
+from echo.callback_container import CallbackContainer
 from glue.core.subset import Subset
 from glue.utils import Pointer, PropertySetMixin
 from glue.core.message import LayerArtistEnabledMessage, LayerArtistDisabledMessage

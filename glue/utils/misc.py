@@ -2,7 +2,7 @@ import queue
 import string
 from functools import partial, reduce
 
-from glue.external.echo.callback_container import CallbackContainer
+from echo.callback_container import CallbackContainer
 
 
 __all__ = ['DeferredMethod', 'nonpartial', 'lookup_class', 'as_variable_name',

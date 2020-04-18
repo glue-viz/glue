@@ -2,7 +2,7 @@ import pytest
 
 from qtpy import QtWidgets
 
-from glue.external.echo.qt.connect import UserDataWrapper
+from echo.qt.connect import UserDataWrapper
 
 from ..widget_properties import (CurrentComboDataProperty,
                                  CurrentComboTextProperty,

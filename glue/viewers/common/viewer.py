@@ -12,7 +12,7 @@ from glue.core.state import save
 from glue.core import message as msg
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
-from glue.external.echo import delay_callback
+from echo import delay_callback
 from glue.core.layer_artist import LayerArtistContainer
 
 from glue.viewers.common.state import ViewerState

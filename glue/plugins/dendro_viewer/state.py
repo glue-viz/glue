@@ -6,7 +6,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ComponentIDComboHelper
-from glue.external.echo import keep_in_sync
+from echo import keep_in_sync
 
 from .dendro_helpers import dendrogram_layout
 

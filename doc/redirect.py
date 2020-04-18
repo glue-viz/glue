@@ -12,7 +12,6 @@
 
 import os.path
 
-from sphinx.application import ENV_PICKLE_FILENAME
 from sphinx.util.console import bold
 from sphinx.util import logging
 logger = logging.getLogger(__name__)

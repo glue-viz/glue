@@ -1,5 +1,4 @@
 from glue import custom_viewer
-from glue.core.subset import RoiSubsetState
 
 from matplotlib.colors import LogNorm
 from matplotlib.patches import Circle, Rectangle, Arc

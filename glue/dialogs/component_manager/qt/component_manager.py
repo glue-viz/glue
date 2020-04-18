@@ -4,8 +4,8 @@ from collections import defaultdict, Counter
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
 
-from glue.external.echo import SelectionCallbackProperty
-from glue.external.echo.qt import connect_combo_selection
+from echo import SelectionCallbackProperty
+from echo.qt import connect_combo_selection
 from glue.utils.qt import load_ui
 
 __all__ = ['ComponentManagerWidget']

@@ -139,6 +139,7 @@ gui_framework = (
 required = (
     QtPy('qtpy', 'Required', min_version='1.3'),
     Dependency('setuptools', 'Required', min_version='1.0'),
+    Dependency('echo', 'Required', min_version='0.2'),
     Dependency('numpy', 'Required', min_version='1.11'),
     Dependency('bottleneck', 'Required', min_version='1.2'),
     Dependency('matplotlib', 'Required for plotting', min_version='2.1'),

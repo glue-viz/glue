@@ -5,12 +5,12 @@ from qtpy.QtCore import Qt
 
 from glue import config
 
-from glue.external.echo import SelectionCallbackProperty
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from echo import SelectionCallbackProperty
+from echo.qt import autoconnect_callbacks_to_qt
 
 from glue.utils.qt import load_ui
 from glue.core.state_objects import State
-from glue.external.echo import ChoiceSeparator
+from echo import ChoiceSeparator
 from glue.core.data_combo_helper import ComponentIDComboHelper, DataCollectionComboHelper
 from glue.core.data_exporters.qt.dialog import export_data
 

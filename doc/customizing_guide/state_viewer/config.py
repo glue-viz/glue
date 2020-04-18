@@ -9,9 +9,8 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 from glue.config import qt_client
 from glue.core.data_combo_helper import ComponentIDComboHelper
 
-from glue.external.echo import CallbackProperty, SelectionCallbackProperty
-from glue.external.echo.qt import (connect_checkable_button,
-                                   autoconnect_callbacks_to_qt)
+from echo import CallbackProperty, SelectionCallbackProperty
+from echo.qt import connect_checkable_button, autoconnect_callbacks_to_qt
 
 from glue.viewers.common.layer_artist import LayerArtist
 from glue.viewers.common.state import ViewerState, LayerState

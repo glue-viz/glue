@@ -7,7 +7,7 @@ from glue.utils.qt import load_ui
 from glue.utils import nonpartial, format_minimal
 from glue.icons.qt import get_icon
 from glue.core.state_objects import State, CallbackProperty
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from echo.qt import autoconnect_callbacks_to_qt
 
 
 class SliceState(State):

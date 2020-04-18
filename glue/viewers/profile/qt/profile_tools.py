@@ -20,8 +20,8 @@ from glue.core.aggregate import mom1, mom2
 from glue.core import BaseData, Subset
 from glue.viewers.image.qt import ImageViewer
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.external.echo import SelectionCallbackProperty
-from glue.external.echo.qt import connect_combo_selection
+from echo import SelectionCallbackProperty
+from echo.qt import connect_combo_selection
 
 __all__ = ['ProfileTools']
 

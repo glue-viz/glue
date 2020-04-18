@@ -2,7 +2,7 @@ import numpy as np
 
 from numpy.testing import assert_allclose
 
-from glue.external.echo import CallbackProperty, ListCallbackProperty
+from echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
 from glue.utils import nanmedian
 

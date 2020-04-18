@@ -73,7 +73,7 @@ import numpy as np
 
 from qtpy.QtWidgets import QWidget, QGridLayout, QLabel
 
-from glue.external.echo.qt import autoconnect_callbacks_to_qt
+from echo.qt import autoconnect_callbacks_to_qt
 
 from glue.config import qt_client
 

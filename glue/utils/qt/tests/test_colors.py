@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from glue.external.echo import CallbackProperty
+from echo import CallbackProperty
 from qtpy import QtGui
 
 from ..colors import qt_to_mpl_color, QColorBox, connect_color, QColormapCombo

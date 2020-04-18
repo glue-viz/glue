@@ -36,7 +36,7 @@ will likely be changed to the layer state), but beyond this, you can implement
 the widgets any way you like. Let's take the simple layer state example above
 with the ``fill`` option. You could implement a layer options widget by doing::
 
-    from glue.external.echo.qt import connect_checkable_button
+    from echo.qt import connect_checkable_button
     from qtpy.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 
     class TutorialLayerStateWidget(QWidget):
@@ -54,7 +54,7 @@ with the ``fill`` option. You could implement a layer options widget by doing::
              connect_checkable_button(self.layer_state, 'fill', self.checkbox)
 
 In the above example, you can see that we use the
-:func:`~glue.external.echo.qt.connect_checkable_button` function to link the
+:class:`~echo.qt.connect_checkable_button` function to link the
 ``fill`` property from the layer state with the checkbox. For a full list of
 available functions, see `here
 <https://echo.readthedocs.io/en/latest/api.html>`__.
@@ -63,10 +63,10 @@ For more complex cases, you may want to use Qt Designer to create a ui file with
 your layout (such as :download:`viewer_state.ui <state_viewer/viewer_state.ui>`), then load it
 into the options widget - you can then also automatically connect UI elements to
 state properties using the
-:func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` function. Let's use
+:func:`~echo.qt.autoconnect_callbacks_to_qt` function. Let's use
 this to create a widget to control the viewer state::
 
-    from glue.external.echo.qt import autoconnect_callbacks_to_qt
+    from echo.qt import autoconnect_callbacks_to_qt
     from qtpy.QtWidgets import QWidget
     from glue.utils.qt import load_ui
 
@@ -83,7 +83,7 @@ this to create a widget to control the viewer state::
              self.viewer_state = viewer_state
              self._connections = autoconnect_callbacks_to_qt(self.viewer_state, self.ui)
 
-For :func:`~glue.external.echo.qt.autoconnect_callbacks_to_qt` to work, you need
+For :func:`~echo.qt.autoconnect_callbacks_to_qt` to work, you need
 to follow certain naming conventions for the UI elements in the ``.ui`` file. You
 can read up more about this convention `here
 <https://echo.readthedocs.io/en/latest/api/echo.qt.autoconnect_callbacks_to_qt.html#echo.qt.autoconnect_callbacks_to_qt>`__.

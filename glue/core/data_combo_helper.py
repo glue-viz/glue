@@ -11,7 +11,7 @@ from glue.core.message import (DataReorderComponentMessage,
                                DataCollectionDeleteMessage,
                                DataUpdateMessage,
                                DataRenameComponentMessage)
-from glue.external.echo import delay_callback, ChoiceSeparator
+from echo import delay_callback, ChoiceSeparator
 
 __all__ = ['ComponentIDComboHelper', 'ManualDataComboHelper',
            'DataCollectionComboHelper', 'ComboHelper', 'BaseDataComboHelper']
@@ -44,7 +44,7 @@ class ComboHelper(HubListener):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
+    selection_property : :class:`~echo.SelectionCallbackProperty`
         The selection property representing the combo.
     """
 
@@ -127,7 +127,7 @@ class ComponentIDComboHelper(ComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
+    selection_property : :class:`~echo.SelectionCallbackProperty`
         The selection property representing the combo.
     data_collection : :class:`~glue.core.data_collection.DataCollection`, optional
         The data collection to which the datasets belong - if specified,
@@ -411,7 +411,7 @@ class BaseDataComboHelper(ComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
+    selection_property : :class:`~echo.SelectionCallbackProperty`
         The selection property representing the combo.
     data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection to which the datasets belong - this is needed
@@ -492,7 +492,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
+    selection_property : :class:`~echo.SelectionCallbackProperty`
         The selection property representing the combo.
     data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection to which the datasets belong - this is needed
@@ -566,7 +566,7 @@ class DataCollectionComboHelper(BaseDataComboHelper):
     ----------
     state : :class:`~glue.core.state_objects.State`
         The state to which the selection property belongs
-    selection_property : :class:`~glue.external.echo.SelectionCallbackProperty`
+    selection_property : :class:`~echo.SelectionCallbackProperty`
         The selection property representing the combo.
     data_collection : :class:`~glue.core.data_collection.DataCollection`
         The data collection with which to stay in sync
