@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
-    <height>145</height>
+    <width>332</width>
+    <height>152</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -313,7 +313,29 @@
         <number>5</number>
        </property>
        <item>
-        <widget class="AxesEditorWidget" name="axes_editor"/>
+        <widget class="AxesEditorWidget" name="axes_editor" native="true"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Legend</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="LegendEditorWidget" name="legend_editor" native="true"/>
        </item>
       </layout>
      </widget>
@@ -327,6 +349,11 @@
    <class>AxesEditorWidget</class>
    <extends>QWidget</extends>
    <header>glue.viewers.matplotlib.qt.axes_editor</header>
+  </customwidget>
+  <customwidget>
+   <class>LegendEditorWidget</class>
+   <extends>QWidget</extends>
+   <header>glue.viewers.matplotlib.qt.legend_editor</header>
   </customwidget>
  </customwidgets>
  <resources/>

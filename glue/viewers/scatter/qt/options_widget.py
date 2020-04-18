@@ -22,6 +22,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
         self._connections = autoconnect_callbacks_to_qt(viewer_state, self.ui)
         self._connections_axes = autoconnect_callbacks_to_qt(viewer_state, self.ui.axes_editor.ui)
+        connect_kwargs = {'legend_alpha': dict(value_range=(0, 1))}
+        self._connections_legend = autoconnect_callbacks_to_qt(viewer_state, self.ui.legend_editor.ui, connect_kwargs)
 
         self.viewer_state = viewer_state
 
