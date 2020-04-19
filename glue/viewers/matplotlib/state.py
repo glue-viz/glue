@@ -34,8 +34,11 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
 
 VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']
 
-VALID_LOCATIONS = ['best', 'upper right', 'upper left', 'lower left', 'lower right',
-                  'center left', 'center right', 'lower center', 'lower right']
+VALID_LOCATIONS = ['best',
+                   'upper right', 'upper left',
+                   'lower left', 'lower right',
+                   'center left', 'center right',
+                   'lower center', 'upper center']
 
 
 class MatplotlibDataViewerState(ViewerState):

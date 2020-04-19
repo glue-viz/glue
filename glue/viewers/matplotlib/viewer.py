@@ -1,3 +1,5 @@
+from textwrap import indent
+
 import numpy as np
 
 from matplotlib.patches import Rectangle
@@ -31,9 +33,6 @@ ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_
 ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={x_ticklabel_size})
 
-# Uncomment to draw the legend
-# plt.legend()
-
 # For manual edition of the plot
 #  - Uncomment the next code line (plt.show)
 #  - Also change the matplotlib backend to qt5Agg
@@ -43,6 +42,16 @@ ax.tick_params('y', labelsize={x_ticklabel_size})
 # Save figure
 fig.savefig('glue_plot.png')
 plt.close(fig)
+""".strip()
+
+SCRIPT_LEGEND = """
+ax.legend(
+    loc='{legend_location}',            # location
+    framealpha={legend_alpha:.2f},      # opacity of the frame
+    title='{legend_title}',             # title of the legend
+    title_fontsize={legend_fontsize},   # fontsize of the title
+    fontsize={legend_fontsize}          # fontsize of the labels
+)
 """.strip()
 
 ZORDER_MAX = 100000
@@ -256,3 +265,10 @@ class MatplotlibViewerMixin(object):
         state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
         state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
         return [], SCRIPT_FOOTER.format(**state_dict)
+
+    def _script_legend(self):
+        state_dict = self.state.as_dict()
+        legend_str = SCRIPT_LEGEND.format(**state_dict)
+        if not self.state.show_legend:
+            legend_str = indent(legend_str, "# ")
+        return [], legend_str

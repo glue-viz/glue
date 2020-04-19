@@ -111,6 +111,10 @@ data_collection = load('{data}')
 
 {layers}
 
+### Legend
+
+{legend}
+
 ### Finalize viewer
 
 {footer}
@@ -405,6 +409,9 @@ class Viewer(BaseViewer):
     def _script_header(self):
         raise NotImplementedError()
 
+    def _script_legend(self):
+        return [], ""
+
     def _script_footer(self):
         raise NotImplementedError()
 
@@ -440,6 +447,8 @@ class Viewer(BaseViewer):
             imports.extend(imports_layer)
             layers += layer_script.strip() + "\n"
 
+        imports_legend, legend = self._script_legend()
+        imports.extend(imports_legend)
         imports_footer, footer = self._script_footer()
         imports.extend(imports_footer)
 
@@ -454,6 +463,7 @@ class Viewer(BaseViewer):
                                         imports=imports.strip(),
                                         header=header.strip(),
                                         layers=layers.strip(),
+                                        legend=legend.strip(),
                                         footer=footer.strip())
 
         with open(filename, 'w') as f:
