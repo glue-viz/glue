@@ -81,7 +81,7 @@ from glue.core.roi import Roi
 from glue.core import glue_pickle as gp
 from glue.core.subset_group import coerce_subset_groups
 from glue.utils import lookup_class
-
+from glue.config import session_patch
 
 literals = tuple([type(None), float, int, bytes, bool])
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
@@ -435,7 +435,12 @@ class GlueUnSerializer(object):
         self._working = set()
         self._rec = json.loads(string) if string else json.load(fobj)
         self._callbacks = []
+
+        # apply Glue defined patches
         apply_inplace_patches(self._rec)
+        # apply user-defined patches
+        for patcher in session_patch:
+            patcher.function(self._rec)
 
     @classmethod
     def loads(cls, string):
@@ -1218,8 +1223,8 @@ def _load_datetime64(rec, context):
 def apply_inplace_patches(rec):
     """
     Apply in-place patches to a loaded session file. Ideally this should be
-    empty but we use this to fix session files that need fixing to be
-    interpretable by the current version of glue.
+    empty, except for user patches, but we use this to fix session files that
+    need fixing to be interpretable by the current version of glue.
     """
 
     # The following is a patch for session files made with glue 0.15.* or
