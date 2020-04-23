@@ -529,15 +529,29 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def get_handle_legend(self):
         if self.enabled and self.state.visible:
+            # the difficulty here is to find a good compromise between
+            # the meaning behind the scatter plot, how to represent it in the
+            # legend and the complexity of that code
             if not self.state.line_visible:
                 linestyle = "none"
             else:
                 linestyle = self.state.linestyle
 
-            handle = Line2D([0], [0], marker="o",
-                            ms=self.state.size, alpha=self.state.alpha,
+            if self.state.cmap_mode == 'Fixed':
+                color = self.get_layer_color()
+            else:
+                color = "#444444"
+
+            if self.state.size_mode == 'Fixed':
+                size = self.state.size * self.state.size_scaling
+            else:
+                size = ((self.state.size_vmax - self.state.size_vmin) *
+                        self.state.size_scaling / 2)
+
+            handle = Line2D([0, ], [0, ], marker="o",
+                            ms=size, alpha=self.state.alpha,
                             linestyle=linestyle, linewidth=self.state.linewidth,
-                            color=self.get_layer_color())
+                            color=color)
 
             return handle, self.layer.label, None
         else:
