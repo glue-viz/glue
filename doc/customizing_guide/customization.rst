@@ -515,6 +515,29 @@ using
                                       format='my-serialized-format')
     "a > 3"
 
+Custom session patch
+--------------------
+
+Adding new features and keeping backward compatibility is hard. Because the
+features of glue, and/or its plugins changes over time, old but tprecious
+sessions files might not open anymore. To solve this problem, custom patch
+functions can be provided to edit *in-place* the session file, just after it
+is loaded. These patch functions should take a loaded session file (as a dict),
+detect if it is invalid, and if so correct the problem, e.g.::
+
+    from glue.config import subset_definition_translator
+
+    @session_patch(priority=0)
+    def correct_bad_version_plugin(session_obj):
+        # if problem:
+            # correct problem
+
+        ...
+
+        return
+
+
+
 Complete list of registries
 ---------------------------
 
@@ -545,6 +568,7 @@ Registry name                  Registry class
 ``autolinker``               :class:`glue.config.AutoLinkerRegistry`
 ``data_translator``          :class:`glue.config.DataTranslatorRegistry`
 ``subset_state_translator``  :class:`glue.config.SubsetDefinitionTranslatorRegistry`
+``session_patch``            :class:`glue.config.SessionPatchRegistry`
 =========================== =========================================================
 
 .. _lazy_load_plugin:

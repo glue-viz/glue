@@ -8,6 +8,7 @@ from numpy.testing import assert_equal
 from glue import core
 from glue.core.component import CategoricalComponent, DateTimeComponent
 from glue.tests.helpers import requires_astropy, make_file
+from glue.config import session_patch
 
 from ..data_factories import load_data
 from ..data_factories.tests.test_fits import TEST_FITS_DATA
@@ -99,6 +100,19 @@ def test_data_style():
     d.style.color = 'blue'
     d2 = clone(d)
     assert d2.style.color == 'blue'
+
+
+def test_user_patch_is_called():
+    @session_patch()
+    def a_patch(session):
+        session["__main__"]["label"] = 'has_changed'
+
+    d = core.Data(x=[1, 2, 3], label='testing')
+    d2 = clone(d)
+
+    session_patch._members.pop(-1)  # clean registry
+
+    assert d2.label == 'has_changed'
 
 
 @requires_astropy
