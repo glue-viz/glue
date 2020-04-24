@@ -1639,10 +1639,12 @@ class Data(BaseCartesianData):
         num_total_bins = 1
         bins_per_dim = []
         bin_ids = None
-        if view is None:
+        if is_slice_subset:
+            data_shape = subset_state.to_array(self,self.components[0])[view].shape
+        elif view is None:
             data_shape = self.shape
         else:
-            data_shape = (np.broadcast_to(1,self.shape)[view]).shape
+            data_shape = (self.get_data(self.components[0], view=view)).shape
             axis_map = []
             view_axis = 0
             for base_axis in range(self.ndim):
@@ -1665,7 +1667,7 @@ class Data(BaseCartesianData):
                     bin_lims[-1] += 10 * np.spacing(bin_lims[-1])
 
                     if is_slice_subset:
-                        data = subset_state.to_array(self, cid)[view]
+                        data = subset_state.to_array(self, bin_by_cid)[view]
                     else:
                         data = self.get_data(bin_by_cid, view=view)
                     if isinstance(data, categorical_ndarray):
@@ -1738,121 +1740,27 @@ class Data(BaseCartesianData):
 
     def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
-        Compute an n-dimensional histogram with regularly spaced bins.
-
-        Currently this only implements 1-D histograms.
-
-        Parameters
-        ----------
-        cids : list of str or `ComponentID`
-            Component IDs to compute the histogram over
-        weights : str or ComponentID
-            Component IDs to use for the histogram weights
-        range : list of tuple
-            The ``(min, max)`` of the histogram range
-        bins : list of int
-            The number of bins
-        log : list of bool
-            Whether to compute the histogram in log space
-        subset_state : `SubsetState`, optional
-            If specified, the histogram will only take into account values in
-            the subset state.
+        Currently deprecated. Use compute_statistic with a statistic value of `'count'` instead 
         """
+        warnings.warn('Deprecated in favor of compute_statistic', DeprecationWarning)
 
-        if len(cids) > 2:
-            raise NotImplementedError()
-
-        ndim = len(cids)
-
-        x = self.get_data(cids[0])
-        if isinstance(x, categorical_ndarray):
-            x = x.codes
-
-        if ndim > 1:
-            y = self.get_data(cids[1])
-            if isinstance(y, categorical_ndarray):
-                y = y.codes
-
-        if weights is not None:
-            w = self.get_data(weights)
-            if isinstance(w, categorical_ndarray):
-                w = w.codes
+        if weights:
+            return self.compute_statistic(statistic='sum',
+                                          cid=weights,
+                                          bin_by=cids,
+                                          limits=range,
+                                          shape=bins,
+                                          log=log,
+                                          subset_state=subset_state)
         else:
-            w = None
+            print ("test", cids)
+            return self.compute_statistic(statistic='count',
+                                          bin_by=cids,
+                                          limits=range,
+                                          shape=bins,
+                                          log=log,
+                                          subset_state=subset_state)
 
-        if subset_state is not None:
-            mask = subset_state.to_mask(self)
-            x = x[mask]
-            if ndim > 1:
-                y = y[mask]
-            if w is not None:
-                w = w[mask]
-
-        if ndim == 1:
-            xmin, xmax = range[0]
-            xmin, xmax = sorted((xmin, xmax))
-            keep = (x >= xmin) & (x <= xmax)
-        else:
-            (xmin, xmax), (ymin, ymax) = range
-            xmin, xmax = sorted((xmin, xmax))
-            ymin, ymax = sorted((ymin, ymax))
-            keep = (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax)
-
-        if x.dtype.kind == 'M':
-            x = datetime64_to_mpl(x)
-            xmin = datetime64_to_mpl(xmin)
-            xmax = datetime64_to_mpl(xmax)
-        else:
-            keep &= ~np.isnan(x)
-
-        if ndim > 1:
-            if y.dtype.kind == 'M':
-                y = datetime64_to_mpl(y)
-                ymin = datetime64_to_mpl(ymin)
-                ymax = datetime64_to_mpl(ymax)
-            else:
-                keep &= ~np.isnan(y)
-
-        x = x[keep]
-        if ndim > 1:
-            y = y[keep]
-        if w is not None:
-            w = w[keep]
-
-        if len(x) == 0:
-            return np.zeros(bins)
-
-        if ndim > 1 and len(y) == 0:
-            return np.zeros(bins)
-
-        if log is not None and log[0]:
-            if xmin < 0 or xmax < 0:
-                return np.zeros(bins)
-            xmin = np.log10(xmin)
-            xmax = np.log10(xmax)
-            x = np.log10(x)
-
-        if ndim > 1 and log is not None and log[1]:
-            if ymin < 0 or ymax < 0:
-                return np.zeros(bins)
-            ymin = np.log10(ymin)
-            ymax = np.log10(ymax)
-            y = np.log10(y)
-
-        # By default fast-histogram drops values that are exactly xmax, so we
-        # increase xmax very slightly to make sure that this doesn't happen, to
-        # be consistent with np.histogram.
-        if ndim >= 1:
-            xmax += 10 * np.spacing(xmax)
-        if ndim >= 2:
-            ymax += 10 * np.spacing(ymax)
-
-        if ndim == 1:
-            range = (xmin, xmax)
-            return histogram1d(x, range=range, bins=bins[0], weights=w)
-        elif ndim > 1:
-            range = [(xmin, xmax), (ymin, ymax)]
-            return histogram2d(x, y, range=range, bins=bins, weights=w)
 
     def compute_fixed_resolution_buffer(self, *args, **kwargs):
         from .fixed_resolution_buffer import compute_fixed_resolution_buffer
