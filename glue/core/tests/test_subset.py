@@ -409,7 +409,12 @@ class TestCompositeSubsetStateCopy(object):
         assert s1.state2.copy() is s2.state2
 
     def test_invert(self):
-        self.assert_composite_copy(InvertState)
+        state1 = MagicMock()
+        s1 = InvertState(state1)
+        s2 = s1.copy()
+
+        assert type(s1) == type(s2)
+        assert s1.state1.copy() is s2.state1
 
     def test_and(self):
         self.assert_composite_copy(AndState)

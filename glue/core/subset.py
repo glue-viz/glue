@@ -1001,35 +1001,70 @@ class CompositeSubsetState(SubsetState):
     """
     The base class for combinations of subset states.
     """
+    def _traverse_state_tree(self, substate_func, unary_func, binary_func):
+        visitation_stack = [(self, False)]
+        results_stack = []
+
+        while visitation_stack:
+            state, visited = visitation_stack.pop()
+            if isinstance(state, CompositeSubsetState):
+                if visited:
+                    if state.op is operator.invert:
+                        results_stack[-1] = unary_func(state, results_stack[-1])
+                    else:
+                        lhs = results_stack.pop()
+                        results_stack[-1] = binary_func(state, lhs, results_stack[-1])
+                else:
+                    visitation_stack.append((state, True))
+                    visitation_stack.append((state.state1, False))
+                    if (state.state2 is not None):
+                        visitation_stack.append((state.state2, False))
+
+            else:
+                results_stack.append(substate_func(state))
+
+        return results_stack[0]
 
     op = None
 
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
-        self.state1 = state1.copy()
+        if state1:
+            self.state1 = state1.copy()
         if state2:
             state2 = state2.copy()
         self.state2 = state2
 
     def copy(self):
-        return type(self)(self.state1, self.state2)
+        leaf_func = lambda state: state.copy()
+        def _copy_composite(state, lhs, rhs=None):
+            copy = type(state)(None, None)
+            copy.state1 = lhs
+            copy.state2 = rhs
+            return copy
+        return self._traverse_state_tree(leaf_func, _copy_composite, _copy_composite)
+
 
     @property
     def attributes(self):
-        att = self.state1.attributes
-        if self.state2 is not None:
-            att += self.state2.attributes
-        return tuple(sorted(set(att)))
+        leaf_func = lambda state: state.attributes
+        invert_func = lambda _,input: input
+        binary_func = lambda _, lhs, rhs: lhs+rhs
+        preclean = self._traverse_state_tree(leaf_func, invert_func, binary_func)
+        return tuple(sorted(set(preclean)))
 
     @memoize
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-        return self.op(self.state1.to_mask(data, view),
-                       self.state2.to_mask(data, view))
-
+        leaf_func = lambda state, data=data, view=view: state.to_mask(data, view)
+        invert_func = lambda _, input: ~input
+        binary_func = lambda state, lhs, rhs: state.op(lhs, rhs)
+        return self._traverse_state_tree(leaf_func, invert_func,binary_func)
     def __str__(self):
-        sym = OPSYM.get(self.op, self.op)
-        return "(%s %s %s)" % (self.state1, sym, self.state2)
+        leaf_func = lambda state: "%s" % state
+        invert_func = lambda _, input: "(~%s)" % input
+        binary_func = lambda state, lhs, rhs: "(%s %s %s)" % (lhs, OPSYM.get(state.op, state.op), rhs)
+        return self._traverse_state_tree(leaf_func, invert_func, binary_func)
 
 
 class OrState(CompositeSubsetState):
@@ -1070,14 +1105,7 @@ class InvertState(CompositeSubsetState):
     vice-versa. The original subset state can be accessed using the attribute
     ``state1``.
     """
-
-    @memoize
-    @contract(data='isinstance(Data)', view='array_view')
-    def to_mask(self, data, view=None):
-        return ~self.state1.to_mask(data, view)
-
-    def __str__(self):
-        return "(~%s)" % self.state1
+    op = operator.invert
 
 
 class MultiOrState(SubsetState):
