@@ -37,7 +37,7 @@ class Registry(object):
         self._disable = False
 
     def register(self, obj, label, group=None):
-        """ Register label with object (possibly disamgiguating)
+        """ Register label with object (possibly disambiguating)
 
         :param obj: The object to label
         :param label: The desired label

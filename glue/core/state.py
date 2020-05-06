@@ -709,6 +709,8 @@ def _save_style(style, context):
 @loader(VisualAttributes)
 def _load_style(rec, context):
     result = VisualAttributes()
+    if 'preferred_cmap' in result._atts:
+        result._atts.remove('preferred_cmap')
     for attr in result._atts:
         setattr(result, attr, rec[attr])
     return result
