@@ -1002,6 +1002,29 @@ class CompositeSubsetState(SubsetState):
     The base class for combinations of subset states.
     """
     def _traverse_state_tree(self, substate_func, unary_func, binary_func):
+        """
+        A helper function that traverses the entire state tree iteratively.
+        
+        Use this instead of writing recursive function calls to prevent stack overflow.
+
+        Parameters
+        ----------
+        substate_func : callable
+            A callable object that takes one argument of a `SubsetState` object.
+            This function will be applied to all substates that are not CompositeSubsetStates.
+            This callable should return a result.
+        unary_func : callable
+            A callable object that takes two arguments, an `InvertState` and one input argument.
+            The input argument is the same as the result of the recursive function call on 
+            the state1 field of the InvertState object.
+            This callable should return a result.
+        binary_func : callable
+            A callable object that takes three agruments, an `InvertState` and two arguments.
+            The first input argument is the same as the result of the recursive function call on 
+            the state1 field, and the second argument is the result of recursion on state2. 
+            This callable should return a result.
+        """
+
         visitation_stack = [(self, False)]
         results_stack = []
 
@@ -1012,13 +1035,13 @@ class CompositeSubsetState(SubsetState):
                     if state.op is operator.invert:
                         results_stack[-1] = unary_func(state, results_stack[-1])
                     else:
-                        lhs = results_stack.pop()
-                        results_stack[-1] = binary_func(state, lhs, results_stack[-1])
+                        rhs = results_stack.pop()
+                        results_stack[-1] = binary_func(state, results_stack[-1], rhs)
                 else:
                     visitation_stack.append((state, True))
-                    visitation_stack.append((state.state1, False))
-                    if (state.state2 is not None):
+                    if state.op is not operator.invert:
                         visitation_stack.append((state.state2, False))
+                    visitation_stack.append((state.state1, False))
 
             else:
                 results_stack.append(substate_func(state))
@@ -1030,7 +1053,8 @@ class CompositeSubsetState(SubsetState):
     def __init__(self, state1, state2=None):
         super(CompositeSubsetState, self).__init__()
         if state1:
-            self.state1 = state1.copy()
+            state1 = state1.copy()
+        self.state1 = state1
         if state2:
             state2 = state2.copy()
         self.state2 = state2
