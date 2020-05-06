@@ -3,6 +3,7 @@ from matplotlib.cm import get_cmap
 
 from glue.config import settings
 
+
 from echo import callback_property, HasCallbackProperties
 
 # Define acceptable line styles

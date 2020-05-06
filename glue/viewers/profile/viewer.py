@@ -1,18 +1,42 @@
 from glue.core.subset import roi_to_subset_state
+from glue.core.coordinates import LegacyCoordinates
+
+from astropy.wcs import WCS
+from astropy.visualization.wcsaxes.frame import RectangularFrame1D
 
 __all__ = ['MatplotlibProfileMixin']
+
+
+def get_identity_wcs(naxis):
+
+    wcs = WCS(naxis=naxis)
+    wcs.wcs.ctype = ['X'] * naxis
+    wcs.wcs.crval = [0.] * naxis
+    wcs.wcs.crpix = [1.] * naxis
+    wcs.wcs.cdelt = [1.] * naxis
+
+    return wcs
 
 
 class MatplotlibProfileMixin(object):
 
     def setup_callbacks(self):
-        self.state.add_callback('x_att', self._update_axes)
-        self.state.add_callback('normalize', self._update_axes)
+
+        self._changing_slice_requires_wcs_update = None
+        self.state.add_callback('normalize', self._set_wcs)
+        self.state.add_callback('x_att_pixel', self._set_wcs)
+        self.state.add_callback('reference_data', self._set_wcs)
+        self.state.add_callback('slices', self._set_wcs)
+
+    def update_x_ticklabel(self, *event):
+
+        # We need to overload this here for WCSAxes
+        axis = 0
+
+        self.axes.coords[axis].set_ticklabel(size=self.state.x_ticklabel_size)
+        self.redraw()
 
     def _update_axes(self, *args):
-
-        if self.state.x_att is not None:
-            self.state.x_axislabel = self.state.x_att.label
 
         if self.state.normalize:
             self.state.y_axislabel = 'Normalized data values'
@@ -33,5 +57,30 @@ class MatplotlibProfileMixin(object):
         if len(self.layers) == 0:
             return
 
-        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
+        subset_state = roi_to_subset_state(roi, x_att=self.state.x_att_pixel)
         self.apply_subset_state(subset_state, override_mode=override_mode)
+
+    def _set_wcs(self, event=None, relim=True):
+        ref_coords = getattr(self.state.reference_data, 'coords', None)
+
+        self.axes.frame_class = RectangularFrame1D
+
+        if ref_coords is None or isinstance(ref_coords, LegacyCoordinates):
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice,
+                                wcs=get_identity_wcs(self.state.reference_data.ndim))
+        else:
+            self.axes.reset_wcs(slices=self.state.wcsaxes_slice, wcs=ref_coords)
+
+        self.axes.yaxis.set_visible(True)
+
+        # Reset the axis labels to match the fact that the new axes have no labels
+        self.state.x_axislabel = ''
+        self.state.y_axislabel = 'Data values'
+
+        self._update_appearance_from_settings()
+        self._update_axes()
+
+        self.update_x_ticklabel()
+
+        if relim:
+            self.state.reset_limits()

@@ -12,6 +12,8 @@ from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboH
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
+from glue.core.state_objects import StateAttributeLimitsHelper
+
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -20,7 +22,8 @@ FUNCTIONS = OrderedDict([('maximum', 'Maximum'),
                          ('minimum', 'Minimum'),
                          ('mean', 'Mean'),
                          ('median', 'Median'),
-                         ('sum', 'Sum')])
+                         ('sum', 'Sum'),
+                         ('slice', 'Slice')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -29,7 +32,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
     """
 
     x_att_pixel = DDCProperty(docstring='The component ID giving the pixel component '
-                                  'shown on the x axis')
+                                        'shown on the x axis')
 
     x_att = DDSCProperty(docstring='The component ID giving the pixel or world component '
                                    'shown on the x axis')
@@ -38,6 +41,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
                                             'which the images are shown')
+
+    slices = DDCProperty(docstring='The current slice along all dimensions')
 
     function = DDSCProperty(docstring='The function to use for collapsing data')
 
@@ -80,6 +85,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _update_att(self, *args):
+        """
+        Define self.x_att_pixel in viewer state.
+        """
         if self.x_att is not None:
             if self._display_world:
                 if self.x_att in self.reference_data.pixel_component_ids:
@@ -104,18 +112,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         data = self.reference_data
 
-        if self.x_att in data.pixel_component_ids:
-            x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
-        else:
-            axis = data.world_component_ids.index(self.x_att)
-            axis_view = [0] * data.ndim
-            axis_view[axis] = slice(None)
-            axis_values = data[self.x_att, tuple(axis_view)]
-            x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
-
         with delay_callback(self, 'x_min', 'x_max'):
-            self.x_min = x_min
-            self.x_max = x_max
+            self.x_min = -0.5
+            self.x_max = data.shape[self.x_att_pixel.axis] - 0.5
 
     def _reset_y_limits(self, *event):
         if self.normalize:
@@ -171,6 +170,31 @@ class ProfileViewerState(MatplotlibDataViewerState):
         else:
             return 1
 
+    @property
+    def wcsaxes_slice(self):
+        """
+        Returns slicing information usable by WCSAxes.
+
+        This returns an iterable of slices, and including ``'x'`` and ``'y'``
+        for the dimensions along which we are not slicing.
+        """
+        if self.reference_data is None:
+            return None
+        slices = []
+        for i in range(self.reference_data.ndim):
+            if i == self.x_att_pixel.axis:
+                slices.append('x')
+            else:
+                slices.append(0)
+        return slices[::-1]
+
+    def _set_default_slices(self):
+        # Need to make sure this gets called immediately when reference_data is changed
+        if self.reference_data is None:
+            self.slices = ()
+        else:
+            self.slices = (0,) * self.reference_data.ndim
+
 
 class ProfileLayerState(MatplotlibLayerState):
     """
@@ -188,9 +212,15 @@ class ProfileLayerState(MatplotlibLayerState):
     _viewer_callbacks_set = False
     _profile_cache = None
 
-    def __init__(self, layer=None, viewer_state=None, **kwargs):
+    def __init__(self, layer=None, viewer_state=None, session=None, **kwargs):
 
-        super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
+        super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state, session=session)
+
+        self.session = session
+
+        self.attribute_lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
+                                                               percentile='percentile',
+                                                               lower='v_min', upper='v_max')
 
         self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
                                                            numeric=True, categorical=False)
@@ -258,7 +288,7 @@ class ProfileLayerState(MatplotlibLayerState):
             raise IncompatibleDataException()
 
         # Check what pixel axis in the current dataset x_att corresponds to
-        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att_pixel)
+        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
 
         if pix_cid is None:
             raise IncompatibleDataException()
@@ -280,7 +310,16 @@ class ProfileLayerState(MatplotlibLayerState):
             data = self.layer
             subset_state = None
 
-        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
+        # The indices should be arranged in the ordinary (in contrast to reversed) order
+        if self.viewer_state.function == 'slice':
+            # profile_values = data.compute_statistic('slice', self.attribute, view=self.viewer_state.slices)
+
+            data_slice = list(self.viewer_state.slices)
+            data_slice[pix_cid.axis] = slice(None)
+            profile_values = data.compute_statistic('slice', self.attribute, view=tuple(data_slice))
+        else:
+            profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes,
+                                                    subset_state=subset_state)
 
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
@@ -294,6 +333,7 @@ class ProfileLayerState(MatplotlibLayerState):
             self.update_limits(update_profile=False)
 
     def update_limits(self, update_profile=True):
+
         with delay_callback(self, 'v_min', 'v_max'):
             if update_profile:
                 self.update_profile(update_limits=False)

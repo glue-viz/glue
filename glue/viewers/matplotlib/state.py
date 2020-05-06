@@ -273,7 +273,7 @@ class MatplotlibLayerState(LayerState):
 
     def __init__(self, viewer_state=None, **kwargs):
 
-        super(MatplotlibLayerState, self).__init__(viewer_state=viewer_state, **kwargs)
+        super(MatplotlibLayerState, self).__init__(viewer_state=viewer_state, preferred_cmap=None, **kwargs)
 
         self.color = self.layer.style.color
         self.alpha = self.layer.style.alpha

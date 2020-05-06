@@ -450,6 +450,9 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
     # NOTE: this function should not ever have to use glue-specific objects.
     # The aim is to eventually use a fast C implementation of this function.
 
+    if statistic == 'slice':
+        return np.array(data, dtype=float)[axis]
+
     if statistic not in PLAIN_FUNCTIONS:
         raise ValueError("Unrecognized statistic: {0}".format(statistic))
 
