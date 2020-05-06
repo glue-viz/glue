@@ -16,6 +16,7 @@ from glue.app.qt.application import GlueApplication
 from glue.core.roi import XRangeROI
 from glue.utils.qt import process_events
 from glue.tests.helpers import requires_matplotlib_ge_22
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 
 
 class MatplotlibDrawCounter(object):
@@ -677,3 +678,26 @@ class BaseTestMatplotlibDataViewer(object):
 
         self.viewer.state.show_axes = True
         assert self.viewer.axes.axison
+
+    def test_update_settings_from(self):
+        copy_from_state = MatplotlibDataViewerState()
+        copy_from_state.x_axislabel_size = 1
+        copy_from_state.y_axislabel_size = 2
+        copy_from_state.x_axislabel_weight = 'heavy'
+        copy_from_state.y_axislabel_weight = 'black'
+        copy_from_state.x_ticklabel_size = 5
+        copy_from_state.y_ticklabel_size = 6
+        copy_from_state.show_axes = False
+        state = self.viewer.state
+        state.update_axes_settings_from(copy_from_state)
+        assert state.x_axislabel_size == 1
+        assert state.y_axislabel_size == 2
+        assert state.x_axislabel_weight == 'heavy'
+        assert state.y_axislabel_weight == 'black'
+        assert state.x_ticklabel_size == 5
+        assert state.y_ticklabel_size == 6
+        assert not state.show_axes
+
+
+
+
