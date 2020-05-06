@@ -65,7 +65,6 @@ class ProfileViewerTool(Tool):
             # be a pixel attribute or world attribute depending on what information
             # is available in the coordinates, so we need to be careful about that.
 
-            x_att = profile_viewer.state.x_att
             reference_data = self.viewer.state.reference_data
 
             if isinstance(profile_viewer.state.x_att, PixelComponentID):

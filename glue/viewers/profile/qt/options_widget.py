@@ -5,6 +5,8 @@ from qtpy import QtWidgets
 from glue.core.coordinate_helpers import dependent_axes
 from echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
+from glue.viewers.profile.qt.slice_widget import ProfileMultiSliceWidgetHelper
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 
 __all__ = ['ProfileOptionsWidget']
 
@@ -33,9 +35,27 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
         self.session = session
 
+        self.profile_slice_helper = None
+
+        self.viewer_state.add_callback('function', self._on_function_change)
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
 
         self.ui.text_warning.hide()
+
+        self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
+
+    def _on_function_change(self, *args):
+
+        if self.viewer_state.function == 'slice':
+            self.profile_slice_helper = ProfileMultiSliceWidgetHelper(viewer_state=self.viewer_state,
+                                                                      session=self.session,
+                                                                      layout=self.ui.layout_slices)
+            self.ui.text_warning.hide()
+            self.ui.text_warning.setText('')
+
+        else:
+            if self.profile_slice_helper:
+                self.profile_slice_helper.remove()
 
     def _on_attribute_change(self, *args):
 
@@ -45,12 +65,19 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
             self.ui.text_warning.hide()
             return
 
-        world_warning = len(dependent_axes(self.viewer_state.reference_data.coords,
-                                           self.viewer_state.x_att_pixel.axis)) > 1
+        if self.viewer_state.function != 'slice':
 
-        if world_warning:
-            self.ui.text_warning.show()
-            self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
-        else:
+            world_warning = len(dependent_axes(self.viewer_state.reference_data.coords,
+                                               self.viewer_state.x_att_pixel.axis)) > 1
+
             self.ui.text_warning.hide()
-            self.ui.text_warning.setText('')
+
+            if world_warning:
+                self.ui.text_warning.show()
+                self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
+
+    def _apply_all_viewers(self):
+        for tab in self.session.application.viewers:
+            for viewer in tab:
+                if isinstance(viewer.state, MatplotlibDataViewerState):
+                    viewer.state.update_axes_settings_from(self.viewer_state)

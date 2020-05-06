@@ -38,7 +38,8 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon', 'image:point_selection', 'image:contrast_bias',
+             'select:polygon', 'image:point_selection',
+             'image:contrast_bias',
              'profile-viewer']
 
     def __init__(self, session, parent=None, state=None):

@@ -3,7 +3,6 @@ import warnings
 
 from matplotlib.lines import Line2D
 
-
 from glue.core import BaseData
 from glue.utils import defer_draw
 from glue.viewers.profile.state import ProfileLayerState
@@ -27,9 +26,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_profile)
         self.state.add_global_callback(self._update_profile)
 
-        drawstyle = 'steps-mid' if self.state.as_steps else 'default'
-        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle=drawstyle)[0]
-
+        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid',
+                                          color=self.state.layer.style.color)[0]
         self.mpl_artists = [self.plot_artist]
 
     @defer_draw
@@ -47,6 +45,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         # otherwise the thread tries to send these to the glue logger (which
         # uses Qt), which then results in this kind of error:
         # QObject::connect: Cannot queue arguments of type 'QTextCursor'
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if reset:
@@ -122,7 +121,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _update_profile(self, force=False, **kwargs):
 
-        if (self._viewer_state.x_att is None or
+        if (self._viewer_state.x_att_pixel is None or
                 self.state.attribute is None or
                 self.state.layer is None):
             return
@@ -131,9 +130,10 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         # of updated properties is up to date after this method has been called.
         changed = self.pop_changed_properties()
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max', 'visible')):
-            self._calculate_profile(reset=force)
-            force = True
+        if force or any(prop in changed for prop in ('layer', 'slices', 'x_att', 'x_att_pixel', 'attribute',
+                                                     'function', 'normalize', 'v_min', 'v_max', 'visible')):
+            self._update_visual_attributes()
+            self._calculate_profile(reset=True)
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth', 'as_steps')):
             self._update_visual_attributes()
