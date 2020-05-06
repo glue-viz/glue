@@ -13,6 +13,7 @@ from glue.utils import defer_draw, decorate_all_methods
 from glue.viewers.image.qt.contrast_mouse_mode import ContrastBiasMode  # noqa
 from glue.viewers.image.qt.profile_viewer_tool import ProfileViewerTool  # noqa
 from glue.viewers.image.qt.pixel_selection_mode import PixelSelectionTool  # noqa
+from glue.viewers.image.qt.pixel_extraction_mode import PixelExtractionTool # noqa
 
 from glue.viewers.image.viewer import MatplotlibImageMixin
 
@@ -38,7 +39,9 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
 
     tools = ['select:rectangle', 'select:xrange',
              'select:yrange', 'select:circle',
-             'select:polygon', 'image:point_selection', 'image:contrast_bias',
+             'select:polygon', 'image:point_selection',
+             'image:pixel_extraction',
+             'image:contrast_bias',
              'profile-viewer']
 
     def __init__(self, session, parent=None, state=None):

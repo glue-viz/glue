@@ -4,7 +4,6 @@ import warnings
 import numpy as np
 from matplotlib.lines import Line2D
 
-
 from glue.core import BaseData
 from glue.utils import defer_draw, nanmin, nanmax
 from glue.viewers.profile.state import ProfileLayerState
@@ -28,8 +27,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_profile)
         self.state.add_global_callback(self._update_profile)
 
-        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid')[0]
-
+        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid',
+                                          color=self.state.layer.style.color)[0]
         self.mpl_artists = [self.plot_artist]
 
     @defer_draw
@@ -47,6 +46,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         # otherwise the thread tries to send these to the glue logger (which
         # uses Qt), which then results in this kind of error:
         # QObject::connect: Cannot queue arguments of type 'QTextCursor'
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if reset:
@@ -79,6 +79,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         # Update the data values.
         if len(x) > 0:
+            x = np.arange(len(x))
             self.state.update_limits()
             # Normalize profile values to the [0:1] range based on limits
             if self._viewer_state.normalize:
@@ -149,14 +150,15 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
     def _update_profile(self, force=False, **kwargs):
 
-        if (self._viewer_state.x_att is None or
+        if (self._viewer_state.x_att_pixel is None or
                 self.state.attribute is None or
                 self.state.layer is None):
             return
 
         changed = set() if force else self.pop_changed_properties()
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max', 'visible')):
+        if force or any(prop in changed for prop in ('layer', 'slices', 'x_att', 'x_att_pixel', 'attribute',
+                                                     'function', 'normalize', 'v_min', 'v_max', 'visible')):
             self._calculate_profile(reset=force)
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth')):

@@ -5,6 +5,8 @@ from qtpy import QtWidgets
 from glue.core.coordinate_helpers import dependent_axes
 from echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
+from glue.viewers.profile.qt.slice_widget import ProfileMultiSliceWidgetHelper
+from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 
 __all__ = ['ProfileOptionsWidget']
 
@@ -35,7 +37,13 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
 
+        self.profile_slice_helper = ProfileMultiSliceWidgetHelper(viewer_state=self.viewer_state,
+                                                                  session=self.session,
+                                                                  layout=self.ui.layout_slices)
+
         self.ui.text_warning.hide()
+
+        self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
 
     def _on_attribute_change(self, *args):
 
@@ -54,3 +62,9 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         else:
             self.ui.text_warning.hide()
             self.ui.text_warning.setText('')
+
+    def _apply_all_viewers(self):
+        for tab in self.session.application.viewers:
+            for viewer in tab:
+                if isinstance(viewer.state, MatplotlibDataViewerState):
+                    viewer.state.update_axes_settings_from(self.viewer_state)
