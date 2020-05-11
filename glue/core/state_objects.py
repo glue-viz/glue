@@ -189,7 +189,7 @@ class StateAttributeCacheHelper(object):
             self.set(cache=False, **self._cache[self.component_id])
         else:
             # We need to compute the values for the first time
-            self.update_values(attribute=self.component_id, use_default_modifiers=True)
+            self.update_values(attribute=self.component_id)
 
     def _update_values(self, **properties):
 
@@ -310,6 +310,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 self._update_attribute()
 
     def update_values(self, force=False, use_default_modifiers=False, **properties):
+
+        print('use_default_modifiers', use_default_modifiers)
 
         if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
             self.set(percentile='Custom')

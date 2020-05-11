@@ -482,9 +482,9 @@ class ImageLayerState(BaseImageLayerState):
     """
 
     attribute = DDSCProperty(docstring='The attribute shown in the layer')
-    v_min = DDCProperty(docstring='The lower level shown')
-    v_max = DDCProperty(docstring='The upper level shown')
-    percentile = DDSCProperty(docstring='The percentile value used to '
+    v_min = DDCProperty(0, docstring='The lower level shown')
+    v_max = DDCProperty(1, docstring='The upper level shown')
+    percentile = DDSCProperty(0, docstring='The percentile value used to '
                                         'automatically calculate levels',
                               comparison_type='equality')
     contrast = DDCProperty(1, docstring='The contrast of the layer')
@@ -511,8 +511,8 @@ class ImageLayerState(BaseImageLayerState):
         self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
                                                            numeric=True, categorical=False)
 
-        self.viewer_state.add_callback('x_att', self._update_percentile_choices)
-        self.viewer_state.add_callback('y_att', self._update_percentile_choices)
+        self.viewer_state.add_callback('x_att', self._update_percentile_choices, priority=1000000)
+        self.viewer_state.add_callback('y_att', self._update_percentile_choices, priority=1000000)
         self._update_percentile_choices()
 
         stretch_display = {'linear': 'Linear',
@@ -536,7 +536,11 @@ class ImageLayerState(BaseImageLayerState):
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
 
+        self._percentile_set = False
+
     def _update_percentile_choices(self, *event):
+
+        print('_update_percentile_choices', self.percentile, type(self.layer))
 
         percentile_display = {100: 'Min/Max',
                               99.5: '99.5%',
@@ -545,7 +549,11 @@ class ImageLayerState(BaseImageLayerState):
                               90: '90%',
                               'Custom': 'Custom'}
 
-        base_choices = [100, 99.5, 99, 95, 90, 'Custom']
+        base_choices = [(100, Ellipsis),
+                        (99.5, Ellipsis),
+                        (99, Ellipsis),
+                        (95, Ellipsis),
+                        (90, Ellipsis)]
 
         if (self.layer is not None and self.layer.ndim > 2 and
                self.viewer_state.x_att is not None and self.viewer_state.y_att is not None):
@@ -558,25 +566,26 @@ class ImageLayerState(BaseImageLayerState):
                     view.append(slice(None))
             view = tuple(view)
 
-            choices = ([ChoiceSeparator('Whole Data')] +
+            choices = (['Custom'] +
+                       [ChoiceSeparator('Whole Data')] +
                        base_choices +
                        [ChoiceSeparator('First slice')])
 
             for choice in base_choices:
-                if choice != 'Custom':
-                    choices.append((choice, view))
+                choices.append((choice[0], view))
 
-            if self.percentile is not None:
+            if self.percentile is not None and self._percentile_set:
                 if isinstance(self.percentile, tuple):
                     percentile_new = self.percentile[0], view
                 else:
-                    percentile_new = self.percentile, view
+                    percentile_new = self.percentile
             else:
                 percentile_new = 100, view
+                self._percentile_set = True
 
         else:
 
-            choices = base_choices
+            choices = ['Custom'] + base_choices
             percentile_new = None
 
         def get_percentile_display(value):

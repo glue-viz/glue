@@ -23,7 +23,7 @@ def unbroadcast(array):
     for more details.
     """
 
-    if array.ndim == 0:
+    if array.ndim == 0 or not hasattr(array, 'strides'):
         return array
 
     new_shape = np.where(np.array(array.strides) == 0, 1, array.shape)

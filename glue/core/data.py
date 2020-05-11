@@ -1595,6 +1595,11 @@ class Data(BaseCartesianData):
             chunks with at most this size.
         """
 
+        print('statistic', statistic, view)
+
+        if view is Ellipsis or view is None:
+            raise Exception("WHENCE?")
+
         # TODO: generalize chunking to more types of axis
 
         if (view is None and
@@ -1674,11 +1679,18 @@ class Data(BaseCartesianData):
             data = unbroadcast(data)
 
         if random_subset and data.size > random_subset:
-            if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
-                self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
-            data = data.ravel(order="K")[self._random_subset_indices[1]]
-            if mask is not None:
-                mask = mask.ravel(order="K")[self._random_subset_indices[1]]
+            if isinstance(data, np.ndarray):
+                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
+                    self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
+                data = data.ravel(order="K")[self._random_subset_indices[1]]
+                if mask is not None:
+                    mask = mask.ravel(order="K")[self._random_subset_indices[1]]
+            else:
+                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
+                    self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
+                data = data.ravel()[self._random_subset_indices[1]]
+                if mask is not None:
+                    mask = mask.ravel()[self._random_subset_indices[1]]
 
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)
