@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw, view_shape
-from echo import delay_callback
+from echo import delay_callback, ChoiceSeparator
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 
@@ -485,7 +485,8 @@ class ImageLayerState(BaseImageLayerState):
     v_min = DDCProperty(docstring='The lower level shown')
     v_max = DDCProperty(docstring='The upper level shown')
     percentile = DDSCProperty(docstring='The percentile value used to '
-                                        'automatically calculate levels')
+                                        'automatically calculate levels',
+                              comparison_type='equality')
     contrast = DDCProperty(1, docstring='The contrast of the layer')
     bias = DDCProperty(0.5, docstring='A constant value that is added to the '
                                       'layer before rendering')
@@ -510,15 +511,9 @@ class ImageLayerState(BaseImageLayerState):
         self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
                                                            numeric=True, categorical=False)
 
-        percentile_display = {100: 'Min/Max',
-                              99.5: '99.5%',
-                              99: '99%',
-                              95: '95%',
-                              90: '90%',
-                              'Custom': 'Custom'}
-
-        ImageLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
-        ImageLayerState.percentile.set_display_func(self, percentile_display.get)
+        self.viewer_state.add_callback('x_att', self._update_percentile_choices)
+        self.viewer_state.add_callback('y_att', self._update_percentile_choices)
+        self._update_percentile_choices()
 
         stretch_display = {'linear': 'Linear',
                            'sqrt': 'Square Root',
@@ -540,6 +535,65 @@ class ImageLayerState(BaseImageLayerState):
 
         if self.cmap is None:
             self.cmap = colormaps.members[0][1]
+
+    def _update_percentile_choices(self, *event):
+
+        percentile_display = {100: 'Min/Max',
+                              99.5: '99.5%',
+                              99: '99%',
+                              95: '95%',
+                              90: '90%',
+                              'Custom': 'Custom'}
+
+        base_choices = [100, 99.5, 99, 95, 90, 'Custom']
+
+        if (self.layer is not None and self.layer.ndim > 2 and
+               self.viewer_state.x_att is not None and self.viewer_state.y_att is not None):
+
+            view = []
+            for idim in range(self.layer.ndim):
+                if idim != self.viewer_state.x_att.axis and idim != self.viewer_state.y_att.axis:
+                    view.append(idim)
+                else:
+                    view.append(slice(None))
+            view = tuple(view)
+
+            choices = ([ChoiceSeparator('Whole Data')] +
+                       base_choices +
+                       [ChoiceSeparator('First slice')])
+
+            for choice in base_choices:
+                if choice != 'Custom':
+                    choices.append((choice, view))
+
+            if self.percentile is not None:
+                if isinstance(self.percentile, tuple):
+                    percentile_new = self.percentile[0], view
+                else:
+                    percentile_new = self.percentile, view
+            else:
+                percentile_new = 100, view
+
+        else:
+
+            choices = base_choices
+            percentile_new = None
+
+        def get_percentile_display(value):
+            if value == 'Custom':
+                return 'Custom'
+            if isinstance(value, tuple):
+                value = value[0]
+            if value == 100:
+                return 'Min/Max'
+            else:
+                return '{0}%'.format(value)
+
+        with delay_callback(self, 'percentile'):
+            ImageLayerState.percentile.set_choices(self, choices)
+            ImageLayerState.percentile.set_display_func(self, get_percentile_display)
+            if percentile_new is not None:
+                self.percentile = percentile_new
 
     def _update_attribute(self, *args):
         if self.layer is not None:
