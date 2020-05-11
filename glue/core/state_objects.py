@@ -287,7 +287,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     """
 
     values_names = ('lower', 'upper')
-    modifiers_names = ('log', 'percentile')
+    modifiers_names = ('log', 'percentile', 'view')
 
     def __init__(self, state, attribute, random_subset=10000, margin=0, **kwargs):
 
@@ -311,20 +311,24 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
     def update_values(self, force=False, use_default_modifiers=False, **properties):
 
-        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
+        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log', 'view')):
             self.set(percentile='Custom')
             return
 
         if use_default_modifiers:
             percentile = 100
             log = False
+            view = None
         else:
             percentile = getattr(self, 'percentile', None) or 100
             log = getattr(self, 'log', None) or False
+            view = getattr(self, 'view', None)
+
+        print(percentile, log, view)
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
 
-            self.set(percentile=percentile, log=log)
+            self.set(percentile=percentile, log=log, view=view)
 
         else:
 
@@ -332,7 +336,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if isinstance(self.component_id, PixelComponentID) and percentile == 100 and not log:
                 lower = -0.5
                 upper = self.data.shape[self.component_id.axis] - 0.5
-                self.set(lower=lower, upper=upper, percentile=percentile, log=log)
+                self.set(lower=lower, upper=upper, percentile=percentile, log=log, view=view)
                 return
 
             exclude = (100 - percentile) / 2.
@@ -340,17 +344,21 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if percentile == 100:
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    random_subset=self.random_subset,
+                                                    view=view)
                 upper = self.data.compute_statistic('maximum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    random_subset=self.random_subset,
+                                                    view=view)
             else:
                 lower = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=exclude, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    random_subset=self.random_subset,
+                                                    view=view)
                 upper = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=100 - exclude, positive=log,
-                                                    random_subset=self.random_subset)
+                                                    random_subset=self.random_subset,
+                                                    view=view)
 
             if not isinstance(lower, np.datetime64) and np.isnan(lower):
                 lower, upper = 0, 1
@@ -369,7 +377,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     lower -= value_range * self.margin
                     upper += value_range * self.margin
 
-            self.set(lower=lower, upper=upper, percentile=percentile, log=log)
+            self.set(lower=lower, upper=upper, percentile=percentile, log=log, view=view)
 
     def flip_limits(self):
         self.set(lower=self.upper, upper=self.lower)

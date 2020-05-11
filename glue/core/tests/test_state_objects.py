@@ -183,6 +183,57 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.upper == 234
         assert self.helper.log
 
+    def test_view(self):
+
+        data = Data(x=np.arange(24).reshape(2, 3, 4),
+                    y=np.arange(24).reshape(2, 3, 4) + 24, label='test_data')
+
+        data_collection = DataCollection([data])
+
+        class SimpleViewState(State):
+
+            layer = CallbackProperty()
+            comp = CallbackProperty()
+            lower = CallbackProperty()
+            upper = CallbackProperty()
+            array_view = CallbackProperty()
+
+        state = SimpleViewState()
+
+        helper = StateAttributeLimitsHelper(state, attribute='comp',
+                                            lower='lower', upper='upper',
+                                            view='array_view')
+        state.data = data
+        state.comp = data.id['x']
+
+        assert helper.lower == 0
+        assert helper.upper == 23
+
+        state.array_view = [slice(0, 1), slice(0, 1), slice(0, 1)]
+
+        assert helper.lower == 0
+        assert helper.upper == 0
+
+        state.array_view = [slice(1, 2), slice(None), slice(None)]
+
+        assert helper.lower == 12
+        assert helper.upper == 23
+
+        state.comp = data.id['y']
+
+        assert helper.lower == 24
+        assert helper.upper == 47
+
+        state.array_view = [slice(0, 1), slice(0, 1), slice(0, 1)]
+
+        assert helper.lower == 24
+        assert helper.upper == 24
+
+        state.comp = data.id['x']
+
+        assert helper.lower == 12
+        assert helper.upper == 23
+
 
 class TestStateAttributeSingleValueHelper():
 
