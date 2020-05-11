@@ -185,54 +185,47 @@ class TestStateAttributeLimitsHelper():
 
     def test_view(self):
 
+        # Test option that allows a view to be optionally specified with the
+        # percentile.
+
         data = Data(x=np.arange(24).reshape(2, 3, 4),
                     y=np.arange(24).reshape(2, 3, 4) + 24, label='test_data')
 
-        data_collection = DataCollection([data])
+        self.state.data = data
+        self.state.comp = data.id['x']
 
-        class SimpleViewState(State):
+        assert self.helper.lower == 0
+        assert self.helper.upper == 23
 
-            layer = CallbackProperty()
-            comp = CallbackProperty()
-            lower = CallbackProperty()
-            upper = CallbackProperty()
-            array_view = CallbackProperty()
+        self.state.scale = (100, [slice(0, 1), slice(0, 1), slice(0, 1)])
 
-        state = SimpleViewState()
+        assert self.helper.lower == 0
+        assert self.helper.upper == 0
 
-        helper = StateAttributeLimitsHelper(state, attribute='comp',
-                                            lower='lower', upper='upper',
-                                            view='array_view')
-        state.data = data
-        state.comp = data.id['x']
+        self.state.scale = (100, [slice(1, 2), slice(None), slice(None)])
 
-        assert helper.lower == 0
-        assert helper.upper == 23
+        assert self.helper.lower == 12
+        assert self.helper.upper == 23
 
-        state.array_view = [slice(0, 1), slice(0, 1), slice(0, 1)]
+        self.state.comp = data.id['y']
 
-        assert helper.lower == 0
-        assert helper.upper == 0
+        assert self.helper.lower == 24
+        assert self.helper.upper == 47
 
-        state.array_view = [slice(1, 2), slice(None), slice(None)]
+        self.state.scale = (100, [slice(0, 1), slice(0, 1), slice(0, 1)])
 
-        assert helper.lower == 12
-        assert helper.upper == 23
+        assert self.helper.lower == 24
+        assert self.helper.upper == 24
 
-        state.comp = data.id['y']
+        self.state.comp = data.id['x']
 
-        assert helper.lower == 24
-        assert helper.upper == 47
+        assert self.helper.lower == 12
+        assert self.helper.upper == 23
 
-        state.array_view = [slice(0, 1), slice(0, 1), slice(0, 1)]
+        self.state.scale = (90, [slice(1, 2), slice(None), slice(None)])
 
-        assert helper.lower == 24
-        assert helper.upper == 24
-
-        state.comp = data.id['x']
-
-        assert helper.lower == 12
-        assert helper.upper == 23
+        assert self.helper.lower == 12.55
+        assert self.helper.upper == 22.45
 
 
 class TestStateAttributeSingleValueHelper():
