@@ -378,6 +378,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                     lower -= value_range * self.margin
                     upper += value_range * self.margin
 
+            if view is not None:
+                percentile = (percentile, view)
+
             self.set(lower=lower, upper=upper, percentile=percentile, log=log)
 
     def flip_limits(self):
