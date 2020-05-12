@@ -11,7 +11,7 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
            'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
            'categorical_ndarray', 'index_lookup', 'ensure_numerical',
-           'broadcast_arrays_minimal']
+           'broadcast_arrays_minimal', 'random_views_for_dask_array']
 
 
 def unbroadcast(array):
@@ -598,3 +598,36 @@ def index_lookup(data, items):
     result = np.zeros(ndata, dtype=float) * np.nan
     result[np.array(m.row)] = m.cat_row
     return result
+
+
+def random_views_for_dask_array(array, n_random_samples, n_chunks):
+    """
+    Return a list of views to extract random values from a dask array in an
+    efficient way taking into account the chunk layout. This will return
+    n_chunks views such that all views together add up to approximately
+    n_random_samples samples.
+    """
+
+    # Find the indices of the chunks to extract
+    indices = [np.random.randint(dimsize, size=n_chunks) for dimsize in array.numblocks]
+
+    # Determine the boundaries of chunks along each dimension
+    chunk_indices = [np.hstack([0, np.cumsum([size for size in sizes])]) for sizes in array.chunks]
+
+    n_per_chunk = n_random_samples // n_chunks
+
+    all_slices = []
+    for ichunk in range(n_chunks):
+        slices = []
+        remaining_size = n_per_chunk
+        for idim in range(array.ndim):
+            start = chunk_indices[idim][indices[idim][ichunk]]
+            stop = chunk_indices[idim][indices[idim][ichunk] + 1]
+            if stop - start > remaining_size:
+                stop = start + remaining_size
+            slices.append(slice(start, stop))
+            remaining_size //= (stop - start)
+            remaining_size = max(1, remaining_size)
+        all_slices.append(tuple(slices))
+
+    return all_slices
