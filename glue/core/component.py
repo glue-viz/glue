@@ -489,7 +489,6 @@ class DaskComponent(Component):
     """
 
     def __init__(self, data, units=None):
-        print("IN DASK")
         self._data = data
         self.units = units
 
