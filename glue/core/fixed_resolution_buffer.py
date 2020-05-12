@@ -233,16 +233,36 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
             if isinstance(bounds[i], tuple) and i not in dimensions_all:
                 raise IncompatibleDataException()
 
-    # PERF: optimize further - check if we can extract a sub-region that
-    # contains all the valid values.
+    # Extract sub-region of data first, then fetch exact coordinate values
+    subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
 
-    # Take subset_state into account, if present
-    if subset_state is None:
-        array = data.get_data(target_cid, view=translated_coords).astype(float)
-        invalid_value = -np.inf
+    # We don't want to extract a sub-region first if the sub-region is too large.
+    # FIXME: for now we set this threshold to 20e7 elements but we should figure
+    # out how we really want to do this. Some data types might not support fancy
+    # indexing at all.
+    if np.product([x.stop - x.start for x in subregion]) < 20e7:
+
+        # Take subset_state into account, if present
+        if subset_state is None:
+            array = data.get_data(target_cid, view=subregion).astype(float)
+            invalid_value = -np.inf
+        else:
+            array = data.get_mask(subset_state, view=subregion)
+            invalid_value = False
+
+        translated_coords = tuple([coord - np.nanmin(coord) for coord in translated_coords])
+
+        array = array[translated_coords]
+
     else:
-        array = data.get_mask(subset_state, view=translated_coords)
-        invalid_value = False
+
+        # Take subset_state into account, if present
+        if subset_state is None:
+            array = data.get_data(target_cid, view=translated_coords).astype(float)
+            invalid_value = -np.inf
+        else:
+            array = data.get_mask(subset_state, view=translated_coords)
+            invalid_value = False
 
     if np.any(invalid_all):
         if not array.flags.writeable:
