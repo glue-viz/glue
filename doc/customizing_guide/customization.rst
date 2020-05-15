@@ -519,7 +519,7 @@ Custom session patch
 --------------------
 
 Adding new features and keeping backward compatibility is hard. Because the
-features of glue, and/or its plugins changes over time, old but tprecious
+features of glue, and/or its plugins changes over time, old but precious
 sessions files might not open anymore. To solve this problem, custom patch
 functions can be provided to edit *in-place* the session file, just after it
 is loaded. These patch functions should take a loaded session file (as a dict),
