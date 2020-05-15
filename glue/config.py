@@ -21,8 +21,9 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
            'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
-           'LayerArtistMakerRegistry', 'layer_artist_maker', 'AutoLinkerRegistry',
-           'autolinker',
+           'LayerArtistMakerRegistry', 'layer_artist_maker',
+           'SessionPatchRegistry', 'session_patch',
+           'AutoLinkerRegistry', 'autolinker',
            'DataTranslatorRegistry', 'data_translator',
            'SubsetDefinitionTranslatorRegistry', 'subset_state_translator']
 
@@ -911,6 +912,39 @@ class LayerArtistMakerRegistry(Registry):
             yield member
 
 
+class SessionPatchRegistry(Registry):
+    """A registry that allows in-place patch of the session file"""
+
+    item = namedtuple('SessionPatch', 'function priority')
+
+    def add(self, function, priority=0):
+        """
+        Add a new plugin for providing custom in-place session patch.
+
+        Plugins take the form of functions that take one argument: the session
+        object (a dictionary). It should returns `None`.
+
+        Parameters
+        ----------
+        function : callable
+            The function apply the patch *in-place*
+        priority : int, optional
+            Set this to a higher number if multiple plugins are present
+            and you want your plugin to take precedence over another.
+        """
+        self.members.append(self.item(function, priority))
+
+    def __call__(self, priority=0):
+        def adder(func):
+            self.add(func, priority=priority)
+            return func
+        return adder
+
+    def __iter__(self):
+        for member in sorted(self.members, key=lambda x: -x.priority):
+            yield member
+
+
 layer_artist_maker = LayerArtistMakerRegistry()
 qt_client = QtClientRegistry()
 qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
@@ -929,6 +963,7 @@ qglue_parser = QGlueParserRegistry()
 startup_action = StartupActionRegistry()
 keyboard_shortcut = KeyboardShortcut()
 autolinker = AutoLinkerRegistry()
+session_patch = SessionPatchRegistry()
 
 # watch loaded data files for changes?
 auto_refresh = BooleanSetting(False)
