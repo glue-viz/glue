@@ -74,16 +74,3 @@ class MatplotlibDataViewer(MatplotlibViewerMixin, DataViewer):
 
         # If we get here, the computation has stopped so we can stop the timer
         self._monitor_computation.stop()
-
-    def get_handles_legend(self):
-        handles = []
-        labels = []
-        handler_dict = {}
-        for layer_artist in self._layer_artist_container:
-            handle, label, handler = layer_artist.get_handle_legend()
-            if handle is not None:
-                handles.append(handle)
-                labels.append(label)
-                if handler is not None:
-                    handler_dict[handle] = handler
-        return handles, labels, handler_dict

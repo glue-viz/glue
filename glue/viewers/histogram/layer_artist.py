@@ -2,7 +2,7 @@ import sys
 import warnings
 
 import numpy as np
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Patch
 
 from glue.utils import defer_draw
 
@@ -168,6 +168,16 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible')):
             self._update_visual_attributes()
+
+    def get_handle_legend(self):
+        # The default legend handle for matplotlib viewer
+        if self.enabled and self.state.visible:
+            handle = Patch(facecolor=self.get_layer_color(), edgecolor='none', alpha=self.layer.style.alpha)
+            return handle, self.layer.label, None
+        else:
+            return None, None, None
+
+
 
     @defer_draw
     def update(self):

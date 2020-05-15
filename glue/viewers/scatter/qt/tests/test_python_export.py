@@ -31,12 +31,23 @@ class TestExportPython(BaseTestExportPython):
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
 
+    def test_simple_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
+        self.assert_same(tmpdir)
+
     def test_simple_nofill(self, tmpdir):
         self.viewer.state.layers[0].fill = False
         self.viewer.state.layers[0].size_scaling = 10
         self.assert_same(tmpdir)
 
     def test_simple_visual(self, tmpdir):
+        self.viewer.state.layers[0].color = 'blue'
+        self.viewer.state.layers[0].markersize = 30
+        self.viewer.state.layers[0].alpha = 0.5
+        self.assert_same(tmpdir)
+
+    def test_simple_visual_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.viewer.state.layers[0].color = 'blue'
         self.viewer.state.layers[0].markersize = 30
         self.viewer.state.layers[0].alpha = 0.5
@@ -56,6 +67,16 @@ class TestExportPython(BaseTestExportPython):
         self.test_cmap_mode(tmpdir)
 
     def test_size_mode(self, tmpdir):
+        self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].size_att = self.data.id['d']
+        self.viewer.state.layers[0].size_vmin = 0.1
+        self.viewer.state.layers[0].size_vmax = 0.8
+        self.viewer.state.layers[0].size_scaling = 0.4
+        self.viewer.state.layers[0].alpha = 0.7
+        self.assert_same(tmpdir)
+
+    def test_size_mode_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.viewer.state.layers[0].size_mode = 'Linear'
         self.viewer.state.layers[0].size_att = self.data.id['d']
         self.viewer.state.layers[0].size_vmin = 0.1
@@ -99,6 +120,16 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_errorbarxy(self, tmpdir):
+        self.viewer.state.layers[0].xerr_visible = True
+        self.viewer.state.layers[0].xerr_att = self.data.id['e']
+        self.viewer.state.layers[0].yerr_visible = True
+        self.viewer.state.layers[0].yerr_att = self.data.id['f']
+        self.viewer.state.layers[0].color = 'purple'
+        self.viewer.state.layers[0].alpha = 0.5
+        self.assert_same(tmpdir)
+
+    def test_errorbarxy_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.viewer.state.layers[0].xerr_visible = True
         self.viewer.state.layers[0].xerr_att = self.data.id['e']
         self.viewer.state.layers[0].yerr_visible = True
@@ -159,6 +190,17 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_density_map_cmap_with_subset(self, tmpdir):
+        self.viewer.state.dpi = 2
+        self.viewer.state.layers[0].density_map = True
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_vmin = 0.2
+        self.viewer.state.layers[0].cmap_vmax = 0.7
+        self.viewer.state.layers[0].cmap = plt.cm.BuGn
+        self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
+        self.assert_same(tmpdir)
+
+    def test_density_map_cmap_with_subset_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.viewer.state.dpi = 2
         self.viewer.state.layers[0].density_map = True
         self.viewer.state.layers[0].cmap_mode = 'Linear'

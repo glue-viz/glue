@@ -8,6 +8,7 @@ def python_export_image_layer(layer, *args):
 
     script = ""
     imports = ["from glue.viewers.image.state import get_sliced_data_maker"]
+    imports += ["import matplotlib.patches as mpatches"]
 
     slices, agg_func, transpose = layer._viewer_state.numpy_slice_aggregation_transpose
 
@@ -43,7 +44,25 @@ def python_export_image_layer(layer, *args):
                    alpha=layer.state.alpha,
                    stretch=layer.state.stretch)
 
-    script += "composite.set('{0}', {1})\n\n".format(layer.uuid, serialize_options(options))
+    script += "composite.set('{0}', {1})\n".format(layer.uuid, serialize_options(options))
+
+    if layer._viewer_state.color_mode == 'Colormaps':
+        imports += ["from glue.utils.matplotlib import ColormapPatchHandler"]
+        script += "handle = mpatches.Patch(color='{0}')\n".format(layer.state.color)
+        script += "handler = ColormapPatchHandler("+code('plt.cm.' + layer.state.cmap.name)+")\n"
+
+        script += "legend_handles.append(handle)\n"
+        script += "legend_handler_dict[handle] = handler\n"
+        script += "legend_labels.append(layer_data.label)\n"
+    else:
+        options = dict(color=layer.state.color,
+                       alpha=layer.state.alpha)
+        script += "handle = mpatches.Patch({0})\n".format(serialize_options(options))
+        script += "legend_handles.append(handle)\n"
+        script += "legend_labels.append(layer_data.label)\n"
+
+    script+= "\n"
+
 
     return imports, script.strip()
 
@@ -79,5 +98,14 @@ def python_export_image_subset_layer(layer, *args):
                    zorder=layer.state.zorder, alpha=layer.state.alpha)
 
     script += "imshow(ax, {0}, {1})\n".format(code('array_maker'), serialize_options(options))
+
+    # legend
+    options = dict(color=layer.state.color,
+                       alpha=layer.state.alpha)
+    script += "handle = mpatches.Patch({0})\n".format(serialize_options(options))
+    script += "legend_handles.append(handle)\n"
+    script += "legend_labels.append(layer_data.label)\n"
+
+    script+= "\n"
 
     return imports, script.strip()

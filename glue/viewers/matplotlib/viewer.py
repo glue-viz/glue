@@ -14,6 +14,11 @@ SCRIPT_HEADER = """
 # Initialize figure
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
+
+# for the legend
+legend_handles = []
+legend_labels = []
+legend_handler_dict = dict()
 """.strip()
 
 SCRIPT_FOOTER = """
@@ -45,7 +50,8 @@ plt.close(fig)
 """.strip()
 
 SCRIPT_LEGEND = """
-ax.legend(
+ax.legend(legend_handles, legend_labels,
+    handler_map=legend_handler_dict,
     loc='{legend_location}',            # location
     framealpha={legend_alpha:.2f},      # opacity of the frame
     title='{legend_title}',             # title of the legend
@@ -146,10 +152,29 @@ class MatplotlibViewerMixin(object):
         self.axes.yaxis.get_offset_text().set_fontsize(self.state.y_ticklabel_size)
         self.redraw()
 
+    def get_handles_legend(self):
+        handles = []
+        labels = []
+        handler_dict = {}
+        for layer_artist in self._layer_artist_container:
+            handle, label, handler = layer_artist.get_handle_legend()
+            if handle is not None:
+                handles.append(handle)
+                labels.append(label)
+                if handler is not None:
+                    handler_dict[handle] = handler
+        return handles, labels, handler_dict
+
     def draw_legend(self, *args):
         if self.state.show_legend:
             handles, labels, handler_map = self.get_handles_legend()
-            self.axes.legend(handles, labels, handler_map=handler_map,
+            if handler_map is not None:
+                self.axes.legend(handles, labels, handler_map=handler_map,
+                             loc=self.state.legend_location, framealpha=self.state.legend_alpha,
+                             title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
+                             fontsize=self.state.legend_fontsize)
+            else:
+                self.axes.legend(handles, labels,
                              loc=self.state.legend_location, framealpha=self.state.legend_alpha,
                              title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
                              fontsize=self.state.legend_fontsize)

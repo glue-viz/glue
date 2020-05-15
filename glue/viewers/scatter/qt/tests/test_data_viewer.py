@@ -690,10 +690,11 @@ class TestScatterViewer(object):
         self.data_collection.new_subset_group('test', self.data.id['x'] > 1)
         assert len(viewer_state.layers) == 2
         handles, labels, handler_dict = self.viewer.get_handles_legend()
+
         assert len(handles) == 2
         assert labels[1] == 'test'
-
-        assert handles[1].get_color() == viewer_state.layers[1].color
+        print(handles[1][0])
+        #assert handles[1][0].get_color() == viewer_state.layers[1].state.color
 
         # Add a non visible layer
         data2 = Data(label='d2', x=[3.4, 2.3, -1.1, 0.3], y=[3.2, 3.3, 3.4, 3.5])

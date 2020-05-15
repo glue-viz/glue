@@ -125,6 +125,7 @@ def plot_colored_line(ax, x, y, c=None, cmap=None, vmin=None, vmax=None, **kwarg
     lc = ColoredLineCollection(x, y, **kwargs)
     lc.set_linearcolor(color=c, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.add_collection(lc)
+    return lc
 
 
 class ScatterLayerArtist(MatplotlibLayerArtist):
@@ -158,7 +159,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                        vmin=self.density_auto_limits.min,
                                                        vmax=self.density_auto_limits.max,
                                                        update_while_panning=False,
-                                                       histogram2d_func=self.compute_density_map)
+                                                       histogram2d_func=self.compute_density_map,
+                                                       label=None)
         self.axes.add_artist(self.density_artist)
 
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
@@ -226,6 +228,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
+                self.density_artist.set_label(None)
                 if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
@@ -295,7 +298,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                   pivot=self.state.vector_origin,
                                                   headwidth=hw, headlength=hl,
                                                   scale_units='width', angles='xy',
-                                                  scale=10 / self.state.vector_scaling * vmax)
+                                                  scale=10 / self.state.vector_scaling * vmax
+                                                  )
             self.mpl_artists[self.vector_index] = self.vector_artist
 
         if self.state.xerr_visible or self.state.yerr_visible:
@@ -322,7 +326,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             self._errorbar_keep = keep
 
             self.errorbar_artist = self.axes.errorbar(x[keep], y[keep], fmt='none',
-                                                      xerr=xerr, yerr=yerr)
+                                                      xerr=xerr, yerr=yerr
+                                                      )
             self.mpl_artists[self.errorbar_index] = self.errorbar_artist
 
     @defer_draw
@@ -529,30 +534,38 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def get_handle_legend(self):
         if self.enabled and self.state.visible:
-            # the difficulty here is to find a good compromise between
-            # the meaning behind the scatter plot, how to represent it in the
-            # legend and the complexity of that code
-            if not self.state.line_visible:
-                linestyle = "none"
+            handles = []
+            if self.state.markers_visible:
+                if self.state.density_map:
+                    if self.state.cmap_mode == 'Fixed':
+                        color = self.get_layer_color()
+                    else:
+                        color = self.layer.style.color
+                    handle = Line2D([0, ], [0, ], marker=".", linestyle="none",
+                                    ms=self.state.size, alpha=self.state.alpha,
+                                    color=color)
+                    handles.append(handle)  # as placeholder
+                else:
+                    if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
+                        handles.append(self.plot_artist)
+                    else:
+                        handles.append(self.scatter_artist)
+
+
+            if self.state.line_visible:
+                handles.append(self.line_collection)
+
+            if self.state.vector_visible:
+                handles.append(self.vector_artist)
+
+            if self.state.xerr_visible or self.state.yerr_visible:
+                handles.append(self.errorbar_artist)
+
+            handles = tuple(handles)
+            if len(handles) > 0:
+                return handles, self.layer.label, None
             else:
-                linestyle = self.state.linestyle
+                return None, None, None
 
-            if self.state.cmap_mode == 'Fixed':
-                color = self.get_layer_color()
-            else:
-                color = "#444444"
-
-            if self.state.size_mode == 'Fixed':
-                size = self.state.size * self.state.size_scaling
-            else:
-                size = ((self.state.size_vmax - self.state.size_vmin) *
-                        self.state.size_scaling / 2)
-
-            handle = Line2D([0, ], [0, ], marker="o",
-                            ms=size, alpha=self.state.alpha,
-                            linestyle=linestyle, linewidth=self.state.linewidth,
-                            color=color)
-
-            return handle, self.layer.label, None
         else:
             return None, None, None
