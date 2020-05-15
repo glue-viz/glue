@@ -74,7 +74,7 @@ class TestExportPython(BaseTestExportPython):
     def test_subset_legend(self, tmpdir):
         self.viewer.state.show_legend = True
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
-        self.assert_same(tmpdir, tol=0.15) # transparency and such
+        self.assert_same(tmpdir, tol=0.15)  # transparency and such
 
     def test_subset_slice(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)

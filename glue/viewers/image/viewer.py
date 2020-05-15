@@ -226,7 +226,6 @@ class MatplotlibImageMixin(object):
             imports.append('from glue.viewers.image.viewer import get_identity_wcs')
             script += "ax.reset_wcs(slices={0}, wcs=get_identity_wcs(ref_data.ndim))\n".format(self.state.wcsaxes_slice)
 
-
         script += "# for the legend\n"
         script += "legend_handles = []\n"
         script += "legend_labels = []\n"

@@ -9,7 +9,6 @@ def python_export_scatter_layer(layer, *args):
     script = ""
     imports = ["import numpy as np"]
 
-
     script += "layer_handles = []  # for legend"
 
     script += "# Get main data values\n"

@@ -694,7 +694,7 @@ class TestScatterViewer(object):
         assert len(handles) == 2
         assert labels[1] == 'test'
         print(handles[1][0])
-        #assert handles[1][0].get_color() == viewer_state.layers[1].state.color
+        # assert handles[1][0].get_color() == viewer_state.layers[1].state.color
 
         # Add a non visible layer
         data2 = Data(label='d2', x=[3.4, 2.3, -1.1, 0.3], y=[3.2, 3.3, 3.4, 3.5])

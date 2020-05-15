@@ -169,15 +169,17 @@ class MatplotlibViewerMixin(object):
         if self.state.show_legend:
             handles, labels, handler_map = self.get_handles_legend()
             if handler_map is not None:
-                self.axes.legend(handles, labels, handler_map=handler_map,
-                             loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                             title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                             fontsize=self.state.legend_fontsize)
+                self.axes.legend(
+                    handles, labels, handler_map=handler_map,
+                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
+                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
+                    fontsize=self.state.legend_fontsize)
             else:
-                self.axes.legend(handles, labels,
-                             loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                             title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                             fontsize=self.state.legend_fontsize)
+                self.axes.legend(
+                    handles, labels,
+                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
+                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
+                    fontsize=self.state.legend_fontsize)
         else:
             legend = self.axes.get_legend()
             if legend is not None:

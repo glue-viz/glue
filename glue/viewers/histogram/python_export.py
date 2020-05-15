@@ -66,8 +66,7 @@ def python_export_histogram_layer(layer, *args):
     options = dict(
         facecolor=layer.state.color,
         edgecolor='none',
-        alpha=layer.state.alpha
-        )
+        alpha=layer.state.alpha)
 
     imports += ["from matplotlib.patches import Patch"]
     script += "handle = Patch({0})  # for legend\n".format(serialize_options(options))

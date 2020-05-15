@@ -551,7 +551,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     else:
                         handles.append(self.scatter_artist)
 
-
             if self.state.line_visible:
                 handles.append(self.line_collection)
 

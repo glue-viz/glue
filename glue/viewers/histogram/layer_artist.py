@@ -177,8 +177,6 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         else:
             return None, None, None
 
-
-
     @defer_draw
     def update(self):
         self.state.reset_cache()

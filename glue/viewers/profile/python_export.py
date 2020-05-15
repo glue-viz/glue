@@ -40,6 +40,8 @@ def python_export_profile_layer(layer, *args):
                         zorder=layer.state.zorder,
                         drawstyle='steps-mid')
 
-    script += "ax.plot(profile_x_values[keep], profile_values[keep], '-', {0})\n\n".format(serialize_options(plot_options))
+    script += "handle,  = ax.plot(profile_x_values[keep], profile_values[keep], '-', {0})\n".format(serialize_options(plot_options))
+    script += "legend_handles.append(handle)\n"
+    script += "legend_labels.append(layer_data.label)\n\n"
 
     return imports, script.strip()

@@ -49,7 +49,7 @@ def python_export_image_layer(layer, *args):
     if layer._viewer_state.color_mode == 'Colormaps':
         imports += ["from glue.utils.matplotlib import ColormapPatchHandler"]
         script += "handle = mpatches.Patch(color='{0}')\n".format(layer.state.color)
-        script += "handler = ColormapPatchHandler("+code('plt.cm.' + layer.state.cmap.name)+")\n"
+        script += "handler = ColormapPatchHandler(" + code('plt.cm.' + layer.state.cmap.name) + ")\n"
 
         script += "legend_handles.append(handle)\n"
         script += "legend_handler_dict[handle] = handler\n"
@@ -61,8 +61,7 @@ def python_export_image_layer(layer, *args):
         script += "legend_handles.append(handle)\n"
         script += "legend_labels.append(layer_data.label)\n"
 
-    script+= "\n"
-
+    script += "\n"
 
     return imports, script.strip()
 
@@ -101,11 +100,10 @@ def python_export_image_subset_layer(layer, *args):
 
     # legend
     options = dict(color=layer.state.color,
-                       alpha=layer.state.alpha)
+                   alpha=layer.state.alpha)
     script += "handle = mpatches.Patch({0})\n".format(serialize_options(options))
     script += "legend_handles.append(handle)\n"
     script += "legend_labels.append(layer_data.label)\n"
-
-    script+= "\n"
+    script += "\n"
 
     return imports, script.strip()
