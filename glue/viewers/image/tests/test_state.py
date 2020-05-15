@@ -333,3 +333,40 @@ class TestReprojection():
 
         with pytest.raises(IncompatibleAttribute):
             self.viewer_state.layers[0].get_sliced_data()
+
+
+def test_update_x_att_and_y_att():
+
+    # Regression test for a bug that caused y_att to not be updated before
+    # events were sent out about x_att changing.
+
+    viewer_state = ImageViewerState()
+
+    data1 = Data(x=np.ones((3, 4, 5)))
+
+    layer_state1 = ImageLayerState(layer=data1, viewer_state=viewer_state)
+    viewer_state.layers.append(layer_state1)
+
+    data2 = Data(x=np.ones((3, 4, 5)))
+
+    layer_state2 = ImageLayerState(layer=data2, viewer_state=viewer_state)
+    viewer_state.layers.append(layer_state2)
+
+    def check_consistency(*args, **kwargs):
+        # Make sure that x_att and y_att are always for same dataset
+        assert viewer_state.x_att.parent is viewer_state.y_att.parent
+
+    viewer_state.add_global_callback(check_consistency)
+    viewer_state.add_callback('x_att', check_consistency)
+    viewer_state.add_callback('y_att', check_consistency)
+    viewer_state.add_callback('x_att_world', check_consistency)
+    viewer_state.add_callback('y_att_world', check_consistency)
+    viewer_state.add_callback('slices', check_consistency)
+
+    viewer_state.reference_data = data1
+    assert viewer_state.x_att is data1.pixel_component_ids[2]
+    assert viewer_state.y_att is data1.pixel_component_ids[1]
+
+    viewer_state.reference_data = data2
+    assert viewer_state.x_att is data2.pixel_component_ids[2]
+    assert viewer_state.y_att is data2.pixel_component_ids[1]

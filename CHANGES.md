@@ -45,6 +45,8 @@ v0.16.0 (unreleased)
 v0.15.7 (2020-03-12)
 --------------------
 
+* Fix a bug where x_att and y_att could end up being out of sync in image viewer. [#2141]
+
 * Fix bug that caused an infinite loop in the table viewer and caused glue to
   hang if too many incompatible subsets were in a table viewer. [#2105]
 

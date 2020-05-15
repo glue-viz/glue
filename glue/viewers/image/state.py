@@ -173,6 +173,11 @@ class ImageViewerState(MatplotlibDataViewerState):
                         self.yw_att_helper.world_coord = False
                     self._update_combo_att()
                     self._set_default_slices()
+                    # We need to make sure that we update x_att and y_att
+                    # at the same time before any other callbacks get called,
+                    # so we do this here manually.
+                    self._on_xatt_world_change()
+                    self._on_yatt_world_change()
 
     def _layers_changed(self, *args):
 
