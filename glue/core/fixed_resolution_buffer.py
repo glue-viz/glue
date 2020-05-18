@@ -1,6 +1,6 @@
 import numpy as np
 from glue.core.exceptions import IncompatibleDataException
-from glue.core.component import CoordinateComponent
+from glue.core.component import CoordinateComponent, DaskComponent
 from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
 
@@ -233,14 +233,19 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
             if isinstance(bounds[i], tuple) and i not in dimensions_all:
                 raise IncompatibleDataException()
 
-    # Extract sub-region of data first, then fetch exact coordinate values
-    subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
+    # Ideally, we would use fancy indexing to extract the data, but this can
+    # be slow on non-SSD drives if using memory-mapped arrays, and also doesn't
+    # work at all for dask arrays. For now, we therefore extract a sub-region
+    # from the data before applying fancy indexing if the data is a dask
+    # array. This won't be very efficient when dealing with 3d fixed
+    # resolution buffers, but it will at least work as opposed to not.
 
-    # We don't want to extract a sub-region first if the sub-region is too large.
-    # FIXME: for now we set this threshold to 20e7 elements but we should figure
-    # out how we really want to do this. Some data types might not support fancy
-    # indexing at all.
-    if np.product([x.stop - x.start for x in subregion]) < 20e7:
+    comp = data.get_component(target_cid)
+
+    if isinstance(comp, DaskComponent):
+
+        # Extract sub-region of data first, then fetch exact coordinate values
+        subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
 
         # Take subset_state into account, if present
         if subset_state is None:

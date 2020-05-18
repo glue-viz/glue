@@ -333,7 +333,7 @@ class CoordinateComponent(Component):
             slices = [slice(0, s, 1) for s in self.shape]
             grids = np.broadcast_arrays(*np.ogrid[slices])
             if view is not None:
-                grids = [g[view] for g in grids]
+                grids = [g[tuple(view)] for g in grids]
             return grids[self.axis]
 
     @property
