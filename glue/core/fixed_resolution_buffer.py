@@ -241,7 +241,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     # array. This won't be very efficient when dealing with 3d fixed
     # resolution buffers, but it will at least work as opposed to not.
 
-    if isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent):
+    if target_cid is not None and isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent):
 
         # Extract sub-region of data first, then fetch exact coordinate values
         subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
