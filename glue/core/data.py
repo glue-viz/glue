@@ -29,7 +29,7 @@ from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, broadcast_to, categorical_ndarray,
-                        format_choices)
+                        format_choices, random_views_for_dask_array)
 from glue.core.coordinate_helpers import axis_label
 
 
@@ -38,6 +38,12 @@ from glue.core.coordinate_helpers import axis_label
 # file)
 from glue.core.component import Component, CoordinateComponent, DerivedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
+
+try:
+    import dask.array as da
+    DASK_INSTALLED = True
+except ImportError:
+    DASK_INSTALLED = False
 
 __all__ = ['Data', 'BaseCartesianData', 'BaseData']
 
@@ -1610,20 +1616,25 @@ class Data(BaseCartesianData):
 
             # In the specific case where the subset state depends only on pixel
             # component IDs but not the one for the chunk iteration axis used
-            # here, we should not need to chunk.
+            # here, we should not need to chunk. However this doesn't quite
+            # work because compute_statistic still makes a copy of the data
+            # so we need to make sure we never have too large arrays there.
+            # efficient_subset_state = False
+            # if subset_state is not None:
+            #     from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
+            #     for att in subset_state.attributes:
+            #         # TODO: in principle we cold still deal with non-pixel
+            #         # componnet IDs, so this should be fixed.
+            #         if not isinstance(att, PixelComponentID):
+            #             break
+            #         matrix = pixel_cid_to_pixel_cid_matrix(att.parent, self)
+            #         if matrix[att.axis, axis_index]:
+            #             break
+            #     else:
+            #         efficient_subset_state = True
+
+            # For now, just assume we always have to chunk
             efficient_subset_state = False
-            if subset_state is not None:
-                from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
-                for att in subset_state.attributes:
-                    # TODO: in principle we cold still deal with non-pixel
-                    # componnet IDs, so this should be fixed.
-                    if not isinstance(att, PixelComponentID):
-                        break
-                    matrix = pixel_cid_to_pixel_cid_matrix(att.parent, self)
-                    if matrix[att.axis, axis_index]:
-                        break
-                else:
-                    efficient_subset_state = True
 
             if not efficient_subset_state:
 
@@ -1674,11 +1685,18 @@ class Data(BaseCartesianData):
             data = unbroadcast(data)
 
         if random_subset and data.size > random_subset:
-            if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
-                self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
-            data = data.ravel(order="K")[self._random_subset_indices[1]]
-            if mask is not None:
-                mask = mask.ravel(order="K")[self._random_subset_indices[1]]
+            if DASK_INSTALLED and isinstance(data, da.Array):
+                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
+                    self._random_subset_indices = (data.size, random_views_for_dask_array(data, random_subset, n_chunks=10))
+                data = np.hstack([data[slices].ravel() for slices in self._random_subset_indices[1]])
+                if mask is not None:
+                    mask = np.hstack([mask[slices].ravel() for slices in self._random_subset_indices[1]])
+            else:
+                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
+                    self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
+                data = data.ravel(order="K")[self._random_subset_indices[1]]
+                if mask is not None:
+                    mask = mask.ravel(order="K")[self._random_subset_indices[1]]
 
         return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                  positive=positive, percentile=percentile)

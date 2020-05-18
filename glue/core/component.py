@@ -7,6 +7,11 @@ from glue.core.coordinate_helpers import dependent_axes, pixel2world_single_axis
 from glue.utils import (shape_to_string, coerce_numeric,
                         broadcast_to, categorical_ndarray)
 
+try:
+    import dask.array as da
+    DASK_INSTALLED = True
+except ImportError:
+    DASK_INSTALLED = False
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
            'CoordinateComponent', 'DateTimeComponent']
@@ -131,6 +136,10 @@ class Component(object):
 
         :returns: A Component (or subclass)
         """
+
+        if DASK_INSTALLED and isinstance(data, da.Array):
+            return DaskComponent(data, units=units)
+
         data = np.asarray(data)
 
         if np.issubdtype(data.dtype, np.object_):
@@ -472,3 +481,51 @@ class DateTimeComponent(Component):
     @property
     def datetime(self):
         return True
+
+
+class DaskComponent(Component):
+    """
+    A data component powered by a dask array.
+    """
+
+    def __init__(self, data, units=None):
+        self._data = data
+        self.units = units
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        if value is None:
+            self._units = ''
+        else:
+            self._units = str(value)
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def shape(self):
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        return len(self._data.shape)
+
+    def __getitem__(self, key):
+        return self._data[key].compute()
+
+    @property
+    def numeric(self):
+        return True
+
+    @property
+    def categorical(self):
+        return False
+
+    @property
+    def datetime(self):
+        return False

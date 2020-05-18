@@ -308,6 +308,8 @@ def load_data(path, factory=None, **kwargs):
 def data_label(path):
     """Convert a file path into a data label, by stripping out
     slashes, file extensions, etc."""
+    if os.path.basename(path) == '':
+        path = os.path.dirname(path)
     _, fname = os.path.split(path)
     name, _ = os.path.splitext(fname)
     return name

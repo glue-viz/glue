@@ -417,7 +417,7 @@ def pixel_cid_to_pixel_cid_matrix(data1, data2):
 
     for idim, pix_cid in enumerate(data1.pixel_component_ids):
         try:
-            pix_coords = unbroadcast(data2[pix_cid, [slice(2)] * data2.ndim])
+            pix_coords = unbroadcast(data2[pix_cid, (slice(2),) * data2.ndim])
             matrix[idim] = np.array(pix_coords.shape) == 2
         except IncompatibleAttribute:
             pass

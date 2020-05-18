@@ -1,6 +1,7 @@
 import numpy as np
+from glue.core import Data
 from glue.core.exceptions import IncompatibleDataException
-from glue.core.component import CoordinateComponent
+from glue.core.component import CoordinateComponent, DaskComponent
 from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
 
@@ -233,16 +234,39 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
             if isinstance(bounds[i], tuple) and i not in dimensions_all:
                 raise IncompatibleDataException()
 
-    # PERF: optimize further - check if we can extract a sub-region that
-    # contains all the valid values.
+    # Ideally, we would use fancy indexing to extract the data, but this can
+    # be slow on non-SSD drives if using memory-mapped arrays, and also doesn't
+    # work at all for dask arrays. For now, we therefore extract a sub-region
+    # from the data before applying fancy indexing if the data is a dask
+    # array. This won't be very efficient when dealing with 3d fixed
+    # resolution buffers, but it will at least work as opposed to not.
 
-    # Take subset_state into account, if present
-    if subset_state is None:
-        array = data.get_data(target_cid, view=translated_coords).astype(float)
-        invalid_value = -np.inf
+    if target_cid is not None and isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent):
+
+        # Extract sub-region of data first, then fetch exact coordinate values
+        subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
+
+        # Take subset_state into account, if present
+        if subset_state is None:
+            array = data.get_data(target_cid, view=subregion).astype(float)
+            invalid_value = -np.inf
+        else:
+            array = data.get_mask(subset_state, view=subregion)
+            invalid_value = False
+
+        translated_coords = tuple([coord - np.nanmin(coord) for coord in translated_coords])
+
+        array = array[translated_coords]
+
     else:
-        array = data.get_mask(subset_state, view=translated_coords)
-        invalid_value = False
+
+        # Take subset_state into account, if present
+        if subset_state is None:
+            array = data.get_data(target_cid, view=translated_coords).astype(float)
+            invalid_value = -np.inf
+        else:
+            array = data.get_mask(subset_state, view=translated_coords)
+            invalid_value = False
 
     if np.any(invalid_all):
         if not array.flags.writeable:

@@ -1,7 +1,8 @@
 # A plugin to enable link helpers for Astronomical coordinate conversions.
 
 from astropy import units as u
-from astropy.coordinates import ICRS, FK5, FK4, Galactic, Galactocentric
+from astropy.coordinates import (ICRS, FK5, FK4, Galactic, Galactocentric,
+                                 galactocentric_frame_defaults)
 
 from glue.core.link_helpers import BaseMultiLink
 from glue.config import link_helper
@@ -102,9 +103,11 @@ class GalactocentricToGalactic(BaseMultiLink):
     display = "3D Galactocentric <-> Galactic"
 
     def forwards(self, x_kpc, y_kpc, z_kpc):
-        gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
+        with galactocentric_frame_defaults.set('pre-v4.0'):
+            gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
         return gal.l.degree, gal.b.degree, gal.distance.to(u.kpc).value
 
     def backwards(self, l_deg, b_deg, d_kpc):
-        gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric)
+        with galactocentric_frame_defaults.set('pre-v4.0'):
+            gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric)
         return gal.x.to(u.kpc).value, gal.y.to(u.kpc).value, gal.z.to(u.kpc).value

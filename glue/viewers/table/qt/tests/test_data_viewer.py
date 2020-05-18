@@ -450,7 +450,7 @@ def test_incompatible_subset():
 
     dc.new_subset_group('test subset', data2.id['a'] > 2)
     gapp.show()
-    process_events()
+    process_events(0.5)
 
     with patch.object(viewer.layers[0], '_refresh') as refresh1:
         with patch.object(viewer.layers[1], '_refresh') as refresh2:
