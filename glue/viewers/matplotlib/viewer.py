@@ -5,9 +5,15 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
+<<<<<<< HEAD
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from echo import delay_callback
+=======
+from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings, DEFAULT_MARGIN
+from glue.external.echo import delay_callback
+>>>>>>> Remove margin when hiding axes
 from glue.utils import mpl_to_datetime64
+from glue.utils.matplotlib import freeze_margins
 
 __all__ = ['MatplotlibViewerMixin']
 
@@ -214,10 +220,12 @@ class MatplotlibViewerMixin(object):
     def update_axes_visibility(self, *event):
         if self.state.show_axes:
             self.axes.set_axis_on()
+            freeze_margins(self.axes, margins=DEFAULT_MARGIN)
         else:
             self.axes.set_axis_off()
-            self.axes.set_axis_off()
-        self.redraw()
+            freeze_margins(self.axes, margins=[0., 0., 0., 0.])
+        # Have to force a resize event to update margins
+        self.axes.figure.canvas.resize_event()
 
     def redraw(self):
         self.figure.canvas.draw_idle()

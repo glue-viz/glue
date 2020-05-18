@@ -5,6 +5,8 @@ from glue.utils.matplotlib import freeze_margins
 
 __all__ = ['update_appearance_from_settings', 'init_mpl']
 
+DEFAULT_MARGIN = [1, 0.25, 0.50, 0.25]
+
 
 def set_background_color(axes, color):
     axes.figure.set_facecolor(color)
@@ -59,7 +61,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
             else:
                 _axes = axes_factory(_figure)
 
-    freeze_margins(_axes, margins=[1, 0.25, 0.50, 0.25])
+    freeze_margins(_axes, margins=DEFAULT_MARGIN)
 
     update_appearance_from_settings(_axes)
 
