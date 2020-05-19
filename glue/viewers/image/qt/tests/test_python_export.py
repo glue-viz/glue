@@ -31,10 +31,14 @@ class TestExportPython(BaseTestExportPython):
         self.app.close()
         self.app = None
 
-    def assert_same(self, tmpdir):
-        BaseTestExportPython.assert_same(self, tmpdir, tol=0.1)
+    def assert_same(self, tmpdir, tol=0.1):
+        BaseTestExportPython.assert_same(self, tmpdir, tol=tol)
 
     def test_simple(self, tmpdir):
+        self.assert_same(tmpdir)
+
+    def test_simple_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.assert_same(tmpdir)
 
     def test_simple_att(self, tmpdir):
@@ -43,6 +47,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_visual(self, tmpdir):
+        self.viewer.state.show_legend = True
         self.viewer.state.layers[0].cmap = plt.cm.RdBu
         self.viewer.state.layers[0].v_min = 0.2
         self.viewer.state.layers[0].v_max = 0.8
@@ -65,6 +70,11 @@ class TestExportPython(BaseTestExportPython):
     def test_subset(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
+
+    def test_subset_legend(self, tmpdir):
+        self.viewer.state.show_legend = True
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.assert_same(tmpdir, tol=0.15)  # transparency and such
 
     def test_subset_slice(self, tmpdir):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)

@@ -2,6 +2,8 @@ import sys
 import warnings
 
 import numpy as np
+from matplotlib.lines import Line2D
+
 
 from glue.core import BaseData
 from glue.utils import defer_draw, nanmin, nanmax
@@ -165,3 +167,13 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self.state.reset_cache()
         self._update_profile(force=True)
         self.redraw()
+
+    def get_handle_legend(self):
+        if self.enabled and self.state.visible:
+            handle = Line2D([0], [0], alpha=self.state.alpha,
+                            linestyle="-", linewidth=self.state.linewidth,
+                            color=self.get_layer_color())
+
+            return handle, self.layer.label, None
+        else:
+            return None, None, None

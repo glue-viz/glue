@@ -1,3 +1,5 @@
+from textwrap import indent
+
 import numpy as np
 
 from matplotlib.patches import Rectangle
@@ -12,6 +14,11 @@ SCRIPT_HEADER = """
 # Initialize figure
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
+
+# for the legend
+legend_handles = []
+legend_labels = []
+legend_handler_dict = dict()
 """.strip()
 
 SCRIPT_FOOTER = """
@@ -31,9 +38,26 @@ ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_
 ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={x_ticklabel_size})
 
+# For manual edition of the plot
+#  - Uncomment the next code line (plt.show)
+#  - Also change the matplotlib backend to qt5Agg
+#  - And comment the "plt.close" line
+# plt.show()
+
 # Save figure
 fig.savefig('glue_plot.png')
 plt.close(fig)
+""".strip()
+
+SCRIPT_LEGEND = """
+ax.legend(legend_handles, legend_labels,
+    handler_map=legend_handler_dict,
+    loc='{legend_location}',            # location
+    framealpha={legend_alpha:.2f},      # opacity of the frame
+    title='{legend_title}',             # title of the legend
+    title_fontsize={legend_fontsize},   # fontsize of the title
+    fontsize={legend_fontsize}          # fontsize of the labels
+)
 """.strip()
 
 ZORDER_MAX = 100000
@@ -91,10 +115,17 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
+        self.state.add_callback('show_legend', self.draw_legend)
+        self.state.add_callback('legend_location', self.draw_legend)
+        self.state.add_callback('legend_alpha', self.draw_legend)
+        self.state.add_callback('legend_title', self.draw_legend)
+        self.state.add_callback('legend_fontsize', self.draw_legend)
+
         self.update_x_axislabel()
         self.update_y_axislabel()
         self.update_x_ticklabel()
         self.update_y_ticklabel()
+        self.draw_legend()
 
     def _update_computation(self, message=None):
         pass
@@ -119,6 +150,40 @@ class MatplotlibViewerMixin(object):
     def update_y_ticklabel(self, *event):
         self.axes.tick_params(axis='y', labelsize=self.state.y_ticklabel_size)
         self.axes.yaxis.get_offset_text().set_fontsize(self.state.y_ticklabel_size)
+        self.redraw()
+
+    def get_handles_legend(self):
+        handles = []
+        labels = []
+        handler_dict = {}
+        for layer_artist in self._layer_artist_container:
+            handle, label, handler = layer_artist.get_handle_legend()
+            if handle is not None:
+                handles.append(handle)
+                labels.append(label)
+                if handler is not None:
+                    handler_dict[handle] = handler
+        return handles, labels, handler_dict
+
+    def draw_legend(self, *args):
+        if self.state.show_legend:
+            handles, labels, handler_map = self.get_handles_legend()
+            if handler_map is not None:
+                self.axes.legend(
+                    handles, labels, handler_map=handler_map,
+                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
+                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
+                    fontsize=self.state.legend_fontsize)
+            else:
+                self.axes.legend(
+                    handles, labels,
+                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
+                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
+                    fontsize=self.state.legend_fontsize)
+        else:
+            legend = self.axes.get_legend()
+            if legend is not None:
+                legend.remove()
         self.redraw()
 
     def redraw(self):
@@ -217,10 +282,20 @@ class MatplotlibViewerMixin(object):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
-        return ['import matplotlib', "matplotlib.use('Agg')", 'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
+        return ['import matplotlib',
+                "matplotlib.use('Agg')",
+                "# matplotlib.use('qt5Agg')",
+                'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         state_dict = self.state.as_dict()
         state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
         state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
         return [], SCRIPT_FOOTER.format(**state_dict)
+
+    def _script_legend(self):
+        state_dict = self.state.as_dict()
+        legend_str = SCRIPT_LEGEND.format(**state_dict)
+        if not self.state.show_legend:
+            legend_str = indent(legend_str, "# ")
+        return [], legend_str

@@ -13,6 +13,8 @@ class LayerArtist(LayerArtistBase):
 
     _layer_state_cls = LayerState
 
+    _python_exporter = None
+
     def __init__(self, viewer_state, layer_state=None, layer=None):
 
         super(LayerArtist, self).__init__(layer)

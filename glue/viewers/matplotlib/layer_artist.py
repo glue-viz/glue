@@ -1,3 +1,6 @@
+import matplotlib.patches as mpatches
+
+
 from glue.viewers.matplotlib.state import DeferredDrawCallbackProperty
 from glue.core.message import ComputationStartedMessage, ComputationEndedMessage
 from glue.viewers.common.layer_artist import LayerArtist
@@ -58,6 +61,14 @@ class MatplotlibLayerArtist(LayerArtist):
 
     def get_layer_color(self):
         return self.state.color
+
+    def get_handle_legend(self):
+        # The default legend handle for matplotlib viewer
+        if self.enabled and self.state.visible:
+            handle = mpatches.Patch(color=self.get_layer_color(), alpha=self.layer.style.alpha)
+            return handle, self.layer.label, None
+        else:
+            return None, None, None
 
     def redraw(self):
         self.axes.figure.canvas.draw_idle()

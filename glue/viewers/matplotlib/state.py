@@ -34,6 +34,12 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
 
 VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']
 
+VALID_LOCATIONS = ['best',
+                   'upper right', 'upper left',
+                   'lower left', 'lower right',
+                   'center left', 'center right',
+                   'lower center', 'upper center']
+
 
 class MatplotlibDataViewerState(ViewerState):
     """
@@ -66,12 +72,19 @@ class MatplotlibDataViewerState(ViewerState):
     x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
+    show_legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
+    legend_location = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
+    legend_alpha = DeferredDrawCallbackProperty(0.8, docstring='Transparency of the legend frame')
+    legend_title = DeferredDrawCallbackProperty("", docstring='Transparency of the legend frame')
+    legend_fontsize = DeferredDrawCallbackProperty(10, docstring='Transparency of the legend frame')
+
     def __init__(self, *args, **kwargs):
 
         self._axes_aspect_ratio = None
 
         MatplotlibDataViewerState.x_axislabel_weight.set_choices(self, VALID_WEIGHTS)
         MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
+        MatplotlibDataViewerState.legend_location.set_choices(self, VALID_LOCATIONS)
 
         super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
 
@@ -174,6 +187,11 @@ class MatplotlibDataViewerState(ViewerState):
         self.y_axislabel_weight = state.y_axislabel_weight
         self.x_ticklabel_size = state.x_ticklabel_size
         self.y_ticklabel_size = state.y_ticklabel_size
+        self.show_legend = state.show_legend
+        self.legend_location = state.legend_location
+        self.legend_alpha = state.legend_alpha
+        self.legend_title = state.legend_title
+        self.legend_fontsize = state.legend_fontsize
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):

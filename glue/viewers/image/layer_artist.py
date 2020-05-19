@@ -3,6 +3,9 @@ import weakref
 
 import numpy as np
 
+import matplotlib.patches as mpatches
+import matplotlib.colors as mcolors
+
 from glue.utils import defer_draw, broadcast_to
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
@@ -11,6 +14,7 @@ from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.utils import color2rgb
+from glue.utils.matplotlib import ColormapPatchHandler
 from glue.core import BaseData, HubListener
 from glue.core.message import (ComponentsChangedMessage,
                                ExternallyDerivableComponentsChangedMessage,
@@ -82,6 +86,22 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return self.state.color
         else:
             return self.state.cmap
+
+    def get_handle_legend(self):
+        if self.enabled and self.state.visible:
+            # a fancier patch drawing the colormap
+            color = self.get_layer_color()
+            label = self.layer.label
+            if isinstance(color, mcolors.Colormap):
+                handle = mpatches.Patch(color=color(0.5))
+                # actual color of the handle is not important
+                handler = ColormapPatchHandler(color)
+            else:
+                handle = mpatches.Patch(color=color, alpha=self.layer.style.alpha)
+                handler = None  # default handler is good enough
+            return handle, label, handler
+        else:
+            return None, None, None
 
     def enable(self):
         if hasattr(self, 'composite_image'):

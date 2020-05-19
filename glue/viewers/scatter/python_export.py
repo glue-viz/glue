@@ -9,6 +9,8 @@ def python_export_scatter_layer(layer, *args):
     script = ""
     imports = ["import numpy as np"]
 
+    script += "layer_handles = []  # for legend"
+
     script += "# Get main data values\n"
     script += "x = layer_data['{0}']\n".format(layer._viewer_state.x_att.label)
     script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
@@ -62,17 +64,30 @@ def python_export_scatter_layer(layer, *args):
             script += "density = ScatterDensityArtist(ax, x, y, {0})\n".format(serialize_options(options))
             script += "ax.add_artist(density)\n\n"
 
+            # legend
+            imports += ["from matplotlib.lines import Line2D"]
+
+            options = dict(ms=layer.state.size,
+                           alpha=layer.state.alpha,
+                           color=layer.state.color)
+            script += "layer_handles.append(\n"
+            script += "    Line2D([0, ], [0, ],\n"
+            script += "           marker='.', linestyle='none',\n"
+            script += "           {0}))\n".format(serialize_options(options))
+
         else:
             if layer.state.cmap_mode == 'Fixed' and layer.state.size_mode == 'Fixed':
                 options = dict(color=layer.state.color,
                                markersize=layer.state.size * layer.state.size_scaling,
                                alpha=layer.state.alpha,
-                               zorder=layer.state.zorder)
+                               zorder=layer.state.zorder,
+                               label=layer.layer.label)
                 if layer.state.fill:
                     options['mec'] = 'none'
                 else:
                     options['mfc'] = 'none'
-                script += "ax.plot(x[keep], y[keep], 'o', {0})\n\n".format(serialize_options(options))
+                script += "plot_artists = ax.plot(x[keep], y[keep], 'o', {0})\n".format(serialize_options(options))
+                script += "layer_handles.extend(plot_artists)\n\n"
             else:
                 options = dict(alpha=layer.state.alpha,
                                zorder=layer.state.zorder)
@@ -89,16 +104,14 @@ def python_export_scatter_layer(layer, *args):
 
                 if layer.state.fill:
                     options['edgecolor'] = 'none'
-                else:
-                    script += "s = "
 
-                script += "ax.scatter(x[keep], y[keep], {0})\n".format(serialize_options(options))
+                script += "scatter_artist = ax.scatter(x[keep], y[keep], {0})\n".format(serialize_options(options))
 
                 if not layer.state.fill:
-                    script += "s.set_edgecolors(s.get_facecolors())\n"
-                    script += "s.set_facecolors('none')\n"
+                    script += "scatter_artist.set_edgecolors(scatter_artist.get_facecolors())\n"
+                    script += "scatter_artist.set_facecolors('none')\n"
 
-                script += "\n"
+                script += "layer_handles.append(scatter_artist)\n\n"
 
     if layer.state.vector_visible:
 
@@ -141,7 +154,8 @@ def python_export_scatter_layer(layer, *args):
         else:
             options['color'] = code('colors[keep]')
 
-        script += "ax.quiver(x[keep], y[keep], vx, vy, {0})\n\n".format(serialize_options(options))
+        script += "vector_artist = ax.quiver(x[keep], y[keep], vx, vy, {0})\n".format(serialize_options(options))
+        script += "layer_handles.append(vector_artist)\n\n"
 
     if layer.state.xerr_visible or layer.state.yerr_visible:
 
@@ -166,7 +180,8 @@ def python_export_scatter_layer(layer, *args):
         script += "xerr = layer_data['{0}']\n".format(layer.state.xerr_att.label)
         script += "yerr = layer_data['{0}']\n".format(layer.state.yerr_att.label)
         script += "keep &= ~np.isnan(xerr) & ~np.isnan(yerr)\n"
-        script += "ax.errorbar(x[keep], y[keep], {0})\n\n".format(serialize_options(options))
+        script += "error_artist = ax.errorbar(x[keep], y[keep], {0})\n".format(serialize_options(options))
+        script += "layer_handles.append(error_artist)\n\n"
 
     if layer.state.line_visible:
 
@@ -180,6 +195,9 @@ def python_export_scatter_layer(layer, *args):
         else:
             options['c'] = code('colors')
             imports.append("from glue.viewers.scatter.layer_artist import plot_colored_line")
-            script += "plot_colored_line(ax, x, y, {0})\n\n".format(serialize_options(options))
+            script += "line_collection = plot_colored_line(ax, x, y, {0})\n".format(serialize_options(options))
+            script += "layer_handles.append(line_collection)\n\n"
 
+    script += "legend_handles.append(tuple(layer_handles))\n"
+    script += "legend_labels.append(layer_data.label)\n\n"
     return imports, script.strip()

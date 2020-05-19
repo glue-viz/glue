@@ -60,8 +60,17 @@ def python_export_histogram_layer(layer, *args):
     if layer._viewer_state.cumulative:
         options['cumulative'] = True
 
-    script += "\nx = x[(x >= hist_x_min) & (x <= hist_x_max)]\n"
+    script += "\nx = x[(x >= hist_x_min) & (x <= hist_x_max)]\n\n"
 
-    script += "\nax.hist(x, {0})".format(serialize_options(options))
+    script += "ax.hist(x, {0})\n\n".format(serialize_options(options))
+    options = dict(
+        facecolor=layer.state.color,
+        edgecolor='none',
+        alpha=layer.state.alpha)
+
+    imports += ["from matplotlib.patches import Patch"]
+    script += "handle = Patch({0})  # for legend\n".format(serialize_options(options))
+    script += "legend_handles.append(handle)\n"
+    script += "legend_labels.append(layer_data.label)\n"
 
     return imports, script.strip()

@@ -111,6 +111,10 @@ data_collection = load('{data}')
 
 {layers}
 
+### Legend
+
+{legend}
+
 ### Finalize viewer
 
 {footer}
@@ -159,6 +163,11 @@ class Viewer(BaseViewer):
         # And vice-versa when layer states are removed from the viewer state, we
         # need to keep the layer_artist_container in sync
         self.state.add_callback('layers', self._sync_layer_artist_container, priority=10000)
+
+        self.state.add_callback('layers', self.draw_legend)
+
+    def draw_legend(self, *args):
+        pass
 
     def _sync_state_layers(self, *args):
         # Remove layer state objects that no longer have a matching layer
@@ -328,6 +337,10 @@ class Viewer(BaseViewer):
                       self._update_computation,
                       filter=self._has_layer_artist)
 
+        hub.subscribe(self, msg.LayerArtistDisabledMessage,
+                      self.draw_legend,
+                      filter=self._has_layer_artist)
+
     def _has_layer_artist(self, message):
         return message.layer_artist in self.layers
 
@@ -362,6 +375,7 @@ class Viewer(BaseViewer):
                 layer_state.viewer_state = viewer.state
                 viewer._layer_artist_container.append(layer_artist)
 
+        viewer.draw_legend()  # need to be called here because callbacks are ignored in previous step
         return viewer
 
     def cleanup(self):
@@ -394,6 +408,9 @@ class Viewer(BaseViewer):
 
     def _script_header(self):
         raise NotImplementedError()
+
+    def _script_legend(self):
+        return [], ""
 
     def _script_footer(self):
         raise NotImplementedError()
@@ -430,15 +447,23 @@ class Viewer(BaseViewer):
             imports.extend(imports_layer)
             layers += layer_script.strip() + "\n"
 
+        imports_legend, legend = self._script_legend()
+        imports.extend(imports_legend)
         imports_footer, footer = self._script_footer()
         imports.extend(imports_footer)
 
-        imports = os.linesep.join(sorted(set(imports)))
+        imports = os.linesep.join(sorted(set(imports),
+                                         key=lambda s: s.strip('# ')))
+        # The sorting key is added keep together similar but commented imports
+        # Typical ex:
+        #    matplotlib.use('Agg')
+        #    # matplotlib.use('qt5Agg')
 
         script = TEMPLATE_SCRIPT.format(data=os.path.basename(data_filename),
                                         imports=imports.strip(),
                                         header=header.strip(),
                                         layers=layers.strip(),
+                                        legend=legend.strip(),
                                         footer=footer.strip())
 
         with open(filename, 'w') as f:
