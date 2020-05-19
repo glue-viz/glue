@@ -1004,7 +1004,7 @@ class CompositeSubsetState(SubsetState):
     def _traverse_state_tree(self, substate_func, unary_func, binary_func):
         """
         A helper function that traverses the entire state tree iteratively.
-        
+
         Use this instead of writing recursive function calls to prevent stack overflow.
 
         Parameters
@@ -1015,13 +1015,13 @@ class CompositeSubsetState(SubsetState):
             This callable should return a result.
         unary_func : callable
             A callable object that takes two arguments, an `InvertState` and one input argument.
-            The input argument is the same as the result of the recursive function call on 
+            The input argument is the same as the result of the recursive function call on
             the state1 field of the InvertState object.
             This callable should return a result.
         binary_func : callable
             A callable object that takes three agruments, an `InvertState` and two arguments.
-            The first input argument is the same as the result of the recursive function call on 
-            the state1 field, and the second argument is the result of recursion on state2. 
+            The first input argument is the same as the result of the recursive function call on
+            the state1 field, and the second argument is the result of recursion on state2.
             This callable should return a result.
         """
 
@@ -1061,19 +1061,20 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         leaf_func = lambda state: state.copy()
+
         def _copy_composite(state, lhs, rhs=None):
             copy = type(state)(None, None)
             copy.state1 = lhs
             copy.state2 = rhs
             return copy
-        return self._traverse_state_tree(leaf_func, _copy_composite, _copy_composite)
 
+        return self._traverse_state_tree(leaf_func, _copy_composite, _copy_composite)
 
     @property
     def attributes(self):
         leaf_func = lambda state: state.attributes
-        invert_func = lambda _,input: input
-        binary_func = lambda _, lhs, rhs: lhs+rhs
+        invert_func = lambda _, input: input
+        binary_func = lambda _, lhs, rhs: lhs + rhs
         preclean = self._traverse_state_tree(leaf_func, invert_func, binary_func)
         return tuple(sorted(set(preclean)))
 
@@ -1083,7 +1084,8 @@ class CompositeSubsetState(SubsetState):
         leaf_func = lambda state, data=data, view=view: state.to_mask(data, view)
         invert_func = lambda _, input: ~input
         binary_func = lambda state, lhs, rhs: state.op(lhs, rhs)
-        return self._traverse_state_tree(leaf_func, invert_func,binary_func)
+        return self._traverse_state_tree(leaf_func, invert_func, binary_func)
+
     def __str__(self):
         leaf_func = lambda state: "%s" % state
         invert_func = lambda _, input: "(~%s)" % input
