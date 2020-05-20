@@ -44,6 +44,25 @@ described in `A shared Python interface for World Coordinate Systems
 <https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object conforming
 to that API can now be used directly as a ``Data.coords`` object.
 
+Legend
+------
+
+Legend can now be displayed for the default matplotlib viewers:
+
+.. image:: images/v0.16/legend_example.png
+   :align: center
+   :width: 500
+
+The legend can be customized using a new tab in the plot options widget:
+
+.. image:: images/v0.16/legend_control.png
+   :align: center
+   :width: 200
+
+The export scripts for the default matplotlib viewers have also been updated to
+draw the legend if it is activated in the GUI. Otherwise, it is commented so the
+user can easily activate the legend if needed.
+
 .. _whatsnew_015:
 
 What's new in glue v0.15?
