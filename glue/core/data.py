@@ -1661,8 +1661,53 @@ class Data(BaseCartesianData):
                 data = subset_state.to_array(self, cid)
             else:
                 mask = subset_state.to_mask(self, view)
+
                 if np.any(unbroadcast(mask)):
+
+                    # Find minimal subarray containing the masked area.
+                    subarray_slices = []
+                    for idim in range(mask.ndim):
+                        collapse_axes = tuple(index for index in range(mask.ndim) if index != idim)
+                        valid = mask.any(axis=collapse_axes)
+                        indices = np.where(valid)[0]
+                        subarray_slices.append(slice(np.min(indices), np.max(indices) + 1))
+                    subarray_slices = tuple(subarray_slices)
+
+                    # Extract the mask in this region
+                    mask = mask[subarray_slices]
+
+                    # We now need to determine the view for which to extract the
+                    # data.
+
+                    if view is None or view is Ellipsis:
+                        # In the case where view is None, things are pretty
+                        # simple since we just use subarray_slices to view the data
+                        view = subarray_slices
+                    elif isinstance(view, (list, tuple)):
+                        # At this point view is a list or a tuple, which could
+                        # contain either scalar values or slice objects. In
+                        # addition, it may contain fewer elements than are needed
+                        # to slice the data, so we need to take this into account.
+                        mask_idim = 0
+                        new_view = []
+                        for idim in range(self.ndim):
+                            if len(view) < idim - 1:
+                                new_view.append(subarray_slices(mask_idim))
+                                mask_idim += 1
+                            elif isinstance(view[idim], slice):
+                                if view[idim].step is not None and view[idim].step != 1:
+                                    raise RuntimeError("Unexpected step for view: {0}".format(view[idim].step))
+                                new_view.append(slice(view[idim].start + subarray_slices[mask_idim].start,
+                                                      view[idim].start + subarray_slices[mask_idim].stop))
+                                mask_idim += 1
+                            else:
+                                new_view.append(view[idim])
+                        view = tuple(new_view)
+                    else:
+                        raise RuntimeError("Unexpected type for view: {0}".format(type(view)))
+
                     data = self.get_data(cid, view)
+
                 else:
                     if axis is None:
                         return np.nan
