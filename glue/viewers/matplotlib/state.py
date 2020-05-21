@@ -77,6 +77,8 @@ class MatplotlibDataViewerState(ViewerState):
     legend_alpha = DeferredDrawCallbackProperty(0.8, docstring='Transparency of the legend frame')
     legend_title = DeferredDrawCallbackProperty("", docstring='Transparency of the legend frame')
     legend_fontsize = DeferredDrawCallbackProperty(10, docstring='Transparency of the legend frame')
+    legend_frame_color = DeferredDrawCallbackProperty("#FFFFFF", docstring='Background color of the legend')
+    legend_text_color = DeferredDrawCallbackProperty("#000000", docstring='Text color of the legend')
 
     def __init__(self, *args, **kwargs):
 
@@ -86,13 +88,21 @@ class MatplotlibDataViewerState(ViewerState):
         MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
         MatplotlibDataViewerState.legend_location.set_choices(self, VALID_LOCATIONS)
 
+
         super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
+        self._set_color_choices()
 
         self.add_callback('aspect', self._adjust_limits_aspect, priority=10000)
         self.add_callback('x_min', self._adjust_limits_aspect_x, priority=10000)
         self.add_callback('x_max', self._adjust_limits_aspect_x, priority=10000)
         self.add_callback('y_min', self._adjust_limits_aspect_y, priority=10000)
         self.add_callback('y_max', self._adjust_limits_aspect_y, priority=10000)
+
+    def _set_color_choices(self):
+        from glue.config import settings
+
+        self.legend_frame_color = settings.BACKGROUND_COLOR
+        self.legend_text_color = settings.FOREGROUND_COLOR
 
     def _set_axes_aspect_ratio(self, value):
         """
@@ -181,17 +191,21 @@ class MatplotlibDataViewerState(ViewerState):
                 self.y_max = y_max
 
     def update_axes_settings_from(self, state):
+        # axis
         self.x_axislabel_size = state.x_axislabel_size
         self.y_axislabel_size = state.y_axislabel_size
         self.x_axislabel_weight = state.x_axislabel_weight
         self.y_axislabel_weight = state.y_axislabel_weight
         self.x_ticklabel_size = state.x_ticklabel_size
         self.y_ticklabel_size = state.y_ticklabel_size
+        # legend
         self.show_legend = state.show_legend
         self.legend_location = state.legend_location
         self.legend_alpha = state.legend_alpha
         self.legend_title = state.legend_title
         self.legend_fontsize = state.legend_fontsize
+        self.legend_frame_color = state.legend_frame_color
+        self.legend_text_color = state.legend_text_color
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):

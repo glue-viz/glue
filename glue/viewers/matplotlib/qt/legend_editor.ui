@@ -117,8 +117,49 @@
      </property>
     </widget>
    </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>frame color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>text color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QColorBox" name="color_legend_frame_color">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QColorBox" name="color_legend_text_color">
+     <property name="text">
+      <string>           </string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QColorBox</class>
+   <extends>QLabel</extends>
+   <header>glue.utils.qt.colors</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

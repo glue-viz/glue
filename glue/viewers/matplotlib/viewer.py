@@ -3,6 +3,7 @@ from textwrap import indent
 import numpy as np
 
 from matplotlib.patches import Rectangle
+from matplotlib.artist import setp as msetp
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from echo import delay_callback
@@ -117,9 +118,12 @@ class MatplotlibViewerMixin(object):
 
         self.state.add_callback('show_legend', self.draw_legend)
         self.state.add_callback('legend_location', self.draw_legend)
-        self.state.add_callback('legend_alpha', self.draw_legend)
+        self.state.add_callback('legend_alpha', self.update_legend)
         self.state.add_callback('legend_title', self.draw_legend)
-        self.state.add_callback('legend_fontsize', self.draw_legend)
+        self.state.add_callback('legend_fontsize', self.update_legend)
+        self.state.add_callback('legend_frame_color', self.update_legend)
+        self.state.add_callback('legend_text_color', self.update_legend)
+
 
         self.update_x_axislabel()
         self.update_y_axislabel()
@@ -165,21 +169,36 @@ class MatplotlibViewerMixin(object):
                     handler_dict[handle] = handler
         return handles, labels, handler_dict
 
+    def _update_legend_visual(self, legend):
+            msetp(legend.get_title(), color=self.state.legend_text_color)
+            msetp(legend.get_texts(), color=self.state.legend_text_color)
+            msetp(legend.get_frame(),
+                  alpha=self.state.legend_alpha,
+                  facecolor=self.state.legend_frame_color
+                  )
+
+    def update_legend(self, *args):
+        legend = self.axes.get_legend()
+        if legend is not None:
+            self._update_legend_visual(legend)
+        self.redraw()
+
+
     def draw_legend(self, *args):
         if self.state.show_legend:
             handles, labels, handler_map = self.get_handles_legend()
+            kwargs = dict(loc=self.state.legend_location,
+                          title=self.state.legend_title,
+                          title_fontsize=self.state.legend_fontsize,
+                          fontsize=self.state.legend_fontsize,
+                          )
             if handler_map is not None:
-                self.axes.legend(
-                    handles, labels, handler_map=handler_map,
-                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                    fontsize=self.state.legend_fontsize)
-            else:
-                self.axes.legend(
-                    handles, labels,
-                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                    fontsize=self.state.legend_fontsize)
+                kwargs["handler_map"] = handler_map
+            legend = self.axes.legend(
+                    handles, labels, **kwargs)
+            self._update_legend_visual(legend)
+            legend.set_draggable(True)
+
         else:
             legend = self.axes.get_legend()
             if legend is not None:
