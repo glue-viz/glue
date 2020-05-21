@@ -34,7 +34,7 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
 
 VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']
 
-VALID_LOCATIONS = ['best',
+VALID_LOCATIONS = ['best (draggable)', 'best',
                    'upper right', 'upper left',
                    'lower left', 'lower right',
                    'center left', 'center right',
@@ -75,9 +75,10 @@ class MatplotlibDataViewerState(ViewerState):
     show_legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
     legend_location = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
     legend_alpha = DeferredDrawCallbackProperty(0.8, docstring='Transparency of the legend frame')
-    legend_title = DeferredDrawCallbackProperty("", docstring='Transparency of the legend frame')
-    legend_fontsize = DeferredDrawCallbackProperty(10, docstring='Transparency of the legend frame')
-    legend_frame_color = DeferredDrawCallbackProperty("#FFFFFF", docstring='Background color of the legend')
+    legend_title = DeferredDrawCallbackProperty("", docstring='The title of the legend')
+    legend_fontsize = DeferredDrawCallbackProperty(10, docstring='The font size of the title')
+    legend_frame_color = DeferredDrawCallbackProperty("#ffffff", docstring='Frame color of the legend')
+    legend_show_frame_edge = DeferredDrawCallbackProperty(True, docstring="Whether to show the edge of the frame ")
     legend_text_color = DeferredDrawCallbackProperty("#000000", docstring='Text color of the legend')
 
     def __init__(self, *args, **kwargs):
@@ -205,6 +206,7 @@ class MatplotlibDataViewerState(ViewerState):
         self.legend_title = state.legend_title
         self.legend_fontsize = state.legend_fontsize
         self.legend_frame_color = state.legend_frame_color
+        self.legend_show_edge = state.legend_show_edge
         self.legend_text_color = state.legend_text_color
 
     @defer_draw

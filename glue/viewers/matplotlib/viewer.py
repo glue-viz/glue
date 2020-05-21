@@ -3,6 +3,7 @@ from textwrap import indent
 import numpy as np
 
 from matplotlib.patches import Rectangle
+from matplotlib.colors import to_rgba
 from matplotlib.artist import setp as msetp
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
@@ -120,10 +121,10 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('legend_location', self.draw_legend)
         self.state.add_callback('legend_alpha', self.update_legend)
         self.state.add_callback('legend_title', self.draw_legend)
-        self.state.add_callback('legend_fontsize', self.update_legend)
+        self.state.add_callback('legend_fontsize', self.draw_legend)
         self.state.add_callback('legend_frame_color', self.update_legend)
+        self.state.add_callback('legend_show_frame_edge', self.update_legend)
         self.state.add_callback('legend_text_color', self.update_legend)
-
 
         self.update_x_axislabel()
         self.update_y_axislabel()
@@ -157,6 +158,7 @@ class MatplotlibViewerMixin(object):
         self.redraw()
 
     def get_handles_legend(self):
+        """Collect the handles and labels from each layer artist."""
         handles = []
         labels = []
         handler_dict = {}
@@ -170,35 +172,45 @@ class MatplotlibViewerMixin(object):
         return handles, labels, handler_dict
 
     def _update_legend_visual(self, legend):
-            msetp(legend.get_title(), color=self.state.legend_text_color)
-            msetp(legend.get_texts(), color=self.state.legend_text_color)
-            msetp(legend.get_frame(),
-                  alpha=self.state.legend_alpha,
-                  facecolor=self.state.legend_frame_color
-                  )
+        """Update the legend colors and opacity. No redraw."""
+        msetp(legend.get_title(), color=self.state.legend_text_color)
+        msetp(legend.get_texts(), color=self.state.legend_text_color)
+        if self.state.legend_show_frame_edge:
+            edge_color = to_rgba(self.state.legend_text_color, self.state.legend_alpha)
+        else:
+            edge_color = 'none'
+        msetp(legend.get_frame(),
+              alpha=self.state.legend_alpha,
+              facecolor=self.state.legend_frame_color,
+              edgecolor=edge_color
+              )
 
     def update_legend(self, *args):
+        """Update the legend colors and opacity."""
         legend = self.axes.get_legend()
         if legend is not None:
             self._update_legend_visual(legend)
         self.redraw()
 
-
     def draw_legend(self, *args):
         if self.state.show_legend:
             handles, labels, handler_map = self.get_handles_legend()
-            kwargs = dict(loc=self.state.legend_location,
+            loc = self.state.legend_location
+            if loc == 'best (draggable)':
+                loc = 'best'
+                draggable = True
+            else:
+                draggable = False
+            kwargs = dict(loc=loc,
                           title=self.state.legend_title,
                           title_fontsize=self.state.legend_fontsize,
-                          fontsize=self.state.legend_fontsize,
-                          )
+                          fontsize=self.state.legend_fontsize)
             if handler_map is not None:
                 kwargs["handler_map"] = handler_map
             legend = self.axes.legend(
                     handles, labels, **kwargs)
             self._update_legend_visual(legend)
-            legend.set_draggable(True)
-
+            legend.set_draggable(draggable)
         else:
             legend = self.axes.get_legend()
             if legend is not None:

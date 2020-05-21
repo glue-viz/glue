@@ -32,6 +32,29 @@
    <property name="bottomMargin">
     <number>5</number>
    </property>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>enable</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="bool_show_legend">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -55,51 +78,12 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QCheckBox" name="bool_show_legend">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>enable</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="5" column="1">
     <widget class="QSlider" name="value_legend_alpha">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>label size</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QSpinBox" name="value_legend_fontsize"/>
-   </item>
-   <item row="7" column="1">
-    <widget class="QLineEdit" name="text_legend_title"/>
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="label_5">
@@ -117,17 +101,26 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_6">
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="text_legend_title"/>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>frame color</string>
+      <string>label size</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="label_7">
+   <item row="8" column="1">
+    <widget class="QSpinBox" name="value_legend_fontsize"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>text color</string>
+      <string>box color</string>
      </property>
     </widget>
    </item>
@@ -145,9 +138,30 @@
     </widget>
    </item>
    <item row="10" column="1">
+    <widget class="QCheckBox" name="bool_legend_show_frame_edge">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>text color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
     <widget class="QColorBox" name="color_legend_text_color">
      <property name="text">
-      <string>           </string>
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>box edge</string>
      </property>
     </widget>
    </item>
