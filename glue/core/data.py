@@ -1662,22 +1662,44 @@ class Data(BaseCartesianData):
             else:
                 mask = subset_state.to_mask(self, view)
 
-                if np.any(unbroadcast(mask)):
+                unbroadcast_mask = unbroadcast(mask)
 
-                    # Find minimal subarray containing the masked area.
+                if np.any(unbroadcast_mask):
+
+                    # Find minimal subarray containing the masked area. At this
+                    # point we've already accessed all the values in unbroadcast_mask
+                    # so the calls to .any() below should not have a significant
+                    # performance impact.
                     subarray_slices = []
                     for idim in range(mask.ndim):
+
+                        # Check whether any values should be included for each
+                        # element along the axis being considered. For efficiency
+                        # we use the unbroadcast mask here.
                         collapse_axes = tuple(index for index in range(mask.ndim) if index != idim)
-                        valid = mask.any(axis=collapse_axes)
+                        valid = unbroadcast_mask.any(axis=collapse_axes)
+
+                        # Since we just used the unbroadcast mask, we need to
+                        # broadcast it back to the original mask shape.
+                        valid = np.broadcast_to(valid, mask.shape[idim:idim+1])
+
+                        # We now find the first and last value for which the mask
+                        # is set, to determine the slice of the minimal subarray
                         indices = np.where(valid)[0]
                         subarray_slices.append(slice(np.min(indices), np.max(indices) + 1))
+
                     subarray_slices = tuple(subarray_slices)
 
-                    # Extract the mask in this region
-                    mask = mask[subarray_slices]
-
                     # We now need to determine the view for which to extract the
-                    # data.
+                    # data, which essentially needs to combine the original view
+                    # which was used to compute the mask, and the new view which
+                    # extracts a subset of this mask.
+
+                    # For some views we don't support this, so we keep track of
+                    # whether we can actually use subarray_slices above
+                    use_subarray_slices = True
+
+                    print(subarray_slices)
 
                     if view is None or view is Ellipsis:
                         # In the case where view is None, things are pretty
@@ -1696,15 +1718,26 @@ class Data(BaseCartesianData):
                                 mask_idim += 1
                             elif isinstance(view[idim], slice):
                                 if view[idim].step is not None and view[idim].step != 1:
-                                    raise RuntimeError("Unexpected step for view: {0}".format(view[idim].step))
-                                new_view.append(slice(view[idim].start + subarray_slices[mask_idim].start,
-                                                      view[idim].start + subarray_slices[mask_idim].stop))
+                                    # This makes things more complicated, so bail out at this point
+                                    use_subarray_slices = False
+                                    break
+                                view_start, _, _ = view[idim].indices(self.shape[idim])
+                                sub_start, sub_stop, _ = subarray_slices[mask_idim].indices(mask.shape[mask_idim])
+                                new_view.append(slice(view_start + sub_start,
+                                                      view_start + sub_stop))
                                 mask_idim += 1
                             else:
                                 new_view.append(view[idim])
                         view = tuple(new_view)
                     else:
-                        raise RuntimeError("Unexpected type for view: {0}".format(type(view)))
+                        # This should probably never happen, but just in case!
+                        use_subarray_slices = False
+
+                    if use_subarray_slices:
+                        # Extract the mask in the subarray region. The view will
+                        # then also take into account the subarray slices in this
+                        # case.
+                        mask = mask[subarray_slices]
 
                     data = self.get_data(cid, view)
 

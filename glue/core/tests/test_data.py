@@ -871,7 +871,7 @@ def test_compute_statistic_random_subset():
         result = data.compute_statistic('mean', data.id['x'], random_subset=5,
                                         subset_state=MaskSubsetState([0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
                                                                      data.pixel_component_ids))
-        assert_allclose(result, 4.75)
+        assert_allclose(result, 5)
 
 
 def test_compute_statistic_empty_subset():
