@@ -1,7 +1,10 @@
 from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 
+from matplotlib.colors import to_rgba
+
 from glue.core.message import LayerArtistUpdatedMessage
 
+from glue.core.state_objects import State
 from glue.viewers.common.state import ViewerState, LayerState
 
 from glue.utils import defer_draw, avoid_circular
@@ -41,6 +44,62 @@ VALID_LOCATIONS = ['best (draggable)', 'best',
                    'lower center', 'upper center']
 
 
+class MatplotlibLegendState(State):
+    """The legend state"""
+
+    visible = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
+
+    loc_and_drag = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
+
+    title = DeferredDrawCallbackProperty("", docstring='The title of the legend')
+    fontsize = DeferredDrawCallbackProperty(10, docstring='The font size of the title')
+
+    alpha = DeferredDrawCallbackProperty(0.6, docstring='Transparency of the legend frame')
+    frame_color = DeferredDrawCallbackProperty("#ffffff", docstring='Frame color of the legend')
+    show_edge = DeferredDrawCallbackProperty(True, docstring="Whether to show the edge of the frame ")
+    text_color = DeferredDrawCallbackProperty("#000000", docstring='Text color of the legend')
+
+    def __init__(self, *args, **kwargs):
+        MatplotlibLegendState.loc_and_drag.set_choices(self, VALID_LOCATIONS)
+
+        super().__init__(*args, **kwargs)
+        self._set_color_choices()
+
+    def _set_color_choices(self):
+        from glue.config import settings
+
+        self.frame_color = settings.BACKGROUND_COLOR
+        self.text_color = settings.FOREGROUND_COLOR
+
+    @property
+    def edge_color(self):
+        if self.show_edge:
+            return to_rgba(self.text_color, self.alpha)
+        else:
+            return 'none'
+
+    @property
+    def draggable(self):
+        return self.loc_and_drag.endswith('(draggable)')
+
+    @property
+    def location(self):
+        if self.loc_and_drag.endswith('(draggable)'):
+            return self.loc_and_drag[:-12]
+        else:
+            return self.loc_and_drag
+
+
+    def update_axes_settings_from(self, state):
+        self.visible = state.show_legend
+        self.loc_and_drag = state.loc_and_drag
+        self.alpha = state.alpha
+        self.title = state.title
+        self.fontsize = state.fontsize
+        self.frame_color = state.frame_color
+        self.show_edge = state.show_edge
+        self.text_color = state.text_color
+
 class MatplotlibDataViewerState(ViewerState):
     """
     A base class that includes common attributes for viewers based on
@@ -72,14 +131,6 @@ class MatplotlibDataViewerState(ViewerState):
     x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
-    show_legend = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
-    legend_location = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
-    legend_alpha = DeferredDrawCallbackProperty(0.8, docstring='Transparency of the legend frame')
-    legend_title = DeferredDrawCallbackProperty("", docstring='The title of the legend')
-    legend_fontsize = DeferredDrawCallbackProperty(10, docstring='The font size of the title')
-    legend_frame_color = DeferredDrawCallbackProperty("#ffffff", docstring='Frame color of the legend')
-    legend_show_frame_edge = DeferredDrawCallbackProperty(True, docstring="Whether to show the edge of the frame ")
-    legend_text_color = DeferredDrawCallbackProperty("#000000", docstring='Text color of the legend')
 
     def __init__(self, *args, **kwargs):
 
@@ -87,11 +138,9 @@ class MatplotlibDataViewerState(ViewerState):
 
         MatplotlibDataViewerState.x_axislabel_weight.set_choices(self, VALID_WEIGHTS)
         MatplotlibDataViewerState.y_axislabel_weight.set_choices(self, VALID_WEIGHTS)
-        MatplotlibDataViewerState.legend_location.set_choices(self, VALID_LOCATIONS)
-
 
         super(MatplotlibDataViewerState, self).__init__(*args, **kwargs)
-        self._set_color_choices()
+        self.legend = MatplotlibLegendState(*args, **kwargs)
 
         self.add_callback('aspect', self._adjust_limits_aspect, priority=10000)
         self.add_callback('x_min', self._adjust_limits_aspect_x, priority=10000)
@@ -99,11 +148,6 @@ class MatplotlibDataViewerState(ViewerState):
         self.add_callback('y_min', self._adjust_limits_aspect_y, priority=10000)
         self.add_callback('y_max', self._adjust_limits_aspect_y, priority=10000)
 
-    def _set_color_choices(self):
-        from glue.config import settings
-
-        self.legend_frame_color = settings.BACKGROUND_COLOR
-        self.legend_text_color = settings.FOREGROUND_COLOR
 
     def _set_axes_aspect_ratio(self, value):
         """
@@ -200,14 +244,7 @@ class MatplotlibDataViewerState(ViewerState):
         self.x_ticklabel_size = state.x_ticklabel_size
         self.y_ticklabel_size = state.y_ticklabel_size
         # legend
-        self.show_legend = state.show_legend
-        self.legend_location = state.legend_location
-        self.legend_alpha = state.legend_alpha
-        self.legend_title = state.legend_title
-        self.legend_fontsize = state.legend_fontsize
-        self.legend_frame_color = state.legend_frame_color
-        self.legend_show_edge = state.legend_show_edge
-        self.legend_text_color = state.legend_text_color
+        self.legend.update_axes_settings_from(state.legend)
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):

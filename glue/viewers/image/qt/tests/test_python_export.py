@@ -47,7 +47,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_visual(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].cmap = plt.cm.RdBu
         self.viewer.state.layers[0].v_min = 0.2
         self.viewer.state.layers[0].v_max = 0.8
@@ -72,7 +72,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_subset_legend(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir, tol=0.15)  # transparency and such
 
