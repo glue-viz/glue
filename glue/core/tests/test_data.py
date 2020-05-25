@@ -894,6 +894,81 @@ def test_compute_statistic_empty_subset():
     assert_equal(result, np.nan)
 
 
+def test_compute_statistic_efficient():
+
+    # Unit test to test the logic for dealing with accessing only a minimal
+    # region from the data based on the smallest array that covers a given
+    # subset state.
+
+    # TODO: add a way to check what data has actually been accessed to test
+    # the efficiency of the algorithm.
+
+    array = np.ones(10 * 20 * 30 * 40).reshape((10, 20, 40, 30))
+    array[3:5, 6:14, :, 10:21:2] += 1
+
+    class CustomData(Data):
+        def get_data(self, cid, view=None):
+            if cid.label == 'x':
+                self.elements_accessed = np.ones(self.shape)[view].sum()
+            else:
+                self.elements_accessed = 0
+            return super().get_data(cid, view=view)
+
+    data = CustomData(x=array, y=array)
+
+    subset_state = data.id['y'] > 1.5
+
+    # First test withoiut view
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state)
+    assert_allclose(result, 7680)
+    assert data.elements_accessed == 7040
+
+    # Now apply a view which includes just one slice that covers the original area
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[slice(0, 5)])
+    assert_allclose(result, 7680)
+    assert data.elements_accessed == 7040
+
+    # Make it so that the slice doesn't fully overlap with the subset
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[slice(0, 4)])
+    assert_allclose(result, 3840)
+    assert data.elements_accessed == 3520
+
+    # And now make it so there is no overlap
+    # TODO: should this result be 0 instead of nan?
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[slice(0, 3)])
+    assert_allclose(result, np.nan)
+    assert data.elements_accessed == 0
+
+    # Check what happens if we use an integer index that overlaps...
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[3])
+    assert_allclose(result, 3840)
+    assert data.elements_accessed == 3520
+
+    # ... and one that doesn't
+    # TODO: should this result be 0 instead of nan?
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[2])
+    assert_allclose(result, np.nan)
+    assert data.elements_accessed == 0
+
+    # Now try using a slice that has a step>1 - this should actually then
+    # bypass the efficient algorithm
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=[slice(0, 5, 2)])
+    assert_allclose(result, 3840)
+    assert data.elements_accessed == 72000
+
+    # Finally we can do a complex mix of options
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    view=(slice(0, 5), slice(3, 10), 20, slice(None)))
+    assert_allclose(result, 96)
+    assert data.elements_accessed == 88
+
+
 def test_compute_histogram_log():
 
     # Make sure that the returned histogram is NaN everywhere if either of the

@@ -1603,6 +1603,11 @@ class Data(BaseCartesianData):
 
         # TODO: generalize chunking to more types of axis
 
+        # In recent version of Numpy, using lists is not the same as using
+        # tuples, so we make sure we always use tuples to avoid confusion.
+        if isinstance(view, list):
+            view = tuple(view)
+
         if (view is None and
                 isinstance(axis, tuple) and
                 len(axis) > 0 and
@@ -1681,7 +1686,7 @@ class Data(BaseCartesianData):
 
                         # Since we just used the unbroadcast mask, we need to
                         # broadcast it back to the original mask shape.
-                        valid = np.broadcast_to(valid, mask.shape[idim:idim+1])
+                        valid = np.broadcast_to(valid, mask.shape[idim:idim + 1])
 
                         # We now find the first and last value for which the mask
                         # is set, to determine the slice of the minimal subarray
@@ -1699,8 +1704,6 @@ class Data(BaseCartesianData):
                     # whether we can actually use subarray_slices above
                     use_subarray_slices = True
 
-                    print(subarray_slices)
-
                     if view is None or view is Ellipsis:
                         # In the case where view is None, things are pretty
                         # simple since we just use subarray_slices to view the data
@@ -1713,13 +1716,14 @@ class Data(BaseCartesianData):
                         mask_idim = 0
                         new_view = []
                         for idim in range(self.ndim):
-                            if len(view) < idim - 1:
-                                new_view.append(subarray_slices(mask_idim))
+                            if idim >= len(view):
+                                new_view.append(subarray_slices[mask_idim])
                                 mask_idim += 1
                             elif isinstance(view[idim], slice):
                                 if view[idim].step is not None and view[idim].step != 1:
                                     # This makes things more complicated, so bail out at this point
                                     use_subarray_slices = False
+                                    new_view = view
                                     break
                                 view_start, _, _ = view[idim].indices(self.shape[idim])
                                 sub_start, sub_stop, _ = subarray_slices[mask_idim].indices(mask.shape[mask_idim])
@@ -1729,7 +1733,7 @@ class Data(BaseCartesianData):
                             else:
                                 new_view.append(view[idim])
                         view = tuple(new_view)
-                    else:
+                    else:  # pragma: nocover
                         # This should probably never happen, but just in case!
                         use_subarray_slices = False
 
