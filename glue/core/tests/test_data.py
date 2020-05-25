@@ -920,6 +920,21 @@ def test_compute_histogram_log():
     assert result.shape == (2, 3) and np.sum(result) == 0
 
 
+def test_compute_histogram_dask():
+
+    # Make sure that compute_histogram works for dask arrays
+
+    da = pytest.importorskip('dask.array')
+
+    data = Data(x=da.arange(10))
+
+    result = data.compute_histogram([data.id['x']], range=[[-0.5, 11.75]], bins=[2])
+    assert_allclose(result, [6, 4])
+
+    result = data.compute_histogram([data.id['x']], range=[[-0.5, 11.25]], bins=[2], subset_state=data.id['x'] > 4.5)
+    assert_allclose(result, [1, 4])
+
+
 def test_base_cartesian_data_coords():
 
     # Make sure that world_component_ids works in both the case where
