@@ -1747,11 +1747,20 @@ class Data(BaseCartesianData):
 
         if subset_state is not None:
             mask = subset_state.to_mask(self)
-            x = x[mask]
+            if DASK_INSTALLED and isinstance(x, da.Array) and not isinstance(mask, da.Array):
+                x = x[da.asarray(mask)]
+            else:
+                x = x[mask]
             if ndim > 1:
-                y = y[mask]
+                if DASK_INSTALLED and isinstance(y, da.Array) and not isinstance(mask, da.Array):
+                    y = y[da.asarray(mask)]
+                else:
+                    y = y[mask]
             if w is not None:
-                w = w[mask]
+                if DASK_INSTALLED and isinstance(w, da.Array) and not isinstance(mask, da.Array):
+                    w = w[da.asarray(mask)]
+                else:
+                    w = w[mask]
 
         if ndim == 1:
             xmin, xmax = range[0]
@@ -1783,6 +1792,16 @@ class Data(BaseCartesianData):
             y = y[keep]
         if w is not None:
             w = w[keep]
+
+        # For now, compute dask arrays at this point. In future we could delegate
+        # the histogram calculation to dask.
+        if DASK_INSTALLED:
+            if isinstance(x, da.Array):
+                x = x.compute()
+            if ndim > 1 and isinstance(y, da.Array):
+                x = x.compute()
+            if isinstance(w, da.Array):
+                w = w.compute()
 
         if len(x) == 0:
             return np.zeros(bins)
