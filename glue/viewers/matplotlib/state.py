@@ -37,7 +37,8 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
 
 VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']
 
-VALID_LOCATIONS = ['best (draggable)', 'best',
+
+VALID_LOCATIONS = ['draggable', 'best',
                    'upper right', 'upper left',
                    'lower left', 'lower right',
                    'center left', 'center right',
@@ -49,7 +50,7 @@ class MatplotlibLegendState(State):
 
     visible = DeferredDrawCallbackProperty(False, docstring="Whether to show the legend")
 
-    loc_and_drag = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
+    location = DeferredDrawSelectionCallbackProperty(0, docstring="The location of the legend in the axis")
 
     title = DeferredDrawCallbackProperty("", docstring='The title of the legend')
     fontsize = DeferredDrawCallbackProperty(10, docstring='The font size of the title')
@@ -60,7 +61,7 @@ class MatplotlibLegendState(State):
     text_color = DeferredDrawCallbackProperty("#000000", docstring='Text color of the legend')
 
     def __init__(self, *args, **kwargs):
-        MatplotlibLegendState.loc_and_drag.set_choices(self, VALID_LOCATIONS)
+        MatplotlibLegendState.location.set_choices(self, VALID_LOCATIONS)
 
         super().__init__(*args, **kwargs)
         self._set_color_choices()
@@ -76,19 +77,18 @@ class MatplotlibLegendState(State):
         if self.show_edge:
             return to_rgba(self.text_color, self.alpha)
         else:
-            return 'none'
+            return None
 
     @property
     def draggable(self):
-        return self.loc_and_drag.endswith('(draggable)')
+        return self.location == 'draggable'
 
     @property
-    def location(self):
-        if self.loc_and_drag.endswith('(draggable)'):
-            return self.loc_and_drag[:-12]
+    def mpl_location(self):
+        if self.location == 'draggable':
+            return 'best'
         else:
             return self.loc_and_drag
-
 
     def update_axes_settings_from(self, state):
         self.visible = state.show_legend
@@ -99,6 +99,7 @@ class MatplotlibLegendState(State):
         self.frame_color = state.frame_color
         self.show_edge = state.show_edge
         self.text_color = state.text_color
+
 
 class MatplotlibDataViewerState(ViewerState):
     """
@@ -131,7 +132,6 @@ class MatplotlibDataViewerState(ViewerState):
     x_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the x-axis tick labels')
     y_ticklabel_size = DeferredDrawCallbackProperty(8, docstring='Size of the y-axis tick labels')
 
-
     def __init__(self, *args, **kwargs):
 
         self._axes_aspect_ratio = None
@@ -147,7 +147,6 @@ class MatplotlibDataViewerState(ViewerState):
         self.add_callback('x_max', self._adjust_limits_aspect_x, priority=10000)
         self.add_callback('y_min', self._adjust_limits_aspect_y, priority=10000)
         self.add_callback('y_max', self._adjust_limits_aspect_y, priority=10000)
-
 
     def _set_axes_aspect_ratio(self, value):
         """

@@ -3,7 +3,6 @@ from textwrap import indent
 import numpy as np
 
 from matplotlib.patches import Rectangle
-from matplotlib.colors import to_rgba
 from matplotlib.artist import setp as msetp
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
@@ -120,7 +119,7 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
         self.state.legend.add_callback('visible', self.draw_legend)
-        self.state.legend.add_callback('loc_and_drag', self.draw_legend)
+        self.state.legend.add_callback('location', self.draw_legend)
         self.state.legend.add_callback('alpha', self.update_legend)
         self.state.legend.add_callback('title', self.draw_legend)
         self.state.legend.add_callback('fontsize', self.draw_legend)
@@ -193,14 +192,13 @@ class MatplotlibViewerMixin(object):
     def draw_legend(self, *args):
         if self.state.legend.visible:
             handles, labels, handler_map = self.get_handles_legend()
-            kwargs = dict(loc=self.state.legend.location,
+            kwargs = dict(loc=self.state.legend.mpl_location,
                           title=self.state.legend.title,
                           title_fontsize=self.state.legend.fontsize,
                           fontsize=self.state.legend.fontsize)
             if handler_map is not None:
                 kwargs["handler_map"] = handler_map
-            legend = self.axes.legend(
-                    handles, labels, **kwargs)
+            legend = self.axes.legend(handles, labels, **kwargs)
             self._update_legend_visual(legend)
             legend.set_draggable(self.state.legend.draggable)
         else:
@@ -318,7 +316,7 @@ class MatplotlibViewerMixin(object):
 
     def _script_legend(self):
         state_dict = self.state.legend.as_dict()
-        state_dict['location'] = self.state.legend.location
+        state_dict['location'] = self.state.legend.mpl_location
         state_dict['edge_color'] = self.state.legend.edge_color
         legend_str = SCRIPT_LEGEND.format(**state_dict)
         if not self.state.legend.visible:
