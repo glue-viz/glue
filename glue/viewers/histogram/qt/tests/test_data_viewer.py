@@ -10,8 +10,8 @@ from numpy.testing import assert_equal, assert_allclose
 
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
-from glue.core.roi import XRangeROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState
+from glue.core.roi import XRangeROI, RectangularROI
+from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, RoiSubsetState
 from glue import core
 from glue.app.qt import GlueApplication
 from glue.core.component_id import ComponentID
@@ -685,3 +685,50 @@ class TestHistogramViewer(object):
         assert labels[1] == 'test'
 
         assert to_hex(handles[1].get_facecolor()) == viewer_state.layers[1].color
+
+
+def test_with_dask_array():
+
+    # Regression test for a bug that caused the histogram to now work when
+    # making spatial selections on a cube represented as a dask array
+
+    da = pytest.importorskip('dask.array')
+
+    data = Data(x=da.arange(1000).reshape((10, 10, 10)), label='d1')
+
+    app = GlueApplication()
+    session = app.session
+    hub = session.hub
+
+    data_collection = session.data_collection
+    data_collection.append(data)
+
+    viewer = app.new_data_viewer(HistogramViewer)
+
+    viewer.add_data(data)
+
+    viewer.state.hist_n_bin = 1
+
+    process_events(0.5)
+
+    assert len(viewer.layers) == 1
+    assert viewer.layers[0].enabled
+
+    zid, yid, xid = data.pixel_component_ids
+
+    subset_state = RoiSubsetState(xatt=xid, yatt=yid,
+                                  roi=RectangularROI(xmin=3.5, xmax=5.5, ymin=3.7, ymax=7.5))
+
+    data_collection.new_subset_group(subset_state=subset_state, label='subset')
+
+    assert len(viewer.layers) == 2
+    assert viewer.layers[0].enabled
+    assert viewer.layers[1].enabled
+
+    assert viewer.state.layers[0].histogram[1][0] == 1000.
+    assert viewer.state.layers[1].histogram[1][0] == 80.
+
+    viewer.close()
+    viewer = None
+    app.close()
+    app = None
