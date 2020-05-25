@@ -88,7 +88,7 @@ class MatplotlibLegendState(State):
         if self.location == 'draggable':
             return 'best'
         else:
-            return self.loc_and_drag
+            return self.location
 
     def update_axes_settings_from(self, state):
         self.visible = state.show_legend
