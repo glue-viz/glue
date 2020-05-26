@@ -4,6 +4,10 @@ Full changelog
 v0.16.0 (unreleased)
 --------------------
 
+* Add legend for matplotlib viewers (in qt and in export scripts) [#2097]
+
+* Add new registry to apply in-place patches to the session file [#2127]
+
 * Initial support for dask arrays. [#2137]
 
 * Don't sync color and transparency of image layers by default. [#2116]
