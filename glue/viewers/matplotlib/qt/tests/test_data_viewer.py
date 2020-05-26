@@ -625,7 +625,7 @@ class BaseTestMatplotlibDataViewer(object):
         # no legend by default
         assert self.viewer.axes.get_legend() is None
 
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
 
         # a legend appears
         legend = self.viewer.axes.get_legend()
@@ -644,7 +644,7 @@ class BaseTestMatplotlibDataViewer(object):
     # The next set of test check that the legend does not create extra draws !
     def test_legend_single_draw(self):
         # Make sure that the number of draws is kept to a minimum
-        self.viewer.show_legend = True
+        self.viewer.state.legend.visible = True
         self.init_draw_count()
         self.init_subset()
         assert self.draw_count == 0
@@ -652,7 +652,7 @@ class BaseTestMatplotlibDataViewer(object):
         assert self.draw_count == 1
 
     def test_legend_numerical_data_changed(self):
-        self.viewer.show_legend = True
+        self.viewer.state.legend.visible = True
         self.init_draw_count()
         self.init_subset()
         assert self.draw_count == 0

@@ -33,7 +33,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_visual_legend(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].color = 'blue'
         self.viewer.state.layers[0].alpha = 0.5
         self.assert_same(tmpdir)
@@ -51,7 +51,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_subset_legend(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.data_collection.new_subset_group('mysubset', self.data.id['a'] > 0.5)
         self.assert_same(tmpdir)
 

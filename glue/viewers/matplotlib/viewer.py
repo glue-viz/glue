@@ -3,6 +3,7 @@ from textwrap import indent
 import numpy as np
 
 from matplotlib.patches import Rectangle
+from matplotlib.artist import setp as msetp
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from echo import delay_callback
@@ -52,11 +53,13 @@ plt.close(fig)
 SCRIPT_LEGEND = """
 ax.legend(legend_handles, legend_labels,
     handler_map=legend_handler_dict,
-    loc='{legend_location}',            # location
-    framealpha={legend_alpha:.2f},      # opacity of the frame
-    title='{legend_title}',             # title of the legend
-    title_fontsize={legend_fontsize},   # fontsize of the title
-    fontsize={legend_fontsize}          # fontsize of the labels
+    loc='{location}',            # location
+    framealpha={alpha:.2f},      # opacity of the frame
+    title='{title}',             # title of the legend
+    title_fontsize={fontsize},   # fontsize of the title
+    fontsize={fontsize},          # fontsize of the labels
+    facecolor='{frame_color}',
+    edgecolor={edge_color}
 )
 """.strip()
 
@@ -115,11 +118,14 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
 
-        self.state.add_callback('show_legend', self.draw_legend)
-        self.state.add_callback('legend_location', self.draw_legend)
-        self.state.add_callback('legend_alpha', self.draw_legend)
-        self.state.add_callback('legend_title', self.draw_legend)
-        self.state.add_callback('legend_fontsize', self.draw_legend)
+        self.state.legend.add_callback('visible', self.draw_legend)
+        self.state.legend.add_callback('location', self.draw_legend)
+        self.state.legend.add_callback('alpha', self.update_legend)
+        self.state.legend.add_callback('title', self.draw_legend)
+        self.state.legend.add_callback('fontsize', self.draw_legend)
+        self.state.legend.add_callback('frame_color', self.update_legend)
+        self.state.legend.add_callback('show_edge', self.update_legend)
+        self.state.legend.add_callback('text_color', self.update_legend)
 
         self.update_x_axislabel()
         self.update_y_axislabel()
@@ -153,6 +159,7 @@ class MatplotlibViewerMixin(object):
         self.redraw()
 
     def get_handles_legend(self):
+        """Collect the handles and labels from each layer artist."""
         handles = []
         labels = []
         handler_dict = {}
@@ -165,21 +172,35 @@ class MatplotlibViewerMixin(object):
                     handler_dict[handle] = handler
         return handles, labels, handler_dict
 
+    def _update_legend_visual(self, legend):
+        """Update the legend colors and opacity. No redraw."""
+        msetp(legend.get_title(), color=self.state.legend.text_color)
+        msetp(legend.get_texts(), color=self.state.legend.text_color)
+        msetp(legend.get_frame(),
+              alpha=self.state.legend.alpha,
+              facecolor=self.state.legend.frame_color,
+              edgecolor=self.state.legend.edge_color
+              )
+
+    def update_legend(self, *args):
+        """Update the legend colors and opacity."""
+        legend = self.axes.get_legend()
+        if legend is not None:
+            self._update_legend_visual(legend)
+        self.redraw()
+
     def draw_legend(self, *args):
-        if self.state.show_legend:
+        if self.state.legend.visible:
             handles, labels, handler_map = self.get_handles_legend()
+            kwargs = dict(loc=self.state.legend.mpl_location,
+                          title=self.state.legend.title,
+                          title_fontsize=self.state.legend.fontsize,
+                          fontsize=self.state.legend.fontsize)
             if handler_map is not None:
-                self.axes.legend(
-                    handles, labels, handler_map=handler_map,
-                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                    fontsize=self.state.legend_fontsize)
-            else:
-                self.axes.legend(
-                    handles, labels,
-                    loc=self.state.legend_location, framealpha=self.state.legend_alpha,
-                    title=self.state.legend_title, title_fontsize=self.state.legend_fontsize,
-                    fontsize=self.state.legend_fontsize)
+                kwargs["handler_map"] = handler_map
+            legend = self.axes.legend(handles, labels, **kwargs)
+            self._update_legend_visual(legend)
+            legend.set_draggable(self.state.legend.draggable)
         else:
             legend = self.axes.get_legend()
             if legend is not None:
@@ -294,8 +315,10 @@ class MatplotlibViewerMixin(object):
         return [], SCRIPT_FOOTER.format(**state_dict)
 
     def _script_legend(self):
-        state_dict = self.state.as_dict()
+        state_dict = self.state.legend.as_dict()
+        state_dict['location'] = self.state.legend.mpl_location
+        state_dict['edge_color'] = self.state.legend.edge_color
         legend_str = SCRIPT_LEGEND.format(**state_dict)
-        if not self.state.show_legend:
+        if not self.state.legend.visible:
             legend_str = indent(legend_str, "# ")
         return [], legend_str

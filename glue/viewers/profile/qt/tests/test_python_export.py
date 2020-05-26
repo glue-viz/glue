@@ -31,7 +31,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_simple_legend(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.assert_same(tmpdir)
 
     def test_color(self, tmpdir):
@@ -72,7 +72,7 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_subset_legend(self, tmpdir):
-        self.viewer.state.show_legend = True
+        self.viewer.state.legend.visible = True
         self.viewer.state.function = 'mean'
         self.viewer.state.layers[0].linewidth = 7.25
         self.data_collection.new_subset_group('mysubset', self.data.id['x'] > 0.25)

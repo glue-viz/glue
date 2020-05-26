@@ -681,7 +681,7 @@ class TestScatterViewer(object):
         viewer_state = self.viewer.state
 
         self.viewer.add_data(self.data)
-        self.viewer.state.show_legend = True
+        viewer_state.legend.visible = True
 
         handles, labels, handler_dict = self.viewer.get_handles_legend()
         assert len(handles) == 1
