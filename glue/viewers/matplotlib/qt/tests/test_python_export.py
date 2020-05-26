@@ -52,5 +52,5 @@ class BaseTestExportPython:
             pytest.fail(msg, pytrace=False)
 
     def test_hide_axes(self, tmpdir):
-        self.viewer.state.show_axis = False
+        self.viewer.state.show_axes = False
         self.assert_same(tmpdir)
