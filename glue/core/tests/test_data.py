@@ -900,9 +900,6 @@ def test_compute_statistic_efficient():
     # region from the data based on the smallest array that covers a given
     # subset state.
 
-    # TODO: add a way to check what data has actually been accessed to test
-    # the efficiency of the algorithm.
-
     array = np.ones(10 * 20 * 30 * 40).reshape((10, 20, 40, 30))
     array[3:5, 6:14, :, 10:21:2] += 1
 
@@ -918,7 +915,7 @@ def test_compute_statistic_efficient():
 
     subset_state = data.id['y'] > 1.5
 
-    # First test withoiut view
+    # First test without view
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state)
     assert_allclose(result, 7680)
     assert data.elements_accessed == 7040
@@ -967,6 +964,31 @@ def test_compute_statistic_efficient():
                                     view=(slice(0, 5), slice(3, 10), 20, slice(None)))
     assert_allclose(result, 96)
     assert data.elements_accessed == 88
+
+
+def test_compute_statistic_shape():
+
+    # The compute_statistic method has some code that helps it be more efficient
+    # with subsets, but we need to make sure that the final result has the same
+    # shape as if we didn't have those optimizations.
+
+    array = np.ones(10 * 20 * 30).reshape((10, 20, 30))
+    array[3:5, 6:14, 10:21] += 1
+
+    data = Data(x=array, y=array)
+
+    subset_state = data.id['y'] > 1.5
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state)
+    assert np.isscalar(result)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    axis=1)
+    assert result.shape == (10, 30)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
+                                    axis=(0, 2))
+    assert result.shape == (20,)
 
 
 def test_compute_histogram_log():
