@@ -1660,6 +1660,10 @@ class Data(BaseCartesianData):
 
                 return result
 
+        # We initialize subarray_slices here because if it is set at any point
+        # later we will need to pad out the result of compute_statistic.
+        subarray_slices = None
+
         if subset_state:
             if isinstance(subset_state, SliceSubsetState) and view is None:
                 mask = None
@@ -1780,8 +1784,24 @@ class Data(BaseCartesianData):
                 if mask is not None:
                     mask = mask.ravel(order="K")[self._random_subset_indices[1]]
 
-        return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
-                                 positive=positive, percentile=percentile)
+        result = compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
+                                   positive=positive, percentile=percentile)
+
+        if subarray_slices is None or axis is None:
+            return result
+        else:
+            # Since subarray_slices was set above, we need to determine the
+            # shape of the full results had subarray_slices not been set,
+            # then insert the result into it. If axis is None, then we don't
+            # need to do anything, and this is covered by the first clause
+            # of the if statement above.
+            if not isinstance(axis, tuple):
+                axis = (axis,)
+            full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
+            full_result = np.zeros(full_shape) * np.nan
+            result_slices = [subarray_slices[idim] for idim in range(self.ndim) if idim not in axis]
+            full_result[result_slices] = result
+            return full_result
 
     def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
