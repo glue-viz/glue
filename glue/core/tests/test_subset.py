@@ -235,6 +235,30 @@ class TestSubsetStateCombinations(object):
         assert isinstance(s3, XorState)
 
 
+class WatchedOrState(OrState):
+
+    str_calls = 0
+    tomask_calls = 0
+    copy_calls = 0
+
+    def __str__(self):
+        WatchedOrState.str_calls += 1
+        return super(WatchedOrState, self).__str__()
+
+    def copy(self):
+        WatchedOrState.copy_calls += 1
+        return  super(WatchedOrState, self).copy()
+
+    def to_mask(self, data, view=None):
+        WatchedOrState.tomask_calls += 1
+        return super(WatchedOrState, self).to_mask(data, view)
+
+    def reset_counts():
+        WatchedOrState.str_calls = 0
+        WatchedOrState.tomask_calls = 0
+        WatchedOrState.copy_calls = 0
+
+
 class TestCompositeSubsetStates(object):
 
     class DummyState(SubsetState):
@@ -247,6 +271,7 @@ class TestCompositeSubsetStates(object):
 
         def copy(self):
             return TestCompositeSubsetStates.DummyState(self._mask)
+
 
     def setup_method(self, method):
         self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
@@ -283,6 +308,22 @@ class TestCompositeSubsetStates(object):
         answer = s4.to_mask(self.data)
         expected = np.array([False, True, False, False])
         np.testing.assert_array_equal(answer, expected)
+
+    def test_not_recursion(self):
+        state = WatchedOrState(self.sub1, self.sub2)
+        for i in range(10):
+            state = WatchedOrState(state, WatchedOrState(self.sub2, self.sub1))
+
+        WatchedOrState.reset_counts()
+
+        mask = state.to_mask(self.data)
+        assert WatchedOrState.tomask_calls == 1
+
+        string = str(state)
+        assert WatchedOrState.str_calls == 1
+
+        copy = state.copy()
+        assert WatchedOrState.copy_calls == 1
 
 
 class TestElementSubsetState(object):
