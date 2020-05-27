@@ -247,7 +247,7 @@ class WatchedOrState(OrState):
 
     def copy(self):
         WatchedOrState.copy_calls += 1
-        return  super(WatchedOrState, self).copy()
+        return super(WatchedOrState, self).copy()
 
     def to_mask(self, data, view=None):
         WatchedOrState.tomask_calls += 1
@@ -271,7 +271,6 @@ class TestCompositeSubsetStates(object):
 
         def copy(self):
             return TestCompositeSubsetStates.DummyState(self._mask)
-
 
     def setup_method(self, method):
         self.sub1 = self.DummyState(np.array([1, 1, 0, 0], dtype='bool'))
