@@ -18,7 +18,11 @@ def _ensure_mpl_nav(viewer):
 def _cleanup_mpl_nav(viewer):
     if getattr(viewer, '_mpl_nav', None) is not None:
         viewer._mpl_nav.setParent(None)
-        viewer._mpl_nav.parent = None
+        try:
+            viewer._mpl_nav.parent = None
+        except AttributeError:
+            pass
+        viewer._mpl_nav = None
 
 
 class MatplotlibTool(Tool):
