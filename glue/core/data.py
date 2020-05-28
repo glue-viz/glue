@@ -1603,6 +1603,11 @@ class Data(BaseCartesianData):
 
         # TODO: generalize chunking to more types of axis
 
+        # In recent version of Numpy, using lists is not the same as using
+        # tuples, so we make sure we always use tuples to avoid confusion.
+        if isinstance(view, list):
+            view = tuple(view)
+
         if (view is None and
                 isinstance(axis, tuple) and
                 len(axis) > 0 and
@@ -1655,14 +1660,95 @@ class Data(BaseCartesianData):
 
                 return result
 
+        # We initialize subarray_slices here because if it is set at any point
+        # later we will need to pad out the result of compute_statistic.
+        subarray_slices = None
+
         if subset_state:
             if isinstance(subset_state, SliceSubsetState) and view is None:
                 mask = None
                 data = subset_state.to_array(self, cid)
             else:
                 mask = subset_state.to_mask(self, view)
-                if np.any(unbroadcast(mask)):
+
+                unbroadcast_mask = unbroadcast(mask)
+
+                if np.any(unbroadcast_mask):
+
+                    # Find minimal subarray containing the masked area. At this
+                    # point we've already accessed all the values in unbroadcast_mask
+                    # so the calls to .any() below should not have a significant
+                    # performance impact.
+                    subarray_slices = []
+                    for idim in range(mask.ndim):
+
+                        # Check whether any values should be included for each
+                        # element along the axis being considered. For efficiency
+                        # we use the unbroadcast mask here.
+                        collapse_axes = tuple(index for index in range(mask.ndim) if index != idim)
+                        valid = unbroadcast_mask.any(axis=collapse_axes)
+
+                        # Since we just used the unbroadcast mask, we need to
+                        # broadcast it back to the original mask shape.
+                        valid = np.broadcast_to(valid, mask.shape[idim:idim + 1])
+
+                        # We now find the first and last value for which the mask
+                        # is set, to determine the slice of the minimal subarray
+                        indices = np.where(valid)[0]
+                        subarray_slices.append(slice(np.min(indices), np.max(indices) + 1))
+
+                    subarray_slices = tuple(subarray_slices)
+
+                    # We now need to determine the view for which to extract the
+                    # data, which essentially needs to combine the original view
+                    # which was used to compute the mask, and the new view which
+                    # extracts a subset of this mask.
+
+                    # For some views we don't support this, so we keep track of
+                    # whether we can actually use subarray_slices above
+                    use_subarray_slices = True
+
+                    if view is None or view is Ellipsis:
+                        # In the case where view is None, things are pretty
+                        # simple since we just use subarray_slices to view the data
+                        view = subarray_slices
+                    elif isinstance(view, (list, tuple)):
+                        # At this point view is a list or a tuple, which could
+                        # contain either scalar values or slice objects. In
+                        # addition, it may contain fewer elements than are needed
+                        # to slice the data, so we need to take this into account.
+                        mask_idim = 0
+                        new_view = []
+                        for idim in range(self.ndim):
+                            if idim >= len(view):
+                                new_view.append(subarray_slices[mask_idim])
+                                mask_idim += 1
+                            elif isinstance(view[idim], slice):
+                                if view[idim].step is not None and view[idim].step != 1:
+                                    # This makes things more complicated, so bail out at this point
+                                    use_subarray_slices = False
+                                    new_view = view
+                                    break
+                                view_start, _, _ = view[idim].indices(self.shape[idim])
+                                sub_start, sub_stop, _ = subarray_slices[mask_idim].indices(mask.shape[mask_idim])
+                                new_view.append(slice(view_start + sub_start,
+                                                      view_start + sub_stop))
+                                mask_idim += 1
+                            else:
+                                new_view.append(view[idim])
+                        view = tuple(new_view)
+                    else:  # pragma: nocover
+                        # This should probably never happen, but just in case!
+                        use_subarray_slices = False
+
+                    if use_subarray_slices:
+                        # Extract the mask in the subarray region. The view will
+                        # then also take into account the subarray slices in this
+                        # case.
+                        mask = mask[subarray_slices]
+
                     data = self.get_data(cid, view)
+
                 else:
                     if axis is None:
                         return np.nan
@@ -1698,8 +1784,24 @@ class Data(BaseCartesianData):
                 if mask is not None:
                     mask = mask.ravel(order="K")[self._random_subset_indices[1]]
 
-        return compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
-                                 positive=positive, percentile=percentile)
+        result = compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
+                                   positive=positive, percentile=percentile)
+
+        if subarray_slices is None or axis is None:
+            return result
+        else:
+            # Since subarray_slices was set above, we need to determine the
+            # shape of the full results had subarray_slices not been set,
+            # then insert the result into it. If axis is None, then we don't
+            # need to do anything, and this is covered by the first clause
+            # of the if statement above.
+            if not isinstance(axis, tuple):
+                axis = (axis,)
+            full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
+            full_result = np.zeros(full_shape) * np.nan
+            result_slices = [subarray_slices[idim] for idim in range(self.ndim) if idim not in axis]
+            full_result[result_slices] = result
+            return full_result
 
     def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
         """
