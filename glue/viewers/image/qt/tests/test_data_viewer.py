@@ -5,6 +5,7 @@ import gc
 from collections import Counter
 
 import pytest
+from unittest.mock import MagicMock
 
 from astropy.wcs import WCS
 
@@ -739,6 +740,41 @@ class TestImageViewer(object):
         assert labels[1] == 'test'
 
         assert to_hex(handles[1].get_facecolor()) == viewer_state.layers[1].color
+
+    def test_recalculate_wcs(self):
+
+        #Test to make sure we skip recalculating WCS when appropriate
+        
+        mock = MagicMock(wraps=self.viewer.axes.reset_wcs)
+        self.viewer.axes.reset_wcs = mock
+
+        coords = self.hypercube_wcs.coords
+        coords.wcs.crpix = [1.2, 2, 2.25 ,1.9]
+        coords.wcs.cdelt = np.array([-6.7, 6.7, 5.1, -4.6])
+        coords.wcs.crval = [0, -90, 10, 40]
+        coords.wcs.ctype = ["RA---SFL", "DEC--SFL", "VOPT", "ZOPT"]
+        coords.wcs.specsys = "LSRK"
+        self.viewer.add_data(self.hypercube_wcs)
+        self.viewer.state.x_att = self.hypercube_wcs.pixel_component_ids[0]
+        self.viewer.state.y_att = self.hypercube_wcs.pixel_component_ids[3]
+        self.viewer.state.slices = [0, 0, 0, 0]
+
+        mock.reset_mock()
+        self.viewer.state.slices = [0, 2, 3, 0]
+        mock.assert_called()
+
+        mock.reset_mock()
+        self.viewer.state.show_axes = False
+        self.viewer.state.slices = [0, 1, 0, 0]
+        mock.assert_not_called()
+
+        mock.reset_mock()
+        self.viewer.state.x_att = self.hypercube_wcs.pixel_component_ids[1]
+        mock.assert_called()
+
+        mock.reset_mock()
+        self.viewer.state.slices = [1, 1, 0, 0]
+        mock.assert_not_called()
 
 
 class TestSessions(object):
