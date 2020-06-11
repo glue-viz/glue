@@ -85,3 +85,7 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.y_att = self.data.pixel_component_ids[1]
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
+
+    def test_hide_axes(self, tmpdir):
+        self.viewer.state.aspect = 'auto'
+        super().test_hide_axes(tmpdir)
