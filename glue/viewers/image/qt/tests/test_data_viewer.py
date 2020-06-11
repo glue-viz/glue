@@ -743,13 +743,13 @@ class TestImageViewer(object):
 
     def test_recalculate_wcs(self):
 
-        #Test to make sure we skip recalculating WCS when appropriate
-        
+        # Test to make sure we skip recalculating WCS when appropriate
+
         mock = MagicMock(wraps=self.viewer.axes.reset_wcs)
         self.viewer.axes.reset_wcs = mock
 
         coords = self.hypercube_wcs.coords
-        coords.wcs.crpix = [1.2, 2, 2.25 ,1.9]
+        coords.wcs.crpix = [1.2, 2, 2.25, 1.9]
         coords.wcs.cdelt = np.array([-6.7, 6.7, 5.1, -4.6])
         coords.wcs.crval = [0, -90, 10, 40]
         coords.wcs.ctype = ["RA---SFL", "DEC--SFL", "VOPT", "ZOPT"]

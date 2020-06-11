@@ -75,7 +75,6 @@ class MatplotlibImageMixin(object):
             self._changing_slice_requires_wcs_update = False
         super(MatplotlibImageMixin, self).update_axes_visibility(event)
 
-
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:
@@ -97,7 +96,6 @@ class MatplotlibImageMixin(object):
     def _on_slice_change(self, event=None):
         if self._changing_slice_requires_wcs_update:
             self._set_wcs(event=event, relim=False)
-
 
     def _set_wcs(self, event=None, relim=True):
 

@@ -697,7 +697,3 @@ class BaseTestMatplotlibDataViewer(object):
         assert state.x_ticklabel_size == 5
         assert state.y_ticklabel_size == 6
         assert not state.show_axes
-
-
-
-
