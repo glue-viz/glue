@@ -618,7 +618,6 @@ class BaseTestMatplotlibDataViewer(object):
 
         self.data.update_values_from_data(data)
 
-<<<<<<< HEAD
     def test_legend(self):
         viewer_state = self.viewer.state
 
