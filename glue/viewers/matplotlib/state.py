@@ -91,8 +91,8 @@ class MatplotlibLegendState(State):
             return self.location
 
     def update_axes_settings_from(self, state):
-        self.visible = state.show_legend
-        self.loc_and_drag = state.loc_and_drag
+        self.visible = state.visible
+        self.location = state.location
         self.alpha = state.alpha
         self.title = state.title
         self.fontsize = state.fontsize

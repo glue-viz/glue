@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings, DEFAULT_MARGIN
-from glue.external.echo import delay_callback
+from echo import delay_callback
 from glue.utils import mpl_to_datetime64
 from glue.utils.matplotlib import freeze_margins
 
