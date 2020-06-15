@@ -9,6 +9,7 @@ from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPy
 
 from astropy.wcs import WCS
 
+
 class TestExportPython(BaseTestExportPython):
 
     def setup_method(self, method):
