@@ -226,7 +226,7 @@ class MatplotlibImageMixin(object):
         ref_coords = self.state.reference_data.coords
 
         if hasattr(ref_coords, 'wcs'):
-            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords.wcs)\n".format(self.state.wcsaxes_slice)
+            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords)\n".format(self.state.wcsaxes_slice)
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             raise NotImplementedError()
         else:

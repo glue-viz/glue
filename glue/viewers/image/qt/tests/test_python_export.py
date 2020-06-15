@@ -7,6 +7,7 @@ from glue.app.qt.application import GlueApplication
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython
 
+from astropy.wcs import WCS
 
 class TestExportPython(BaseTestExportPython):
 
@@ -89,3 +90,8 @@ class TestExportPython(BaseTestExportPython):
     def test_hide_axes(self, tmpdir):
         self.viewer.state.aspect = 'auto'
         super().test_hide_axes(tmpdir)
+
+    def test_wcs_image(self, tmpdir):
+        coords = WCS(naxis=3)
+        wcs_data = Data(self.data.data)
+        self.assert_same(tmpdir)
