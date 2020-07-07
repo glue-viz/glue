@@ -90,6 +90,10 @@ class TestExportPython(BaseTestExportPython):
 
     def test_hide_axes(self, tmpdir):
         self.viewer.state.aspect = 'auto'
+        self.viewer.state.x_min = -5
+        self.viewer.state.y_min = -3
+        self.viewer.state.x_max = 30
+        self.viewer.state.y_max = 55
         super().test_hide_axes(tmpdir)
 
     def test_wcs_image(self, tmpdir):
