@@ -1,6 +1,7 @@
+import pytest
 import numpy as np
-
 from astropy.wcs import WCS
+
 from glue.core import Data, DataCollection
 from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink, WCSLink
 from glue.core.link_helpers import MultiLink
@@ -31,32 +32,6 @@ def test_wcs_autolink_emptywcs():
     data2 = Data()
     data2.coords = WCS(naxis=1)
     data2['x'] = [4, 5, 6]
-
-    dc = DataCollection([data1, data2])
-    links = wcs_autolink(dc)
-    assert len(links) == 0
-
-
-def test_wcs_autolink_dimensional_mismatch():
-
-    # No links should be found because the WCS don't actually have well defined
-    # physical types.
-
-    wcs1 = WCS(naxis=1)
-    wcs1.wcs.ctype = ['FREQ']
-    wcs1.wcs.set()
-
-    data1 = Data()
-    data1.coords = wcs1
-    data1['x'] = [1, 2, 3]
-
-    wcs2 = WCS(naxis=3)
-    wcs2.wcs.ctype = 'DEC--TAN', 'FREQ', 'RA---TAN'
-    wcs2.wcs.set()
-
-    data2 = Data()
-    data2.coords = wcs2
-    data2['x'] = np.ones((2, 3, 4))
 
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
@@ -240,3 +215,266 @@ def test_celestial_with_unknown_axes():
     assert link[2].get_from_ids() == [px2, pz2]
     assert link[3].get_to_id() == py1
     assert link[3].get_from_ids() == [px2, pz2]
+
+
+def test_wcs_autolinking_of_2d_cube_with_temporal_and_spectral_axes_case_1():
+    """
+    A test to confirm that two 2D data cubes with matching number of dimensions
+    where the first is temporal and the next one spectral (vacuum wavelength in this
+    case) is indeed autolinked.
+    """
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'TIME', 'WAVE'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+    py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'TAI', 'WAVE'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+    py2, px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 4
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [px1, py1]
+    assert link[1].get_to_id() == py2
+    assert link[1].get_from_ids() == [px1, py1]
+    assert link[2].get_to_id() == px1
+    assert link[2].get_from_ids() == [px2, py2]
+    assert link[3].get_to_id() == py1
+    assert link[3].get_from_ids() == [px2, py2]
+
+
+def test_wcs_autolinking_of_2d_cube_with_temporal_and_spectral_axes_case_2():
+    """
+    A test to confirm that two 2D data cubes with matching number of dimensions
+    where the one is spectral (air wavelength in this case) and the other one
+    temporal is indeed autolinked, to test that the order does not matter.
+    """
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'AWAV', 'TIME'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+    py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'TIME', 'AWAV'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+    py2, px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 4
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [px1, py1]
+    assert link[1].get_to_id() == py2
+    assert link[1].get_from_ids() == [px1, py1]
+    assert link[2].get_to_id() == px1
+    assert link[2].get_from_ids() == [px2, py2]
+    assert link[3].get_to_id() == py1
+    assert link[3].get_from_ids() == [px2, py2]
+
+
+def test_has_celestial_with_time_and_spectral_axes():
+    """
+    To test the case in which we have two data cubes with unequal
+    number of dimensions, but both have celestial axes.
+    """
+
+    wcs1 = WCS(naxis=4)
+    wcs1.wcs.ctype = 'WAVE', 'HPLT-TAN', 'HPLN-TAN', 'TIME'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3, 4, 5))
+    pw1, pz1, py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=3)
+    wcs2.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'TIME'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3, 4))
+    pz2, py2, px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 6
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [py1, pz1, pw1]
+    assert link[1].get_to_id() == py2
+    assert link[1].get_from_ids() == [py1, pz1, pw1]
+    assert link[2].get_to_id() == pz2
+    assert link[2].get_from_ids() == [py1, pz1, pw1]
+    assert link[3].get_to_id() == py1
+    assert link[3].get_from_ids() == [px2, py2, pz2]
+    assert link[4].get_to_id() == pz1
+    assert link[4].get_from_ids() == [px2, py2, pz2]
+    assert link[5].get_to_id() == pw1
+    assert link[5].get_from_ids() == [px2, py2, pz2]
+
+
+@pytest.mark.xfail
+def test_2d_and_1d_data_cubes_with_no_celestial_axes():
+    """
+    Test the case where we have one 2D dataset with WAVE and TIME
+    as CTYPEs and a 1D dataset with WAVE as the CTYPE.
+    """
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'TIME', 'WAVE'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+    py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=1)
+    wcs2.wcs.ctype = ['WAVE']
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones(3)
+    px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 2
+    assert ' '.join(str(link[0].get_to_id()).split()[:2]) == ' '.join(str(py1).split()[:2])
+    assert ' '.join(str(link[0].get_from_ids()).split()[:2]) == ' '.join(str(px2).split()[:2])
+
+
+@pytest.mark.xfail
+def test_link_of_spectral_axes_of_different_physical_types():
+    """
+    To check that there is no auto-link of spectral axes of two different physical types, e.g.
+    between FREQ and WAVE.
+    """
+
+    wcs1 = WCS(naxis=1)
+    wcs1.wcs.ctype = ['FREQ']
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones(2)
+    px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=1)
+    wcs2.wcs.ctype = ['WAVE']
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones(2)
+    px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 2
+    assert link[0].get_to_id() == str(px1[0])
+    assert str(link[0].get_from_ids()) == str(px2)
+    assert link[1].get_to_id() == str(px2)
+    assert str(link[1].get_from_ids()) == str(px1)
+
+
+def test_cube_has_celestial_and_cube_without_celestial_axes_1():
+    """
+    To test that there should be a link between a 3D dataset with celestial axes
+    and a 2D dataset with no celestial axes (variant 1).
+    """
+
+    wcs1 = WCS(naxis=3)
+    wcs1.wcs.ctype = 'RA---TAN', 'FREQ', 'DEC--TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3, 4))
+    pz1, py1, px1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'FREQ', 'TIME'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((4, 5))
+    py2, px2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert isinstance(link, MultiLink)
+    assert len(link) == 2
+    assert link[0].get_to_id() == px2
+    assert link[0].get_from_ids() == [py1]
+    assert link[1].get_to_id() == py1
+    assert link[1].get_from_ids() == [px2]
+
+
+@pytest.mark.xfail
+def test_cube_has_celestial_and_cube_without_celestial_axes_2():
+    """
+    To test that there should be a link between a 3D dataset with celestial axes
+    and a 2D dataset with no celestial axes (variant 2).
+    TODO: To modify code base so that the FREQ axis would be linked up with the WAVE axis.
+    """
+
+    wcs1 = WCS(naxis=3)
+    wcs1.wcs.ctype = 'RA---TAN', 'FREQ', 'DEC--TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3, 4))
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'WAVE', 'TIME'
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((4, 5))
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
