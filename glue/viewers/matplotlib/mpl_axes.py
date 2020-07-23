@@ -34,7 +34,7 @@ def update_appearance_from_settings(axes):
     set_foreground_color(axes, settings.FOREGROUND_COLOR)
 
 
-def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
+def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None, projection=None):
 
     if (axes is not None and figure is not None and
             axes.figure is not figure):
@@ -55,7 +55,7 @@ def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None):
             _figure.add_axes(_axes)
         else:
             if axes_factory is None:
-                _axes = _figure.add_subplot(1, 1, 1)
+                _axes = _figure.add_subplot(1, 1, 1, projection=projection)
             else:
                 _axes = axes_factory(_figure)
 

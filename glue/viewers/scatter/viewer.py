@@ -3,6 +3,9 @@ from glue.core.util import update_ticks
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
+from glue.viewers.matplotlib.mpl_axes import init_mpl
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+
 
 __all__ = ['MatplotlibScatterMixin']
 
@@ -14,6 +17,7 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('y_att', self._update_axes)
         self.state.add_callback('x_log', self._update_axes)
         self.state.add_callback('y_log', self._update_axes)
+        self.state.add_callback('plot_mode', self._update_projection)
         self._update_axes()
 
     def _update_axes(self, *args):
@@ -39,6 +43,19 @@ class MatplotlibScatterMixin(object):
                 self.state.y_axislabel = self.state.y_att.label
 
         self.axes.figure.canvas.draw_idle()
+
+    def _update_projection(self, *args):
+
+        old_layers = self.layers
+
+        self.figure.delaxes(self.axes)
+        _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
+        for layer in old_layers:
+            self._layer_artist_container.append(ScatterLayerArtist(self.axes, self.state,
+                                                                   layer_state=layer.state,
+                                                                   layer=layer.layer))
+            self._layer_artist_container.remove(layer)
+        self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
 
