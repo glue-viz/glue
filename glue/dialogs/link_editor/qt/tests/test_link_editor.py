@@ -443,7 +443,6 @@ class TestLinkEditor:
         assert links[3].cids2[0] is self.data2.id['c']
         assert links[3].forwards is identity
 
-
     def test_add_helper(self):
 
         dialog = LinkEditor(self.data_collection)
