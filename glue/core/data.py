@@ -387,11 +387,13 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     at.
     """
 
-    def __init__(self, coords=None, mask=None):
+    def __init__(self, coords=None, mask=None, uncertainty=None):
         super(BaseCartesianData, self).__init__()
         self._coords = coords
 
         self._mask = mask
+
+        self._uncertainty = uncertainty
 
     @property
     def coords(self):
@@ -427,6 +429,13 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         The mask of the data set, as an array of the same size.
         """
         return self._mask
+
+    @property
+    def uncertainty(self):
+        """
+        The uncertainty of the data set, as an array of the same size.
+        """
+        return self._uncertainty
 
     def get_data(self, cid, view=None):
         """
