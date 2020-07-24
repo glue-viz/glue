@@ -387,9 +387,11 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     at.
     """
 
-    def __init__(self, coords=None):
+    def __init__(self, coords=None, mask=None):
         super(BaseCartesianData, self).__init__()
         self._coords = coords
+
+        self._mask = mask
 
     @property
     def coords(self):
@@ -418,6 +420,13 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         The size of the data (the product of the shape dimensions), as an integer.
         """
         return np.product(self.shape)
+
+    @property
+    def mask(self):
+        """
+        The mask of the data set, as an array of the same size.
+        """
+        return self._mask
 
     def get_data(self, cid, view=None):
         """
@@ -629,7 +638,7 @@ class Data(BaseCartesianData):
         The coordinates object to use to define world coordinates
     """
 
-    def __init__(self, label="", coords=None, **kwargs):
+    def __init__(self, label="", coords=None, mask=None, uncertainty=None, **kwargs):
 
         super(Data, self).__init__()
 
@@ -646,6 +655,10 @@ class Data(BaseCartesianData):
 
         # Coordinate conversion object
         self.coords = coords
+
+        self.mask = mask
+
+        self.uncertainty = uncertainty
 
         self.id = ComponentIDDict(self)
 
@@ -700,6 +713,28 @@ class Data(BaseCartesianData):
     @property
     def size(self):
         return np.product(self.shape)
+
+    @property
+    def mask(self):
+        return self._mask
+
+    @mask.setter
+    def mask(self, value):
+        if (hasattr(self, '_mask') and self._mask != value) or not hasattr(self, '_mask'):
+            self._mask = value
+        elif value is None:
+            self._mask = value
+
+    @property
+    def uncertainty(self):
+        return self._uncertainty
+
+    @uncertainty.setter
+    def uncertainty(self, value):
+        if (hasattr(self, '_uncertainty') and self._uncertainty != value) or not hasattr(self, '_uncertainty'):
+            self._uncertainty = value
+        elif value is None:
+            self._uncertainty = value
 
     @contract(component=Component)
     def _check_can_add(self, component):
