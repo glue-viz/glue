@@ -6,7 +6,7 @@ from glue.core.component import Component
 from glue.core.data_collection import DataCollection
 from glue.core.data_factories.fits import is_fits, fits_reader
 
-__all__ = ['is_nddata', 'nddata_type_data', 'formatted_nddata_factory']
+__all__ = ['is_nddata', 'nddata_data_loader', 'formatted_nddata_factory']
 
 
 def is_nddata(data):
@@ -19,17 +19,17 @@ def is_nddata(data):
         return False
 
 
-@data_factory(label="NDData-type Data", identifier=is_nddata)
-def nddata_type_data(nddata, *args, **kwargs):
+@data_factory(label="NDData", identifier=is_nddata)
+def nddata_data_loader(nddata, *args, **kwargs):
     """
     Build a data set from nddata.
     """
     result = Data()
-    ndd = Component(nddata.data)
+    ndd = Component(nddata.data, units=nddata.unit)
     result.meta = nddata.meta
     result.mask = nddata.mask
     result.uncertainty = nddata.uncertainty
-    result.add_component(ndd, units=nddata.unit)
+    result.add_component(ndd, label="data")
 
     return result
 
@@ -46,7 +46,7 @@ def formatted_nddata_factory(format, label):
                          unit=hdu.unit,
                          uncertainty=hdu.uncertainty,
                          meta=hdu.meta)
-            result = nddata_type_data(ndd)
+            result = nddata_data_loader(ndd)
             dc.append(result)
         return dc
 
