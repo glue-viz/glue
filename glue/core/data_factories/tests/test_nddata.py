@@ -1,15 +1,11 @@
 # 3rd-party
-import pytest
-
 from astropy.nddata import NDData, StdDevUncertainty
 
 import numpy as np
-
 from numpy.testing import assert_array_equal
 
 # Package
-from glue.core import data_factories as df
-from glue.core.data_factories.nddata import *
+from glue.core.data_factories.nddata import nddata_data_loader
 
 
 def test_nddata_data_loader():
