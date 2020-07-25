@@ -729,7 +729,6 @@ class Data(BaseCartesianData):
 
     @mask.setter
     def mask(self, value):
-        # if (hasattr(self, '_mask')) or not hasattr(self, '_mask'):
         if getattr(self, '_label', None) != value:
             self._mask = value
         elif value is None:
