@@ -55,6 +55,9 @@ class MatplotlibScatterMixin(object):
                                                                    layer_state=layer.state,
                                                                    layer=layer.layer))
             self._layer_artist_container.remove(layer)
+        self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
+        self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
+        self.limits_from_mpl()
         self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):

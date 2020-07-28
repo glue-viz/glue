@@ -9,6 +9,16 @@ from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 __all__ = ['ScatterOptionsWidget']
 
 
+def _get_labels(proj):
+    if proj == 'rectilinear':
+        return 'x_axis', 'y_axis'
+    elif proj == 'polar':
+        return 'theta (rad)', 'radius'
+    elif proj in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+        return 'longitude (rad)', 'latitude (rad)'
+    else:
+        return 'axis 1', 'axis 2'
+
 class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def __init__(self, viewer_state, session, parent=None):
@@ -29,6 +39,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
         viewer_state.add_callback('x_att', self._update_x_attribute)
         viewer_state.add_callback('y_att', self._update_y_attribute)
+        viewer_state.add_callback('plot_mode', self._update_plot_mode)
 
         self.session = session
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
@@ -56,3 +67,10 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         if not log_enabled:
             self.ui.bool_y_log.setChecked(False)
             self.ui.bool_y_log_.setChecked(False)
+
+    def _update_plot_mode(self, *args):
+        x_label, y_label = _get_labels(self.viewer_state.plot_mode)
+        self.ui.x_lab.setText(x_label)
+        self.ui.x_lab_2.setText(x_label)
+        self.ui.y_lab.setText(y_label)
+        self.ui.y_lab_2.setText(y_label)
