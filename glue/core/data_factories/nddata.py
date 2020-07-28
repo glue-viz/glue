@@ -26,6 +26,7 @@ def nddata_data_loader(nddata, *args, **kwargs):
     """
     result = Data()
     ndd = Component(nddata.data, units=nddata.unit)
+    result.coords = nddata.wcs
     result.meta = nddata.meta
     result.mask = nddata.mask
     result.uncertainty = nddata.uncertainty
