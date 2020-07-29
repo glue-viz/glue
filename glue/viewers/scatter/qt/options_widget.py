@@ -74,3 +74,12 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.x_lab_2.setText(x_label)
         self.ui.y_lab.setText(y_label)
         self.ui.y_lab_2.setText(y_label)
+        lim_enabled = self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']
+        self.ui.valuetext_x_min.setEnabled(lim_enabled)
+        self.ui.button_flip_x.setEnabled(lim_enabled)
+        self.ui.valuetext_x_max.setEnabled(lim_enabled)
+        self.ui.valuetext_y_min.setEnabled(lim_enabled)
+        self.ui.button_flip_y.setEnabled(lim_enabled)
+        self.ui.valuetext_y_max.setEnabled(lim_enabled)
+        self.ui.bool_y_log.setEnabled(lim_enabled)
+        self.ui.bool_x_log.setEnabled(lim_enabled or self.viewer_state.plot_mode == 'polar')

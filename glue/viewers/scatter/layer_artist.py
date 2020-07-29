@@ -137,7 +137,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
         super(ScatterLayerArtist, self).__init__(axes, viewer_state,
                                                  layer_state=layer_state, layer=layer)
-        print(type(axes),id(axes))
+
         # Watch for changes in the viewer state which would require the
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_scatter)

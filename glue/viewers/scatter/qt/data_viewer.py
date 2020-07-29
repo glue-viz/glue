@@ -49,8 +49,7 @@ class ScatterViewer(MatplotlibScatterMixin, MatplotlibDataViewer):
             self._skip_limits_from_mpl = True
             try:
                 self.axes.set_thetalim(thetamin=rad2deg(x_min), thetamax=rad2deg(x_max))
-                self.axes.set_ylim(y_min, y_max)
-                self.axes.set_rorigin(y_min)
+                self.axes.set_rlim(bottom=y_min, top=y_max)
                 self.axes.figure.canvas.draw_idle()
             finally:
                 self._skip_limits_from_mpl = False

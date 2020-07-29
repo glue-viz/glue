@@ -51,7 +51,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_att_helper = ComponentIDComboHelper(self, 'y_att', pixel_coord=True, world_coord=True)
 
         self.plot_mode_helper = ComboHelper(self, 'plot_mode')
-        self.plot_mode_helper.choices = get_projection_names()
+        self.plot_mode_helper.choices = [proj for proj in get_projection_names() if proj not in ['3d', 'scatter_density']]
         self.plot_mode_helper.selection = 'rectilinear'
 
         self.update_from_dict(kwargs)
