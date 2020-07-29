@@ -87,6 +87,12 @@ class ScatterViewerState(MatplotlibDataViewerState):
         """
         self.y_lim_helper.flip_limits()
 
+    def full_circle(self):
+        if not self.plot_mode == 'polar':
+            return
+        self.x_min = 0
+        self.x_max = 2*np.pi
+
     @property
     def x_categories(self):
         return self._categories(self.x_att)

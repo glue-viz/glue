@@ -41,6 +41,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         viewer_state.add_callback('y_att', self._update_y_attribute)
         viewer_state.add_callback('plot_mode', self._update_plot_mode)
 
+        self.ui.button_full_circle.setVisible(False)
+
         self.session = session
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
 
@@ -75,6 +77,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.y_lab.setText(y_label)
         self.ui.y_lab_2.setText(y_label)
         lim_enabled = self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']
+        is_polar = self.viewer_state.plot_mode == 'polar'
         self.ui.valuetext_x_min.setEnabled(lim_enabled)
         self.ui.button_flip_x.setEnabled(lim_enabled)
         self.ui.valuetext_x_max.setEnabled(lim_enabled)
@@ -82,4 +85,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.button_flip_y.setEnabled(lim_enabled)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
         self.ui.bool_y_log.setEnabled(lim_enabled)
-        self.ui.bool_x_log.setEnabled(lim_enabled or self.viewer_state.plot_mode == 'polar')
+        self.ui.bool_y_log_.setEnabled(lim_enabled)
+        self.ui.bool_x_log.setEnabled(lim_enabled and not is_polar)
+        self.ui.bool_x_log_.setEnabled(lim_enabled and not is_polar)
+        self.ui.button_full_circle.setVisible(is_polar)

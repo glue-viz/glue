@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
+    <width>347</width>
     <height>152</height>
    </rect>
   </property>
@@ -296,16 +296,6 @@
        <item row="1" column="2">
         <widget class="QLineEdit" name="valuetext_x_min"/>
        </item>
-       <item row="1" column="6">
-        <widget class="QPushButton" name="button_full_circle">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string>full circle</string>
-         </property>
-        </widget>
-       </item>
        <item row="4" column="2" colspan="5">
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
@@ -318,6 +308,16 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="button_full_circle">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>full circle</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
