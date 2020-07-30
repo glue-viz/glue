@@ -3,6 +3,7 @@ from astropy.nddata import NDDataBase, NDData
 from glue.config import data_factory
 from glue.core.data import Data
 from glue.core.component import Component
+from glue.core.coordinates import WCSCoordinates
 from glue.core.data_collection import DataCollection
 from glue.core.data_factories.fits import is_fits, fits_reader
 
@@ -42,7 +43,8 @@ def formatted_nddata_factory(format, label):
         extensions = fits_reader(filepath)
         dc = DataCollection()
         for hdu in extensions:
-            ndd = NDData(hdu.data,
+            ndd = NDData(data=hdu.data,
+                         wcs=WCSCoordinates(hdu.header),
                          mask=hdu.mask,
                          unit=hdu.unit,
                          uncertainty=hdu.uncertainty,
