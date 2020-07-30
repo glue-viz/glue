@@ -30,7 +30,8 @@ class ScatterViewer(MatplotlibScatterMixin, MatplotlibDataViewer):
              'select:polygon']
 
     def __init__(self, session, parent=None, state=None):
-        MatplotlibDataViewer.__init__(self, session, parent=parent, state=state)
+        proj = None if not state or not state.plot_mode else state.plot_mode
+        MatplotlibDataViewer.__init__(self, session, parent=parent, state=state, projection=proj)
         MatplotlibScatterMixin.setup_callbacks(self)
 
     def limits_to_mpl(self, *args):
