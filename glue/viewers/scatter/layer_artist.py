@@ -546,7 +546,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                     color=color)
                     handles.append(handle)  # as placeholder
                 else:
-                    if self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed':
+                    if self._use_plot_artist():
                         handles.append(self.plot_artist)
                     else:
                         handles.append(self.scatter_artist)
