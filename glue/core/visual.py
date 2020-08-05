@@ -1,6 +1,8 @@
 from matplotlib.colors import ColorConverter
+from matplotlib.cm import get_cmap
 
 from glue.config import settings
+
 from echo import callback_property, HasCallbackProperties
 
 # Define acceptable line styles
@@ -25,7 +27,7 @@ class VisualAttributes(HasCallbackProperties):
 
     """
 
-    def __init__(self, parent=None, washout=False, color=None, alpha=None):
+    def __init__(self, parent=None, washout=False, color=None, alpha=None, preferred_cmap=None):
 
         super(VisualAttributes, self).__init__()
 
@@ -36,9 +38,10 @@ class VisualAttributes(HasCallbackProperties):
 
         self.parent = parent
         self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
-                      'markersize']
+                      'markersize', 'preferred_cmap']
         self.color = color
         self.alpha = alpha
+        self.preferred_cmap = preferred_cmap
         self.linewidth = 1
         self.linestyle = 'solid'
         self.marker = 'o'
@@ -93,6 +96,20 @@ class VisualAttributes(HasCallbackProperties):
             self._color = value.lower()
         else:
             self._color = value
+
+    @callback_property
+    def preferred_cmap(self):
+        """
+        A preferred colormap specified using Matplotlib notation
+        """
+        return self._preferred_cmap
+
+    @preferred_cmap.setter
+    def preferred_cmap(self, value):
+        if isinstance(value, str):
+            self._preferred_cmap = get_cmap(value)
+        else:
+            self._preferred_cmap = value
 
     @callback_property
     def alpha(self):
@@ -163,7 +180,8 @@ class VisualAttributes(HasCallbackProperties):
 
         # Check that the attribute exists (don't allow new attributes)
         allowed = set(['color', 'linewidth', 'linestyle',
-                       'alpha', 'parent', 'marker', 'markersize'])
+                       'alpha', 'parent', 'marker', 'markersize',
+                       'preferred_cmap'])
         if attribute not in allowed and not attribute.startswith('_'):
             raise Exception("Attribute %s does not exist" % attribute)
 

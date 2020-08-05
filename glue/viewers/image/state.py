@@ -87,9 +87,9 @@ class ImageViewerState(MatplotlibDataViewerState):
                                             'which the images are shown')
     slices = DDCProperty(docstring='The current slice along all dimensions')
     color_mode = DDSCProperty(0, docstring='Whether each layer can have '
-                                                    'its own colormap (``Colormaps``) or '
-                                                    'whether each layer is assigned '
-                                                    'a single color (``One color per layer``)')
+                                           'its own colormap (``Colormaps``) or '
+                                           'whether each layer is assigned '
+                                           'a single color (``One color per layer``)')
 
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
 
@@ -544,7 +544,7 @@ class ImageLayerState(BaseImageLayerState):
         self.update_from_dict(kwargs)
 
         if self.cmap is None:
-            self.cmap = colormaps.members[0][1]
+            self.cmap = self.layer.style.preferred_cmap or colormaps.members[0][1]
 
     def _update_attribute(self, *args):
         if self.layer is not None:
