@@ -143,16 +143,26 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_scatter)
         self.state.add_global_callback(self._update_scatter)
 
-        # Scatter
+        # Scatter density
+        self.density_auto_limits = DensityMapLimits()
+        self._set_axes(axes)
+        self.errorbar_index = 2
+        self.vector_index = 3
+
+        # NOTE: Matplotlib can't deal with NaN values in errorbar correctly, so
+        # we need to prefilter values - the following variable is used to store
+        # the mask for the values we keep, so that we can apply it to the color
+        # See also https://github.com/matplotlib/matplotlib/issues/13799
+        self._errorbar_keep = None
+
+    def _set_axes(self, axes):
+        self.axes = axes
         self.scatter_artist = self.axes.scatter([], [])
         self.plot_artist = self.axes.plot([], [], 'o', mec='none')[0]
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = None
         self.line_collection = ColoredLineCollection([], [])
         self.axes.add_collection(self.line_collection)
-
-        # Scatter density
-        self.density_auto_limits = DensityMapLimits()
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message='All-NaN slice encountered')
             self.density_artist = GenericDensityArtist(self.axes, color='white',
@@ -162,18 +172,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                                        histogram2d_func=self.compute_density_map,
                                                        label=None)
         self.axes.add_artist(self.density_artist)
-
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
                             self.errorbar_artist, self.vector_artist,
                             self.line_collection, self.density_artist]
-        self.errorbar_index = 2
-        self.vector_index = 3
-
-        # NOTE: Matplotlib can't deal with NaN values in errorbar correctly, so
-        # we need to prefilter values - the following variable is used to store
-        # the mask for the values we keep, so that we can apply it to the color
-        # See also https://github.com/matplotlib/matplotlib/issues/13799
-        self._errorbar_keep = None
 
     def compute_density_map(self, *args, **kwargs):
         try:

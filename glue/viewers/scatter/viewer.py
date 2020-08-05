@@ -51,12 +51,8 @@ class MatplotlibScatterMixin(object):
         self.figure.delaxes(self.axes)
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
         for layer in old_layers:
-            z_order = layer.zorder
-            new_layer = ScatterLayerArtist(self.axes, self.state,
-                                           layer_state=layer.state, layer=layer.layer)
-            self._layer_artist_container.append(new_layer)
-            self._layer_artist_container.remove(layer)
-            new_layer.zorder = z_order
+            layer._set_axes(self.axes)
+            layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
         self.limits_from_mpl()
