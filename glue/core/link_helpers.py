@@ -356,9 +356,9 @@ class LinkSame(MultiLink):
             cid2 = _toid(cid2)
             kwargs['cids2'] = [cid2]
 
+        kwargs['forwards'] = identity
         default_kwargs = {'data1': cid1.parent, 'data2': cid2.parent,
-                          'labels1': ['x'], 'labels2': ['y'],
-                          'forwards': identity}
+                          'labels1': ['x'], 'labels2': ['y']}
 
         for keyword, value in default_kwargs.items():
             if keyword not in kwargs:
