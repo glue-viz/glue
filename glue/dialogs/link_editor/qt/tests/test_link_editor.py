@@ -6,7 +6,7 @@ from glue.core import Data, DataCollection
 from glue.dialogs.link_editor.qt import LinkEditor
 from glue.core.component_link import ComponentLink
 from glue.plugins.coordinate_helpers.link_helpers import Galactic_to_FK5, ICRS_to_Galactic
-from glue.core.link_helpers import identity, functional_link_collection
+from glue.core.link_helpers import identity, functional_link_collection, LinkSame
 
 
 def non_empty_rows_count(layout):
@@ -365,9 +365,13 @@ class TestLinkEditor:
         link2 = ComponentLink([self.data2.id['a'], self.data2.id['b']], self.data3.id['j'], using=add)
         link3 = ComponentLink([self.data3.id['i']], self.data2.id['c'], using=double, inverse=halve)
 
+        # Test using a LinkHelper link since that caused a bug earlier
+        link4 = LinkSame(self.data1.id['z'], self.data2.id['c'])
+
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
         self.data_collection.add_link(link3)
+        self.data_collection.add_link(link4)
 
         dialog = LinkEditor(self.data_collection)
         dialog.show()
@@ -376,11 +380,18 @@ class TestLinkEditor:
         link_widget.state.data1 = self.data1
         link_widget.state.data2 = self.data2
 
-        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.listsel_current_link.count() == 2
         assert link_widget.link_details.text() == ''
         assert non_empty_rows_count(link_widget.combos1) == 1
         assert non_empty_rows_count(link_widget.combos2) == 1
         assert link_widget.combos1.itemAtPosition(0, 1).widget().currentText() == 'x'
+        assert link_widget.combos2.itemAtPosition(0, 1).widget().currentText() == 'c'
+
+        link_widget.state.current_link = type(link_widget.state).current_link.get_choices(link_widget.state)[1]
+        assert link_widget.link_details.text() == ''
+        assert non_empty_rows_count(link_widget.combos1) == 1
+        assert non_empty_rows_count(link_widget.combos2) == 1
+        assert link_widget.combos1.itemAtPosition(0, 1).widget().currentText() == 'z'
         assert link_widget.combos2.itemAtPosition(0, 1).widget().currentText() == 'c'
 
         link_widget.state.data1 = self.data3
@@ -406,7 +417,7 @@ class TestLinkEditor:
 
         links = self.data_collection.external_links
 
-        assert len(links) == 3
+        assert len(links) == 4
 
         assert isinstance(links[0], ComponentLink)
         assert links[0].get_from_ids()[0] is self.data1.id['x']
@@ -424,6 +435,13 @@ class TestLinkEditor:
         assert links[2].get_to_id() is self.data2.id['c']
         assert links[2].get_using() is double
         assert links[2].get_inverse() is halve
+
+        assert isinstance(links[3], LinkSame)
+        assert len(links[3].cids1) == 1
+        assert links[3].cids1[0] is self.data1.id['z']
+        assert len(links[3].cids2) == 1
+        assert links[3].cids2[0] is self.data2.id['c']
+        assert links[3].forwards is identity
 
     def test_add_helper(self):
 

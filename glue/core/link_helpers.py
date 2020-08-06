@@ -317,6 +317,9 @@ class MultiLink(BaseMultiLink):
             else:
                 raise ValueError("labels2 needs to be specified if backwards isn't")
 
+        self.labels1 = labels1
+        self.labels2 = labels2
+
         super(MultiLink, self).__init__(cids1=cids1, cids2=cids2, **kwargs)
 
     def __gluestate__(self, context):
@@ -338,24 +341,28 @@ class LinkSame(MultiLink):
     A bi-directional identity link between two components.
     """
 
-    def __init__(self, cid1=None, cid2=None, **kwargs):
+    display = "identity link"
 
+    def __init__(self, cid1=None, cid2=None, **kwargs):
         if cid1 is None:
-            cid1 = kwargs['cids1']
+            cid1 = kwargs['cids1'][0]
         else:
             cid1 = _toid(cid1)
-            kwargs['data1'] = cid1.parent
             kwargs['cids1'] = [cid1]
-            kwargs['labels1'] = 'x'
-            kwargs['forwards'] = identity
 
         if cid2 is None:
-            cid2 = kwargs['cids2']
+            cid2 = kwargs['cids2'][0]
         else:
             cid2 = _toid(cid2)
-            kwargs['data2'] = cid2.parent
             kwargs['cids2'] = [cid2]
-            kwargs['labels2'] = 'y'
+
+        kwargs['forwards'] = identity
+        default_kwargs = {'data1': cid1.parent, 'data2': cid2.parent,
+                          'labels1': ['x'], 'labels2': ['y']}
+
+        for keyword, value in default_kwargs.items():
+            if keyword not in kwargs:
+                kwargs[keyword] = value
 
         self._cid1 = cid1
         self._cid2 = cid2
