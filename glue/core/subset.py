@@ -5,7 +5,7 @@ import operator
 import numpy as np
 
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI, CircularROI, EllipticalROI)
+                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, Projected3dROI)
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -15,7 +15,7 @@ from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
 from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
-                        polygon_line_intersections, categorical_ndarray)
+                        polygon_line_intersections, categorical_ndarray, iterate_chunks)
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -469,7 +469,83 @@ class SubsetState(object):
         return XorState(self, other_state)
 
 
-class RoiSubsetState(SubsetState):
+class RoiSubsetStateNd(SubsetState):
+    """
+    A base class that combines the logic of the 2D and 3D RoiSubsetStates
+    """
+
+    def __init__(self, atts=[], roi=None, pretransform=None):
+        self._atts = atts
+        self._roi = roi
+        self._pretransform = pretransform
+
+    @property
+    def roi(self):
+        """
+        The region of interest.
+        """
+        return self._roi
+
+    @roi.setter
+    def roi(self, value):
+        self._roi = value
+
+    @property
+    def pretransfrom(self):
+        """
+        An optional transformation function to apply before checking if points are in the ROI.
+        """
+        return self._pretransform
+
+    @pretransfrom.setter
+    def pretransform(self, value):
+        if not callable(value) and value is not None:
+            raise TypeError("The pretransform must be callable or None.")
+        self._pretransform = value
+
+    @property
+    def attributes(self):
+        return tuple(self._atts)
+
+    @contract(data='isinstance(Data)', view='array_view')
+    def to_mask(self, data, view=None):
+
+        # TODO: make sure that pixel components don't actually take up much
+        #       memory and are just views
+
+        raw_comps = []
+        for att in self._atts:
+            raw_comps.append(data[att, view])
+
+        if not self.roi.defined():
+            return np.zeros(raw_comps[0].shape, dtype=bool)
+
+        if self.pretransform:
+            transformed_points = []
+            for slices in iterate_chunks(raw_comps[0].shape, n_max=1000000):
+                comp_subsets = []
+                for raw_comp in raw_comps:
+                    comp_subsets.append(raw_comp[slices])
+                res = self.pretransform(*comp_subsets)
+                while len(transformed_points) < len(res):
+                    transformed_points.append(np.zeros(raw_comps[0].shape))
+                for i in len(res):
+                    transformed_points[i][slices] = res[i]
+        else:
+            transformed_points = raw_comps
+
+        if isinstance(self.roi, Projected3dROI):
+            result = self.roi.contains3d(*transformed_points)
+        else:
+            result = self.roi.contains(*transformed_points)
+
+        if result.shape != raw_comps[0].shape:
+            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
+
+        return result
+
+
+class RoiSubsetState(RoiSubsetStateNd):
     """
     A subset defined as the set of points in two dimensions that lie inside
     a region of interest (ROI).
@@ -487,71 +563,48 @@ class RoiSubsetState(SubsetState):
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
-    def __init__(self, xatt=None, yatt=None, roi=None):
-        super(RoiSubsetState, self).__init__()
-        self._xatt = xatt
-        self._yatt = yatt
-        self._roi = roi
+    def __init__(self, xatt=None, yatt=None, roi=None, pretransform=None):
+        super(RoiSubsetState, self).__init__(atts=[xatt, yatt], roi=roi, pretransform=pretransform)
 
     @property
     def xatt(self):
         """
         The data attribute on the x axis.
         """
-        return self._xatt
+        return self._atts[0]
 
     @xatt.setter
     def xatt(self, value):
-        self._xatt = value
+        self._atts[0] = value
 
     @property
     def yatt(self):
         """
         The data attribute on the y axis.
         """
-        return self._yatt
+        return self._atts[1]
 
     @yatt.setter
     def yatt(self, value):
-        self._yatt = value
-
-    @property
-    def roi(self):
-        """
-        The region of interest.
-        """
-        return self._roi
-
-    @roi.setter
-    def roi(self, value):
-        self._roi = value
-
-    @property
-    def attributes(self):
-        return (self.xatt, self.yatt)
+        self._atts[1] = value
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
-
-        # TODO: make sure that pixel components don't actually take up much
-        #       memory and are just views
-
-        x = data[self.xatt, view]
-        y = data[self.yatt, view]
-
-        if (x.ndim == data.ndim and
+        x_data = data[self.xatt, view]
+        if (x_data.ndim == data.ndim and
             self.xatt in data.pixel_component_ids and
-                self.yatt in data.pixel_component_ids):
+            self.yatt in data.pixel_component_ids):
 
             # This is a special case - the ROI is defined in pixel space, so we
-            # can apply it to a single slice and then broadcast it to all other
-            # dimensions. We start off by extracting a slice which takes only
-            # the first elements of all dimensions except the attributes in
-            # question, for which we take all the elements. We need to preserve
-            # the dimensionality of the array, hence the use of slice(0, 1).
-            # Note that we can only do this if the view (if present) preserved
-            # the dimensionality, which is why we checked that x.ndim == data.ndim
+            #  can apply it to a single slice and then broadcast it to all other
+            #  dimensions. We start off by extracting a slice which takes only
+            #  the first elements of all dimensions except the attributes in
+            #  question, for which we take all the elements. We need to preserve
+            #  the dimensionality of the array, hence the use of slice(0, 1).
+            #  Note that we can only do this if the view (if present) preserved
+            #  the dimensionality, which is why we checked that x.ndim == data.ndim
 
+            y_data = data[self.yatt, view]
             subset = []
             for i in range(data.ndim):
                 if i == self.xatt.axis or i == self.yatt.axis:
@@ -559,33 +612,29 @@ class RoiSubsetState(SubsetState):
                 else:
                     subset.append(slice(0, 1))
 
-            x_slice = x[tuple(subset)]
-            y_slice = y[tuple(subset)]
+                x_slice = x_data[tuple(subset)]
+                y_slice = y_data[tuple(subset)]
 
             if self.roi.defined():
+                if self.pretransform:
+                    x_slice, y_slice = self.pretransform(x_slice, y_slice)
                 result = self.roi.contains(x_slice, y_slice)
             else:
                 result = np.zeros(x_slice.shape, dtype=bool)
 
-            result = broadcast_to(result, x.shape)
+            result = broadcast_to(result, x_data.shape)
+            assert result.shape == x_data.shape
+            return result
 
         else:
-
-            if self.roi.defined():
-                result = self.roi.contains(x, y)
-            else:
-                result = np.zeros(x.shape, dtype=bool)
-
-        if result.shape != x.shape:
-            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
-
-        return result
+            return super(RoiSubsetState, self).to_mask(data, view)
 
     def copy(self):
         result = RoiSubsetState()
         result.xatt = self.xatt
         result.yatt = self.yatt
         result.roi = self.roi
+        result.pretransform = self.pretransform
         return result
 
 
@@ -1703,7 +1752,7 @@ class FloodFillSubsetState(MaskSubsetState):
                    context.object(rec['threshold']))
 
 
-class RoiSubsetState3d(SubsetState):
+class RoiSubsetState3d(RoiSubsetStateNd):
     """
     A subset defined as the set of points in three dimensions that lie inside
     a 3-d region of interest (ROI).
@@ -1723,79 +1772,42 @@ class RoiSubsetState3d(SubsetState):
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')
-    def __init__(self, xatt=None, yatt=None, zatt=None, roi=None):
-        super(RoiSubsetState3d, self).__init__()
-        self._xatt = xatt
-        self._yatt = yatt
-        self._zatt = zatt
-        self._roi = roi
+    def __init__(self, xatt=None, yatt=None, zatt=None, roi=None, pretransform=None):
+        super(RoiSubsetState3d, self).__init__(atts=[xatt, yatt, zatt], roi=roi, pretransform=pretransform)
 
     @property
     def xatt(self):
         """
         The data attribute on the x axis.
         """
-        return self._xatt
+        return self._atts[0]
 
     @xatt.setter
     def xatt(self, value):
-        self._xatt = value
+        self._atts[0] = value
 
     @property
     def yatt(self):
         """
         The data attribute on the y axis.
         """
-        return self._yatt
+        return self._atts[1]
 
     @yatt.setter
     def yatt(self, value):
-        self._yatt = value
+        self._atts[1] = value
 
     @property
     def zatt(self):
         """
         The data attribute on the z axis.
         """
-        return self._zatt
+        return self._atts[2]
 
     @zatt.setter
     def zatt(self, value):
-        self._zatt = value
+        self._atts[2] = value
 
-    @property
-    def roi(self):
-        """
-        The region of interest.
-        """
-        return self._roi
-
-    @roi.setter
-    def roi(self, value):
-        self._roi = value
-
-    @property
-    def attributes(self):
-        return (self.xatt, self.yatt, self.zatt)
-
-    @contract(data='isinstance(Data)', view='array_view')
-    def to_mask(self, data, view=None):
-
-        # TODO: make sure that pixel components don't actually take up much
-        #       memory and are just views
-        x = data[self.xatt, view]
-        y = data[self.yatt, view]
-        z = data[self.zatt, view]
-
-        if self.roi.defined():
-            result = self.roi.contains3d(x, y, z)
-        else:
-            result = np.zeros(x.shape, dtype=bool)
-
-        if result.shape != x.shape:
-            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
-
-        return result
 
     def copy(self):
         result = RoiSubsetState3d()
@@ -1803,20 +1815,23 @@ class RoiSubsetState3d(SubsetState):
         result.yatt = self.yatt
         result.zatt = self.zatt
         result.roi = self.roi
+        result.pretransform = self.pretransform
         return result
 
     def __gluestate__(self, context):
         return dict(xatt=context.id(self.xatt),
                     yatt=context.id(self.yatt),
                     zatt=context.id(self.zatt),
-                    roi=context.id(self.roi))
+                    roi=context.id(self.roi),
+                    pretransform=context.id(self.pretransform))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         return RoiSubsetState3d(context.object(rec['xatt']),
                                 context.object(rec['yatt']),
                                 context.object(rec['zatt']),
-                                context.object(rec['roi']))
+                                context.object(rec['roi']),
+                                context.object(rec['pretransform']))
 
 
 @contract(subsets='list(isinstance(Subset))', returns=Subset)
