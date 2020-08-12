@@ -529,7 +529,7 @@ class RoiSubsetStateNd(SubsetState):
                 res = self.pretransform(*comp_subsets)
                 while len(transformed_points) < len(res):
                     transformed_points.append(np.zeros(raw_comps[0].shape))
-                for i in len(res):
+                for i in range(len(res)):
                     transformed_points[i][slices] = res[i]
         else:
             transformed_points = raw_comps
@@ -1852,13 +1852,13 @@ def combine_multiple(subsets, operator):
         return combined
 
 
-def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_categories=None):
+def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_categories=None, use_pretransform=False):
     """
     Given a 2D ROI and attributes on the x and y axis, determine the
     corresponding subset state.
     """
 
-    if isinstance(roi, RangeROI):
+    if isinstance(roi, RangeROI) and not use_pretransform:
 
         if roi.ori == 'x':
             att = x_att
@@ -1962,9 +1962,9 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_catego
 
     else:
 
-        # The selection is polygon-like and components are numerical
+        # The selection is polygon-like or requires a pretransform and components are numerical
 
-        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI)):
+        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI)):
             roi = PolygonalROI(*roi.to_polygon())
 
         subset_state = RoiSubsetState()

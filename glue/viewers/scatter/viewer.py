@@ -1,14 +1,37 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
+from glue.core import glue_pickle as gp
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
 from glue.viewers.matplotlib.mpl_axes import init_mpl
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+import numpy as np
 
 
 __all__ = ['MatplotlibScatterMixin']
 
+
+class MplProjectionTransform(object):
+    def __init__(self, axes):
+        self._transform = (axes.transData + axes.transAxes.inverted()).frozen() if axes else None
+
+    def __call__(self, x,y):
+        assert self._transform is not None
+        assert x.shape == y.shape
+        points = np.hstack((x.reshape(-1,1),y.reshape(-1,1)))
+        res = self._transform.transform(points)
+        out = np.hsplit(res,2)
+        return out[0].reshape(x.shape), out[1].reshape(y.shape)
+
+    def __gluestate__(self, context):
+        return dict(transform=context.id(self._transform))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        obj = cls()
+        obj._transform = context.object(rec['transform'])
+        return obj
 
 class MatplotlibScatterMixin(object):
 
@@ -56,6 +79,8 @@ class MatplotlibScatterMixin(object):
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
         self.limits_from_mpl()
+        self.removeToolBar(self.toolbar)
+        self.initialize_toolbar()
         self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
@@ -77,9 +102,13 @@ class MatplotlibScatterMixin(object):
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
                                   yfunc=mpl_to_datetime64 if y_date else None)
 
+        use_transform = self.state.plot_mode != 'rectilinear'
         subset_state = roi_to_subset_state(roi,
                                            x_att=self.state.x_att, x_categories=self.state.x_categories,
-                                           y_att=self.state.y_att, y_categories=self.state.y_categories)
+                                           y_att=self.state.y_att, y_categories=self.state.y_categories,
+                                           use_pretransform = use_transform)
+        if use_transform:
+            subset_state.pretransform = MplProjectionTransform(self.axes)
 
         self.apply_subset_state(subset_state, override_mode=override_mode)
 

@@ -233,7 +233,8 @@ class RectangleMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(RectangleMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplRectangularROI(self._axes)
+        data_space = not hasattr(viewer.state,'plot_mode') or viewer.state.plot_mode == 'rectilinear'
+        self._roi_tool = roi.MplRectangularROI(self._axes, data_space=data_space)
 
 
 class PathMode(ClickRoiMode):
@@ -264,7 +265,8 @@ class CircleMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(CircleMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplCircularROI(self._axes)
+        data_space = not hasattr(viewer.state,'plot_mode') or viewer.state.plot_mode == 'rectilinear'
+        self._roi_tool = roi.MplCircularROI(self._axes, data_space=data_space)
 
 
 @viewer_tool
@@ -285,7 +287,8 @@ class PolyMode(ClickRoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(PolyMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplPolygonalROI(self._axes)
+        data_space = not hasattr(viewer.state,'plot_mode') or viewer.state.plot_mode == 'rectilinear'
+        self._roi_tool = roi.MplPolygonalROI(self._axes, data_space=data_space)
 
 
 @viewer_tool
@@ -304,7 +307,8 @@ class HRangeMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(HRangeMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplXRangeROI(self._axes)
+        data_space = not hasattr(viewer.state,'plot_mode') or viewer.state.plot_mode == 'rectilinear'
+        self._roi_tool = roi.MplXRangeROI(self._axes, data_space=data_space)
 
 
 @viewer_tool
@@ -323,7 +327,8 @@ class VRangeMode(RoiMode):
 
     def __init__(self, viewer, **kwargs):
         super(VRangeMode, self).__init__(viewer, **kwargs)
-        self._roi_tool = roi.MplYRangeROI(self._axes)
+        data_space = not hasattr(viewer.state,'plot_mode') or viewer.state.plot_mode == 'rectilinear'
+        self._roi_tool = roi.MplYRangeROI(self._axes, data_space=data_space)
 
 
 @viewer_tool
