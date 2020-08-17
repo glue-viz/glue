@@ -197,7 +197,7 @@ class DeleteAction(LayerAction):
 
     def _can_trigger(self):
         selection = self.selected_layers()
-        return all(isinstance(s, core.BaseData)
+        return all(isinstance(s, (core.BaseData, core.SubsetGroup))
                    for s in selection)
 
     def _do_action(self):
