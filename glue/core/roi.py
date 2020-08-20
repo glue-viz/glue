@@ -356,7 +356,10 @@ class RangeROI(Roi):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(rec['ori'], min=rec['min'], max=rec['max'])
+        if cls is XRangeROI or cls is YRangeROI:
+            return cls(min=rec['min'], max=rec['max'])
+        else:
+            return cls(rec['ori'], min=rec['min'], max=rec['max'])
 
 
 class XRangeROI(RangeROI):

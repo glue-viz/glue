@@ -16,11 +16,17 @@ from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, Cate
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI, Projected3dROI,
                    EllipticalROI)
+from ..state import GlueSerializer, GlueUnSerializer
 
 
 FIG = Figure()
 AXES = FIG.add_subplot(111)
 
+def roundtrip_roi(roi):
+    gs = GlueSerializer(roi)
+    out_str = gs.dumps()
+    obj = GlueUnSerializer.loads(out_str)
+    return obj.object('__main__')
 
 class TestPoint(object):
 
@@ -121,6 +127,14 @@ class TestRectangle(object):
         self.roi.update_limits(1, 2, 3, 4)
         assert type(str(self.roi)) == str
 
+    def test_serialization(self):
+        self.roi.update_limits(1, 2, 3, 4)
+        new_roi = roundtrip_roi(self.roi)
+        assert_almost_equal(new_roi.xmin, 1)
+        assert_almost_equal(new_roi.ymin, 2)
+        assert_almost_equal(new_roi.xmax, 3)
+        assert_almost_equal(new_roi.ymax, 4)
+
 
 class TestRange(object):
 
@@ -170,6 +184,13 @@ class TestXRange(object):
         np.testing.assert_array_equal(y,
                                       [-1e100, -1e100, 1e100, 1e100, -1e100])
 
+    def test_serialization(self):
+         roi = XRangeROI()
+         roi.set_range(7, 8)
+         new_roi = roundtrip_roi(roi)
+         assert_almost_equal(new_roi.min, 7)
+         assert_almost_equal(new_roi.max, 8)
+         assert new_roi.ori == 'x'
 
 class TestYRange(object):
     def test_undefined_on_init(self):
@@ -210,6 +231,14 @@ class TestYRange(object):
         np.testing.assert_array_equal(y, [1, 2, 2, 1, 1])
         np.testing.assert_array_equal(x,
                                       [-1e100, -1e100, 1e100, 1e100, -1e100])
+
+    def test_serialization(self):
+        roi = YRangeROI()
+        roi.set_range(4, 5)
+        new_roi = roundtrip_roi(roi)
+        assert_almost_equal(new_roi.min, 4)
+        assert_almost_equal(new_roi.max, 5)
+        assert new_roi.ori == 'y'
 
 
 class TestCircle(object):
@@ -278,6 +307,14 @@ class TestCircle(object):
         assert self.roi.contains(x, y).all()
         assert not self.roi.contains(x + 1, y).any()
         assert self.roi.contains(x, y).shape == (2, 2)
+
+    def test_serialization(self):
+        self.roi.set_center(3, 4)
+        self.roi.set_radius(5)
+        new_roi = roundtrip_roi(self.roi)
+        assert_almost_equal(new_roi.xc, 3)
+        assert_almost_equal(new_roi.yc, 4)
+        assert_almost_equal(new_roi.radius, 5)
 
 
 class TestEllipse(object):
@@ -350,6 +387,13 @@ class TestEllipse(object):
         assert self.roi.contains(x, y).all()
         assert not self.roi.contains(x + 10, y).any()
         assert self.roi.contains(x, y).shape == (2, 2)
+
+    def test_serialization(self):
+        new_roi = roundtrip_roi(self.roi)
+        assert_almost_equal(new_roi.xc, 1)
+        assert_almost_equal(new_roi.yc, 2)
+        assert_almost_equal(new_roi.radius_x, 3)
+        assert_almost_equal(new_roi.radius_y, 4)
 
 
 class TestPolygon(object):
@@ -447,6 +491,11 @@ class TestPolygon(object):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
 
+    def test_serialization(self):
+        self.define_as_square()
+        new_roi = roundtrip_roi(self.roi)
+        assert_almost_equal(new_roi.vx, np.array([0, 0, 1, 1]))
+        assert_almost_equal(new_roi.vy, np.array([0, 1, 1, 0]))
 
 class TestProjected3dROI(object):
     # matrix that converts xyzw to yxzw
