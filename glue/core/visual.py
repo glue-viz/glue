@@ -2,6 +2,7 @@ from matplotlib.colors import ColorConverter
 from matplotlib.cm import get_cmap
 
 from glue.config import settings
+from glue.config import colormaps
 
 from echo import callback_property, HasCallbackProperties
 
@@ -107,7 +108,12 @@ class VisualAttributes(HasCallbackProperties):
     @preferred_cmap.setter
     def preferred_cmap(self, value):
         if isinstance(value, str):
-            self._preferred_cmap = get_cmap(value)
+            try:
+                for i, element in enumerate(colormaps.members):
+                    if element[0] == value:
+                        self._preferred_cmap = element[1]
+            except TypeError:
+                self._preferred_cmap = get_cmap(value)
         else:
             self._preferred_cmap = value
 
