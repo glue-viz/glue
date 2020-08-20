@@ -11,10 +11,6 @@ from glue.viewers.matplotlib.state import MatplotlibDataViewerState
 __all__ = ['ProfileOptionsWidget']
 
 
-WARNING_TEXT = ("Warning: the coordinate '{label}' is not aligned with pixel "
-                "grid, so the values shown on the x-axis are approximate.")
-
-
 class ProfileOptionsWidget(QtWidgets.QWidget):
 
     def __init__(self, viewer_state, session, parent=None):
@@ -53,15 +49,8 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
             self.ui.text_warning.hide()
             return
 
-        world_warning = len(dependent_axes(self.viewer_state.reference_data.coords,
-                                           self.viewer_state.x_att_pixel.axis)) > 1
-
-        if world_warning:
-            self.ui.text_warning.show()
-            self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))
-        else:
-            self.ui.text_warning.hide()
-            self.ui.text_warning.setText('')
+        self.ui.text_warning.hide()
+        self.ui.text_warning.setText('')
 
     def _apply_all_viewers(self):
         for tab in self.session.application.viewers:

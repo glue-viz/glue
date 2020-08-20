@@ -283,6 +283,7 @@ class ProfileLayerState(MatplotlibLayerState):
 
         if not self._viewer_callbacks_set:
             self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('x_att_pixel', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('slices', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
@@ -330,6 +331,8 @@ class ProfileLayerState(MatplotlibLayerState):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
             self._profile_cache = axis_values, profile_values
+
+        print(f'profile_values: {profile_values}')
 
         if update_limits:
             self.update_limits(update_profile=False)
