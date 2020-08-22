@@ -31,10 +31,7 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         self.session = session
 
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
-
-        self.profile_slice_helper = ProfileMultiSliceWidgetHelper(viewer_state=self.viewer_state,
-                                                                  session=self.session,
-                                                                  layout=self.ui.layout_slices)
+        self.viewer_state.add_callback('function', self._on_function_change)
 
         self.ui.text_warning.hide()
 
@@ -50,6 +47,14 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
 
         self.ui.text_warning.hide()
         self.ui.text_warning.setText('')
+
+    def _on_function_change(self, *args):
+        if self.viewer_state.function == 'slice':
+            self.profile_slice_helper = ProfileMultiSliceWidgetHelper(viewer_state=self.viewer_state,
+                                                                      session=self.session,
+                                                                      layout=self.ui.layout_slices)
+        else:
+            self.profile_slice_helper._clear()
 
     def _apply_all_viewers(self):
         for tab in self.session.application.viewers:
