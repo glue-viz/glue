@@ -44,6 +44,17 @@ class ProfileMultiSliceWidgetHelper(object):
 
         self._sliders = []
 
+    def remove(self):
+
+        for _ in range(self.profile_layout.count()):
+            self.profile_layout.takeAt(0)
+
+        for s in self._sliders:
+            if s is not None:
+                s.close()
+
+        self._sliders = []
+
     @avoid_circular
     def sync_state_from_sliders(self, *args):
 

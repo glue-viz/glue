@@ -33,6 +33,8 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
         self.viewer_state.add_callback('function', self._on_function_change)
 
+        self.profile_slice_helper = None
+
         self.ui.text_warning.hide()
 
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
@@ -54,7 +56,7 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
                                                                       session=self.session,
                                                                       layout=self.ui.layout_slices)
         else:
-            self.profile_slice_helper._clear()
+            self.profile_slice_helper.remove()
 
     def _apply_all_viewers(self):
         for tab in self.session.application.viewers:
