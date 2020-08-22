@@ -124,7 +124,10 @@ class ProfileMultiSliceWidgetHelper(object):
         slices = []
         for i in range(self.data.ndim):
             if self._sliders[i] is not None:
-                slices.append(self._sliders[i].state.slice_center)
+                try:
+                    slices.append(self._sliders[i].state.slice_center)
+                except Exception:
+                    pass
             elif self._sliders[i] is None:
                 slices.append(0)
 

@@ -332,8 +332,6 @@ class ProfileLayerState(MatplotlibLayerState):
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
             self._profile_cache = axis_values, profile_values
 
-        print(f'profile_values: {profile_values}')
-
         if update_limits:
             self.update_limits(update_profile=False)
 
