@@ -1,7 +1,11 @@
+import copy
+
 from astropy.wcs import WCS
 from astropy.wcs.utils import pixel_to_pixel
+from astropy.wcs.wcsapi import SlicedLowLevelWCS, HighLevelWCSWrapper
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
+
 
 __all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
 
@@ -18,12 +22,14 @@ def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
     def backwards(*pixel_input):
         return pixel_to_pixel(wcs2, wcs1, *pixel_input)
 
-    pixel_input = (0,) * len(pixel_cids1)
+    pixel_input = [0] * len(pixel_cids1)
 
     try:
+        # the case with wcs linkages
         forwards(*pixel_input)
         backwards(*pixel_input)
     except Exception:
+        # the case without wcs linkages
         return None, None, None, None
 
     return pixel_cids1, pixel_cids2, forwards, backwards
@@ -61,39 +67,83 @@ class WCSLink(MultiLink):
                 self._physical_types_2 = wcs2.world_axis_physical_types
 
         if not forwards or not backwards:
+            # A generalized APE 14-compatible way
+            # Handle also the extra-spatial axes such as those of the time and wavelength dimensions
 
-            # Try setting only a celestial link. We try and extract the celestial
-            # WCS, which will only work if the celestial coordinates are separable.
-            # TODO: find a more generalized APE 14-compatible way to do this.
+            wcs1_celestial_physical_types = wcs2_celestial_physical_types = []
 
-            if not wcs1.has_celestial or not wcs2.has_celestial:
-                raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
-
-            try:
-                wcs1_celestial = wcs1.celestial
-                wcs2_celestial = wcs2.celestial
-            except Exception:
-                raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
+            slicing_axes1 = slicing_axes2 = []
 
             cids1 = data1.pixel_component_ids
-            cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
-                               cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
-
-            if wcs1_celestial.wcs.lng > wcs1_celestial.wcs.lat:
-                cids1_celestial = cids1_celestial[::-1]
-
             cids2 = data2.pixel_component_ids
-            cids2_celestial = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1],
-                               cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
 
-            if wcs2_celestial.wcs.lng > wcs2_celestial.wcs.lat:
-                cids2_celestial = cids2_celestial[::-1]
+            if wcs1.has_celestial and wcs2.has_celestial:
+                wcs1_celestial_physical_types = wcs1.celestial.world_axis_physical_types
+                wcs2_celestial_physical_types = wcs2.celestial.world_axis_physical_types
 
-            pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(wcs1_celestial, wcs2_celestial,
-                                                                                   cids1_celestial, cids2_celestial)
+                cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
+                                   cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
+                cids2_celestial = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1],
+                                   cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
 
-            self._physical_types_1 = wcs1_celestial.world_axis_physical_types
-            self._physical_types_2 = wcs2_celestial.world_axis_physical_types
+                if wcs1.celestial.wcs.lng > wcs1.celestial.wcs.lat:
+                    cids1_celestial = cids1_celestial[::-1]
+
+                if wcs2.celestial.wcs.lng > wcs2.celestial.wcs.lat:
+                    cids2_celestial = cids2_celestial[::-1]
+
+                slicing_axes1 = [cids1_celestial[0].axis, cids1_celestial[1].axis]
+                slicing_axes2 = [cids2_celestial[0].axis, cids2_celestial[1].axis]
+
+            wcs1_sliced_physical_types = wcs2_sliced_physical_types = []
+
+            if wcs1_celestial_physical_types is not None:
+                wcs1_sliced_physical_types = wcs1_celestial_physical_types
+
+            if wcs2_celestial_physical_types is not None:
+                wcs2_sliced_physical_types = wcs2_celestial_physical_types
+
+            for i, physical_type1 in enumerate(wcs1.world_axis_physical_types):
+                for j, physical_type2 in enumerate(wcs2.world_axis_physical_types):
+                    if physical_type1 == physical_type2:
+                        if physical_type1 not in wcs1_sliced_physical_types:
+                            slicing_axes1.append(wcs1.world_n_dim - i - 1)
+                            wcs1_sliced_physical_types.append(physical_type1)
+                        if physical_type2 not in wcs2_sliced_physical_types:
+                            slicing_axes2.append(wcs2.world_n_dim - j - 1)
+                            wcs2_sliced_physical_types.append(physical_type2)
+
+            slicing_axes1 = sorted(slicing_axes1, key=str, reverse=True)
+            slicing_axes2 = sorted(slicing_axes2, key=str, reverse=True)
+
+            # Generate slices for the wcs slicing
+            slices1 = [slice(None)] * wcs1.world_n_dim
+            slices2 = [slice(None)] * wcs2.world_n_dim
+
+            for i in range(wcs1.world_n_dim):
+                if i not in slicing_axes1:
+                    slices1[i] = 0
+
+            for j in range(wcs2.world_n_dim):
+                if j not in slicing_axes2:
+                    slices2[j] = 0
+
+            wcs1_sliced = SlicedLowLevelWCS(wcs1, tuple(slices1))
+            wcs2_sliced = SlicedLowLevelWCS(wcs2, tuple(slices2))
+            wcs1_final = HighLevelWCSWrapper(copy.copy(wcs1_sliced))
+            wcs2_final = HighLevelWCSWrapper(copy.copy(wcs2_sliced))
+
+            cids1_sliced = [cids1[x] for x in slicing_axes1]
+            cids1_sliced = sorted(cids1_sliced, key=str, reverse=True)
+
+            cids2_sliced = [cids2[x] for x in slicing_axes2]
+            cids2_sliced = sorted(cids2_sliced, key=str, reverse=True)
+
+            pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
+                wcs1_final, wcs2_final, cids1_sliced, cids2_sliced)
+
+            self._physical_types_1 = wcs1_sliced_physical_types
+            self._physical_types_2 = wcs2_sliced_physical_types
 
         if pixel_cids1 is None:
             raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
