@@ -11,11 +11,11 @@ __all__ = ['ScatterOptionsWidget']
 
 def _get_labels(proj):
     if proj == 'rectilinear':
-        return 'x_axis', 'y_axis'
+        return 'x axis', 'y axis'
     elif proj == 'polar':
         return 'theta (rad)', 'radius'
     elif proj in ['aitoff', 'hammer', 'lambert', 'mollweide']:
-        return 'longitude (rad)', 'latitude (rad)'
+        return 'long (rad)', 'lat (rad)'
     else:
         return 'axis 1', 'axis 2'
 
@@ -54,7 +54,9 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_x_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = 'categorical' not in self.viewer_state.x_kinds
+        log_enabled = ('categorical' not in self.viewer_state.x_kinds and
+                      self.viewer_state.plot_mode not in ['aitoff', 'hammer',
+                                                          'lambert', 'mollweide', 'polar'])
         self.ui.bool_x_log.setEnabled(log_enabled)
         self.ui.bool_x_log_.setEnabled(log_enabled)
         if not log_enabled:
@@ -63,7 +65,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_y_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = 'categorical' not in self.viewer_state.y_kinds
+        log_enabled = ('categorical' not in self.viewer_state.y_kinds and
+                      self.viewer_state.plot_mode  not in ['aitoff', 'hammer', 'lambert', 'mollweide'])
         self.ui.bool_y_log.setEnabled(log_enabled)
         self.ui.bool_y_log_.setEnabled(log_enabled)
         if not log_enabled:
@@ -84,8 +87,6 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.valuetext_y_min.setEnabled(lim_enabled)
         self.ui.button_flip_y.setEnabled(lim_enabled)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
-        self.ui.bool_y_log.setEnabled(lim_enabled)
-        self.ui.bool_y_log_.setEnabled(lim_enabled)
-        self.ui.bool_x_log.setEnabled(lim_enabled and not is_polar)
-        self.ui.bool_x_log_.setEnabled(lim_enabled and not is_polar)
         self.ui.button_full_circle.setVisible(is_polar)
+        self._update_x_attribute()
+        self._update_y_attribute()
