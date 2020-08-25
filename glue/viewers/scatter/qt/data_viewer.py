@@ -7,10 +7,6 @@ from glue.viewers.scatter.state import ScatterViewerState
 
 from glue.viewers.scatter.viewer import MatplotlibScatterMixin
 
-from echo import delay_callback
-
-
-from numpy import rad2deg, deg2rad, datetime64
 
 __all__ = ['ScatterViewer']
 
@@ -35,53 +31,7 @@ class ScatterViewer(MatplotlibScatterMixin, MatplotlibDataViewer):
         MatplotlibScatterMixin.setup_callbacks(self)
 
     def limits_to_mpl(self, *args):
-        if self.state.plot_mode == 'rectilinear':
-            super().limits_to_mpl(*args)
-        elif self.state.plot_mode == 'polar':
-            x_min, x_max = self.state.x_min, self.state.x_max
-
-            y_min, y_max = self.state.y_min, self.state.y_max
-            if self.state.y_log:
-                if self.state.y_max <= 0:
-                    y_min, y_max = 0.1, 1
-                elif self.state.y_min <= 0:
-                    y_min = y_max / 10
-
-            self._skip_limits_from_mpl = True
-            try:
-                self.axes.set_thetalim(thetamin=rad2deg(x_min), thetamax=rad2deg(x_max))
-                self.axes.set_rlim(bottom=y_min, top=y_max)
-                self.axes.figure.canvas.draw_idle()
-            finally:
-                self._skip_limits_from_mpl = False
-        else:
-            pass
-
-    def mpl_to_limits(self, *args):
-        if self.state.plot_mode == 'rectilinear':
-            super().mpl_to_limits(*args)
-        elif self.state.plot_mode == 'polar':
-            if self._skip_limits_from_mpl:
-                return
-            if isinstance(self.state.x_min, datetime64):
-                x_min = mpl_to_datetime64(self.axes.get_theatmin())
-                x_max = mpl_to_datetime64(self.axes.get_theatmax())
-            else:
-                x_min = self.axes.get_theatmin()
-                x_max = self.axes.get_theatmax()
-
-            if isinstance(self.state.y_min, datetime64):
-                y_min, y_max = [mpl_to_datetime64(y) for y in self.axes.get_ylim()]
-            else:
-                y_min, y_max = self.axes.get_ylim()
-
-            with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
-
-                self.state.x_min = x_min
-                self.state.x_max = x_max
-                self.state.y_min = y_min
-                self.state.y_max = y_max
-
-        else:
-            pass
-
+        # These projections throw errors if we try to set the limits
+        if self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+            return
+        super().limits_to_mpl(*args)
