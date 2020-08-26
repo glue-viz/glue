@@ -5,10 +5,11 @@ from functools import partial
 
 import numpy as np
 
-from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator, FixedLocator
 from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
                                FuncFormatter)
 from matplotlib.dates import AutoDateLocator, AutoDateFormatter
+from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 
 from glue.utils import nanmin, nanmax
 
@@ -334,7 +335,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, kinds, is_log, categories):
+def update_ticks(axes, coord, kinds, is_log, categories, projection = 'rectilinear'):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.
@@ -351,7 +352,14 @@ def update_ticks(axes, coord, kinds, is_log, categories):
         A list of components that are plotted along this axis
     if_log : boolean
         Whether the axis has a log-scale
+    projection: str
+        The name of the matplotlib projection for the axes object. Defaults to 'rectilinear'.
+        Currently only the scatter viewer supports different projections.
     """
+
+    # Short circuit the full-sphere projections
+    if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
+        return
 
     if coord == 'x':
         axis = axes.xaxis
@@ -378,6 +386,10 @@ def update_ticks(axes, coord, kinds, is_log, categories):
         formatter = FuncFormatter(format_func)
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
+    # Have to treat the theta axis of polar plots differently
+    elif projection == 'polar' and coord == 'x':
+        axis.set_major_locator(ThetaLocator(AutoLocator()))
+        axis.set_major_formatter(ThetaFormatter())
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())

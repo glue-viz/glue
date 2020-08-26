@@ -57,7 +57,8 @@ class MatplotlibScatterMixin(object):
         if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log, self.state.x_categories)
+            update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log,
+                         self.state.x_categories, projection = self.state.plot_mode)
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
@@ -67,7 +68,8 @@ class MatplotlibScatterMixin(object):
         if self.state.y_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log, self.state.y_categories)
+            update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log,
+                         self.state.y_categories, projection = self.state.plot_mode)
 
             if self.state.y_log:
                 self.state.y_axislabel = 'Log ' + self.state.y_att.label
