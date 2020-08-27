@@ -1827,11 +1827,12 @@ class RoiSubsetState3d(RoiSubsetStateNd):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
+        pretrans = rec['pretransform'] if 'pretransform' in rec else None
         return RoiSubsetState3d(context.object(rec['xatt']),
                                 context.object(rec['yatt']),
                                 context.object(rec['zatt']),
                                 context.object(rec['roi']),
-                                context.object(rec['pretransform']))
+                                context.object(pretrans))
 
 
 @contract(subsets='list(isinstance(Subset))', returns=Subset)

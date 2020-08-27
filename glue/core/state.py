@@ -676,7 +676,7 @@ def _load_roi_subset_state(rec, context):
     return RoiSubsetState(context.object(rec['xatt']),
                           context.object(rec['yatt']),
                           context.object(rec['roi']),
-                          context.object(rec['pretransform']))
+                          context.object(rec['pretransform'] if 'pretransform' in rec else None))
 
 
 @saver(InequalitySubsetState)
