@@ -227,3 +227,27 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].cmap = plt.cm.BuGn
         self.viewer.state.layers[0].density_map = False
         self.assert_same(tmpdir)
+
+    def test_simple_polar_plot(self, tmpdir):
+        self.viewer.state.plot_mode = 'polar'
+        self.viewer.state.x_att = self.data.id['c']
+        self.viewer.state.y_att = self.data.id['d']
+        self.assert_same(tmpdir)
+
+    def test_full_sphere(self, tmpdir):
+        self.viewer.state.plot_mode = 'aitoff'
+        self.viewer.state.x_att = self.data.id['c']
+        self.viewer.state.y_att = self.data.id['d']
+        self.assert_same(tmpdir)
+        self.viewer.state.plot_mode = 'hammer'
+        self.viewer.state.x_att = self.data.id['e']
+        self.viewer.state.y_att = self.data.id['f']
+        self.assert_same(tmpdir)
+        self.viewer.state.plot_mode = 'lambert'
+        self.viewer.state.x_att = self.data.id['g']
+        self.viewer.state.y_att = self.data.id['h']
+        self.assert_same(tmpdir)
+        self.viewer.state.plot_mode = 'mollweide'
+        self.viewer.state.x_att = self.data.id['a']
+        self.viewer.state.y_att = self.data.id['b']
+        self.assert_same(tmpdir)

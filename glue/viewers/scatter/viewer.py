@@ -1,11 +1,9 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
-from glue.core import glue_pickle as gp
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
 from glue.viewers.matplotlib.mpl_axes import init_mpl
-from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 
 from matplotlib.figure import Figure
 import numpy as np
@@ -92,6 +90,10 @@ class MatplotlibScatterMixin(object):
         self.limits_from_mpl()
         self.removeToolBar(self.toolbar)
         self.initialize_toolbar()
+        self.update_x_axislabel()
+        self.update_y_axislabel()
+        self.update_x_ticklabel()
+        self.update_y_ticklabel()
         self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):

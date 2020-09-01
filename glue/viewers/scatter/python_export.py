@@ -76,7 +76,7 @@ def python_export_scatter_layer(layer, *args):
             script += "           {0}))\n".format(serialize_options(options))
 
         else:
-            if layer.state.cmap_mode == 'Fixed' and layer.state.size_mode == 'Fixed':
+            if layer._use_plot_artist():
                 options = dict(color=layer.state.color,
                                markersize=layer.state.size * layer.state.size_scaling,
                                alpha=layer.state.alpha,
