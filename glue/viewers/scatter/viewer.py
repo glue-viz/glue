@@ -87,13 +87,18 @@ class MatplotlibScatterMixin(object):
             layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
-        self.limits_from_mpl()
         self.removeToolBar(self.toolbar)
         self.initialize_toolbar()
         self.update_x_axislabel()
         self.update_y_axislabel()
         self.update_x_ticklabel()
         self.update_y_ticklabel()
+
+        # Reset and roundtrip the limits to have reasonable and synced limits when changing
+        self.state.reset_limits()
+        self.limits_to_mpl()
+        self.limits_from_mpl()
+        
         self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
