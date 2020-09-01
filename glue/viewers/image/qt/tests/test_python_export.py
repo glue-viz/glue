@@ -7,6 +7,8 @@ from glue.app.qt.application import GlueApplication
 from glue.viewers.image.qt import ImageViewer
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython
 
+from astropy.wcs import WCS
+
 
 class TestExportPython(BaseTestExportPython):
 
@@ -84,4 +86,17 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
         self.viewer.state.y_att = self.data.pixel_component_ids[1]
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.assert_same(tmpdir)
+
+    def test_hide_axes(self, tmpdir):
+        self.viewer.state.aspect = 'auto'
+        self.viewer.state.x_min = -5
+        self.viewer.state.y_min = -3
+        self.viewer.state.x_max = 30
+        self.viewer.state.y_max = 55
+        super().test_hide_axes(tmpdir)
+
+    def test_wcs_image(self, tmpdir):
+        coords = WCS(naxis=3)
+        wcs_data = Data(self.data.data)
         self.assert_same(tmpdir)

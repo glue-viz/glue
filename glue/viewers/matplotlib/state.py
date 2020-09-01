@@ -91,8 +91,8 @@ class MatplotlibLegendState(State):
             return self.location
 
     def update_axes_settings_from(self, state):
-        self.visible = state.show_legend
-        self.loc_and_drag = state.loc_and_drag
+        self.visible = state.visible
+        self.location = state.location
         self.alpha = state.alpha
         self.title = state.title
         self.fontsize = state.fontsize
@@ -244,6 +244,7 @@ class MatplotlibDataViewerState(ViewerState):
         self.y_ticklabel_size = state.y_ticklabel_size
         # legend
         self.legend.update_axes_settings_from(state.legend)
+        self.show_axes = state.show_axes
 
     @defer_draw
     def _notify_global(self, *args, **kwargs):

@@ -5,9 +5,10 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
-from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
+from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings, DEFAULT_MARGIN
 from echo import delay_callback
 from glue.utils import mpl_to_datetime64
+from glue.utils.matplotlib import freeze_margins
 
 __all__ = ['MatplotlibViewerMixin']
 
@@ -30,6 +31,10 @@ ax.set_ylim({y_min}, {y_max})
 # Set scale (log or linear)
 ax.set_xscale('{x_log_str}')
 ax.set_yscale('{y_log_str}')
+
+# Enable or disable the drawing of axes and remove margin if hiding axes
+ax.set_axis_{show_axes}()
+{margin}
 
 # Set axis label properties
 ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
@@ -117,6 +122,7 @@ class MatplotlibViewerMixin(object):
 
         self.state.add_callback('x_ticklabel_size', self.update_x_ticklabel)
         self.state.add_callback('y_ticklabel_size', self.update_y_ticklabel)
+        self.state.add_callback('show_axes', self.update_axes_visibility)
 
         self.state.legend.add_callback('visible', self.draw_legend)
         self.state.legend.add_callback('location', self.draw_legend)
@@ -206,6 +212,16 @@ class MatplotlibViewerMixin(object):
             if legend is not None:
                 legend.remove()
         self.redraw()
+
+    def update_axes_visibility(self, *event):
+        if self.state.show_axes:
+            self.axes.set_axis_on()
+            freeze_margins(self.axes, margins=DEFAULT_MARGIN)
+        else:
+            self.axes.set_axis_off()
+            freeze_margins(self.axes, margins=[0., 0., 0., 0.])
+        # Have to force a resize event to update margins
+        self.axes.figure.canvas.resize_event()
 
     def redraw(self):
         self.figure.canvas.draw_idle()
@@ -312,6 +328,8 @@ class MatplotlibViewerMixin(object):
         state_dict = self.state.as_dict()
         state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
         state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
+        state_dict['show_axes'] = 'on' if self.state.show_axes else 'off'
+        state_dict['margin'] = 'ax.set_position([0, 0, 1, 1])' if not self.state.show_axes else ''
         return [], SCRIPT_FOOTER.format(**state_dict)
 
     def _script_legend(self):

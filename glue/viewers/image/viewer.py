@@ -68,6 +68,13 @@ class MatplotlibImageMixin(object):
         self.axes.coords[axis].set_ticklabel(size=self.state.y_ticklabel_size)
         self.redraw()
 
+    def update_axes_visibility(self, *event):
+        if self.state.show_axes:
+            self._set_wcs()
+        else:
+            self._changing_slice_requires_wcs_update = False
+        super(MatplotlibImageMixin, self).update_axes_visibility(event)
+
     def _update_axes(self, *args):
 
         if self.state.x_att_world is not None:
@@ -132,7 +139,7 @@ class MatplotlibImageMixin(object):
                 y_dep.remove(ix)
             if iy in y_dep:
                 y_dep.remove(iy)
-            self._changing_slice_requires_wcs_update = bool(x_dep or y_dep)
+            self._changing_slice_requires_wcs_update = bool(x_dep or y_dep) and self.state.show_axes
 
         self._wcs_set = True
 
@@ -219,7 +226,7 @@ class MatplotlibImageMixin(object):
         ref_coords = self.state.reference_data.coords
 
         if hasattr(ref_coords, 'wcs'):
-            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords.wcs)\n".format(self.state.wcsaxes_slice)
+            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords)\n".format(self.state.wcsaxes_slice)
         elif hasattr(ref_coords, 'wcsaxes_dict'):
             raise NotImplementedError()
         else:
