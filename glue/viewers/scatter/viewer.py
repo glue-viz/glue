@@ -1,5 +1,6 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
+from glue.core.roi_pretransforms import ProjectionMplTransform
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
@@ -11,34 +12,6 @@ import numpy as np
 
 __all__ = ['MatplotlibScatterMixin']
 
-
-class MplProjectionTransform(object):
-    def __init__(self, projection, x_lim, y_lim, x_scale, y_scale):
-        self._state = {'projection': projection, 'x_lim': x_lim,'y_lim': y_lim,
-                       'x_scale': x_scale, 'y_scale': y_scale}
-        _, axes = init_mpl(Figure(), projection=self._state['projection'])
-        axes.set_xscale(self._state['x_scale'])
-        axes.set_yscale(self._state['y_scale'])
-        if self._state['projection'] not in ['aitoff', 'hammer', 'lambert', 'mollweide']:
-            axes.set_xlim(self._state['x_lim'])
-            axes.set_ylim(self._state['y_lim'])
-        self._transform = (axes.transData + axes.transAxes.inverted()).frozen()
-
-    def __call__(self, x,y):
-        assert self._transform is not None
-        assert x.shape == y.shape
-        points = np.hstack((x.reshape(-1,1),y.reshape(-1,1)))
-        res = self._transform.transform(points)
-        out = np.hsplit(res,2)
-        return out[0].reshape(x.shape), out[1].reshape(y.shape)
-
-    def __gluestate__(self, context):
-        return dict(state=context.id(self._state))
-
-    @classmethod
-    def __setgluestate__(cls, rec, context):
-        state = context.object(rec['state'])
-        return cls(state['projection'], state['x_lim'], state['y_lim'], state['x_scale'], state['y_scale'])
 
 class MatplotlibScatterMixin(object):
 
@@ -98,7 +71,7 @@ class MatplotlibScatterMixin(object):
         self.state.reset_limits()
         self.limits_to_mpl()
         self.limits_from_mpl()
-        
+
         self.figure.canvas.draw_idle()
 
     def apply_roi(self, roi, override_mode=None):
@@ -126,7 +99,7 @@ class MatplotlibScatterMixin(object):
                                            y_att=self.state.y_att, y_categories=self.state.y_categories,
                                            use_pretransform = use_transform)
         if use_transform:
-            subset_state.pretransform = MplProjectionTransform(self.state.plot_mode,
+            subset_state.pretransform = ProjectionMplTransform(self.state.plot_mode,
                                                                self.axes.get_xlim(),
                                                                self.axes.get_ylim(),
                                                                self.axes.get_xscale(),
