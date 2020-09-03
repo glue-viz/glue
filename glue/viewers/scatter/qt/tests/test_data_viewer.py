@@ -706,3 +706,74 @@ class TestScatterViewer(object):
         # 'd2' is not enabled (no linked component)
         handles, labels, handler_dict = self.viewer.get_handles_legend()
         assert len(handles) == 2
+
+    def test_changing_plot_modes(self):
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = 'polar'
+        assert 'polar' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'aitoff'
+        assert 'aitoff' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'hammer'
+        assert 'hammer' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'lambert'
+        assert 'lambert' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'mollweide'
+        assert 'mollweide' in str(type(self.viewer.axes)).lower()
+
+    def test_chaning_mode_limits(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        old_xmin = viewer_state.x_min
+        old_xmax = viewer_state.x_max
+        old_ymin = viewer_state.y_min
+        old_ymax = viewer_state.y_max
+
+        viewer_state.plot_mode = 'polar'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'aitoff'
+        assert_allclose(viewer_state.x_min, -np.pi)
+        assert_allclose(viewer_state.x_max, np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
+        assert_allclose(viewer_state.y_min, -np.pi/2)
+        assert_allclose(viewer_state.y_max, np.pi/2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'hammer'
+        assert_allclose(viewer_state.x_min, -np.pi)
+        assert_allclose(viewer_state.x_max, np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
+        assert_allclose(viewer_state.y_min, -np.pi/2)
+        assert_allclose(viewer_state.y_max, np.pi/2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+
+        viewer_state.plot_mode = 'rectilinear'
+        viewer_state.plot_mode = 'lambert'
+        assert_allclose(viewer_state.x_min, -np.pi)
+        assert_allclose(viewer_state.x_max, np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
+        assert_allclose(viewer_state.y_min, -np.pi/2)
+        assert_allclose(viewer_state.y_max, np.pi/2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+
+        viewer_state.plot_mode = 'rectilinear'
+        viewer_state.plot_mode = 'mollweide'
+        assert_allclose(viewer_state.x_min, -np.pi)
+        assert_allclose(viewer_state.x_max, np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
+        assert_allclose(viewer_state.y_min, -np.pi/2)
+        assert_allclose(viewer_state.y_max, np.pi/2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
