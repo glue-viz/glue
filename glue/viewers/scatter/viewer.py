@@ -6,9 +6,6 @@ from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
 from glue.viewers.matplotlib.mpl_axes import init_mpl
 
-from matplotlib.figure import Figure
-import numpy as np
-
 
 __all__ = ['MatplotlibScatterMixin']
 
