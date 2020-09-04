@@ -84,9 +84,6 @@ class ProfileMultiSliceWidgetHelper(object):
 
             self._clear()
 
-            # Init sliders to 0 every time each is instantiated
-            # self._slices = [0] * self.data.ndim
-
             for i in range(self.data.ndim):
 
                 if i == self.viewer_state.x_att_pixel.axis:

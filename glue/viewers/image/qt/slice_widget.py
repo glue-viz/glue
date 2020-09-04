@@ -58,8 +58,7 @@ class MultiSliceWidgetHelper(object):
                 slices.append(self.viewer_state.slices[i])
         self.viewer_state.slices = tuple(slices)
 
-        if self.viewer_state.reference_data is not self._reference_data:
-            self._reference_data = self.viewer_state.reference_data
+        self._reference_data = self.viewer_state.reference_data
 
     @avoid_circular
     def sync_sliders_from_state(self, *args):

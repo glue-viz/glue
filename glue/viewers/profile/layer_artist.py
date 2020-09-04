@@ -79,7 +79,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         # Update the data values.
         if len(x) > 0:
-            x = np.arange(len(x))
             self.state.update_limits()
             # Normalize profile values to the [0:1] range based on limits
             if self._viewer_state.normalize:

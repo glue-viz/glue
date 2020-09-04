@@ -152,12 +152,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_helper.set_multiple_data([])
                 else:
                     self.x_att_helper.set_multiple_data([self.reference_data])
-                    if self._display_world:
-                        self.x_att_helper.world_coord = True
-                        self.x_att = self.reference_data.world_component_ids[0]
-                    else:
-                        self.x_att_helper.world_coord = False
-                        self.x_att = self.reference_data.pixel_component_ids[0]
+                    # if self._display_world:
+                    #     self.x_att_helper.world_coord = True
+                    #     self.x_att = self.reference_data.world_component_ids[0]
+                    # else:
+                    self.x_att_helper.world_coord = False
+                    self.x_att = self.reference_data.pixel_component_ids[0]
 
                 self._update_att()
 
@@ -195,8 +195,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.slices = ()
         else:
             self.slices = tuple([0] * self.reference_data.ndim)
-
-        print(self.slices)
 
 
 class ProfileLayerState(MatplotlibLayerState):
@@ -320,6 +318,9 @@ class ProfileLayerState(MatplotlibLayerState):
             data_slice = list(copy.deepcopy(self.viewer_state.slices))
             data_slice[pix_cid.axis] = slice(None)
             profile_values = data.get_data(self.attribute, view=tuple(data_slice))
+            if subset_state:
+                subset_profile_mask = data.get_mask(subset_state=subset_state, view=tuple(data_slice))
+                profile_values = profile_values[subset_profile_mask]
         else:
             profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes,
                                                     subset_state=subset_state)

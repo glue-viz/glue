@@ -1,21 +1,10 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import LegacyCoordinates
+from glue.utils.wcs import get_identity_wcs
 
-from astropy.wcs import WCS
 from astropy.visualization.wcsaxes.frame import RectangularFrame1D
 
 __all__ = ['MatplotlibProfileMixin']
-
-
-def get_identity_wcs(naxis):
-
-    wcs = WCS(naxis=naxis)
-    wcs.wcs.ctype = ['X'] * naxis
-    wcs.wcs.crval = [0.] * naxis
-    wcs.wcs.crpix = [1.] * naxis
-    wcs.wcs.cdelt = [1.] * naxis
-
-    return wcs
 
 
 class MatplotlibProfileMixin(object):
