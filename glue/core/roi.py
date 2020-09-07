@@ -49,9 +49,11 @@ def pixel_to_data(axes, x, y):
     xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     return axes.transData.inverted().transform(xy)
 
+
 def pixel_to_axes(axes, x, y):
     xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     return axes.transAxes.inverted().transform(xy)
+
 
 class Roi(object):  # pragma: no cover
 

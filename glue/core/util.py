@@ -5,9 +5,8 @@ from functools import partial
 
 import numpy as np
 
-from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator, FixedLocator
-from matplotlib.ticker import (LogFormatterMathtext, ScalarFormatter,
-                               FuncFormatter)
+from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
+from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 
@@ -335,7 +334,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, kinds, is_log, categories, projection = 'rectilinear'):
+def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear'):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.

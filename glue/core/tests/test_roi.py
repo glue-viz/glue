@@ -22,11 +22,13 @@ from ..state import GlueSerializer, GlueUnSerializer
 FIG = Figure()
 AXES = FIG.add_subplot(111)
 
+
 def roundtrip_roi(roi):
     gs = GlueSerializer(roi)
     out_str = gs.dumps()
     obj = GlueUnSerializer.loads(out_str)
     return obj.object('__main__')
+
 
 class TestPoint(object):
 
@@ -185,12 +187,13 @@ class TestXRange(object):
                                       [-1e100, -1e100, 1e100, 1e100, -1e100])
 
     def test_serialization(self):
-         roi = XRangeROI()
-         roi.set_range(7, 8)
-         new_roi = roundtrip_roi(roi)
-         assert_almost_equal(new_roi.min, 7)
-         assert_almost_equal(new_roi.max, 8)
-         assert new_roi.ori == 'x'
+        roi = XRangeROI()
+        roi.set_range(7, 8)
+        new_roi = roundtrip_roi(roi)
+        assert_almost_equal(new_roi.min, 7)
+        assert_almost_equal(new_roi.max, 8)
+        assert new_roi.ori == 'x'
+
 
 class TestYRange(object):
     def test_undefined_on_init(self):
@@ -496,6 +499,7 @@ class TestPolygon(object):
         new_roi = roundtrip_roi(self.roi)
         assert_almost_equal(new_roi.vx, np.array([0, 0, 1, 1]))
         assert_almost_equal(new_roi.vy, np.array([0, 1, 1, 0]))
+
 
 class TestProjected3dROI(object):
     # matrix that converts xyzw to yxzw

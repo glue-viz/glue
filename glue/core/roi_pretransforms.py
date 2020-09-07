@@ -6,7 +6,7 @@ import numpy as np
 
 class ProjectionMplTransform(object):
     def __init__(self, projection, x_lim, y_lim, x_scale, y_scale):
-        self._state = {'projection': projection, 'x_lim': x_lim,'y_lim': y_lim,
+        self._state = {'projection': projection, 'x_lim': x_lim, 'y_lim': y_lim,
                        'x_scale': x_scale, 'y_scale': y_scale}
         _, axes = init_mpl(Figure(), projection=self._state['projection'])
         axes.set_xscale(self._state['x_scale'])
@@ -19,9 +19,9 @@ class ProjectionMplTransform(object):
     def __call__(self, x, y):
         assert self._transform is not None
         assert x.shape == y.shape
-        points = np.hstack((x.reshape(-1,1),y.reshape(-1,1)))
+        points = np.hstack((x.reshape(-1, 1), y.reshape(-1, 1)))
         res = self._transform.transform(points)
-        out = np.hsplit(res,2)
+        out = np.hsplit(res, 2)
         return out[0].reshape(x.shape), out[1].reshape(y.shape)
 
     def __gluestate__(self, context):

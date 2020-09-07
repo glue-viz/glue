@@ -1,4 +1,4 @@
-from glue.utils import defer_draw, decorate_all_methods, mpl_to_datetime64
+from glue.utils import defer_draw, decorate_all_methods
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
 from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist

@@ -305,7 +305,8 @@ class MatplotlibViewerMixin(object):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
-        state_dict['projection'] = "None" if not hasattr(self.state, 'plot_mode') else "'"+self.state.plot_mode+"'"
+        proj = "'" + self.state.plot_mode + "'" if hasattr(self.state, 'plot_mode') else "None"
+        state_dict['projection'] = proj
         return ['import matplotlib',
                 "matplotlib.use('Agg')",
                 "# matplotlib.use('qt5Agg')",
@@ -317,12 +318,13 @@ class MatplotlibViewerMixin(object):
         temp_str = ''
         if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar']:
             x_log_str = 'log' if self.state.x_log else 'linear'
-            temp_str += "ax.set_xscale('"+x_log_str+"')\n"
+            temp_str += "ax.set_xscale('" + x_log_str + "')\n"
         if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']:
             y_log_str = 'log' if self.state.y_log else 'linear'
-            temp_str += "ax.set_yscale('"+y_log_str+"')\n"
-        state_dict['scale_script'] = "# Set scale (log or linear)\n" +temp_str if temp_str else ''
-        state_dict['limit_script'] = '' if mode in ['aitoff', 'hammer', 'lambert', 'mollweide'] else LIMIT_SCRIPT.format(**state_dict)
+            temp_str += "ax.set_yscale('" + y_log_str + "')\n"
+        state_dict['scale_script'] = "# Set scale (log or linear)\n" + temp_str if temp_str else ''
+        full_sphere = ['aitoff', 'hammer', 'lambert', 'mollweide']
+        state_dict['limit_script'] = '' if mode in full_sphere else LIMIT_SCRIPT.format(**state_dict)
         return [], SCRIPT_FOOTER.format(**state_dict)
 
     def _script_legend(self):

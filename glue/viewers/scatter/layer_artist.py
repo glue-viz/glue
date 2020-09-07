@@ -230,7 +230,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
                 self.density_artist.set_label(None)
-                if  self._use_plot_artist():
+                if self._use_plot_artist():
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
                     self.plot_artist.set_data(x, y)
@@ -572,4 +572,5 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
     def _use_plot_artist(self):
         res = self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed'
-        return res and (not hasattr(self._viewer_state, 'plot_mode') or not self._viewer_state.plot_mode == 'polar')
+        return res and (not hasattr(self._viewer_state, 'plot_mode') or
+                        not self._viewer_state.plot_mode == 'polar')

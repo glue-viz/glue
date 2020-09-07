@@ -740,9 +740,9 @@ class TestScatterViewer(object):
         assert_allclose(viewer_state.x_min, -np.pi)
         assert_allclose(viewer_state.x_max, np.pi)
         assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi/2)
-        assert_allclose(viewer_state.y_max, np.pi/2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+        assert_allclose(viewer_state.y_min, -np.pi / 2)
+        assert_allclose(viewer_state.y_max, np.pi / 2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
 
         viewer_state.plot_mode = 'rectilinear'
         assert_allclose(viewer_state.x_min, old_xmin)
@@ -756,24 +756,24 @@ class TestScatterViewer(object):
         assert_allclose(viewer_state.x_min, -np.pi)
         assert_allclose(viewer_state.x_max, np.pi)
         assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi/2)
-        assert_allclose(viewer_state.y_max, np.pi/2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+        assert_allclose(viewer_state.y_min, -np.pi / 2)
+        assert_allclose(viewer_state.y_max, np.pi / 2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
 
         viewer_state.plot_mode = 'rectilinear'
         viewer_state.plot_mode = 'lambert'
         assert_allclose(viewer_state.x_min, -np.pi)
         assert_allclose(viewer_state.x_max, np.pi)
         assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi/2)
-        assert_allclose(viewer_state.y_max, np.pi/2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+        assert_allclose(viewer_state.y_min, -np.pi / 2)
+        assert_allclose(viewer_state.y_max, np.pi / 2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
 
         viewer_state.plot_mode = 'rectilinear'
         viewer_state.plot_mode = 'mollweide'
         assert_allclose(viewer_state.x_min, -np.pi)
         assert_allclose(viewer_state.x_max, np.pi)
         assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi/2)
-        assert_allclose(viewer_state.y_max, np.pi/2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi/2, np.pi/2])
+        assert_allclose(viewer_state.y_min, -np.pi / 2)
+        assert_allclose(viewer_state.y_max, np.pi / 2)
+        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])

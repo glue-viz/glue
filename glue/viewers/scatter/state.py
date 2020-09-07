@@ -91,7 +91,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
         if not self.plot_mode == 'polar':
             return
         self.x_min = 0
-        self.x_max = 2*np.pi
+        self.x_max = 2 * np.pi
 
     @property
     def x_categories(self):

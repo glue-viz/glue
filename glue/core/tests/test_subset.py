@@ -32,7 +32,8 @@ from .test_state import clone
 
 
 def example_transform(x, y):
-    return x+y, x-y
+    return x + y, x - y
+
 
 class TestSubset(object):
 
@@ -854,11 +855,12 @@ class TestCloneSubsetStates():
         print(example_transform(self.data['a'], self.data['c']))
         import types
         print(type(example_transform), isinstance(example_transform, types.FunctionType))
-        assert_equal(self.data.subsets[0].to_mask(), [0,1,0,0])
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
 
         data_clone = clone(self.data)
 
         assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
 
 @requires_scipy
 def test_floodfill_subset_state():

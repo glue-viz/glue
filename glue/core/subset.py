@@ -592,8 +592,8 @@ class RoiSubsetState(RoiSubsetStateNd):
     def to_mask(self, data, view=None):
         x_data = data[self.xatt, view]
         if (x_data.ndim == data.ndim and
-            self.xatt in data.pixel_component_ids and
-            self.yatt in data.pixel_component_ids):
+                    self.xatt in data.pixel_component_ids and
+                    self.yatt in data.pixel_component_ids):
 
             # This is a special case - the ROI is defined in pixel space, so we
             #  can apply it to a single slice and then broadcast it to all other
@@ -1807,7 +1807,6 @@ class RoiSubsetState3d(RoiSubsetStateNd):
     @zatt.setter
     def zatt(self, value):
         self._atts[2] = value
-
 
     def copy(self):
         result = RoiSubsetState3d()

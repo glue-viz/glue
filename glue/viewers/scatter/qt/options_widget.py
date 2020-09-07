@@ -19,6 +19,7 @@ def _get_labels(proj):
     else:
         return 'axis 1', 'axis 2'
 
+
 class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def __init__(self, viewer_state, session, parent=None):
@@ -54,9 +55,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_x_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = ('categorical' not in self.viewer_state.x_kinds and
-                      self.viewer_state.plot_mode not in ['aitoff', 'hammer',
-                                                          'lambert', 'mollweide', 'polar'])
+        log_enabled = ('categorical' not in self.viewer_state.x_kinds and self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar'])
         self.ui.bool_x_log.setEnabled(log_enabled)
         self.ui.bool_x_log_.setEnabled(log_enabled)
         if not log_enabled:
@@ -65,8 +64,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_y_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = ('categorical' not in self.viewer_state.y_kinds and
-                      self.viewer_state.plot_mode  not in ['aitoff', 'hammer', 'lambert', 'mollweide'])
+        log_enabled = ('categorical' not in self.viewer_state.y_kinds and self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide'])
         self.ui.bool_y_log.setEnabled(log_enabled)
         self.ui.bool_y_log_.setEnabled(log_enabled)
         if not log_enabled:
