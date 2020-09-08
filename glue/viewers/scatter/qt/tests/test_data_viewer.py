@@ -721,41 +721,6 @@ class TestScatterViewer(object):
         viewer_state.plot_mode = 'mollweide'
         assert 'mollweide' in str(type(self.viewer.axes)).lower()
 
-    def test_chaning_mode_limits(self):
-        self.viewer.add_data(self.data)
-        viewer_state = self.viewer.state
-        old_xmin = viewer_state.x_min
-        old_xmax = viewer_state.x_max
-        old_ymin = viewer_state.y_min
-        old_ymax = viewer_state.y_max
-
-        viewer_state.plot_mode = 'polar'
-        assert_allclose(viewer_state.x_min, old_xmin)
-        assert_allclose(viewer_state.x_max, old_xmax)
-        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
-        assert_allclose(viewer_state.y_min, old_ymin)
-        assert_allclose(viewer_state.y_max, old_ymax)
-        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
-
-        viewer_state.plot_mode = 'rectilinear'
-        assert_allclose(viewer_state.x_min, old_xmin)
-        assert_allclose(viewer_state.x_max, old_xmax)
-        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
-        assert_allclose(viewer_state.y_min, old_ymin)
-        assert_allclose(viewer_state.y_max, old_ymax)
-        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
-
-        for proj in fullsphere_projections:
-            viewer_state.plot_mode = 'rectilinear'
-            viewer_state.plot_mode = proj
-            error_msg = "Issue with {} projection".format(proj)
-            assert_allclose(viewer_state.x_min, -np.pi)
-            assert_allclose(viewer_state.x_max, np.pi)
-            assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
-            assert_allclose(viewer_state.y_min, -np.pi / 2)
-            assert_allclose(viewer_state.y_max, np.pi / 2)
-            assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
-
 
     def test_limit_log_set_polar(self):
         self.viewer.add_data(self.data)
@@ -781,7 +746,7 @@ class TestScatterViewer(object):
 
         for proj in fullsphere_projections:
             viewer_state.plot_mode = proj
-            error_msg = "Issue with {} projection".format(proj)
+            error_msg = 'Issue with {} projection'.format(proj)
             axes = self.viewer.axes
             viewer_state.x_min = 0.5
             viewer_state.x_max = 1.5
@@ -789,3 +754,71 @@ class TestScatterViewer(object):
             viewer_state.y_max = 2.5
             assert_allclose(axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
             assert_allclose(axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
+
+    def test_changing_mode_limits(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        old_xmin = viewer_state.x_min
+        old_xmax = viewer_state.x_max
+        old_ymin = viewer_state.y_min
+        old_ymax = viewer_state.y_max
+        # Make sure limits are reset first
+        viewer_state.x_max += 3
+
+        viewer_state.plot_mode = 'polar'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = 'rectilinear'
+            viewer_state.plot_mode = proj
+            error_msg = 'Issue with {} projection'.format(proj)
+            assert_allclose(viewer_state.x_min, -np.pi)
+            assert_allclose(viewer_state.x_max, np.pi)
+            assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose(viewer_state.y_min, -np.pi / 2)
+            assert_allclose(viewer_state.y_max, np.pi / 2)
+            assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
+
+    def test_changing_mode_log(self):
+        # Test to make sure we reset the log axes to false when changing modes to prevent problems
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        viewer_state.x_log = True
+        viewer_state.y_log = True
+
+        viewer_state.plot_mode = 'polar'
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+        assert self.viewer.axes.get_xscale() == 'linear'
+        assert self.viewer.axes.get_yscale() == 'linear'
+        viewer_state.y_log = True
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+        assert self.viewer.axes.get_xscale() == 'linear'
+        assert self.viewer.axes.get_yscale() == 'linear'
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = 'rectilinear'
+            viewer_state.x_log = True
+            viewer_state.y_log = True
+            viewer_state.plot_mode = proj
+            error_msg = 'Issue with {} projection'.format(proj)
+            assert not viewer_state.x_log, error_msg
+            assert not viewer_state.y_log, error_msg
+            assert self.viewer.axes.get_xscale() == 'linear', error_msg
+            assert self.viewer.axes.get_yscale() == 'linear', error_msg

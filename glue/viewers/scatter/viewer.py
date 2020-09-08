@@ -65,6 +65,7 @@ class MatplotlibScatterMixin(object):
         self.update_y_ticklabel()
 
         # Reset and roundtrip the limits to have reasonable and synced limits when changing
+        self.state.x_log = self.state.y_log = False
         self.state.reset_limits()
         self.limits_to_mpl()
         self.limits_from_mpl()
