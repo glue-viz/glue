@@ -31,6 +31,7 @@ class TestScatterCommon(BaseTestMatplotlibDataViewer):
         return Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
     viewer_cls = ScatterViewer
 
+fullsphere_projections = ['aitoff', 'hammer', 'lambert', 'mollweide']
 
 class TestScatterViewer(object):
 
@@ -736,14 +737,6 @@ class TestScatterViewer(object):
         assert_allclose(viewer_state.y_max, old_ymax)
         assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
 
-        viewer_state.plot_mode = 'aitoff'
-        assert_allclose(viewer_state.x_min, -np.pi)
-        assert_allclose(viewer_state.x_max, np.pi)
-        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi / 2)
-        assert_allclose(viewer_state.y_max, np.pi / 2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
-
         viewer_state.plot_mode = 'rectilinear'
         assert_allclose(viewer_state.x_min, old_xmin)
         assert_allclose(viewer_state.x_max, old_xmax)
@@ -752,28 +745,47 @@ class TestScatterViewer(object):
         assert_allclose(viewer_state.y_max, old_ymax)
         assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
 
-        viewer_state.plot_mode = 'hammer'
-        assert_allclose(viewer_state.x_min, -np.pi)
-        assert_allclose(viewer_state.x_max, np.pi)
-        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi / 2)
-        assert_allclose(viewer_state.y_max, np.pi / 2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = 'rectilinear'
+            viewer_state.plot_mode = proj
+            error_msg = "Issue with {} projection".format(proj)
+            assert_allclose(viewer_state.x_min, -np.pi)
+            assert_allclose(viewer_state.x_max, np.pi)
+            assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose(viewer_state.y_min, -np.pi / 2)
+            assert_allclose(viewer_state.y_max, np.pi / 2)
+            assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
 
-        viewer_state.plot_mode = 'rectilinear'
-        viewer_state.plot_mode = 'lambert'
-        assert_allclose(viewer_state.x_min, -np.pi)
-        assert_allclose(viewer_state.x_max, np.pi)
-        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi / 2)
-        assert_allclose(viewer_state.y_max, np.pi / 2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
 
-        viewer_state.plot_mode = 'rectilinear'
-        viewer_state.plot_mode = 'mollweide'
-        assert_allclose(viewer_state.x_min, -np.pi)
-        assert_allclose(viewer_state.x_max, np.pi)
-        assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi])
-        assert_allclose(viewer_state.y_min, -np.pi / 2)
-        assert_allclose(viewer_state.y_max, np.pi / 2)
-        assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2])
+    def test_limit_log_set_polar(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = "polar"
+        axes = self.viewer.axes
+
+        viewer_state.x_min = 0.5
+        viewer_state.x_max = 1.5
+        assert_allclose(axes.get_xlim(),[0.5, 1.5])
+
+        viewer_state.y_min = -2.5
+        viewer_state.y_max = 2.5
+        assert_allclose(axes.get_ylim(), [-2.5, 2.5])
+
+        viewer_state.y_log = True
+        assert axes.get_yscale() == 'log'
+
+    def test_limit_set_fullsphere(self):
+        # Make sure that the full-sphere projections ignore instead of throwing exceptions
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = proj
+            error_msg = "Issue with {} projection".format(proj)
+            axes = self.viewer.axes
+            viewer_state.x_min = 0.5
+            viewer_state.x_max = 1.5
+            viewer_state.y_min = -2.5
+            viewer_state.y_max = 2.5
+            assert_allclose(axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose(axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
