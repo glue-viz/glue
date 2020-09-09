@@ -1021,3 +1021,17 @@ def test_multi_or_state():
 
     # Test str
     assert str(state3) == "('or' combination of 3 individual states)"
+
+
+def test_roi_reduction():
+    # This test checks that the ROI dimensionality shortcut works as expected
+
+    data4d = Data(val=np.zeros((3, 4, 2, 2)))
+    roi = RectangularROI(0.9, 2.1, 1.9, 3.1)
+    state = RoiSubsetState(xatt=data4d.pixel_component_ids[0], yatt=data4d.pixel_component_ids[1], roi=roi)
+    out = state.to_mask(data4d)
+    expected_slice = np.array([[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]])
+    assert_equal(out[:, :, 0, 0], expected_slice)
+    assert_equal(out[:, :, 0, 1], expected_slice)
+    assert_equal(out[:, :, 1, 0], expected_slice)
+    assert_equal(out[:, :, 1, 1], expected_slice)

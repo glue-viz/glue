@@ -516,9 +516,28 @@ class RoiSubsetStateNd(SubsetState):
         raw_comps = []
         for att in self._atts:
             raw_comps.append(data[att, view])
-
+        res_shape = raw_comps[0].shape
         if not self.roi.defined():
             return np.zeros(raw_comps[0].shape, dtype=bool)
+
+        if raw_comps[0].ndim == data.ndim and all([att in data.pixel_component_ids for att in self._atts]):
+            # This is a special case - the ROI is defined in pixel space, so we
+            # can apply it to a single slice and then broadcast it to all other
+            # dimensions. We start off by extracting a slice which takes only
+            # the first elements of all dimensions except the attributes in
+            # question, for which we take all the elements. We need to preserve
+            # the dimensionality of the array, hence the use of slice(0, 1).
+            # Note that we can only do this if the view (if present) preserved
+            # the dimensionality, which is why we checked that raw_comps[0].ndim == data.ndim.
+            axis_ids = [att.axis for att in self._atts]
+            subset = []
+            for i in range(data.ndim):
+                if i in axis_ids:
+                    subset.append(slice(None))
+                else:
+                    subset.append(slice(0,1))
+            for i in range(len(raw_comps)):
+                raw_comps[i] = raw_comps[i][tuple(subset)]
 
         if self.pretransform:
             transformed_points = []
@@ -539,8 +558,8 @@ class RoiSubsetStateNd(SubsetState):
         else:
             result = self.roi.contains(*transformed_points)
 
-        if result.shape != raw_comps[0].shape:
-            raise ValueError("Unexpected error: boolean mask has incorrect dimensions")
+        if result.shape != res_shape:
+            result = np.broadcast_to(result, res_shape)
 
         return result
 
@@ -587,47 +606,6 @@ class RoiSubsetState(RoiSubsetStateNd):
     @yatt.setter
     def yatt(self, value):
         self._atts[1] = value
-
-    @contract(data='isinstance(Data)', view='array_view')
-    def to_mask(self, data, view=None):
-        x_data = data[self.xatt, view]
-        if (x_data.ndim == data.ndim and
-                    self.xatt in data.pixel_component_ids and
-                    self.yatt in data.pixel_component_ids):
-
-            # This is a special case - the ROI is defined in pixel space, so we
-            #  can apply it to a single slice and then broadcast it to all other
-            #  dimensions. We start off by extracting a slice which takes only
-            #  the first elements of all dimensions except the attributes in
-            #  question, for which we take all the elements. We need to preserve
-            #  the dimensionality of the array, hence the use of slice(0, 1).
-            #  Note that we can only do this if the view (if present) preserved
-            #  the dimensionality, which is why we checked that x.ndim == data.ndim
-
-            y_data = data[self.yatt, view]
-            subset = []
-            for i in range(data.ndim):
-                if i == self.xatt.axis or i == self.yatt.axis:
-                    subset.append(slice(None))
-                else:
-                    subset.append(slice(0, 1))
-
-                x_slice = x_data[tuple(subset)]
-                y_slice = y_data[tuple(subset)]
-
-            if self.roi.defined():
-                if self.pretransform:
-                    x_slice, y_slice = self.pretransform(x_slice, y_slice)
-                result = self.roi.contains(x_slice, y_slice)
-            else:
-                result = np.zeros(x_slice.shape, dtype=bool)
-
-            result = broadcast_to(result, x_data.shape)
-            assert result.shape == x_data.shape
-            return result
-
-        else:
-            return super(RoiSubsetState, self).to_mask(data, view)
 
     def copy(self):
         result = RoiSubsetState()
