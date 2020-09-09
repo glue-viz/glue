@@ -17,11 +17,23 @@ def test_simple_polar_mpl_transform():
     radii = np.array([0, 5, 4, 1, 0, 2, -10, 10])
     transform = ProjectionMplTransform('polar', [0, 2 * np.pi], [-5, 5], 'linear', 'linear')
     x, y = transform(angles, radii)
-    sr2 = np.sqrt(2)
-    sr3 = np.sqrt(3)
     expected_x = np.array([0.75, 0.8535533905932736, 0.5, 0.2, .625, 0.5, np.nan, 1.25])
     expected_y = np.array([0.5, 0.8535533905932736, 0.95, 0.5, 0.28349364905389035,
                            0.85, np.nan, 0.5])
+    assert_allclose(x, expected_x)
+    assert_allclose(y, expected_y)
+    new_transform = roundtrip_transform(transform)
+    new_x, new_y = new_transform(angles, radii)
+    assert_allclose(new_x, x, rtol=1e-14)
+    assert_allclose(new_y, y, rtol=1e-14)
+
+def test_log_polar_mpl_transform():
+    angles = np.deg2rad(np.array([0, 90, 180]))
+    radii = np.array([10, 100, 1000])
+    transform = ProjectionMplTransform('polar', [0, 2 * np.pi], [1, 10000], 'linear', 'log')
+    x, y = transform(angles, radii)
+    expected_x = np.array([0.5, 0.5, 0.25])
+    expected_y = np.array([0.5, 0.625, 0.5])
     assert_allclose(x, expected_x)
     assert_allclose(y, expected_y)
     new_transform = roundtrip_transform(transform)
@@ -35,7 +47,6 @@ def test_wedge_polar_mpl_transform():
     radii = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     transform = ProjectionMplTransform('polar', [0, np.pi], [0, 0.5], 'linear', 'linear')
     x, y = transform(angles, radii)
-    sr2 = np.sqrt(2)
     assert_allclose(x, np.array([0.6, 0.64142136, 0.5, 0.21715729, 0]))
     # For just the upper half, y is between 0.25 and 0.75
     assert_allclose(y, np. array([0.25, 0.39142136, 0.55, 0.53284271, 0.25]))
