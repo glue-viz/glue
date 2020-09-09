@@ -491,13 +491,13 @@ class RoiSubsetStateNd(SubsetState):
         self._roi = value
 
     @property
-    def pretransfrom(self):
+    def pretransform(self):
         """
         An optional transformation function to apply before checking if points are in the ROI.
         """
         return self._pretransform
 
-    @pretransfrom.setter
+    @pretransform.setter
     def pretransform(self, value):
         if not callable(value) and value is not None:
             raise TypeError("The pretransform must be callable or None.")
