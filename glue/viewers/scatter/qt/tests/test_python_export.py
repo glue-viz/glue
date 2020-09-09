@@ -251,3 +251,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.x_att = self.data.id['a']
         self.viewer.state.y_att = self.data.id['b']
         self.assert_same(tmpdir)
+
+    def test_cmap_size_noncartesian(self, tmpdir):
+        self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        for proj in ['polar', 'aitoff', 'hammer', 'lambert', 'mollweide']:
+            self.viewer.state.plot_mode = proj
+            self.assert_same(tmpdir)
