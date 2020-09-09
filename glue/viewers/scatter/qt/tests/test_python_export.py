@@ -258,3 +258,19 @@ class TestExportPython(BaseTestExportPython):
         for proj in ['polar', 'aitoff', 'hammer', 'lambert', 'mollweide']:
             self.viewer.state.plot_mode = proj
             self.assert_same(tmpdir)
+
+    def test_vectors_noncartesian(self, tmpdir):
+        for proj in ['polar', 'aitoff', 'hammer', 'lambert', 'mollweide']:
+            self.viewer.state.plot_mode = proj
+            self._vector_common(tmpdir)
+
+    def test_errorbarxy_noncartesian(self, tmpdir):
+        self.viewer.state.layers[0].xerr_visible = True
+        self.viewer.state.layers[0].xerr_att = self.data.id['e']
+        self.viewer.state.layers[0].yerr_visible = True
+        self.viewer.state.layers[0].yerr_att = self.data.id['f']
+        self.viewer.state.layers[0].color = 'purple'
+        self.viewer.state.layers[0].alpha = 0.5
+        for proj in ['polar', 'aitoff', 'hammer', 'lambert', 'mollweide']:
+            self.viewer.state.plot_mode = proj
+            self.assert_same(tmpdir)
