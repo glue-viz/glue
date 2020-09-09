@@ -234,9 +234,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     # In this case we use Matplotlib's plot function because it has much
                     # better performance than scatter.
                     self.plot_artist.set_data(x, y)
-                    self.scatter_artist.set_offsets(np.zeros((0, 2)))
                 else:
-                    self.plot_artist.set_data([], [])
                     offsets = np.vstack((x, y)).transpose()
                     self.scatter_artist.set_offsets(offsets)
         else:
@@ -496,7 +494,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                                        self.state.markers_visible)
                 else:
                     artist.set_visible(self.state.visible)
-
+        if self._use_plot_artist():
+            self.scatter_artist.set_visible(False)
+        else:
+            self.plot_artist.set_visible(False)
         self.redraw()
 
     @defer_draw
