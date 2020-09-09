@@ -822,3 +822,88 @@ class TestScatterViewer(object):
             assert not viewer_state.y_log, error_msg
             assert self.viewer.axes.get_xscale() == 'linear', error_msg
             assert self.viewer.axes.get_yscale() == 'linear', error_msg
+
+    def test_full_circle_utility(self):
+        # Make sure that the full circle function behaves well
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        old_xmin = viewer_state.x_min
+        old_xmax = viewer_state.x_max
+        old_ymin = viewer_state.y_min
+        old_ymax = viewer_state.y_max
+        viewer_state.full_circle()
+        assert_allclose([viewer_state.x_min, viewer_state.x_max], [old_xmin, old_xmax])
+        assert_allclose([viewer_state.y_min, viewer_state.y_max], [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'polar'
+        viewer_state.full_circle()
+        assert_allclose([viewer_state.x_min, viewer_state.x_max], [0, 2 * np.pi])
+        assert_allclose([viewer_state.y_min, viewer_state.y_max], [old_ymin, old_ymax])
+
+        for proj in fullsphere_projections:
+            error_msg = 'Issue with {} projection'.format(proj)
+            viewer_state.plot_mode = proj
+            viewer_state.full_circle()
+            assert_allclose([viewer_state.x_min, viewer_state.x_max], [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose([viewer_state.y_min, viewer_state.y_max], [-np.pi / 2, np.pi /2], err_msg=error_msg)
+
+    def test_limits_log_widget_polar_cartesian(self):
+        ui = self.viewer.options_widget().ui
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = 'polar'
+        assert not ui.bool_x_log.isEnabled()
+        assert not ui.bool_x_log_.isEnabled()
+        assert ui.bool_y_log.isEnabled()
+        assert ui.bool_y_log_.isEnabled()
+        assert ui.valuetext_x_min.isEnabled()
+        assert ui.button_flip_x.isEnabled()
+        assert ui.valuetext_x_max.isEnabled()
+        assert ui.valuetext_y_min.isEnabled()
+        assert ui.button_flip_y.isEnabled()
+        assert ui.valuetext_y_max.isEnabled()
+        assert not ui.button_full_circle.isHidden()
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert ui.bool_x_log.isEnabled()
+        assert ui.bool_x_log_.isEnabled()
+        assert ui.bool_y_log.isEnabled()
+        assert ui.bool_y_log_.isEnabled()
+        assert ui.valuetext_x_min.isEnabled()
+        assert ui.button_flip_x.isEnabled()
+        assert ui.valuetext_x_max.isEnabled()
+        assert ui.valuetext_y_min.isEnabled()
+        assert ui.button_flip_y.isEnabled()
+        assert ui.valuetext_y_max.isEnabled()
+        assert ui.button_full_circle.isHidden()
+        assert ui.button_full_circle.isHidden()
+
+    def test_limits_log_widget_fullsphere(self):
+        ui = self.viewer.options_widget().ui
+        viewer_state = self.viewer.state
+        for proj in fullsphere_projections:
+            error_msg = 'Issue with {} projection'.format(proj)
+            viewer_state.plot_mode = proj
+            not ui.bool_x_log.isEnabled()
+            assert not ui.bool_x_log_.isEnabled(), error_msg
+            assert not ui.bool_y_log.isEnabled(), error_msg
+            assert not ui.bool_y_log_.isEnabled(), error_msg
+            assert not ui.valuetext_x_min.isEnabled(), error_msg
+            assert not ui.button_flip_x.isEnabled(), error_msg
+            assert not ui.valuetext_x_max.isEnabled(), error_msg
+            assert not ui.valuetext_y_min.isEnabled(), error_msg
+            assert not ui.button_flip_y.isEnabled(), error_msg
+            assert not ui.valuetext_y_max.isEnabled(), error_msg
+            assert ui.button_full_circle.isHidden(), error_msg
+
+            viewer_state.plot_mode = 'rectilinear'
+            assert ui.bool_x_log.isEnabled()
+            assert ui.bool_x_log_.isEnabled()
+            assert ui.bool_y_log.isEnabled()
+            assert ui.bool_y_log_.isEnabled()
+            assert ui.valuetext_x_min.isEnabled()
+            assert ui.button_flip_x.isEnabled()
+            assert ui.valuetext_x_max.isEnabled()
+            assert ui.valuetext_y_min.isEnabled()
+            assert ui.button_flip_y.isEnabled()
+            assert ui.valuetext_y_max.isEnabled()
+            assert ui.button_full_circle.isHidden()
