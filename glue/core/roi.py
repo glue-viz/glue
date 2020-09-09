@@ -1330,7 +1330,7 @@ class MplCircularROI(AbstractMplRoi):
         rad = self._roi.get_radius()
 
         # At this point, if one of the axes is not linear, we convert to a polygon
-        if self._axes.get_xscale() != 'linear' or self._axes.get_yscale() != 'linear':
+        if (self._axes.get_xscale() != 'linear' or self._axes.get_yscale() != 'linear') and self._data_space:
             theta = np.linspace(0, 2 * np.pi, num=200)
             x = xy_center[0] + rad * np.cos(theta)
             y = xy_center[1] + rad * np.sin(theta)
