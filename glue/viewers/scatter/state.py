@@ -27,7 +27,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
     x_att = DDSCProperty(docstring='The attribute to show on the x-axis', default_index=0)
     y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
-    plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian or polar mode")
+    plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian, polar or another projection")
 
     def __init__(self, **kwargs):
 

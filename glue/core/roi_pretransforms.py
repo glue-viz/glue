@@ -17,15 +17,13 @@ class ProjectionMplTransform(object):
         self._transform = (axes.transData + axes.transAxes.inverted()).frozen()
 
     def __call__(self, x, y):
-        assert self._transform is not None
-        assert x.shape == y.shape
         points = np.hstack((x.reshape(-1, 1), y.reshape(-1, 1)))
         res = self._transform.transform(points)
         out = np.hsplit(res, 2)
         return out[0].reshape(x.shape), out[1].reshape(y.shape)
 
     def __gluestate__(self, context):
-        return dict(state=context.id(self._state))
+        return dict(state=context.do(self._state))
 
     @classmethod
     def __setgluestate__(cls, rec, context):

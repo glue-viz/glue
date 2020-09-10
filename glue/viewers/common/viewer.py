@@ -396,7 +396,6 @@ class Viewer(BaseViewer):
                     shell.user_ns.pop(key)
 
     def remove_layer(self, layer):
-        print("remove_layer called", layer, self._layer_artist_container)
         self._layer_artist_container.pop(layer)
 
     @property

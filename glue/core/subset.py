@@ -471,7 +471,19 @@ class SubsetState(object):
 
 class RoiSubsetStateNd(SubsetState):
     """
-    A base class that combines the logic of the 2D and 3D RoiSubsetStates
+    A subset defined as the set of points in N dimensions that lie inside
+    a region of interest (ROI).
+
+    The dimensions are defined as numerical data attributes.
+
+    Parameters
+    ----------
+    atts : list of :class:`~glue.core.component_id.ComponentID`
+        The data attributes that define the dimensions of the region.
+    roi : :class:`~glue.core.roi.Roi`
+        The region of interest.
+    pretransform: callable, optional
+        A function that can be optionally applied to the data before checking points against the region.
     """
 
     def __init__(self, atts=[], roi=None, pretransform=None):
@@ -546,8 +558,12 @@ class RoiSubsetStateNd(SubsetState):
                 for raw_comp in raw_comps:
                     comp_subsets.append(raw_comp[slices])
                 res = self.pretransform(*comp_subsets)
+
+                # Do this here in case the pretransform changes the dimensionality
+                # e.g. 3D input to a 2D projection like Projected3dROI does internally
                 while len(transformed_points) < len(res):
                     transformed_points.append(np.zeros(raw_comps[0].shape))
+
                 for i in range(len(res)):
                     transformed_points[i][slices] = res[i]
         else:
@@ -579,6 +595,8 @@ class RoiSubsetState(RoiSubsetStateNd):
         The data attribute on the y axis.
     roi : :class:`~glue.core.roi.Roi`
         The region of interest.
+    pretransform: callable, optional
+        A function that can be optionally applied to the data before checking points against the region.
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
@@ -1747,6 +1765,8 @@ class RoiSubsetState3d(RoiSubsetStateNd):
         The data attribute on the z axis.
     roi : :class:`~glue.core.roi.Roi`
         The region of interest (which should implement ``contains3d``)
+    pretransform: callable, optional
+        A function that can be optionally applied to the data before checking points against the region.
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')

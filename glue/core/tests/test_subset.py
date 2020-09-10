@@ -848,13 +848,11 @@ class TestCloneSubsetStates():
 
     def test_roi_subset_state_with_pretransform(self):
         roi = RectangularROI(xmin=2, xmax=4, ymin=0, ymax=1)
-        # ([-1.8, 3.3, 5.5, 2.9], [-4.2, 0.7, 2.5, -0.9])
         subset = self.data.new_subset()
         subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
                                              roi=roi, pretransform=example_transform)
-        print(example_transform(self.data['a'], self.data['c']))
-        import types
-        print(type(example_transform), isinstance(example_transform, types.FunctionType))
+
+        # Post transform outputs are x=[-1.8, 3.3, 5.5, 2.9], y=[-4.2, 0.7, 2.5, -0.9]
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
 
         data_clone = clone(self.data)

@@ -48,11 +48,9 @@ class MatplotlibScatterMixin(object):
 
     def _update_projection(self, *args):
 
-        old_layers = self.layers
-
         self.figure.delaxes(self.axes)
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
-        for layer in old_layers:
+        for layer in self.layers:
             layer._set_axes(self.axes)
             layer.state.vector_mode = 'Cartesian'
             layer.update()
