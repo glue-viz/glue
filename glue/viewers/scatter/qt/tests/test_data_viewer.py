@@ -26,13 +26,14 @@ from ..data_viewer import ScatterViewer
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
+fullsphere_projections = ['aitoff', 'hammer', 'lambert', 'mollweide']
+
 
 class TestScatterCommon(BaseTestMatplotlibDataViewer):
     def init_data(self):
         return Data(label='d1', x=[3.4, 2.3, -1.1, 0.3], y=['a', 'b', 'c', 'a'])
     viewer_cls = ScatterViewer
 
-fullsphere_projections = ['aitoff', 'hammer', 'lambert', 'mollweide']
 
 class TestScatterViewer(object):
 
@@ -722,7 +723,6 @@ class TestScatterViewer(object):
         viewer_state.plot_mode = 'mollweide'
         assert 'mollweide' in str(type(self.viewer.axes)).lower()
 
-
     def test_limit_log_set_polar(self):
         self.viewer.add_data(self.data)
         viewer_state = self.viewer.state
@@ -731,7 +731,7 @@ class TestScatterViewer(object):
 
         viewer_state.x_min = 0.5
         viewer_state.x_max = 1.5
-        assert_allclose(axes.get_xlim(),[0.5, 1.5])
+        assert_allclose(axes.get_xlim(), [0.5, 1.5])
 
         viewer_state.y_min = -2.5
         viewer_state.y_max = 2.5
@@ -846,7 +846,7 @@ class TestScatterViewer(object):
             viewer_state.plot_mode = proj
             viewer_state.full_circle()
             assert_allclose([viewer_state.x_min, viewer_state.x_max], [-np.pi, np.pi], err_msg=error_msg)
-            assert_allclose([viewer_state.y_min, viewer_state.y_max], [-np.pi / 2, np.pi /2], err_msg=error_msg)
+            assert_allclose([viewer_state.y_min, viewer_state.y_max], [-np.pi / 2, np.pi / 2], err_msg=error_msg)
 
     def test_limits_log_widget_polar_cartesian(self):
         ui = self.viewer.options_widget().ui

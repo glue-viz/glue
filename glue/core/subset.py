@@ -535,7 +535,7 @@ class RoiSubsetStateNd(SubsetState):
                 if i in axis_ids:
                     subset.append(slice(None))
                 else:
-                    subset.append(slice(0,1))
+                    subset.append(slice(0, 1))
             for i in range(len(raw_comps)):
                 raw_comps[i] = raw_comps[i][tuple(subset)]
 
