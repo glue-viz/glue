@@ -49,6 +49,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state.viewer_state.add_callback('x_att', self._update_checkboxes)
         self.layer_state.viewer_state.add_callback('y_att', self._update_checkboxes)
+        if hasattr(self.layer_state.viewer_state, 'plot_mode'):
+            self.layer_state.viewer_state.add_callback('plot_mode', self._update_vectors_visible)
 
         self.layer_state.add_callback('layer', self._update_warnings)
 
@@ -185,7 +187,9 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         self.ui.combosel_yerr_att.setEnabled(self.layer_state.yerr_visible)
 
     def _update_vectors_visible(self, *args):
-        self.ui.combosel_vector_mode.setEnabled(self.layer_state.vector_visible)
+        viewer_state = self.layer_state.viewer_state
+        is_rect = not hasattr(viewer_state, 'plot_mode') or viewer_state.plot_mode == 'rectilinear'
+        self.ui.combosel_vector_mode.setEnabled(self.layer_state.vector_visible and is_rect)
         self.ui.combosel_vx_att.setEnabled(self.layer_state.vector_visible)
         self.ui.combosel_vy_att.setEnabled(self.layer_state.vector_visible)
         self.ui.value_vector_scaling.setEnabled(self.layer_state.vector_visible)

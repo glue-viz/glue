@@ -54,6 +54,7 @@ class MatplotlibScatterMixin(object):
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
         for layer in old_layers:
             layer._set_axes(self.axes)
+            layer.state.vector_mode = 'Cartesian'
             layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
