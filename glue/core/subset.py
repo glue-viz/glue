@@ -18,7 +18,7 @@ from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
                         polygon_line_intersections, categorical_ndarray, iterate_chunks)
 
 
-__all__ = ['Subset', 'SubsetState', 'RoiSubsetState', 'CategoricalROISubsetState',
+__all__ = ['Subset', 'SubsetState', 'RoiSubsetStateNd', 'RoiSubsetState', 'CategoricalROISubsetState',
            'RangeSubsetState', 'MultiRangeSubsetState', 'CompositeSubsetState',
            'OrState', 'AndState', 'XorState', 'InvertState', 'MaskSubsetState', 'CategorySubsetState',
            'ElementSubsetState', 'InequalitySubsetState', 'combine_multiple',
