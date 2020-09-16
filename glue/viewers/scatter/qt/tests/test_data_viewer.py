@@ -12,6 +12,7 @@ from glue.config import colormaps
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI, CircularROI
+from glue.core.roi_pretransforms import ProjectionMplTransform
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
@@ -24,6 +25,8 @@ from glue.app.qt import GlueApplication
 from ..data_viewer import ScatterViewer
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
+
+fullsphere_projections = ['aitoff', 'hammer', 'lambert', 'mollweide']
 
 
 class TestScatterCommon(BaseTestMatplotlibDataViewer):
@@ -706,3 +709,264 @@ class TestScatterViewer(object):
         # 'd2' is not enabled (no linked component)
         handles, labels, handler_dict = self.viewer.get_handles_legend()
         assert len(handles) == 2
+
+    def test_changing_plot_modes(self):
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = 'polar'
+        assert 'polar' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'aitoff'
+        assert 'aitoff' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'hammer'
+        assert 'hammer' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'lambert'
+        assert 'lambert' in str(type(self.viewer.axes)).lower()
+        viewer_state.plot_mode = 'mollweide'
+        assert 'mollweide' in str(type(self.viewer.axes)).lower()
+
+    def test_limit_log_set_polar(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = "polar"
+        axes = self.viewer.axes
+
+        viewer_state.x_min = 0.5
+        viewer_state.x_max = 1.5
+        assert_allclose(axes.get_xlim(), [0.5, 1.5])
+
+        viewer_state.y_min = -2.5
+        viewer_state.y_max = 2.5
+        assert_allclose(axes.get_ylim(), [-2.5, 2.5])
+
+        viewer_state.y_log = True
+        assert axes.get_yscale() == 'log'
+
+    def test_limit_set_fullsphere(self):
+        # Make sure that the full-sphere projections ignore instead of throwing exceptions
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = proj
+            error_msg = 'Issue with {} projection'.format(proj)
+            axes = self.viewer.axes
+            viewer_state.x_min = 0.5
+            viewer_state.x_max = 1.5
+            viewer_state.y_min = -2.5
+            viewer_state.y_max = 2.5
+            assert_allclose(axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose(axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
+
+    def test_changing_mode_limits(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        old_xmin = viewer_state.x_min
+        old_xmax = viewer_state.x_max
+        old_ymin = viewer_state.y_min
+        old_ymax = viewer_state.y_max
+        # Make sure limits are reset first
+        viewer_state.x_max += 3
+
+        viewer_state.plot_mode = 'polar'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert_allclose(viewer_state.x_min, old_xmin)
+        assert_allclose(viewer_state.x_max, old_xmax)
+        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.y_min, old_ymin)
+        assert_allclose(viewer_state.y_max, old_ymax)
+        assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = 'rectilinear'
+            viewer_state.plot_mode = proj
+            error_msg = 'Issue with {} projection'.format(proj)
+            assert_allclose(viewer_state.x_min, -np.pi)
+            assert_allclose(viewer_state.x_max, np.pi)
+            assert_allclose(self.viewer.axes.get_xlim(), [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose(viewer_state.y_min, -np.pi / 2)
+            assert_allclose(viewer_state.y_max, np.pi / 2)
+            assert_allclose(self.viewer.axes.get_ylim(), [-np.pi / 2, np.pi / 2], err_msg=error_msg)
+
+    def test_changing_mode_log(self):
+        # Test to make sure we reset the log axes to false when changing modes to prevent problems
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        viewer_state.x_log = True
+        viewer_state.y_log = True
+
+        viewer_state.plot_mode = 'polar'
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+        assert self.viewer.axes.get_xscale() == 'linear'
+        assert self.viewer.axes.get_yscale() == 'linear'
+        viewer_state.y_log = True
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert not viewer_state.x_log
+        assert not viewer_state.y_log
+        assert self.viewer.axes.get_xscale() == 'linear'
+        assert self.viewer.axes.get_yscale() == 'linear'
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = 'rectilinear'
+            viewer_state.x_log = True
+            viewer_state.y_log = True
+            viewer_state.plot_mode = proj
+            error_msg = 'Issue with {} projection'.format(proj)
+            assert not viewer_state.x_log, error_msg
+            assert not viewer_state.y_log, error_msg
+            assert self.viewer.axes.get_xscale() == 'linear', error_msg
+            assert self.viewer.axes.get_yscale() == 'linear', error_msg
+
+    def test_full_circle_utility(self):
+        # Make sure that the full circle function behaves well
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        old_xmin = viewer_state.x_min
+        old_xmax = viewer_state.x_max
+        old_ymin = viewer_state.y_min
+        old_ymax = viewer_state.y_max
+        viewer_state.full_circle()
+        assert_allclose([viewer_state.x_min, viewer_state.x_max], [old_xmin, old_xmax])
+        assert_allclose([viewer_state.y_min, viewer_state.y_max], [old_ymin, old_ymax])
+
+        viewer_state.plot_mode = 'polar'
+        viewer_state.full_circle()
+        assert_allclose([viewer_state.x_min, viewer_state.x_max], [0, 2 * np.pi])
+        assert_allclose([viewer_state.y_min, viewer_state.y_max], [old_ymin, old_ymax])
+
+        for proj in fullsphere_projections:
+            error_msg = 'Issue with {} projection'.format(proj)
+            viewer_state.plot_mode = proj
+            viewer_state.full_circle()
+            assert_allclose([viewer_state.x_min, viewer_state.x_max], [-np.pi, np.pi], err_msg=error_msg)
+            assert_allclose([viewer_state.y_min, viewer_state.y_max], [-np.pi / 2, np.pi / 2], err_msg=error_msg)
+
+    def test_limits_log_widget_polar_cartesian(self):
+        ui = self.viewer.options_widget().ui
+        viewer_state = self.viewer.state
+        viewer_state.plot_mode = 'polar'
+        assert not ui.bool_x_log.isEnabled()
+        assert not ui.bool_x_log_.isEnabled()
+        assert ui.bool_y_log.isEnabled()
+        assert ui.bool_y_log_.isEnabled()
+        assert ui.valuetext_x_min.isEnabled()
+        assert ui.button_flip_x.isEnabled()
+        assert ui.valuetext_x_max.isEnabled()
+        assert ui.valuetext_y_min.isEnabled()
+        assert ui.button_flip_y.isEnabled()
+        assert ui.valuetext_y_max.isEnabled()
+        assert not ui.button_full_circle.isHidden()
+
+        viewer_state.plot_mode = 'rectilinear'
+        assert ui.bool_x_log.isEnabled()
+        assert ui.bool_x_log_.isEnabled()
+        assert ui.bool_y_log.isEnabled()
+        assert ui.bool_y_log_.isEnabled()
+        assert ui.valuetext_x_min.isEnabled()
+        assert ui.button_flip_x.isEnabled()
+        assert ui.valuetext_x_max.isEnabled()
+        assert ui.valuetext_y_min.isEnabled()
+        assert ui.button_flip_y.isEnabled()
+        assert ui.valuetext_y_max.isEnabled()
+        assert ui.button_full_circle.isHidden()
+        assert ui.button_full_circle.isHidden()
+
+    def test_limits_log_widget_fullsphere(self):
+        ui = self.viewer.options_widget().ui
+        viewer_state = self.viewer.state
+        for proj in fullsphere_projections:
+            error_msg = 'Issue with {} projection'.format(proj)
+            viewer_state.plot_mode = proj
+            not ui.bool_x_log.isEnabled()
+            assert not ui.bool_x_log_.isEnabled(), error_msg
+            assert not ui.bool_y_log.isEnabled(), error_msg
+            assert not ui.bool_y_log_.isEnabled(), error_msg
+            assert not ui.valuetext_x_min.isEnabled(), error_msg
+            assert not ui.button_flip_x.isEnabled(), error_msg
+            assert not ui.valuetext_x_max.isEnabled(), error_msg
+            assert not ui.valuetext_y_min.isEnabled(), error_msg
+            assert not ui.button_flip_y.isEnabled(), error_msg
+            assert not ui.valuetext_y_max.isEnabled(), error_msg
+            assert ui.button_full_circle.isHidden(), error_msg
+
+            viewer_state.plot_mode = 'rectilinear'
+            assert ui.bool_x_log.isEnabled()
+            assert ui.bool_x_log_.isEnabled()
+            assert ui.bool_y_log.isEnabled()
+            assert ui.bool_y_log_.isEnabled()
+            assert ui.valuetext_x_min.isEnabled()
+            assert ui.button_flip_x.isEnabled()
+            assert ui.valuetext_x_max.isEnabled()
+            assert ui.valuetext_y_min.isEnabled()
+            assert ui.button_flip_y.isEnabled()
+            assert ui.valuetext_y_max.isEnabled()
+            assert ui.button_full_circle.isHidden()
+
+    def test_apply_roi_polar(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        roi = RectangularROI(0, 0.5, 0, 0.5)
+        viewer_state.plot_mode = 'polar'
+        viewer_state.full_circle()
+        assert len(self.viewer.layers) == 1
+
+        self.viewer.apply_roi(roi)
+
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
+
+        assert_allclose(self.data.subsets[0].to_mask(), [1, 0, 0, 0])
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RoiSubsetState)
+        assert state.pretransform
+        pretrans = state.pretransform
+        assert isinstance(pretrans, ProjectionMplTransform)
+        assert pretrans._state['projection'] == 'polar'
+        assert_allclose(pretrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
+        assert_allclose(pretrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])
+        assert pretrans._state['x_scale'] == 'linear'
+        assert pretrans._state['y_scale'] == 'linear'
+        self.data.subsets[0].delete()
+
+        viewer_state.y_log = True
+        self.viewer.apply_roi(roi)
+        state = self.data.subsets[0].subset_state
+        assert state.pretransform
+        pretrans = state.pretransform
+        assert isinstance(pretrans, ProjectionMplTransform)
+        assert pretrans._state['y_scale'] == 'log'
+
+    def test_apply_roi_fullsphere(self):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        roi = RectangularROI(0, 0.5, 0, 0.5)
+
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = proj
+            assert len(self.viewer.layers) == 1
+
+            self.viewer.apply_roi(roi)
+
+            assert len(self.viewer.layers) == 2
+            assert len(self.data.subsets) == 1
+
+            subset = self.data.subsets[0]
+            state = subset.subset_state
+            assert isinstance(state, RoiSubsetState)
+            assert state.pretransform
+            pretrans = state.pretransform
+            assert isinstance(pretrans, ProjectionMplTransform)
+            assert pretrans._state['projection'] == proj
+            assert_allclose(pretrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
+            assert_allclose(pretrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])
+            assert pretrans._state['x_scale'] == 'linear'
+            assert pretrans._state['y_scale'] == 'linear'
+            subset.delete()

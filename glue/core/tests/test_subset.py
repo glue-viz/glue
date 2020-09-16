@@ -31,6 +31,10 @@ from ..subset import XorState
 from .test_state import clone
 
 
+def example_transform(x, y):
+    return x + y, x - y
+
+
 class TestSubset(object):
 
     def setup_method(self, method):
@@ -842,6 +846,19 @@ class TestCloneSubsetStates():
 
         assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
 
+    def test_roi_subset_state_with_pretransform(self):
+        roi = RectangularROI(xmin=2, xmax=4, ymin=0, ymax=1)
+        subset = self.data.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
+                                             roi=roi, pretransform=example_transform)
+
+        # Post transform outputs are x=[-1.8, 3.3, 5.5, 2.9], y=[-4.2, 0.7, 2.5, -0.9]
+        assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
 
 @requires_scipy
 def test_floodfill_subset_state():
@@ -1002,3 +1019,17 @@ def test_multi_or_state():
 
     # Test str
     assert str(state3) == "('or' combination of 3 individual states)"
+
+
+def test_roi_reduction():
+    # This test checks that the ROI dimensionality shortcut works as expected
+
+    data4d = Data(val=np.zeros((3, 4, 2, 2)))
+    roi = RectangularROI(0.9, 2.1, 1.9, 3.1)
+    state = RoiSubsetState(xatt=data4d.pixel_component_ids[0], yatt=data4d.pixel_component_ids[1], roi=roi)
+    out = state.to_mask(data4d)
+    expected_slice = np.array([[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]])
+    assert_equal(out[:, :, 0, 0], expected_slice)
+    assert_equal(out[:, :, 0, 1], expected_slice)
+    assert_equal(out[:, :, 1, 0], expected_slice)
+    assert_equal(out[:, :, 1, 1], expected_slice)

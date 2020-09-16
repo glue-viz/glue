@@ -50,6 +50,11 @@ def pixel_to_data(axes, x, y):
     return axes.transData.inverted().transform(xy)
 
 
+def pixel_to_axes(axes, x, y):
+    xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
+    return axes.transAxes.inverted().transform(xy)
+
+
 class Roi(object):  # pragma: no cover
 
     """
@@ -353,7 +358,10 @@ class RangeROI(Roi):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(rec['ori'], min=rec['min'], max=rec['max'])
+        if cls is XRangeROI or cls is YRangeROI:
+            return cls(min=rec['min'], max=rec['max'])
+        else:
+            return cls(rec['ori'], min=rec['min'], max=rec['max'])
 
 
 class XRangeROI(RangeROI):
@@ -775,13 +783,14 @@ class AbstractMplRoi(object):
 
     _roi_cls = None
 
-    def __init__(self, axes, roi=None):
+    def __init__(self, axes, roi=None, data_space=True):
         self._axes = axes
         self._roi = roi or self._roi_cls()
         self._previous_roi = None
         self._mid_selection = False
         self._scrubbing = False
         self._background_cache = None
+        self._data_space = data_space
 
     def _draw(self):
 
@@ -897,45 +906,52 @@ class MplRectangularROI(AbstractMplRoi):
 
     _roi_cls = RectangularROI
 
-    def __init__(self, axes):
+    def __init__(self, axes, data_space=True):
 
-        super(MplRectangularROI, self).__init__(axes)
+        super(MplRectangularROI, self).__init__(axes, data_space=data_space)
 
         self._xi = None
         self._yi = None
-
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
         self._patch = Rectangle((0., 0.), 1., 1., zorder=100)
         self._patch.set_visible(False)
+        if not self._data_space:
+            self._patch.set_transform(self._axes.transAxes)
         self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
-
         if event.inaxes != self._axes:
             return False
+
+        if self._data_space:
+            xval = event.xdata
+            yval = event.ydata
+        else:
+            axes_trans = self._axes.transAxes.inverted()
+            xval, yval = axes_trans.transform([event.x, event.y])
 
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
+            elif not self._roi.contains(xval, yval):
                 return False
 
         self._store_previous_roi()
         self._store_background()
 
-        self._xi = event.xdata
-        self._yi = event.ydata
+        self._xi = xval
+        self._yi = yval
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
             self._cx, self._cy = self._roi.center()
         else:
             self.reset()
-            self._roi.update_limits(event.xdata, event.ydata,
-                                    event.xdata, event.ydata)
+            self._roi.update_limits(self._xi, self._xi,
+                                    self._yi, self._yi)
 
         self._mid_selection = True
 
@@ -951,14 +967,21 @@ class MplRectangularROI(AbstractMplRoi):
             if not self._roi.defined():
                 return False
 
-        if self._scrubbing:
-            self._roi.move_to(self._cx + event.xdata - self._xi,
-                              self._cy + event.ydata - self._yi)
+        if self._data_space:
+            xval = event.xdata
+            yval = event.ydata
         else:
-            self._roi.update_limits(min(event.xdata, self._xi),
-                                    min(event.ydata, self._yi),
-                                    max(event.xdata, self._xi),
-                                    max(event.ydata, self._yi))
+            axes_trans = self._axes.transAxes.inverted()
+            xval, yval = axes_trans.transform([event.x, event.y])
+
+        if self._scrubbing:
+            self._roi.move_to(self._cx + xval - self._xi,
+                              self._cy + yval - self._yi)
+        else:
+            self._roi.update_limits(min(xval, self._xi),
+                                    min(yval, self._yi),
+                                    max(xval, self._xi),
+                                    max(yval, self._yi))
 
         self._sync_patch()
         self._draw()
@@ -998,18 +1021,20 @@ class MplXRangeROI(AbstractMplRoi):
 
     _roi_cls = XRangeROI
 
-    def __init__(self, axes):
+    def __init__(self, axes, data_space=True):
 
-        super(MplXRangeROI, self).__init__(axes)
+        super(MplXRangeROI, self).__init__(axes, data_space=data_space)
 
         self._xi = None
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
-
-        trans = blended_transform_factory(self._axes.transData,
-                                          self._axes.transAxes)
+        if self._data_space:
+            trans = blended_transform_factory(self._axes.transData,
+                                              self._axes.transAxes)
+        else:
+            trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
         self._axes.add_patch(self._patch)
@@ -1018,11 +1043,16 @@ class MplXRangeROI(AbstractMplRoi):
 
         if event.inaxes != self._axes:
             return False
-
+        if self._data_space:
+            x_val = event.xdata
+            y_val = event.ydata
+        else:
+            transform = self._axes.transAxes.inverted()
+            x_val, y_val = transform.transform([event.x, event.y])
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
+            elif not self._roi.contains(x_val, y_val):
                 return False
 
         self._store_previous_roi()
@@ -1030,11 +1060,11 @@ class MplXRangeROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
-            self._dx = event.xdata - self._roi.center()
+            self._dx = x_val - self._roi.center()
         else:
             self.reset()
-            self._roi.set_range(event.xdata, event.xdata)
-            self._xi = event.xdata
+            self._roi.set_range(x_val, x_val)
+            self._xi = x_val
 
         self._mid_selection = True
 
@@ -1050,11 +1080,17 @@ class MplXRangeROI(AbstractMplRoi):
             if not self._roi.defined():
                 return False
 
-        if self._scrubbing:
-            self._roi.move_to(event.xdata + self._dx)
+        if self._data_space:
+            xval = event.xdata
         else:
-            self._roi.set_range(min(event.xdata, self._xi),
-                                max(event.xdata, self._xi))
+            axes_trans = self._axes.transAxes.inverted()
+            xval, _ = axes_trans.transform([event.x, event.y])
+
+        if self._scrubbing:
+            self._roi.move_to(xval + self._dx)
+        else:
+            self._roi.set_range(min(xval, self._xi),
+                                max(xval, self._xi))
 
         self._sync_patch()
         self._draw()
@@ -1089,18 +1125,20 @@ class MplYRangeROI(AbstractMplRoi):
 
     _roi_cls = YRangeROI
 
-    def __init__(self, axes):
+    def __init__(self, axes, data_space=True):
 
-        super(MplYRangeROI, self).__init__(axes)
+        super(MplYRangeROI, self).__init__(axes, data_space=data_space)
 
-        self._xi = None
+        self._yi = None
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
-
-        trans = blended_transform_factory(self._axes.transAxes,
-                                          self._axes.transData)
+        if self._data_space:
+            trans = blended_transform_factory(self._axes.transAxes,
+                                              self._axes.transData)
+        else:
+            trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
         self._axes.add_patch(self._patch)
@@ -1110,10 +1148,17 @@ class MplYRangeROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return False
 
+        if self._data_space:
+            xval = event.xdata
+            yval = event.ydata
+        else:
+            axes_trans = self._axes.transAxes.inverted()
+            xval, yval = axes_trans.transform([event.x, event.y])
+
         if event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
+            elif not self._roi.contains(xval, yval):
                 return False
 
         self._store_previous_roi()
@@ -1121,11 +1166,11 @@ class MplYRangeROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
-            self._dy = event.ydata - self._roi.center()
+            self._dy = yval - self._roi.center()
         else:
             self.reset()
-            self._roi.set_range(event.ydata, event.ydata)
-            self._xi = event.ydata
+            self._roi.set_range(yval, yval)
+            self._yi = yval
 
         self._mid_selection = True
 
@@ -1141,11 +1186,17 @@ class MplYRangeROI(AbstractMplRoi):
             if not self._roi.defined():
                 return False
 
-        if self._scrubbing:
-            self._roi.move_to(event.ydata + self._dy)
+        if self._data_space:
+            yval = event.ydata
         else:
-            self._roi.set_range(min(event.ydata, self._xi),
-                                max(event.ydata, self._xi))
+            axes_trans = self._axes.transAxes.inverted()
+            _, yval = axes_trans.transform([event.x, event.y])
+
+        if self._scrubbing:
+            self._roi.move_to(yval + self._dy)
+        else:
+            self._roi.set_range(min(yval, self._yi),
+                                max(yval, self._yi))
 
         self._sync_patch()
         self._draw()
@@ -1184,9 +1235,9 @@ class MplCircularROI(AbstractMplRoi):
 
     _roi_cls = CircularROI
 
-    def __init__(self, axes):
+    def __init__(self, axes, data_space=True):
 
-        super(MplCircularROI, self).__init__(axes)
+        super(MplCircularROI, self).__init__(axes, data_space=data_space)
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
@@ -1279,7 +1330,7 @@ class MplCircularROI(AbstractMplRoi):
         rad = self._roi.get_radius()
 
         # At this point, if one of the axes is not linear, we convert to a polygon
-        if self._axes.get_xscale() != 'linear' or self._axes.get_yscale() != 'linear':
+        if (self._axes.get_xscale() != 'linear' or self._axes.get_yscale() != 'linear') and self._data_space:
             theta = np.linspace(0, 2 * np.pi, num=200)
             x = xy_center[0] + rad * np.cos(theta)
             y = xy_center[1] + rad * np.sin(theta)
@@ -1293,7 +1344,7 @@ class MplCircularROI(AbstractMplRoi):
             # should return an ellipse.
             x = xy_center[0] + np.array([0, 0, rad])
             y = xy_center[1] + np.array([0, rad, rad])
-            xy_data = pixel_to_data(self._axes, x, y)
+            xy_data = pixel_to_data(self._axes, x, y) if self._data_space else pixel_to_axes(self._axes, x, y)
             rx = xy_data[2, 0] - xy_data[0, 0]
             ry = xy_data[1, 1] - xy_data[0, 1]
             xc, yc = xy_data[0, :]
@@ -1326,9 +1377,9 @@ class MplPolygonalROI(AbstractMplRoi):
 
     _roi_cls = PolygonalROI
 
-    def __init__(self, axes, roi=None):
+    def __init__(self, axes, roi=None, data_space=True):
 
-        super(MplPolygonalROI, self).__init__(axes, roi=roi)
+        super(MplPolygonalROI, self).__init__(axes, roi=roi, data_space=data_space)
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
@@ -1336,6 +1387,8 @@ class MplPolygonalROI(AbstractMplRoi):
 
         self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))), zorder=100)
         self._patch.set_visible(False)
+        if not self._data_space:
+            self._patch.set_transform(self._axes.transAxes)
         self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
@@ -1353,10 +1406,17 @@ class MplPolygonalROI(AbstractMplRoi):
         if event.inaxes != self._axes:
             return False
 
+        if self._data_space:
+            xval = event.xdata
+            yval = event.ydata
+        else:
+            axes_trans = self._axes.transAxes.inverted()
+            xval, yval = axes_trans.transform([event.x, event.y])
+
         if scrubbing or event.key == SCRUBBING_KEY:
             if not self._roi.defined():
                 return False
-            elif not self._roi.contains(event.xdata, event.ydata):
+            elif not self._roi.contains(xval, yval):
                 return False
 
         self._store_previous_roi()
@@ -1364,11 +1424,11 @@ class MplPolygonalROI(AbstractMplRoi):
 
         if scrubbing or event.key == SCRUBBING_KEY:
             self._scrubbing = True
-            self._cx = event.xdata
-            self._cy = event.ydata
+            self._cx = xval
+            self._cy = yval
         else:
             self.reset()
-            self._roi.add_point(event.xdata, event.ydata)
+            self._roi.add_point(xval, yval)
 
         self._mid_selection = True
 
@@ -1384,13 +1444,20 @@ class MplPolygonalROI(AbstractMplRoi):
             if not self._roi.defined():
                 return False
 
-        if self._scrubbing:
-            self._roi.move_to(event.xdata - self._cx,
-                              event.ydata - self._cy)
-            self._cx = event.xdata
-            self._cy = event.ydata
+        if self._data_space:
+            xval = event.xdata
+            yval = event.ydata
         else:
-            self._roi.add_point(event.xdata, event.ydata)
+            axes_trans = self._axes.transAxes.inverted()
+            xval, yval = axes_trans.transform([event.x, event.y])
+
+        if self._scrubbing:
+            self._roi.move_to(xval - self._cx,
+                              yval - self._cy)
+            self._cx = xval
+            self._cy = yval
+        else:
+            self._roi.add_point(xval, yval)
 
         self._sync_patch()
         self._draw()

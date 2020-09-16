@@ -7,6 +7,7 @@ from glue.viewers.scatter.state import ScatterViewerState
 
 from glue.viewers.scatter.viewer import MatplotlibScatterMixin
 
+
 __all__ = ['ScatterViewer']
 
 
@@ -25,5 +26,12 @@ class ScatterViewer(MatplotlibScatterMixin, MatplotlibDataViewer):
              'select:polygon']
 
     def __init__(self, session, parent=None, state=None):
-        MatplotlibDataViewer.__init__(self, session, parent=parent, state=state)
+        proj = None if not state or not state.plot_mode else state.plot_mode
+        MatplotlibDataViewer.__init__(self, session, parent=parent, state=state, projection=proj)
         MatplotlibScatterMixin.setup_callbacks(self)
+
+    def limits_to_mpl(self, *args):
+        # These projections throw errors if we try to set the limits
+        if self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+            return
+        super().limits_to_mpl(*args)

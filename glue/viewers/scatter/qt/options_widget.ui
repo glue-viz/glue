@@ -72,22 +72,15 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="combosel_x_att">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <spacer name="horizontalSpacer">
+       <item row="4" column="1">
+        <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>5</height>
+           <width>20</width>
+           <height>40</height>
           </size>
          </property>
         </spacer>
@@ -105,28 +98,8 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="combosel_y_att">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="x_lab">
+        <widget class="QLabel" name="y_lab">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -135,6 +108,13 @@
          </property>
          <property name="text">
           <string>y axis</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="combosel_y_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
          </property>
         </widget>
        </item>
@@ -148,6 +128,26 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="combosel_x_att">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="2">
         <widget class="QToolButton" name="bool_y_log_">
          <property name="text">
@@ -155,6 +155,22 @@
          </property>
          <property name="checkable">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="combosel_plot_mode"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="type_lab">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>type</string>
          </property>
         </widget>
        </item>
@@ -183,7 +199,39 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
-       <item row="2" column="5">
+       <item row="1" column="1">
+        <widget class="QLabel" name="x_lab_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>x axis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <widget class="QLineEdit" name="valuetext_y_max"/>
+       </item>
+       <item row="5" column="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="5">
         <widget class="QToolButton" name="bool_y_log">
          <property name="text">
           <string>log</string>
@@ -193,20 +241,26 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="5">
-        <widget class="QToolButton" name="bool_x_log">
-         <property name="text">
-          <string>log</string>
+       <item row="1" column="4">
+        <widget class="QLineEdit" name="valuetext_x_max"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLabel" name="y_lab_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
-         <property name="checkable">
-          <bool>true</bool>
+         <property name="text">
+          <string>y axis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="2" column="4">
-        <widget class="QLineEdit" name="valuetext_y_max"/>
-       </item>
-       <item row="2" column="3">
+       <item row="3" column="3">
         <widget class="QToolButton" name="button_flip_y">
          <property name="styleSheet">
           <string notr="true">padding: 0px</string>
@@ -226,48 +280,23 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
+       <item row="1" column="5">
+        <widget class="QToolButton" name="bool_x_log">
+         <property name="text">
+          <string>log</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
         <widget class="QLineEdit" name="valuetext_y_min"/>
-       </item>
-       <item row="1" column="4">
-        <widget class="QLineEdit" name="valuetext_x_max"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_2">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>x axis</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label_2">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>y axis</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
        </item>
        <item row="1" column="2">
         <widget class="QLineEdit" name="valuetext_x_min"/>
        </item>
-       <item row="3" column="2" colspan="4">
+       <item row="4" column="2" colspan="5">
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -280,18 +309,15 @@
          </property>
         </spacer>
        </item>
-       <item row="4" column="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="button_full_circle">
+         <property name="enabled">
+          <bool>true</bool>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+         <property name="text">
+          <string>full circle</string>
          </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -14,7 +14,7 @@ __all__ = ['MatplotlibViewerMixin']
 SCRIPT_HEADER = """
 # Initialize figure
 fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1, aspect='{aspect}')
+ax = fig.add_subplot(1, 1, 1, aspect='{aspect}', projection={projection})
 
 # for the legend
 legend_handles = []
@@ -22,14 +22,16 @@ legend_labels = []
 legend_handler_dict = dict()
 """.strip()
 
-SCRIPT_FOOTER = """
+LIMIT_SCRIPT = """
 # Set limits
-ax.set_xlim({x_min}, {x_max})
-ax.set_ylim({y_min}, {y_max})
+ax.set_xlim(left={x_min}, right={x_max})
+ax.set_ylim(bottom={y_min}, top={y_max})
+"""
 
-# Set scale (log or linear)
-ax.set_xscale('{x_log_str}')
-ax.set_yscale('{y_log_str}')
+SCRIPT_FOOTER = """
+{limit_script}
+
+{scale_script}
 
 # Set axis label properties
 ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
@@ -303,15 +305,26 @@ class MatplotlibViewerMixin(object):
 
     def _script_header(self):
         state_dict = self.state.as_dict()
+        proj = "'" + self.state.plot_mode + "'" if hasattr(self.state, 'plot_mode') else "None"
+        state_dict['projection'] = proj
         return ['import matplotlib',
                 "matplotlib.use('Agg')",
                 "# matplotlib.use('qt5Agg')",
                 'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
+        mode = 'rectilinear' if not hasattr(self.state, 'plot_mode') else self.state.plot_mode
         state_dict = self.state.as_dict()
-        state_dict['x_log_str'] = 'log' if self.state.x_log else 'linear'
-        state_dict['y_log_str'] = 'log' if self.state.y_log else 'linear'
+        temp_str = ''
+        if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar']:
+            x_log_str = 'log' if self.state.x_log else 'linear'
+            temp_str += "ax.set_xscale('" + x_log_str + "')\n"
+        if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+            y_log_str = 'log' if self.state.y_log else 'linear'
+            temp_str += "ax.set_yscale('" + y_log_str + "')\n"
+        state_dict['scale_script'] = "# Set scale (log or linear)\n" + temp_str if temp_str else ''
+        full_sphere = ['aitoff', 'hammer', 'lambert', 'mollweide']
+        state_dict['limit_script'] = '' if mode in full_sphere else LIMIT_SCRIPT.format(**state_dict)
         return [], SCRIPT_FOOTER.format(**state_dict)
 
     def _script_legend(self):

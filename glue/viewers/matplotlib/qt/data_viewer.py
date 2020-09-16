@@ -22,7 +22,7 @@ class MatplotlibDataViewer(MatplotlibViewerMixin, DataViewer):
     tools = ['mpl:home', 'mpl:pan', 'mpl:zoom']
     subtools = {'save': ['mpl:save']}
 
-    def __init__(self, session, parent=None, wcs=None, state=None):
+    def __init__(self, session, parent=None, wcs=None, state=None, projection=None):
 
         super(MatplotlibDataViewer, self).__init__(session, parent=parent, state=state)
 
@@ -33,7 +33,7 @@ class MatplotlibDataViewer(MatplotlibViewerMixin, DataViewer):
         # TODO: shouldn't have to do this
         self.central_widget = self.mpl_widget
 
-        self.figure, self.axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs)
+        self.figure, self.axes = init_mpl(self.mpl_widget.canvas.fig, wcs=wcs, projection=projection)
 
         MatplotlibViewerMixin.setup_callbacks(self)
 

@@ -11,8 +11,10 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from echo import keep_in_sync, delay_callback
-from glue.core.data_combo_helper import ComponentIDComboHelper
+from glue.core.data_combo_helper import ComponentIDComboHelper, ComboHelper
 from glue.core.exceptions import IncompatibleAttribute
+
+from matplotlib.projections import get_projection_names
 
 __all__ = ['ScatterViewerState', 'ScatterLayerState']
 
@@ -25,6 +27,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
     x_att = DDSCProperty(docstring='The attribute to show on the x-axis', default_index=0)
     y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
+    plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian, polar or another projection")
 
     def __init__(self, **kwargs):
 
@@ -46,6 +49,10 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att', pixel_coord=True, world_coord=True)
         self.y_att_helper = ComponentIDComboHelper(self, 'y_att', pixel_coord=True, world_coord=True)
+
+        self.plot_mode_helper = ComboHelper(self, 'plot_mode')
+        self.plot_mode_helper.choices = [proj for proj in get_projection_names() if proj not in ['3d', 'scatter_density']]
+        self.plot_mode_helper.selection = 'rectilinear'
 
         self.update_from_dict(kwargs)
 
@@ -79,6 +86,12 @@ class ScatterViewerState(MatplotlibDataViewerState):
         Flip the y_min/y_max limits.
         """
         self.y_lim_helper.flip_limits()
+
+    def full_circle(self):
+        if not self.plot_mode == 'polar':
+            return
+        self.x_min = 0
+        self.x_max = 2 * np.pi
 
     @property
     def x_categories(self):

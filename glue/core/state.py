@@ -667,14 +667,16 @@ def _load_range_subset_state(rec, context):
 def _save_roi_subset_state(state, context):
     return dict(xatt=context.id(state.xatt),
                 yatt=context.id(state.yatt),
-                roi=context.id(state.roi))
+                roi=context.id(state.roi),
+                pretransform=context.id(state.pretransform))
 
 
 @loader(RoiSubsetState)
 def _load_roi_subset_state(rec, context):
     return RoiSubsetState(context.object(rec['xatt']),
                           context.object(rec['yatt']),
-                          context.object(rec['roi']))
+                          context.object(rec['roi']),
+                          context.object(rec['pretransform'] if 'pretransform' in rec else None))
 
 
 @saver(InequalitySubsetState)
