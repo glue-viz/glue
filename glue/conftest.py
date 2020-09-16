@@ -4,7 +4,10 @@ import warnings
 
 import pytest
 
-from qtpy import PYSIDE2
+try:
+    from qtpy import PYSIDE2
+except Exception:
+    PYSIDE2 = False
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
 
