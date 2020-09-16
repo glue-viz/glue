@@ -62,6 +62,10 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.function = 'sum'
         self.assert_same(tmpdir)
 
+    def test_slice(self, tmpdir):
+        self.viewer.state.function = 'slice'
+        self.assert_same(tmpdir)
+
     def test_normalization(self, tmpdir):
         self.viewer.state.normalize = True
         self.assert_same(tmpdir)

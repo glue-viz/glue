@@ -152,10 +152,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_helper.set_multiple_data([])
                 else:
                     self.x_att_helper.set_multiple_data([self.reference_data])
-                    # if self._display_world:
-                    #     self.x_att_helper.world_coord = True
-                    #     self.x_att = self.reference_data.world_component_ids[0]
-                    # else:
                     self.x_att_helper.world_coord = False
                     self.x_att = self.reference_data.pixel_component_ids[0]
 
