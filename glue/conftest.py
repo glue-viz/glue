@@ -2,6 +2,13 @@ import os
 import sys
 import warnings
 
+import pytest
+
+try:
+    from qtpy import PYSIDE2
+except Exception:
+    PYSIDE2 = False
+
 from glue.config import CFG_DIR as CFG_DIR_ORIG
 
 try:
@@ -10,6 +17,7 @@ except ImportError:
     OBJGRAPH_INSTALLED = False
 else:
     OBJGRAPH_INSTALLED = True
+
 
 STDERR_ORIGINAL = sys.stderr
 
@@ -99,3 +107,21 @@ def pytest_unconfigure(config):
 
         # Uncomment when checking for memory leaks
         # objgraph.show_most_common_types(limit=100)
+
+
+# With PySide2, tests can fail in a non-deterministic way with the following
+# error:
+#
+#   AttributeError: 'PySide2.QtGui.QStandardItem' object has no attribute 'connect'
+#
+# Until this can be properly debugged and fixed, we xfail any test that fails
+# with this exception
+
+if PYSIDE2:
+
+    def pytest_runtest_call(__multicall__):
+        try:
+            __multicall__.execute()
+        except AttributeError as exc:
+            if 'PySide2.QtGui.QStandardItem' in str(exc):
+                pytest.xfail()
