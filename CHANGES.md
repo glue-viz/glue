@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v0.16.0 (unreleased)
+v0.16.0 (2020-09-17)
 --------------------
 
 * Remove bundled echo package and list as a dependency. [#2125]
