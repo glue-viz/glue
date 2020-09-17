@@ -42,24 +42,27 @@ development when many things can still change significantly.
 
 To better reflect the current development stage, and because the programmatic
 interface for glue is used by a number of other packages and user scripts, we
-therefore have chosen to call the present release 1.0. We are adopting `semantic
-versioning <https://semver.org/>`_ to better distinguish between releases that
-break API or have significant changes to the interface, releases that add new
-functionality without changing existing functionality, and releases that just
-fix bugs.
+therefore have chosen to call the present release **1.0.0**. We are adopting `semantic
+versioning <https://semver.org/>`_ (with version numbers of the form
+major.minor.bugfix) to better distinguish between releases that break the
+programmatic interface or have significant changes to the user interface (for
+which we would increase the major number), releases that add new functionality
+without changing existing functionality (for which we would increase the minor
+number), and releases that just fix bugs (for which we would increase the bugfix
+number).
 
-To be clear, the 1.0 version number does not mean that there will no longer
-be significant enhancements or updates to glue, but rather that the version
-numbers will now give a better indication of the scope of changes between
-versions.
+To put it another way, the 1.0.0 version number does not mean that there will no
+longer be significant enhancements or updates to glue, but rather that the
+version numbers will now give a better indication of the scope of changes
+between versions in future.
 
-Updated Python requirement
---------------------------
+Updated minimum Python requirement
+----------------------------------
 
 With this release, we are focusing development on supporting Python 3.6 and
 above, and glue will no longer work for Python 2.7 and 3.5. If you are using
-these Python versions, you will need to continue using the 0.15.x releases
-of glue.
+these Python versions and are unable to upgrade, you will need to continue using
+the 0.15.x releases of glue.
 
 Legends
 -------
@@ -109,21 +112,22 @@ Performance improvements
 
 The performance of the image viewer has been impoved in the case where some of the
 coordinate axes are uncorrelated. In addition, the 1-d profile viewer should now
-also be a lot faster when showing the collapsed profiles for selections made in
+also be signficantly faster when showing the collapsed profiles for selections made in
 the image viewer.
 
 Changes to coordinate classes [advanced]
 ----------------------------------------
 
 The infrastructure to handle world coordinates has been refactored - while this
-should make no difference for users using exclusively the GUI, if you have written
-custom code that makes use of ``Data.coords`` you may need to update your code. The
-biggest change is that the ``pixel2world`` and ``world2pixel`` methods have now been
-renamed to ``pixel_to_world_values`` and ``world_to_pixel_values``. The latest changes
-were to bring the glue API in line with the recommended API for world coordinate systems
-described in `A shared Python interface for World Coordinate Systems
-<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object conforming
-to that API can now be used directly as a ``Data.coords`` object.
+should make no difference for users using exclusively the user interface, if you
+have written custom code that makes use of ``Data.coords`` you may need to
+update your code. The biggest change is that the ``pixel2world`` and
+``world2pixel`` methods have now been renamed to ``pixel_to_world_values`` and
+``world_to_pixel_values``. The latest changes were to bring the glue API in line
+with the recommended API for world coordinate systems described in `A shared
+Python interface for World Coordinate Systems
+<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object
+conforming to that API can now be used directly as a ``Data.coords`` object.
 
 Initial support for dask arrays [advanced]
 ------------------------------------------
