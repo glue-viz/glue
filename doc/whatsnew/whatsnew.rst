@@ -15,7 +15,7 @@ interested.
 Before we get started, here's a reminder on how to install/update glue. You can
 easily update glue if you are using Anaconda/Miniconda by doing::
 
-    conda install -c glueviz glueviz=0.15
+    conda install -c glueviz glueviz=1.0
 
 If instead you installed glue with pip, you can update with::
 
@@ -26,42 +26,116 @@ about glue in general, you can find information :ref:`here
 <help>` about contacting us and/or
 reporting issues.
 
-.. _whatsnew_016:
+.. _whatsnew_100:
 
-What's new in glue v0.16?
-=========================
+What's new in glue v1.0.x?
+==========================
 
-Changes to coordinate classes
------------------------------
+Semantic versioning
+-------------------
 
-The infrastructure to handle world coordinates has been refactored - while this
-should make no difference for users using exclusively the GUI, if you have written
-custom code that makes use of ``Data.coords`` you may need to update your code. The
-biggest change is that the ``pixel2world`` and ``world2pixel`` methods have now been
-renamed to ``pixel_to_world_values`` and ``world_to_pixel_values``. The latest changes
-were to bring the glue API in line with the recommended API for world coordinate systems
-described in `A shared Python interface for World Coordinate Systems
-<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object conforming
-to that API can now be used directly as a ``Data.coords`` object.
+Glue has been developed since 2011, and in the last few years we have focused on
+keeping the application as stable as possible for existing users while adding
+new functionality. The use of version numbers such as **0.15.6** is therefore no
+longer appropriate since the **0** major version is typically used for early
+development when many things can still change significantly.
 
-Legend
-------
+To better reflect the current development stage, and because the programmatic
+interface for glue is used by a number of other packages and user scripts, we
+therefore have chosen to call the present release **1.0.0**. We are adopting `semantic
+versioning <https://semver.org/>`_ (with version numbers of the form
+major.minor.bugfix) to better distinguish between releases that break the
+programmatic interface or have significant changes to the user interface (for
+which we would increase the major number), releases that add new functionality
+without changing existing functionality (for which we would increase the minor
+number), and releases that just fix bugs (for which we would increase the bugfix
+number).
 
-Legend can now be displayed for the default matplotlib viewers:
+To put it another way, the 1.0.0 version number does not mean that there will no
+longer be significant enhancements or updates to glue, but rather that the
+version numbers will now give a better indication of the scope of changes
+between versions in future.
 
-.. image:: images/v0.16/legend_example.png
+Updated minimum Python requirement
+----------------------------------
+
+With this release, we are focusing development on supporting Python 3.6 and
+above, and glue will no longer work for Python 2.7 and 3.5. If you are using
+these Python versions and are unable to upgrade, you will need to continue using
+the 0.15.x releases of glue.
+
+Legends
+-------
+
+Legends can now be displayed for the built-in Matplotlib viewers:
+
+.. image:: images/v1.0.0/legend_example.png
    :align: center
    :width: 500
 
-The legend can be customized using a new tab in the plot options widget:
+The legend in a viewer can be customized using a new tab in the plot options widget:
 
-.. image:: images/v0.16/legend_control.png
+.. image:: images/v1.0.0/legend_control.png
    :align: center
    :width: 200
 
-The export scripts for the default matplotlib viewers have also been updated to
-draw the legend if it is activated in the GUI. Otherwise, it is commented so the
-user can easily activate the legend if needed.
+The export scripts for the default Matplotlib viewers have also been updated to
+draw the legend if it is activated in the user interface. Otherwise, it is
+commented out so the user can easily activate the legend if needed.
+
+Support for polar and other non-rectilinear projections in 2D Scatter Viewer
+----------------------------------------------------------------------------
+
+The 2-d scatter plot now includes experimental support for non-rectilinear
+projections, such as polar plots or Aitoff projections. The following shows
+the 2D scattter plot in polar plot mode:
+
+.. image:: images/v1.0.0/polar.png
+   :align: center
+   :width: 500
+
+Replace mode when creating a subset
+-----------------------------------
+
+When creating a new subset, the selection mode is now automatically changed back
+to 'replace' if it was changed previously, since there is no reason for the mode
+to be one of the logical combinations when creating a new subset from scratch.
+
+Export Python scripts (1D Profile viewer)
+-----------------------------------------
+
+The 1D Profile viewer now allows exporting of Python scripts, in line with the other
+built-in Matplotlib viewers
+
+Performance improvements
+------------------------
+
+The performance of the image viewer has been impoved in the case where some of the
+coordinate axes are uncorrelated. In addition, the 1-d profile viewer should now
+also be signficantly faster when showing the collapsed profiles for selections made in
+the image viewer.
+
+Changes to coordinate classes [advanced]
+----------------------------------------
+
+The infrastructure to handle world coordinates has been refactored - while this
+should make no difference for users using exclusively the user interface, if you
+have written custom code that makes use of ``Data.coords`` you may need to
+update your code. The biggest change is that the ``pixel2world`` and
+``world2pixel`` methods have now been renamed to ``pixel_to_world_values`` and
+``world_to_pixel_values``. The latest changes were to bring the glue API in line
+with the recommended API for world coordinate systems described in `A shared
+Python interface for World Coordinate Systems
+<https://github.com/astropy/astropy-APEs/blob/master/APE14.rst>`_. Any object
+conforming to that API can now be used directly as a ``Data.coords`` object.
+
+Initial support for dask arrays [advanced]
+------------------------------------------
+
+When adding `dask arrays <https://dask.org/>`_ to glue
+:class:`~glue.core.data.Data` objects, glue will no longer cause the whole dask
+array to be loaded into memory. The image viewer in particular will now only
+access the required and relevant parts of the data.
 
 .. _whatsnew_015:
 

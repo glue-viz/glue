@@ -1,14 +1,21 @@
 Full changelog
 ==============
 
-v0.16.0 (unreleased)
+v0.16.0 (2020-09-17)
 --------------------
 
-* Add legend for matplotlib viewers (in qt and in export scripts) [#2097]
+* Remove bundled echo package and list as a dependency. [#2125]
+
+* Add the ability to export Python scripts for the profile viewer. [#2082]
+
+* Add support for polar and other non-rectilinear projections in
+  2-d scatter viewer [#2170]
+
+* Add legend for matplotlib viewers (in qt and in export scripts) [#2097, #2144, #2146]
 
 * Add new registry to apply in-place patches to the session file [#2127]
 
-* Initial support for dask arrays. [#2137]
+* Initial support for dask arrays. [#2137, #2149]
 
 * Don't sync color and transparency of image layers by default. [#2116]
 
@@ -48,10 +55,22 @@ v0.16.0 (unreleased)
 
 * Fixed missing .units on ``CoordinateComponent``. [#2117]
 
-v0.15.7 (2020-03-12)
---------------------
+* Improve auto-linking of astronomical datasets with WCS information. [#2161]
+
+* Fix bug that occurred when using the GUI link editor when links had
+  been defined programmatically. [#2166]
+
+* Add the ability to programmatically set the preferred colormap for a
+  dataset using ``Data.visual.preferred_cmap`` [#2131, #2168]
+
+* Fix bug that caused incorrect unit to be shown on slider for images. [#2159]
+
+* Improve performance of ``Data.compute_statistic`` for subsets. [#2147]
 
 * Fix a bug where x_att and y_att could end up being out of sync in image viewer. [#2141]
+
+v0.15.7 (2020-03-12)
+--------------------
 
 * Fix bug that caused an infinite loop in the table viewer and caused glue to
   hang if too many incompatible subsets were in a table viewer. [#2105]
