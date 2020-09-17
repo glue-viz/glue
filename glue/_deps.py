@@ -137,22 +137,22 @@ gui_framework = (
 )
 
 required = (
-    QtPy('qtpy', 'Required', min_version='1.3'),
-    Dependency('setuptools', 'Required', min_version='1.0'),
-    Dependency('echo', 'Required', min_version='0.2'),
-    Dependency('numpy', 'Required', min_version='1.11'),
+    QtPy('qtpy', 'Required', min_version='1.9'),
+    Dependency('setuptools', 'Required', min_version='30.3'),
+    Dependency('echo', 'Required', min_version='0.5'),
+    Dependency('numpy', 'Required', min_version='1.16'),
     Dependency('bottleneck', 'Required', min_version='1.2'),
-    Dependency('matplotlib', 'Required for plotting', min_version='2.1'),
-    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='0.14'),
+    Dependency('matplotlib', 'Required for plotting', min_version='3.2'),
+    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='1.0'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='4.0'),
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
-    Dependency('h5py', 'Used to support HDF5 files', min_version='2.4'),
-    Dependency('xlrd', 'Used to support Excel files', min_version='1.0'),
-    Dependency('mpl_scatter_density', 'Used to make fast scatter density plots', 'mpl-scatter-density', min_version='0.5'),
+    Dependency('h5py', 'Used to support HDF5 files', min_version='2.10'),
+    Dependency('xlrd', 'Used to support Excel files', min_version='1.2'),
+    Dependency('mpl_scatter_density', 'Used to make fast scatter density plots', 'mpl-scatter-density', min_version='0.7'),
 )
 
 general = (
-    Dependency('scipy', 'Used for some image processing calculation'),
+    Dependency('scipy', 'Used for some image processing calculation', min_version='1.0'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
                'scikit-image'))
