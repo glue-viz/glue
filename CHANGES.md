@@ -1,8 +1,13 @@
 Full changelog
 ==============
 
-v0.16.0 (2020-09-17)
---------------------
+v1.0.1 (2020-11-10)
+-------------------
+
+* Updated supported versions of jupyter_client. [#2175]
+
+v1.0.0 (2020-09-17)
+-------------------
 
 * Remove bundled echo package and list as a dependency. [#2125]
 
