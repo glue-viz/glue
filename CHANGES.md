@@ -6,6 +6,11 @@ v1.1.0 (unreleased)
 
 * No changes yet
 
+v1.0.1 (2020-11-10)
+-------------------
+
+* Updated supported versions of jupyter_client. [#2175]
+
 v1.0.0 (2020-09-17)
 -------------------
 
