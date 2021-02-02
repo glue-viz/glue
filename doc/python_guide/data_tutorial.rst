@@ -276,9 +276,9 @@ In the above examples, we have assumed that the data objects were loaded via
 the Glue application. The readers/writers in Glue can also be accessed using
 the functions in :mod:`glue.core.data_factories`::
 
-    >>> from glue.core.data_factores import (load_data, gridded_data,
-    ...                                      tabular_data)
-    >>> load_data('image.fits', factory=gridded_data)  # reads a FITS image
+    >>> from glue.core.data_factories import (load_data, fits_reader,
+    ...                                       tabular_data)
+    >>> fits_reader('image.fits')  # reads a FITS image
     >>> load_data('catalog.csv', factory=tabular_data) # reads a catalog
     >>> load_data('catalog.csv')  # guesses format
 
