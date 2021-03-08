@@ -13,7 +13,8 @@ __all__ = ['tabular_data']
 def tabular_data(path, **kwargs):
     from glue.core.data_factories.astropy_table import astropy_tabular_data
     from glue.core.data_factories.pandas import pandas_read_table
-    for fac in [astropy_tabular_data, pandas_read_table]:
+    # Try pandas first, as it is an order of mangitude faster than astropy
+    for fac in [pandas_read_table, astropy_tabular_data]:
         try:
             return fac(path, **kwargs)
         except Exception:
