@@ -4,6 +4,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from glue.core import Data
+from glue.core.link_helpers import LinkSame
 from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 from glue.app.qt import GlueApplication
 from glue.utils import nanmean
@@ -23,12 +24,21 @@ class TestProfileTools(object):
         self.data.coords = SimpleCoordinates()
         self.data['x'] = np.arange(240).reshape((30, 4, 2)).astype(float)
 
+        self.data_2d = Data(label='d2')
+        self.data_2d['x'] = np.arange(8).reshape((4, 2)).astype(float)
+
         self.app = GlueApplication()
         self.session = self.app.session
         self.hub = self.session.hub
 
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
+        self.data_collection.append(self.data_2d)
+
+        link1 = LinkSame(self.data.pixel_component_ids[1], self.data_2d.pixel_component_ids[0])
+        link2 = LinkSame(self.data.pixel_component_ids[2], self.data_2d.pixel_component_ids[1])
+        self.data_collection.add_link(link1)
+        self.data_collection.add_link(link2)
 
         self.viewer = self.app.new_data_viewer(ProfileViewer)
         self.viewer.state.function = 'mean'
@@ -214,3 +224,48 @@ class TestProfileTools(object):
         out, err = capsys.readouterr()
         assert out.strip() == ""
         assert err.strip() == ""
+
+    def test_collapse_with_2d_in_image(self, capsys):
+
+        # Regression test for a bug that occurred when collapsing data and when a 2-d
+        # dataset was present in the image viewer.
+
+        self.viewer.add_data(self.data)
+        self.viewer.add_data(self.data_2d)
+
+        image_viewer = self.app.new_data_viewer(ImageViewer)
+        image_viewer.add_data(self.data)
+        image_viewer.add_data(self.data_2d)
+
+        self.profile_tools.ui.tabs.setCurrentIndex(2)
+
+        # First try in pixel coordinates
+
+        self.viewer.state.x_att = self.data.pixel_component_ids[0]
+
+        # Force events to be processed to make sure that the callback functions
+        # for the computation thread are executed (since they rely on signals)
+        self.viewer.layers[0].wait()
+        process_events()
+
+        x, y = self.viewer.axes.transData.transform([[0.9, 4]])[0]
+        self.viewer.axes.figure.canvas.button_press_event(x, y, 1)
+        x, y = self.viewer.axes.transData.transform([[15.1, 4]])[0]
+        self.viewer.axes.figure.canvas.motion_notify_event(x, y, 1)
+
+        process_events()
+
+        self.profile_tools.ui.button_collapse.click()
+
+        process_events()
+
+        assert isinstance(image_viewer.state.slices[0], AggregateSlice)
+        assert image_viewer.state.slices[0].slice.start == 1
+        assert image_viewer.state.slices[0].slice.stop == 15
+        assert image_viewer.state.slices[0].center == 0
+        assert image_viewer.state.slices[0].function is nanmean
+
+        out, err = capsys.readouterr()
+
+        assert err.strip() == ""
+        assert out.strip() == ""
