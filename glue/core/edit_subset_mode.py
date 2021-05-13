@@ -64,6 +64,7 @@ class EditSubsetMode(object):
         :param override_mode: Mode to use instead of EditSubsetMode.mode
         """
         mode = override_mode or self.mode
+        len_edit_subset = len(self._edit_subset)
         if not self._edit_subset or mode is NewMode:
             if self.data_collection is None:
                 raise RuntimeError("Must set data_collection before "
@@ -72,6 +73,12 @@ class EditSubsetMode(object):
         subs = self._edit_subset
         for s in as_list(subs):
             mode(s, new_state)
+        # If we wanted to make sure that when in NewMode we go back to having
+        # no current subset selected (which would mean creating a new subset
+        # every time) we need to reset edit_subset here
+        print(self.mode, self._edit_subset)
+        if self.mode is NewMode or len_edit_subset == 0:
+            self.edit_subset = []
 
     @contract(d='inst($DataCollection, $Data)',
               new_state='isinstance(SubsetState)',
