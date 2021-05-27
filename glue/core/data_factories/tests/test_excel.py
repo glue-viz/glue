@@ -44,9 +44,9 @@ def test_excel_multiple():
 @requires_openpyxl
 def test_excel_single():
 
-    from ..excel import panda_read_xlsx
+    from ..excel import panda_read_excel
 
-    d = panda_read_xlsx(os.path.join(DATA, 'simple_data.xlsx'), sheet='Data2')[0]
+    d = panda_read_excel(os.path.join(DATA, 'simple_data.xlsx'), sheet='Data2')[0]
 
     assert_array_equal(d['1'], [2, 3, 4, 5])
     assert d['1'].dtype.kind == 'i'
@@ -59,9 +59,9 @@ def test_excel_single():
 @requires_openpyxl
 def test_excel_datetime():
 
-    from ..excel import panda_read_xlsx
+    from ..excel import panda_read_excel
 
-    d = panda_read_xlsx(os.path.join(DATA, 'datetime.xlsx'))[0]
+    d = panda_read_excel(os.path.join(DATA, 'datetime.xlsx'))[0]
 
     assert d.get_kind('date') == 'datetime'
     assert d.get_kind('a') == 'numerical'
