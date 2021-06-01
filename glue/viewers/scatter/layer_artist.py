@@ -398,7 +398,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         if self.state.fill:
                             self.scatter_artist.set_edgecolors('none')
                         else:
-                            colors = self.scatter_artist.get_facecolors()
+                            # The following should work, but doesn't seem to, so instead
+                            # we get the colormap and apply it to the array values ourselves
+                            # colors = self.scatter_artist.get_facecolors()
+                            colors = self.scatter_artist.get_cmap()(self.scatter_artist.get_array())
                             self.scatter_artist.set_facecolors('none')
                             self.scatter_artist.set_edgecolors(colors)
 
