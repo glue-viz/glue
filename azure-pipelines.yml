@@ -27,7 +27,7 @@ jobs:
       coverage: 'false'
 
     # Linux builds - test on all supported PyQt5 versions, and include all dependencies in some builds
-    - linux: py36-test-pyqt59-legacy
+    - linux: py37-test-pyqt59-legacy
     - linux: py37-test-pyqt510
     - linux: py37-test-pyqt511-all
     - linux: py37-test-pyqt512
@@ -41,19 +41,17 @@ jobs:
     - linux: py37-test-pyside513-dev-all
 
     # Test a few configurations on MacOS X
-    - macos: py36-test-pyqt513
     - macos: py37-test-pyqt513
     - macos: py38-test-pyqt514-all
     - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
-    - windows: py36-test-pyqt510
     - windows: py37-test-pyqt510
     # The following fails due to https://github.com/jupyter/qtconsole/issues/400
     # - windows: py38-test-pyqt514-all
     - windows: py37-test-pyside513-all
 
     # Try out documentation build on Linux and Windows
-    - linux: py36-docs-pyqt513
+    - linux: py37-docs-pyqt513
     - macos: py37-docs-pyqt513
     - windows: py38-docs-pyqt513

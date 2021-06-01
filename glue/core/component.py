@@ -93,7 +93,7 @@ class Component(object):
         # would force the computation of the whole component in the case of
         # derived components, so instead we specifically only get the first
         # element.
-        return np.can_cast(self[(0,) * self.ndim].dtype, np.complex)
+        return np.can_cast(self[(0,) * self.ndim].dtype, complex)
 
     @property
     def categorical(self):
