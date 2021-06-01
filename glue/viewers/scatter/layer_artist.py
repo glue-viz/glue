@@ -460,6 +460,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                     c = ensure_numerical(self.layer[self.state.cmap_att].ravel()).copy()
                     c = c[self._errorbar_keep]
+                    eartist.set_color(None)
                     set_mpl_artist_cmap(eartist, c, self.state)
 
                 if force or 'alpha' in changed:
