@@ -140,14 +140,15 @@ required = (
     QtPy('qtpy', 'Required', min_version='1.9'),
     Dependency('setuptools', 'Required', min_version='30.3'),
     Dependency('echo', 'Required', min_version='0.5'),
-    Dependency('numpy', 'Required', min_version='1.16'),
+    Dependency('numpy', 'Required', min_version='1.17'),
     Dependency('bottleneck', 'Required', min_version='1.2'),
     Dependency('matplotlib', 'Required for plotting', min_version='3.2'),
-    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='1.0'),
+    Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='1.2'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='4.0'),
     Dependency('dill', 'Used when saving Glue sessions', min_version='0.2'),
     Dependency('h5py', 'Used to support HDF5 files', min_version='2.10'),
     Dependency('xlrd', 'Used to support Excel files', min_version='1.2'),
+    Dependency('openpyxl', 'Used to support Excel files', min_version='3.0'),
     Dependency('mpl_scatter_density', 'Used to make fast scatter density plots', 'mpl-scatter-density', min_version='0.7'),
 )
 
