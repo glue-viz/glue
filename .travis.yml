@@ -39,7 +39,7 @@ install:
   - LC_ALL=C
 
   # Install glue and dependencies (but without Qt)
-  - pip install .[all]
+  - pip install .[all] --upgrade
 
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories
