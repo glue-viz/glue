@@ -141,7 +141,7 @@ required = (
     Dependency('setuptools', 'Required', min_version='30.3'),
     Dependency('echo', 'Required', min_version='0.5'),
     Dependency('numpy', 'Required', min_version='1.17'),
-    Dependency('bottleneck', 'Required', min_version='1.2'),
+    Dependency('bottleneck', 'Required', min_version='1.3'),
     Dependency('matplotlib', 'Required for plotting', min_version='3.2'),
     Dependency('pandas', 'Adds support for Excel files and DataFrames', min_version='1.2'),
     Dependency('astropy', 'Used for FITS I/O, table reading, and WCS Parsing', min_version='4.0'),
@@ -153,7 +153,7 @@ required = (
 )
 
 general = (
-    Dependency('scipy', 'Used for some image processing calculation', min_version='1.0'),
+    Dependency('scipy', 'Used for some image processing calculation', min_version='1.1'),
     Dependency('skimage',
                'Used to read popular image formats (jpeg, png, etc.)',
                'scikit-image'))
