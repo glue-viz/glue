@@ -4,12 +4,11 @@ Full changelog
 v1.1.0 (unreleased)
 -------------------
 
-* No changes yet
-
-v1.0.2 (unreleased)
--------------------
-
 * Fix compatibility with xlrd 2.0 and require openpyxl for .xlsx input. [#2196]
+
+* Dropped support for Python 3.6. [#2196]
+
+* Fixed compatibility with recent releases of Matplotlib. [#2196]
 
 v1.0.1 (2020-11-10)
 -------------------
