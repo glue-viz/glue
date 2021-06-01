@@ -45,6 +45,9 @@ def pytest_configure(config):
 
     os.environ['GLUE_TESTING'] = 'True'
 
+    from glue._mpl_backend import set_mpl_backend
+    set_mpl_backend()
+
     if config.getoption('no_optional_skip'):
         from glue.tests import helpers
         for attr in helpers.__dict__:

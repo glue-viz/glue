@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 
 class MatplotlibBackendSetter(object):
@@ -46,3 +47,9 @@ def set_mpl_backend():
     # Explicitly switch backend
     from matplotlib.pyplot import switch_backend
     switch_backend('agg')
+
+    # We override the datetime64 units.registry entry to use our class. We do
+    # this here to make sure that rcdefaults hasn't reset this.
+    import matplotlib.units as units
+    from glue.utils.matplotlib import Datetime64Converter
+    units.registry[np.datetime64] = Datetime64Converter()
