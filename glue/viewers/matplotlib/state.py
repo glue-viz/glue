@@ -195,7 +195,7 @@ class MatplotlibDataViewerState(ViewerState):
 
         # Only do something if the data ratio is sufficiently different
         # from the axes ratio.
-        if abs(data_ratio - axes_ratio) / (0.5 * (data_ratio + axes_ratio)) > 0.01:
+        if abs(data_ratio - axes_ratio) / (0.5 * (data_ratio + axes_ratio)) > 0.0001:
 
             # We now adjust the limits - which ones we adjust depends on
             # the adjust keyword. We also make sure we preserve the
