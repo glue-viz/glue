@@ -18,8 +18,8 @@ If your problem is not described there, `open a new issue
    dependencies
    developer
 
-.. note:: If you are using MacOS X Big Sur and/or Apple M1 hardware, be sure to
-          read :ref:`apple-m1` and :ref:`apple-bigsur`.
+.. note:: If you are using Apple M1 hardware, be sure to read :ref:`apple-m1`
+          before proceeding with the installation instructions.
 
 Once glue is installed, you will be able to type::
 
@@ -40,3 +40,6 @@ On Windows, installation creates an executable ``glue.exe`` file within the
 python script directory (e.g., ``C:\Python27\Scripts``). Windows users can
 create a desktop shortcut for this file, and run Glue by double clicking on the
 icon.
+
+.. note:: If you have issues with Glue after installing it on MacOS X Big Sur,
+          see :ref:`apple-bigsur`.
