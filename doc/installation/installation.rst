@@ -18,6 +18,9 @@ If your problem is not described there, `open a new issue
    dependencies
    developer
 
+.. note:: If you are using MacOS X Big Sur and/or Apple M1 hardware, be sure to
+          read :ref:`apple-m1` and :ref:`apple-bigsur`.
+
 Once glue is installed, you will be able to type::
 
     glue
