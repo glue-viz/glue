@@ -28,7 +28,7 @@ First, make sure that your conda command is up to date::
 
 then install glue with::
 
-    conda install -c glueviz glueviz=0.15
+    conda install -c glueviz glueviz=1.0
 
 This will install the latest version of glue from the ``glueviz`` conda channel.
 
