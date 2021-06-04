@@ -316,10 +316,10 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             return
 
         if use_default_modifiers:
-            percentile = 100
+            percentile = 95
             log = False
         else:
-            percentile = getattr(self, 'percentile', None) or 100
+            percentile = getattr(self, 'percentile', None) or 95
             log = getattr(self, 'log', None) or False
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
