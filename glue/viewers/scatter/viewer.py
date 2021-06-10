@@ -18,15 +18,23 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('x_log', self._update_axes)
         self.state.add_callback('y_log', self._update_axes)
         self.state.add_callback('plot_mode', self._update_projection)
-        self._update_axes()
+        self.state.add_callback('angle_unit', self._update_angle_unit)
+
+        self.state.add_callback('x_min', self._x_limits_to_mpl)
+        self.state.add_callback('x_max', self._x_limits_to_mpl)
+        self.state.add_callback('y_min', self.limits_to_mpl)
+        self.state.add_callback('y_max', self.limits_to_mpl)
+        self._update_angle_unit()
+        self.state.reset_limits()
 
     def _update_axes(self, *args):
 
         if self.state.x_att is not None:
 
             # Update ticks, which sets the labels to categories if components are categorical
+            radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
             update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log,
-                         self.state.x_categories, projection=self.state.plot_mode)
+                         self.state.x_categories, projection=self.state.plot_mode, radians=radians)
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
@@ -47,7 +55,6 @@ class MatplotlibScatterMixin(object):
         self.axes.figure.canvas.draw_idle()
 
     def _update_projection(self, *args):
-
         self.figure.delaxes(self.axes)
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
         for layer in self.layers:
@@ -63,13 +70,36 @@ class MatplotlibScatterMixin(object):
         self.update_x_ticklabel()
         self.update_y_ticklabel()
 
+
         # Reset and roundtrip the limits to have reasonable and synced limits when changing
         self.state.x_log = self.state.y_log = False
         self.state.reset_limits()
+
+        is_polar = self.using_polar()
+        if is_polar:
+            self.state.full_circle()
         self.limits_to_mpl()
+        if is_polar:
+            self.state.y_min = 0
         self.limits_from_mpl()
 
+        # We need to update the tick marks, particularly when we're using radians
+        self._update_axes()
+
         self.figure.canvas.draw_idle()
+
+    def using_polar(self):
+        return self.state.plot_mode == 'polar'
+
+    def _update_angle_unit(self, *args):
+        self._update_axes()
+        for layer in self.layers:
+            layer.update()
+
+    def _x_limits_to_mpl(self, *args, **kwargs):
+        if self.using_polar():
+            self.state.full_circle()
+        self.limits_to_mpl()
 
     def apply_roi(self, roi, override_mode=None):
 
