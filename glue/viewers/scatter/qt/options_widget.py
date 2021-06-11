@@ -90,7 +90,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.button_flip_x.setEnabled(lim_enabled)
         self.ui.valuetext_x_max.setEnabled(lim_enabled)
         self.ui.valuetext_y_min.setEnabled(lim_enabled and not is_polar)
-        self.ui.button_flip_y.setEnabled(lim_enabled)
+        self.ui.button_flip_y.setEnabled(lim_enabled and not is_polar)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
         self.ui.button_full_circle.setVisible(False)
         self.ui.angle_unit_lab.setVisible(is_polar)
