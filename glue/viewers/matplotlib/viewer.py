@@ -145,11 +145,9 @@ class MatplotlibViewerMixin(object):
         self.redraw()
 
     def update_y_axislabel(self, *event):
-        labelpad = 25 if getattr(self.state, 'plot_mode', None) == 'polar' else None
         self.axes.set_ylabel(self.state.y_axislabel,
                              weight=self.state.y_axislabel_weight,
-                             size=self.state.y_axislabel_size,
-                             labelpad=labelpad)
+                             size=self.state.y_axislabel_size)
         self.redraw()
 
     def update_x_ticklabel(self, *event):
@@ -237,9 +235,6 @@ class MatplotlibViewerMixin(object):
         else:
             y_min, y_max = self.axes.get_ylim()
 
-        if getattr(self.state, 'using_polar', False):
-            y_min = 0
-
         with delay_callback(self.state, 'x_min', 'x_max', 'y_min', 'y_max'):
 
             self.state.x_min = x_min
@@ -268,16 +263,12 @@ class MatplotlibViewerMixin(object):
             elif self.state.y_min <= 0:
                 y_min = y_max / 10
 
-        is_polar = getattr(self.state, 'using_polar', False)
-        if is_polar:
-            y_min = max(0, y_min)
-
         # Since we deal with aspect ratio internally, there are no conditions
         # under which we would want to immediately change the state once the
         # limits are set in Matplotlib, so we avoid this by setting the
         # _skip_limits_from_mpl attribute which is then recognized inside
         # limits_from_mpl
-        self._skip_limits_from_mpl = not is_polar
+        self._skip_limits_from_mpl = True
         try:
             self.axes.set_xlim(x_min, x_max)
             self.axes.set_ylim(y_min, y_max)

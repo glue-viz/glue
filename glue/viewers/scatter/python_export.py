@@ -12,7 +12,9 @@ def python_export_scatter_layer(layer, *args):
     script += "layer_handles = []  # for legend"
 
     script += "# Get main data values\n"
-    script += "x = layer_data['{0}']\n".format(layer._viewer_state.x_att.label)
+    x_transform_open = "np.radians(" if layer._viewer_state.using_polar else ""
+    x_transform_close = ")" if layer._viewer_state.using_polar else ""
+    script += "x = {0}layer_data['{1}']{2}\n".format(x_transform_open, layer._viewer_state.x_att.label, x_transform_close)
     script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
     script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
 

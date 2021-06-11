@@ -82,7 +82,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
             self.y_min = 0
 
     def reset_limits(self):
-        if self.using_polar:
+        if not self.using_polar:
             self._reset_x_limits()
         self._reset_y_limits()
 
@@ -102,17 +102,19 @@ class ScatterViewerState(MatplotlibDataViewerState):
     def using_polar(self):
         return self.plot_mode == 'polar'
 
+    @property
+    def using_degrees(self):
+        return self.using_polar and self.angle_unit == 'degrees'
+
+    @property
+    def using_radians(self):
+        return self.using_polar and self.angle_unit == 'radians'
+
     def full_circle(self):
         if not self.using_polar:
             return
         self.x_min = 0
         self.x_max = 2 * np.pi
-
-    def semicircle(self):
-        if not self.using_polar:
-            return
-        self.x_min = 0
-        self.x_max = np.pi
 
     @property
     def x_categories(self):
@@ -287,6 +289,8 @@ class ScatterLayerState(MatplotlibLayerState):
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
                                                     numeric=True, datetime=False, categorical=False)
 
+        self.points_mode_helper = ComboHelper(self, 'points_mode')
+
         points_mode_display = {'auto': 'Density map or markers (auto)',
                                'markers': 'Markers',
                                'density': 'Density map'}
@@ -328,7 +332,9 @@ class ScatterLayerState(MatplotlibLayerState):
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
             self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            self.viewer_state.add_callback('plot_mode', self._update_points_mode, priority=10000)
             self._on_xy_change()
+            self._update_points_mode()
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -341,6 +347,12 @@ class ScatterLayerState(MatplotlibLayerState):
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
 
         self.update_from_dict(kwargs)
+
+    def _update_points_mode(self, *args):
+        if self.viewer_state.using_polar:
+            self.points_mode_helper.choices = ['markers']
+        else:
+            self.points_mode_helper.choices = ['auto', 'markers', 'density']
 
     def _on_xy_change(self, *event):
 

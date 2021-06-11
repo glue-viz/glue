@@ -43,18 +43,6 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         viewer_state.add_callback('plot_mode', self._update_plot_mode)
         viewer_state.add_callback('angle_unit', self._update_x_attribute)
 
-        is_polar = self.viewer_state.plot_mode == 'polar'
-        lim_enabled = self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']
-        self.ui.button_full_circle.setVisible(False)  # For now
-        self.ui.angle_unit_lab.setVisible(is_polar)
-        self.ui.combosel_angle_unit.setVisible(is_polar)
-        self.ui.x_lab_2.setVisible(not is_polar)
-        self.ui.valuetext_x_min.setVisible(not is_polar)
-        self.ui.button_flip_x.setVisible(not is_polar)
-        self.ui.valuetext_x_max.setVisible(not is_polar)
-        self.ui.bool_x_log.setVisible(not is_polar)
-        self.ui.valuetext_y_min.setEnabled(lim_enabled and not is_polar)
-
         self.session = session
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
 
@@ -62,6 +50,9 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         # regardless of the current plot mode
         self._update_x_attribute()
         self._update_y_attribute()
+
+        # Make sure that the UI is consistent with the plot mode that's selected
+        self._update_plot_mode()
 
     def _apply_all_viewers(self):
         for tab in self.session.application.viewers:

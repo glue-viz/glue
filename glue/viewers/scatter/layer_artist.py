@@ -230,8 +230,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
 
-                # In the future, probably want something more generic here
-                if getattr(self._viewer_state, 'using_polar', False) and getattr(self._viewer_state, 'angle_unit', None) == 'degrees':
+                if getattr(self._viewer_state, 'using_degrees', False):
                     x = np.radians(x)
 
                 self.density_artist.set_label(None)
