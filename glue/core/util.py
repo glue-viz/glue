@@ -18,6 +18,7 @@ __all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_compon
            'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
 
+
 class ThetaRadianFormatter(mticker.Formatter):
     """
     Used to format the *theta* tick labels in radians
@@ -58,10 +59,10 @@ class ThetaRadianFormatter(mticker.Formatter):
         if n == 0:
             return "0"
         elif d == 1:
-            return fr'${ns}\pi$'
+            return r'${0}\pi$'.format(ns)
         elif abs(n) < cls.max_num and d < cls.max_den:
             sgn = "-" if n < 0 else ""
-            return fr"${sgn}{ns}\pi/{d}$"
+            return r"${0}{1}\pi/{2}$".format(sgn, ns, d)
 
     def __call__(self, x, pos=None):
         vmin, vmax = self.axis.get_view_interval()
