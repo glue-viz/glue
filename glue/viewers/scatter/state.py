@@ -351,6 +351,7 @@ class ScatterLayerState(MatplotlibLayerState):
     def _update_points_mode(self, *args):
         if self.viewer_state.using_polar:
             self.points_mode_helper.choices = ['markers']
+            self.points_mode_helper.select = 'markers'
         else:
             self.points_mode_helper.choices = ['auto', 'markers', 'density']
 

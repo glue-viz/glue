@@ -67,6 +67,7 @@ class MatplotlibScatterMixin(object):
         for layer in self.layers:
             layer._set_axes(self.axes)
             layer.state.vector_mode = 'Cartesian'
+            layer.state._update_points_mode()
             layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
