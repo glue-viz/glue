@@ -24,8 +24,8 @@ class MatplotlibScatterMixin(object):
 
         self.state.add_callback('x_min', self._x_limits_to_mpl)
         self.state.add_callback('x_max', self._x_limits_to_mpl)
-        self.state.add_callback('y_min', self._y_limits_to_mpl)
-        self.state.add_callback('y_max', self._y_limits_to_mpl)
+        self.state.add_callback('y_min', self.limits_to_mpl)
+        self.state.add_callback('y_max', self.limits_to_mpl)
         self._update_projection(on_startup=True)
         self._update_axes()
         self.state.reset_limits()
@@ -107,11 +107,6 @@ class MatplotlibScatterMixin(object):
     def _x_limits_to_mpl(self, *args, **kwargs):
         if self.using_polar():
             self.state.full_circle()
-        self.limits_to_mpl()
-
-    def _y_limits_to_mpl(self, *args, **kwargs):
-        if self.using_polar():
-            self.state.y_min = 0
         self.limits_to_mpl()
 
     # Because of how the polar plot is drawn, we need to give the y-axis label more padding
