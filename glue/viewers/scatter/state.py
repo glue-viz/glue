@@ -332,7 +332,8 @@ class ScatterLayerState(MatplotlibLayerState):
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
             self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
-            self.viewer_state.add_callback('plot_mode', self._update_points_mode, priority=10000)
+            if hasattr(self.viewer_state, 'plot_mode'):
+                self.viewer_state.add_callback('plot_mode', self._update_points_mode, priority=10000)
             self._on_xy_change()
             self._update_points_mode()
 
@@ -349,7 +350,7 @@ class ScatterLayerState(MatplotlibLayerState):
         self.update_from_dict(kwargs)
 
     def _update_points_mode(self, *args):
-        if self.viewer_state.using_polar:
+        if getattr(self.viewer_state, 'using_polar', False):
             self.points_mode_helper.choices = ['markers']
             self.points_mode_helper.select = 'markers'
         else:
