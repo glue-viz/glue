@@ -24,7 +24,7 @@ matrix:
         # sub-directories to be removed, to make sure that no non-Qt code has
         # any dependence on Qt code.
         - os: linux
-          python: 3.6
+          python: 3.7
           env: QT_PKG=False
 
 before_install:
@@ -39,7 +39,7 @@ install:
   - LC_ALL=C
 
   # Install glue and dependencies (but without Qt)
-  - pip install .[all]
+  - pip install .[all] --upgrade
 
   # Uninstall any version of Qt if QT_PKG is False, and remove all qt
   # sub-directories

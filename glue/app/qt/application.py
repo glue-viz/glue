@@ -134,6 +134,9 @@ class GlueLogger(QtWidgets.QWidget):
 
         self.setLayout(l)
 
+    def fileno(self):
+        return self._stderr_original.fileno()
+
     def _set_console_button(self, attention):
         if attention:
             style = 'color: red; text-decoration: underline;'

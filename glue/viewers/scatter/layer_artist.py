@@ -398,9 +398,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                         if self.state.fill:
                             self.scatter_artist.set_edgecolors('none')
                         else:
-                            colors = self.scatter_artist.get_facecolors()
                             self.scatter_artist.set_facecolors('none')
-                            self.scatter_artist.set_edgecolors(colors)
 
                     if force or any(prop in changed for prop in MARKER_PROPERTIES):
 
@@ -460,6 +458,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 elif force or any(prop in changed for prop in CMAP_PROPERTIES):
                     c = ensure_numerical(self.layer[self.state.cmap_att].ravel()).copy()
                     c = c[self._errorbar_keep]
+                    eartist.set_color(None)
                     set_mpl_artist_cmap(eartist, c, self.state)
 
                 if force or 'alpha' in changed:

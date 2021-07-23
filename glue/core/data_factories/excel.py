@@ -10,11 +10,17 @@ __all__ = []
 
 @data_factory(label="Excel", identifier=has_extension('xls xlsx'))
 def panda_read_excel(path, sheet=None, **kwargs):
-    """ A factory for reading excel data using pandas.
-    :param path: path/to/file
-    :param sheet: The sheet to read. If `None`, all sheets are read.
-    :param kwargs: All other kwargs are passed to pandas.read_excel
-    :return: core.data.Data object.
+    """
+    A factory for reading excel data using pandas.
+
+    Parameters
+    ----------
+    path : str
+        Path to the file
+    sheet : str, optional
+        The sheet to read. If `None`, all sheets are read.
+    kwargs
+        All other kwargs are passed to pandas.read_excel
     """
 
     try:
@@ -22,20 +28,36 @@ def panda_read_excel(path, sheet=None, **kwargs):
     except ImportError:
         raise ImportError('Pandas is required for Excel input.')
 
-    try:
-        import xlrd
-    except ImportError:
-        raise ImportError('xlrd is required for Excel input.')
-
     name = os.path.basename(path)
     if '.xls' in name:
         name = name.rsplit('.xls', 1)[0]
 
-    xl_workbook = xlrd.open_workbook(path)
-
     if sheet is None:
-        sheet_names = xl_workbook.sheet_names()
+
+        if path.endswith('xlsx'):
+
+            try:
+                from openpyxl import load_workbook
+            except ImportError:
+                raise ImportError('openpyxl is required for xlsx input.')
+
+            xl_workbook = load_workbook(filename=path)
+
+            sheet_names = xl_workbook.sheetnames
+
+        else:
+
+            try:
+                import xlrd
+            except ImportError:
+                raise ImportError('xlrd is required for xls input.')
+
+            xl_workbook = xlrd.open_workbook(path)
+
+            sheet_names = xl_workbook.sheet_names()
+
     else:
+
         sheet_names = [sheet]
 
     all_data = []

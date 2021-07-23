@@ -3,6 +3,40 @@
 Known issues and solutions
 ==========================
 
+.. _apple-m1:
+
+Using glue on Apple M1 hardware
+-------------------------------
+
+At the moment, glue is not easy to set up to run using a Python stack running
+natively on M1 processors - instead you should
+`enable Rosetta 2 <https://support.apple.com/en-gb/HT211861>`_
+for the **Terminal.app**. You can do this by selecting **Terminal.app** in the
+Finder, then going to **File** and selecting **Get Info**, then clicking the
+checkbox **Open using Rosetta**.
+
+Once you have done this, follow the regular
+:ref:`installation` instructions for glue as if you were using an intel Mac.
+Be sure to also read `Using glue on Big Sur`_ since this is the version of
+MacOS X that is installed on Apple M1 hardware.
+
+.. _apple-bigsur:
+
+Using glue on Big Sur
+---------------------
+
+If you have issues with getting the 3D functionality to work, you will need to
+install the latest development version of VisPy. If you are using conda, you
+will first need to remove the conda-installed version of VisPy using::
+
+    conda remove vispy --force
+
+You can then install the latest development version of VisPy with::
+
+    pip install git+https://github.com/vispy/vispy
+
+Once this is done the 3D viewers should work properly.
+
 3D viewers not working on Linux with PyQt5
 ------------------------------------------
 

@@ -1799,7 +1799,7 @@ class Data(BaseCartesianData):
                 axis = (axis,)
             full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
             full_result = np.zeros(full_shape) * np.nan
-            result_slices = [subarray_slices[idim] for idim in range(self.ndim) if idim not in axis]
+            result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
             full_result[result_slices] = result
             return full_result
 
