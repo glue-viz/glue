@@ -22,6 +22,13 @@ def get_function_name(info):
         return item.__name__
 
 
+class TinyMenu(QtWidgets.QMenu):
+    def __init__(self, parent=None):
+        super(TinyMenu, self).__init__(parent=parent)
+
+        self.addAction('Link Values')
+
+
 class LinkMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None):
@@ -73,6 +80,10 @@ class LinkEditorWidget(QtWidgets.QWidget):
         self._menu.triggered.connect(self._add_link)
         self._ui.button_add_link.setMenu(self._menu)
 
+        self._menu2 = TinyMenu(parent=self._ui.button_simple_link)
+        self._menu2.triggered.connect(self._value_link)
+        self._ui.button_simple_link.setMenu(self._menu2)
+
         self._watched_links = []
 
         self.state.add_callback('data1', self._on_data_change)
@@ -88,6 +99,9 @@ class LinkEditorWidget(QtWidgets.QWidget):
 
     def _add_link(self, action):
         self.state.new_link(action.data().data)
+
+    def _value_link(self, action):
+        self.state.value_link()
 
     def _set_up_combos(self):
 

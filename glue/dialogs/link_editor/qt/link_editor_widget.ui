@@ -127,6 +127,9 @@
          <property name="text">
           <string>Glue attributes</string>
          </property>
+         <property name="popupMode">
+          <enum>QToolButton::MenuButtonPopup</enum>
+         </property>
         </widget>
        </item>
       </layout>

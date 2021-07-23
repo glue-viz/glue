@@ -135,6 +135,10 @@ class LinkEditorState(State):
         self.current_link.x = self.att1
         self.current_link.y = self.att2
 
+    def value_link(self, *args):
+        self.data1.join_on_key(self.data2, self.att1, self.att2)
+        # TODO interface with ui
+
     def new_link(self, function_or_helper):
 
         if hasattr(function_or_helper, 'function'):
