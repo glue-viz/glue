@@ -4,13 +4,13 @@ from astropy.coordinates import FK5, Galactic
 
 def fk52gal(ra, dec):
     c = FK5(ra * u.deg, dec * u.deg)
-    out = c.transform_to(Galactic)
+    out = c.transform_to(Galactic())
     return out.l.degree, out.b.degree
 
 
 def gal2fk5(l, b):
     c = Galactic(l * u.deg, b * u.deg)
-    out = c.transform_to(FK5)
+    out = c.transform_to(FK5())
     return out.ra.degree, out.dec.degree
 
 
