@@ -104,10 +104,10 @@ class GalactocentricToGalactic(BaseMultiLink):
 
     def forwards(self, x_kpc, y_kpc, z_kpc):
         with galactocentric_frame_defaults.set('pre-v4.0'):
-            gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic)
+            gal = Galactocentric(x=x_kpc * u.kpc, y=y_kpc * u.kpc, z=z_kpc * u.kpc).transform_to(Galactic())
         return gal.l.degree, gal.b.degree, gal.distance.to(u.kpc).value
 
     def backwards(self, l_deg, b_deg, d_kpc):
         with galactocentric_frame_defaults.set('pre-v4.0'):
-            gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric)
+            gal = Galactic(l=l_deg * u.deg, b=b_deg * u.deg, distance=d_kpc * u.kpc).transform_to(Galactocentric())
         return gal.x.to(u.kpc).value, gal.y.to(u.kpc).value, gal.z.to(u.kpc).value
