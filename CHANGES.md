@@ -10,6 +10,8 @@ v1.1.0 (unreleased)
 
 * Fixed compatibility with recent releases of Matplotlib. [#2196]
 
+* Avoid warnings with recent releases of astropy. [#2212]
+
 v1.0.1 (2020-11-10)
 -------------------
 
