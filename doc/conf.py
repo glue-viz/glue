@@ -35,7 +35,6 @@ if os.environ.get('READTHEDOCS') == 'True':
 
 intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
-    'sphinx': ('https://www.sphinx-doc.org/en/3.x/', None),
     'python': ('https://docs.python.org/3.7', None),
     'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
@@ -175,6 +174,7 @@ nitpick_ignore = [('py:class', 'object'), ('py:class', 'str'),
                   ('py:class', 'QStyle'),
                   ('py:class', 'QToolBar'),
                   ('py:class', 'QThread'),
+                  ('py:class', 'QScreen'),
                   ('py:class', 'QWidget'),
                   ('py:class', 'QWidget.RenderFlag'),
                   ('py:class', 'QWidget.RenderFlags'),
