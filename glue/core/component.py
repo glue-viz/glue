@@ -389,9 +389,6 @@ class CategoricalComponent(Component):
 
         self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
 
-        if self._data.ndim != 1:
-            raise ValueError("Categorical Data must be 1-dimensional")
-
         self.jitter(method=jitter)
 
     @property
@@ -435,7 +432,7 @@ class CategoricalComponent(Component):
         Parameters
         ----------
         method : {None, 'uniform'}
-            If `None`, not jittering is done (or any jittering is undone).
+            If `None`, no jittering is done (or any jittering is undone).
             If ``'uniform'``, the codes are randomized by a uniformly
             distributed random variable.
         """
