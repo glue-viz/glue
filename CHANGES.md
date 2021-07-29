@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v1.2.0 (unreleased)
+-------------------
+
+* Allow CategoricalComponents to be n-dimensional. [#2214]
+
 v1.1.0 (2021-07-21)
 -------------------
 
