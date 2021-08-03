@@ -1,5 +1,5 @@
 """
-The LinkManager class is responsible for maintaining the conistency
+The LinkManager class is responsible for maintaining the consistency
 of the "web of links" in a DataCollection. It discovers how to
 combine ComponentLinks together to discover all of the ComponentIDs
 that a Data object can derive,
