@@ -684,7 +684,7 @@ class CategoricalROISubsetState(SubsetState):
         x = data[self.att, view]
         result = self.roi.contains(x, None)
         assert x.shape == result.shape
-        return result.ravel()
+        return result
 
     def copy(self):
         result = CategoricalROISubsetState()
