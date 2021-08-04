@@ -193,6 +193,14 @@ def test_nd_categorical_component():
         np.testing.assert_equal(cat_comp.categories, ['a', 'b', 'c'])
 
 
+def test_nd_categorical_component_autotype():
+    x = np.array([['M', 'F'], ['F', 'M']])
+    assert Component.autotyped(x).categorical
+
+    d = Data(x=[['male', 'female', 'male'],['female','female','male']])
+    assert d.get_component('x').categorical
+
+
 class TestCoordinateComponent(object):
 
     def setup_method(self, method):
