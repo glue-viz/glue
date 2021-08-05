@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v1.1.0 (unreleased)
+v1.1.0 (2021-07-21)
 -------------------
 
 * Fix compatibility with xlrd 2.0 and require openpyxl for .xlsx input. [#2196]
@@ -11,6 +11,8 @@ v1.1.0 (unreleased)
 * Fixed compatibility with recent releases of Matplotlib. [#2196]
 
 * Avoid warnings with recent releases of astropy. [#2212]
+
+* Fixed compatibility of auto-linking with all APE 14 WCSes. [#2209]
 
 v1.0.1 (2020-11-10)
 -------------------
