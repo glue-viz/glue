@@ -8,12 +8,12 @@ from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 
 
-__all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
+__all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink', 'AffineLink']
 
 
 class AffineLink(MultiLink):
 
-    def __init__(self, cids1=None, cids2=None, matrix=None):
+    def __init__(self, data1=None, data2=None, cids1=None, cids2=None, matrix=None):
 
         if matrix.ndim != 2:
             raise ValueError("Affine matrix should be two-dimensional")
@@ -26,6 +26,9 @@ class AffineLink(MultiLink):
 
         self._matrix = matrix
         self._matrix_inv = np.linalg.inv(matrix)
+
+        self.data1 = data1
+        self.data2 = data2
 
         super(AffineLink, self).__init__(cids1, cids2,
                                          forwards=self.forwards,
@@ -251,7 +254,8 @@ class WCSLink(MultiLink):
 
         matrix = np.vstack([best.reshape((2, 3)), [[0, 0, 1]]])
 
-        return AffineLink(cids1=self.cids1, cids2=self.cids2, matrix=matrix)
+        return AffineLink(data1=self.data1, data2=self.data2,
+                          cids1=self.cids1, cids2=self.cids2, matrix=matrix)
 
 
 @autolinker('Astronomy WCS')
