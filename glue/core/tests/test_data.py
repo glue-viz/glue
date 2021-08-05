@@ -336,6 +336,24 @@ class TestData(object):
         assert 'read-only' in exc.value.args[0]
         assert not d['gender'].flags['WRITEABLE']
 
+    def test_update_components(self):
+        d = Data(x=[1, 2, 3], y=[1, 2, 3])
+        d.update_components({d.id['x']: [10, 20, 30]})
+        np.testing.assert_array_equal(d['x'],[10, 20, 30])
+
+    def test_update_categorical_components(self):
+        d = Data(x=['M', 'M', 'F'], y=['F', 'F', 'M'])
+        d.update_components({d.id['x']: ['M', 'F', 'M']})
+        np.testing.assert_array_equal(d['x'],np.array(['M', 'F', 'M']))
+        assert isinstance(d.get_component(d.id['x']),CategoricalComponent)
+
+    def test_update_nd_categorical_components(self):
+        d = Data(x=[['M', 'M', 'F'],['F', 'F', 'M']])
+        d.update_components({d.id['x']: [['M', 'F', 'M'],['F','M','F']]})
+        np.testing.assert_array_equal(d['x'],[['M', 'F', 'M'],['F','M','F']])
+        assert isinstance(d.get_component(d.id['x']),CategoricalComponent)
+
+
     def test_update_clears_subset_cache(self):
         from ..roi import RectangularROI
 

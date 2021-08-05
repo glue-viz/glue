@@ -20,6 +20,7 @@ from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
 from glue.core.subset import Subset, SubsetState, SliceSubsetState
+from glue.core.component import CategoricalComponent
 from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
@@ -1478,7 +1479,10 @@ class Data(BaseCartesianData):
             if data.shape != self.shape:
                 raise ValueError("Cannot change shape of data")
 
-            comp._data = data
+            if isinstance(comp, CategoricalComponent):
+                comp._data = categorical_ndarray(data)
+            else:
+                comp._data = data
 
         # alert hub of the change
         if self.hub is not None:
