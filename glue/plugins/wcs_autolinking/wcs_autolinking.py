@@ -1,12 +1,51 @@
 import copy
 
+import numpy as np
 from astropy.wcs.utils import pixel_to_pixel
 from astropy.wcs.wcsapi import BaseHighLevelWCS, SlicedLowLevelWCS, HighLevelWCSWrapper
+from scipy.optimize import leastsq
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 
 
 __all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink']
+
+
+class AffineLink(MultiLink):
+
+    def __init__(self, cids1=None, cids2=None, matrix=None):
+
+        if matrix.ndim != 2:
+            raise ValueError("Affine matrix should be two-dimensional")
+
+        if matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("Affine matrix should be square")
+
+        if np.any(matrix[-1, :-1] != 0) or matrix[-1, -1] != 1:
+            raise ValueError("Last row of matrix should be zeros and a one")
+
+        self._matrix = matrix
+        self._matrix_inv = np.linalg.inv(matrix)
+
+        super(AffineLink, self).__init__(cids1, cids2,
+                                         forwards=self.forwards,
+                                         backwards=self.backwards)
+
+    @property
+    def matrix(self):
+        return self._matrix
+
+    def forwards(self, *pixel_in):
+        pixel_in = np.array(np.broadcast_arrays(*(list(pixel_in) + [np.ones(np.shape(pixel_in[0]))])))
+        pixel_in = np.moveaxis(pixel_in, 0, -1)
+        pixel_out = np.matmul(pixel_in, self._matrix.T)
+        return tuple(np.moveaxis(pixel_out, -1, 0))[:-1]
+
+    def backwards(self, *pixel_out):
+        pixel_out = np.array(np.broadcast_arrays(*(list(pixel_out) + [np.ones(np.shape(pixel_out[0]))])))
+        pixel_out = np.moveaxis(pixel_out, 0, -1)
+        pixel_in = np.matmul(pixel_out, self._matrix_inv.T)
+        return tuple(np.moveaxis(pixel_in, -1, 0))[:-1]
 
 
 class IncompatibleWCS(Exception):
@@ -175,6 +214,44 @@ class WCSLink(MultiLink):
                 'of the coordinates linked in the first dataset are: '
                 '<ul>{0}</ul>and in the second dataset:<ul>{1}</ul>'
                 .format(types1, types2))
+
+    def as_affine_link(self, n_samples=1000, tolerance=1):
+        """
+        Approximate the link as an affine transformation which can, if the
+        approximation is good, result in significant performance improvements.
+
+        For now this will only work for datasets in which two pixel coordinates
+        are linked.
+        """
+
+        if len(self.cids1) != 2 or len(self.cids2) != 2:
+            raise NotImplementedError("Only 2-dimensional WCS links are supported")
+
+        # Start off by generating random positions in data1
+        pixel1 = []
+        for cid in self.cids1:
+            size = self.data1.shape[cid.axis]
+            pixel1.append(np.random.uniform(-0.5, size - 0.5, n_samples))
+
+        # Convert to pixel positions in data2
+        pixel2 = self.forwards(*pixel1)
+
+        def transform_affine(coeff):
+            a, b, c, d, e, f = coeff
+            pixel1_tr = pixel1[0] * a + pixel1[1] * b + c, pixel1[0] * d + pixel1[1] * e + f
+            return np.hypot(pixel2[0] - pixel1_tr[0], pixel2[1] - pixel1_tr[1])
+
+        best, _ = leastsq(transform_affine, (1, 0, 0, 0, 1, 0))
+
+        max_deviation = np.max(transform_affine(best))
+
+        if max_deviation > tolerance:
+            raise ValueError(f'Could not find a good affine approximation to '
+                             f'WCSLink with tolerance={tolerance}')
+
+        matrix = np.vstack([best.reshape((2, 3)), [[0, 0, 1]]])
+
+        return AffineLink(cids1=self.cids1, cids2=self.cids2, matrix=matrix)
 
 
 @autolinker('Astronomy WCS')
