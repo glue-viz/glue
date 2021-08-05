@@ -1466,11 +1466,11 @@ class Data(BaseCartesianData):
         All changes to component numerical data should use this method,
         which broadcasts the state change to the appropriate places.
 
-        :param mapping: A dict mapping Components or ComponenIDs to arrays.
+        :param mapping: A dict mapping Components or ComponentIDs to arrays.
 
         This method has the following restrictions:
           - New components must have the same shape as old components
-          - Component subclasses cannot be updated.
+          - Component subclasses (other than CategoricalComponent) cannot be updated.
         """
         for comp, data in mapping.items():
             if isinstance(comp, ComponentID):
