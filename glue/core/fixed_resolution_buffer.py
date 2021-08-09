@@ -129,7 +129,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     for bound in bounds:
         if isinstance(bound, tuple) and bound[2] < 1:
-            raise ValueError("Number of steps in bounds should be >=1")
+            raise ValueError(f"Number of steps in bounds should be >=1 but got bound={bound}")
 
     # If cache_id is specified, we keep a cached version of the resulting array
     # indexed by cache_id as well as a hash formed of the call arguments to this
