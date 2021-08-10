@@ -8,7 +8,12 @@ from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
 
 
-__all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink', 'AffineLink']
+__all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink', 'AffineLink', 'OffsetLink',
+           'NoAffineApproximation']
+
+
+class NoAffineApproximation(Exception):
+    pass
 
 
 class OffsetLink(MultiLink):
@@ -281,8 +286,8 @@ class WCSLink(MultiLink):
         max_deviation = np.max(transform_affine(best))
 
         if max_deviation > tolerance:
-            raise ValueError(f'Could not find a good affine approximation to '
-                             f'WCSLink with tolerance={tolerance}')
+            raise NoAffineApproximation(f'Could not find a good affine approximation to '
+                                        f'WCSLink with tolerance={tolerance}')
 
         matrix = np.vstack([best.reshape((2, 3)), [[0, 0, 1]]])
 
