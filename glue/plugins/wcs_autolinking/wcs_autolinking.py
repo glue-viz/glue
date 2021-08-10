@@ -11,6 +11,24 @@ from glue.core.link_helpers import MultiLink
 __all__ = ['IncompatibleWCS', 'WCSLink', 'wcs_autolink', 'AffineLink']
 
 
+class OffsetLink(MultiLink):
+
+    def __init__(self, data1=None, data2=None, cids1=None, cids2=None, offsets=None):
+
+        self.offsets = offsets
+
+        self.data1 = data1
+        self.data2 = data2
+
+        super().__init__(cids1, cids2, forwards=self.forwards, backwards=self.backwards)
+
+    def forwards(self, *pixel_in):
+        return tuple([pi - o for (pi, o) in zip(pixel_in, self.offsets)])
+
+    def backwards(self, *pixel_out):
+        return tuple([po + o for (po, o) in zip(pixel_out, self.offsets)])
+
+
 class AffineLink(MultiLink):
 
     def __init__(self, data1=None, data2=None, cids1=None, cids2=None, matrix=None):
@@ -30,9 +48,7 @@ class AffineLink(MultiLink):
         self.data1 = data1
         self.data2 = data2
 
-        super(AffineLink, self).__init__(cids1, cids2,
-                                         forwards=self.forwards,
-                                         backwards=self.backwards)
+        super().__init__(cids1, cids2, forwards=self.forwards, backwards=self.backwards)
 
     @property
     def matrix(self):
@@ -238,6 +254,22 @@ class WCSLink(MultiLink):
 
         # Convert to pixel positions in data2
         pixel2 = self.forwards(*pixel1)
+
+        # First try simple offset
+
+        def transform_offset(offsets):
+            pixel1_tr = pixel1[0] - offsets[0], pixel1[1] - offsets[1]
+            return np.hypot(pixel2[0] - pixel1_tr[0], pixel2[1] - pixel1_tr[1])
+
+        best, _ = leastsq(transform_offset, (0, 0))
+
+        max_deviation = np.max(transform_offset(best))
+
+        if max_deviation <= tolerance:
+            return OffsetLink(data1=self.data1, data2=self.data2,
+                              cids1=self.cids1, cids2=self.cids2, offsets=best)
+
+        # If the above doesn't work, try a full affine transformation
 
         def transform_affine(coeff):
             a, b, c, d, e, f = coeff
