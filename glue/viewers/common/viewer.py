@@ -12,7 +12,7 @@ from glue.core.state import save
 from glue.core import message as msg
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.state import lookup_class_with_patches
-from echo import delay_callback
+from echo import delay_callback, ignore_callback
 from glue.core.layer_artist import LayerArtistContainer
 
 from glue.viewers.common.state import ViewerState
@@ -250,7 +250,12 @@ class Viewer(BaseViewer):
         if layer is None:
             return False
 
-        self._layer_artist_container.append(layer)
+        # When adding a layer artist to the layer artist container, zorder
+        # gets set automatically - however since we call a forced update of the
+        # layer after adding it to the container we can ignore any callbacks
+        # related to zorder.
+        with ignore_callback(layer.state, 'zorder'):
+            self._layer_artist_container.append(layer)
         layer.update()
 
         return True
