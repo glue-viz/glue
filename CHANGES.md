@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.2.0 (unreleased)
+-------------------
+
+* Added a new ``WCSLink.as_affine_link`` method which can be used to find
+  an affine approximation to a WCSLink. [#2219]
+
 v1.1.0 (2021-07-21)
 -------------------
 

@@ -1,9 +1,12 @@
 import pytest
 import numpy as np
+from numpy.testing import assert_allclose
 from astropy.wcs import WCS
 
 from glue.core import Data, DataCollection
-from glue.plugins.wcs_autolinking.wcs_autolinking import wcs_autolink, WCSLink
+from glue.plugins.wcs_autolinking.wcs_autolinking import (wcs_autolink, WCSLink,
+                                                          OffsetLink, AffineLink,
+                                                          NoAffineApproximation)
 from glue.core.link_helpers import MultiLink
 from glue.core.tests.test_state import clone
 from glue.dialogs.link_editor.state import EditableLinkFunctionState
@@ -478,3 +481,113 @@ def test_cube_has_celestial_and_cube_without_celestial_axes_2():
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
     assert len(links) == 1
+
+
+def test_wcs_offset_approximation():
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs2.wcs.crpix = -3, 5
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+
+    link = WCSLink(data1, data2)
+
+    offset_link = link.as_affine_link(tolerance=0.1)
+
+    assert isinstance(offset_link, OffsetLink)
+    assert_allclose(offset_link.offsets, [3, -5])
+
+    x1 = np.array([1.4, 3.2, 2.5])
+    y1 = np.array([0.2, 4.3, 2.2])
+
+    x2, y2 = link.forwards(x1, y1)
+    x3, y3 = offset_link.forwards(x1, y1)
+
+    assert_allclose(x2, x3, atol=1e-5)
+    assert_allclose(y2, y3, atol=1e-5)
+
+    x4, y4 = link.backwards(x1, y1)
+    x5, y5 = offset_link.backwards(x1, y1)
+
+    assert_allclose(x4, x5, atol=1e-5)
+    assert_allclose(y4, y4, atol=1e-5)
+
+
+def test_wcs_affine_approximation():
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs2.wcs.crpix = -3, 5
+    wcs2.wcs.cd = [[2, -1], [1, 2]]
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+
+    link = WCSLink(data1, data2)
+
+    affine_link = link.as_affine_link(tolerance=0.1)
+
+    assert isinstance(affine_link, AffineLink)
+    assert_allclose(affine_link.matrix, [[0.4, 0.2, -3.4], [-0.2, 0.4, 4.2], [0, 0, 1]], atol=1e-5)
+
+    x1 = np.array([1.4, 3.2, 2.5])
+    y1 = np.array([0.2, 4.3, 2.2])
+
+    x2, y2 = link.forwards(x1, y1)
+    x3, y3 = affine_link.forwards(x1, y1)
+
+    assert_allclose(x2, x3, atol=1e-5)
+    assert_allclose(y2, y3, atol=1e-5)
+
+    x4, y4 = link.backwards(x1, y1)
+    x5, y5 = affine_link.backwards(x1, y1)
+
+    assert_allclose(x4, x5, atol=1e-5)
+    assert_allclose(y4, y4, atol=1e-5)
+
+
+def test_wcs_no_approximation():
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'DEC--TAN', 'RA---TAN'
+    wcs2.wcs.crval = 30, 50
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+
+    link = WCSLink(data1, data2)
+
+    with pytest.raises(NoAffineApproximation):
+        link.as_affine_link(tolerance=0.1)

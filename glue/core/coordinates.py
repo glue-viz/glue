@@ -194,7 +194,7 @@ class AffineCoordinates(Coordinates):
 WCSCoordinates = WCS
 
 
-def coordinates_from_header(header):
+def coordinates_from_header(header, hdulist=None):
     """
     Convert a FITS header into a glue Coordinates object.
 
@@ -216,7 +216,7 @@ def coordinates_from_header(header):
 
     if isinstance(header, Header) and 'CRVAL1' in header:
         try:
-            return WCSCoordinates(header)
+            return WCSCoordinates(header, hdulist)
         except Exception as e:
             logging.getLogger(__name__).warn(
                 "\n\n*******************************\n"

@@ -128,7 +128,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                 extnum not in exclude_exts):
             if is_image_hdu(hdu):
                 shape = hdu.data.shape
-                coords = coordinates_from_header(hdu.header)
+                coords = coordinates_from_header(hdu.header, hdulist)
                 units = hdu.header.get('BUNIT')
                 if not auto_merge or has_wcs(coords):
                     data = new_data(suffix=len(hdulist) > 1)
@@ -220,7 +220,7 @@ def casalike_cube(filename, **kwargs):
     with fits.open(filename, mode='denywrite', **kwargs) as hdulist:
         array = hdulist[0].data
         header = hdulist[0].header
-    result.coords = coordinates_from_header(header)
+        result.coords = coordinates_from_header(header, hdulist)
     for i in range(array.shape[0]):
         units = header.get('BUNIT')
         component = Component.autotyped(array[[i]], units=units)
