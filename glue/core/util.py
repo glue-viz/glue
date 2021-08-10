@@ -35,7 +35,7 @@ class ThetaRadianFormatter(mticker.Formatter):
     @classmethod
     def _numerator_denominator(cls, x):
         f = Fraction(x / np.pi).limit_denominator(cls.limit_den)
-        n,d = f.numerator, f.denominator
+        n, d = f.numerator, f.denominator
         if cls._check_valid(n, d):
             return n, d
 
