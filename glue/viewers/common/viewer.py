@@ -209,8 +209,16 @@ class Viewer(BaseViewer):
         if layer is None:
             return False
 
-        self._layer_artist_container.append(layer)
+        # When adding a layer artist to the layer artist container, zorder
+        # gets set automatically - however since we call a forced update of the
+        # layer after adding it to the container we can ignore any callbacks
+        # related to zorder. We also then need to set layer.state.zorder manually.
+        with ignore_callback(layer, 'zorder'):
+            with ignore_callback(layer.state, 'zorder'):
+                self._layer_artist_container.append(layer)
+                layer.state.zorder = layer.zorder
         layer.update()
+        self.draw_legend()  # need to be called here because callbacks are ignored in previous step
 
         # Add existing subsets to viewer
         for subset in data.subsets:
@@ -253,10 +261,13 @@ class Viewer(BaseViewer):
         # When adding a layer artist to the layer artist container, zorder
         # gets set automatically - however since we call a forced update of the
         # layer after adding it to the container we can ignore any callbacks
-        # related to zorder.
-        with ignore_callback(layer.state, 'zorder'):
-            self._layer_artist_container.append(layer)
+        # related to zorder. We also then need to set layer.state.zorder manually.
+        with ignore_callback(layer, 'zorder'):
+            with ignore_callback(layer.state, 'zorder'):
+                self._layer_artist_container.append(layer)
+                layer.state.zorder = layer.zorder
         layer.update()
+        self.draw_legend()  # need to be called here because callbacks are ignored in previous step
 
         return True
 
