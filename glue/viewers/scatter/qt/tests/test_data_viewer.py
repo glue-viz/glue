@@ -580,7 +580,6 @@ class TestScatterViewer(object):
         options.valuetext_x_min.editingFinished.emit()
         assert self.viewer.axes.get_xlim() == (719266.0, 719575.0)
         assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
-        test = options.valuetext_x_min.text()
 
         # Make sure that everything works fine after saving/reloading
         filename = tmpdir.join('test_datetime64.glu').strpath
@@ -591,7 +590,6 @@ class TestScatterViewer(object):
         ga = state.object('__main__')
         viewer = ga.viewers[0][0]
         options = viewer.options_widget().ui
-        test2 = options.valuetext_x_min.text()
 
         assert_equal(self.viewer.state.x_min, np.datetime64('1970-04-14', 'D'))
 
