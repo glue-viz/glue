@@ -26,9 +26,7 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('x_max', self._x_limits_to_mpl)
         self.state.add_callback('y_min', self.limits_to_mpl)
         self.state.add_callback('y_max', self.limits_to_mpl)
-        self._update_projection(on_startup=True)
         self._update_axes()
-        self.state.reset_limits()
 
     def _update_axes(self, *args):
 
@@ -61,7 +59,7 @@ class MatplotlibScatterMixin(object):
 
         self.axes.figure.canvas.draw_idle()
 
-    def _update_projection(self, *args, on_startup=False):
+    def _update_projection(self, *args):
         self.figure.delaxes(self.axes)
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
         for layer in self.layers:
@@ -71,9 +69,6 @@ class MatplotlibScatterMixin(object):
             layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
-        if not on_startup:
-            self.removeToolBar(self.toolbar)
-            self.initialize_toolbar()
         self.update_x_axislabel()
         self.update_y_axislabel()
         self.update_x_ticklabel()
