@@ -85,7 +85,6 @@ class MatplotlibScatterMixin(object):
 
         if self.using_polar():
             self.state.full_circle()
-            self.state.y_min = 0
         self.limits_to_mpl()
         self.limits_from_mpl()
 

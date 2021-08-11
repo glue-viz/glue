@@ -78,8 +78,6 @@ class ScatterViewerState(MatplotlibDataViewerState):
             return
         self.y_lim_helper.percentile = 100
         self.y_lim_helper.update_values(force=True)
-        if self.using_polar:
-            self.y_min = 0
 
     def reset_limits(self):
         if not self.using_polar:

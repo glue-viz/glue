@@ -9,14 +9,25 @@ def python_export_scatter_layer(layer, *args):
     script = ""
     imports = ["import numpy as np"]
 
+    polar = layer._viewer_state.using_polar
+    degrees = polar and getattr(layer._viewer_state, 'using_degrees', False)
+    if polar:
+        imports += ["from glue.core.util import ThetaRadianFormatter",
+                    "from matplotlib.projections.polar import ThetaFormatter, ThetaLocator",
+                    "from matplotlib.ticker import AutoLocator"]
+
     script += "layer_handles = []  # for legend"
 
     script += "# Get main data values\n"
-    x_transform_open = "np.radians(" if layer._viewer_state.using_polar else ""
-    x_transform_close = ")" if layer._viewer_state.using_polar else ""
+    x_transform_open = "np.radians(" if degrees else ""
+    x_transform_close = ")" if degrees else ""
     script += "x = {0}layer_data['{1}']{2}\n".format(x_transform_open, layer._viewer_state.x_att.label, x_transform_close)
     script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
-    script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
+    script += "keep = ~np.isnan(x) & ~np.isnan(y)\n"
+    if polar:
+        script += 'ax.xaxis.set_major_locator(ThetaLocator(AutoLocator()))\n'
+        formatter = 'ThetaFormatter' if degrees else 'ThetaRadianFormatter'
+        script += 'ax.xaxis.set_major_formatter({0}())\n\n'.format(formatter)
 
     if layer.state.cmap_mode == 'Linear':
 
@@ -28,8 +39,6 @@ def python_export_scatter_layer(layer, *args):
         script += "colors = plt.cm.{0}((colors - cmap_vmin) / (cmap_vmax - cmap_vmin))\n\n".format(layer.state.cmap.name)
 
     if layer.state.size_mode == 'Linear':
-
-        imports = ['import numpy as np']
 
         script += "# Set up size values\n"
         script += "sizes = layer_data['{0}']\n".format(layer.state.size_att.label)
