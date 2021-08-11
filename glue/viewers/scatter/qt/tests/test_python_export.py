@@ -228,8 +228,16 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].density_map = False
         self.assert_same(tmpdir)
 
-    def test_simple_polar_plot(self, tmpdir):
+    def test_simple_polar_plot_degrees(self, tmpdir):
         self.viewer.state.plot_mode = 'polar'
+        self.viewer.state.angle_unit = 'degrees'
+        self.viewer.state.x_att = self.data.id['c']
+        self.viewer.state.y_att = self.data.id['d']
+        self.assert_same(tmpdir)
+
+    def test_simple_polar_plot_radians(self, tmpdir):
+        self.viewer.state.plot_mode = 'polar'
+        self.viewer.state.angle_unit = 'radians'
         self.viewer.state.x_att = self.data.id['c']
         self.viewer.state.y_att = self.data.id['d']
         self.assert_same(tmpdir)

@@ -766,10 +766,11 @@ class TestScatterViewer(object):
         # Make sure limits are reset first
         viewer_state.x_max += 3
 
+        # Currently, when we change to polar mode, the x-limits are changed to 0, 2pi
         viewer_state.plot_mode = 'polar'
-        assert_allclose(viewer_state.x_min, old_xmin)
-        assert_allclose(viewer_state.x_max, old_xmax)
-        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.x_min, 0)
+        assert_allclose(viewer_state.x_max, 2 * np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [0, 2 * np.pi])
         assert_allclose(viewer_state.y_min, old_ymin)
         assert_allclose(viewer_state.y_max, old_ymax)
         assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
