@@ -40,6 +40,7 @@ class DataCollection(HubListener):
 
         self.hub = None
 
+        self._disable_sync_link_manager = 0
         self._subset_groups = []
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
@@ -91,7 +92,7 @@ class DataCollection(HubListener):
         :param data: List of data objects to add
         """
         # Wait until all datasets are added to sync the link manager
-        with self._no_sync_link_manager():
+        with self._ignore_link_manager_update():
             for d in data:
                 self.append(d)
         self._sync_link_manager()
@@ -113,7 +114,7 @@ class DataCollection(HubListener):
             self.hub.broadcast(msg)
 
     def clear(self):
-        with self._no_sync_link_manager():
+        with self._ignore_link_manager_update():
             for data in list(self):
                 self.remove(data)
 
@@ -126,14 +127,30 @@ class DataCollection(HubListener):
             return
 
         # Avoid circular calls
-        with self._no_sync_link_manager():
+        with self._ignore_link_manager_update():
             self._link_manager.update_externally_derivable_components()
 
     @contextmanager
-    def _no_sync_link_manager(self):
-        self._disable_sync_link_manager = True
+    def _ignore_link_manager_update(self):
+        self._disable_sync_link_manager += 1
         yield
-        self._disable_sync_link_manager = False
+        self._disable_sync_link_manager -= 1
+
+    @contextmanager
+    def delay_link_manager_update(self):
+        """
+        Context manager to delay any updates to the link manager until the
+        context is exited.
+
+        This can be useful for improving performance if e.g. several datasets
+        or links are being added to the data collection, since otherwise the
+        link manager updates its internal tree representation of the links
+        after each operation.
+        """
+        self._disable_sync_link_manager += 1
+        yield
+        self._disable_sync_link_manager -= 1
+        self._sync_link_manager()
 
     @property
     def links(self):
@@ -159,7 +176,7 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        self._link_manager.add_link(links)
+        self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
 
     def remove_link(self, links):
         """
@@ -172,7 +189,7 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        self._link_manager.remove_link(links)
+        self._link_manager.remove_link(links, update_external=not self._disable_sync_link_manager)
 
     def _merge_link(self, link):
         pass
@@ -186,7 +203,7 @@ class DataCollection(HubListener):
             :class:`~glue.core.component_link.ComponentLink` instances
         """
         self._link_manager.clear_links()
-        self._link_manager.add_link(links)
+        self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
 
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub.
