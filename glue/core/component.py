@@ -389,6 +389,9 @@ class CategoricalComponent(Component):
 
         self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
 
+        if self._data.ndim < 1:
+            raise ValueError("Categorical Data must be at least 1-dimensional")
+
         self.jitter(method=jitter)
 
     @property
