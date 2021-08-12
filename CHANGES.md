@@ -4,6 +4,9 @@ Full changelog
 v1.2.0 (unreleased)
 -------------------
 
+* Fixed a bug that caused the image viewer to not correctly display 2-d datasets
+  with collapsed 3-d cubes. [#2188]
+
 * Added a new ``WCSLink.as_affine_link`` method which can be used to find
   an affine approximation to a WCSLink. [#2219]
 
