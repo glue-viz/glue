@@ -9,6 +9,9 @@ v1.2.0 (unreleased)
 
 * Avoid duplicate update of layer artist when creating a new layer. [#2220]
 
+* Expose ``DataCollection.delay_link_manager_update`` which can be used
+  to delay any updating to the link tree when adding datasets. [#2225]
+
 v1.1.0 (2021-07-21)
 -------------------
 
