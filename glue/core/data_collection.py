@@ -91,7 +91,7 @@ class DataCollection(HubListener):
         :param data: List of data objects to add
         """
         # Wait until all datasets are added to sync the link manager
-        with self._no_sync_link_manager():
+        with self.ignore_link_manager_update():
             for d in data:
                 self.append(d)
         self._sync_link_manager()
@@ -113,7 +113,7 @@ class DataCollection(HubListener):
             self.hub.broadcast(msg)
 
     def clear(self):
-        with self._no_sync_link_manager():
+        with self.ignore_link_manager_update():
             for data in list(self):
                 self.remove(data)
 
@@ -122,18 +122,25 @@ class DataCollection(HubListener):
         for each data set are up-to-date
         """
 
-        if getattr(self, '_disable_sync_link_manager', False):
+        if getattr(self, '_delay_link_manager_update', False):
             return
 
         # Avoid circular calls
-        with self._no_sync_link_manager():
+        with self.ignore_link_manager_update():
             self._link_manager.update_externally_derivable_components()
 
     @contextmanager
-    def _no_sync_link_manager(self):
-        self._disable_sync_link_manager = True
+    def ignore_link_manager_update(self):
+        self._delay_link_manager_update = True
         yield
-        self._disable_sync_link_manager = False
+        self._delay_link_manager_update = False
+
+    @contextmanager
+    def delay_link_manager_update(self):
+        self._delay_link_manager_update = True
+        yield
+        self._delay_link_manager_update = False
+        self._sync_link_manager()
 
     @property
     def links(self):
@@ -159,7 +166,7 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        self._link_manager.add_link(links)
+        self._link_manager.add_link(links, update_external=not self._delay_link_manager_update)
 
     def remove_link(self, links):
         """
@@ -172,7 +179,7 @@ class DataCollection(HubListener):
            :class:`~glue.core.component_link.ComponentLink`
            instances, or a :class:`~glue.core.link_helpers.LinkCollection`
         """
-        self._link_manager.remove_link(links)
+        self._link_manager.remove_link(links, update_external=not self._delay_link_manager_update)
 
     def _merge_link(self, link):
         pass
