@@ -40,6 +40,7 @@ class DataCollection(HubListener):
 
         self.hub = None
 
+        self._disable_sync_link_manager = 0
         self._subset_groups = []
         self.register_to_hub(Hub())
         self.extend(as_list(data or []))
@@ -131,9 +132,9 @@ class DataCollection(HubListener):
 
     @contextmanager
     def _ignore_link_manager_update(self):
-        self._disable_sync_link_manager = True
+        self._disable_sync_link_manager += 1
         yield
-        self._disable_sync_link_manager = False
+        self._disable_sync_link_manager -= 1
 
     @contextmanager
     def delay_link_manager_update(self):
@@ -146,9 +147,9 @@ class DataCollection(HubListener):
         link manager updates its internal tree representation of the links
         after each operation.
         """
-        self._disable_sync_link_manager = True
+        self._disable_sync_link_manager += 1
         yield
-        self._disable_sync_link_manager = False
+        self._disable_sync_link_manager -= 1
         self._sync_link_manager()
 
     @property
@@ -202,7 +203,7 @@ class DataCollection(HubListener):
             :class:`~glue.core.component_link.ComponentLink` instances
         """
         self._link_manager.clear_links()
-        self._link_manager.add_link(links)
+        self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
 
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub.

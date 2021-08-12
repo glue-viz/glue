@@ -256,6 +256,20 @@ class TestDataCollection(object):
         with pytest.raises(IncompatibleAttribute):
             d[cid2]
 
+    def test_delay_link(self):
+        d = Data()
+        comp = Component(np.array([1, 2, 3]))
+        id1 = ComponentID("id1")
+        d.add_component(comp, id1)
+        id2 = ComponentID("id2")
+        self.dc.append(d)
+        link = ComponentLink([id1], id2)
+        with self.dc.delay_link_manager_update():
+            self.dc.set_links([link])
+            with pytest.raises(IncompatibleAttribute):
+                d[id2]
+        assert_equal(d[id2], d[id1])
+
     def test_merge_links(self):
         """Trivial links should be merged, discarding the duplicate ID"""
         d1 = Data(x=[1, 2, 3])
