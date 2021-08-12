@@ -143,7 +143,7 @@ class DataCollection(HubListener):
 
         This can be useful for improving performance if e.g. several datasets
         or links are being added to the data collection, since otherwise the
-        link manaager updates its internal tree representation of the links
+        link manager updates its internal tree representation of the links
         after each operation.
         """
         self._disable_sync_link_manager = True
