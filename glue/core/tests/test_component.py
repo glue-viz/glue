@@ -183,6 +183,23 @@ class TestCategoricalComponent(object):
             cat_comp.jitter(method='this will never be a jitter method')
 
 
+def test_nd_categorical_component():
+    data = [['a', 'b'], ['c', 'b']]
+    cat_comp = CategoricalComponent(data)
+    np.testing.assert_equal(cat_comp.data, data)
+    np.testing.assert_equal(cat_comp.labels, data)
+    np.testing.assert_equal(cat_comp.codes, [[0, 1], [2, 1]])
+    np.testing.assert_equal(cat_comp.categories, ['a', 'b', 'c'])
+
+
+def test_nd_categorical_component_autotype():
+    x = np.array([['M', 'F'], ['F', 'M']])
+    assert Component.autotyped(x).categorical
+
+    d = Data(x=[['male', 'female', 'male'], ['female', 'female', 'male']])
+    assert d.get_component('x').categorical
+
+
 class TestCoordinateComponent(object):
 
     def setup_method(self, method):

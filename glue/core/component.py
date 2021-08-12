@@ -148,7 +148,7 @@ class Component(object):
         if data.dtype.kind == 'M':
             return DateTimeComponent(data)
 
-        n = coerce_numeric(data)
+        n = coerce_numeric(data.ravel()).reshape(data.shape)
 
         thresh = 0.5
         try:
@@ -389,8 +389,8 @@ class CategoricalComponent(Component):
 
         self._data = categorical_ndarray(categorical_data, copy=False, categories=categories)
 
-        if self._data.ndim != 1:
-            raise ValueError("Categorical Data must be 1-dimensional")
+        if self._data.ndim < 1:
+            raise ValueError("Categorical Data must be at least 1-dimensional")
 
         self.jitter(method=jitter)
 
@@ -435,7 +435,7 @@ class CategoricalComponent(Component):
         Parameters
         ----------
         method : {None, 'uniform'}
-            If `None`, not jittering is done (or any jittering is undone).
+            If `None`, no jittering is done (or any jittering is undone).
             If ``'uniform'``, the codes are randomized by a uniformly
             distributed random variable.
         """

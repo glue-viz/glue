@@ -12,6 +12,8 @@ v1.2.0 (unreleased)
 * Expose ``DataCollection.delay_link_manager_update`` which can be used
   to delay any updating to the link tree when adding datasets. [#2225]
 
+* Allow CategoricalComponents to be n-dimensional. [#2214]
+
 v1.1.0 (2021-07-21)
 -------------------
 

@@ -36,6 +36,14 @@ def test_unique_dtype():
     assert U.dtype.kind in 'SU'
 
 
+def test_unique_nd():
+
+    array = np.array([['a', 'b'], ['c', 'a']])
+    U, I = unique(array)
+    assert_equal(U, ['a', 'b', 'c'])
+    assert_equal(I, [[0, 1], [2, 0]])
+
+
 def test_shape_to_string():
     assert shape_to_string((1, 4, 3)) == "(1, 4, 3)"
 
