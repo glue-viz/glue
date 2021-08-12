@@ -696,13 +696,13 @@ def test_inherited_properties():
 class TestNDCategoricalSubsets():
 
     def setup_method(self, method):
-        self.data = Data(sex=[['Male','Male','Female'],['Female','Male','Female']])
+        self.data = Data(sex=[['Male', 'Male', 'Female'], ['Female', 'Male', 'Female']])
 
     def test_categorical_roi_subset(self):
-        roi = CategoricalROI(['sex','Male'])
+        roi = CategoricalROI(['sex', 'Male'])
         subset = self.data.new_subset()
         subset.subset_state = CategoricalROISubsetState(att=self.data.id['sex'], roi=roi)
-        np.testing.assert_equal(self.data.subsets[0].to_mask(), [[1, 1, 0],[0, 1, 0]])
+        np.testing.assert_equal(self.data.subsets[0].to_mask(), [[1, 1, 0], [0, 1, 0]])
 
 
 class TestCloneSubsetStates():
