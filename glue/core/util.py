@@ -1,7 +1,7 @@
 import logging
 from itertools import count
 from functools import partial
-
+from fractions import Fraction
 
 import numpy as np
 
@@ -9,13 +9,66 @@ from matplotlib.ticker import AutoLocator, MaxNLocator, LogLocator
 from matplotlib.ticker import LogFormatterMathtext, ScalarFormatter, FuncFormatter
 from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
+import matplotlib.ticker as mticker
 
 from glue.utils import nanmin, nanmax
 
-__all__ = ["relim", "split_component_view", "join_component_view",
+__all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
            'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
+
+
+class ThetaRadianFormatter(mticker.Formatter):
+    """
+    Used to format the *theta* tick labels in radians
+    """
+
+    max_num = 20
+    max_den = 20
+    limit_den = 10000
+
+    @classmethod
+    def _check_valid(cls, num, den):
+        return den != 0 and abs(num) < cls.max_num and den < cls.max_den
+
+    @classmethod
+    def _numerator_denominator(cls, x):
+        f = Fraction(x / np.pi).limit_denominator(cls.limit_den)
+        n, d = f.numerator, f.denominator
+        if cls._check_valid(n, d):
+            return n, d
+
+        f = Fraction(np.pi / x).limit_denominator(cls.limit_den)
+        d, n = f.numerator, f.denominator
+        d = d if n >= 0 else -d
+        n = abs(n)
+        if cls._check_valid(n, d):
+            return n, d
+
+        return None, None
+
+    @classmethod
+    def rad_fn(cls, x, digits=2):
+        n, d = cls._numerator_denominator(x)
+
+        if n is None or d is None:
+            return "{value:0.{digits}f}".format(value=x, digits=digits)
+
+        ns = "" if n == 1 else str(n)
+        if n == 0:
+            return "0"
+        elif d == 1:
+            return r'${0}\pi$'.format(ns)
+        elif abs(n) < cls.max_num and d < cls.max_den:
+            sgn = "-" if n < 0 else ""
+            return r"${0}{1}\pi/{2}$".format(sgn, ns, d)
+
+    def __call__(self, x, pos=None):
+        vmin, vmax = self.axis.get_view_interval()
+        d = abs(vmax - vmin)
+        digits = max(-int(np.log10(d) - 1.5), 0)
+        return ThetaRadianFormatter.rad_fn(x, digits=digits)
 
 
 def relim(lo, hi, log=False):
@@ -334,7 +387,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear'):
+def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear', radians=True):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.
@@ -388,7 +441,8 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
     # Have to treat the theta axis of polar plots differently
     elif projection == 'polar' and coord == 'x':
         axis.set_major_locator(ThetaLocator(AutoLocator()))
-        axis.set_major_formatter(ThetaFormatter())
+        formatter = ThetaRadianFormatter if radians else ThetaFormatter
+        axis.set_major_formatter(formatter())
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())

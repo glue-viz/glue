@@ -229,6 +229,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
+
+                if getattr(self._viewer_state, 'using_degrees', False):
+                    x = np.radians(x)
+
                 self.density_artist.set_label(None)
                 if self._use_plot_artist():
                     # In this case we use Matplotlib's plot function because it has much

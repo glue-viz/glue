@@ -28,6 +28,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
     y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
     plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian, polar or another projection")
+    angle_unit = DDSCProperty(docstring="When plotting in polar mode, whether to use radians or degrees for the angles")
 
     def __init__(self, **kwargs):
 
@@ -54,10 +55,17 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.plot_mode_helper.choices = [proj for proj in get_projection_names() if proj not in ['3d', 'scatter_density']]
         self.plot_mode_helper.selection = 'rectilinear'
 
+        self.angle_unit_helper = ComboHelper(self, 'angle_unit')
+        self.angle_unit_helper.choices = ['radians', 'degrees']
+        self.angle_unit_helper.selection = 'radians'
+
         self.update_from_dict(kwargs)
 
         self.add_callback('x_log', self._reset_x_limits)
         self.add_callback('y_log', self._reset_y_limits)
+
+        if self.using_polar:
+            self.full_circle()
 
     def _reset_x_limits(self, *args):
         if self.x_att is None:
@@ -72,7 +80,8 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_lim_helper.update_values(force=True)
 
     def reset_limits(self):
-        self._reset_x_limits()
+        if not self.using_polar:
+            self._reset_x_limits()
         self._reset_y_limits()
 
     def flip_x(self):
@@ -87,8 +96,20 @@ class ScatterViewerState(MatplotlibDataViewerState):
         """
         self.y_lim_helper.flip_limits()
 
+    @property
+    def using_polar(self):
+        return self.plot_mode == 'polar'
+
+    @property
+    def using_degrees(self):
+        return self.using_polar and self.angle_unit == 'degrees'
+
+    @property
+    def using_radians(self):
+        return self.using_polar and self.angle_unit == 'radians'
+
     def full_circle(self):
-        if not self.plot_mode == 'polar':
+        if not self.using_polar:
             return
         self.x_min = 0
         self.x_max = 2 * np.pi
@@ -266,6 +287,8 @@ class ScatterLayerState(MatplotlibLayerState):
         self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att',
                                                     numeric=True, datetime=False, categorical=False)
 
+        self.points_mode_helper = ComboHelper(self, 'points_mode')
+
         points_mode_display = {'auto': 'Density map or markers (auto)',
                                'markers': 'Markers',
                                'density': 'Density map'}
@@ -307,7 +330,10 @@ class ScatterLayerState(MatplotlibLayerState):
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
             self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            if hasattr(self.viewer_state, 'plot_mode'):
+                self.viewer_state.add_callback('plot_mode', self._update_points_mode, priority=10000)
             self._on_xy_change()
+            self._update_points_mode()
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -320,6 +346,13 @@ class ScatterLayerState(MatplotlibLayerState):
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
 
         self.update_from_dict(kwargs)
+
+    def _update_points_mode(self, *args):
+        if getattr(self.viewer_state, 'using_polar', False):
+            self.points_mode_helper.choices = ['markers']
+            self.points_mode_helper.select = 'markers'
+        else:
+            self.points_mode_helper.choices = ['auto', 'markers', 'density']
 
     def _on_xy_change(self, *event):
 

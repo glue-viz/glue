@@ -13,7 +13,7 @@ def _get_labels(proj):
     if proj == 'rectilinear':
         return 'x axis', 'y axis'
     elif proj == 'polar':
-        return 'theta (rad)', 'radius'
+        return 'theta', 'radius'
     elif proj in ['aitoff', 'hammer', 'lambert', 'mollweide']:
         return 'long (rad)', 'lat (rad)'
     else:
@@ -41,11 +41,18 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         viewer_state.add_callback('x_att', self._update_x_attribute)
         viewer_state.add_callback('y_att', self._update_y_attribute)
         viewer_state.add_callback('plot_mode', self._update_plot_mode)
-
-        self.ui.button_full_circle.setVisible(False)
+        viewer_state.add_callback('angle_unit', self._update_x_attribute)
 
         self.session = session
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
+
+        # Without this, log buttons will be enabled when the application starts
+        # regardless of the current plot mode
+        self._update_x_attribute()
+        self._update_y_attribute()
+
+        # Make sure that the UI is consistent with the plot mode that's selected
+        self._update_plot_mode()
 
     def _apply_all_viewers(self):
         for tab in self.session.application.viewers:
@@ -64,7 +71,7 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
 
     def _update_y_attribute(self, *args):
         # If at least one of the components is categorical or a date, disable log button
-        log_enabled = ('categorical' not in self.viewer_state.y_kinds and self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide'])
+        log_enabled = ('categorical' not in self.viewer_state.y_kinds and self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar'])
         self.ui.bool_y_log.setEnabled(log_enabled)
         self.ui.bool_y_log_.setEnabled(log_enabled)
         if not log_enabled:
@@ -85,6 +92,13 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.valuetext_y_min.setEnabled(lim_enabled)
         self.ui.button_flip_y.setEnabled(lim_enabled)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
-        self.ui.button_full_circle.setVisible(is_polar)
+        self.ui.button_full_circle.setVisible(False)
+        self.ui.angle_unit_lab.setVisible(is_polar)
+        self.ui.combosel_angle_unit.setVisible(is_polar)
+        self.ui.x_lab_2.setVisible(not is_polar)
+        self.ui.valuetext_x_min.setVisible(not is_polar)
+        self.ui.button_flip_x.setVisible(not is_polar)
+        self.ui.valuetext_x_max.setVisible(not is_polar)
+        self.ui.bool_x_log.setVisible(not is_polar)
         self._update_x_attribute()
         self._update_y_attribute()

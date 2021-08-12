@@ -723,22 +723,23 @@ class TestScatterViewer(object):
         viewer_state.plot_mode = 'mollweide'
         assert 'mollweide' in str(type(self.viewer.axes)).lower()
 
-    def test_limit_log_set_polar(self):
-        self.viewer.add_data(self.data)
-        viewer_state = self.viewer.state
-        viewer_state.plot_mode = "polar"
-        axes = self.viewer.axes
-
-        viewer_state.x_min = 0.5
-        viewer_state.x_max = 1.5
-        assert_allclose(axes.get_xlim(), [0.5, 1.5])
-
-        viewer_state.y_min = -2.5
-        viewer_state.y_max = 2.5
-        assert_allclose(axes.get_ylim(), [-2.5, 2.5])
-
-        viewer_state.y_log = True
-        assert axes.get_yscale() == 'log'
+    # For the time being, the polar plots don't support log scaling
+    # def test_limit_log_set_polar(self):
+    #     self.viewer.add_data(self.data)
+    #     viewer_state = self.viewer.state
+    #     viewer_state.plot_mode = "polar"
+    #     axes = self.viewer.axes
+    #
+    #     viewer_state.x_min = 0.5
+    #     viewer_state.x_max = 1.5
+    #     assert_allclose(axes.get_xlim(), [0.5, 1.5])
+    #
+    #     viewer_state.y_min = -2.5
+    #     viewer_state.y_max = 2.5
+    #     assert_allclose(axes.get_ylim(), [-2.5, 2.5])
+    #
+    #     viewer_state.y_log = True
+    #     assert axes.get_yscale() == 'log'
 
     def test_limit_set_fullsphere(self):
         # Make sure that the full-sphere projections ignore instead of throwing exceptions
@@ -766,10 +767,11 @@ class TestScatterViewer(object):
         # Make sure limits are reset first
         viewer_state.x_max += 3
 
+        # Currently, when we change to polar mode, the x-limits are changed to 0, 2pi
         viewer_state.plot_mode = 'polar'
-        assert_allclose(viewer_state.x_min, old_xmin)
-        assert_allclose(viewer_state.x_max, old_xmax)
-        assert_allclose(self.viewer.axes.get_xlim(), [old_xmin, old_xmax])
+        assert_allclose(viewer_state.x_min, 0)
+        assert_allclose(viewer_state.x_max, 2 * np.pi)
+        assert_allclose(self.viewer.axes.get_xlim(), [0, 2 * np.pi])
         assert_allclose(viewer_state.y_min, old_ymin)
         assert_allclose(viewer_state.y_max, old_ymax)
         assert_allclose(self.viewer.axes.get_ylim(), [old_ymin, old_ymax])
@@ -854,15 +856,15 @@ class TestScatterViewer(object):
         viewer_state.plot_mode = 'polar'
         assert not ui.bool_x_log.isEnabled()
         assert not ui.bool_x_log_.isEnabled()
-        assert ui.bool_y_log.isEnabled()
-        assert ui.bool_y_log_.isEnabled()
+        assert not ui.bool_y_log.isEnabled()
+        assert not ui.bool_y_log_.isEnabled()
         assert ui.valuetext_x_min.isEnabled()
         assert ui.button_flip_x.isEnabled()
         assert ui.valuetext_x_max.isEnabled()
         assert ui.valuetext_y_min.isEnabled()
         assert ui.button_flip_y.isEnabled()
         assert ui.valuetext_y_max.isEnabled()
-        assert not ui.button_full_circle.isHidden()
+        assert ui.button_full_circle.isHidden()
 
         viewer_state.plot_mode = 'rectilinear'
         assert ui.bool_x_log.isEnabled()
