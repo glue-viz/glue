@@ -15,7 +15,7 @@ interested.
 Before we get started, here's a reminder on how to install/update glue. You can
 easily update glue if you are using Anaconda/Miniconda by doing::
 
-    conda install -c glueviz glueviz=1.1
+    conda install -c glueviz glueviz=1.2
 
 If instead you installed glue with pip, you can update with::
 
@@ -25,6 +25,14 @@ If you have any questions about any of the functionality described below or
 about glue in general, you can find information :ref:`here
 <help>` about contacting us and/or
 reporting issues.
+
+.. _whatsnew_120:
+
+What's new in glue v1.2.0?
+==========================
+
+Glue v1.2.0 is a maintenance release that provides performance improvements and
+incremental improvements in the programmatic API.
 
 .. _whatsnew_110:
 

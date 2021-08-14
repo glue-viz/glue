@@ -14,6 +14,8 @@ v1.2.0 (unreleased)
 
 * Allow CategoricalComponents to be n-dimensional. [#2214]
 
+* Improve usability of 2D scatter plot in non-cartesian projection. [#2200]
+
 v1.1.0 (2021-07-21)
 -------------------
 
