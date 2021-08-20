@@ -266,7 +266,6 @@ class ArithmeticAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        print(data.label)
         dialog = ArithmeticEditorWidget(self._layer_tree.data_collection,
                                         initial_data=data)
         dialog.exec_()
@@ -283,7 +282,6 @@ class ManageComponentsAction(LayerAction):
     def _do_action(self):
         assert self._can_trigger()
         data = self.selected_layers()[0]
-        print(data.label)
         dialog = ComponentManagerWidget(self._layer_tree.data_collection,
                                         initial_data=data)
         dialog.exec_()

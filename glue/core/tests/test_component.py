@@ -112,7 +112,6 @@ class TestCategoricalComponent(object):
         from pandas import DataFrame
         df = DataFrame()
         df['a'] = ['a', 'b', 'c']
-        print(df['a'].fillna(''), type)
         CategoricalComponent(df['a'].fillna(''))
 
     def test_accepts_list(self):

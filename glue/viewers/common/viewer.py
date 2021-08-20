@@ -213,10 +213,8 @@ class Viewer(BaseViewer):
         # gets set automatically - however since we call a forced update of the
         # layer after adding it to the container we can ignore any callbacks
         # related to zorder. We also then need to set layer.state.zorder manually.
-        with ignore_callback(layer, 'zorder'):
-            with ignore_callback(layer.state, 'zorder'):
-                self._layer_artist_container.append(layer)
-                layer.state.zorder = layer.zorder
+        with ignore_callback(layer.state, 'zorder'):
+            self._layer_artist_container.append(layer)
         layer.update()
         self.draw_legend()  # need to be called here because callbacks are ignored in previous step
 
