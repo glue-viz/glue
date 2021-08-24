@@ -1,7 +1,13 @@
 Full changelog
 ==============
 
-v1.2.0 (unreleased)
+v1.2.1 (2021-08-24)
+-------------------
+
+* Fixed a bug that caused issues with packages depending on glue which
+  defined layer artists with no zorder on the artist class. [#2226, #2227]
+
+v1.2.0 (2021-08-14)
 -------------------
 
 * Added a new ``WCSLink.as_affine_link`` method which can be used to find
