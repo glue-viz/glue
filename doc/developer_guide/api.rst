@@ -213,3 +213,8 @@ Utilities
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:
 
+Plugins
+=======
+
+.. automodapi:: glue.plugins.wcs_autolinking.wcs_autolinking
+   :no-inheritance-diagram:
