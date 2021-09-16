@@ -44,7 +44,7 @@ class MatplotlibImageMixin(object):
         self.state.add_callback('x_att', self._set_wcs)
         self.state.add_callback('y_att', self._set_wcs)
         self.state.add_callback('slices', self._on_slice_change)
-        self.state.add_callback('reference_data', self._set_wcs)
+        self.state.add_callback('reference_data', self._set_wcs, echo_old=True)
         self.axes._composite = CompositeArray()
         self.axes._composite_image = imshow(self.axes, self.axes._composite, aspect='auto',
                                             origin='lower', interpolation='nearest')
@@ -88,11 +88,17 @@ class MatplotlibImageMixin(object):
 
     def _on_slice_change(self, event=None):
         if self._changing_slice_requires_wcs_update:
-            self._set_wcs(event=event, relim=False)
+            self._set_wcs(relim=False)
 
-    def _set_wcs(self, event=None, relim=True):
+    def _set_wcs(self, before=None, after=None, relim=True):
 
         if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+            return
+
+        # A callback event for reference_data is triggered if the choices change
+        # but the actual selection doesn't - so we avoid resetting the WCS in
+        # this case.
+        if after is not None and before is after:
             return
 
         ref_coords = getattr(self.state.reference_data, 'coords', None)

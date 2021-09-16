@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.2.2 (unreleased)
+-------------------
+
+* Prevent resetting of image viewer limits when adding a dataset to the
+  viewer. [#2232]
+
 v1.2.1 (2021-08-24)
 -------------------
 
