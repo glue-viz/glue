@@ -279,3 +279,42 @@ class TestProfileViewer(object):
         assert not viewer4.state.layers[2].visible
 
         ga.close()
+
+    def test_reset_limits(self):
+        self.viewer.add_data(self.data)
+        self.viewer.add_data(self.data2)
+        self.viewer.state.x_min = 0.2
+        self.viewer.state.x_max = 0.4
+        self.viewer.state.y_min = 0.3
+        self.viewer.state.y_max = 0.5
+        self.viewer.state.reset_limits()
+        assert self.viewer.state.x_min == 0
+        assert self.viewer.state.x_max == 4
+        assert self.viewer.state.y_min == 7
+        assert self.viewer.state.y_max == 23
+
+    def test_limits_unchanged(self):
+        # Make sure the limits don't change if a subset is created or another
+        # dataset added - they should only change if the reference data is changed
+        self.viewer.add_data(self.data)
+        self.viewer.state.x_min = 0.2
+        self.viewer.state.x_max = 0.4
+        self.viewer.state.y_min = 0.3
+        self.viewer.state.y_max = 0.5
+        self.viewer.add_data(self.data2)
+        assert self.viewer.state.x_min == 0.2
+        assert self.viewer.state.x_max == 0.4
+        assert self.viewer.state.y_min == 0.3
+        assert self.viewer.state.y_max == 0.5
+        roi = XRangeROI(0.9, 2.1)
+        self.viewer.apply_roi(roi)
+        assert self.viewer.state.x_min == 0.2
+        assert self.viewer.state.x_max == 0.4
+        assert self.viewer.state.y_min == 0.3
+        assert self.viewer.state.y_max == 0.5
+
+    def test_layer_visibility(self):
+        self.viewer.add_data(self.data)
+        assert self.viewer.layers[0].mpl_artists[0].get_visible() is True
+        self.viewer.state.layers[0].visible = False
+        assert self.viewer.layers[0].mpl_artists[0].get_visible() is False

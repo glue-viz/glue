@@ -7,6 +7,14 @@ v1.2.2 (unreleased)
 * Prevent resetting of image viewer limits when adding a dataset to the
   viewer. [#2232]
 
+* Fixed home button for resetting limits in profile viewer. [#2233]
+
+* Fixed a bug that caused the visibility checkbox of layers in the profile
+  viewer to not always correctly. [#2233]
+
+* Fixed a bug that caused the profile viewer limits to be unecessarily
+  changed every time a subset was updated or a dataset was added. [#2233]
+
 v1.2.1 (2021-08-24)
 -------------------
 

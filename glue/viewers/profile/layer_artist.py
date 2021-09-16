@@ -1,12 +1,11 @@
 import sys
 import warnings
 
-import numpy as np
 from matplotlib.lines import Line2D
 
 
 from glue.core import BaseData
-from glue.utils import defer_draw, nanmin, nanmax
+from glue.utils import defer_draw
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
@@ -89,34 +88,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             # passing an empty list to plot_artist
             self.plot_artist.set_data([0.], [0.])
 
-        # TODO: the following was copy/pasted from the histogram viewer, maybe
-        # we can find a way to avoid duplication?
-
-        # We have to do the following to make sure that we reset the y_max as
-        # needed. We can't simply reset based on the maximum for this layer
-        # because other layers might have other values, and we also can't do:
-        #
-        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
-        #
-        # because this would never allow y_max to get smaller.
-
-        if not self._viewer_state.normalize and len(y) > 0:
-
-            y_min = nanmin(y)
-            y_max = nanmax(y)
-            y_range = y_max - y_min
-
-            self.state._y_min = y_min - y_range * 0.1
-            self.state._y_max = y_max + y_range * 0.1
-
-            largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
-            if largest_y_max != self._viewer_state.y_max:
-                self._viewer_state.y_max = largest_y_max
-
-            smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
-            if smallest_y_min != self._viewer_state.y_min:
-                self._viewer_state.y_min = smallest_y_min
-
         self.redraw()
 
     @defer_draw
@@ -154,10 +125,13 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
                 self.state.layer is None):
             return
 
-        changed = set() if force else self.pop_changed_properties()
+        # NOTE: we need to evaluate this even if force=True so that the cache
+        # of updated properties is up to date after this method has been called.
+        changed = self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max', 'visible')):
             self._calculate_profile(reset=force)
+            force = True
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth')):
             self._update_visual_attributes()
