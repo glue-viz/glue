@@ -134,10 +134,13 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     if len(y) > 0:
                         y_min = min(y_min, nanmin(y))
                         y_max = max(y_max, nanmax(y))
-            if y_max > y_min:
-                with delay_callback(self, 'y_min', 'y_max'):
+            with delay_callback(self, 'y_min', 'y_max'):
+                if y_max > y_min:
                     self.y_min = y_min
                     self.y_max = y_max
+                else:
+                    self.y_min = 0
+                    self.y_max = 1
 
     def flip_x(self):
         """
