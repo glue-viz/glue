@@ -126,7 +126,7 @@ def coerce_numeric(arr):
 
     # Convert booleans to integers
     if np.issubdtype(arr.dtype, np.bool_):
-        return arr.astype(np.int)
+        return arr.astype(int)
 
     # a string dtype, or anything else
     try:
