@@ -131,8 +131,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     continue
                 if profile is not None:
                     x, y = profile
-                    y_min = min(y_min, nanmin(y))
-                    y_max = max(y_max, nanmax(y))
+                    if len(y) > 0:
+                        y_min = min(y_min, nanmin(y))
+                        y_max = max(y_max, nanmax(y))
             if y_max > y_min:
                 with delay_callback(self, 'y_min', 'y_max'):
                     self.y_min = y_min
