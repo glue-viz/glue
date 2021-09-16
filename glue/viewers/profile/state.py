@@ -53,7 +53,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
 
         self.add_callback('layers', self._layers_changed)
-        self.add_callback('reference_data', self._reference_data_changed)
+        self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
         self.add_callback('normalize', self._reset_y_limits)
 
@@ -122,6 +122,21 @@ class ProfileViewerState(MatplotlibDataViewerState):
             with delay_callback(self, 'y_min', 'y_max'):
                 self.y_min = -0.1
                 self.y_max = +1.1
+        else:
+            y_min, y_max = np.inf, -np.inf
+            for layer in self.layers:
+                try:
+                    profile = layer.profile
+                except Exception:  # e.g. incompatible subset
+                    continue
+                if profile is not None:
+                    x, y = profile
+                y_min = min(y_min, nanmin(y))
+                y_max = max(y_max, nanmax(y))
+            if y_max > y_min:
+                with delay_callback(self, 'y_min', 'y_max'):
+                    self.y_min = y_min
+                    self.y_max = y_max
 
     def flip_x(self):
         """
@@ -135,7 +150,13 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self._update_combo_ref_data()
 
     @defer_draw
-    def _reference_data_changed(self, *args):
+    def _reference_data_changed(self, before=None, after=None):
+
+        # A callback event for reference_data is triggered if the choices change
+        # but the actual selection doesn't - so we avoid resetting the WCS in
+        # this case.
+        if before is after:
+            return
 
         for layer in self.layers:
             layer.reset_cache()
@@ -160,6 +181,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                         self.x_att = self.reference_data.pixel_component_ids[0]
 
                 self._update_att()
+
+        self.reset_limits()
 
     def _update_priority(self, name):
         if name == 'layers':

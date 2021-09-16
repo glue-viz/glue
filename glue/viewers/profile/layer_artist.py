@@ -89,34 +89,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             # passing an empty list to plot_artist
             self.plot_artist.set_data([0.], [0.])
 
-        # TODO: the following was copy/pasted from the histogram viewer, maybe
-        # we can find a way to avoid duplication?
-
-        # We have to do the following to make sure that we reset the y_max as
-        # needed. We can't simply reset based on the maximum for this layer
-        # because other layers might have other values, and we also can't do:
-        #
-        #   self._viewer_state.y_max = max(self._viewer_state.y_max, result[0].max())
-        #
-        # because this would never allow y_max to get smaller.
-
-        if not self._viewer_state.normalize and len(y) > 0:
-
-            y_min = nanmin(y)
-            y_max = nanmax(y)
-            y_range = y_max - y_min
-
-            self.state._y_min = y_min - y_range * 0.1
-            self.state._y_max = y_max + y_range * 0.1
-
-            largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
-            if largest_y_max != self._viewer_state.y_max:
-                self._viewer_state.y_max = largest_y_max
-
-            smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
-            if smallest_y_min != self._viewer_state.y_min:
-                self._viewer_state.y_min = smallest_y_min
-
         self.redraw()
 
     @defer_draw
