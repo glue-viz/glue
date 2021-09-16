@@ -740,6 +740,34 @@ class TestImageViewer(object):
 
         assert to_hex(handles[1].get_facecolor()) == viewer_state.layers[1].color
 
+    def test_limit_resetting(self):
+
+        # Test to make sure that the limits only change if the reference data
+        # is changed
+
+        self.viewer.state.aspect = 'auto'
+
+        self.viewer.add_data(self.image1)
+
+        self.viewer.state.x_min = 0.2
+        self.viewer.state.x_max = 0.4
+        self.viewer.state.y_min = 0.3
+        self.viewer.state.y_max = 0.5
+
+        self.viewer.add_data(self.image2)
+
+        assert self.viewer.state.x_min == 0.2
+        assert self.viewer.state.x_max == 0.4
+        assert self.viewer.state.y_min == 0.3
+        assert self.viewer.state.y_max == 0.5
+
+        self.viewer.state.reference_data = self.image2
+
+        assert self.viewer.state.x_min == -0.5
+        assert self.viewer.state.x_max == 1.5
+        assert self.viewer.state.y_min == -0.5
+        assert self.viewer.state.y_max == 1.5
+
 
 class TestSessions(object):
 

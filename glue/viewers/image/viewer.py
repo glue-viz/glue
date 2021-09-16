@@ -88,20 +88,17 @@ class MatplotlibImageMixin(object):
 
     def _on_slice_change(self, event=None):
         if self._changing_slice_requires_wcs_update:
-            self._set_wcs(event=event, relim=False)
+            self._set_wcs(relim=False)
 
     def _set_wcs(self, before=None, after=None, relim=True):
+
+        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+            return
 
         # A callback event for reference_data is triggered if the choices change
         # but the actual selection doesn't - so we avoid resetting the WCS in
         # this case.
-
-        if before is after:
-            if relim:
-                self.state.reset_limits()
-            return
-
-        if self.state.x_att is None or self.state.y_att is None or self.state.reference_data is None:
+        if after is not None and before is after:
             return
 
         ref_coords = getattr(self.state.reference_data, 'coords', None)
