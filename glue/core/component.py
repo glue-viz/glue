@@ -452,7 +452,7 @@ class CategoricalComponent(Component):
         :return: pandas.Series
         """
 
-        return pd.Series(self.labels, dtype=np.object, **kwargs)
+        return pd.Series(self.labels, dtype=object, **kwargs)
 
 
 class DateTimeComponent(Component):
