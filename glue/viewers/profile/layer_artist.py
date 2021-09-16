@@ -158,6 +158,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'x_att', 'attribute', 'function', 'normalize', 'v_min', 'v_max', 'visible')):
             self._calculate_profile(reset=force)
+            force = True
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth')):
             self._update_visual_attributes()
