@@ -1,12 +1,11 @@
 import sys
 import warnings
 
-import numpy as np
 from matplotlib.lines import Line2D
 
 
 from glue.core import BaseData
-from glue.utils import defer_draw, nanmin, nanmax
+from glue.utils import defer_draw
 from glue.viewers.profile.state import ProfileLayerState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
