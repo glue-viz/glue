@@ -325,15 +325,19 @@ class TestEllipse(object):
     def setup_method(self, method):
         self.roi_empty = EllipticalROI()
         self.roi = EllipticalROI(1, 2, 3, 4)
+        self.roi_rotated = EllipticalROI(1, 2, 3, 0.4, theta=np.pi / 6)
 
     def test_undefined_on_creation(self):
         assert not self.roi_empty.defined()
         assert self.roi.defined()
+        assert self.roi_rotated.defined()
 
     def test_contains_on_undefined_contains_raises(self):
         with pytest.raises(UndefinedROI):
             self.roi_empty.contains(1, 1)
-        self.roi.contains(1, 1)
+        assert self.roi.contains(1, 1)
+        assert self.roi_rotated.contains(0, 2.5)
+        assert not self.roi_rotated.contains(0, 2)
 
     def test_set_center(self):
         assert self.roi.contains(0, 0)
@@ -365,6 +369,11 @@ class TestEllipse(object):
         poly = PolygonalROI(vx=x, vy=y)
         assert poly.contains(0, 0)
         assert not poly.contains(10, 0)
+
+        x, y = self.roi_rotated.to_polygon()
+        poly = PolygonalROI(vx=x, vy=y)
+        assert poly.contains(0, 2.5)
+        assert not poly.contains(0, 2)
 
     def test_poly_undefined(self):
         x, y = self.roi_empty.to_polygon()
@@ -931,7 +940,7 @@ def test_circular_roi_representation():
 
     # Case 2: linear-linear axes with non-square aspect ratio
 
-    ax.set_xlim(-40, 100)
+    ax.set_xlim(10, 100)
     ax.set_ylim(-2, 5)
     ax.set_xscale('linear')
     ax.set_yscale('linear')

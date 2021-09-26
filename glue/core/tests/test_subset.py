@@ -851,7 +851,8 @@ class TestCloneSubsetStates():
         roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4)
 
         subset = self.data.new_subset()
-        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'], roi=roi)
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
+                                             roi=roi)
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
 
         data_clone = clone(self.data)
@@ -866,6 +867,19 @@ class TestCloneSubsetStates():
 
         # Post transform outputs are x=[-1.8, 3.3, 5.5, 2.9], y=[-4.2, 0.7, 2.5, -0.9]
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
+    def test_roi_subset_state_rotated(self):
+
+        roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4, theta=np.pi / 3)
+
+        subset = self.data.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
+                                             roi=roi)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 0, 0, 1])
 
         data_clone = clone(self.data)
 
