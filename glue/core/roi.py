@@ -55,6 +55,12 @@ def pixel_to_axes(axes, x, y):
     return axes.transAxes.inverted().transform(xy)
 
 
+def rotation(alpha):
+    """Return rotation matrix for angle alpha around origin.
+    """
+    return np.array([[np.cos(alpha), np.sin(alpha)], [-np.sin(alpha), np.cos(alpha)]])
+
+
 class Roi(object):  # pragma: no cover
 
     """
@@ -163,21 +169,37 @@ class RectangularROI(Roi):
 
     """
     A 2D rectangular region of interest.
+
+    Parameters
+    ----------
+    xmin, xmax :  float, optional
+        x coordinates of left and right border
+    ymin, ymax :  float, optional
+        y coordinates of lower and upper border
+    theta : float, optional
+        Angle of clockwise rotation around center
     """
 
-    def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None):
+    def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None, theta=None):
         super(RectangularROI, self).__init__()
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
+        self.theta = theta
+        if self.theta is None or self.theta == 0.0:
+            self.rotation = np.identity(2)
+        else:
+            self.rotation = rotation(self.theta)
+        self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def __str__(self):
-        if self.defined():
-            return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin,
-                                                           self.xmax,
-                                                           self.ymin,
-                                                           self.ymax)
+        if self.defined() and self.theta is None:
+            return f"x=[{self.xmin:.3f}, {self.xmax:.3f}], y=[{self.ymin:.3f}, {self.ymax:.3f}]"
+        elif self.defined():
+            return (f"center=({self.center()[0]:.3f}, {self.center()[1]:.3f}), "
+                    f"size=({self.width():.3f} x {self.height():.3f}), "
+                    f"theta={self.theta:.3f} radian")
         else:
             return "Undefined Rectangular ROI"
 
@@ -229,8 +251,26 @@ class RectangularROI(Roi):
         if not self.defined():
             raise UndefinedROI
 
-        return (x > self.xmin) & (x < self.xmax) & \
-               (y > self.ymin) & (y < self.ymax)
+        if self.theta is not None and self.theta != 0.0:
+            if not isinstance(x, np.ndarray):
+                x = np.asarray(x)
+            if not isinstance(y, np.ndarray):
+                y = np.asarray(y)
+
+            inside = np.zeros_like(x, dtype=bool)
+            bounds = self.to_polygon()
+            xc, yc = self.center()
+            keep = ((x >= bounds[0].min()) & (x <= bounds[0].max()) &
+                    (y >= bounds[1].min()) & (y <= bounds[1].max()))
+            x = x[keep] - xc
+            y = y[keep] - yc
+            shape = (2,) + x.shape
+            x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
+            inside[keep] = (abs(x) <= self.width() / 2) & (abs(y) <= self.height() / 2)
+            return inside
+
+        else:
+            return (x > self.xmin) & (x < self.xmax) & (y > self.ymin) & (y < self.ymax)
 
     def update_limits(self, xmin, ymin, xmax, ymax):
         """
@@ -255,8 +295,13 @@ class RectangularROI(Roi):
 
     def to_polygon(self):
         if self.defined():
-            return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
-                    np.array([self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]))
+            if self.theta is None or self.theta == 0.0:
+                return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
+                        np.array([self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]))
+            else:
+                corners = (np.array([-1, 1, 1, -1, -1]) * self.width() / 2,
+                           np.array([-1, -1, 1, 1, -1]) * self.height() / 2)
+            return tuple((self.rotation @ corners) + np.array(self.center()).reshape((2, 1)))
         else:
             return [], []
 
@@ -471,25 +516,50 @@ class CircularROI(Roi):
 
 class EllipticalROI(Roi):
     """
-    A 2D elliptical region of interest.
+    A 2D elliptical region of interest at (xc, yc) with semimajor/minor axes radius_[xy].
+
+    Parameters
+    ----------
+    xc :  float, optional
+        x coordinate of center
+    yc :  float, optional
+        y coordinate of center
+    radius_x :  float, optional
+        Semiaxis along x axis
+    radius_y :  float, optional
+        Semiaxis along y axis
+    theta : float, optional
+        Angle of clockwise rotation around (xc, yc)
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
         super(EllipticalROI, self).__init__()
-        if theta is not None and theta != 0:
-            raise NotImplementedError("Rotated ellipses are not yet supported")
         self.xc = xc
         self.yc = yc
         self.radius_x = radius_x
         self.radius_y = radius_y
+        self.theta = theta
+        if self.theta is None or self.theta == 0.0:
+            self.rotation = np.identity(2)
+        else:
+            self.rotation = rotation(self.theta)
+        self.invrot = self.rotation * [[1, -1], [-1, 1]]
+
+    def __str__(self):
+        if self.defined():
+            return (f"center=({self.xc:.3f}, {self.yc:.3f}), "
+                    f"semiaxes=({self.radius_x:.3f} x {self.radius_y:.3f}), "
+                    f"theta={self.theta:.3f} radian")
+        else:
+            return "Undefined Elliptical ROI"
 
     def contains(self, x, y):
         """
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        :param x: A list of x points
-        :param y: A list of y points
+        :param x: A list of x coordinates
+        :param y: A list of y coordinates
 
         *Returns*
 
@@ -504,6 +574,19 @@ class EllipticalROI(Roi):
             x = np.asarray(x)
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
+
+        if self.theta is not None:
+            inside = np.zeros_like(x, dtype=bool)
+            bounds = self.bounds()
+            keep = ((x >= bounds[0][0]) & (x <= bounds[0][1]) &
+                    (y >= bounds[1][0]) & (y <= bounds[1][1]))
+            x = x[keep] - self.xc
+            y = y[keep] - self.yc
+            shape = (2,) + x.shape
+            x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
+            inside[keep] = ((x ** 2 / self.radius_x ** 2 + y ** 2 / self.radius_y ** 2) < 1.)
+            return inside
+
         return (((x - self.xc) ** 2 / self.radius_x ** 2 +
                  (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
 
@@ -523,14 +606,27 @@ class EllipticalROI(Roi):
                 self.radius_x is not None and
                 self.radius_y is not None)
 
+    def get_center(self):
+        return self.xc, self.yc
+
     def to_polygon(self):
         """ Returns x, y, where each is a list of points """
         if not self.defined():
             return [], []
         theta = np.linspace(0, 2 * np.pi, num=20)
-        x = self.xc + self.radius_x * np.cos(theta)
-        y = self.yc + self.radius_y * np.sin(theta)
-        return x, y
+        x = self.radius_x * np.cos(theta)
+        y = self.radius_y * np.sin(theta)
+        x, y = self.rotation @ (x, y)
+        return x + self.xc, y + self.yc
+
+    def bounds(self):
+        """ Returns (conservatively estimated) boundary values in x and y """
+        if self.theta is None or self.theta == 0.0:
+            return [[self.xc - self.radius_x, self.xc + self.radius_x],
+                    [self.yc - self.radius_y, self.yc + self.radius_y]]
+        radius = max(self.radius_x, self.radius_y)
+        return [[self.xc - radius, self.xc + radius],
+                [self.yc - radius, self.yc + radius]]
 
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
@@ -673,6 +769,10 @@ class PolygonalROI(VertexROIBase):
 
         result = points_inside_poly(x, y, self.vx, self.vy)
         return result
+
+    # There are several possible definitions of the centre; this is easiest to calculate.
+    def center(self):
+        return np.mean(self.vx), np.mean(self.vy)
 
     def move_to(self, xdelta, ydelta):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
