@@ -212,7 +212,7 @@ class HistogramLayerState(MatplotlibLayerState):
     def histogram(self):
         self.update_histogram()
         edges, unscaled = self._histogram_cache[1]
-        scaled = unscaled.astype(np.float)
+        scaled = unscaled.astype(float)
         dx = edges[1] - edges[0]
         if self.viewer_state.cumulative:
             scaled = scaled.cumsum()
