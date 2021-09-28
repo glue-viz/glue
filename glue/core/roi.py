@@ -117,6 +117,14 @@ class Roi(object):  # pragma: no cover
         """Translate the ROI to a center of (x, y)"""
         raise NotImplementedError()
 
+    def rotate_to(self, theta):
+        """Set rotation angle of ROI around center to theta"""
+        raise NotImplementedError()
+
+    def rotate_by(self, dtheta):
+        """Rotate the ROI around center by angle dtheta"""
+        raise NotImplementedError()
+
     def defined(self):
         """ Returns whether or not the subset is properly defined """
         raise NotImplementedError()
@@ -186,15 +194,15 @@ class RectangularROI(Roi):
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
-        self.theta = theta
-        if self.theta is None or self.theta == 0.0:
+        self.theta = 0 if theta is None else theta
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
             self.rotation = np.identity(2)
         else:
             self.rotation = rotation(self.theta)
         self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def __str__(self):
-        if self.defined() and self.theta is None:
+        if self.defined() and self.theta == 0:
             return f"x=[{self.xmin:.3f}, {self.xmax:.3f}], y=[{self.ymin:.3f}, {self.ymax:.3f}]"
         elif self.defined():
             return (f"center=({self.center()[0]:.3f}, {self.center()[1]:.3f}), "
@@ -214,6 +222,17 @@ class RectangularROI(Roi):
         self.xmax += dx
         self.ymin += dy
         self.ymax += dy
+
+    def rotate_to(self, theta):
+        self.theta = 0 if theta is None else theta
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+            self.rotation = np.identity(2)
+        else:
+            self.rotation = rotation(self.theta)
+        self.invrot = self.rotation * [[1, -1], [-1, 1]]
+
+    def rotate_by(self, dtheta):
+        self.rotate_to(self.theta + dtheta)
 
     def transpose(self, copy=True):
         if copy:
@@ -239,8 +258,8 @@ class RectangularROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        :param x: A scalar or numpy array of x points
-        :param y: A scalar or numpy array of y points
+        :param x: A scalar or iterable of x coordinates
+        :param y: A scalar or iterable of y coordinates
 
         *Returns*
 
@@ -251,26 +270,30 @@ class RectangularROI(Roi):
         if not self.defined():
             raise UndefinedROI
 
-        if self.theta is not None and self.theta != 0.0:
-            if not isinstance(x, np.ndarray):
-                x = np.asarray(x)
-            if not isinstance(y, np.ndarray):
-                y = np.asarray(y)
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
 
-            inside = np.zeros_like(x, dtype=bool)
-            bounds = self.to_polygon()
-            xc, yc = self.center()
-            keep = ((x >= bounds[0].min()) & (x <= bounds[0].max()) &
-                    (y >= bounds[1].min()) & (y <= bounds[1].max()))
-            x = x[keep] - xc
-            y = y[keep] - yc
-            shape = (2,) + x.shape
-            x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
-            inside[keep] = (abs(x) <= self.width() / 2) & (abs(y) <= self.height() / 2)
-            return inside
-
-        else:
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
             return (x > self.xmin) & (x < self.xmax) & (y > self.ymin) & (y < self.ymax)
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            xc, yc = self.center()
+            xext = self.height() / 2
+            yext = self.width() / 2
+            return (x > xc - xext) & (x < xc + xext) & (y > yc - yext) & (y < yc + yext)
+
+        inside = np.zeros_like(x, dtype=bool)
+        bounds = self.to_polygon()
+        xc, yc = self.center()
+        keep = ((x >= bounds[0].min()) & (x <= bounds[0].max()) &
+                (y >= bounds[1].min()) & (y <= bounds[1].max()))
+        x = x[keep] - xc
+        y = y[keep] - yc
+        shape = (2,) + x.shape
+        x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
+        inside[keep] = (abs(x) <= self.width() / 2) & (abs(y) <= self.height() / 2)
+        return inside
 
     def update_limits(self, xmin, ymin, xmax, ymax):
         """
@@ -295,7 +318,7 @@ class RectangularROI(Roi):
 
     def to_polygon(self):
         if self.defined():
-            if self.theta is None or self.theta == 0.0:
+            if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
                 return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
                         np.array([self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]))
             else:
@@ -316,12 +339,14 @@ class RectangularROI(Roi):
         return dict(xmin=context.do(self.xmin),
                     xmax=context.do(self.xmax),
                     ymin=context.do(self.ymin),
-                    ymax=context.do(self.ymax))
+                    ymax=context.do(self.ymax),
+                    theta=context.do(self.theta))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xmin=context.object(rec['xmin']), xmax=context.object(rec['xmax']),
-                   ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']))
+                   ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']),
+                   theta=context.object(rec['theta']))
 
 
 class RangeROI(Roi):
@@ -438,8 +463,8 @@ class CircularROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        :param x: A list of x points
-        :param y: A list of y points
+        :param x: A scalar or iterable of x coordinates
+        :param y: A scalar or iterable of y coordinates
 
         *Returns*
 
@@ -538,8 +563,8 @@ class EllipticalROI(Roi):
         self.yc = yc
         self.radius_x = radius_x
         self.radius_y = radius_y
-        self.theta = theta
-        if self.theta is None or self.theta == 0.0:
+        self.theta = 0 if theta is None else theta
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
             self.rotation = np.identity(2)
         else:
             self.rotation = rotation(self.theta)
@@ -558,8 +583,8 @@ class EllipticalROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        :param x: A list of x coordinates
-        :param y: A list of y coordinates
+        :param x: A scalar or iterable of x coordinates
+        :param y: A scalar or iterable of y coordinates
 
         *Returns*
 
@@ -575,7 +600,16 @@ class EllipticalROI(Roi):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        if self.theta is not None:
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+            return (((x - self.xc) ** 2 / self.radius_x ** 2 +
+                     (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            return (((x - self.xc) ** 2 / self.radius_y ** 2 +
+                     (y - self.yc) ** 2 / self.radius_x ** 2) < 1.)
+        else:
+            # Pre-select points inside the bounding rectangle. In principle this could be
+            # used to speed up the non-rotated cases above as well, but will only pay off
+            # the overhead for datasets much larger than the region (e.g. < ~1 % inside).
             inside = np.zeros_like(x, dtype=bool)
             bounds = self.bounds()
             keep = ((x >= bounds[0][0]) & (x <= bounds[0][1]) &
@@ -586,9 +620,6 @@ class EllipticalROI(Roi):
             x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
             inside[keep] = ((x ** 2 / self.radius_x ** 2 + y ** 2 / self.radius_y ** 2) < 1.)
             return inside
-
-        return (((x - self.xc) ** 2 / self.radius_x ** 2 +
-                 (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
 
     def reset(self):
         """
@@ -621,12 +652,16 @@ class EllipticalROI(Roi):
 
     def bounds(self):
         """ Returns (conservatively estimated) boundary values in x and y """
-        if self.theta is None or self.theta == 0.0:
+        if self.theta is None or np.isclose(self.theta % (np.pi), 0.0, atol=1e-9):
             return [[self.xc - self.radius_x, self.xc + self.radius_x],
                     [self.yc - self.radius_y, self.yc + self.radius_y]]
-        radius = max(self.radius_x, self.radius_y)
-        return [[self.xc - radius, self.xc + radius],
-                [self.yc - radius, self.yc + radius]]
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            return [[self.xc - self.radius_y, self.xc + self.radius_y],
+                    [self.yc - self.radius_x, self.yc + self.radius_x]]
+        else:
+            radius = max(self.radius_x, self.radius_y)
+            return [[self.xc - radius, self.xc + radius],
+                    [self.yc - radius, self.yc + radius]]
 
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
@@ -635,16 +670,28 @@ class EllipticalROI(Roi):
         self.xc += xdelta
         self.yc += ydelta
 
+    def rotate_to(self, theta):
+        self.theta = 0 if theta is None else theta
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+            self.rotation = np.identity(2)
+        else:
+            self.rotation = rotation(self.theta)
+        self.invrot = self.rotation * [[1, -1], [-1, 1]]
+
+    def rotate_by(self, dtheta):
+        self.rotate_to(self.theta + dtheta)
+
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
                     yc=context.do(self.yc),
                     radius_x=context.do(self.radius_x),
-                    radius_y=context.do(self.radius_y))
+                    radius_y=context.do(self.radius_y),
+                    theta=context.do(self.theta))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xc=rec['xc'], yc=rec['yc'],
-                   radius_x=rec['radius_x'], radius_y=rec['radius_y'])
+                   radius_x=rec['radius_x'], radius_y=rec['radius_y'], theta=rec['theta'])
 
 
 class VertexROIBase(Roi):
@@ -663,6 +710,7 @@ class VertexROIBase(Roi):
             self.vx = []
         if self.vy is None:
             self.vy = []
+        self.theta = 0
 
     def transformed(self, xfunc=None, yfunc=None):
         vx = self.vx if xfunc is None else xfunc(np.asarray(self.vx))
@@ -729,8 +777,7 @@ class VertexROIBase(Roi):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(vx=context.object(rec['vx']),
-                   vy=context.object(rec['vy']))
+        return cls(vx=context.object(rec['vx']), vy=context.object(rec['vy']))
 
 
 class PolygonalROI(VertexROIBase):
@@ -770,13 +817,30 @@ class PolygonalROI(VertexROIBase):
         result = points_inside_poly(x, y, self.vx, self.vy)
         return result
 
-    # There are several possible definitions of the centre; this is easiest to calculate.
+    # There are several possible definitions of the centre; this is easiest to calculate
+    # (and invariant under rotation?) - do not include starting vertex twice!
     def center(self):
-        return np.mean(self.vx), np.mean(self.vy)
+        if not self.defined():
+            raise UndefinedROI
+        if self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]:
+            return np.mean(self.vx[:-1]), np.mean(self.vy[:-1])
+        else:
+            return np.mean(self.vx), np.mean(self.vy)
 
     def move_to(self, xdelta, ydelta):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
+
+    def rotate_to(self, theta):
+        theta = 0 if theta is None else theta
+        dtheta = theta - self.theta
+        if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
+            dx, dy = np.array([self.vx, self.vy]) - np.array(self.center()).reshape(2, 1)
+            self.vx, self.vy = rotation(dtheta) @ (dx, dy) + np.array(self.center()).reshape(2, 1)
+        self.theta = theta
+
+    def rotate_by(self, dtheta):
+        self.rotate_to(self.theta + dtheta)
 
 
 class Projected3dROI(Roi):
