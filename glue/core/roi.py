@@ -56,9 +56,9 @@ def pixel_to_axes(axes, x, y):
 
 
 def rotation(alpha):
-    """Return rotation matrix for angle alpha around origin.
+    """Return rotation matrix for angle alpha (increasing anticlockwise) around origin.
     """
-    return np.array([[np.cos(alpha), np.sin(alpha)], [-np.sin(alpha), np.cos(alpha)]])
+    return np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])
 
 
 class Roi(object):  # pragma: no cover
@@ -185,7 +185,7 @@ class RectangularROI(Roi):
     ymin, ymax :  float, optional
         y coordinates of lower and upper border
     theta : float, optional
-        Angle of clockwise rotation around center
+        Angle of anticlockwise rotation around center
     """
 
     def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None, theta=None):
@@ -224,6 +224,7 @@ class RectangularROI(Roi):
         self.ymax += dy
 
     def rotate_to(self, theta):
+        """ Rotate anticlockwise around center to position angle theta (radian) """
         self.theta = 0 if theta is None else theta
         if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
             self.rotation = np.identity(2)
@@ -317,6 +318,7 @@ class RectangularROI(Roi):
         return self.xmin is not None
 
     def to_polygon(self):
+        """ Returns vertices x, y, where each is an array of coordinates """
         if self.defined():
             if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
                 return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
@@ -554,7 +556,7 @@ class EllipticalROI(Roi):
     radius_y :  float, optional
         Semiaxis along y axis
     theta : float, optional
-        Angle of clockwise rotation around (xc, yc)
+        Angle of anticlockwise rotation around (xc, yc)
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
@@ -641,7 +643,7 @@ class EllipticalROI(Roi):
         return self.xc, self.yc
 
     def to_polygon(self):
-        """ Returns x, y, where each is a list of points """
+        """ Returns vertices x, y, where each is an array of coordinates """
         if not self.defined():
             return [], []
         theta = np.linspace(0, 2 * np.pi, num=20)
@@ -671,6 +673,7 @@ class EllipticalROI(Roi):
         self.yc += ydelta
 
     def rotate_to(self, theta):
+        """ Rotate anticlockwise around center to position angle theta (radian) """
         self.theta = 0 if theta is None else theta
         if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
             self.rotation = np.identity(2)
@@ -832,6 +835,7 @@ class PolygonalROI(VertexROIBase):
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
     def rotate_to(self, theta):
+        """ Rotate anticlockwise around center to position angle theta (radian) """
         theta = 0 if theta is None else theta
         dtheta = theta - self.theta
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):

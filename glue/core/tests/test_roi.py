@@ -80,12 +80,12 @@ class TestRectangle(object):
 
     def test_set_rotation(self):
         self.roi.update_limits(0, 0, 10, 4)
-        self.roi.rotate_by(-np.pi / 6)
+        self.roi.rotate_by(np.pi / 6)
         assert self.roi.contains(8, 6)
-        self.roi.rotate_by(-np.pi / 3)
+        self.roi.rotate_by(np.pi / 3)
         assert not self.roi.contains(9, 6)
         assert self.roi.contains(6, 6.9)
-        self.roi.rotate_to(np.pi / 3)
+        self.roi.rotate_to(-np.pi / 3)
         assert not self.roi.contains(5, 6)
         assert self.roi.contains(6, -3)
 
@@ -104,7 +104,7 @@ class TestRectangle(object):
         x, y = self.roi.to_polygon()
         poly = PolygonalROI(vx=x, vy=y)
         assert not poly.contains(8, 3)
-        assert poly.contains(4, 6)
+        assert poly.contains(6, 6)
 
     def test_ndarray(self):
         self.roi.update_limits(0, 0, 10, 10)
@@ -353,8 +353,8 @@ class TestEllipse(object):
         with pytest.raises(UndefinedROI):
             self.roi_empty.contains(1, 1)
         assert self.roi.contains(1, 1)
-        assert self.roi_rotated.contains(0, 2.5)
-        assert not self.roi_rotated.contains(0, 2)
+        assert self.roi_rotated.contains(2, 2.5)
+        assert not self.roi_rotated.contains(2, 2)
 
     def test_set_center(self):
         assert self.roi.contains(0, 0)
@@ -376,12 +376,12 @@ class TestEllipse(object):
 
     def test_set_rotation(self):
         self.roi_rotated.rotate_to(0.55)
-        assert self.roi_rotated.contains(-1.5, 3.6)
+        assert self.roi_rotated.contains(-1.5, 0.4)
         self.roi_rotated.rotate_by(np.pi / 3)
-        assert self.roi_rotated.contains(1.2, 4.5)
+        assert self.roi_rotated.contains(0.8, 4.5)
         self.roi_rotated.rotate_to(np.pi / 3)
-        assert not self.roi_rotated.contains(1.2, 4.5)
-        assert self.roi_rotated.contains(0.5, 3.5)
+        assert not self.roi_rotated.contains(0.8, 4.5)
+        assert self.roi_rotated.contains(0.5, 0.5)
 
     def test_contains_many(self):
         x = [0, 0, 0, 0, 0]
@@ -398,8 +398,8 @@ class TestEllipse(object):
 
         x, y = self.roi_rotated.to_polygon()
         poly = PolygonalROI(vx=x, vy=y)
-        assert poly.contains(0, 2.5)
-        assert not poly.contains(0, 2)
+        assert poly.contains(2, 2.5)
+        assert not poly.contains(2, 2)
 
     def test_poly_undefined(self):
         x, y = self.roi_empty.to_polygon()
@@ -437,7 +437,7 @@ class TestEllipse(object):
         new_roi = roundtrip_roi(self.roi_rotated)
         assert new_roi.radius_y == 0.4
         assert new_roi.theta == np.pi / 6
-        assert new_roi.contains(-1.5, 3.5)
+        assert new_roi.contains(-1.5, 0.5)
 
 
 class TestPolygon(object):
@@ -550,8 +550,8 @@ class TestPolygon(object):
         new_roi = roundtrip_roi(self.roi)
         assert new_roi.theta == 0
         sqh = np.sqrt(0.5)
-        assert_almost_equal(new_roi.vx, np.array([-sqh, 0, sqh, 0]) + 0.5)
-        assert_almost_equal(new_roi.vy, np.array([0, sqh, 0, -sqh]) + 0.5)
+        assert_almost_equal(new_roi.vx, np.array([0, -sqh, 0, sqh]) + 0.5)
+        assert_almost_equal(new_roi.vy, np.array([-sqh, 0, sqh, 0]) + 0.5)
 
 
 class TestProjected3dROI(object):
