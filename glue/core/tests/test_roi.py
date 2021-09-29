@@ -585,6 +585,19 @@ class TestProjected3dROI(object):
         assert roi.to_polygon() == roi_2d.to_polygon()
         assert roi.defined() == roi_2d.defined()
 
+    def test_rotate2d(self):
+        """ Test rotation of the 2d ROI """
+        roi_2d = PolygonalROI(vx=[1.5, 3.5, 3.5, 1.5], vy=[4.5, 4.5, 5.5, 5.5])
+        roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=self.xyzw2yxzw)
+        assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, False, False]
+        assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [False, True], [False, False]]
+
+        roi.rotate_by(np.pi / 2)
+        assert_almost_equal(roi.roi_2d.theta, np.pi / 2)
+        assert_almost_equal(roi_2d.theta, np.pi / 2)
+        assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, True, False]
+        assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [True, True], [False, True]]
+
 
 class TestCategorical(object):
 

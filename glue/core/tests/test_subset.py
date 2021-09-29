@@ -1094,4 +1094,3 @@ def test_roi_reduction():
     assert_equal(out[:, :, 0, 1], expected_slice)
     assert_equal(out[:, :, 1, 0], expected_slice)
     assert_equal(out[:, :, 1, 1], expected_slice)
-

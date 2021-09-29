@@ -117,14 +117,6 @@ class Roi(object):  # pragma: no cover
         """Translate the ROI to a center of (x, y)"""
         raise NotImplementedError()
 
-    def rotate_to(self, theta):
-        """Set rotation angle of ROI around center to theta"""
-        raise NotImplementedError()
-
-    def rotate_by(self, dtheta):
-        """Rotate the ROI around center by angle dtheta"""
-        raise NotImplementedError()
-
     def defined(self):
         """ Returns whether or not the subset is properly defined """
         raise NotImplementedError()
@@ -133,6 +125,14 @@ class Roi(object):  # pragma: no cover
         """ Returns a tuple of x and y points, approximating the ROI
         as a polygon."""
         raise NotImplementedError()
+
+    def rotate_to(self, theta):
+        """Set rotation angle of ROI around center to theta"""
+        raise NotImplementedError()
+
+    def rotate_by(self, dtheta):
+        """Rotate the ROI around center by angle dtheta"""
+        self.rotate_to(getattr(self, 'theta', 0.0) + dtheta)
 
     def copy(self):
         """
@@ -231,9 +231,6 @@ class RectangularROI(Roi):
         else:
             self.rotation = rotation(self.theta)
         self.invrot = self.rotation * [[1, -1], [-1, 1]]
-
-    def rotate_by(self, dtheta):
-        self.rotate_to(self.theta + dtheta)
 
     def transpose(self, copy=True):
         if copy:
@@ -681,9 +678,6 @@ class EllipticalROI(Roi):
             self.rotation = rotation(self.theta)
         self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
-    def rotate_by(self, dtheta):
-        self.rotate_to(self.theta + dtheta)
-
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
                     yc=context.do(self.yc),
@@ -843,9 +837,6 @@ class PolygonalROI(VertexROIBase):
             self.vx, self.vy = rotation(dtheta) @ (dx, dy) + np.array(self.center()).reshape(2, 1)
         self.theta = theta
 
-    def rotate_by(self, dtheta):
-        self.rotate_to(self.theta + dtheta)
-
 
 class Projected3dROI(Roi):
     """"A region of interest defined in screen coordinates.
@@ -924,6 +915,9 @@ class Projected3dROI(Roi):
 
     def transformed(self, xfunc=None, yfunc=None):
         return self.roi_2d.transformed(xfunc, yfunc)
+
+    def rotate_to(self, theta):
+        return self.roi_2d.rotate_to(theta)
 
 
 class Path(VertexROIBase):
