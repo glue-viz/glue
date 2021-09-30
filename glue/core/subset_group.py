@@ -34,16 +34,17 @@ class GroupedSubset(Subset):
     """
     A member of a SubsetGroup, whose internal representation
     is shared with other group members
+
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
+        Instance to bind to.
+    group : :class:`~glue.core.subset_group.SubsetGroup`
     """
     subset_state = Pointer('group.subset_state')
     label = Pointer('group.label')
 
     def __init__(self, data, group):
-        """
-        :param data: :class:`~glue.core.data.Data` instance to bind to
-        :param group: :class:`~glue.core.subset_group.SubsetGroup`
-        """
-
         # We deliberately don't call Subset.__init__ here because we don't want
         # to set e.g. the subset state, color, transparency, etc. Instead we
         # just want to defer to the SubsetGroup for these.
@@ -130,7 +131,7 @@ class SubsetGroup(HubListener):
             d.add_subset(s)
 
     def paste(self, other_subset):
-        """paste subset state from other_subset onto self """
+        """Paste subset state from other_subset onto self"""
         state = other_subset.subset_state.copy()
         self.subset_state = state
 
