@@ -6,7 +6,7 @@ from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.component import CategoricalComponent
 from glue.core.exceptions import UndefinedROI
-from glue.utils import points_inside_poly, iterate_chunks
+from glue.utils import points_inside_poly, iterate_chunks, rotation_matrix_2d
 
 
 np.seterr(all='ignore')
@@ -53,12 +53,6 @@ def pixel_to_data(axes, x, y):
 def pixel_to_axes(axes, x, y):
     xy = np.column_stack((np.asarray(x).ravel(), np.asarray(y).ravel()))
     return axes.transAxes.inverted().transform(xy)
-
-
-def rotation(alpha):
-    """Return rotation matrix for angle alpha (increasing anticlockwise) around origin.
-    """
-    return np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])
 
 
 class Roi(object):  # pragma: no cover
@@ -127,11 +121,11 @@ class Roi(object):  # pragma: no cover
         raise NotImplementedError()
 
     def rotate_to(self, theta):
-        """Set rotation angle of ROI around center to theta"""
+        """Set rotation angle of ROI around center to theta (radian)"""
         raise NotImplementedError()
 
     def rotate_by(self, dtheta):
-        """Rotate the ROI around center by angle dtheta"""
+        """Rotate the ROI around center by angle dtheta (radian)"""
         self.rotate_to(getattr(self, 'theta', 0.0) + dtheta)
 
     def copy(self):
@@ -180,12 +174,12 @@ class RectangularROI(Roi):
 
     Parameters
     ----------
-    xmin, xmax :  float, optional
-        x coordinates of left and right border
-    ymin, ymax :  float, optional
-        y coordinates of lower and upper border
+    xmin, xmax : float, optional
+        x coordinates of left and right border.
+    ymin, ymax : float, optional
+        y coordinates of lower and upper border.
     theta : float, optional
-        Angle of anticlockwise rotation around center
+        Angle of anticlockwise rotation around center in radian.
     """
 
     def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None, theta=None):
@@ -195,11 +189,6 @@ class RectangularROI(Roi):
         self.ymin = ymin
         self.ymax = ymax
         self.theta = 0 if theta is None else theta
-        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
-            self.rotation = np.identity(2)
-        else:
-            self.rotation = rotation(self.theta)
-        self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def __str__(self):
         if self.defined() and self.theta == 0:
@@ -226,11 +215,6 @@ class RectangularROI(Roi):
     def rotate_to(self, theta):
         """ Rotate anticlockwise around center to position angle theta (radian) """
         self.theta = 0 if theta is None else theta
-        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
-            self.rotation = np.identity(2)
-        else:
-            self.rotation = rotation(self.theta)
-        self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def transpose(self, copy=True):
         if copy:
@@ -253,16 +237,20 @@ class RectangularROI(Roi):
 
     def contains(self, x, y):
         """
-        Test whether a set of (x,y) points falls within
-        the region of interest
+        Test whether a set of (x,y) points falls within the region of interest
 
-        :param x: A scalar or iterable of x coordinates
-        :param y: A scalar or iterable of y coordinates
+        Parameters
+        ----------
+        x : float or array-like
+            x coordinate(s) of point(s).
+        y : float or array-like
+            y coordinate(s) of point(s).
 
-        *Returns*
+        Returns
+        -------
 
-            A list of True/False values, for whether each (x,y)
-            point falls within the ROI
+        inside : bool or `numpy.ndarray`
+            An iterable of True/False values, for whether each (x,y) point falls within the ROI
         """
 
         if not self.defined():
@@ -289,7 +277,7 @@ class RectangularROI(Roi):
         x = x[keep] - xc
         y = y[keep] - yc
         shape = (2,) + x.shape
-        x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
+        x, y = (rotation_matrix_2d(-self.theta) @ [x.flatten(), y.flatten()]).reshape(shape)
         inside[keep] = (abs(x) <= self.width() / 2) & (abs(y) <= self.height() / 2)
         return inside
 
@@ -323,7 +311,8 @@ class RectangularROI(Roi):
             else:
                 corners = (np.array([-1, 1, 1, -1, -1]) * self.width() / 2,
                            np.array([-1, -1, 1, 1, -1]) * self.height() / 2)
-            return tuple((self.rotation @ corners) + np.array(self.center()).reshape((2, 1)))
+            return tuple((rotation_matrix_2d(self.theta) @ corners) +
+                         np.array(self.center()).reshape((2, 1)))
         else:
             return [], []
 
@@ -345,7 +334,7 @@ class RectangularROI(Roi):
     def __setgluestate__(cls, rec, context):
         return cls(xmin=context.object(rec['xmin']), xmax=context.object(rec['xmax']),
                    ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']),
-                   theta=context.object(rec['theta']))
+                   theta=context.object(rec.get('theta', 0)))
 
 
 class RangeROI(Roi):
@@ -544,16 +533,16 @@ class EllipticalROI(Roi):
 
     Parameters
     ----------
-    xc :  float, optional
-        x coordinate of center
-    yc :  float, optional
-        y coordinate of center
-    radius_x :  float, optional
-        Semiaxis along x axis
-    radius_y :  float, optional
-        Semiaxis along y axis
+    xc : float, optional
+        x coordinate of center.
+    yc : float, optional
+        y coordinate of center.
+    radius_x : float, optional
+        Semiaxis along x axis.
+    radius_y : float, optional
+        Semiaxis along y axis.
     theta : float, optional
-        Angle of anticlockwise rotation around (xc, yc)
+        Angle of anticlockwise rotation around (xc, yc) in radian.
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
@@ -563,11 +552,6 @@ class EllipticalROI(Roi):
         self.radius_x = radius_x
         self.radius_y = radius_y
         self.theta = 0 if theta is None else theta
-        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
-            self.rotation = np.identity(2)
-        else:
-            self.rotation = rotation(self.theta)
-        self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def __str__(self):
         if self.defined():
@@ -582,14 +566,18 @@ class EllipticalROI(Roi):
         Test whether a set of (x,y) points falls within
         the region of interest
 
-        :param x: A scalar or iterable of x coordinates
-        :param y: A scalar or iterable of y coordinates
+        Parameters
+        ----------
+        x : float or array-like
+            x coordinate(s) of point(s).
+        y : float or array-like
+            y coordinate(s) of point(s).
 
-        *Returns*
+        Returns
+        -------
 
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
+        inside : bool or `numpy.ndarray`
+            An iterable of True/False values, for whether each (x,y) point falls within the ROI
         """
         if not self.defined():
             raise UndefinedROI
@@ -616,7 +604,7 @@ class EllipticalROI(Roi):
             x = x[keep] - self.xc
             y = y[keep] - self.yc
             shape = (2,) + x.shape
-            x, y = (self.invrot @ [x.flatten(), y.flatten()]).reshape(shape)
+            x, y = (rotation_matrix_2d(-self.theta) @ [x.flatten(), y.flatten()]).reshape(shape)
             inside[keep] = ((x ** 2 / self.radius_x ** 2 + y ** 2 / self.radius_y ** 2) < 1.)
             return inside
 
@@ -646,7 +634,7 @@ class EllipticalROI(Roi):
         theta = np.linspace(0, 2 * np.pi, num=20)
         x = self.radius_x * np.cos(theta)
         y = self.radius_y * np.sin(theta)
-        x, y = self.rotation @ (x, y)
+        x, y = rotation_matrix_2d(self.theta) @ (x, y)
         return x + self.xc, y + self.yc
 
     def bounds(self):
@@ -672,11 +660,6 @@ class EllipticalROI(Roi):
     def rotate_to(self, theta):
         """ Rotate anticlockwise around center to position angle theta (radian) """
         self.theta = 0 if theta is None else theta
-        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
-            self.rotation = np.identity(2)
-        else:
-            self.rotation = rotation(self.theta)
-        self.invrot = self.rotation * [[1, -1], [-1, 1]]
 
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
@@ -688,7 +671,7 @@ class EllipticalROI(Roi):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xc=rec['xc'], yc=rec['yc'],
-                   radius_x=rec['radius_x'], radius_y=rec['radius_y'], theta=rec['theta'])
+                   radius_x=rec['radius_x'], radius_y=rec['radius_y'], theta=rec.get('theta', 0))
 
 
 class VertexROIBase(Roi):
@@ -792,18 +775,22 @@ class PolygonalROI(VertexROIBase):
 
     def contains(self, x, y):
         """
-        Test whether a set of (x,y) points falls within
-        the region of interest
+        Test whether a set of (x,y) points falls within the region of interest
 
-        :param x: A list of x points
-        :param y: A list of y points
+        Parameters
+        ----------
+        x : float or array-like
+            x coordinate(s) of point(s).
+        y : float or array-like
+            y coordinate(s) of point(s).
 
-        *Returns*
+        Returns
+        -------
 
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
+        inside : bool or `numpy.ndarray`
+            An iterable of True/False values, for whether each (x,y) point falls within the ROI
         """
+
         if not self.defined():
             raise UndefinedROI
         if not isinstance(x, np.ndarray):
@@ -834,7 +821,8 @@ class PolygonalROI(VertexROIBase):
         dtheta = theta - self.theta
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
             dx, dy = np.array([self.vx, self.vy]) - np.array(self.center()).reshape(2, 1)
-            self.vx, self.vy = rotation(dtheta) @ (dx, dy) + np.array(self.center()).reshape(2, 1)
+            self.vx, self.vy = (rotation_matrix_2d(dtheta) @ (dx, dy) +
+                                np.array(self.center()).reshape(2, 1))
         self.theta = theta
 
 
