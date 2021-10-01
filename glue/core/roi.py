@@ -61,11 +61,13 @@ class Roi(object):  # pragma: no cover
     Glue uses ROIs to represent user-drawn regions on plots. There
     are many specific sub-classes of Roi, but they all have a ``contains``
     method to test whether a collection of 2D points lies inside the region.
+    ROI bounds are generally designed as being exclusive (that is, points
+    situated exactly on a border are considered to lie outside the region).
     """
 
     def contains(self, x, y):
         """
-        Test which of a set of (`x`, `y`) points fall within the region of interest
+        Test which of a set of (`x`, `y`) points fall within the region of interest.
 
         Parameters
         ----------
@@ -76,41 +78,41 @@ class Roi(object):  # pragma: no cover
 
         Returns
         -------
-
-        inside : bool or `numpy.ndarray`
+        inside : bool or `~numpy.ndarray`
             An boolean iterable, where each element is `True` if the corresponding
             (`x`, `y`) tuple is inside the Roi.
 
         Raises
         ------
         UndefinedROI
-            if not defined
+            If not defined.
         """
         raise NotImplementedError()
 
     def contains3d(self, x, y, z):
         """
-        Test which of a set of projected (`x`, `y`, `z`) points fall within the region of interest
+        Test which of a set of projected (`x`, `y`, `z`) points fall within the
+        linked 2D region of interest.
 
         Parameters
         ----------
-        x : :class:`numpy.ndarray`
+        x : :class:`~numpy.ndarray`
             Array of `x` locations
-        y : :class:`numpy.ndarray`
+        y : :class:`~numpy.ndarray`
             Array of `y` locations
-        z : :class:`numpy.ndarray`
+        z : :class:`~numpy.ndarray`
             Array of `z` locations
 
         Returns
         -------
-        :class:`numpy.ndarray`
+        :class:`~numpy.ndarray`
             A boolean array, where each element is `True` if the corresponding
-            (`x`, `y`, `z`) tuple is projected inside the linked 2-d Roi.
+            (`x`, `y`, `z`) tuple is projected inside the associated 2D Roi.
 
         Raises
         ------
         UndefinedROI
-            if not defined
+            If not defined.
         """
         raise NotImplementedError()
 
