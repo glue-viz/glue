@@ -29,8 +29,8 @@ class IndexedData(BaseCartesianData, HubListener):
     Parameters
     ----------
     original_data : `~glue.core.data.BaseCartesianData`
-        The original data to reduce the dimension of
-    indices : tuple of `int` or `None`
+        The original data to reduce the dimension of.
+    indices : `tuple` of `int` or `None`
         The indices to apply to the data, or `None` if a dimension should be
         preserved. This tuple should have as many elements as there are
         dimensions in ``original_data``.

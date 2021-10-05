@@ -136,19 +136,19 @@ class ComponentIDComboHelper(ComboHelper):
     data : :class:`~glue.core.data.Data`, optional
         If specified, set up the combo for this dataset only and don't allow
         datasets to be added/removed
-    numeric : bool, optional
+    numeric : `bool`, optional
         Show numeric components
-    datetime : bool, optional
+    datetime : `bool`, optional
         Show datetime components
-    categorical : bool, optional
+    categorical : `bool`, optional
         Show categorical components
-    pixel_coord : bool, optional
+    pixel_coord : `bool`, optional
         Show pixel coordinate components
-    world_coord : bool, optional
+    world_coord : `bool`, optional
         Show world coordinate components
-    derived : bool, optional
+    derived : `bool`, optional
         Show derived components
-    none : bool or str, optional
+    none : `bool` or `str`, optional
         Add an entry that means `None`. If a string, this is the display string
         that will be shown for the `None` entry, otherwise an empty string is
         shown.
@@ -310,7 +310,7 @@ class ComponentIDComboHelper(ComboHelper):
 
         Parameters
         ----------
-        datasets : list
+        datasets : `list`
             The list of :class:`~glue.core.data.Data` objects to add
         """
         if self._manual_data:
@@ -513,7 +513,7 @@ class ManualDataComboHelper(BaseDataComboHelper):
 
         Parameters
         ----------
-        datasets : list
+        datasets : `list`
             The list of :class:`~glue.core.data.Data` objects to add
         """
         self._datasets.clear()

@@ -57,10 +57,12 @@ class Command(object):
     @abstractmethod
     def do(self, session):
         """
-        Execute the command
+        Execute the command.
 
-        :param session: An object used to store and fetch resources
-                        needed by a Command.
+        Parameters
+        ----------
+        session : object
+            An object used to store and fetch resources needed by `Command`.
         """
         pass
 
@@ -116,9 +118,16 @@ class CommandStack(CallbackMixin):
 
     def do(self, cmd):
         """
-        Execute and log a new command
+        Execute and log a new command.
 
-        :rtype: The return value of cmd.do()
+        Parameters
+        ----------
+        cmd : :class:`Command`
+
+        Returns
+        -------
+        result
+            The return value of ``cmd.do()``.
         """
         logging.getLogger(__name__).debug("Do %s", cmd)
         self._command_stack.append(cmd)
@@ -130,9 +139,11 @@ class CommandStack(CallbackMixin):
 
     def undo(self):
         """
-        Undo the previous command
+        Undo the previous command.
 
-        :raises: IndexError, if there are no objects to undo
+        Raises
+        ------
+        IndexError, if there are no objects in the stack to undo.
         """
         try:
             c = self._command_stack.pop()
@@ -145,9 +156,11 @@ class CommandStack(CallbackMixin):
 
     def redo(self):
         """
-        Redo the previously-undone command
+        Redo the previously-undone command.
 
-        :raises: IndexError, if there are no undone actions
+        Raises
+        ------
+        IndexError, if there are no undone actions.
         """
         try:
             c = self._undo_stack.pop()
@@ -161,9 +174,12 @@ class CommandStack(CallbackMixin):
 
     def can_undo_redo(self):
         """
-        Return whether undo and redo options are possible
+        Return whether undo and redo options are possible.
 
-        :rtype: (bool, bool) - Whether undo and redo are possible, respectively
+        Returns
+        -------
+        tuple(bool, bool)
+            Whether undo and redo are possible, respectively.
         """
         return len(self._command_stack) > 0, len(self._undo_stack) > 0
 
@@ -202,11 +218,15 @@ class RemoveData(Command):
 
 
 class NewDataViewer(Command):
-    """Add a new data viewer to the application
+    """
+    Add a new data viewer to the application.
 
-    :param viewer: The class of viewer to create
-    :param data: The data object to initialize the viewer with, or None
-    :type date: :class:`~glue.core.data.Data` or None
+    Parameters
+    ----------
+    viewer : `type`
+        The class of viewer to create.
+    data : :class:`~glue.core.BaseData` or :class:`~glue.core.subset.Subset`, optional
+        The data object to initialize the viewer with.
     """
     kwargs = ['viewer', 'data']
     label = 'new data viewer'
@@ -224,11 +244,15 @@ class NewDataViewer(Command):
 
 
 class AddLayer(Command):
-    """Add a new layer to a viewer
+    """
+    Add a new layer to a viewer.
 
-    :param layer: The layer to add
-    :type layer: :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
-    :param viewer: The viewer to add the layer to
+    Parameters
+    ----------
+    layer : :class:`~glue.core.data.Data` or :class:`~glue.core.subset.Subset`
+        The layer to add.
+    viewer : :class:`~glue.viewers.common.viewer.BaseViewer`
+        The viewer to add the layer to.
     """
     kwargs = ['layer', 'viewer']
     label = 'add layer'
@@ -250,7 +274,7 @@ class ApplyROI(Command):
         DataCollection to operate on
     roi: :class:`~glue.core.roi.Roi`
         ROI to apply
-    apply_func: callable
+    apply_func: `callable`
         The function to call which takes the ROI and actually applies it.
     """
     kwargs = ['data_collection', 'roi', 'apply_func']
@@ -284,7 +308,7 @@ class ApplySubsetState(Command):
         DataCollection to operate on
     subset_state: :class:`~glue.core.subset_state.SubsetState`
         Subset state to apply
-    override_mode: bool
+    override_mode: `bool`
         Flag indicating whether to update current subset or create a new one
     """
     kwargs = ['data_collection', 'subset_state']

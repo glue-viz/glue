@@ -53,15 +53,18 @@ class EditSubsetMode(object):
             self.data_collection.hub.broadcast(EditSubsetMessage(self, self.edit_subset, self.mode))
 
     def _combine_data(self, new_state, override_mode=None):
-        """ Dispatches to the combine method of mode attribute.
+        """Dispatches to the combine method of mode attribute.
 
         The behavior is dependent on the mode it dispatches to.
         By default, the method uses ReplaceMode, which overwrites
         the edit_subsets' subset_state with new_state
 
-        :param edit_subset: The current edit_subset
-        :param new_state: The new SubsetState
-        :param override_mode: Mode to use instead of EditSubsetMode.mode
+        Parameters
+        ----------
+        new_state : :class:`~glue.core.subset.SubsetState`
+            The new SubsetState.
+        override_mode : callable, optional
+            Mode to use instead of EditSubsetMode.mode.
         """
         mode = override_mode or self.mode
         if not self._edit_subset or mode is NewMode:
@@ -81,18 +84,18 @@ class EditSubsetMode(object):
         :class:`~glue.core.data.Data` or
         :class:`~glue.core.data_collection.DataCollection` instance
 
-        :param d: Data or Collection to act upon
-        :type d: Data or DataCollection
-
-        :param new_state: Subset state to combine with
-        :type new_state: :class:`~glue.core.subset.SubsetState`
-
-        :param focus_data: The main data set in focus by the client,
-        if relevant. If a data set is in focus and has no subsets,
-        a new one will be created using new_state.
-
-        :param override_mode: Mode to use instead of EditSubsetMode.mode
-        :type override_mode: bool
+        Parameters
+        ----------
+        d : :class:`~glue.core.data.Data` or :class:`~glue.core.data_collection.DataCollection`
+            The Data or Collection to act upon.
+        new_state : :class:`~glue.core.subset.SubsetState`
+            Subset state to combine with.
+        focus_data : :class:`~glue.core.data.Data`, optional
+            The main data set in focus by the client, if relevant.
+            If a data set is in focus and has no subsets,
+            a new one will be created using ``new_state``.
+        override_mode : callable, optional
+            Mode to use instead of ``EditSubsetMode.mode``.
         """
         logging.getLogger(__name__).debug("Update subset for %s", d)
 

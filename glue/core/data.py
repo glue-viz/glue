@@ -84,7 +84,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        cid : `ComponentID`
+        cid : :class:`~glue.core.component_id.ComponentID`
             The component ID to get the data kind for
 
         Returns
@@ -183,16 +183,21 @@ class BaseData(object, metaclass=abc.ABCMeta):
         """
         Create a new subset, and attach to self.
 
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
+        Parameters
+        ----------
+        subset : :class:`~glue.core.subset.Subset` or :class:`~glue.core.subset.SubsetState`, optional
+            Reference subset or subset state. If provided, the new subset
+            will copy the logic of this subset.
 
-        :param subset: optional, reference subset or subset state.
-                       If provided, the new subset will copy the logic of
-                       this subset.
+        Returns
+        -------
+        The new subset object
 
-        :returns: The new subset object
+        Notes
+        -----
+        The preferred way for creating subsets is via
+        :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+        Manually-instantiated subsets will **not** be represented properly by the UI.
         """
         nsub = len(self.subsets)
         color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
@@ -208,16 +213,17 @@ class BaseData(object, metaclass=abc.ABCMeta):
     def add_subset(self, subset, label=None):
         """Assign a pre-existing subset to this data object.
 
-        :param subset: A :class:`~glue.core.subset.Subset` or
-                       :class:`~glue.core.subset.SubsetState` object
+        Parameters
+        ----------
+        subset : :class:`~glue.core.subset.Subset` or :class:`~glue.core.subset.SubsetState`
+            The subset to be assigned. If this is a `~glue.core.subset.SubsetState`,
+            it will be wrapped in a new Subset automatically
 
-        If input is a :class:`~glue.core.subset.SubsetState`,
-        it will be wrapped in a new Subset automatically
-
-        .. note:: The preferred way for creating subsets is via
-            :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
-            Manually-instantiated subsets will **not** be
-            represented properly by the UI
+        Notes
+        -----
+        The preferred way for creating subsets is via
+        :meth:`~glue.core.data_collection.DataCollection.new_subset_group`.
+        Manually-instantiated subsets will **not** be represented properly by the UI.
         """
 
         if subset in self.subsets:
@@ -248,8 +254,10 @@ class BaseData(object, metaclass=abc.ABCMeta):
         """
         Send a :class:`~glue.core.message.DataUpdateMessage` to the hub
 
-        :param attribute: Name of an attribute that has changed (or None)
-        :type attribute: str
+        Parameters
+        ----------
+        attribute : str
+            Name of an attribute that has changed (or None).
         """
         if not self.hub:
             return
@@ -259,7 +267,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
     @property
     def subsets(self):
         """
-        Tuple of subsets attached to this dataset
+        Tuple of subsets attached to this dataset.
         """
         return tuple(self._subsets)
 
@@ -270,7 +278,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        cls : type, optional
+        cls : `type`, optional
             The class to use for representing the data object. If a non-glue
             data object was added to the glue data collection, it should
             automatically be returned using the same class as it was provided
@@ -299,9 +307,9 @@ class BaseData(object, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        subset_id : str or int, optional
+        subset_id : `str` or `int`, optional
             The name or index of the subset to retrieve.
-        cls : type, optional
+        cls : `type`, optional
             The class to use for representing the data object. If a non-glue
             data object was added to the data collection, the subset should
             automatically be returned using the same class as it was provided
@@ -344,9 +352,9 @@ class BaseData(object, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        subset_id : str or int, optional
+        subset_id : `str` or `int`, optional
             The name or index of the subset to retrieve.
-        format : str, optional
+        format : `str`, optional
             The format to translate the subset state to.
         """
 
@@ -425,9 +433,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        cid : `ComponentID`
-            The component ID to get the data for
-        view
+        cid : :class:`~glue.core.component_id.ComponentID`
+            The component ID to get the data for.
+        view : `slice`
             The 'view' on the data - anything that is considered a valid
             Numpy slice/index.
         """
@@ -451,9 +459,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        subset_state : `SubsetState`
+        subset_state : :class:`~glue.core.subset.SubsetState`
             The subset state to use to compute the mask
-        view
+        view : `slice`
             The 'view' on the mask - anything that is considered a valid
             Numpy slice/index.
         """
@@ -470,27 +478,27 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         ----------
         statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
             The statistic to compute
-        cid : `ComponentID` or str
+        cid : :class:`~glue.core.component_id.ComponentID` or `str`
             The component ID to compute the statistic on - if given as a string
             this will be assumed to be for the component belonging to the dataset
             (not external links).
-        subset_state : `SubsetState`
+        subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the statistic will only include the values that are in
             the subset specified by this subset state.
-        axis : None or int or tuple of int
+        axis : `int` or `tuple` of `int`, optional
             If specified, the axis/axes to compute the statistic over.
-        finite : bool, optional
+        finite : `bool`, optional
             Whether to include only finite values in the statistic. This should
             be `True` to ignore NaN/Inf values
-        positive : bool, optional
+        positive : `bool`, optional
             Whether to include only (strictly) positive values in the statistic.
             This is used for example when computing statistics of data shown in
             log space.
-        percentile : float, optional
+        percentile : `float`, optional
             If ``statistic`` is ``'percentile'``, the ``percentile`` argument
             should be given and specify the percentile to calculate in the
             range [0:100]
-        random_subset : int, optional
+        random_subset : `int`, optional
             If specified, this should be an integer giving the number of values
             to use for the statistic. This can only be used if ``axis`` is `None`
         """
@@ -503,17 +511,17 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        cids : list of str or `ComponentID`
-            Component IDs to compute the histogram over
-        weights : str or ComponentID
-            Component IDs to use for the histogram weights
-        range : list of tuple
-            The ``(min, max)`` of the histogram range
-        bins : list of int
-            The number of bins
-        log : list of bool
-            Whether to compute the histogram in log space
-        subset_state : `SubsetState`, optional
+        cids : `list` of `str` or :class:`~glue.core.component_id.ComponentID`
+            Component IDs to compute the histogram over.
+        weights : `str` or :class:`~glue.core.component_id.ComponentID`
+            Component IDs to use for the histogram weights.
+        range : `list` of `tuple`
+            The ``(min, max)`` of the histogram range.
+        bins : `list` of `int`
+            The number of bins.
+        log : `list` of `bool`
+            Whether to compute the histogram in log space.
+        subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the histogram will only take into account values in
             the subset state.
         """
@@ -526,20 +534,20 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        bounds : list
+        bounds : `list`
             The list of bounds for the fixed resolution buffer. This list should
             have as many items as there are dimensions in ``target_data``. Each
             item should either be a scalar value, or a tuple of ``(min, max, nsteps)``.
-        target_data : `~glue.core.Data`, optional
+        target_data : :class:`~glue.core.Data`, optional
             The data in whose frame of reference the bounds are defined. Defaults
             to ``data``.
-        target_cid : `~glue.core.component_id.ComponentID`, optional
+        target_cid : :class:`~glue.core.component_id.ComponentID`, optional
             If specified, gives the component ID giving the component to use for the
             data values. Alternatively, use ``subset_state`` to get a subset mask.
-        subset_state : `~glue.core.subset.SubsetState`, optional
+        subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, gives the subset state for which to compute a mask.
             Alternatively, use ``target_cid`` if you want to get data values.
-        broadcast : bool, optional
+        broadcast : `bool`, optional
             If `True`, then if a dimension in ``target_data`` for which ``bounds``
             is not a scalar does not affect any of the dimensions in ``data``,
             then the final array will be effectively broadcast along this
@@ -577,7 +585,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     def world_component_ids(self):
         """
         A list of :class:`~glue.core.component_id.ComponentID` giving all
-        world coordinate component IDs in the data
+        world coordinate component IDs in the data.
         """
         if self.coords is None:
             return []
@@ -623,10 +631,10 @@ class Data(BaseCartesianData):
 
     Parameters
     ----------
-    label : str
-        The name of the dataset
+    label : `str`
+        The name of the dataset.
     coords : :class:`~glue.core.coordinates.Coordinates`
-        The coordinates object to use to define world coordinates
+        The coordinates object to use to define world coordinates.
     """
 
     def __init__(self, label="", coords=None, **kwargs):
@@ -727,8 +735,10 @@ class Data(BaseCartesianData):
     def remove_component(self, component_id):
         """ Remove a component from a data set
 
-        :param component_id: the component to remove
-        :type component_id: :class:`~glue.core.component_id.ComponentID`
+        Parameters
+        ----------
+        component_id : :class:`~glue.core.component_id.ComponentID`
+            The component to remove.
         """
         # TODO: avoid too many messages when removing a component triggers
         # the removal of derived components.
@@ -768,11 +778,11 @@ class Data(BaseCartesianData):
         Parameters
         ----------
         other : :class:`~glue.core.data.Data`
-            Data object to join with
-        cid : str or :class:`~glue.core.component_id.ComponentID` or iterable
-            Component(s) in this dataset to use as a key
-        cid_other : str or :class:`~glue.core.component_id.ComponentID` or iterable
-            Component(s) in the other dataset to use as a key
+            Data object to join with.
+        cid : `str` or :class:`~glue.core.component_id.ComponentID` or `iterable` thereof
+            Component(s) in this dataset to use as a key.
+        cid_other : `str` or :class:`~glue.core.component_id.ComponentID` or `iterable` thereof
+            Component(s) in the other dataset to use as a key.
 
         Examples
         --------
@@ -928,26 +938,24 @@ class Data(BaseCartesianData):
     def add_component(self, component, label):
         """ Add a new component to this data set.
 
-        :param component: object to add. Can be a Component,
-                          array-like object, or ComponentLink
+        Parameters
+        ----------
+        component : :class:`~glue.core.component.Component` or array-like
+            Object to add.
+        label : `str` or :class:`~glue.core.component_id.ComponentID`
+              The label. If this is a string, a new
+              :class:`glue.core.component_id.ComponentID`
+              with this label will be created and associated with the Component.
 
-        :param label:
-              The label. If this is a string,
-              a new :class:`glue.core.component_id.ComponentID` with this label will be
-              created and associated with the Component
+        Raises
+        ------
+           `TypeError`, if label is invalid.
+           `ValueError`, if the component has an incompatible shape.
 
-        :type component: :class:`~glue.core.component.Component` or
-                         array-like
-        :type label: :class:`str` or :class:`~glue.core.component_id.ComponentID`
-
-        :raises:
-
-           TypeError, if label is invalid
-           ValueError if the component has an incompatible shape
-
-        :returns:
-
-           The ComponentID associated with the newly-added component
+        Returns
+        -------
+        :class:`glue.core.component_id.ComponentID`
+           The ComponentID associated with the newly-added component.
         """
 
         if isinstance(component, ComponentLink):
@@ -1080,7 +1088,7 @@ class Data(BaseCartesianData):
         ----------
         link : :class:`~glue.core.component_link.ComponentLink`
             The link to use to generate a new component
-        label : :class:`~glue.core.component_id.ComponentID` or str
+        label : :class:`~glue.core.component_id.ComponentID` or `str`
             The ComponentID or label to attach to.
 
         Returns
@@ -1161,9 +1169,11 @@ class Data(BaseCartesianData):
 
     @property
     def components(self):
-        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data
+        """All :class:`ComponentIDs <glue.core.component_id.ComponentID>` in the Data.
 
-        :rtype: list
+        Returns
+        -------
+        `list`
         """
         return list(self._components.keys())
 
@@ -1173,9 +1183,11 @@ class Data(BaseCartesianData):
 
     @property
     def coordinate_components(self):
-        """The ComponentIDs associated with a :class:`~glue.core.component.CoordinateComponent`
+        """The ComponentIDs associated with a :class:`~glue.core.component.CoordinateComponent`.
 
-        :rtype: list
+        Returns
+        -------
+        `list`
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], CoordinateComponent)]
@@ -1187,9 +1199,11 @@ class Data(BaseCartesianData):
 
     @property
     def derived_components(self):
-        """The ComponentIDs for each :class:`~glue.core.component.DerivedComponent`
+        """The ComponentIDs for each :class:`~glue.core.component.DerivedComponent`.
 
-        :rtype: list
+        Returns
+        -------
+        `list`
         """
         return [c for c in self.component_ids() if
                 isinstance(self._components[c], DerivedComponent)]
@@ -1212,9 +1226,14 @@ class Data(BaseCartesianData):
     def find_component_id(self, label):
         """ Retrieve component_ids associated by label name.
 
-        :param label: ComponentID or string to search for
+        Parameters
+        ----------
+        label ::class:`~glue.core.component_id.ComponentID` or `str`
+            ComponentID to search for.
 
-        :returns:
+        Returns
+        -------
+        :class:`~glue.core.component_id.ComponentID` or `None`
             The associated ComponentID if label is found and unique, else None.
             First, this checks whether the component ID is present and unique in
             the primary (non-derived) components of the data, and if not then
@@ -1277,10 +1296,10 @@ class Data(BaseCartesianData):
 
         Parameters
         ----------
-        old : :class:`glue.core.component_id.ComponentID`
-            The old component ID
-        new : :class:`glue.core.component_id.ComponentID`
-            The new component ID
+        old : :class:`~glue.core.component_id.ComponentID`
+            The old component ID.
+        new : :class:`~glue.core.component_id.ComponentID`
+            The new component ID.
         """
 
         if new is old:
@@ -1396,7 +1415,10 @@ class Data(BaseCartesianData):
     def get_component(self, component_id):
         """Fetch the component corresponding to component_id.
 
-        :param component_id: the component_id to retrieve
+        Parameters
+        ----------
+        component_id : :class:`~glue.core.component_id.ComponentID`
+            The ID for the component to retrieve.
         """
         if component_id is None:
             raise IncompatibleAttribute()
@@ -1412,11 +1434,16 @@ class Data(BaseCartesianData):
             raise IncompatibleAttribute(component_id)
 
     def to_dataframe(self, index=None):
-        """ Convert the Data object into a pandas.DataFrame object
+        """Convert the Data object into a pandas.DataFrame object.
 
-        :param index: Any 'index-like' object that can be passed to the pandas.Series constructor
+        Parameters
+        ----------
+        index : index-like
+            Any object that can be passed to the pandas.Series constructor.
 
-        :return: pandas.DataFrame
+        Returns
+        -------
+        :class:`~pandas.DataFrame`
         """
 
         h = lambda comp: self.get_component(comp).to_series(index=index)
@@ -1465,7 +1492,10 @@ class Data(BaseCartesianData):
         All changes to component numerical data should use this method,
         which broadcasts the state change to the appropriate places.
 
-        :param mapping: A dict mapping Components or ComponenIDs to arrays.
+        Parameters
+        ----------
+        mapping : `dict`
+            A dictionary mapping Components or ComponenIDs to arrays.
 
         This method has the following restrictions:
           - New components must have the same shape as old components
@@ -1573,30 +1603,30 @@ class Data(BaseCartesianData):
         ----------
         statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
             The statistic to compute
-        cid : `ComponentID` or str
+        cid : :class:`~glue.core.component_id.ComponentID` or `str`
             The component ID to compute the statistic on - if given as a string
             this will be assumed to be for the component belonging to the dataset
             (not external links).
-        subset_state : `SubsetState`
+        subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the statistic will only include the values that are in
             the subset specified by this subset state.
-        axis : None or int or tuple of int
+        axis : `int` or `tuple` of `int`, optional
             If specified, the axis/axes to compute the statistic over.
-        finite : bool, optional
+        finite : `bool`, optional
             Whether to include only finite values in the statistic. This should
             be `True` to ignore NaN/Inf values
-        positive : bool, optional
+        positive : `bool`, optional
             Whether to include only (strictly) positive values in the statistic.
             This is used for example when computing statistics of data shown in
             log space.
-        percentile : float, optional
+        percentile : `float`, optional
             If ``statistic`` is ``'percentile'``, the ``percentile`` argument
             should be given and specify the percentile to calculate in the
             range [0:100]
-        random_subset : int, optional
+        random_subset : `int`, optional
             If specified, this should be an integer giving the number of values
             to use for the statistic. This can only be used if ``axis`` is `None`
-        n_chunk_max : int, optional
+        n_chunk_max : `int`, optional
             If there are more elements in the array than this value, operate in
             chunks with at most this size.
         """
@@ -1812,17 +1842,17 @@ class Data(BaseCartesianData):
 
         Parameters
         ----------
-        cids : list of str or `ComponentID`
-            Component IDs to compute the histogram over
-        weights : str or ComponentID
-            Component IDs to use for the histogram weights
-        range : list of tuple
-            The ``(min, max)`` of the histogram range
-        bins : list of int
-            The number of bins
-        log : list of bool
-            Whether to compute the histogram in log space
-        subset_state : `SubsetState`, optional
+        cids : `list` of `str` or :class:`~glue.core.component_id.ComponentID`
+            Component IDs to compute the histogram over.
+        weights : `str` or :class:`~glue.core.component_id.ComponentID`
+            Component ID to use for the histogram weights.
+        range : `list` of `tuple`
+            The ``(min, max)`` of the histogram range.
+        bins : `list` of `int`
+            The number of bins.
+        log : `list` of `bool`
+            Whether to compute the histogram in log space.
+        subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the histogram will only take into account values in
             the subset state.
         """

@@ -59,9 +59,10 @@ class Subset(object):
     def __init__(self, data, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None):
         """Create a new subset object.
 
-        Note: the preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        Note: the preferred way for creating subsets is via
+        :func:`~glue.core.DataCollection.new_subset_group`.
+        Manually-instantiated subsets will probably *not*
+        be represented properly by the UI
         """
 
         self._broadcasting = False  # must be first def
@@ -347,7 +348,8 @@ class Subset(object):
 
     def state_as_mask(self):
         """
-        Convert the current SubsetState to a MaskSubsetState.
+        Convert the current :class:`~glue.core.subset.SubsetState` to a
+        :class:`~glue.core.subset.MaskSubsetState`.
         """
         try:
             m = self.to_mask()

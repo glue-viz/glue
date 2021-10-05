@@ -32,24 +32,24 @@ class ComponentLink(object, metaclass=ContractsMeta):
 
     Parameters
     ----------
-    comp_from : list of :class:`~glue.core.component_id.ComponentID`
+    comp_from : `list` of :class:`~glue.core.component_id.ComponentID`
         The input ComponentIDs
     comp_to : :class:`~glue.core.component_id.ComponentID`
         The target component ID
-    using : func, optional
+    using : `func`, optional
         The translation function which maps data from ``comp_from`` to
         ``comp_to``. The using function should satisfy
         ``using(data[comp_from[0]],...,data[comp_from[-1]]) = desired data``.
         If not specifies, this defaults to an identity function.
-    inverse : func, optional
+    inverse : `func`, optional
         The inverse translation function, if exists
-    description : str
+    description : `str`
         A short description for the link. This is used e.g. in the link editor.
-    input_names : list of str, optional
+    input_names : `list` of `str`, optional
         The names to use for the inputs to the ``using`` function. By default
         this is determined by inspecting the function signature. This is used
         e.g. in the link editor.
-    output_name : str, optional
+    output_name : `str`, optional
         The name to use for the output of the ``using`` function. This is used
         e.g. in the link editor.
 
@@ -152,9 +152,9 @@ class ComponentLink(object, metaclass=ContractsMeta):
         Parameters
         ----------
         data : `~glue.core.data.Data`
-            The data set to use
-        view : `None` or `slice` or `tuple`
-            Optional view (e.g. slice) through the data to use
+            The data set to use.
+        view : `slice` or `tuple`, optional
+            Optional view (e.g. slice) through the data to use.
 
         Returns
         -------
@@ -211,11 +211,14 @@ class ComponentLink(object, metaclass=ContractsMeta):
 
     @contract(old='isinstance(ComponentID)', new='isinstance(ComponentID)')
     def replace_ids(self, old, new):
-        """Replace all references to an old ComponentID with references
-        to new
+        """Replace all references to an old ComponentID with references to new.
 
-        :parma old: ComponentID to replace
-        :param new: ComponentID to replace with
+        Parameters
+        ----------
+        old : :class:`~glue.core.component_id.ComponentID`
+            ComponentID to replace.
+        new : :class:`~glue.core.component_id.ComponentID`
+            ComponentID to replace with.
         """
         for i, f in enumerate(self._from):
             if f is old:
@@ -402,15 +405,16 @@ class BinaryComponentLink(ComponentLink):
     """
     A ComponentLink that combines two inputs with a binary function
 
-    :param left: The first input argument.
-                 ComponentID, ComponentLink, or number
+    Parameters
+    ----------
+    left : :class:`~glue.core.component_id.ComponentID`, :class:`ComponentLink`, or `number`
+        The first input argument.
+    right : :class:`~glue.core.component_id.ComponentID`, :class:`ComponentLink`, or `number`
+        The second input argument.
+    op : `func`
+        A function with two inputs that works on numpy arrays.
 
-    :param right: The second input argument.
-                  ComponentID, ComponentLink, or number
-
-    :param op: A function with two inputs that works on numpy arrays
-
-    The CompoentLink represents the logic of applying `op` to the
+    The ComponentLink represents the logic of applying `op` to the
     data associated with the inputs `left` and `right`.
     """
 

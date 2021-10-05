@@ -25,6 +25,13 @@ class Component(object):
     ComponentIDs. All Components in a data set must have the same
     shape and number of dimensions
 
+    Parameters
+    ----------
+    data : :class:`~numpy.ndarray`
+        The data to store.
+    units : `str`, optional
+        Unit label.
+
     Notes
     -----
     Instead of instantiating Components directly, consider using
@@ -33,14 +40,6 @@ class Component(object):
     """
 
     def __init__(self, data, units=None):
-        """
-        :param data: The data to store
-        :type data: :class:`numpy.ndarray`
-
-        :param units: Optional unit label
-        :type units: str
-        """
-
         # The physical units of the data
         self.units = units
 
@@ -67,17 +66,17 @@ class Component(object):
 
     @property
     def data(self):
-        """ The underlying :class:`numpy.ndarray` """
+        """The underlying :class:`~numpy.ndarray`"""
         return self._data
 
     @property
     def shape(self):
-        """ Tuple of array dimensions """
+        """Tuple of array dimensions"""
         return self._data.shape
 
     @property
     def ndim(self):
-        """ The number of dimensions """
+        """The number of dimensions"""
         return len(self._data.shape)
 
     def __getitem__(self, key):
@@ -87,7 +86,7 @@ class Component(object):
     @property
     def numeric(self):
         """
-        Whether or not the datatype is numeric
+        Whether or not the datatype is numeric.
         """
         # We need to be careful here to not just access self.data since that
         # would force the computation of the whole component in the case of
@@ -98,7 +97,7 @@ class Component(object):
     @property
     def categorical(self):
         """
-        Whether or not the datatype is categorical
+        Whether or not the datatype is categorical.
         """
         return False
 
@@ -118,8 +117,13 @@ class Component(object):
     def to_series(self, **kwargs):
         """ Convert into a pandas.Series object.
 
-        :param kwargs: All kwargs are passed to the Series constructor.
-        :return: pandas.Series
+        Parameters
+        ----------
+        kwargs :
+            All kwargs are passed to the Series constructor.
+        Returns
+        -------
+        :class:`~pandas.Series`
         """
 
         return pd.Series(self.data.ravel(), **kwargs)
@@ -130,11 +134,16 @@ class Component(object):
         Automatically choose between Component and CategoricalComponent,
         based on the input data type.
 
-        :param data: The data to pack into a Component (array-like)
-        :param units: Optional units
-        :type units: str
+        Parameters
+        ----------
+        data : array-like
+            The data to pack into a Component.
+        units : `str`, optional
+            Unit description.
 
-        :returns: A Component (or subclass)
+        Returns
+        -------
+        :class:`Component` (or subclass)
         """
 
         if DASK_INSTALLED and isinstance(data, da.Array):
@@ -165,18 +174,19 @@ class Component(object):
 
 class DerivedComponent(Component):
 
-    """ A component which derives its data from a function """
+    """
+    A component which derives its data from a function.
 
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
+        The data object to use for calculation.
+    link : :class:`~glue.core.component_link.ComponentLink`
+        The link that carries out the function.
+    units : `str`, optional
+        Unit description.
+    """
     def __init__(self, data, link, units=None):
-        """
-        :param data: The data object to use for calculation
-        :type data: :class:`~glue.core.data.Data`
-
-        :param link: The link that carries out the function
-        :type link: :class:`~glue.core.component_link.ComponentLink`
-
-        :param units: Optional unit description
-        """
         super(DerivedComponent, self).__init__(data, units=units)
         self._link = link
 
@@ -186,12 +196,12 @@ class DerivedComponent(Component):
 
     @property
     def data(self):
-        """ Return the numerical data as a numpy array """
+        """Return the numerical data as a numpy array"""
         return self._link.compute(self._data)
 
     @property
     def link(self):
-        """ Return the component link """
+        """Return the component link"""
         return self._link
 
     def __getitem__(self, key):
@@ -338,12 +348,12 @@ class CoordinateComponent(Component):
 
     @property
     def shape(self):
-        """ Tuple of array dimensions. """
+        """Tuple of array dimensions."""
         return self._data.shape
 
     @property
     def ndim(self):
-        """ Number of dimensions """
+        """Number of dimensions"""
         return len(self._data.shape)
 
     def __getitem__(self, key):
@@ -374,15 +384,20 @@ class CategoricalComponent(Component):
 
     """
     Container for categorical data.
+
+    Parameters
+    ----------
+    categorical_data : :class:`~numpy.ndarray`
+        The underlying array.
+    categories : `iterable`, optional
+        List of unique values in the data.
+    jitter : `str`, optional
+         Strategy for jittering the data.
+    units : `str`, optional
+        Unit description.
     """
 
     def __init__(self, categorical_data, categories=None, jitter=None, units=None):
-        """
-        :param categorical_data: The underlying :class:`numpy.ndarray`
-        :param categories: List of unique values in the data
-        :jitter: Strategy for jittering the data
-        """
-
         # TOOD: deal with custom categories
 
         super(CategoricalComponent, self).__init__(None, units)
@@ -448,8 +463,14 @@ class CategoricalComponent(Component):
 
         This will be converted as a dtype=np.object!
 
-        :param kwargs: All kwargs are passed to the Series constructor.
-        :return: pandas.Series
+        Parameters
+        ----------
+        kwargs :
+            All kwargs are passed to the Series constructor.
+
+        Returns
+        -------
+        :class:`~pandas.Series`
         """
 
         return pd.Series(self.labels, dtype=object, **kwargs)
@@ -461,7 +482,7 @@ class DateTimeComponent(Component):
 
     Parameters
     ----------
-    data : `~numpy.ndarray`
+    data : :class:`~numpy.ndarray`
         The data to store, with `~numpy.datetime64` dtype
     """
 
