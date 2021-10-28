@@ -1,6 +1,6 @@
 
-Anaconda Python Distribution (Recommended)
-==========================================
+Anaconda Python distribution
+============================
 
 **Platforms:** MacOS X, Linux, and Windows
 
