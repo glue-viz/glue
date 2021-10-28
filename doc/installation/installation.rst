@@ -3,7 +3,7 @@
 Installing and running glue
 ===========================
 
-Several installation methods for Glue are outlined in the sections below. If you
+Several installation methods for glue are outlined in the sections below. If you
 run into issues, each page should provide relevant troubleshooting, and you can
 also check the :ref:`known-issues` page which collects some more general issues.
 If your problem is not described there, `open a new issue
@@ -12,6 +12,7 @@ If your problem is not described there, `open a new issue
 .. toctree::
    :maxdepth: 1
 
+   standalone
    conda
    pip
    qt
