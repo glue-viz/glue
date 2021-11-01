@@ -14,8 +14,8 @@ the common glue plugins is to download pre-built single-file applications.
 MacOS X
 -------
 
-Donwload the `glue 2021.10.2.dmg
-<http://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.dmg>`_
+Donwload the :download:`glue 2021.10.2.dmg
+<https://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.dmg>`
 file, open it and copy the **glue 2021.10.2.app** application to your
 **Applications** folder (or any other location you want to use).
 
@@ -44,8 +44,8 @@ installing a new version, if you relaunch the same application it should now wor
 Windows
 -------
 
-Donwload the `glue 2021.10.2.exe
-<http://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.exe>`_ file.
+Donwload the :download:`glue 2021.10.2.exe
+<https://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.exe>` file.
 Once the file has downloaded, open the **glue 2021.10.2.exe** application. You
 will likely then see a dialog such as:
 
