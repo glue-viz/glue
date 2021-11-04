@@ -1848,7 +1848,7 @@ class Data(BaseCartesianData):
             w = None
 
         if subset_state is not None:
-            mask = subset_state.to_mask(self)
+            mask = self.get_mask(subset_state)
             if DASK_INSTALLED and isinstance(x, da.Array) and not isinstance(mask, da.Array):
                 x = x[da.asarray(mask)]
             else:
