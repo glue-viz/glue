@@ -11,6 +11,17 @@ the common glue plugins is to download pre-built single-file applications.
           <https://github.com/glue-viz/glue-standalone-apps/issues/new>`_. In the
           mean time, you can always try one of the other installation methods.
 
+The plugins included by default in the standalone applications are:
+
+* `glue-vispy-viewers <https://github.com/glue-viz/glue-vispy-viewers/>`_
+* `glue-wwt <https://github.com/glue-viz/glue-wwt/>`_
+* `glue-plotly <https://github.com/glue-viz/glue-plotly/>`_
+
+With this installation method, it is not possible to install additional plugins
+beyond those included by default, so if you want the ability to do this, you
+should check one of the other installation methods mentioned in
+:ref:`installation`.
+
 MacOS X
 -------
 
