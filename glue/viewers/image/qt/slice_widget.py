@@ -6,7 +6,6 @@ from glue.viewers.common.qt.data_slice_widget import SliceWidget
 from glue.viewers.image.state import AggregateSlice
 from glue.utils.decorators import avoid_circular
 
-
 __all__ = ['MultiSliceWidgetHelper']
 
 
@@ -57,7 +56,6 @@ class MultiSliceWidgetHelper(object):
             else:
                 slices.append(self.viewer_state.slices[i])
         self.viewer_state.slices = tuple(slices)
-
         self._reference_data = self.viewer_state.reference_data
 
     @avoid_circular
@@ -96,7 +94,6 @@ class MultiSliceWidgetHelper(object):
                                        pixel_axis=world_axis_index,
                                        world_axis=world_axis_index)
                     world_unit = self.data.coords.world_axis_units[world_axis_index]
-
                     world_warning = len(dependent_axes(self.data.coords, i)) > 1
                     world_label = self.data.world_component_ids[i].label
                 else:
@@ -110,7 +107,6 @@ class MultiSliceWidgetHelper(object):
                                      world_unit=world_unit, world_warning=world_warning)
 
                 self.slider_state = slider.state
-
                 self.slider_state.add_callback('slice_center', self.sync_state_from_sliders)
                 self._sliders.append(slider)
                 self.layout.addWidget(slider)

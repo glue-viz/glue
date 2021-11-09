@@ -62,7 +62,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
-        self.add_callback('x_att', self._update_att)
+        self.add_callback('x_att', self._update_x_att)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -88,9 +88,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
         return getattr(self.reference_data, 'coords', None) is not None
 
     @defer_draw
-    def _update_att(self, *args):
+    def _update_x_att(self, *args):
         """
-        Define self.x_att_pixel in viewer state.
+        Defines ``self.x_att_pixel`` in the viewer state.
         """
         if self.x_att is not None:
             if self._display_world:
@@ -183,7 +183,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_helper.world_coord = False
                     self.x_att = self.reference_data.pixel_component_ids[0]
 
-                self._update_att()
+                self._update_x_att()
 
         self.reset_limits()
 
@@ -207,9 +207,17 @@ class ProfileViewerState(MatplotlibDataViewerState):
         """
         if self.reference_data is None:
             return None
+        elif self.x_att_pixel is None:
+            # TODO: This should not be here.
+            # I can not work out how to get this to be set at initialisation.
+            self.x_att_helper.set_multiple_data([self.reference_data])
+            self.x_att_helper.world_coord = False
+            self.x_att = self.reference_data.pixel_component_ids[0]
+            self._update_x_att()
+
         slices = []
         for i in range(self.reference_data.ndim):
-            if i == self.x_att_pixel.axis:
+            if self.x_att_pixel and i == self.x_att_pixel.axis:
                 slices.append('x')
             else:
                 slices.append(0)

@@ -26,7 +26,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_profile)
         self.state.add_global_callback(self._update_profile)
 
-        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid',
+        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], drawstyle='steps-mid',
                                           color=self.state.layer.style.color)[0]
         self.mpl_artists = [self.plot_artist]
 
@@ -45,7 +45,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         # otherwise the thread tries to send these to the glue logger (which
         # uses Qt), which then results in this kind of error:
         # QObject::connect: Cannot queue arguments of type 'QTextCursor'
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if reset:

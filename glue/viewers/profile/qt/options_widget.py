@@ -41,7 +41,6 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         self.viewer_state.add_callback('x_att', self._on_attribute_change)
 
         self.ui.text_warning.hide()
-
         self.ui.axes_editor.button_apply_all.clicked.connect(self._apply_all_viewers)
 
     def _on_function_change(self, *args):
@@ -52,7 +51,6 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
                                                                       layout=self.ui.layout_slices)
             self.ui.text_warning.hide()
             self.ui.text_warning.setText('')
-
         else:
             if self.profile_slice_helper:
                 self.profile_slice_helper.remove()

@@ -109,7 +109,6 @@ class SliceWidget(QtWidgets.QWidget):
 
     def set_label_from_slider(self):
         value = self.state.slice_center
-
         if self.state.use_world:
             value = self._world[value]
             if self._world_warning:

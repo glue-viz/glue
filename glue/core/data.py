@@ -27,8 +27,7 @@ from glue.core.visual import VisualAttributes
 from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
-from glue.utils import (compute_statistic,
-                        unbroadcast, iterate_chunks,
+from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, broadcast_to, categorical_ndarray,
                         format_choices, random_views_for_dask_array)
 from glue.core.coordinate_helpers import axis_label
@@ -1687,7 +1686,6 @@ class Data(BaseCartesianData):
                     values = self.compute_statistic(statistic, cid, subset_state=subset_state,
                                                     axis=axis, finite=finite, positive=positive,
                                                     percentile=percentile, view=chunk_view)
-
                     result[chunk_view[axis_index]] = values
 
                 return result
