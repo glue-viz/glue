@@ -1772,11 +1772,12 @@ class Data(BaseCartesianData):
 
         if random_subset and data.size > random_subset:
             if DASK_INSTALLED and isinstance(data, da.Array):
-                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
-                    self._random_subset_indices = (data.size, random_views_for_dask_array(data, random_subset, n_chunks=10))
-                data = np.hstack([data[slices].ravel() for slices in self._random_subset_indices[1]])
+                # We shouldn't cache _random_subset_indices_dask here because
+                # it might be different for different dask arrays
+                random_subset_indices_dask = (data.size, random_views_for_dask_array(data, random_subset, n_chunks=10))
+                data = da.hstack([data[slices].ravel() for slices in random_subset_indices_dask[1]])
                 if mask is not None:
-                    mask = np.hstack([mask[slices].ravel() for slices in self._random_subset_indices[1]])
+                    mask = da.hstack([mask[slices].ravel() for slices in random_subset_indices_dask[1]])
             else:
                 if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
                     self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
@@ -1901,7 +1902,7 @@ class Data(BaseCartesianData):
             if isinstance(x, da.Array):
                 x = x.compute()
             if ndim > 1 and isinstance(y, da.Array):
-                x = x.compute()
+                y = y.compute()
             if isinstance(w, da.Array):
                 w = w.compute()
 
