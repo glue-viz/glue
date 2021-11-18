@@ -152,6 +152,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
         Given which layers are visible or not, convert order to order_visible.
         """
 
+        self.data_by_row_and_column.cache_clear()
+
         # First, if the data layer is visible, show all rows
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
@@ -162,7 +164,10 @@ class DataTableModel(QtCore.QAbstractTableModel):
         visible = np.zeros(self.order.shape, dtype=bool)
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
-                visible |= layer_artist.layer.to_mask()
+                mask = layer_artist.layer.to_mask()
+                if DASK_INSTALLED and isinstance(mask, da.Array):
+                    mask = mask.compute()
+                visible |= mask
 
         self.order_visible = self.order[visible]
 

@@ -466,7 +466,8 @@ def test_table_with_dask_column():
 
     app = get_qapp()
 
-    d = Data(d=da.asarray([1, 2, 3, 4, 5]))
+    d = Data(d=da.asarray([1, 2, 3, 4, 5]),
+             e=np.arange(5) + 1)
 
     dc = DataCollection([d])
 
@@ -477,16 +478,27 @@ def test_table_with_dask_column():
 
     sg1 = dc.new_subset_group('D <= 3', d.id['d'] <= 3)
     sg1.style.color = '#aa0000'
-    sg2 = dc.new_subset_group('1 < D < 4', (d.id['d'] > 1) & (d.id['d'] < 4))
+    sg2 = dc.new_subset_group('1 < E < 4', (d.id['e'] > 1) & (d.id['e'] < 4))
     sg2.style.color = '#0000cc'
+
+    assert widget.state.layers[0].visible
+    assert widget.state.layers[1].visible
+    assert widget.state.layers[2].visible
 
     model = widget.ui.table.model()
 
     # We now check what the data and colors of the table are, and try various
     # sorting methods to make sure that things are still correct.
 
-    data = {'d': [1, 2, 3, 4, 5]}
+    data = {'d': [1, 2, 3, 4, 5],
+            'e': [1, 2, 3, 4, 5]}
 
     colors = ['#aa0000', '#380088', '#380088', None, None]
+
+    check_values_and_color(model, data, colors)
+
+    widget.state.layers[2].visible = False
+
+    colors = ['#aa0000', '#aa0000', '#aa0000', None, None]
 
     check_values_and_color(model, data, colors)
