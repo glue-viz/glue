@@ -1848,6 +1848,15 @@ class Data(BaseCartesianData):
         else:
             w = None
 
+        # Some operations below don't work well when mixing dask and non-dask
+        # arrays, so we make sure that if one is a dask array we convert the
+        # other one too.
+        if DASK_INSTALLED:
+            if isinstance(x, da.Array) and not isinstance(y, da.Array):
+                y = da.asarray(y)
+            if not isinstance(x, da.Array) and isinstance(y, da.Array):
+                x = da.asarray(x)
+
         if subset_state is not None:
             mask = subset_state.to_mask(self)
             if DASK_INSTALLED and isinstance(x, da.Array) and not isinstance(mask, da.Array):
