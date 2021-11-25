@@ -223,7 +223,8 @@ def test_coordinate_component_units():
     assert wid[0].label == 'Stokes'
     assert d.get_component(wid[0]).units == ''
     assert wid[1].label == 'Vopt'
-    assert d.get_component(wid[1]).units == 'm s-1'
+    # astropy 5.0 changed the string representation of WCS units
+    assert d.get_component(wid[1]).units in ['m s-1', 'm.s**-1']
     assert wid[2].label == 'Declination'
     assert d.get_component(wid[2]).units == 'deg'
     assert wid[3].label == 'Right Ascension'

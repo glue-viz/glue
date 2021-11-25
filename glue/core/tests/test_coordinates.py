@@ -320,7 +320,7 @@ def test_world_axis_units():
     coord = coordinates_from_header(header_from_string(HDR_3D_VALID_WCS))
     assert coord.world_axis_units[0] == 'deg'
     assert coord.world_axis_units[1] == 'deg'
-    assert coord.world_axis_units[2] == 'm s-1'
+    assert coord.world_axis_units[2] in ['m s-1', 'm.s**-1']
 
 
 def test_dependent_axes_non_diagonal_pc():

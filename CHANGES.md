@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v1.2.3 (unreleased)
+-------------------
+
+* Fixed compatibility with Matplotlib 3.5.0. [#2250]
+
 v1.2.2 (2021-09-16)
 -------------------
 

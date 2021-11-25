@@ -88,6 +88,12 @@ class BaseTestMatplotlibDataViewer(object):
             self.viewer.close()
         self.application.close()
 
+        # Matplotlib 3.5 introduced a memory leak when resizing the viewer
+        # in https://github.com/matplotlib/matplotlib/pull/19255 so for now
+        # we skip the affected test for the objgraph testing
+        if method.__name__ == 'test_aspect_resize':
+            return
+
         # The following is a check to make sure that once the viewer and
         # application have been closed, there are no leftover references to
         # the data viewer. This was introduced because there were previously
