@@ -4,7 +4,9 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
 import pandas as pd
-import bottleneck as bt
+
+# For backward-compatibility with when we used to define bottleneck wrappers
+from numpy import nanmin, nanmax, nanmean, nanmedian, nansum
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
@@ -311,70 +313,6 @@ def combine_slices(slice1, slice2, length):
         return slice(indices[0], end_new, indices[1] - indices[0])
 
 
-def _move_tuple_axes_first(array, axis):
-    """
-    Bottleneck can only take integer axis, not tuple, so this function takes all
-    the axes to be operated on and combines them into the first dimension of the
-    array so that we can then use axis=0
-    """
-
-    # Figure out how many axes we are operating over
-    naxis = len(axis)
-
-    # Add remaining axes to the axis tuple
-    axis += tuple(i for i in range(array.ndim) if i not in axis)
-
-    # The new position of each axis is just in order
-    destination = tuple(range(array.ndim))
-
-    # Reorder the array so that the axes being operated on are at the beginning
-    array_new = np.moveaxis(array, axis, destination)
-
-    # Figure out the size of the product of the dimensions being operated on
-    first = np.prod(array_new.shape[:naxis])
-
-    # Collapse the dimensions being operated on into a single dimension so that
-    # we can then use axis=0 with the bottleneck functions
-    array_new = array_new.reshape((first,) + array_new.shape[naxis:])
-
-    return array_new
-
-
-def nanmean(array, axis=None):
-    if isinstance(axis, tuple):
-        array = _move_tuple_axes_first(array, axis=axis)
-        axis = 0
-    return bt.nanmean(array, axis=axis)
-
-
-def nanmedian(array, axis=None):
-    if isinstance(axis, tuple):
-        array = _move_tuple_axes_first(array, axis=axis)
-        axis = 0
-    return bt.nanmedian(array, axis=axis)
-
-
-def nansum(array, axis=None):
-    if isinstance(axis, tuple):
-        array = _move_tuple_axes_first(array, axis=axis)
-        axis = 0
-    return bt.nansum(array, axis=axis)
-
-
-def nanmin(array, axis=None):
-    if isinstance(axis, tuple):
-        array = _move_tuple_axes_first(array, axis=axis)
-        axis = 0
-    return bt.nanmin(array, axis=axis)
-
-
-def nanmax(array, axis=None):
-    if isinstance(axis, tuple):
-        array = _move_tuple_axes_first(array, axis=axis)
-        axis = 0
-    return bt.nanmax(array, axis=axis)
-
-
 def format_minimal(values):
     """
     Find the shortest format that can be used to represent all values in an
@@ -407,11 +345,11 @@ PLAIN_FUNCTIONS = {'minimum': np.min,
                    'sum': np.sum,
                    'percentile': np.percentile}
 
-NAN_FUNCTIONS = {'minimum': nanmin,
-                 'maximum': nanmax,
-                 'mean': nanmean,
-                 'median': nanmedian,
-                 'sum': nansum,
+NAN_FUNCTIONS = {'minimum': np.nanmin,
+                 'maximum': np.nanmax,
+                 'mean': np.nanmean,
+                 'median': np.nanmedian,
+                 'sum': np.nansum,
                  'percentile': np.nanpercentile}
 
 

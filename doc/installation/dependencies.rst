@@ -24,7 +24,6 @@ Glue has the following required dependencies:
 * `xlrd <https://pypi.org/project/xlrd>`_ 1.2 or later, for reading Excel files
 * `mpl-scatter-density <https://github.com/astrofrog/mpl-scatter-density>`_ 0.7 or later, for making
   scatter density maps of many points.
-* `bottleneck <https://pypi.org/project/Bottleneck/>`_ 1.2 or later, for fast NaN-friendly computations
 
 The following optional dependencies are also highly recommended and
 domain-independent:
