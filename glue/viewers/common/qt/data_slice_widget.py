@@ -43,7 +43,7 @@ class SliceWidget(QtWidgets.QWidget):
         self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
 
         font = self.text_warning.font()
-        font.setPointSize(font.pointSize() * 0.75)
+        font.setPointSize(int(font.pointSize() * 0.75))
         self.text_warning.setFont(font)
 
         self.button_first.setStyleSheet('border: 0px')
