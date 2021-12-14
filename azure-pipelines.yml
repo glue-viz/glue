@@ -33,6 +33,8 @@ jobs:
     - linux: py37-test-pyqt512
     - linux: py37-test-pyqt513-all
     - linux: py38-test-pyqt514
+    - linux: py39-test-pyqt515
+    - linux: py310-test-pyqt515
     - linux: py36-test-pyside512
     - linux: py37-test-pyside513-all
     - linux: py38-test-pyside514

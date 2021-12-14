@@ -6,6 +6,9 @@ v1.2.3 (unreleased)
 
 * Fixed compatibility with Matplotlib 3.5.0. [#2250]
 
+* Remove bottleneck dependency as it is no longer maintained. Certain
+  array operations may be slower as a result. [#2258]
+
 v1.2.2 (2021-09-16)
 -------------------
 
