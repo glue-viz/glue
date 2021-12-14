@@ -90,5 +90,5 @@ def update_global_font_size():
     font = qapp.font()
     point_size = settings.FONT_SIZE
     size_offset = __get_font_size_offset()
-    font.setPointSize(point_size - size_offset)
+    font.setPointSize(int(point_size - size_offset))
     qapp.setFont(font)

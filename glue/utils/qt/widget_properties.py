@@ -268,4 +268,4 @@ class ValueProperty(WidgetProperty):
             imin, imax = widget.minimum(), widget.maximum()
             vmin, vmax = self.value_range
             val = (val - vmin) / (vmax - vmin) * (imax - imin) + imin
-        widget.setValue(val)
+        widget.setValue(int(val))
