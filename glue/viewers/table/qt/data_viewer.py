@@ -1,4 +1,6 @@
 import os
+from functools import lru_cache
+
 import numpy as np
 
 from qtpy.QtCore import Qt
@@ -18,6 +20,12 @@ from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.table.compat import update_table_viewer_state
+
+try:
+    import dask.array as da
+    DASK_INSTALLED = True
+except ImportError:
+    DASK_INSTALLED = False
 
 __all__ = ['TableViewer', 'TableLayerArtist']
 
@@ -40,6 +48,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         top_left = self.index(0, 0)
         bottom_right = self.index(self.columnCount(), self.rowCount())
         self._update_visible()
+        self.data_by_row_and_column.cache_clear()
         self.dataChanged.emit(top_left, bottom_right)
         self.layoutChanged.emit()
 
@@ -75,19 +84,33 @@ class DataTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
+        return self.data_by_row_and_column(index.row(), index.column(), role)
+
+    # The data() method gets called many times, often with the same parameters,
+    # for example if bringing the window to the foreground/background, shifting
+    # up/down/left/right by one cell, etc. This can be very slow when e.g. dask
+    # columns are present so we cache the most recent 65536 calls which should
+    # have a reasonably sensible memory footprint.
+    @lru_cache(maxsize=65536)
+    def data_by_row_and_column(self, row, column, role):
+
         if role == Qt.DisplayRole:
 
-            c = self.columns[index.column()]
-            idx = self.order_visible[index.row()]
+            c = self.columns[column]
+            idx = self.order_visible[row]
             comp = self._data[c]
-            if isinstance(comp[idx], bytes):
-                return comp[idx].decode('ascii')
+            value = comp[idx]
+            if isinstance(value, bytes):
+                return value.decode('ascii')
             else:
-                return str(comp[idx])
+                if DASK_INSTALLED and isinstance(value, da.Array):
+                    return str(value.compute())
+                else:
+                    return str(comp[idx])
 
         elif role == Qt.BackgroundRole:
 
-            idx = self.order_visible[index.row()]
+            idx = self.order_visible[row]
 
             # Find all subsets that this index is part of
             colors = []
@@ -121,12 +144,15 @@ class DataTableModel(QtCore.QAbstractTableModel):
         if ascending == Qt.DescendingOrder:
             self.order = self.order[::-1]
         self._update_visible()
+        self.data_by_row_and_column.cache_clear()
         self.layoutChanged.emit()
 
     def _update_visible(self):
         """
         Given which layers are visible or not, convert order to order_visible.
         """
+
+        self.data_by_row_and_column.cache_clear()
 
         # First, if the data layer is visible, show all rows
         for layer_artist in self._table_viewer.layers:
@@ -138,7 +164,10 @@ class DataTableModel(QtCore.QAbstractTableModel):
         visible = np.zeros(self.order.shape, dtype=bool)
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
-                visible |= layer_artist.layer.to_mask()
+                mask = layer_artist.layer.to_mask()
+                if DASK_INSTALLED and isinstance(mask, da.Array):
+                    mask = mask.compute()
+                visible |= mask
 
         self.order_visible = self.order[visible]
 
