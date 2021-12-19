@@ -1,13 +1,11 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
-from glue.core.roi_pretransforms import ProjectionMplTransform
+from glue.core.roi_pretransforms import ProjectionMplTransform, RadianTransform
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
 from glue.viewers.matplotlib.mpl_axes import init_mpl
 
-import numpy as np
-from functools import partial
 
 __all__ = ['MatplotlibScatterMixin']
 
@@ -113,11 +111,6 @@ class MatplotlibScatterMixin(object):
                              labelpad=labelpad)
         self.redraw()
 
-    @staticmethod
-    def _radian_pretransform(x, y, transform):
-        x = np.deg2rad(x)
-        return transform(x, y)
-
     def apply_roi(self, roi, override_mode=None):
 
         # Force redraw to get rid of ROI. We do this because applying the
@@ -151,7 +144,7 @@ class MatplotlibScatterMixin(object):
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
             if self.using_polar() and self.state.angle_unit == 'degrees':
-                transform = partial(MatplotlibScatterMixin._radian_pretransform, transform=transform)
+                transform = RadianTransform(next_transform=transform)
             subset_state.pretransform = transform
 
         self.apply_subset_state(subset_state, override_mode=override_mode)

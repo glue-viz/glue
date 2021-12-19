@@ -30,3 +30,26 @@ class ProjectionMplTransform(object):
         state = context.object(rec['state'])
         return cls(state['projection'], state['x_lim'], state['y_lim'],
                    state['x_scale'], state['y_scale'])
+
+
+class RadianTransform(object):
+    # We define 'next_transform' so that this pre-transform can
+    # be chained together with another transformation, if desired
+    def __init__(self, next_transform=None):
+        self._next_transform = next_transform
+        self._state = {"next_transform": next_transform}
+
+    def __call__(self, x, y):
+        x = np.deg2rad(x)
+        if self._next_transform is not None:
+            return self._next_transform(x, y)
+        else:
+            return x, y
+
+    def __gluestate__(self, context):
+        return dict(state=context.do(self._state))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        state = context.object(rec['state'])
+        return cls(state['next_transform'])
