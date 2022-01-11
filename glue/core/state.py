@@ -699,7 +699,7 @@ def _save_roi(roi, context):
 
 
 @loader(Roi)
-def _laod_roi(roi, context):
+def _load_roi(roi, context):
     raise NotImplementedError
 
 
