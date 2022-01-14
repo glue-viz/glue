@@ -26,6 +26,10 @@ class ThetaRadianFormatter(mticker.Formatter):
     max_den = 20
     limit_den = 10000
 
+    def __init__(self, axis_label=None):
+        super().__init__()
+        self.axis_label = axis_label
+
     @classmethod
     def _check_valid(cls, num, den):
         return den != 0 and abs(num) < cls.max_num and den < cls.max_den
@@ -62,12 +66,49 @@ class ThetaRadianFormatter(mticker.Formatter):
             sgn = "-" if n < 0 else ""
             return r"${0}{1}\pi/{2}$".format(sgn, ns, d)
 
+    def format_ticks(self, values):
+        ticks = super().format_ticks(values)
+        if self.axis_label:
+            ticks[0] = "{label}={value}".format(label=self.axis_label, value=ticks[0])
+        return ticks
+
     def __call__(self, x, pos=None):
         vmin, vmax = self.axis.get_view_interval()
         d = abs(vmax - vmin)
         digits = max(-int(np.log10(d) - 1.5), 0)
         return ThetaRadianFormatter.rad_fn(x, digits=digits)
 
+
+class ThetaDegreeFormatter(ThetaFormatter):
+
+    def __init__(self, axis_label=None):
+        super().__init__()
+        self.axis_label = axis_label
+
+    def format_ticks(self, values):
+        ticks = super().format_ticks(values)
+        if self.axis_label:
+            ticks[0] = "{label}={value}".format(label=self.axis_label, value=ticks[0])
+        return ticks
+
+
+class PolarRadiusFormatter(ScalarFormatter):
+
+    def __init__(self, axis_label=None):
+        super().__init__()
+        self.axis_label = axis_label
+
+    def format_ticks(self, values):
+        ticks = super().format_ticks(values)
+        _, vmax = self.axis.get_view_interval()
+        # Not every tick will necessarily be shown
+        # We don't want to include ticks outside the view interval
+        index = -1
+        while values[index] > vmax and abs(index) <= len(values):
+            index -= 1
+        if self.axis_label:
+            ticks[index] = "{label}={value}".format(label=self.axis_label, value=ticks[index])
+        return ticks
 
 def relim(lo, hi, log=False):
     logging.getLogger(__name__).debug("Inputs to relim: %r %r", lo, hi)
@@ -385,7 +426,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear', radians=True):
+def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear', radians=True, label=None):
     """
     Changes the axes to have the proper tick formatting based on the type of
     component.
@@ -437,10 +478,14 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
     # Have to treat the theta axis of polar plots differently
-    elif projection == 'polar' and coord == 'x':
-        axis.set_major_locator(ThetaLocator(AutoLocator()))
-        formatter = ThetaRadianFormatter if radians else ThetaFormatter
-        axis.set_major_formatter(formatter())
+    elif projection == 'polar':
+        if coord == 'x':
+            axis.set_major_locator(ThetaLocator(AutoLocator()))
+            formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
+            axis.set_major_formatter(formatter_type(label))
+        else:
+            axis.set_major_locator(AutoLocator())
+            axis.set_major_formatter(PolarRadiusFormatter(label))
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
