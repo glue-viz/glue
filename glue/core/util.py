@@ -490,7 +490,7 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         formatter = FuncFormatter(format_func)
         axis.set_major_locator(locator)
         axis.set_major_formatter(formatter)
-    # Have to treat the theta axis of polar plots differently
+    # Have to treat the axes for polar plots differently
     elif projection == 'polar':
         if coord == 'x':
             axis.set_major_locator(ThetaLocator(AutoLocator()))
@@ -501,6 +501,8 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         else:
             axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(PolarRadiusFormatter(label))
+            for lbl in axis.get_majorticklabels():
+                lbl.set_fontstyle("italic")
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
