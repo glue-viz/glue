@@ -110,6 +110,7 @@ class PolarRadiusFormatter(ScalarFormatter):
             ticks[index] = "{label}={value}".format(label=self.axis_label, value=ticks[index])
         return ticks
 
+
 def relim(lo, hi, log=False):
     logging.getLogger(__name__).debug("Inputs to relim: %r %r", lo, hi)
     x, y = lo, hi
@@ -426,6 +427,18 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
+def _polar_tick_alignment(value, radians):
+    if radians:
+        value = value * 180 / np.pi
+
+    if value < 90 or 270 < value:
+        return "left"
+    elif 90 < value < 270:
+        return "right"
+    else:
+        return "center"
+
+
 def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear', radians=True, label=None):
     """
     Changes the axes to have the proper tick formatting based on the type of
@@ -483,6 +496,8 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
             axis.set_major_locator(ThetaLocator(AutoLocator()))
             formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
             axis.set_major_formatter(formatter_type(label))
+            for lbl, loc in zip(axis.get_majorticklabels(), axis.get_majorticklocs()):
+                lbl.set_horizontalalignment(_polar_tick_alignment(loc, radians))
         else:
             axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(PolarRadiusFormatter(label))
