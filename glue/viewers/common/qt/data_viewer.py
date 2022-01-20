@@ -136,6 +136,15 @@ class DataViewer(Viewer, BaseQtViewerWidget,
         self._toolbars.append(tb)
         self._tb_vis[tb] = True
 
+    def remove_toolbar(self, tb):
+        self._toolbars.remove(tb)
+        self._tb_vis.pop(tb, None)
+        super(DataViewer, self).removeToolBar(tb)
+
+    def remove_all_toolbars(self):
+        for tb in reversed(self._toolbars):
+            self.remove_toolbar(tb)
+
     def initialize_toolbar(self):
 
         from glue.config import viewer_tool
