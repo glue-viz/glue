@@ -9,6 +9,9 @@ v1.2.3 (unreleased)
 * Remove bottleneck dependency as it is no longer maintained. Certain
   array operations may be slower as a result. [#2258]
 
+* Fixed a bug which prevented serialization for polar plots in degree
+  mode. [#2259]
+
 v1.2.2 (2021-09-16)
 -------------------
 
