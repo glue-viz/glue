@@ -12,6 +12,9 @@ v1.2.3 (unreleased)
 * Fixed a bug that caused selections to no longer work
   in a scatter viewer once its projection had been changed. [#2262]
 
+* Fixed a bug which prevented serialization for polar plots in degree
+  mode. [#2259]
+
 v1.2.2 (2021-09-16)
 -------------------
 
