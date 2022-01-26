@@ -9,6 +9,9 @@ v1.2.3 (unreleased)
 * Remove bottleneck dependency as it is no longer maintained. Certain
   array operations may be slower as a result. [#2258]
 
+* Fixed a bug that caused selections to no longer work
+  in a scatter viewer once its projection had been changed. [#2262]
+
 v1.2.2 (2021-09-16)
 -------------------
 
