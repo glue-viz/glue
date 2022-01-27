@@ -1,6 +1,7 @@
 import os
-import imp
+from importlib.machinery import SourceFileLoader
 import sys
+import types
 import warnings
 from collections import namedtuple
 
@@ -994,13 +995,13 @@ def load_configuration(search_path=None):
        Exception, if no module was found
     """
     search_order = search_path or _default_search_order()
-    result = imp.new_module('config')
+    result = types.ModuleType('config')
 
     for config_file in search_order:
         dir = os.path.dirname(config_file)
         try:
             sys.path.append(dir)
-            config = imp.load_source('config', config_file)
+            config = SourceFileLoader('config', config_file).load_module()
             result = config
         except IOError:
             pass
