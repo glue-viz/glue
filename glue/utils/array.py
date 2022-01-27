@@ -6,7 +6,7 @@ from numpy.lib.stride_tricks import as_strided
 import pandas as pd
 
 # For backward-compatibility with when we used to define bottleneck wrappers
-from numpy import nanmin, nanmax, nanmean, nanmedian, nansum
+from numpy import nanmin, nanmax, nanmean, nanmedian, nansum  # noqa
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',

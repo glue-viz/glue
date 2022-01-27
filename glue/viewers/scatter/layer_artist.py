@@ -295,7 +295,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 hw = 1
                 hl = 0
 
-            vmax = nanmax(np.hypot(vx, vy))
+            vmax = np.nanmax(np.hypot(vx, vy))
 
             self.vector_artist = self.axes.quiver(x, y, vx, vy, units='width',
                                                   pivot=self.state.vector_origin,
