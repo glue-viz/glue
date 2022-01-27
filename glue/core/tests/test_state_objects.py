@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 from echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
-from glue.utils import nanmedian
 
 from .test_state import clone
 from ..state_objects import (State, StateAttributeLimitsHelper,
@@ -202,7 +201,7 @@ class TestStateAttributeSingleValueHelper():
         self.state = SimpleState()
 
         self.helper = StateAttributeSingleValueHelper(self.state, attribute='comp',
-                                                      function=nanmedian, value='val')
+                                                      function=np.nanmedian, value='val')
 
         self.state.data = self.data
 
