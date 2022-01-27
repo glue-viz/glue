@@ -199,7 +199,7 @@ def _slice_from_path(x, y, data, attribute, slc):
     :note: For >3D cubes, the "V-axis" of the PV slice is the longest
            cube axis ignoring the x/y axes of `slc`
     """
-    from glue.external.pvextractor import Path, extract_pv_slice
+    from pvextractor import Path, extract_pv_slice
     p = Path(list(zip(x, y)))
 
     cube = data[attribute]
@@ -207,7 +207,12 @@ def _slice_from_path(x, y, data, attribute, slc):
     s = list(slc)
     ind = _slice_index(data, slc)
 
-    cube_wcs = getattr(data.coords, 'wcs', None)
+    from astropy.wcs import WCS
+
+    if isinstance(data.coords, WCS):
+        cube_wcs = data.coords
+    else:
+        cube_wcs = None
 
     # transpose cube to (z, y, x, <whatever>)
     def _swap(x, s, i, j):
@@ -230,8 +235,6 @@ def _slice_from_path(x, y, data, attribute, slc):
     # sample cube
     spacing = 1  # pixel
     x, y = [np.round(_x).astype(int) for _x in p.sample_points(spacing)]
-
-    from astropy.wcs import WCS
 
     try:
         result = extract_pv_slice(cube, path=p, wcs=cube_wcs, order=0)
