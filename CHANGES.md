@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.3.0 (unreleased)
+-------------------
+
+* Remove bundled version of pvextractor and include it as a proper
+  dependency. [#2252]
+
 v1.2.4 (2022-01-27)
 -------------------
 

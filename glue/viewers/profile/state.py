@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw, nanmin, nanmax
+from glue.utils import defer_draw
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 
@@ -132,8 +132,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 if profile is not None:
                     x, y = profile
                     if len(y) > 0:
-                        y_min = min(y_min, nanmin(y))
-                        y_max = max(y_max, nanmax(y))
+                        y_min = min(y_min, np.nanmin(y))
+                        y_max = max(y_max, np.nanmax(y))
             with delay_callback(self, 'y_min', 'y_max'):
                 if y_max > y_min:
                     self.y_min = y_min
@@ -325,5 +325,5 @@ class ProfileLayerState(MatplotlibLayerState):
             if update_profile:
                 self.update_profile(update_limits=False)
             if self._profile_cache is not None and len(self._profile_cache[1]) > 0:
-                self.v_min = nanmin(self._profile_cache[1])
-                self.v_max = nanmax(self._profile_cache[1])
+                self.v_min = np.nanmin(self._profile_cache[1])
+                self.v_max = np.nanmax(self._profile_cache[1])

@@ -8,7 +8,7 @@ import numpy as np
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets, QtGui
 
-from glue.utils import color2hex, nanmean, nanmedian, nanmin, nanmax, nansum
+from glue.utils import color2hex
 from glue.config import fit_plugin, viewer_tool
 from glue.utils.qt import load_ui, fix_tab_widget_fontsize
 from glue.viewers.profile.qt.mouse_mode import NavigateMouseMode, RangeMouseMode
@@ -28,11 +28,11 @@ __all__ = ['ProfileTools']
 
 MODES = ['navigate', 'fit', 'collapse']
 
-COLLAPSE_FUNCS = OrderedDict([(nanmean, 'Mean'),
-                              (nanmedian, 'Median'),
-                              (nanmin, 'Minimum'),
-                              (nanmax, 'Maximum'),
-                              (nansum, 'Sum'),
+COLLAPSE_FUNCS = OrderedDict([(np.nanmean, 'Mean'),
+                              (np.nanmedian, 'Median'),
+                              (np.nanmin, 'Minimum'),
+                              (np.nanmax, 'Maximum'),
+                              (np.nansum, 'Sum'),
                               (mom1, 'Moment 1'),
                               (mom2, 'Moment 2')])
 

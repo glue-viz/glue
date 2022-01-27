@@ -6,7 +6,6 @@ from numpy.testing import assert_allclose
 from glue.core import Data
 from glue.tests.helpers import PYSIDE2_INSTALLED  # noqa
 from glue.app.qt import GlueApplication
-from glue.utils import nanmean
 from glue.utils.qt import process_events
 from glue.viewers.image.state import AggregateSlice
 
@@ -159,7 +158,7 @@ class TestProfileTools(object):
         assert image_viewer.state.slices[0].slice.start == 1
         assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
-        assert image_viewer.state.slices[0].function is nanmean
+        assert image_viewer.state.slices[0].function is np.nanmean
 
         # Next, try in world coordinates
 
@@ -181,7 +180,7 @@ class TestProfileTools(object):
         assert image_viewer.state.slices[0].slice.start == 1
         assert image_viewer.state.slices[0].slice.stop == 15
         assert image_viewer.state.slices[0].center == 0
-        assert image_viewer.state.slices[0].function is nanmean
+        assert image_viewer.state.slices[0].function is np.nanmean
 
     def test_collapse_reverse(self, capsys):
 
