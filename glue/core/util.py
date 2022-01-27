@@ -11,8 +11,6 @@ from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 import matplotlib.ticker as mticker
 
-from glue.utils import nanmin, nanmax
-
 __all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
            'small_view', 'small_view_array', 'visible_limits',
@@ -205,9 +203,9 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
             raise ValueError("Cannot infer data limits for ComponentID %s"
                              % cid)
         if lo is None:
-            lo = nanmin(vals)
+            lo = np.nanmin(vals)
         if hi is None:
-            hi = nanmax(vals)
+            hi = np.nanmax(vals)
 
     reverse = lo > hi
     if log:
@@ -362,7 +360,7 @@ def visible_limits(artists, axis):
     if data.size == 0:
         return
 
-    lo, hi = nanmin(data), nanmax(data)
+    lo, hi = np.nanmin(data), np.nanmax(data)
     if not np.isfinite(lo):
         return
 

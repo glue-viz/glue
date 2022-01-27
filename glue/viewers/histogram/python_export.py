@@ -1,9 +1,9 @@
 from distutils.version import LooseVersion
 
+import numpy as np
 from matplotlib import __version__
 
 from glue.viewers.common.python_export import code, serialize_options
-from glue.utils import nanmin, nanmax
 
 MATPLOTLIB_GE_30 = LooseVersion(__version__) > '3'
 
@@ -17,8 +17,8 @@ def python_export_histogram_layer(layer, *args):
     imports = ["import numpy as np"]
 
     x = layer.layer[layer._viewer_state.x_att]
-    x_min = nanmin(x)
-    x_max = nanmax(x)
+    x_min = np.nanmin(x)
+    x_max = np.nanmax(x)
 
     hist_x_min = layer._viewer_state.hist_x_min
     hist_x_max = layer._viewer_state.hist_x_max

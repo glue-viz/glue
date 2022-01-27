@@ -10,8 +10,7 @@ from numpy import nanmin, nanmax, nanmean, nanmedian, nansum
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
-           'iterate_chunks', 'combine_slices', 'nanmean', 'nanmedian', 'nansum',
-           'nanmin', 'nanmax', 'format_minimal', 'compute_statistic',
+           'iterate_chunks', 'combine_slices', 'format_minimal', 'compute_statistic',
            'categorical_ndarray', 'index_lookup', 'ensure_numerical',
            'broadcast_arrays_minimal', 'random_views_for_dask_array']
 
