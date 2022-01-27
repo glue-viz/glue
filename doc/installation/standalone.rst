@@ -71,3 +71,16 @@ Click on **More info** and you will then see:
    :width: 400
 
 Click on **Run anyway** and glue should now open.
+
+Nightly builds
+--------------
+
+The applications above are built every few months to provide stability
+and are checked to make sure they all work correctly. We also provide
+'nightly' builds which use the latest (released) versions of all the relevant
+glue packages and plugins. These are generated automatically and are
+not hand-checked, so may be unstable. The download links are:
+
+* Linux: :download:`glue-nightly <https://glueviz.s3.amazonaws.com/installers/nightly/glue-nightly>`
+* MacOS X: :download:`glue nightly.dmg <https://glueviz.s3.amazonaws.com/installers/nightly/glue%20nightly.dmg>`
+* Windows: :download:`glue nightly.exe <https://glueviz.s3.amazonaws.com/installers/nightly/glue%20nightly.exe>`
