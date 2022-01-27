@@ -1218,7 +1218,7 @@ class MaskSubsetState(SubsetState):
             return self.mask[view].copy()
 
         # locate each element of data in the coordinate system of the mask
-        vals = [data[c, view].astype(np.int) for c in self.cids]
+        vals = [data[c, view].astype(int) for c in self.cids]
         result = self.mask[tuple(vals)]
 
         for v, n in zip(vals, data.shape):
