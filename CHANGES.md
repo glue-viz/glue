@@ -1,7 +1,21 @@
 Full changelog
 ==============
 
-v1.2.3 (unreleased)
+v1.2.4 (2022-01-27)
+-------------------
+
+* Fixed a bug that caused selections to no longer work
+  in a scatter viewer once its projection had been changed. [#2262]
+
+* Fixed a bug which prevented serialization for polar plots in degree
+  mode. [#2259]
+
+* Fixed a bug that caused histograms and density maps to not work
+  correctly with attributes linked using ``join_on_key``. [#2242]
+
+* Fixed issues in viewers when dask arrays were used. [#2249]
+
+v1.2.3 (2021-11-14)
 -------------------
 
 * Fixed compatibility with Matplotlib 3.5.0. [#2250]
@@ -9,11 +23,7 @@ v1.2.3 (unreleased)
 * Remove bottleneck dependency as it is no longer maintained. Certain
   array operations may be slower as a result. [#2258]
 
-* Fixed a bug that caused selections to no longer work
-  in a scatter viewer once its projection had been changed. [#2262]
-
-* Fixed a bug which prevented serialization for polar plots in degree
-  mode. [#2259]
+* Fixed compatibility with Python 3.10 and recent versions of PyQt. [#2258]
 
 v1.2.2 (2021-09-16)
 -------------------
