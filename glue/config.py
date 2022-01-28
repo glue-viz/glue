@@ -1001,7 +1001,9 @@ def load_configuration(search_path=None):
         dir = os.path.dirname(config_file)
         try:
             sys.path.append(dir)
-            config = SourceFileLoader('config', config_file).load_module()
+            loader = SourceFileLoader('config', config_file)
+            config = types.ModuleType(loader.name)
+            loader.exec_module(config)
             result = config
         except IOError:
             pass
