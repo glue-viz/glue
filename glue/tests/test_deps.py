@@ -52,6 +52,9 @@ class ImportDenier(object):
     def load_module(self, mod_name):
         raise ImportError("Importing %%s" %% mod_name)
 
+    def exec_module(self, mod_name):
+        raise ImportError("Importing %%s" %% mod_name)
+
 import sys
 sys.meta_path.append(ImportDenier())
 
