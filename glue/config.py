@@ -1008,7 +1008,15 @@ def load_configuration(search_path=None):
         except IOError:
             pass
         except Exception as e:
-            raise type(e)("Error loading config file %s:\n%s" % (config_file, e), sys.exc_info()[2])
+            if isinstance(e, Warning):
+                # avoid hard-raising warnings if they were turned into errors
+                # see https://github.com/glue-viz/glue/issues/2263
+                warnings.warn(e, category=type(e))
+            else:
+                raise type(e)(
+                    "Error loading config file %s:\n%s" % (config_file, e),
+                    sys.exc_info()[2]
+                )
         finally:
             sys.path.remove(dir)
 
