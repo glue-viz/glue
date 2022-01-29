@@ -187,8 +187,7 @@ class DataCollection(HubListener):
 
         Parameters
         ----------
-        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or
-                :class:`~glue.core.link_helpers.LinkCollection`
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
             The links to add.
         """
         self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
@@ -201,8 +200,7 @@ class DataCollection(HubListener):
 
         Parameters
         ----------
-        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or
-                :class:`~glue.core.link_helpers.LinkCollection`
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
             The links to remove.
         """
         self._link_manager.remove_link(links, update_external=not self._disable_sync_link_manager)
@@ -217,8 +215,7 @@ class DataCollection(HubListener):
 
         Parameters
         ----------
-        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or
-                :class:`~glue.core.link_helpers.LinkCollection`
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
             The new links.
         """
         self._link_manager.clear_links()

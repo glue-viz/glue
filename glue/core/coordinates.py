@@ -203,6 +203,10 @@ def coordinates_from_header(header, hdulist=None):
     header : :class:`astropy.io.fits.Header`
         Header to convert
 
+    hdulist : :class:`astropy.io.fits.HDUList`, optional
+        The full HDUList is required when header keywords point to a
+        'Distortion Paper' lookup table stored in a different extension.
+
     Returns
     -------
     coordinates : :class:`~glue.core.coordinates.Coordinates`

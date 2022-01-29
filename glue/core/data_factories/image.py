@@ -14,8 +14,14 @@ __all__ = ['img_data']
 def img_loader(file_name):
     """Load an image to a numpy array, using either PIL or skimage
 
-    :param file_name: Path of file to load
-    :rtype: Numpy array
+    Parameters
+    ----------
+    file_name : str
+        Path of the file to load.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
     """
     try:
         from skimage import img_as_ubyte

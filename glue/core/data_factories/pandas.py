@@ -54,11 +54,22 @@ def panda_process(indf):
 
 @data_factory(label="Pandas Table", identifier=has_extension('csv csv txt tsv tbl dat'))
 def pandas_read_table(path, **kwargs):
-    """ A factory for reading tabular data using pandas
-    :param path: path/to/file
-    :param kwargs: All kwargs are passed to pandas.read_csv
-    :returns: :class:`glue.core.data.Data` object
     """
+    A factory for reading tabular data using pandas.
+
+    Parameters
+    ----------
+    path : str
+        Path to the file.
+
+    kwargs
+        All other kwargs are passed to `~pandas.read_csv`.
+
+    Returns
+    -------
+    :class:`glue.core.data.Data` object
+    """
+
     try:
         from pandas.errors import ParserError
     except ImportError:
