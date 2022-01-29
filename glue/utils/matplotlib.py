@@ -37,7 +37,7 @@ def all_artists(fig):
 
     Parameters
     ----------
-    fig : `~matplotlib.pyplot.figure`
+    fig : :class:`matplotlib.pyplot.figure`
         Matplotlib figure.
     """
     return set(item
@@ -53,7 +53,7 @@ def new_artists(fig, old_artists):
 
     Parameters
     ----------
-    fig : `~matplotlib.pyplot.figure`
+    fig : :class:`matplotlib.pyplot.figure`
         Matplotlib figure.
     old_artists : set
         Return value from :func:`all_artists`.
@@ -310,7 +310,7 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     Parameters
     ----------
-    ax_class : `~matplotlib.axes.Axes`
+    ax_class : :class:`matplotlib.axes.Axes`
         The axes class for which to fix the margins
     margins : iterable
         The margins, in inches. The order of the margins is
@@ -340,9 +340,9 @@ def cache_axes(axes, toolbar):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The axes to cache
-    toolbar : `~glue.viewers.common.qt.toolbar.GlueToolbar`
+    toolbar : :class:`glue.viewers.common.qt.toolbar.GlueToolbar`
         The toolbar managing the axes' canvas
     """
     canvas = axes.figure.canvas
@@ -361,7 +361,7 @@ class ColormapPatchHandler(HandlerBase):
 
         Parameters
         ----------
-        cmap : `~matplotlib.colors.colormap`
+        cmap : :class:`matplotlib.colors.colormap`
             The matplotlib colormap to use
         nb_subpatch : int, optional
             The number of stripes to use to represent the colormap.

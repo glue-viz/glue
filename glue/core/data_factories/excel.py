@@ -22,7 +22,7 @@ def panda_read_excel(path, sheet=None, **kwargs):
         The sheet to read. If `None`, all sheets are read.
 
     kwargs
-        All other kwargs are passed to `~pandas.read_excel`.
+        All other kwargs are passed to :func:`pandas.read_excel`.
     """
 
     try:

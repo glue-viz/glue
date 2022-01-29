@@ -57,7 +57,7 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
         Merge extensions that have the same shape
         and only one has a defined WCS.
 
-    exclude_exts: [~astropy.io.fits._BaseHDU`, ] or [index, ]
+    exclude_exts: [:class:`astropy.io.fits._BaseHDU`, ] or [index, ]
         List of HDU's to exclude from reading.
         This can be a list of HDUs or a list
         of HDU indices.

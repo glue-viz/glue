@@ -69,7 +69,7 @@ class MouseMode(object):
 
         Parameters
         ----------
-        event : :class:`~matplotlib.backend_bases.MouseEvent`
+        event : :class:`matplotlib.backend_bases.MouseEvent`
             The event that was triggered
         """
         self._log_position(event)
@@ -84,7 +84,7 @@ class MouseMode(object):
 
         Parameters
         ----------
-        event : :class:`~matplotlib.backend_bases.MouseEvent`
+        event : :class:`matplotlib.backend_bases.MouseEvent`
             The event that was triggered
         """
         self._log_position(event)
@@ -99,7 +99,7 @@ class MouseMode(object):
 
         Parameters
         ----------
-        event : :class:`~matplotlib.backend_bases.MouseEvent`
+        event : :class:`matplotlib.backend_bases.MouseEvent`
             The event that was triggered
         """
         self._log_position(event)
@@ -114,7 +114,7 @@ class MouseMode(object):
 
         Parameters
         ----------
-        event : :class:`~matplotlib.backend_bases.KeyEvent`
+        event : :class:`matplotlib.backend_bases.KeyEvent`
             The event that was triggered
         """
         if self._key_callback is not None:

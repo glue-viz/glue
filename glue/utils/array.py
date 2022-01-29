@@ -572,7 +572,7 @@ def index_lookup(data, items):
     Parameters
     ----------
     data : array-like
-        An array-like object that can be used to instantiate a `~pandas.DataFrame`.
+        An array-like object that can be used to instantiate a :class:`pandas.DataFrame`.
     items : array-like
         An array-like of unique values in `data`.
 

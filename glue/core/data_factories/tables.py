@@ -12,8 +12,9 @@ __all__ = ['tabular_data']
               priority=1)
 def tabular_data(path, **kwargs):
     """
-    A factory for reading ASCII table data using the `~astropy.io.registry` or
-    `~pandas.read_table`, tried in sequence.
+    A factory for reading ASCII table data using
+    :func:`glue.core.data_factories.astropy_tabular_data` or
+    :func:`pandas.read_table`, tried in sequence.
 
     Parameters
     ----------

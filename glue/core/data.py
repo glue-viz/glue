@@ -1434,16 +1434,16 @@ class Data(BaseCartesianData):
             raise IncompatibleAttribute(component_id)
 
     def to_dataframe(self, index=None):
-        """Convert the Data object into a pandas.DataFrame object.
+        """Convert the Data object into a :class:`pandas.DataFrame` object.
 
         Parameters
         ----------
         index : index-like
-            Any object that can be passed to the pandas.Series constructor.
+            Any object that can be passed to the :class:`pandas.Series` constructor.
 
         Returns
         -------
-        :class:`~pandas.DataFrame`
+        :class:`pandas.DataFrame`
         """
 
         h = lambda comp: self.get_component(comp).to_series(index=index)

@@ -123,7 +123,7 @@ class Component(object):
             All kwargs are passed to the Series constructor.
         Returns
         -------
-        :class:`~pandas.Series`
+        :class:`pandas.Series`
         """
 
         return pd.Series(self.data.ravel(), **kwargs)
@@ -470,7 +470,7 @@ class CategoricalComponent(Component):
 
         Returns
         -------
-        :class:`~pandas.Series`
+        :class:`pandas.Series`
         """
 
         return pd.Series(self.labels, dtype=object, **kwargs)

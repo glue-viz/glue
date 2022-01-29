@@ -66,7 +66,7 @@ def cmap2pixmap(cmap, steps=50, size=(100, 100)):
 
     Parameters
     ----------
-    cmap : `~matplotlib.colors.Colormap`
+    cmap : :class:`matplotlib.colors.Colormap`
         The colormap to use
     steps : int
         The number of color steps in the output. Default=50
