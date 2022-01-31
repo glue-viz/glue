@@ -100,12 +100,21 @@ class PolarRadiusFormatter(ScalarFormatter):
 
     def format_ticks(self, values):
         ticks = super().format_ticks(values)
-        _, vmax = self.axis.get_view_interval()
+        vmin, vmax = self.axis.get_view_interval()
+
         # Not every tick will necessarily be shown
         # We don't want to include ticks outside the view interval
-        index = -1
-        while values[index] > vmax and abs(index) <= len(values):
-            index -= 1
+
+        # Which direction are the ticks running?
+        forwards = vmax > vmin
+        if forwards:
+            delta, index = -1, -1
+            def test(idx): return values[idx] > vmax and idx >= -len(values)
+        else:
+            delta, index = 1, 0
+            def test(idx): return values[idx] < vmax and idx < len(values)
+        while test(index):
+            index += delta
         if self.axis_label:
             ticks[index] = "{label}={value}".format(label=self.axis_label, value=ticks[index])
         return ticks
@@ -410,7 +419,6 @@ def visible_limits(artists, axis):
 
 
 def tick_linker(all_categories, pos, *args):
-
     # We need to take care to ignore negative indices since these would actually
     # 'work' 'when accessing all_categories, but we need to avoid that.
     if pos < 0 or pos >= len(all_categories):
