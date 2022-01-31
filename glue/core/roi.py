@@ -139,9 +139,9 @@ class Roi(object):  # pragma: no cover
         """Rotate anticlockwise around center to position angle theta (radian)"""
         raise NotImplementedError()
 
-    def rotate_by(self, dtheta):
+    def rotate_by(self, dtheta, **kwargs):
         """Rotate the Roi around center by angle dtheta (radian)"""
-        self.rotate_to(getattr(self, 'theta', 0.0) + dtheta)
+        self.rotate_to(getattr(self, 'theta', 0.0) + dtheta, **kwargs)
 
     def copy(self):
         """Return a clone of the Roi"""
@@ -673,12 +673,8 @@ class VertexROIBase(Roi):
 
     def __init__(self, vx=None, vy=None):
         super(VertexROIBase, self).__init__()
-        self.vx = vx
-        self.vy = vy
-        if self.vx is None:
-            self.vx = []
-        if self.vy is None:
-            self.vy = []
+        self.vx = [] if vx is None else list(vx)
+        self.vy = [] if vy is None else list(vy)
         self.theta = 0
 
     def transformed(self, xfunc=None, yfunc=None):
@@ -785,27 +781,91 @@ class PolygonalROI(VertexROIBase):
         result = points_inside_poly(x, y, self.vx, self.vy)
         return result
 
-    # There are several possible definitions of the centre; this is easiest to calculate
-    # (and invariant under rotation?) - do not include starting vertex twice!
-    def center(self):
+    # There are several possible definitions of the centre; `mean()` is
+    # easiest to calculate, but not robust against adding vertices.
+    def mean(self):
+        """Return arithmetic mean (of vertex positions) of polygon."""
+
         if not self.defined():
             raise UndefinedROI
+        # Do not include starting vertex twice!
         if self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]:
             return np.mean(self.vx[:-1]), np.mean(self.vy[:-1])
         else:
             return np.mean(self.vx), np.mean(self.vy)
 
+    def area(self, signed=False):
+        """
+        Return area of polygon using the shoelace formula.
+
+        Parameters
+        ----------
+        signed : bool, optional
+            If `True`, return signed area from the cross product calculation,
+            indicating whether vertices are ordered clockwise (negative) or
+            counter clockwise (positive).
+        """
+
+        # Use offsets to improve numerical precision
+        x0, y0 = self.mean()
+        x_ = self.vx - x0
+        y_ = self.vy - y0
+
+        # Shoelace formula; in case where the start vertex is not already duplicated
+        # at the end, final term added manually to avoid an array copy.
+        area_main = np.dot(x_[:-1], y_[1:]) - np.dot(y_[:-1], x_[1:])
+        if not (self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]):
+            area_main += x_[-1] * y_[0] - y_[-1] * x_[0]
+        if signed:
+            return 0.5 * area_main
+        else:
+            return 0.5 * np.abs(area_main)
+
+    def centroid(self):
+        """Return centroid (centre of mass) of polygon."""
+
+        # See http://paulbourke.net/geometry/polygonmesh/
+        #     https://www.ma.ic.ac.uk/~rn/centroid.pdf
+
+        # Use vertex position offsets from mean to improve numerical precision;
+        # for a triangle the mean already identifies the centroid.
+
+        if len(self.vx) == 3:
+            return self.mean()
+        else:
+            x0, y0 = self.mean()
+
+        if self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]:
+            x_ = self.vx[:-1] - x0
+            y_ = self.vy[:-1] - y0
+        else:
+            x_ = self.vx - x0
+            y_ = self.vy - y0
+        indices = np.arange(len(x_)) - 1
+
+        xs = x_[indices] + x_
+        ys = y_[indices] + y_
+        dxy = x_[indices] * y_ - y_[indices] * x_
+        scl = 1. / (6 * self.area(signed=True))
+
+        return np.dot(xs, dxy) * scl + x0, np.dot(ys, dxy) * scl + y0
+
     def move_to(self, xdelta, ydelta):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
-    def rotate_to(self, theta):
+    def rotate_to(self, theta, center=None):
+        """
+        Rotate polygon by angle `theta` [radian] around `center` (default centroid).
+        """
+
         theta = 0 if theta is None else theta
+        center = self.centroid() if center is None else center
         dtheta = theta - self.theta
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
-            dx, dy = np.array([self.vx, self.vy]) - np.array(self.center()).reshape(2, 1)
+            dx, dy = np.array([self.vx, self.vy]) - np.array(center).reshape(2, 1)
             self.vx, self.vy = (rotation_matrix_2d(dtheta) @ (dx, dy) +
-                                np.array(self.center()).reshape(2, 1))
+                                np.array(center).reshape(2, 1)).tolist()
         self.theta = theta
 
 

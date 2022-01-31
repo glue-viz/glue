@@ -536,10 +536,43 @@ class TestPolygon(object):
         assert type(str(self.roi)) == str
 
     def test_rotate(self):
+        """ Test 45 deg rotation of square ROI """
         self.define_as_square()
-        self.roi.rotate_to(np.pi / 4)
+        self.roi.rotate_to(np.pi/4)
         assert self.roi.contains([.5, .5, 1.2], [1.2, -0.2, .5]).all()
         assert not self.roi.contains([1.5, 1.5], [0, 0]).any()
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+
+    def test_rotate_triangle(self):
+        """ Test incremental rotations of triangular (half-square) ROI """
+        self.define_as_square()
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        self.roi.remove_point(1, 1)
+        assert_almost_equal(self.roi.area(), 0.5, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        self.roi.rotate_to(np.pi/3)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        self.roi.rotate_by(np.pi/6)
+        assert_almost_equal(self.roi.area(), 0.5, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        assert_almost_equal(self.roi.vx, (2/3, -1/3, 2/3), decimal=12)
+        assert_almost_equal(self.roi.vy, (0, 0, 1), decimal=12)
+
+    def test_append_mock_points(self):
+        """
+        Test that adding points on the side of square ROI conserves area and centroid.
+        """
+        self.define_as_square()
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.area(signed=True), -1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        assert_almost_equal(self.roi.mean(), (0.5, 0.5), decimal=12)
+        self.roi.add_point(0.9, 0)
+        self.roi.add_point(0.7, 0)
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        assert_almost_equal(self.roi.mean(), (0.6, 1/3), decimal=12)
 
     def test_serialization(self):
         self.define_as_square()
