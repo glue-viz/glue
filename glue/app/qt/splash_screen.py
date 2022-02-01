@@ -28,7 +28,7 @@ class QtSplashScreen(QtWidgets.QWidget):
         self.image = QtGui.QPixmap(pth)
 
     def set_progress(self, value):
-        self.progress.setValue(value)
+        self.progress.setValue(int(value))
         QtWidgets.QApplication.processEvents()  # update progress bar
 
     def paintEvent(self, event):
