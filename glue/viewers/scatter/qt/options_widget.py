@@ -100,5 +100,16 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.button_flip_x.setVisible(not is_polar)
         self.ui.valuetext_x_max.setVisible(not is_polar)
         self.ui.bool_x_log.setVisible(not is_polar)
+
+        # In polar mode, the axis labels are shown in ticks rather than using the plot axis
+        # so we adjust the axes editor to account for this
+        axes_ui = self.ui.axes_editor.ui
+        axes_ui.label_3.setVisible(not is_polar)
+        axes_ui.label_4.setVisible(not is_polar)
+        axes_ui.value_x_axislabel_size.setVisible(not is_polar)
+        axes_ui.value_y_axislabel_size.setVisible(not is_polar)
+        axes_ui.combosel_x_axislabel_weight.setVisible(not is_polar)
+        axes_ui.combosel_y_axislabel_weight.setVisible(not is_polar)
+
         self._update_x_attribute()
         self._update_y_attribute()
