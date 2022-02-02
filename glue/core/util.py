@@ -435,7 +435,7 @@ def tick_linker(all_categories, pos, *args):
             return ''
 
 
-def _polar_tick_alignment(value, radians):
+def polar_tick_alignment(value, radians):
     if radians:
         value = value * 180 / np.pi
 
@@ -505,7 +505,7 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
             formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
             axis.set_major_formatter(formatter_type(label))
             for lbl, loc in zip(axis.get_majorticklabels(), axis.get_majorticklocs()):
-                lbl.set_horizontalalignment(_polar_tick_alignment(loc, radians))
+                lbl.set_horizontalalignment(polar_tick_alignment(loc, radians))
         else:
             axis.set_major_locator(AutoLocator())
             axis.set_major_formatter(PolarRadiusFormatter(label))
