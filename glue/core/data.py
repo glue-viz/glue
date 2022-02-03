@@ -538,7 +538,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             The list of bounds for the fixed resolution buffer. This list should
             have as many items as there are dimensions in ``target_data``. Each
             item should either be a scalar value, or a tuple of ``(min, max, nsteps)``.
-        target_data : :class:`~glue.core.Data`, optional
+        target_data : :class:`~glue.core.data.Data`, optional
             The data in whose frame of reference the bounds are defined. Defaults
             to ``data``.
         target_cid : :class:`~glue.core.component_id.ComponentID`, optional

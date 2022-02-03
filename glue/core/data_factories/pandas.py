@@ -62,7 +62,7 @@ def pandas_read_table(path, **kwargs):
     path : str
         Path to the file.
 
-    kwargs
+    **kwargs
         All other kwargs are passed to :func:`pandas.read_csv`.
 
     Returns

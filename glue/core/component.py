@@ -119,7 +119,7 @@ class Component(object):
 
         Parameters
         ----------
-        kwargs :
+        **kwargs :
             All kwargs are passed to the Series constructor.
         Returns
         -------
@@ -465,7 +465,7 @@ class CategoricalComponent(Component):
 
         Parameters
         ----------
-        kwargs :
+        **kwargs :
             All kwargs are passed to the Series constructor.
 
         Returns

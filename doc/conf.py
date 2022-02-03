@@ -37,8 +37,8 @@ intersphinx_cache_limit = 10     # days to keep the cached inventories
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.7', None),
     'matplotlib': ('https://matplotlib.org', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'astropy': ('http://docs.astropy.org/en/stable/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
     'echo': ('https://echo.readthedocs.io/en/latest/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }

@@ -21,7 +21,7 @@ def tabular_data(path, **kwargs):
     path : str
         Path to the file.
 
-    kwargs
+    **kwargs
         All other kwargs are passed to the reader backend.
     """
 
