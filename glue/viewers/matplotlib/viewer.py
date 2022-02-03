@@ -319,9 +319,12 @@ class MatplotlibViewerMixin(object):
         if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar']:
             x_log_str = 'log' if self.state.x_log else 'linear'
             temp_str += "ax.set_xscale('" + x_log_str + "')\n"
-        if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+        if mode not in ['aitoff', 'hammer', 'lambert', 'mollweide', 'polar']:
             y_log_str = 'log' if self.state.y_log else 'linear'
             temp_str += "ax.set_yscale('" + y_log_str + "')\n"
+        if mode == 'polar':
+            state_dict['x_axislabel'] = ''
+            state_dict['y_axislabel'] = ''
         state_dict['scale_script'] = "# Set scale (log or linear)\n" + temp_str if temp_str else ''
         full_sphere = ['aitoff', 'hammer', 'lambert', 'mollweide']
         state_dict['limit_script'] = '' if mode in full_sphere else LIMIT_SCRIPT.format(**state_dict)

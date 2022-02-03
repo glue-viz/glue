@@ -12,9 +12,12 @@ def python_export_scatter_layer(layer, *args):
     polar = layer._viewer_state.using_polar
     degrees = polar and getattr(layer._viewer_state, 'using_degrees', False)
     if polar:
-        imports += ["from glue.core.util import ThetaRadianFormatter",
-                    "from matplotlib.projections.polar import ThetaFormatter, ThetaLocator",
-                    "from matplotlib.ticker import AutoLocator"]
+        theta_formatter = 'ThetaDegreeFormatter' if degrees else 'ThetaRadianFormatter'
+        imports += [
+            "from glue.core.util import polar_tick_alignment, PolarRadiusFormatter, {0}".format(theta_formatter),
+            "from matplotlib.projections.polar import ThetaFormatter, ThetaLocator",
+            "from matplotlib.ticker import AutoLocator"
+        ]
 
     script += "layer_handles = []  # for legend"
 
@@ -23,11 +26,17 @@ def python_export_scatter_layer(layer, *args):
     x_transform_close = ")" if degrees else ""
     script += "x = {0}layer_data['{1}']{2}\n".format(x_transform_open, layer._viewer_state.x_att.label, x_transform_close)
     script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
-    script += "keep = ~np.isnan(x) & ~np.isnan(y)\n"
+    script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
     if polar:
         script += 'ax.xaxis.set_major_locator(ThetaLocator(AutoLocator()))\n'
-        formatter = 'ThetaFormatter' if degrees else 'ThetaRadianFormatter'
-        script += 'ax.xaxis.set_major_formatter({0}())\n\n'.format(formatter)
+        script += 'ax.xaxis.set_major_formatter({0}("{1}"))\n'.format(theta_formatter, layer._viewer_state.x_axislabel)
+        script += "for lbl, loc in zip(ax.xaxis.get_majorticklabels(), ax.xaxis.get_majorticklocs()):\n"
+        script += "\tlbl.set_horizontalalignment(polar_tick_alignment(loc, {0}))\n\n".format(not degrees)
+
+        script += 'ax.yaxis.set_major_locator(AutoLocator())\n'
+        script += 'ax.yaxis.set_major_formatter(PolarRadiusFormatter("{0}"))\n'.format(layer._viewer_state.y_axislabel)
+        script += 'for lbl in ax.yaxis.get_majorticklabels():\n'
+        script += '\tlbl.set_fontstyle(\'italic\')\n\n'
 
     if layer.state.cmap_mode == 'Linear':
 

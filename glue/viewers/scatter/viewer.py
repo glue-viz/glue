@@ -24,38 +24,47 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('x_max', self._x_limits_to_mpl)
         self.state.add_callback('y_min', self.limits_to_mpl)
         self.state.add_callback('y_max', self.limits_to_mpl)
+        self.state.add_callback('x_axislabel', self._update_polar_ticks)
+        self.state.add_callback('y_axislabel', self._update_polar_ticks)
         self._update_axes()
 
-    def _update_axes(self, *args):
-
+    def _update_ticks(self, *args):
         if self.state.x_att is not None:
-
             # Update ticks, which sets the labels to categories if components are categorical
             radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
             update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log,
-                         self.state.x_categories, projection=self.state.plot_mode, radians=radians)
+                         self.state.x_categories, projection=self.state.plot_mode, radians=radians,
+                         label=self.state.x_axislabel)
+
+        if self.state.y_att is not None:
+            # Update ticks, which sets the labels to categories if components are categorical
+            update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log,
+                         self.state.y_categories, projection=self.state.plot_mode, label=self.state.y_axislabel)
+
+    def _update_axes(self, *args):
+
+        self._update_ticks(args)
+
+        if self.state.x_att is not None:
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
-            elif self.using_polar():
-                self.state.x_axislabel = ""
             else:
                 self.state.x_axislabel = self.state.x_att.label
 
         if self.state.y_att is not None:
 
-            # Update ticks, which sets the labels to categories if components are categorical
-            update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log,
-                         self.state.y_categories, projection=self.state.plot_mode)
-
             if self.state.y_log:
                 self.state.y_axislabel = 'Log ' + self.state.y_att.label
-            elif self.using_polar():
-                self.state.y_axislabel = ""
             else:
                 self.state.y_axislabel = self.state.y_att.label
 
         self.axes.figure.canvas.draw_idle()
+
+    def _update_polar_ticks(self, *args):
+        if self.using_polar():
+            self._update_ticks(args)
+            self.axes.figure.canvas.draw_idle()
 
     def _update_projection(self, *args):
         self.figure.delaxes(self.axes)
@@ -103,14 +112,22 @@ class MatplotlibScatterMixin(object):
             self.state.full_circle()
         self.limits_to_mpl()
 
+    def update_x_axislabel(self, *event):
+        if self.using_polar():
+            self.axes.set_xlabel("")
+        else:
+            super().update_x_axislabel()
+
     # Because of how the polar plot is drawn, we need to give the y-axis label more padding
     # Since this mixin is first in the MRO, we can 'override' the MatplotlibDataViewer method
     def update_y_axislabel(self, *event):
-        labelpad = 25 if self.using_polar() else None
-        self.axes.set_ylabel(self.state.y_axislabel,
-                             weight=self.state.y_axislabel_weight,
-                             size=self.state.y_axislabel_size,
-                             labelpad=labelpad)
+        if self.using_polar():
+            self.axes.set_ylabel("")
+        else:
+            self.axes.set_ylabel(self.state.y_axislabel,
+                                 weight=self.state.y_axislabel_weight,
+                                 size=self.state.y_axislabel_size,
+                                 labelpad=None)
         self.redraw()
 
     def apply_roi(self, roi, override_mode=None):
