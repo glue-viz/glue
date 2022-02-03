@@ -4,6 +4,9 @@ Full changelog
 v1.3.0 (unreleased)
 -------------------
 
+* Modify scatter viewer so that axis labels are shown in tick marks
+  when in polar mode. [#2267]
+
 * Remove bundled version of pvextractor and include it as a proper
   dependency. [#2252]
 
