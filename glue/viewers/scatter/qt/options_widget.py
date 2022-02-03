@@ -112,6 +112,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         axes_ui.combosel_y_axislabel_weight.setVisible(not is_polar)
         axes_ui.label_2.setText("Θlabel" if is_polar else "xlabel")
         axes_ui.label_6.setText("rlabel" if is_polar else "ylabel")
+        axes_ui.label.setText("Θ" if is_polar else "x")
+        axes_ui.label_10.setText("r" if is_polar else "y")
 
         self._update_x_attribute()
         self._update_y_attribute()
