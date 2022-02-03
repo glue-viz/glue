@@ -43,7 +43,7 @@ jobs:
     # - linux: py38-test-pyside514
 
     # Test against latest developer versions of some packages
-    - linux: py37-test-pyqt512-dev-all
+    - linux: py310-test-pyqt514-dev-all
 
     # Test a few configurations on MacOS X
     - macos: py37-test-pyqt513
