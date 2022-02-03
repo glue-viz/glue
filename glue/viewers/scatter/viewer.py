@@ -49,8 +49,6 @@ class MatplotlibScatterMixin(object):
 
             if self.state.x_log:
                 self.state.x_axislabel = 'Log ' + self.state.x_att.label
-            # elif self.using_polar():
-            #     self.state.x_axislabel = ""
             else:
                 self.state.x_axislabel = self.state.x_att.label
 
@@ -58,8 +56,6 @@ class MatplotlibScatterMixin(object):
 
             if self.state.y_log:
                 self.state.y_axislabel = 'Log ' + self.state.y_att.label
-            # elif self.using_polar():
-            #     self.state.y_axislabel = ""
             else:
                 self.state.y_axislabel = self.state.y_att.label
 
@@ -129,9 +125,9 @@ class MatplotlibScatterMixin(object):
             self.axes.set_ylabel("")
         else:
             self.axes.set_ylabel(self.state.y_axislabel,
-                             weight=self.state.y_axislabel_weight,
-                             size=self.state.y_axislabel_size,
-                             labelpad=None)
+                                 weight=self.state.y_axislabel_weight,
+                                 size=self.state.y_axislabel_size,
+                                 labelpad=None)
         self.redraw()
 
     def apply_roi(self, roi, override_mode=None):

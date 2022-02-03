@@ -109,10 +109,14 @@ class PolarRadiusFormatter(ScalarFormatter):
         forwards = vmax > vmin
         if forwards:
             delta, index = -1, -1
-            def test(idx): return values[idx] > vmax and idx >= -len(values)
+
+            def test(idx):
+                return values[idx] > vmax and idx >= -len(values)
         else:
             delta, index = 1, 0
-            def test(idx): return values[idx] < vmax and idx < len(values)
+
+            def test(idx):
+                return values[idx] < vmax and idx < len(values)
         while test(index):
             index += delta
         if self.axis_label:
