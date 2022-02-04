@@ -25,6 +25,13 @@ def extract_hdf5_datasets(filename, memmap=True):
     Recursive function that returns a dictionary with all the datasets found in
     an HDF5 file or group. `handle` should be an instance of h5py.highlevel.File
     or h5py.highlevel.Group.
+
+    Parameters
+    ----------
+    filename : str or file-like
+        The path or file handle to the HDF5 file
+    memmap : bool, optional
+        Whether to use memory mapping
     """
 
     import h5py
@@ -77,8 +84,8 @@ def hdf5_reader(filename, auto_merge=True, memmap=True, **kwargs):
 
     Parameters
     ----------
-    filename : str
-        The filename of the HDF5 file
+    filename : str or file-like
+        The path or file handle to the HDF5 file
     auto_merge : bool
         If all datasets have the same shape, and are at the base of the file,
         assume they are a column-based table and merge them into a single dataset.

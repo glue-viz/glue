@@ -16,11 +16,13 @@ def panda_read_excel(path, sheet=None, **kwargs):
     Parameters
     ----------
     path : str
-        Path to the file
+        Path to the file.
+
     sheet : str, optional
         The sheet to read. If `None`, all sheets are read.
-    kwargs
-        All other kwargs are passed to pandas.read_excel
+
+    **kwargs
+        All other kwargs are passed to :func:`pandas.read_excel`.
     """
 
     try:

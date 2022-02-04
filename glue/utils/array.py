@@ -22,6 +22,16 @@ def unbroadcast(array):
 
     See https://stackoverflow.com/questions/40845769/un-broadcasting-numpy-arrays
     for more details.
+
+    Parameters
+    ----------
+    array : `~numpy.ndarray`
+        The array to use.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The reshaped array.
     """
 
     if array.ndim == 0 or not hasattr(array, 'strides'):
@@ -34,6 +44,16 @@ def unbroadcast(array):
 def broadcast_arrays_minimal(*arrays):
     """
     Unbroadcast arrays then broadcast to smallest common shape.
+
+    Parameters
+    ----------
+    arrays : iterable of `~numpy.ndarray`
+        The arrays to broadcast.
+
+    Returns
+    -------
+    broadcasted : list of `~numpy.ndarray`
+        List of views on the unbroadcasted arrays.
     """
     return np.broadcast_arrays(*[unbroadcast(array) for array in arrays])
 
@@ -45,14 +65,14 @@ def unique(array):
 
     Parameters
     ----------
-    array : `numpy.ndarray`
-        The array to use
+    array : `~numpy.ndarray`
+        The array to use.
 
     Returns
     -------
-    U : `numpy.ndarray`
+    U : `~numpy.ndarray`
         The unique elements of the array
-    I : `numpy.ndarray`
+    I : `~numpy.ndarray`
         The indices such that ``U[I] == array``
     """
     # numpy.unique doesn't handle mixed-types on python3,
@@ -109,12 +129,12 @@ def coerce_numeric(arr):
     Coerce an array into a numeric array, replacing non-numeric elements with
     nans.
 
-    If the array is already a numeric type, it is returned unchanged
+    If the array is already a numeric type, it is returned unchanged.
 
     Parameters
     ----------
-    arr : `numpy.ndarray`
-        The array to coerce
+    arr : `~numpy.ndarray`
+        The array to coerce.
     """
 
     # Already numeric type
@@ -139,6 +159,11 @@ def coerce_numeric(arr):
 def check_sorted(array):
     """
     Return `True` if the array is sorted, `False` otherwise.
+
+    Parameters
+    ----------
+    array : `~numpy.ndarray`
+        The array to test.
     """
     # this ignores NANs, and does the right thing if nans
     # are concentrated at beginning or end of array
@@ -149,12 +174,12 @@ def check_sorted(array):
 
 def pretty_number(numbers):
     """
-    Convert a list/array of numbers into a nice list of strings
+    Convert an iterable of numbers into a nice list of strings.
 
     Parameters
     ----------
-    numbers : list
-        The numbers to convert
+    numbers : array-like of int or float
+        The numbers to convert.
     """
     try:
         return [pretty_number(n) for n in numbers]
@@ -195,6 +220,13 @@ def find_chunk_shape(shape, n_max=None):
 
     This currently assumes the optimal chunk shape to return is for C-contiguous
     arrays.
+
+    Parameters
+    ----------
+    shape : iterable
+        The shape of the n-dimensional array.
+    n_max : int, optional
+        The maximum number of elements per chunk.
     """
 
     if n_max is None:
@@ -220,6 +252,19 @@ def iterate_chunks(shape, chunk_shape=None, n_max=None):
     """
     Given a data shape and a chunk shape (or maximum chunk size), iteratively
     return slice objects that can be used to slice the array.
+
+    Parameters
+    ----------
+    shape : iterable
+        The shape of the n-dimensional array.
+    chunk_shape : iterable, optional
+        The shape of the chunks to be sliced into, needs to fit within `shape`.
+    n_max : int, optional
+        The maximum number of elements per chunk.
+
+    Notes
+    -----
+    Exactly one of `chunk_shape` or `n_max` must be specified.
     """
 
     # Shortcut - if there are any 0 elements in the shape, there are no
@@ -273,6 +318,15 @@ def combine_slices(slice1, slice2, length):
     Given two slices that can be applied to a 1D array and the length of that
     array, this returns a new slice which is the one that should be applied to
     the array instead of slice2 if slice1 has already been applied.
+
+    Parameters
+    ----------
+    slice1 : slice
+        The first slice (only positive step sizes allowed).
+    slice2 : slice
+        The second slice (only positive step sizes allowed).
+    length : int
+        The length of the array on which the combined slice is to be applied.
     """
 
     beg1, end1, step1 = slice1.indices(length)
@@ -314,8 +368,8 @@ def combine_slices(slice1, slice2, length):
 
 def format_minimal(values):
     """
-    Find the shortest format that can be used to represent all values in an
-    array such that all the string representations are different.
+    Find the shortest `float` format that can be used to represent all values
+    in an array such that all the string representations are different.
 
     The current implementation is not incredibly efficient, but it takes only
     ~30ms for a 1000 element array and 200ms for a 10000 element array. One
@@ -323,6 +377,11 @@ def format_minimal(values):
     for now for what we use it for.
 
     Returns the optimal format as well as an array of formatted values.
+
+    Parameters
+    ----------
+    values : array-like
+        The (typically non-integer) values to be formatted.
     """
     values = np.asarray(values)
     if np.max(np.abs(values)) > 1e5 or np.min(np.diff(values)) < 1e-5:
@@ -361,9 +420,9 @@ def compute_statistic(statistic, data, mask=None, axis=None, finite=True,
     ----------
     statistic : {'minimum', 'maximum', 'mean', 'median', 'sum', 'percentile'}
         The statistic to compute
-    data : `numpy.ndarray`
+    data : `~numpy.ndarray`
         The data to compute the statistic for.
-    mask : `numpy.ndarray`
+    mask : `~numpy.ndarray`
         The mask to apply when computing the statistic.
     axis : None or int or tuple of int
         If specified, the axis/axes to compute the statistic over.
@@ -512,16 +571,16 @@ def index_lookup(data, items):
 
     Parameters
     ----------
-    data
-        An array-like object
-    items
-        Array-like of unique values
+    data : array-like
+        An array-like object that can be used to instantiate a :class:`pandas.DataFrame`.
+    items : array-like
+        An array-like of unique values in `data`.
 
     Returns
     -------
-    array
+    :class:`~numpy.ndarray`
         If result[i] is finite, then data[i] = categories[result[i]]
-        Otherwise, data[i] is not in the categories list
+        Otherwise, data[i] is not in the categories list.
     """
 
     # np.searchsorted doesn't work on mixed types in Python3

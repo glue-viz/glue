@@ -49,8 +49,8 @@ class ComponentID(object):
 
     Parameters
     ----------
-    label : str
-        Name for the component ID
+    label : `str`
+        Name for the component ID.
     """
 
     def __init__(self, label, parent=None):
@@ -74,10 +74,14 @@ class ComponentID(object):
     def label(self, value):
         """Change label.
 
+        Parameters
+        ----------
+        value : `str`
+            The new label.
+
         .. warning::
-            Label changes are not currently tracked by client
-            classes. Label's should only be changd before creating other
-            client objects
+            Label changes are not currently tracked by client classes.
+            Labels should only be changd before creating other client objects.
         """
         self._label = str(value)
         if self.parent is not None and self.parent.hub:

@@ -279,7 +279,7 @@ class MultiLink(BaseMultiLink):
     labels2 : list of str
         The human-readable names of the inputs to the ``backwards`` function.
         If not specified, this is set to the argument names of ``backwards``.
-    kwargs :
+    **kwargs :
         Additional arguments are passed
     """
 

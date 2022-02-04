@@ -34,6 +34,11 @@ def renderless_figure():
 def all_artists(fig):
     """
     Build a set of all Matplotlib artists in a Figure
+
+    Parameters
+    ----------
+    fig : :func:`matplotlib.pyplot.figure`
+        Matplotlib figure.
     """
     return set(item
                for axes in fig.axes
@@ -44,20 +49,31 @@ def all_artists(fig):
 
 def new_artists(fig, old_artists):
     """
-    Find the newly-added artists in a figure
+    Find the newly-added artists in a figure.
 
-    :param fig: Matplotlib figure
-    :param old_artists: Return value from :func:all_artists
-    :returns: All artists added since all_artists was called
+    Parameters
+    ----------
+    fig : :func:`matplotlib.pyplot.figure`
+        Matplotlib figure.
+    old_artists : set
+        Return value from :func:`all_artists`.
+
+    Returns
+    -------
+    set
+        All artists added since ``all_artists`` was called.
     """
     return all_artists(fig) - old_artists
 
 
 def remove_artists(artists):
     """
-    Remove a collection of matplotlib artists from a scene
+    Remove a collection of matplotlib artists from a scene.
 
-    :param artists: Container of artists
+    Parameters
+    ----------
+    artists : sequence
+        Container of artists.
     """
     for a in artists:
         try:
@@ -76,14 +92,14 @@ def get_extent(view, transpose=False):
 def view_cascade(data, view):
     """
     Return a set of views progressively zoomed out of input at roughly constant
-    pixel count
+    pixel count.
 
     Parameters
     ----------
     data : array-like
-        The array to view
-    view :
-        The original view into the data
+        The array to view.
+    view : iterable
+        The original view into the data.
     """
     shp = data.shape
     v2 = list(view)
@@ -112,19 +128,19 @@ def _scoreatpercentile(values, percentile, limit=None):
 
 def fast_limits(data, plo, phi):
     """
-    Quickly estimate percentiles in an array, using a downsampled version
+    Quickly estimate percentiles in an array, using a downsampled version.
 
     Parameters
     ----------
-    data : `numpy.ndarray`
-        The array to estimate the percentiles for
+    data : `~numpy.ndarray`
+        The array to estimate the percentiles for.
     plo, phi : float
-        The percentile values
+        The percentiles.
 
     Returns
     -------
     lo, hi : float
-        The percentile values
+        The percentile values.
     """
 
     shp = data.shape
@@ -205,15 +221,20 @@ def color2hex(color):
 def point_contour(x, y, data):
     """Calculate the contour that passes through (x,y) in data
 
-    :param x: x location
-    :param y: y location
-    :param data: 2D image
-    :type data: :class:`numpy.ndarray`
+    Parameters
+    ----------
+    data : `~numpy.ndarray`
+        A 2D image.
+    x : int
+        Index of `x` location.
+    y : int
+        Index of `y` location.
 
-    Returns:
-
-       * A (nrow, 2column) numpy array. The two columns give the x and
-         y locations of the contour vertices
+    Returns
+    -------
+    contour : `~numpy.ndarray`
+        A shape ``(N, 2)`` numpy array giving the `x` and `y` locations
+        of the `N` contour vertices.
     """
     try:
         from scipy.ndimage import label, binary_fill_holes
@@ -289,7 +310,7 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     Parameters
     ----------
-    ax_class : matplotlib.axes.Axes
+    ax_class : :class:`matplotlib.axes.Axes`
         The axes class for which to fix the margins
     margins : iterable
         The margins, in inches. The order of the margins is
@@ -319,9 +340,9 @@ def cache_axes(axes, toolbar):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The axes to cache
-    toolbar : `~glue.viewers.common.qt.toolbar.GlueToolbar`
+    toolbar : :class:`glue.viewers.common.qt.toolbar.BasicToolbar`
         The toolbar managing the axes' canvas
     """
     canvas = axes.figure.canvas
@@ -340,7 +361,7 @@ class ColormapPatchHandler(HandlerBase):
 
         Parameters
         ----------
-        cmap : `~matplotlib.colors.colormap`
+        cmap : :class:`matplotlib.colors.colormap`
             The matplotlib colormap to use
         nb_subpatch : int, optional
             The number of stripes to use to represent the colormap.

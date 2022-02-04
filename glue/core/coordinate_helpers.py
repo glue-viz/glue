@@ -22,15 +22,15 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
 
     Parameters
     ----------
-    *pixel : scalars lists, or Numpy arrays
-        The pixel coordinates (0-based) to convert
-    world_axis : int, optional
+    *pixel : array-like
+        The pixel coordinates (0-based) to convert.
+    world_axis : `int`, optional
         The index of the world coordinate that is needed.
 
     Returns
     -------
-    world : `numpy.ndarray`
-        The world coordinates for the requested axis
+    world : :class:`~numpy.ndarray`
+        The world coordinates for the requested axis.
     """
 
     if world_axis is None:
@@ -68,15 +68,15 @@ def world2pixel_single_axis(wcs, *world, pixel_axis=None):
 
     Parameters
     ----------
-    *world : scalars lists, or Numpy arrays
-        The world coordinates to convert
-    pixel_axis : int, optional
+    *world : array-like
+        The world coordinates to convert.
+    pixel_axis : `int`, optional
         The index of the pixel coordinate that is needed.
 
     Returns
     -------
-    pixel : `numpy.ndarray`
-        The pixel coordinates for the requested axis
+    pixel : :class:`~numpy.ndarray`
+        The pixel coordinates for the requested axis.
     """
 
     if pixel_axis is None:
@@ -113,11 +113,11 @@ def world_axis(wcs, data, *, pixel_axis=None, world_axis=None):
     ----------
     data : `~glue.core.data.Data`
         The data to compute the coordinate axis for (this is used to
-        determine the size of the axis)
-    pixel_axis : int
+        determine the size of the axis).
+    pixel_axis : `int`
         The pixel axis along which to compute the world coordinate,
         in coordinate order.
-    world_axis : int
+    world_axis : `int`
         The world axis to compute.
 
     Notes

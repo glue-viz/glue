@@ -56,8 +56,7 @@ def astropy_tabular_data(*args, **kwargs):
     Build a data set from a table. We restrict ourselves to tables
     with 1D columns.
 
-    All arguments are passed to
-        astropy.table.Table.read(...).
+    All arguments are passed to the :class:`astropy.table.Table` reader.
     """
 
     result = Data()

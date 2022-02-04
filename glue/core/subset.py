@@ -36,7 +36,8 @@ SYMOP = dict((v, k) for k, v in OPSYM.items())
 
 class Subset(object):
 
-    """Base class to handle subsets of data.
+    """
+    Base class to handle subsets of data.
 
     These objects both describe subsets of a dataset, and relay any
     state changes to the hub that their parent data are assigned to.
@@ -45,9 +46,10 @@ class Subset(object):
     state changes back to the hub. Subclasses implement the actual
     description and manipulation of data subsets
 
-    :param data:
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`
         The dataset that this subset describes
-    :type data: :class:`~glue.core.data.Data`
     """
 
     @contract(data='isinstance(Data)|None',
@@ -55,11 +57,12 @@ class Subset(object):
               alpha=float,
               label='string|None')
     def __init__(self, data, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None):
-        """ Create a new subset object.
+        """Create a new subset object.
 
-        Note: the preferred way for creating subsets is
-        via DataCollection.new_subset_group. Manually-instantiated
-        subsets will probably *not* be represented properly by the UI
+        Note: the preferred way for creating subsets is via
+        :func:`~glue.core.data_collection.DataCollection.new_subset_group`.
+        Manually-instantiated subsets will probably *not*
+        be represented properly by the UI
         """
 
         self._broadcasting = False  # must be first def
@@ -112,12 +115,15 @@ class Subset(object):
 
     @property
     def label(self):
-        """ Convenience access to subset's label """
+        """
+        Convenience access to subset's label.
+        """
         return self._label
 
     @label.setter
     def label(self, value):
-        """Set the subset's label
+        """
+        Set the subset's label
 
         Subset labels within a data object must be unique. The input
         will be auto-disambiguated if necessary
@@ -128,16 +134,12 @@ class Subset(object):
     @property
     def attributes(self):
         """
-        Returns a tuple of the ComponentIDs that this subset
-        depends upon
+        Returns a tuple of the ComponentIDs that this subset depends upon.
         """
         return self.subset_state.attributes
 
     def register(self):
-        """ Register a subset to its data, and start broadcasting
-        state changes
-
-        """
+        """Register a subset to its data, and start broadcasting state changes"""
         self.data.add_subset(self)
         self.do_broadcast(True)
 
@@ -150,19 +152,19 @@ class Subset(object):
         If x is the numpy array corresponding to some component.data,
         the two following statements are equivalent::
 
-           x.flat[subset.to_index_list()]
-           x[subset.to_mask()]
+            x.flat[subset.to_index_list()]
+            x[subset.to_mask()]
 
-        Returns:
+        Returns
+        -------
+        :class:`~numpy.ndarray`
+            A numpy array, giving the indices of elements in the data that
+            belong to this subset.
 
-           A numpy array, giving the indices of elements in the data that
-           belong to this subset.
-
-        Raises:
-
-           IncompatibleDataException: if an index list cannot be created
-           for the requested data set.
-
+        Raises
+        ------
+        IncompatibleDataException
+            If an index list cannot be created for the requested data set.
         """
         return self.subset_state.to_index_list(self.data)
 
@@ -171,13 +173,17 @@ class Subset(object):
         """
         Convert the current subset to a mask.
 
-        :param view: An optional view into the dataset (e.g. a slice)
-                     If present, the mask will pertain to the view and not the
-                     entire dataset.
+        Parameters
+        ----------
+        view : object
+            An optional view into the dataset (e.g. a slice)
+            If present, the mask will pertain to the view and not the entire dataset.
 
-           A boolean numpy array, the same shape as the data, that
-           defines whether each element belongs to the subset.
-
+        Returns
+        -------
+        :class:`~numpy.ndarray`
+            A boolean numpy array, the same shape as the data, that
+            defines whether each element belongs to the subset.
         """
         return self.data.get_mask(self.subset_state, view=view)
 
@@ -189,8 +195,10 @@ class Subset(object):
         It can be useful to turn off broadcasting, when modifying the
         subset in ways that don't impact any of the clients.
 
-        Attributes:
-        value: Whether the subset should broadcast state changes (True/False)
+        Attributes
+        ----------
+        value : bool
+            Whether the subset should broadcast state changes (True/False)
 
         """
         object.__setattr__(self, '_broadcasting', value)
@@ -198,13 +206,12 @@ class Subset(object):
     @contract(attribute='string')
     def broadcast(self, attribute):
         """
-        Explicitly broadcast a SubsetUpdateMessage to the hub
+        Explicitly broadcast a SubsetUpdateMessage to the hub.
 
-        :param attribute:
-                   The name of the attribute (if any) that should be
-                   broadcast as updated.
-        :type attribute: ``str``
-
+        Parameters
+        ----------
+        attribute : str
+            The name of the attribute (if any) that should be broadcast as updated.
         """
 
         if not hasattr(self, 'data') or not hasattr(self.data, 'hub'):
@@ -215,9 +222,10 @@ class Subset(object):
             self.data.hub.broadcast(msg)
 
     def delete(self):
-        """Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting
+        """
+        Broadcast a SubsetDeleteMessage to the hub, and stop broadcasting.
 
-        Also removes subset reference from parent data's subsets list
+        Also removes subset reference from parent data's subsets list.
         """
 
         dobroad = self._broadcasting and self.data is not None and \
@@ -238,11 +246,12 @@ class Subset(object):
     def write_mask(self, file_name, format="fits"):
         """ Write a subset mask out to file
 
-        :param file_name: name of file to write to
-        :param format:
-           Name of format to write to. Currently, only "fits" is
-           supported
-
+        Parameters
+        ----------
+        file_name : str
+            Name of file to write to
+        format : str, optional
+            Name of format to write to. Currently, only "fits" is supported.
         """
         mask = np.short(self.to_mask())
         if format == 'fits':
@@ -280,9 +289,13 @@ class Subset(object):
             self.broadcast(attribute)
 
     def __getitem__(self, view):
-        """ Retrieve the elements from a data view within the subset
+        """
+        Retrieve the elements from a data view within the subset.
 
-        :param view: View of the data. See data.__getitem__ for detils
+        Parameters
+        ----------
+        view : object
+            View of the data. See ``data.__getitem__`` for details.
         """
         c, v = split_component_view(view)
         ma = self.to_mask(v)
@@ -290,7 +303,9 @@ class Subset(object):
 
     @contract(other_subset='isinstance(Subset)')
     def paste(self, other_subset):
-        """paste subset state from other_subset onto self """
+        """
+        Paste subset state from other_subset onto self.
+        """
         state = other_subset.subset_state.copy()
         self.subset_state = state
 
@@ -333,7 +348,8 @@ class Subset(object):
 
     def state_as_mask(self):
         """
-        Convert the current SubsetState to a MaskSubsetState
+        Convert the current :class:`~glue.core.subset.SubsetState` to a
+        :class:`~glue.core.subset.MaskSubsetState`.
         """
         try:
             m = self.to_mask()
@@ -482,8 +498,9 @@ class RoiSubsetStateNd(SubsetState):
         The data attributes that define the dimensions of the region.
     roi : :class:`~glue.core.roi.Roi`
         The region of interest.
-    pretransform: callable, optional
-        A function that can be optionally applied to the data before checking points against the region.
+    pretransform : callable, optional
+        A function that can be optionally applied to the data before
+        checking points against the region.
     """
 
     def __init__(self, atts=[], roi=None, pretransform=None):
@@ -596,7 +613,8 @@ class RoiSubsetState(RoiSubsetStateNd):
     roi : :class:`~glue.core.roi.Roi`
         The region of interest.
     pretransform: callable, optional
-        A function that can be optionally applied to the data before checking points against the region.
+        A function that can be optionally applied to the data before
+        checking points against the region.
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)')
@@ -873,7 +891,7 @@ class CategoricalROISubsetState2D(SubsetState):
     @property
     def att1(self):
         """
-        The component ID matching the keys of the ``categories`` dictionary
+        The component ID matching the keys of the ``categories`` dictionary.
         """
         return self._att1
 
@@ -884,7 +902,7 @@ class CategoricalROISubsetState2D(SubsetState):
     @property
     def att2(self):
         """
-        The component ID matching the values of the ``categories`` dictionary
+        The component ID matching the values of the ``categories`` dictionary.
         """
         return self._att2
 
@@ -1109,11 +1127,10 @@ class XorState(CompositeSubsetState):
 
 class InvertState(CompositeSubsetState):
     """
-    A inverted subset state.
+    An inverted subset state.
 
-    Values inside the original subset are now considered outside, and
-    vice-versa. The original subset state can be accessed using the attribute
-    ``state1``.
+    Values inside the original subset are now considered outside, and vice-versa.
+    The original subset state can be accessed using the attribute ``state1``.
     """
 
     @memoize
@@ -1169,7 +1186,7 @@ class MaskSubsetState(SubsetState):
 
     Parameters
     ----------
-    mask : `~numpy.ndarray`
+    mask : :class:`~numpy.ndarray`
         The boolean mask to apply to the data.
     cids : iterable of :class:`~glue.core.component_id.ComponentID`
         The component IDs along which the mask applies.
@@ -1379,7 +1396,7 @@ class CategorySubsetState(SubsetState):
     Parameters
     ----------
     att : :class:`~glue.core.component_id.ComponentID`
-        The categorical data attribute used for the subset
+        The categorical data attribute used for the subset.
     categories : iterable
         The categories that the attribute should be equal to. These should be
         given as the integer codes, not the categorical labels.
@@ -1393,7 +1410,7 @@ class CategorySubsetState(SubsetState):
     @property
     def att(self):
         """
-        The categorical data attribute used for the subset
+        The categorical data attribute used for the subset.
         """
         return self._att
 
@@ -1539,7 +1556,7 @@ class InequalitySubsetState(SubsetState):
     right : float or `~glue.core.component_id.ComponentID` or str
         The value or component on the right hand side of the comparison.
     operator : operator
-        The comparison operator (from the :mod:`operator` module)
+        The comparison operator (from the :mod:`operator` module).
     """
 
     def __init__(self, left, right, operator):
@@ -1587,7 +1604,7 @@ class InequalitySubsetState(SubsetState):
     @property
     def operator(self):
         """
-        The comparison operator (from the :mod:`operator` module)
+        The comparison operator (from the :mod:`operator` module).
         """
         return self._operator
 
@@ -1640,10 +1657,10 @@ class FloodFillSubsetState(MaskSubsetState):
     start_coords : tuple
         The pixel coordinates of the starting point.
     threshold : float
-        A value greater or equal to 1 describing the extend of the flood
-        filling. The range of values selected by the flood fill is ``start_value
-        * (2 -threshold)`` to ``start_value * threshold`` where ``start_value``
-        is the value of the data at ``start_coords``.
+        A value greater or equal to 1 describing the extent of the flood filling.
+        The range of values selected by the flood fill is
+        ``start_value * (2 -threshold)`` to ``start_value * threshold`` where
+        ``start_value`` is the value of the data at ``start_coords``.
     """
 
     # TODO: we need to recompute the mask if the numerical values of the
@@ -1700,9 +1717,9 @@ class FloodFillSubsetState(MaskSubsetState):
     def threshold(self):
         """
         A value greater or equal to 1 describing the extend of the flood
-        filling. The range of values selected by the flood fill is ``start_value
-        * (2 -threshold)`` to ``start_value * threshold`` where ``start_value``
-        is the value of the data at ``start_coords``.
+        filling. The range of values selected by the flood fill is
+        ``start_value * (2 -threshold)`` to ``start_value * threshold`` where
+        ``start_value`` is the value of the data at ``start_coords``.
         """
         return self._threshold
 
@@ -1766,7 +1783,8 @@ class RoiSubsetState3d(RoiSubsetStateNd):
     roi : :class:`~glue.core.roi.Roi`
         The region of interest (which should implement ``contains3d``)
     pretransform: callable, optional
-        A function that can be optionally applied to the data before checking points against the region.
+        A function that can be optionally applied to the data before checking points
+        against the region.
     """
 
     @contract(xatt='isinstance(ComponentID)', yatt='isinstance(ComponentID)', zatt='isinstance(ComponentID)')

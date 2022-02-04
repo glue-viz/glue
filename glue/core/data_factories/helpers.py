@@ -188,14 +188,20 @@ class FileWatcher(object):
 
     """
     Watch a path for modifications, and perform an action on change
+
+    Parameters
+    ----------
+    path : str
+        The path to watch.
+
+    callback : callable
+        A function to call when the path changes.
+
+    poll_interval : int
+        Time to wait between checks, in ms.
     """
 
     def __init__(self, path, callback, poll_interval=1000):
-        """
-        :param path: The path to watch, str
-        :param callback: A function to call when the path changes
-        :param poll_interval: Time to wait between checks, in ms
-        """
         self.path = path
         self.callback = callback
         self.poll_interval = poll_interval
@@ -230,16 +236,23 @@ class FileWatcher(object):
 @contract(path='string', factory='callable|None',
           returns='inst($Data)|list(inst($Data))')
 def load_data(path, factory=None, **kwargs):
-    """Use a factory to load a file and assign a label.
+    """
+    Use a factory to load a file and assign a label.
 
     This is the preferred interface for loading data into Glue,
     as it logs metadata about how data objects relate to files
     on disk.
 
-    :param path: Path to a file
-    :param factory: factory function to use. Defaults to :func:`auto_data`
+    Parameters
+    ----------
+    path : str
+        Path to the file.
 
-    Extra keywords are passed through to factory functions
+    factory : callable
+        Factory function to use. Defaults to :func:`glue.core.data_factories.auto_data`
+        callback.
+
+        Extra keywords are passed through to factory functions.
     """
     from glue.qglue import parse_data
 
@@ -260,7 +273,6 @@ def load_data(path, factory=None, **kwargs):
         factory = find_factory(path, **kwargs)
         if factory is None:
             raise KeyError("Don't know how to open file: %s" % path)
-
     lbl = data_label(path)
 
     d = as_list(factory(path, **kwargs))
@@ -306,8 +318,10 @@ def load_data(path, factory=None, **kwargs):
 
 
 def data_label(path):
-    """Convert a file path into a data label, by stripping out
-    slashes, file extensions, etc."""
+    """
+    Convert a file path into a data label, by stripping out
+    slashes, file extensions, etc.
+    """
     if os.path.basename(path) == '':
         path = os.path.dirname(path)
     _, fname = os.path.split(path)

@@ -17,22 +17,25 @@ __all__ = ['DataCollection']
 
 class DataCollection(HubListener):
 
-    """The top-level object for interacting with datasets in Glue.
+    """
+    The top-level object for interacting with datasets in Glue.
 
     DataCollections have the following responsibilities:
 
-       * Providing a way to retrieve and store data
-       * Broadcasting messages when data are added or removed
-       * Keeping each managed data set's list of
-         :class:`~glue.core.component.DerivedComponent` instances up-to-date
-       * Creating the hub that all other objects should use to communicate
-         with one another (stored in ``self.hub``)
+        * Providing a way to retrieve and store data
+        * Broadcasting messages when data are added or removed
+        * Keeping each managed data set's list of
+          :class:`~glue.core.component.DerivedComponent` instances up-to-date
+        * Creating the hub that all other objects should use to communicate
+          with one another (stored in ``self.hub``)
+
+    Parameters
+    ----------
+    data : :class:`~glue.core.data.Data`, or `list` of such, optional
+        The data objects to be stored in the collection.
     """
 
     def __init__(self, data=None):
-        """
-        :param data: :class:`~glue.core.data.Data` object, or list of such objects
-        """
         super(DataCollection, self).__init__()
 
         self._link_manager = LinkManager(self)
@@ -50,17 +53,21 @@ class DataCollection(HubListener):
 
     @property
     def data(self):
-        """ The :class:`~glue.core.data.Data` objects in the collection """
+        """The :class:`~glue.core.data.Data` objects in the collection"""
         return self._data
 
     def append(self, data):
-        """ Add a new dataset to this collection.
+        """
+        Add a new dataset to this collection.
 
         Appending emits a DataCollectionAddMessage.
         It also updates the list of DerivedComponents that each
         data set can work with.
 
-        :param data: :class:`~glue.core.data.BaseCartesianData` object to add
+        Parameters
+        ----------
+        data : :class:`~glue.core.data.BaseCartesianData`, or `list` of such
+            The dataset to add.
         """
 
         if isinstance(data, list):
@@ -85,11 +92,15 @@ class DataCollection(HubListener):
         self._sync_link_manager()
 
     def extend(self, data):
-        """Add several new datasets to this collection
+        """
+        Add several new datasets to this collection.
 
-        See :meth:`append` for more information
+        See :meth:`append` for more information.
 
-        :param data: List of data objects to add
+        Parameters
+        ----------
+        data : `iterable` of :class:`~glue.core.data.BaseCartesianData`
+            The datasets to add.
         """
         # Wait until all datasets are added to sync the link manager
         with self._ignore_link_manager_update():
@@ -98,12 +109,13 @@ class DataCollection(HubListener):
         self._sync_link_manager()
 
     def remove(self, data):
-        """ Remove a data set from the collection
+        """
+        Remove a data set from the collection, if present.
 
-        Emits a DataCollectionDeleteMessage
+        Emits a DataCollectionDeleteMessage.
 
-        :param data: the object to remove
-        :type data: :class:`~glue.core.data.Data`
+        data : :class:`~glue.core.data.Data`
+            The data object to remove.
         """
         if data not in self._data:
             return
@@ -119,8 +131,9 @@ class DataCollection(HubListener):
                 self.remove(data)
 
     def _sync_link_manager(self):
-        """ update the LinkManager, so all the DerivedComponents
-        for each data set are up-to-date
+        """
+        Update the LinkManager, so all the DerivedComponents
+        for each data set are up-to-date.
         """
 
         if getattr(self, '_disable_sync_link_manager', False):
@@ -167,14 +180,15 @@ class DataCollection(HubListener):
         return tuple(self._link_manager.external_links)
 
     def add_link(self, links):
-        """Add one or more links to the data collection.
+        """
+        Add one or more links to the data collection.
 
-        This will auto-update the components in each data set
+        This will auto-update the components in each data set.
 
-        :param links:
-           The links to add. A scalar or list of
-           :class:`~glue.core.component_link.ComponentLink`
-           instances, or a :class:`~glue.core.link_helpers.LinkCollection`
+        Parameters
+        ----------
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
+            The links to add.
         """
         self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
 
@@ -182,12 +196,12 @@ class DataCollection(HubListener):
         """
         Remove one or more links from the data collection.
 
-        This will auto-update the components in each data set
+        This will auto-update the components in each data set.
 
-        :param links:
-           The links to remove. A scalar or list of
-           :class:`~glue.core.component_link.ComponentLink`
-           instances, or a :class:`~glue.core.link_helpers.LinkCollection`
+        Parameters
+        ----------
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
+            The links to remove.
         """
         self._link_manager.remove_link(links, update_external=not self._disable_sync_link_manager)
 
@@ -199,8 +213,10 @@ class DataCollection(HubListener):
         Override the links in the collection, and update data objects as
         necessary.
 
-        :param links: The new links. An iterable of
-            :class:`~glue.core.component_link.ComponentLink` instances
+        Parameters
+        ----------
+        links : :class:`~glue.core.component_link.ComponentLink`, or `iterable` of such, or :class:`~glue.core.link_helpers.LinkCollection`
+            The new links.
         """
         self._link_manager.clear_links()
         self._link_manager.add_link(links, update_external=not self._disable_sync_link_manager)
@@ -208,8 +224,10 @@ class DataCollection(HubListener):
     def register_to_hub(self, hub):
         """ Register managed data objects to a hub.
 
-        :param hub: The hub to register with
-        :type hub: :class:`~glue.core.hub.Hub`
+        Parameters
+        ----------
+        hub : :class:`~glue.core.hub.Hub`
+            The hub to register with.
         """
         if self.hub is hub:
             return
@@ -235,12 +253,16 @@ class DataCollection(HubListener):
         """
         Create and return a new Subset Group.
 
-        :param label: The label to assign to the group
-        :type label: str
-        :param subset_state: The state to initialize the group with
-        :type subset_state: :class:`~glue.core.subset.SubsetState`
+        Parameters
+        ----------
+        label : `str`
+            The label to assign to the group.
+        subset_state : :class:`~glue.core.subset.SubsetState`
+            The state to initialize the group with.
 
-        :returns: A new :class:`~glue.core.subset_group.SubsetGroup`
+        Returns
+        -------
+        :class:`~glue.core.subset_group.SubsetGroup`
         """
         from glue.core.subset_group import SubsetGroup
         color = settings.SUBSET_COLORS[self._sg_count % len(settings.SUBSET_COLORS)]
@@ -297,15 +319,23 @@ class DataCollection(HubListener):
 
         This has the following effects:
 
-        All components from all datasets are added to the first argument
-        All datasets except the first argument are removed from the collection
-        Any component name conflicts are disambiguated
-        The pixel and world components apart from the first argument are discarded
+        All components from all datasets are added to the first argument.
+        All datasets except the first argument are removed from the collection.
+        Any component name conflicts are disambiguated.
+        The pixel and world components apart from the first argument are discarded.
 
-        :note: All arguments must have the same shape
+        Parameters
+        ----------
+        data : `iterable` of :class:`~glue.core.data.Data`
+            Two or more datasets to be added to this collection.
 
-        :param data: One or more :class:`~glue.core.data.Data` instances.
-        :returns: self
+        Notes
+        -----
+        All arguments must have the same shape.
+
+        Returns
+        -------
+        self
         """
         if len(data) < 2:
             raise ValueError("merge requires 2 or more arguments")
@@ -360,7 +390,7 @@ class DataCollection(HubListener):
     @property
     def subset_groups(self):
         """
-        tuple of current :class:`Subset Groups <glue.core.subset_group.SubsetGroup>`
+        `tuple` of current :class:`Subset Groups <glue.core.subset_group.SubsetGroup>`
         """
         return tuple(self._subset_groups)
 

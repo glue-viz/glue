@@ -774,9 +774,9 @@ class AbstractMplRoi(object):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
-    roi : `~glue.core.roi.Roi`, optional
+    roi : :class:`glue.core.roi.Roi`, optional
         If specified, this ROI will be used and updated, otherwise a new one
         will be created.
     """
@@ -869,7 +869,7 @@ class MplPickROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 
@@ -900,7 +900,7 @@ class MplRectangularROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 
@@ -1015,7 +1015,7 @@ class MplXRangeROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 
@@ -1119,7 +1119,7 @@ class MplYRangeROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 
@@ -1229,7 +1229,7 @@ class MplCircularROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 
@@ -1368,9 +1368,9 @@ class MplPolygonalROI(AbstractMplRoi):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
-    roi : `~glue.core.roi.Roi`, optional
+    roi : :class:`glue.core.roi.Roi`, optional
         If specified, this ROI will be used and updated, otherwise a new one
         will be created.
     """
@@ -1475,7 +1475,7 @@ class MplPathROI(MplPolygonalROI):
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The Matplotlib axes to draw to.
     """
 

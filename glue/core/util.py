@@ -174,7 +174,7 @@ def join_component_view(component, view):
 
     Parameters
     ----------
-    component : `~glue.core.component_id.ComponentID`
+    component : :class:`glue.core.component_id.ComponentID`
         The ComponentID to pack
     view
         The view into the data, or `None`
@@ -202,9 +202,9 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
 
     Parameters
     ----------
-    data : :class:`~glue.core.data_collection.DataCollection`
+    data : :class:`glue.core.data_collection.DataCollection`
         The DataCollection object to use
-    cid : :class:`~glue.core.component_id.ComponentID`
+    cid : :class:`glue.core.component_id.ComponentID`
          The ComponentID to facet on
     lo : float, optional
         The lower bound for the faceting. Defaults to minimum value in data
@@ -220,7 +220,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     Returns
     -------
     subset_groups : iterable
-        List of :class:`~glue.core.subset_group.SubsetGroup` instances added to
+        List of :class:`glue.core.subset_group.SubsetGroup` instances added to
         `data`
 
     Examples
@@ -311,7 +311,7 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
     ----------
     subsets : list
         List of subsets
-    cmap : `~matplotlib.colors.Colormap`
+    cmap : :class:`matplotlib.colors.Colormap`
         Matplotlib colormap instance
     lo : float, optional
         Start location in colormap. 0-1. Defaults to 0
@@ -460,7 +460,7 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
 
     Parameters
     ----------
-    axes : `~matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         A matplotlib axis object to alter
     coord : { 'x' | 'y' }
         The coordinate axis on which to update the ticks

@@ -70,8 +70,7 @@ class Application(HubListener):
 
     def new_data_viewer(self, viewer_class, data=None, state=None):
         """
-        Create a new data viewer, add it to the UI,
-        and populate with data
+        Create a new data viewer, add it to the UI, and populate with data.
         """
         if viewer_class is None:
             return
@@ -96,12 +95,13 @@ class Application(HubListener):
 
     @catch_error("Failed to save session")
     def save_session(self, path, include_data=False, absolute_paths=True):
-        """ Save the data collection and hub to file.
+        """
+        Save the data collection and hub to file.
 
-        Can be restored via restore_session
+        Can be restored via restore_session.
 
         Note: Saving of client is not currently supported. Thus,
-        restoring this session will lose all current viz windows
+        restoring this session will lose all current viz windows.
         """
 
         from glue.core.state import GlueSerializer
@@ -132,13 +132,13 @@ class Application(HubListener):
 
         Parameters
         ----------
-        path : str
-            Path to the file to load
+        path : `str`
+            Path to the file to load.
 
         Returns
         -------
         app : :class:`Application`
-            The loaded application
+            The loaded application.
         """
         from glue.core.state import GlueUnSerializer
 
@@ -168,8 +168,10 @@ class Application(HubListener):
         """
         Set the value of an application setting
 
-        Raises a KeyError if the setting does not exist
-        Raises a ValueError if the value is invalid
+        Raises
+        ------
+        KeyError, if the setting does not exist.
+        ValueError, if the value is invalid.
         """
         validator = self._settings[key][1]
         self._settings[key][0] = validator(value)
@@ -242,15 +244,16 @@ class Application(HubListener):
         return datasets
 
     def report_error(self, message, detail):
-        """ Report an error message to the user.
-        Must be implemented in a subclass
+        """
+        Report an error message to the user.
+        Must be implemented in a subclass.
 
         Parameters
         ----------
-        message : str
-            The message to display
-        detail : str
-            Longer context about the error
+        message : `str`
+            The message to display.
+        detail : `str`
+            Longer context about the error.
         """
         raise Exception(message + "(" + detail + ")")
 
@@ -278,7 +281,7 @@ class Application(HubListener):
 
         Parameters
         ----------
-        datasets : :class:`~glue.core.data.Data` or list of Data
+        datasets : :class:`~glue.core.data.Data` or `list` thereof
             One or more :class:`~glue.core.data.Data` instances.
 
         Adds datasets to the collection in the application.
