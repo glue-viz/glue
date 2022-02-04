@@ -41,6 +41,7 @@ intersphinx_mapping = {
     'astropy': ('https://docs.astropy.org/en/stable/', None),
     'echo': ('https://echo.readthedocs.io/en/latest/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'PyQt5': ('https://www.riverbankcomputing.com/static/Docs/PyQt5/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.

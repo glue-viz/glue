@@ -10,8 +10,9 @@ manages SubsetGroups, and presents each group to the user as a single
 entity. The individual subsets are held in-sync by the SubsetGroup.
 
 Client code should *only* create Subset Groups via
-DataCollection.new_subset_group. It should *not* call Data.add_subset
-or Data.new_subset directly
+:func:`glue.core.data_collection.DataCollection.new_subset_group`.
+It should *not* call :func:`~glue.core.data.BaseData.add_subset` or
+:func:`~glue.core.data.BaseData.new_subset` directly
 """
 from warnings import warn
 
@@ -93,7 +94,7 @@ class SubsetGroup(HubListener):
         Create a new empty SubsetGroup
 
         Note: By convention, SubsetGroups should be created via
-        DataCollection.new_subset.
+        :func:`glue.core.data_collection.DataCollection.new_subset_group`
         """
         self.subsets = []
 
@@ -116,7 +117,7 @@ class SubsetGroup(HubListener):
         Register to a :class:`~glue.core.data_collection.DataCollection`
 
         This is called automatically by
-        :meth:`glue.core.data_collection.DataCollection.new_subset_group`
+        :func:`glue.core.data_collection.DataCollection.new_subset_group`
         """
         self.register_to_hub(data.hub)
 
@@ -208,8 +209,9 @@ class SubsetGroup(HubListener):
 
 def coerce_subset_groups(collect):
     """
-    If necessary, reassign non-grouped subsets in a DataCollection
-    into SubsetGroups.
+    If necessary, reassign non-grouped subsets in a
+    :class:`~glue.core.data_collection.DataCollection` into
+    :class:`glue.core.subset_group.SubsetGroup`s.
 
     This is used to support DataCollections saved with
     version 1 of glue.core.state.save_data_collection

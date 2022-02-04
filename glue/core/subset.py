@@ -60,7 +60,7 @@ class Subset(object):
         """Create a new subset object.
 
         Note: the preferred way for creating subsets is via
-        :func:`~glue.core.DataCollection.new_subset_group`.
+        :func:`~glue.core.data_collection.DataCollection.new_subset_group`.
         Manually-instantiated subsets will probably *not*
         be represented properly by the UI
         """
@@ -1186,7 +1186,7 @@ class MaskSubsetState(SubsetState):
 
     Parameters
     ----------
-    mask : `~numpy.ndarray`
+    mask : :class:`~numpy.ndarray`
         The boolean mask to apply to the data.
     cids : iterable of :class:`~glue.core.component_id.ComponentID`
         The component IDs along which the mask applies.

@@ -37,7 +37,7 @@ def all_artists(fig):
 
     Parameters
     ----------
-    fig : :class:`matplotlib.pyplot.figure`
+    fig : :func:`matplotlib.pyplot.figure`
         Matplotlib figure.
     """
     return set(item
@@ -53,7 +53,7 @@ def new_artists(fig, old_artists):
 
     Parameters
     ----------
-    fig : :class:`matplotlib.pyplot.figure`
+    fig : :func:`matplotlib.pyplot.figure`
         Matplotlib figure.
     old_artists : set
         Return value from :func:`all_artists`.
@@ -342,7 +342,7 @@ def cache_axes(axes, toolbar):
     ----------
     axes : :class:`matplotlib.axes.Axes`
         The axes to cache
-    toolbar : :class:`glue.viewers.common.qt.toolbar.GlueToolbar`
+    toolbar : :class:`glue.viewers.common.qt.toolbar.BasicToolbar`
         The toolbar managing the axes' canvas
     """
     canvas = axes.figure.canvas
