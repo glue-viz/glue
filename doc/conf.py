@@ -131,13 +131,7 @@ texinfo_documents = [
 todo_include_todos = True
 autoclass_content = 'both'
 
-nitpick_ignore = [('py:mod', 'glue.core'),
-                  ('py:mod', 'glue.dialogs.custom_component'),
-                  ('py:mod', 'glue.viewers'),
-                  ('py:mod', 'glue.viewers.scatter'),
-                  ('py:mod', 'glue.viewers.common'),
-                  ('py:mod', 'glue.viewers.common.qt.toolbar_mode'),
-                  ('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.insertAction'),
+nitpick_ignore = [('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.insertAction'),
                   ('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.setTabOrder'),
                   ('py:class', 'glue.viewers.histogram.layer_artist.HistogramLayerBase'),
                   ('py:class', 'glue.viewers.scatter.layer_artist.ScatterLayerBase'),

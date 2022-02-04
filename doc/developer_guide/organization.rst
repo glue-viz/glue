@@ -12,8 +12,8 @@ Glue sub-packages
 The code is organized into the following
 top-level sub-packages (starting with some of the easy ones):
 
-``glue.external``
-^^^^^^^^^^^^^^^^^
+:mod:`!glue.external`
+^^^^^^^^^^^^^^^^^^^^^
 
 This is a sub-package that you should never have to edit directly. It contains
 files and modules edited in other repositories that have been bundled with
@@ -22,8 +22,8 @@ other repositories, and then port over the changes to Glue. In general, it's
 useful to know these bundled modules are available, but you will likely not
 need to edit them.
 
-``glue.utils``
-^^^^^^^^^^^^^^
+:mod:`!glue.utils`
+^^^^^^^^^^^^^^^^^^
 
 This is a sub-package that contains various Python, Matplotlib, and Qt-related
 utilities that do not depend on any other parts of Glue. These utilities don't
@@ -35,8 +35,8 @@ into a Qt ``QPixmap`` instance. This is one of the easiest sub-packages to
 approach -- it is just a collection of small helper functions and classes and
 doesn't require understanding any other parts of Glue.
 
-``glue.core``
-^^^^^^^^^^^^^
+:mod:`!glue.core`
+^^^^^^^^^^^^^^^^^
 
 As its name describes, this is the most important part of the Glue package.
 This defines the general classes for datasets, subsets, data collections,
@@ -44,41 +44,41 @@ messages, layer artists, and other Glue concepts. On the other hand it does
 *not* define specific viewers or data readers. The code in this sub-package is
 not concerned with specific graphical user interface (GUI) representations, and
 you could in principle develop a completely different GUI than the main Glue
-one making use of the Glue core code. You could even use :mod:`glue.core` to
+one making use of the Glue core code. You could even use :mod:`!glue.core` to
 give glue-like functionality to other existing applications.
 
-``glue.viewers``
-^^^^^^^^^^^^^^^^
+:mod:`!glue.viewers`
+^^^^^^^^^^^^^^^^^^^^
 
 This sub-package contains the code for all the built-in viewers in glue, such
 as the scatter plot and image viewers. Each viewer is contained in a
-sub-package of :mod:`glue.viewers`, such as :mod:`glue.viewers.scatter`. A
-:mod:`glue.viewers.common` sub-package is also provided, with utilities and
+sub-package of :mod:`!glue.viewers`, such as :mod:`!glue.viewers.scatter`. A
+:mod:`!glue.viewers.common` sub-package is also provided, with utilities and
 base classes that might be useful for various viewers. For instance, the
-:mod:`glue.viewers.common.qt.toolbar_mode` sub-module contains code related to
+:mod:`!glue.viewers.common.qt.toolbar_mode` sub-module contains code related to
 defining toolbar mouse 'modes' for selection.
 
-``glue.dialogs``
-^^^^^^^^^^^^^^^^
+:mod:`!glue.dialogs`
+^^^^^^^^^^^^^^^^^^^^
 
 This sub-package contains implementations of various common dialogs, each
-organized into sub-packages. For instance, :mod:`glue.dialogs.custom_component`
+organized into sub-packages. For instance, :mod:`!glue.dialogs.custom_component`
 contains the implementation of the dialog used to add new components to
 datasets in the Glue application. The implementation for these dialogs only
-uses the framework from the :mod:`glue.core` package and the dialogs don't need
+uses the framework from the :mod:`!glue.core` package and the dialogs don't need
 to know anything about the rest of the state of the design of the Glue
 application.
 
-.. ``glue.core.data_factories``
-.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. :mod:`glue.core.data_factories`
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ..
 .. While the core package defines the basic infrastructure for reading/writing
 .. files, specific implementations of readers/writers live in
 .. :mod:`glue.core.data_factories`. If you want to add a new reader or writer, this is
 .. the place to put it!
 
-``glue.app``
-^^^^^^^^^^^^
+:mod:`!glue.app`
+^^^^^^^^^^^^^^^^
 
 This package defines the Glue *Application*, that is the default GUI that users
 interact with if they launch the Glue Application. This essentially pulls
@@ -87,15 +87,15 @@ However, it would be entirely possible to develop other applications using the
 available components - for instance, one could build an application with fixed
 data viewers for a specific purpose.
 
-``glue.plugins``
-^^^^^^^^^^^^^^^^
+:mod:`!glue.plugins`
+^^^^^^^^^^^^^^^^^^^^
 
 This package features more specialized tools/viewers for Glue, and in the long
 term some of these will be moved into top-level sub-packages such as
 ``glue.viewers`` as they are made more general.
 
-``glue.icons``
-^^^^^^^^^^^^^^
+:mod:`!glue.icons`
+^^^^^^^^^^^^^^^^^^
 
 This contains various icons used in Glue, both in the vector SVG form, and in
 rasterized PNG format.
