@@ -36,32 +36,27 @@ jobs:
     - linux: py37-test-pyqt512
     - linux: py37-test-pyqt513-all
     - linux: py38-test-pyqt514
-    - linux: py38-test-pyqt515
     - linux: py39-test-pyqt515
-    - linux: py310-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - linux: py36-test-pyside512
     # - linux: py37-test-pyside513-all
     # - linux: py38-test-pyside514
 
     # Test against latest developer versions of some packages
-    - linux: py310-test-pyqt514-dev-all
+    - linux: py310-test-pyqt515-dev-all
 
     # Test a few configurations on MacOS X
     - macos: py37-test-pyqt513
     - macos: py38-test-pyqt514-all
-    - macos: py39-test-pyqt515
     - macos: py310-test-pyqt515-all
     # FIXME: The PySide builds are broken, needs investigating
     # - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
     - windows: py37-test-pyqt510
-    # The following failed due to https://github.com/jupyter/qtconsole/issues/400 - should be fixed upstream
+    # The following failed due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
     - windows: py38-test-pyqt514-all
-    - windows: py38-test-pyqt515
-    - windows: py39-test-pyqt515
-    - windows: py310-test-pyqt515-all
+    - windows: py310-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - windows: py37-test-pyside513-all
 
