@@ -13,9 +13,12 @@ jobs:
 
     xvfb: true
     coverage: codecov
+
+    # The Linux PyQt 5.15 installation requires apt-getting its xcb deps
     libraries:
       apt:
-        - libxkbcommon-x11-0
+        - libxcb.*-dev
+        - libxkbcommon-x11-dev
       brew:
         - enchant
 
@@ -33,28 +36,27 @@ jobs:
     - linux: py37-test-pyqt512
     - linux: py37-test-pyqt513-all
     - linux: py38-test-pyqt514
-
-    # TODO: The PyQt 5.15 builds have never passed, need to investigate why
-    # - linux: py39-test-pyqt515
-    # - linux: py310-test-pyqt515
+    - linux: py39-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - linux: py36-test-pyside512
     # - linux: py37-test-pyside513-all
     # - linux: py38-test-pyside514
 
     # Test against latest developer versions of some packages
-    - linux: py310-test-pyqt514-dev-all
+    - linux: py310-test-pyqt515-dev-all
 
     # Test a few configurations on MacOS X
     - macos: py37-test-pyqt513
     - macos: py38-test-pyqt514-all
+    - macos: py310-test-pyqt515-all
     # FIXME: The PySide builds are broken, needs investigating
     # - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
     - windows: py37-test-pyqt510
-    # FIXME: The following fails due to https://github.com/jupyter/qtconsole/issues/400
-    # - windows: py38-test-pyqt514-all
+    # The following failed due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
+    - windows: py38-test-pyqt514-all
+    - windows: py310-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - windows: py37-test-pyside513-all
 
