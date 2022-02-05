@@ -48,13 +48,19 @@ jobs:
     # Test a few configurations on MacOS X
     - macos: py37-test-pyqt513
     - macos: py38-test-pyqt514-all
+    # PyQt 5.15 failing on Linux possibly due to X11-related problems (X11/lib/libxcb)
+    # - let's try on macOS
+    - macos: py39-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
     - windows: py37-test-pyqt510
-    # FIXME: The following fails due to https://github.com/jupyter/qtconsole/issues/400
-    # - windows: py38-test-pyqt514-all
+    # The following failed due to https://github.com/jupyter/qtconsole/issues/400 - should be fixed upstream
+    - windows: py38-test-pyqt514-all
+    # PyQt 5.15 failing on Linux possibly due to X11-related problems (X11/lib/libxcb)
+    # - let's try on Windows
+    - windows: py39-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - windows: py37-test-pyside513-all
 
