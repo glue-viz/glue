@@ -15,7 +15,10 @@ jobs:
     coverage: codecov
     libraries:
       apt:
+        - libxcb.*-dev
         - libxkbcommon-x11-0
+        - libxkbcommon-x11-dev
+        - libxkbcommon-dev
       brew:
         - enchant
 
@@ -51,20 +54,17 @@ jobs:
     # - macos: py38-test-pyqt514-all
     # PyQt 5.15 failing on Linux possibly due to X11-related problems (X11/lib/libxcb)
     # - let's try on macOS
-    - macos: py38-test-pyqt515
-    - macos: py39-test-pyqt515
-    - macos: py310-test-pyqt515
+    # - macos: py37-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - macos: py37-test-pyside513
 
     # Test a few configurations on Windows
     # - windows: py37-test-pyqt510
     # The following failed due to https://github.com/jupyter/qtconsole/issues/400 - should be fixed upstream
-    - windows: py38-test-pyqt514-all
+    # - windows: py38-test-pyqt514-all
     # PyQt 5.15 failing on Linux possibly due to X11-related problems (X11/lib/libxcb)
     # - let's try on Windows
-    - windows: py39-test-pyqt515
-    - windows: py310-test-pyqt515
+    # - windows: py38-test-pyqt515
     # FIXME: The PySide builds are broken, needs investigating
     # - windows: py37-test-pyside513-all
 
