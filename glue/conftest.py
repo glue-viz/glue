@@ -122,9 +122,11 @@ def pytest_unconfigure(config):
 
 if PYSIDE2:
 
-    def pytest_runtest_call(__multicall__):
+    @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_call():
         try:
-            __multicall__.execute()
-        except AttributeError as exc:
-            if 'PySide2.QtGui.QStandardItem' in str(exc):
+            outcome = yield
+            rep = outcome.get_result()
+        except AttributeError:
+            if 'PySide2.QtGui.QStandardItem' in str(outcome.excinfo[0]):
                 pytest.xfail()
