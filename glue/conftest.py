@@ -123,10 +123,19 @@ def pytest_unconfigure(config):
 if PYSIDE2:
 
     @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_setup():
+        try:
+            outcome = yield
+            return outcome.get_result()
+        except AttributeError:
+            if "'PySide2.QtGui.QStandardItem' object has no attribute" in str(outcome.excinfo[1]):
+                pytest.xfail('Known issue in QStandardItem')
+
+    @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call():
         try:
             outcome = yield
-            rep = outcome.get_result()
+            return outcome.get_result()
         except AttributeError:
-            if 'PySide2.QtGui.QStandardItem' in str(outcome.excinfo[0]):
-                pytest.xfail()
+            if "'PySide2.QtGui.QStandardItem' object has no attribute" in str(outcome.excinfo[1]):
+                pytest.xfail('Known issue in QStandardItem')
