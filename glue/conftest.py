@@ -121,6 +121,8 @@ def pytest_unconfigure(config):
 # with this exception
 
 if PYSIDE2:
+    QTSTANDARD_EXC = "'PySide2.QtGui.QStandardItem' object has no attribute 'connect'"
+    TEARDOWN_EXC = "No net viewers should be created in tests"
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_setup():
@@ -128,14 +130,16 @@ if PYSIDE2:
             outcome = yield
             return outcome.get_result()
         except AttributeError:
-            if "'PySide2.QtGui.QStandardItem' object has no attribute" in str(outcome.excinfo[1]):
-                pytest.xfail('Known issue in QStandardItem')
+            exc = str(outcome.excinfo[1])
+            if QTSTANDARD_EXC in exc:
+                pytest.xfail(f'Known issue {exc}')
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call():
         try:
             outcome = yield
             return outcome.get_result()
-        except AttributeError:
-            if "'PySide2.QtGui.QStandardItem' object has no attribute" in str(outcome.excinfo[1]):
-                pytest.xfail('Known issue in QStandardItem')
+        except (AttributeError, ValueError):
+            exc = str(outcome.excinfo[1])
+            if QTSTANDARD_EXC in exc or TEARDOWN_EXC in exc:
+                pytest.xfail(f'Known issue {exc}')
