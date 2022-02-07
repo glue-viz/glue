@@ -32,35 +32,33 @@ jobs:
     # Linux builds - test on all supported PyQt5 and PySide2 versions,
     # and include all dependencies in some builds
     - linux: py37-test-pyqt59-legacy
-    # - linux: py37-test-pyqt510
-    # - linux: py37-test-pyqt511-all
-    # - linux: py37-test-pyqt512
-    # - linux: py37-test-pyqt513-all
-    # - linux: py38-test-pyqt514
-    # - linux: py39-test-pyqt515
+    - linux: py37-test-pyqt510
+    - linux: py37-test-pyqt511-all
+    - linux: py37-test-pyqt512
+    - linux: py37-test-pyqt513-all
+    - linux: py38-test-pyqt514
+    - linux: py39-test-pyqt515
     - linux: py37-test-pyside513-all
     - linux: py38-test-pyside514
     - linux: py310-test-pyside515-all
-    - linux: py310-test-pyside515-dev-all
 
     # Test against latest developer versions of some packages
     - linux: py310-test-pyqt515-dev-all
 
     # Test a few configurations on MacOS X
-    # - macos: py37-test-pyqt513
-    # - macos: py38-test-pyqt514
-    # - macos: py310-test-pyqt515-all
-    - macos: py310-test-pyside513
-    - macos: py310-test-pyside515
+    - macos: py37-test-pyqt513
+    - macos: py38-test-pyqt514
+    - macos: py310-test-pyqt515-all
+    - macos: py38-test-pyside514
 
     # Test a few configurations on Windows
-    # - windows: py37-test-pyqt510
+    - windows: py37-test-pyqt510
     # PyQt5.14 used to fail due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
-    # - windows: py38-test-pyqt514-all
+    - windows: py38-test-pyqt514-all
     - windows: py310-test-pyqt515
     - windows: py39-test-pyside515-all
 
     # Try out documentation build on Linux and Windows
-    # - linux: py37-docs-pyqt513
-    # - macos: py37-docs-pyqt513
-    # - windows: py38-docs-pyqt513
+    - linux: py37-docs-pyqt513
+    - macos: py37-docs-pyqt513
+    - windows: py38-docs-pyqt513
