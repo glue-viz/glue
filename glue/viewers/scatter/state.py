@@ -97,16 +97,20 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_lim_helper.flip_limits()
 
     @property
+    def using_rectilinear(self):
+        return self.plot_mode == 'rectilinear'
+
+    @property
     def using_polar(self):
         return self.plot_mode == 'polar'
 
     @property
     def using_degrees(self):
-        return self.using_polar and self.angle_unit == 'degrees'
+        return not self.using_rectilinear and self.angle_unit == 'degrees'
 
     @property
     def using_radians(self):
-        return self.using_polar and self.angle_unit == 'radians'
+        return not self.using_rectilinear and self.angle_unit == 'radians'
 
     def full_circle(self):
         if not self.using_polar:

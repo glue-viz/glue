@@ -99,6 +99,9 @@ class MatplotlibScatterMixin(object):
 
         self.figure.canvas.draw_idle()
 
+    def using_rectilinear(self):
+        return self.state.plot_mode == 'rectilinear'
+
     def using_polar(self):
         return self.state.plot_mode == 'polar'
 
@@ -162,7 +165,7 @@ class MatplotlibScatterMixin(object):
                                                                self.axes.get_yscale())
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
-            if self.using_polar() and self.state.angle_unit == 'degrees':
+            if not self.using_rectilinear() and self.state.angle_unit == 'degrees':
                 transform = RadianTransform(next_transform=transform)
             subset_state.pretransform = transform
 

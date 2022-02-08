@@ -85,7 +85,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.y_lab.setText(y_label)
         self.ui.y_lab_2.setText(y_label)
         lim_enabled = self.viewer_state.plot_mode not in ['aitoff', 'hammer', 'lambert', 'mollweide']
-        is_polar = self.viewer_state.plot_mode == 'polar'
+        is_polar = self.viewer_state.using_polar
+        is_rect = self.viewer_state.using_rectilinear
         self.ui.valuetext_x_min.setEnabled(lim_enabled)
         self.ui.button_flip_x.setEnabled(lim_enabled)
         self.ui.valuetext_x_max.setEnabled(lim_enabled)
@@ -93,8 +94,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         self.ui.button_flip_y.setEnabled(lim_enabled)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
         self.ui.button_full_circle.setVisible(False)
-        self.ui.angle_unit_lab.setVisible(is_polar)
-        self.ui.combosel_angle_unit.setVisible(is_polar)
+        self.ui.angle_unit_lab.setVisible(not is_rect)
+        self.ui.combosel_angle_unit.setVisible(not is_rect)
         self.ui.x_lab_2.setVisible(not is_polar)
         self.ui.valuetext_x_min.setVisible(not is_polar)
         self.ui.button_flip_x.setVisible(not is_polar)

@@ -57,7 +57,8 @@ class ThetaRadianFormatter(mticker.Formatter):
         if n is None or d is None:
             return "{value:0.{digits}f}".format(value=x, digits=digits)
 
-        ns = "" if n == 1 else str(n)
+        absn = abs(n)
+        ns = "" if absn == 1 else str(absn)
         if n == 0:
             return "0"
         elif d == 1:
@@ -474,8 +475,8 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
     """
 
     # Short circuit the full-sphere projections
-    if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
-        return
+    # if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
+    #    return
 
     if coord == 'x':
         axis = axes.xaxis
@@ -515,6 +516,10 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
             axis.set_major_formatter(PolarRadiusFormatter(label))
             for lbl in axis.get_majorticklabels():
                 lbl.set_fontstyle("italic")
+    elif projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
+        axis.set_major_locator(ThetaLocator(AutoLocator()))
+        formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
+        axis.set_major_formatter(formatter_type())
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
