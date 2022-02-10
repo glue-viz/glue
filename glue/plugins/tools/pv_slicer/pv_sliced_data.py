@@ -184,11 +184,11 @@ class PVSlicedData(DerivedData):
         for idim in range(self.original_data.ndim):
 
             if idim == self.cid_x.axis:
-                ixmax = np.ceil(np.max(x))
+                ixmax = int(np.ceil(np.max(x)))
                 bound = (0, ixmax, ixmax + 1)
                 slices.append(np.round(x).astype(int))
             elif idim == self.cid_y.axis:
-                iymax = np.ceil(np.max(y))
+                iymax = int(np.ceil(np.max(y)))
                 bound = (0, iymax, iymax + 1)
                 slices.append(np.round(y).astype(int))
             else:

@@ -8,7 +8,7 @@ from glue.app.qt import GlueApplication
 from glue.tests.helpers import requires_astropy, requires_scipy
 from glue.viewers.image.qt.data_viewer import ImageViewer
 
-from ..pv_slicer import _slice_from_path, _slice_label, _slice_index
+from ..pv_slicer import _slice_label, _slice_index
 
 
 class TestPVSlicerMode(object):
@@ -46,38 +46,6 @@ class TestPVSlicerMode(object):
         roi.to_polygon.return_value = [1, 10, 12], [2, 13, 14]
 
         tool._extract_callback(mode)
-
-
-@requires_astropy
-@requires_scipy
-class TestSliceExtraction(object):
-
-    def setup_method(self, method):
-        self.x = np.random.random((2, 3, 4))
-        self.d = Data(x=self.x)
-
-    def test_constant_y(self):
-
-        slc = (0, 'y', 'x')
-        x = [-0.5, 3.5]
-        y = [0, 0]
-        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
-        assert_allclose(s, self.x[:, 0, :])
-
-    def test_constant_x(self):
-
-        slc = (0, 'y', 'x')
-        y = [-0.5, 2.5]
-        x = [0, 0]
-        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
-        assert_allclose(s, self.x[:, :, 0])
-
-    def test_transpose(self):
-        slc = (0, 'x', 'y')
-        y = [-0.5, 3.5]
-        x = [0, 0]
-        s = _slice_from_path(x, y, self.d, 'x', slc)[0]
-        assert_allclose(s, self.x[:, 0, :])
 
 
 def test_slice_label():

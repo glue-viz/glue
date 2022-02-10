@@ -10,6 +10,8 @@ v1.3.0 (unreleased)
 * Remove bundled version of pvextractor and include it as a proper
   dependency. [#2252]
 
+* Remove ``StandaloneImageViewer`` class. [#1663]
+
 v1.2.4 (2022-01-27)
 -------------------
 
@@ -573,8 +575,6 @@ v0.13.0 (2018-04-27)
 * Re-write spectrum viewer into a generic profile viewer that uses
   subsets to define the areas in which to compute profiles rather
   than custom ROIs. [#1635]
-
-* Remove ``StandaloneImageViewer`` class. [#1663]
 
 * Added support for PySide2 and remove support for PyQt4 and
   PySide. [#1662]
