@@ -64,7 +64,7 @@ class PVSlicerMode(PathMode):
                 for pvdata in self.viewer.session.data_collection:
                     if isinstance(pvdata, PVSlicedData):
                         if pvdata.original_data is data:
-                            pvdata.original_data = self.viewer.state.reference_data
+                            pvdata.original_data = data
                             pvdata.x_att = self.viewer.state.x_att
                             pvdata.y_att = self.viewer.state.y_att
                             pvdata.set_xy(vx, vy)
