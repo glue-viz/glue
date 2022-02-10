@@ -29,6 +29,7 @@ class PVSlicerMode(PathMode):
         self._roi_callback = self._extract_callback
         self._slice_widget = None
         self.viewer.state.add_callback('reference_data', self._on_reference_data_change)
+        self.open_viewer = True
         self._on_reference_data_change()
 
     def _on_reference_data_change(self, *args):
@@ -46,46 +47,65 @@ class PVSlicerMode(PathMode):
 
         vx, vy = mode.roi().to_polygon()
 
-        selected = self.viewer.session.application.selected_layers()
+        if self.open_viewer:
+            viewer = self.viewer.session.application.new_data_viewer(ImageViewer)
+            self.open_viewer = False
+        else:
+            viewer = None
 
-        open_viewer = False
+        for layer_state in self.viewer.state.layers:
 
-        all_pvdata = []
+            data = layer_state.layer
 
-        for data in self.viewer.state.layers_data:
             if isinstance(data, Data):
+
+                # TODO: need to generalize this for non-xy cuts
 
                 for pvdata in self.viewer.session.data_collection:
                     if isinstance(pvdata, PVSlicedData):
                         if pvdata.original_data is data:
+                            pvdata.original_data = self.viewer.state.reference_data
+                            pvdata.x_att = self.viewer.state.x_att
+                            pvdata.y_att = self.viewer.state.y_att
+                            pvdata.set_xy(vx, vy)
                             break
                 else:
-                    pvdata = None
+                    pvdata = PVSlicedData(data,
+                                          self.viewer.state.x_att, vx,
+                                          self.viewer.state.y_att, vy,
+                                          label=data.label + " [slice]")
+                    pvdata.parent_viewer = self.viewer
+                    self.viewer.session.data_collection.append(pvdata)
 
-            if pvdata is None:
-                pvdata = PVSlicedData(data,
-                                      self.viewer.state.x_att, vx,
-                                      self.viewer.state.y_att, vy,
-                                      label=data.label + " [slice]")
-                pvdata.parent_viewer = self.viewer
-                self.viewer.session.data_collection.append(pvdata)
-                open_viewer = True
             else:
-                data = pvdata
-                data.original_data = self.viewer.state.reference_data
-                data.x_att = self.viewer.state.x_att
-                data.y_att = self.viewer.state.y_att
-                data.set_xy(vx, vy)
 
-            all_pvdata.append(pvdata)
+                # For now don't do anything with the subsets, adding the data
+                # will automatically add all subsets. In future we could try
+                # and only add subsets that were shown in the original viewer.
+                continue
 
-        if open_viewer:
-            viewer = self.viewer.session.application.new_data_viewer(ImageViewer)
-            for pvdata in all_pvdata:
+            if viewer is not None:
+
                 viewer.add_data(pvdata)
 
+                # Copy over visual state from original layer, such as color,
+                # attribute and so on.
+                pvstate = layer_state.as_dict()
+                pvstate.pop('layer')
+
+                # Find layer state to update in new viewer - this might not be
+                # the last layer if subsets are present
+                for new_layer_state in viewer.state.layers[::-1]:
+                    if new_layer_state.layer is pvdata:
+                        new_layer_state.update_from_dict(pvstate)
+                        break
+
+        if viewer is not None:
+
             viewer.state.aspect = 'auto'
+            viewer.state.color_mode = self.viewer.state.color_mode
             viewer.state.reset_limits()
+
 
 
 @viewer_tool

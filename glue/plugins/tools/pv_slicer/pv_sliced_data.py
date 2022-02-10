@@ -205,7 +205,8 @@ class PVSlicedData(DerivedData):
         result = compute_fixed_resolution_buffer(self.original_data, new_bounds,
                                                  target_data=target_data.original_data,
                                                  target_cid=target_cid,
-                                                 subset_state=subset_state)
+                                                 subset_state=subset_state,
+                                                 cache_id=cache_id)
 
         result = result[tuple(slices)]
 
