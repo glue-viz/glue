@@ -204,7 +204,8 @@ class PVSlicedData(DerivedData):
         # Now compute the fixed resolution buffer using the original datasets
         result = compute_fixed_resolution_buffer(self.original_data, new_bounds,
                                                  target_data=target_data.original_data,
-                                                 target_cid=target_cid)
+                                                 target_cid=target_cid,
+                                                 subset_state=subset_state)
 
         result = result[tuple(slices)]
 
