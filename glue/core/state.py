@@ -405,7 +405,7 @@ class GlueSerializer(object):
         Can be used as default kwarg in json.dumps/json.dump
         """
         if np.isscalar(o) and isinstance(o, np.generic):
-            return np.asscalar(o)  # coerce numpy number to pure-python type
+            return o.item()  # coerce numpy number to pure-python type
         elif isinstance(o, (tuple, set)):
             return list(o)
         else:
