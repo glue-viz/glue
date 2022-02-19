@@ -39,7 +39,7 @@ class MatplotlibScatterMixin(object):
         if self.state.y_att is not None:
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log,
-                         self.state.y_categories, projection=self.state.plot_mode, label=self.state.y_axislabel)
+                         self.state.y_categories, projection=self.state.plot_mode, radians=radians, label=self.state.y_axislabel)
 
     def _update_axes(self, *args):
 

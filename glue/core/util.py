@@ -11,7 +11,8 @@ from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 import matplotlib.ticker as mticker
 
-__all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_component_view",
+__all__ = ["ThetaRadianFormatter", "ThetaDegreeFormatter", "PolarRadiusFormatter",
+           "relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
            'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
@@ -477,6 +478,8 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
     # Short circuit the full-sphere projections
     # if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
     #    return
+    if projection == 'lambert' and coord == 'y':
+        return
 
     if coord == 'x':
         axis = axes.xaxis
@@ -517,7 +520,6 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
             for lbl in axis.get_majorticklabels():
                 lbl.set_fontstyle("italic")
     elif projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
-        axis.set_major_locator(ThetaLocator(AutoLocator()))
         formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
         axis.set_major_formatter(formatter_type())
     else:
