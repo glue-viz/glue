@@ -476,8 +476,6 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
     """
 
     # Short circuit the full-sphere projections
-    # if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
-    #    return
     if projection == 'lambert' and coord == 'y':
         return
 
