@@ -29,9 +29,9 @@ class MatplotlibScatterMixin(object):
         self._update_axes()
 
     def _update_ticks(self, *args):
+        radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
         if self.state.x_att is not None:
             # Update ticks, which sets the labels to categories if components are categorical
-            radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
             update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log,
                          self.state.x_categories, projection=self.state.plot_mode, radians=radians,
                          label=self.state.x_axislabel)
