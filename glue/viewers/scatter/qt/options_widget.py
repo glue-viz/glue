@@ -15,7 +15,7 @@ def _get_labels(proj):
     elif proj == 'polar':
         return 'theta', 'radius'
     elif proj in ['aitoff', 'hammer', 'lambert', 'mollweide']:
-        return 'long (rad)', 'lat (rad)'
+        return 'long', 'lat'
     else:
         return 'axis 1', 'axis 2'
 
