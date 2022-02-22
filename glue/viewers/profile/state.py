@@ -56,6 +56,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
         self.add_callback('normalize', self._reset_y_limits)
+        self.add_callback('function', self._reset_y_limits)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, datetime=False, categorical=False,
