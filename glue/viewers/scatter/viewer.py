@@ -152,7 +152,7 @@ class MatplotlibScatterMixin(object):
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
                                   yfunc=mpl_to_datetime64 if y_date else None)
 
-        use_transform = self.state.plot_mode != 'rectilinear'
+        use_transform = not self.using_rectilinear()
         subset_state = roi_to_subset_state(roi,
                                            x_att=self.state.x_att, x_categories=self.state.x_categories,
                                            y_att=self.state.y_att, y_categories=self.state.y_categories,
@@ -165,7 +165,7 @@ class MatplotlibScatterMixin(object):
                                                                self.axes.get_yscale())
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
-            if not self.using_rectilinear() and self.state.angle_unit == 'degrees':
+            if self.state.angle_unit == 'degrees':
                 transform = RadianTransform(next_transform=transform)
             subset_state.pretransform = transform
 
