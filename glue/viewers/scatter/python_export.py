@@ -10,12 +10,17 @@ def python_export_scatter_layer(layer, *args):
     imports = ["import numpy as np"]
 
     polar = layer._viewer_state.using_polar
-    degrees = polar and getattr(layer._viewer_state, 'using_degrees', False)
-    if polar:
-        theta_formatter = 'ThetaDegreeFormatter' if degrees else 'ThetaRadianFormatter'
+    rect = layer._viewer_state.using_rectilinear
+    degrees = layer._viewer_state.using_degrees
+    theta_formatter = 'ThetaDegreeFormatter' if degrees else 'ThetaRadianFormatter'
+    if not rect:
         imports += [
-            "from glue.core.util import polar_tick_alignment, PolarRadiusFormatter, {0}".format(theta_formatter),
-            "from matplotlib.projections.polar import ThetaFormatter, ThetaLocator",
+            "from glue.core.util import {0}".format(theta_formatter),
+        ]
+    if polar:
+        imports += [
+            "from glue.core.util import PolarRadiusFormatter, polar_tick_alignment",
+            "from matplotlib.projections.polar import ThetaLocator",
             "from matplotlib.ticker import AutoLocator"
         ]
 
@@ -37,6 +42,10 @@ def python_export_scatter_layer(layer, *args):
         script += 'ax.yaxis.set_major_formatter(PolarRadiusFormatter("{0}"))\n'.format(layer._viewer_state.y_axislabel)
         script += 'for lbl in ax.yaxis.get_majorticklabels():\n'
         script += '\tlbl.set_fontstyle(\'italic\')\n\n'
+    elif not rect:
+        script += 'ax.xaxis.set_major_formatter({0}())\n'.format(theta_formatter)
+        if layer._viewer_state.plot_mode != 'lambert':
+            script += 'ax.yaxis.set_major_formatter({0}())\n'.format(theta_formatter)
 
     if layer.state.cmap_mode == 'Linear':
 
