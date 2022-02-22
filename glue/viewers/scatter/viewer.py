@@ -166,7 +166,8 @@ class MatplotlibScatterMixin(object):
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
             if self.state.angle_unit == 'degrees':
-                transform = RadianTransform(next_transform=transform)
+                coords = ['x'] if self.using_polar() else ['x', 'y']
+                transform = RadianTransform(coords=coords, next_transform=transform)
             subset_state.pretransform = transform
 
         self.apply_subset_state(subset_state, override_mode=override_mode)
