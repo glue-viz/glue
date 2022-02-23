@@ -1247,3 +1247,15 @@ def apply_inplace_patches(rec):
                             load_log = rec[rec[comp]['log']]
                             if 'force_coords' not in load_log:
                                 load_log['force_coords'] = True
+
+        # The following accounts for the addition of the degree mode to the
+        # full-sphere projection. Originally, this was only used for polar mode
+        # and so the `coords` parameter was not needed. If this is not present,
+        # the plot is polar and we can set coords to be ['x']
+        if value['_type'] == 'glue.core.roi_pretransforms.RadianTransform':
+            if 'state' in value and value['state'] is not None:
+                state = value['state']
+                if 'contents' in state and state['contents'] is not None:
+                    contents = state['contents']
+                    if 'st__coords' not in contents:
+                        contents['st__coords'] = ['x']

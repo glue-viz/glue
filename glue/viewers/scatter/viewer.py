@@ -152,7 +152,7 @@ class MatplotlibScatterMixin(object):
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
                                   yfunc=mpl_to_datetime64 if y_date else None)
 
-        use_transform = self.using_polar() or self.using_rectilinear()
+        use_transform = not self.using_rectilinear()
         subset_state = roi_to_subset_state(roi,
                                            x_att=self.state.x_att, x_categories=self.state.x_categories,
                                            y_att=self.state.y_att, y_categories=self.state.y_categories,
