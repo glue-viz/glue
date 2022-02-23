@@ -105,8 +105,12 @@ class ScatterViewerState(MatplotlibDataViewerState):
         return self.plot_mode == 'polar'
 
     @property
+    def using_full_sphere(self):
+        return self.plot_mode in ['aitoff', 'hammer', 'mollweide', 'lambert']
+
+    @property
     def using_degrees(self):
-        return not self.using_rectilinear and self.angle_unit == 'degrees'
+        return (self.using_polar or self.using_full_sphere) and self.angle_unit == 'degrees'
 
     @property
     def using_radians(self):
