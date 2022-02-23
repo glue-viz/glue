@@ -56,4 +56,4 @@ class RadianTransform(object):
     @classmethod
     def __setgluestate__(cls, rec, context):
         state = context.object(rec['state'])
-        return cls(state["coords"], state['next_transform'])
+        return cls(state['coords'], state['next_transform'])

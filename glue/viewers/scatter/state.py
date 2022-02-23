@@ -356,7 +356,7 @@ class ScatterLayerState(MatplotlibLayerState):
         self.update_from_dict(kwargs)
 
     def _update_points_mode(self, *args):
-        if getattr(self.viewer_state, 'using_polar', False):
+        if getattr(self.viewer_state, 'using_polar', False) or getattr(self.viewer_state, 'using_full_sphere', False):
             self.points_mode_helper.choices = ['markers']
             self.points_mode_helper.select = 'markers'
         else:
