@@ -475,7 +475,6 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         Currently only the scatter viewer supports different projections.
     """
 
-    # Short circuit the full-sphere projections
     if projection == 'lambert' and coord == 'y':
         return
 
