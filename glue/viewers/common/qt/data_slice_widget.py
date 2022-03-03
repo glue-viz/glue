@@ -27,7 +27,7 @@ class SliceWidget(QtWidgets.QWidget):
                  parent=None, world_unit=None,
                  world_warning=False):
 
-        super(SliceWidget, self).__init__(parent=parent)
+        super(SliceWidget, self).__init__(parent)
 
         self.state = SliceState()
         self.state.label = label

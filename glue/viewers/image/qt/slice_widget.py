@@ -11,7 +11,7 @@ __all__ = ['MultiSliceWidgetHelper']
 
 class MultiSliceWidgetHelper(object):
 
-    def __init__(self, viewer_state=None, layout=None, *args, **kwargs):
+    def __init__(self, *args, viewer_state=None, layout=None, **kwargs):
 
         self.viewer_state = viewer_state
 
@@ -60,6 +60,7 @@ class MultiSliceWidgetHelper(object):
 
     @avoid_circular
     def sync_sliders_from_state(self, *args):
+
         if self.data is None or self.viewer_state.x_att is None or self.viewer_state.y_att is None:
             return
 
