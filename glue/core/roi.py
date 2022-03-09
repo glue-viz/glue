@@ -476,7 +476,7 @@ class EllipticalROI(Roi):
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
         super(EllipticalROI, self).__init__()
-        if theta is not None:
+        if theta is not None and theta != 0:
             raise NotImplementedError("Rotated ellipses are not yet supported")
         self.xc = xc
         self.yc = yc
