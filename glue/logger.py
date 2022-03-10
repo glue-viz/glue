@@ -1,5 +1,3 @@
-from logging import getLogger, basicConfig, NullHandler
-basicConfig()
+from logging import getLogger, StreamHandler
 logger = getLogger("glue")
-# Default to Null unless we override this later
-logger.addHandler(NullHandler())
+logger.addHandler(StreamHandler())
