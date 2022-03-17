@@ -10,6 +10,11 @@ v1.3.0 (unreleased)
 * Remove bundled version of pvextractor and include it as a proper
   dependency. [#2252]
 
+v1.2.5 (unreleased)
+-------------------
+
+* Fixed an issue where glue modified global logging settings. [#2281]
+
 v1.2.4 (2022-01-27)
 -------------------
 
