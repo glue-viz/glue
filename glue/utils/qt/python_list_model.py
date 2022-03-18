@@ -72,7 +72,7 @@ class PythonListModel(QtCore.QAbstractListModel):
             self.dataChanged.emit(index, index)
             return True
 
-        return super(PythonListModel, self).setDdata(index, value, role)
+        return super(PythonListModel, self).setData(index, value, role)
 
     def removeRow(self, row, parent=None):
         """
