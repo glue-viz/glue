@@ -14,9 +14,16 @@ jobs:
     with:
       coverage: codecov
       display: true
+      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
       libraries: |
         apt:
           - libxkbcommon-x11-dev
+          - libxcb-icccm4-dev
+          - libxcb-image0-dev
+          - libxcb-keysyms1-dev
+          - libxcb-randr0-dev
+          - libxcb-render-util0-dev
+          - libxcb-xinerama0-dev
 
       envs: |
         # Code style
@@ -33,13 +40,18 @@ jobs:
         - linux: py37-test-pyqt513-all
         - linux: py37-test-pyside513-all
         - linux: py38-test-pyside514
+        - linux: py39-test-pyqt515
+        - linux: py310-test-pyside515-all
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
 
         # Try out documentation build on Linux and macOS
         - linux: py37-docs-pyqt513
           coverage: false
 
   macos:
-    # Windows failing erratically on GH actions without explanation
+    # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
@@ -48,7 +60,6 @@ jobs:
           - enchant
 
       envs: |
-        # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
         - macos: py37-test-pyqt513
         - macos: py38-test-pyqt514
         - macos: py310-test-pyqt515-all
@@ -60,7 +71,7 @@ jobs:
           coverage: false
 
   windows:
-    # Windows failing erratically on GH actions without explanation
+    # Test some configurations on Windows
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
@@ -75,24 +86,3 @@ jobs:
         # Try out documentation build on Windows
         - windows: py38-docs-pyqt513
           coverage: false
-
-  allowed_failures:
-    # envs currently failing on GH actions; apt being unable to install the qt5 dependencies
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-    with:
-      coverage: codecov
-      display: true
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
-      libraries: |
-        apt:
-          - libqt5gui5
-          - libxkbcommon-x11-dev
-          - libxcb-xinerama0-dev
-          - libx11-xcb-dev
-
-      envs: |
-        - linux: py39-test-pyqt515
-        - linux: py310-test-pyside515-all
-
-        # Test against latest developer versions of some packages
-        - linux: py310-test-pyqt515-dev-all
