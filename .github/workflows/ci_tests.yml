@@ -9,16 +9,15 @@ on:
   pull_request:
 
 jobs:
-  tests:
+  linux:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
+      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps
       libraries: |
         apt:
-          - libxkbcommon-x11-0
+          - libxcb.*-dev
           - libxkbcommon-x11-dev
-        brew:
-          - enchant
 
       envs: |
         # Code style
@@ -29,20 +28,30 @@ jobs:
         # Standard tests
         # Linux builds - test on all supported PyQt5 and PySide2 versions,
         # and include all dependencies in some builds
-        - linux: py37-test-pyqt59-legacy
         - linux: py37-test-pyqt510
         - linux: py37-test-pyqt511-all
         - linux: py37-test-pyqt512
         - linux: py37-test-pyqt513-all
-        - linux: py38-test-pyqt514
-        - linux: py39-test-pyqt515
         - linux: py37-test-pyside513-all
-        - linux: py38-test-pyside514
         - linux: py310-test-pyside515-all
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
 
+        # Try out documentation build on Linux and macOS
+        - linux: py37-docs-pyqt513
+          coverage: false
+
+  macos:
+    # Windows failing erratically on GH actions without explanation
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      libraries: |
+        brew:
+          - enchant
+
+      envs: |
         # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
         - macos: py37-test-pyqt513
         - macos: py38-test-pyqt514
@@ -50,24 +59,39 @@ jobs:
           PLAT: arm64
         - macos: py38-test-pyside514
 
-        # Try out documentation build on Linux and macOS
-        - linux: py37-docs-pyqt513
-          coverage: false
+        # Try out documentation build on macOS
         - macos: py37-docs-pyqt513
           coverage: false
 
-  allowed_failures:
+  windows:
+    # Windows failing erratically on GH actions without explanation
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
+
       envs: |
-        # GH actions on Windows is currently failing without explanation
         - windows: py37-test-pyqt510
         # PyQt5.14 failed due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
         - windows: py38-test-pyqt514-all
         - windows: py310-test-pyqt515
         - windows: py39-test-pyside515-all
 
-        # Try out documentation build Windows
+        # Try out documentation build on Windows
         - windows: py38-docs-pyqt513
           coverage: false
+
+  allowed_failures:
+    # envs currently failing on GH actions without explanation
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      libraries: |
+        apt:
+          - libxcb.*-dev
+          - libxkbcommon-x11-dev
+
+      envs: |
+        - linux: py37-test-pyqt59-legacy
+        - linux: py38-test-pyqt514
+        - linux: py39-test-pyqt515
+        - linux: py38-test-pyside514
