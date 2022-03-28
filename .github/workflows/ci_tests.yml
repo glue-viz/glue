@@ -50,17 +50,24 @@ jobs:
           PLAT: arm64
         - macos: py38-test-pyside514
 
-        # Test a few configurations on Windows
+        # Try out documentation build on Linux and macOS
+        - linux: py37-docs-pyqt513
+          coverage: false
+        - macos: py37-docs-pyqt513
+          coverage: false
+
+  allowed_failures:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      envs: |
+        # GH actions on Windows is currently failing without explanation
         - windows: py37-test-pyqt510
         # PyQt5.14 failed due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
         - windows: py38-test-pyqt514-all
         - windows: py310-test-pyqt515
         - windows: py39-test-pyside515-all
 
-        # Try out documentation build on Linux and Windows
-        - linux: py37-docs-pyqt513
-          coverage: false
-        - macos: py37-docs-pyqt513
-          coverage: false
+        # Try out documentation build Windows
         - windows: py38-docs-pyqt513
           coverage: false
