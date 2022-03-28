@@ -13,10 +13,9 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps
+      display: true
       libraries: |
         apt:
-          - libxcb.*-dev
           - libxkbcommon-x11-dev
 
       envs: |
@@ -33,10 +32,7 @@ jobs:
         - linux: py37-test-pyqt512
         - linux: py37-test-pyqt513-all
         - linux: py37-test-pyside513-all
-        - linux: py310-test-pyside515-all
-
-        # Test against latest developer versions of some packages
-        - linux: py310-test-pyqt515-dev-all
+        - linux: py38-test-pyside514
 
         # Try out documentation build on Linux and macOS
         - linux: py37-docs-pyqt513
@@ -81,17 +77,22 @@ jobs:
           coverage: false
 
   allowed_failures:
-    # envs currently failing on GH actions without explanation
+    # envs currently failing on GH actions; apt being unable to install the qt5 dependencies
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
+      display: true
+      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
       libraries: |
         apt:
-          - libxcb.*-dev
+          - libqt5gui5
           - libxkbcommon-x11-dev
+          - libxcb-xinerama0-dev
+          - libx11-xcb-dev
 
       envs: |
-        - linux: py37-test-pyqt59-legacy
-        - linux: py38-test-pyqt514
         - linux: py39-test-pyqt515
-        - linux: py38-test-pyside514
+        - linux: py310-test-pyside515-all
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
