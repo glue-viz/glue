@@ -460,6 +460,46 @@ def test_incompatible_subset():
     assert refresh2.call_count == 0
 
 
+def test_table_incompatible_attribute():
+    """
+    Regression test for a bug where the table viewer generates an
+    uncaught IncompatibleAttribute error if one toggles the
+    visibility of a dataset iff an invalid subset exists. This
+    occurred because disabled layer_artists were still showing
+    as visible.
+    """
+    app = get_qapp()
+    d1 = Data(x=[1,2,3,4],y=[5,6,7,8],label='d1')
+    d2 = Data(a=['a','b','c'],b=['x','y','z'],label='d2')
+    dc = DataCollection([d1,d2])
+    gapp = GlueApplication(dc)
+    viewer = gapp.new_data_viewer(TableViewer)
+    viewer.add_data(d2)
+
+    #This subset should not be shown in the viewer
+    sg1 = dc.new_subset_group('invalid', d1.id['x'] <= 3)
+
+    assert len(viewer.state.layers) == 2
+    assert not viewer.state.layers[1].visible
+    assert viewer.state.layers[0].visible
+
+    #This subset can be shown in the viewer
+    sg2 = dc.new_subset_group('valid', d2.id['a'] == 'a')
+
+    assert len(viewer.state.layers) == 3
+    assert viewer.state.layers[2].visible
+    assert not viewer.state.layers[1].visible
+    assert viewer.state.layers[0].visible
+
+    # The original IncompatibleAttribute was thrown
+    # here as making the data layer invisible made
+    # DataTableModel._update_visible() try and draw
+    # the invalid subset
+    viewer.state.layers[0].visible = False
+    assert viewer.state.layers[2].visible
+    assert not viewer.state.layers[1].visible
+
+
 def test_table_with_dask_column():
 
     da = pytest.importorskip('dask.array')
