@@ -130,7 +130,7 @@ class TestCategoricalComponent(object):
         cat_comp = CategoricalComponent(self.array_data)
         np.testing.assert_equal(cat_comp.categories, np.asarray(['a', 'b']))
         np.testing.assert_equal(cat_comp.codes, np.array([0, 0, 1, 1]))
-        assert cat_comp.codes.dtype == np.float
+        assert cat_comp.codes.dtype == float
 
     def test_accepts_provided_grouping(self):
         ncategories = ['b', 'c']
