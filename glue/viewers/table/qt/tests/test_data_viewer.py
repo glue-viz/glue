@@ -479,25 +479,25 @@ def test_table_incompatible_attribute():
     #This subset should not be shown in the viewer
     sg1 = dc.new_subset_group('invalid', d1.id['x'] <= 3)
 
-    assert len(viewer.state.layers) == 2
-    assert not viewer.state.layers[1].visible
-    assert viewer.state.layers[0].visible
+    assert len(viewer.layers) == 2
+    assert not viewer.layers[1].visible
+    assert viewer.layers[0].visible
 
     #This subset can be shown in the viewer
     sg2 = dc.new_subset_group('valid', d2.id['a'] == 'a')
 
-    assert len(viewer.state.layers) == 3
-    assert viewer.state.layers[2].visible
-    assert not viewer.state.layers[1].visible
-    assert viewer.state.layers[0].visible
+    assert len(viewer.layers) == 3
+    assert viewer.layers[2].visible
+    assert not viewer.layers[1].visible
+    assert viewer.layers[0].visible
 
     # The original IncompatibleAttribute was thrown
     # here as making the data layer invisible made
     # DataTableModel._update_visible() try and draw
     # the invalid subset
-    viewer.state.layers[0].visible = False
-    assert viewer.state.layers[2].visible
-    assert not viewer.state.layers[1].visible
+    viewer.layers[0].visible = False
+    assert viewer.layers[2].visible
+    assert not viewer.layers[1].visible
 
 
 def test_table_with_dask_column():
