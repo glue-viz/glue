@@ -16,7 +16,7 @@ from glue.dialogs.link_editor.qt import LinkEditor
 from glue.icons.qt import get_icon
 from glue.dialogs.component_arithmetic.qt import ArithmeticEditorWidget
 from glue.dialogs.component_manager.qt import ComponentManagerWidget
-from glue.dialogs.subset_facet.qt import SubsetFacetDialog
+from glue.dialogs.subset_facet.qt import SubsetFacetDialog, SubsetCategoricalsDialog
 from glue.dialogs.data_wizard.qt import data_wizard
 from glue.utils import nonpartial
 from glue.utils.decorators import avoid_circular
@@ -141,6 +141,24 @@ class FacetAction(LayerAction):
         except (AttributeError, TypeError, IndexError):
             default = None
         SubsetFacetDialog.facet(self._layer_tree.data_collection,
+                                parent=self._layer_tree, default=default)
+
+class SubsetCategoriesAction(LayerAction):
+    
+    """Add a sequence of subsets from all the categories in a ComponentID"""
+    _title = "Create subsets from categories"
+    _tooltip = "Create subsets from categories"
+    
+    def _can_trigger(self):
+        return len(self._layer_tree.data_collection) > 0
+    
+    def _do_action(self):
+        layers = self.selected_layers()
+        try:
+            default = layers[0].data
+        except (AttributeError, TypeError, IndexError):
+            default = None
+        SubsetCategoricalsDialog.facet(self._layer_tree.data_collection,
                                 parent=self._layer_tree, default=default)
 
 
@@ -599,6 +617,7 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
         self._actions['clear'] = ClearAction(self)
         self._actions['delete'] = DeleteAction(self)
         self._actions['facet'] = FacetAction(self)
+        self._actions['subsetcategories'] = SubsetCategoriesAction(self)
         self._actions['metadata'] = MetadataAction(self)
         self._actions['merge'] = MergeAction(self)
         self._actions['maskify'] = MaskifySubsetAction(self)

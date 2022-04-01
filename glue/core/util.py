@@ -12,7 +12,7 @@ from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 import matplotlib.ticker as mticker
 
 __all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_component_view",
-           "facet_subsets", "colorize_subsets", "disambiguate",
+           "subset_catgorical", "facet_subsets", "colorize_subsets", "disambiguate",
            'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
 
@@ -190,16 +190,38 @@ def join_component_view(component, view):
 
     return tuple(result)
 
-def facet_categorical(data, cid, prefix=''):
+def subset_categorical(data_collection, data, cid, prefix=''):
     """
     Create a series of subsets based on the categories present in
     a particular attribute.
-    
-    The problem is that we actually need cid applied to a particular
-    dataset
     """
-    data.id[cid].categories
-
+    TOO_MANY_CATEGORIES = 20
+    
+    labels = []
+    states = []
+    component = data.get_kind(cid)
+    if component == 'categorical':
+        category_names = data[cid].categories
+    elif component == 'numerical':
+        category_names = np.unique(data[cid])
+    
+    print(component)
+    if len(category_names) > TOO_MANY_CATEGORIES:
+        print("There are {0} categories in this component. Continuing will create a lot of subsets."
+              "Are you sure you want to continue?".format(len(category_names)))
+    for catname in category_names:
+        print(f'{catname=}')
+        subsetstate = data.id[cid] == catname
+        states.append(subsetstate)
+        label = prefix + '{0}={1}'.format(cid,catname)
+        labels.append(label)
+    
+    result = []
+    for lbl,s in zip(labels,states):
+        sg = data_collection.new_subset_group(label=lbl, subset_state=s)
+        result.append(sg)
+    
+    return result
 
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
                   prefix='', log=False):
