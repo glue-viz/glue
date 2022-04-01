@@ -479,6 +479,9 @@ def test_table_incompatible_attribute():
     #This subset should not be shown in the viewer
     sg1 = dc.new_subset_group('invalid', d1.id['x'] <= 3)
 
+    gapp.show()
+    process_events()
+
     assert len(viewer.layers) == 2
     assert not viewer.layers[1].visible
     assert viewer.layers[0].visible
