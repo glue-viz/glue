@@ -190,6 +190,16 @@ def join_component_view(component, view):
 
     return tuple(result)
 
+def facet_categorical(data, cid, prefix=''):
+    """
+    Create a series of subsets based on the categories present in
+    a particular attribute.
+    
+    The problem is that we actually need cid applied to a particular
+    dataset
+    """
+    data.id[cid].categories
+
 
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
                   prefix='', log=False):

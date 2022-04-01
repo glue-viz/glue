@@ -90,7 +90,7 @@ class SubsetFacetDialog(QtWidgets.QDialog):
     @classmethod
     def facet(cls, collect, default=None, parent=None):
         """
-        Class method to create facted subsets.
+        Class method to create faceted subsets.
 
         The arguments are the same as __init__.
         """
