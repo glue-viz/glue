@@ -463,20 +463,22 @@ def test_incompatible_subset():
 def test_table_incompatible_attribute():
     """
     Regression test for a bug where the table viewer generates an
-    uncaught IncompatibleAttribute error if one toggles the
-    visibility of a dataset iff an invalid subset exists. This
-    occurred because disabled layer_artists were still showing
-    as visible.
+    uncaught IncompatibleAttribute error in _update_visible() if
+    the dataset is not visible and an invalid subset exists at all.
+    This occurred because layer_artists depending on
+    invalid attributes were only being disabled (but were still
+    visible) and the viewer attempts to compute a mask for
+    all visible subsets if the underlying dataset is not visible.
     """
     app = get_qapp()
-    d1 = Data(x=[1,2,3,4],y=[5,6,7,8],label='d1')
-    d2 = Data(a=['a','b','c'],b=['x','y','z'],label='d2')
-    dc = DataCollection([d1,d2])
+    d1 = Data(x=[1, 2, 3, 4], y=[5, 6, 7, 8], label='d1')
+    d2 = Data(a=['a', 'b', 'c'], b=['x', 'y', 'z'], label='d2')
+    dc = DataCollection([d1, d2])
     gapp = GlueApplication(dc)
     viewer = gapp.new_data_viewer(TableViewer)
     viewer.add_data(d2)
 
-    #This subset should not be shown in the viewer
+    # This subset should not be shown in the viewer
     sg1 = dc.new_subset_group('invalid', d1.id['x'] <= 3)
 
     gapp.show()
@@ -486,7 +488,7 @@ def test_table_incompatible_attribute():
     assert not viewer.layers[1].visible
     assert viewer.layers[0].visible
 
-    #This subset can be shown in the viewer
+    # This subset can be shown in the viewer
     sg2 = dc.new_subset_group('valid', d2.id['a'] == 'a')
 
     assert len(viewer.layers) == 3
