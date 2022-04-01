@@ -100,8 +100,9 @@ class SubsetFacetDialog(QtWidgets.QDialog):
         if value == QtWidgets.QDialog.Accepted:
             self._apply()
 
+
 class SubsetCategoricalsState(State):
-            
+
     data = SelectionCallbackProperty()
     att = SelectionCallbackProperty()
     cmap = CallbackProperty()
@@ -111,7 +112,8 @@ class SubsetCategoricalsState(State):
         super(SubsetCategoricalsState, self).__init__()
 
         self.data_helper = DataCollectionComboHelper(self, 'data', data_collection)
-        self.att_helper = ComponentIDComboHelper(self, 'att', numeric=True, categorical=True) #Some categoricals may be encoded as integers
+        # Some categoricals may be encoded as integers, so we allow that as an option
+        self.att_helper = ComponentIDComboHelper(self, 'att', numeric=True, categorical=True)
 
         self.add_callback('data', self._on_data_change)
         self._on_data_change()
@@ -155,7 +157,7 @@ class SubsetCategoricalsDialog(QtWidgets.QDialog):
     def _apply(self):
 
         subsets = subset_categorical(self._collect, self.state.data, self.state.att)
-        #colorize_subsets(subsets, self.state.cmap)
+        # colorize_subsets(subsets, self.state.cmap)
 
     @classmethod
     def facet(cls, collect, default=None, parent=None):

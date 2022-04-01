@@ -143,15 +143,16 @@ class FacetAction(LayerAction):
         SubsetFacetDialog.facet(self._layer_tree.data_collection,
                                 parent=self._layer_tree, default=default)
 
+
 class SubsetCategoriesAction(LayerAction):
-    
+
     """Add a sequence of subsets from all the categories in a ComponentID"""
     _title = "Create subsets from categories"
     _tooltip = "Create subsets from categories"
-    
+
     def _can_trigger(self):
         return len(self._layer_tree.data_collection) > 0
-    
+
     def _do_action(self):
         layers = self.selected_layers()
         try:
@@ -159,7 +160,7 @@ class SubsetCategoriesAction(LayerAction):
         except (AttributeError, TypeError, IndexError):
             default = None
         SubsetCategoricalsDialog.facet(self._layer_tree.data_collection,
-                                parent=self._layer_tree, default=default)
+                                       parent=self._layer_tree, default=default)
 
 
 class MetadataAction(LayerAction):
