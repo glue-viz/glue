@@ -13,6 +13,7 @@ from glue.app.qt import GlueApplication
 from ..data_viewer import DataTableModel, TableViewer
 
 from glue.core.edit_subset_mode import AndNotMode, OrMode, ReplaceMode
+from glue.tests.helpers import requires_pyqt_gt_59
 
 
 class TestDataTableModel():
@@ -460,6 +461,7 @@ def test_incompatible_subset():
     assert refresh2.call_count == 0
 
 
+@requires_pyqt_gt_59
 def test_table_incompatible_attribute():
     """
     Regression test for a bug where the table viewer generates an

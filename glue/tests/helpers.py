@@ -12,9 +12,14 @@ import pytest
 def make_skipper(module, label=None, version=None):
     label = label or module
     try:
-        mod = __import__(module)
+        if label == 'PyQt5':  # PyQt5 does not use __version__
+            from PyQt5 import QtCore
+            version_installed = QtCore.PYQT_VERSION_STR
+        else:
+            mod = __import__(module)
+            version_installed = mod.__version__
         if version:
-            assert LooseVersion(mod.__version__) >= LooseVersion(version)
+            assert LooseVersion(version_installed) >= LooseVersion(version)
         installed = True
     except (ImportError, AssertionError):
         installed = False
@@ -56,6 +61,7 @@ H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 PYQT5_INSTALLED, requires_pyqt5 = make_skipper('PyQt5')
 PYSIDE2_INSTALLED, requires_pyside2 = make_skipper('PySide2')
 
+
 HYPOTHESIS_INSTALLED, requires_hypothesis = make_skipper('hypothesis')
 
 QT_INSTALLED = PYQT5_INSTALLED or PYSIDE2_INSTALLED
@@ -65,6 +71,12 @@ SPECTRAL_CUBE_INSTALLED, requires_spectral_cube = make_skipper('spectral_cube',
 
 requires_qt = pytest.mark.skipif(str(not QT_INSTALLED),
                                  reason='An installation of Qt is required')
+
+PYQT_GT_59, _ = make_skipper('PyQt5', version='5.9')
+
+REQUIRES_PYQT_GT_59 = PYQT_GT_59 and not PYSIDE2_INSTALLED
+
+requires_pyqt_gt_59 = pytest.mark.skipif(str(not REQUIRES_PYQT_GT_59), reason='Requires PyQt >= 5.9')
 
 
 @contextmanager
