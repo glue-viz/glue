@@ -461,7 +461,7 @@ def test_incompatible_subset():
     assert refresh2.call_count == 0
 
 
-@requires_pyqt_gt_59
+@requires_pyqt_gt_59_or_pyside2
 def test_table_incompatible_attribute():
     """
     Regression test for a bug where the table viewer generates an
