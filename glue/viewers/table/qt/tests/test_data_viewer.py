@@ -13,7 +13,7 @@ from glue.app.qt import GlueApplication
 from ..data_viewer import DataTableModel, TableViewer
 
 from glue.core.edit_subset_mode import AndNotMode, OrMode, ReplaceMode
-from glue.tests.helpers import requires_pyqt_gt_59
+from glue.tests.helpers import requires_pyqt_gt_59_or_pyside2
 
 
 class TestDataTableModel():
