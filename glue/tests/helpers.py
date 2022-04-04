@@ -72,11 +72,11 @@ SPECTRAL_CUBE_INSTALLED, requires_spectral_cube = make_skipper('spectral_cube',
 requires_qt = pytest.mark.skipif(str(not QT_INSTALLED),
                                  reason='An installation of Qt is required')
 
-PYQT_GT_59, _ = make_skipper('PyQt5', version='5.9')
+PYQT_GT_59, _ = make_skipper('PyQt5', version='5.10')
 
 REQUIRES_PYQT_GT_59 = PYQT_GT_59 and not PYSIDE2_INSTALLED
 
-requires_pyqt_gt_59 = pytest.mark.skipif(str(not REQUIRES_PYQT_GT_59), reason='Requires PyQt >= 5.9')
+requires_pyqt_gt_59 = pytest.mark.skipif(str(not REQUIRES_PYQT_GT_59), reason='Requires PyQt > 5.9')
 
 
 @contextmanager
