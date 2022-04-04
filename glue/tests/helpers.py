@@ -61,7 +61,6 @@ H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 PYQT5_INSTALLED, requires_pyqt5 = make_skipper('PyQt5')
 PYSIDE2_INSTALLED, requires_pyside2 = make_skipper('PySide2')
 
-
 HYPOTHESIS_INSTALLED, requires_hypothesis = make_skipper('hypothesis')
 
 QT_INSTALLED = PYQT5_INSTALLED or PYSIDE2_INSTALLED
