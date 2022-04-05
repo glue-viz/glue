@@ -161,7 +161,7 @@ class CompositeArray(object):
 
     @property
     def dtype(self):
-        return np.float
+        return np.dtype(float)
 
     @property
     def ndim(self):

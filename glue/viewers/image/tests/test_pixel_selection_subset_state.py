@@ -41,7 +41,7 @@ def test_pixel_selection_subset_state():
         for state in states:
             cid = data.main_components[0]
             if data is data1:
-                assert_array_equal(state.to_array(data, cid), data[cid][state.slices])
+                assert_array_equal(state.to_array(data, cid), data[cid][tuple(state.slices)])
             else:
                 with pytest.raises(IncompatibleAttribute):
                     state.to_array(data, cid)

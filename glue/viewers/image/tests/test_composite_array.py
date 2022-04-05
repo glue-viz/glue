@@ -21,7 +21,7 @@ class TestCompositeArray(object):
         assert self.composite.shape is None
         assert self.composite.size is None
         assert self.composite.ndim == 2  # for now, this is hard-coded
-        assert self.composite.dtype is np.float  # for now, this is hard-coded
+        assert self.composite.dtype is np.dtype(float)  # for now, this is hard-coded
 
         self.composite.allocate('a')
         self.composite.set('a', array=self.array1)
@@ -29,7 +29,7 @@ class TestCompositeArray(object):
         assert self.composite.shape == (2, 2)
         assert self.composite.size == 4
         assert self.composite.ndim == 2
-        assert self.composite.dtype is np.float
+        assert self.composite.dtype is np.dtype(float)
 
     def test_shape_function(self):
 
