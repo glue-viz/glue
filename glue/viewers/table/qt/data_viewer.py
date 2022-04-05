@@ -126,8 +126,10 @@ class DataTableModel(QtCore.QAbstractTableModel):
                         # Only disable the layer if enabled, as otherwise we
                         # will recursively call clear and _refresh, causing
                         # an infinite loop and performance issues.
+                        # Also make sure that a disabled layer is not visible
                         if layer_artist.enabled:
                             layer_artist.disable_invalid_attributes(*exc.args)
+                            layer_artist.visible = False
                     else:
                         layer_artist.enabled = True
 

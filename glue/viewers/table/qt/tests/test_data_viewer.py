@@ -13,6 +13,7 @@ from glue.app.qt import GlueApplication
 from ..data_viewer import DataTableModel, TableViewer
 
 from glue.core.edit_subset_mode import AndNotMode, OrMode, ReplaceMode
+from glue.tests.helpers import requires_pyqt_gt_59_or_pyside2
 
 
 class TestDataTableModel():
@@ -458,6 +459,52 @@ def test_incompatible_subset():
 
     assert refresh1.call_count == 0
     assert refresh2.call_count == 0
+
+
+@requires_pyqt_gt_59_or_pyside2
+def test_table_incompatible_attribute():
+    """
+    Regression test for a bug where the table viewer generates an
+    uncaught IncompatibleAttribute error in _update_visible() if
+    the dataset is not visible and an invalid subset exists at all.
+    This occurred because layer_artists depending on
+    invalid attributes were only being disabled (but were still
+    visible) and the viewer attempts to compute a mask for
+    all visible subsets if the underlying dataset is not visible.
+    """
+    app = get_qapp()
+    d1 = Data(x=[1, 2, 3, 4], y=[5, 6, 7, 8], label='d1')
+    d2 = Data(a=['a', 'b', 'c'], b=['x', 'y', 'z'], label='d2')
+    dc = DataCollection([d1, d2])
+    gapp = GlueApplication(dc)
+    viewer = gapp.new_data_viewer(TableViewer)
+    viewer.add_data(d2)
+
+    # This subset should not be shown in the viewer
+    sg1 = dc.new_subset_group('invalid', d1.id['x'] <= 3)
+
+    gapp.show()
+    process_events()
+
+    assert len(viewer.layers) == 2
+    assert not viewer.layers[1].visible
+    assert viewer.layers[0].visible
+
+    # This subset can be shown in the viewer
+    sg2 = dc.new_subset_group('valid', d2.id['a'] == 'a')
+
+    assert len(viewer.layers) == 3
+    assert viewer.layers[2].visible
+    assert not viewer.layers[1].visible
+    assert viewer.layers[0].visible
+
+    # The original IncompatibleAttribute was thrown
+    # here as making the data layer invisible made
+    # DataTableModel._update_visible() try and draw
+    # the invalid subset
+    viewer.layers[0].visible = False
+    assert viewer.layers[2].visible
+    assert not viewer.layers[1].visible
 
 
 def test_table_with_dask_column():
