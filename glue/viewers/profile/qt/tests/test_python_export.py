@@ -20,6 +20,8 @@ class TestExportPython(BaseTestExportPython):
         self.app = GlueApplication(self.data_collection)
         self.viewer = self.app.new_data_viewer(ProfileViewer)
         self.viewer.add_data(self.data)
+        # Make legend location deterministic
+        self.viewer.state.legend.location = 'lower left'
 
     def teardown_method(self, method):
         self.viewer.close()

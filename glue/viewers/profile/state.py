@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from glue.core.hub import HubListener
 
 import numpy as np
 
@@ -12,6 +13,7 @@ from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboH
 from glue.utils import defer_draw
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
+from glue.core.message import SubsetUpdateMessage
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -200,7 +202,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return 1
 
 
-class ProfileLayerState(MatplotlibLayerState):
+class ProfileLayerState(MatplotlibLayerState, HubListener):
     """
     A state class that includes all the attributes for layers in a Profile plot.
     """
@@ -214,6 +216,7 @@ class ProfileLayerState(MatplotlibLayerState):
                                         'automatically calculate levels')
 
     _viewer_callbacks_set = False
+    _layer_subset_updates_subscribed = False
     _profile_cache = None
 
     def __init__(self, layer=None, viewer_state=None, **kwargs):
@@ -233,16 +236,32 @@ class ProfileLayerState(MatplotlibLayerState):
         ProfileLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
         ProfileLayerState.percentile.set_display_func(self, percentile_display.get)
 
-        self.add_callback('layer', self._update_attribute, priority=1000)
+        self.add_callback('layer', self._on_layer_change, priority=1000)
+        self.add_callback('visible', self.reset_cache, priority=1000)
 
         if layer is not None:
-            self._update_attribute()
+            self._on_layer_change()
 
         self.update_from_dict(kwargs)
 
-    def _update_attribute(self, *args):
+    def _on_layer_change(self, *args):
+
         if self.layer is not None:
+
+            # Set the available attributes
             self.attribute_att_helper.set_multiple_data([self.layer])
+
+            # We only subscribe to SubsetUpdateMessage the first time that 'layer'
+            # is not None, and then do any filtering in the callback function.
+            if not self._layer_subset_updates_subscribed and self.layer.hub is not None:
+                self.layer.hub.subscribe(self, SubsetUpdateMessage, handler=self._on_subset_update)
+                self._layer_subset_updates_subscribed = True
+
+        self.reset_cache()
+
+    def _on_subset_update(self, msg):
+        if msg.subset is self.layer:
+            self.reset_cache()
 
     @property
     def independent_x_att(self):
