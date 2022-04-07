@@ -140,12 +140,11 @@ if PYSIDE2:
         try:
             outcome = yield
             return outcome.get_result()
-        except AttributeError:
-            exc = str(outcome.excinfo[1])
-            for attr in QTSTANDARD_ATTRS:
-                if QTSTANDARD_EXC + attr in exc:
-                    pytest.xfail(f'Known issue {exc}')
-        except ValueError:
+        # excinfo seems only to be preserved through a single hook
+        except (AttributeError, ValueError):
             exc = str(outcome.excinfo[1])
             if "No net viewers should be created in tests" in exc:
                 pytest.xfail(f'Known issue {exc}')
+            for attr in QTSTANDARD_ATTRS:
+                if QTSTANDARD_EXC + attr in exc:
+                    pytest.xfail(f'Known issue {exc}')
