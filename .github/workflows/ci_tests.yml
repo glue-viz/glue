@@ -9,8 +9,8 @@ on:
   pull_request:
 
 jobs:
-  linux:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+  tests:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
     with:
       coverage: codecov
       display: true
@@ -24,6 +24,8 @@ jobs:
           - libxcb-randr0-dev
           - libxcb-render-util0-dev
           - libxcb-xinerama0-dev
+        brew:
+          - enchant
 
       envs: |
         # Code style
@@ -50,16 +52,7 @@ jobs:
         - linux: py37-docs-pyqt513
           coverage: false
 
-  macos:
-    # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-    with:
-      coverage: codecov
-      libraries: |
-        brew:
-          - enchant
-
-      envs: |
+        # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
         - macos: py37-test-pyqt513
         - macos: py38-test-pyqt514
         - macos: py310-test-pyqt515-all
@@ -70,15 +63,8 @@ jobs:
         - macos: py37-docs-pyqt513
           coverage: false
 
-  windows:
-    # Test some configurations on Windows
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-    with:
-      coverage: codecov
-
-      envs: |
+        # Test some configurations on Windows
         - windows: py37-test-pyqt510
-        # PyQt5.14 failed due to https://github.com/jupyter/qtconsole/issues/400 - fixed upstream
         - windows: py38-test-pyqt514-all
         - windows: py310-test-pyqt515
         - windows: py39-test-pyside515-all

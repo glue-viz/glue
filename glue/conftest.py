@@ -112,17 +112,17 @@ def pytest_unconfigure(config):
         # objgraph.show_most_common_types(limit=100)
 
 
-# With PySide2, tests can fail in a non-deterministic way with the following
-# error:
+# With PySide2, tests can fail in a non-deterministic way on a teardown error
+# or with the following error:
 #
-#   AttributeError: 'PySide2.QtGui.QStandardItem' object has no attribute 'connect'
+#   AttributeError: 'PySide2.QtGui.QStandardItem' object has no attribute '...'
 #
 # Until this can be properly debugged and fixed, we xfail any test that fails
-# with this exception
+# with one of these exceptions.
 
 if PYSIDE2:
-    QTSTANDARD_EXC = "'PySide2.QtGui.QStandardItem' object has no attribute 'connect'"
-    TEARDOWN_EXC = "No net viewers should be created in tests"
+    QTSTANDARD_EXC = "'PySide2.QtGui.QStandardItem' object has no attribute "
+    QTSTANDARD_ATTRS = ["'connect'", "'item'", "'triggered'"]
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_setup():
@@ -131,15 +131,21 @@ if PYSIDE2:
             return outcome.get_result()
         except AttributeError:
             exc = str(outcome.excinfo[1])
-            if QTSTANDARD_EXC in exc:
-                pytest.xfail(f'Known issue {exc}')
+            for attr in QTSTANDARD_ATTRS:
+                if QTSTANDARD_EXC + attr in exc:
+                    pytest.xfail(f'Known issue {exc}')
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call():
         try:
             outcome = yield
             return outcome.get_result()
-        except (AttributeError, ValueError):
+        except AttributeError:
             exc = str(outcome.excinfo[1])
-            if QTSTANDARD_EXC in exc or TEARDOWN_EXC in exc:
+            for attr in QTSTANDARD_ATTRS:
+                if QTSTANDARD_EXC + attr in exc:
+                    pytest.xfail(f'Known issue {exc}')
+        except ValueError:
+            exc = str(outcome.excinfo[1])
+            if "No net viewers should be created in tests" in exc:
                 pytest.xfail(f'Known issue {exc}')
