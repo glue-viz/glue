@@ -1,4 +1,4 @@
-name: CI Tests
+name: CI Workflows
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   tests:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
       display: true
@@ -72,3 +72,11 @@ jobs:
         # Try out documentation build on Windows
         - windows: py38-docs-pyqt513
           coverage: false
+
+  publish:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
+    with:
+      test_extras: 'test,qt'
+      test_command: pytest --pyargs glue
+    secrets:
+      pypi_token: ${{ secrets.pypi_token }}
