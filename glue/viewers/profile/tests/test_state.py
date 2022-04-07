@@ -1,3 +1,4 @@
+from glue.core.data_collection import DataCollection
 import numpy as np
 
 from numpy.testing import assert_allclose
@@ -30,9 +31,13 @@ class SimpleCoordinates(Coordinates):
 class TestProfileViewerState:
 
     def setup_method(self, method):
+
         self.data = Data(label='d1')
         self.data.coords = SimpleCoordinates()
         self.data['x'] = np.arange(24).reshape((3, 4, 2)).astype(float)
+
+        self.data_collection = DataCollection([self.data])
+
         self.viewer_state = ProfileViewerState()
         self.layer_state = ProfileLayerState(viewer_state=self.viewer_state,
                                              layer=self.data)
@@ -101,9 +106,6 @@ class TestProfileViewerState:
         assert_allclose(y, [np.nan, 13., 19.5])
 
         subset.subset_state = self.data.id['x'] > 100
-
-        # TODO: the fact we have to call this isn't ideal
-        self.layer_state.reset_cache()
 
         x, y = self.layer_state.profile
         assert len(x) == 0
