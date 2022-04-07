@@ -1,0 +1,74 @@
+name: CI Tests
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  tests:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+    with:
+      coverage: codecov
+      display: true
+      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      libraries: |
+        apt:
+          - libxkbcommon-x11-dev
+          - libxcb-icccm4-dev
+          - libxcb-image0-dev
+          - libxcb-keysyms1-dev
+          - libxcb-randr0-dev
+          - libxcb-render-util0-dev
+          - libxcb-xinerama0-dev
+        brew:
+          - enchant
+
+      envs: |
+        # Code style
+        - linux: codestyle
+          libraries:
+          coverage: false
+
+        # Standard tests
+        # Linux builds - test on all supported PyQt5 and PySide2 versions,
+        # and include all dependencies in some builds
+        - linux: py37-test-pyqt510
+        - linux: py37-test-pyqt511-all
+        - linux: py37-test-pyqt512
+        - linux: py37-test-pyqt513-all
+        - linux: py37-test-pyside513-all
+        - linux: py38-test-pyside514
+        - linux: py39-test-pyqt515
+        - linux: py310-test-pyside515-all
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
+
+        # Try out documentation build on Linux and macOS
+        - linux: py37-docs-pyqt513
+          coverage: false
+
+        # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
+        - macos: py37-test-pyqt513
+        - macos: py38-test-pyqt514
+        - macos: py310-test-pyqt515-all
+          PLAT: arm64
+        - macos: py38-test-pyside514
+
+        # Try out documentation build on macOS
+        - macos: py37-docs-pyqt513
+          coverage: false
+
+        # Test some configurations on Windows
+        - windows: py37-test-pyqt510
+        - windows: py38-test-pyqt514-all
+        - windows: py310-test-pyqt515
+        - windows: py39-test-pyside515-all
+
+        # Try out documentation build on Windows
+        - windows: py38-docs-pyqt513
+          coverage: false
