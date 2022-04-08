@@ -1,4 +1,4 @@
-name: CI Tests
+name: CI Workflows
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   tests:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
       display: true
@@ -72,3 +72,13 @@ jobs:
         # Try out documentation build on Windows
         - windows: py38-docs-pyqt513
           coverage: false
+
+  publish:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
+    with:
+      # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
+      libraries: 'libxkbcommon-x11-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libgl1-mesa-glx xvfb'
+      test_extras: 'test,qt'
+      test_command: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & sleep 3; DISPLAY=:99.0 pytest --pyargs glue
+    secrets:
+      pypi_token: ${{ secrets.pypi_token }}
