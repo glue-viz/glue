@@ -25,10 +25,11 @@ class VisualAttributes(HasCallbackProperties):
     :param linestyle: The linestyle (``'solid' | 'dashed' | 'dash-dot' | 'dotted' | 'none'``)
     :param marker: The matplotlib marker shape (``'o' | 's' | '^' | etc``)
     :param markersize: The size of the marker (int)
+    :param preferred_cmap: The colormap required (str)
 
     """
 
-    def __init__(self, parent=None, washout=False, color=None, alpha=None, preferred_cmap=None):
+    def __init__(self, parent=None, color=None, alpha=None, preferred_cmap=None):
 
         super(VisualAttributes, self).__init__()
 
@@ -109,11 +110,17 @@ class VisualAttributes(HasCallbackProperties):
     def preferred_cmap(self, value):
         if isinstance(value, str):
             try:
-                for i, element in enumerate(colormaps.members):
+                self._preferred_cmap = get_cmap(value)
+            except ValueError:
+                # This checks for the formal name of the colormap.
+                # e.g., 'viridis' is 'Viridis'
+                for element in colormaps.members:
                     if element[0] == value:
                         self._preferred_cmap = element[1]
-            except TypeError:
-                self._preferred_cmap = get_cmap(value)
+                        break
+                else:
+                    # If the string name fails to be validated
+                    self._preferred_cmap = None
         else:
             self._preferred_cmap = value
 
