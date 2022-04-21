@@ -10,6 +10,8 @@ v1.3.0 (unreleased)
 * Remove bundled version of pvextractor and include it as a proper
   dependency. [#2252]
 
+* Support toggling plotting profile viewer layer as steps. [#2292]
+
 v1.2.5 (unreleased)
 -------------------
 

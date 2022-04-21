@@ -27,7 +27,8 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
         self._viewer_state.add_global_callback(self._update_profile)
         self.state.add_global_callback(self._update_profile)
 
-        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle='steps-mid')[0]
+        drawstyle = 'steps-mid' if self.state.as_steps else 'default'
+        self.plot_artist = self.axes.plot([1, 2, 3], [3, 4, 5], 'k-', drawstyle=drawstyle)[0]
 
         self.mpl_artists = [self.plot_artist]
 
@@ -115,6 +116,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             mpl_artist.set_color(self.state.color)
             mpl_artist.set_alpha(self.state.alpha)
             mpl_artist.set_linewidth(self.state.linewidth)
+            mpl_artist.set_drawstyle('steps-mid' if self.state.as_steps else 'default')
 
         self.redraw()
 
@@ -133,7 +135,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             self._calculate_profile(reset=force)
             force = True
 
-        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth')):
+        if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'linewidth', 'as_steps')):
             self._update_visual_attributes()
 
     @defer_draw

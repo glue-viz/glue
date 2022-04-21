@@ -215,7 +215,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
     percentile = DDSCProperty(docstring='The percentile value used to '
                                         'automatically calculate levels')
 
-    as_steps = DDCProperty(False, docstring='Whether to display the profile as steps')
+    as_steps = DDCProperty(True, docstring='Whether to display the profile as steps')
 
     _viewer_callbacks_set = False
     _layer_subset_updates_subscribed = False
@@ -240,7 +240,6 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
 
         self.add_callback('layer', self._on_layer_change, priority=1000)
         self.add_callback('visible', self.reset_cache, priority=1000)
-        self.add_callback('as_steps', self._on_as_steps_change, priority=1000)
 
         if layer is not None:
             self._on_layer_change()
@@ -339,21 +338,10 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            if self.as_steps:
-                a = np.insert(axis_values, 0, 2*axis_values[0] - axis_values[1])
-                b = np.append(axis_values, 2*axis_values[-1] - axis_values[-2])
-                edges = (a + b) / 2
-                axis_values = np.concatenate((edges[:1], np.repeat(edges[1:-1], 2), edges[-1:]))
-                profile_values = np.repeat(profile_values, 2)
-
             self._profile_cache = axis_values, profile_values
 
         if update_limits:
             self.update_limits(update_profile=False)
-
-    def _on_as_steps_change(self, *args):
-        self.reset_cache()
-        self.update_profile()
 
     def update_limits(self, update_profile=True):
         with delay_callback(self, 'v_min', 'v_max'):
