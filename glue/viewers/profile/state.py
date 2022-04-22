@@ -215,6 +215,8 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
     percentile = DDSCProperty(docstring='The percentile value used to '
                                         'automatically calculate levels')
 
+    as_steps = DDCProperty(True, docstring='Whether to display the profile as steps')
+
     _viewer_callbacks_set = False
     _layer_subset_updates_subscribed = False
     _profile_cache = None
@@ -335,6 +337,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view = [0] * data.ndim
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
+
             self._profile_cache = axis_values, profile_values
 
         if update_limits:
