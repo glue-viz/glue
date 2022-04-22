@@ -1,7 +1,7 @@
 Full changelog
 ==============
 
-v1.3.0 (unreleased)
+v1.3.0 (2022-04-22)
 -------------------
 
 * Modify scatter viewer so that axis labels are shown in tick marks
@@ -12,8 +12,10 @@ v1.3.0 (unreleased)
 
 * Support toggling plotting profile viewer layer as steps. [#2292]
 
-v1.2.5 (unreleased)
--------------------
+* Reset limits in profile viewer when changing collapse function. [#2277]
+
+* Fixed a bug that caused an error when the table viewer tried to show
+  disabled layers. [#2286]
 
 * Fixed an issue where glue modified global logging settings. [#2281]
 
