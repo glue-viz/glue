@@ -1433,6 +1433,11 @@ class Data(BaseCartesianData):
         else:
             raise IncompatibleAttribute(component_id)
 
+    def convert_component_units_to(self, component_id, units):
+        comp = self.get_component(component_id)
+        comp._convert_to_units(units)
+        self._numerical_data_changed()
+
     def to_dataframe(self, index=None):
         """Convert the Data object into a :class:`pandas.DataFrame` object.
 
@@ -1511,12 +1516,15 @@ class Data(BaseCartesianData):
             comp._data = data
 
         # alert hub of the change
-        if self.hub is not None:
-            msg = NumericalDataChangedMessage(self)
-            self.hub.broadcast(msg)
+        self._numerical_data_changed()
 
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)
+
+    def _numerical_data_changed(self):
+        if self.hub is not None:
+            msg = NumericalDataChangedMessage(self)
+            self.hub.broadcast(msg)
 
     def update_values_from_data(self, data):
         """
@@ -1583,9 +1591,7 @@ class Data(BaseCartesianData):
         self.coords = data.coords
 
         # alert hub of the change
-        if self.hub is not None:
-            msg = NumericalDataChangedMessage(self)
-            self.hub.broadcast(msg)
+        self._numerical_data_changed()
 
         for subset in self.subsets:
             clear_cache(subset.subset_state.to_mask)

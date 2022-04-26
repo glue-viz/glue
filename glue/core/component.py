@@ -3,6 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 
+from astropy import units as u
+
 from glue.core.coordinate_helpers import dependent_axes, pixel2world_single_axis
 from glue.utils import (shape_to_string, coerce_numeric,
                         broadcast_to, categorical_ndarray)
@@ -40,8 +42,10 @@ class Component(object):
     """
 
     def __init__(self, data, units=None):
+
         # The physical units of the data
         self.units = units
+        self._original_units = self._units
 
         # The actual data
         # subclasses may pass non-arrays here as placeholders.
@@ -64,10 +68,20 @@ class Component(object):
         else:
             self._units = str(value)
 
+    def _convert_to_units(self, units):
+        self.units = units
+
+    @property
+    def _units_scale(self):
+        return u.Unit(self._original_units).to(u.Unit(self._units))
+
     @property
     def data(self):
         """The underlying :class:`~numpy.ndarray`"""
-        return self._data
+        if self._units != self._original_units:
+            return self._data * self._units_scale
+        else:
+            return self._data
 
     @property
     def shape(self):
@@ -81,7 +95,10 @@ class Component(object):
 
     def __getitem__(self, key):
         logging.debug("Using %s to index data of shape %s", key, self.shape)
-        return self._data[key]
+        if self._units != self._original_units:
+           return self._data[key] * self._units_scale
+        else:
+            return self._data[key]
 
     @property
     def numeric(self):
@@ -197,6 +214,7 @@ class DerivedComponent(Component):
     @property
     def data(self):
         """Return the numerical data as a numpy array"""
+        # TODO: take into account unit conversion
         return self._link.compute(self._data)
 
     @property
@@ -205,6 +223,7 @@ class DerivedComponent(Component):
         return self._link
 
     def __getitem__(self, key):
+        # TODO: take into account unit conversion
         return self._link.compute(self._data, key)
 
 
