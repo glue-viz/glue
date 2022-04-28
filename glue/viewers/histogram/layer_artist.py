@@ -79,7 +79,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         except Exception:
             return
 
-        if mpl_hist_edges.size == 0 or mpl_hist.sum() == 0:
+        if mpl_hist_edges.size == 0:
             return
 
         if len(self.mpl_artists) > len(mpl_hist):
