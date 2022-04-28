@@ -45,7 +45,6 @@ class Component(object):
 
         # The physical units of the data
         self.units = units
-        self._original_units = self._units
 
         # The actual data
         # subclasses may pass non-arrays here as placeholders.
@@ -66,7 +65,13 @@ class Component(object):
         if value is None:
             self._units = ''
         else:
-            self._units = str(value)
+            new_units = str(value)
+        if getattr(self, '_original_units', '') == '':
+            self._original_units = new_units
+        if not u.Unit(self._original_units).is_equivalent(u.Unit(new_units)):
+            raise u.UnitConversionError(f"New unit '{new_units}' must be convertible "
+                                        f"from original one '{self._original_units}'")
+        self._units = new_units
 
     def _convert_to_units(self, units):
         self.units = units
