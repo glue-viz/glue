@@ -63,7 +63,7 @@ class Component(object):
     @units.setter
     def units(self, value):
         if value is None:
-            self._units = ''
+            new_units = ''
         else:
             new_units = str(value)
         if getattr(self, '_original_units', '') == '':
