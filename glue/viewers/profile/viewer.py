@@ -8,6 +8,7 @@ class MatplotlibProfileMixin(object):
     def setup_callbacks(self):
         self.state.add_callback('x_att', self._update_axes)
         self.state.add_callback('normalize', self._update_axes)
+        self.state.add_callback('y_display_unit', self._update_axes)
 
     def _update_axes(self, *args):
 
@@ -17,7 +18,10 @@ class MatplotlibProfileMixin(object):
         if self.state.normalize:
             self.state.y_axislabel = 'Normalized data values'
         else:
-            self.state.y_axislabel = 'Data values'
+            if self.state.y_display_unit:
+                self.state.y_axislabel = f'Data values [{self.state.y_display_unit}]'
+            else:
+                self.state.y_axislabel = 'Data values'
 
         self.axes.figure.canvas.draw_idle()
 
