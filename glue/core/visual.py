@@ -15,21 +15,29 @@ __all__ = ['VisualAttributes']
 class VisualAttributes(HasCallbackProperties):
 
     """
-    This class is used to define visual attributes for any kind of objects
+    This class is used to define visual attributes for any kind of objects.
 
-    The essential attributes of a VisualAttributes instance are:
-
-    :param color: A matplotlib color string
-    :param alpha: Opacity (0-1)
-    :param linewidth: The linewidth (float or int)
-    :param linestyle: The linestyle (``'solid' | 'dashed' | 'dash-dot' | 'dotted' | 'none'``)
-    :param marker: The matplotlib marker shape (``'o' | 's' | '^' | etc``)
-    :param markersize: The size of the marker (int)
-    :param preferred_cmap: The colormap required (str)
-
+    Parameters
+    ----------
+    parent : QObject, optional
+        The object that this visual attributes object is attached to. Default is `None`.
+    color : str, optional
+        A matplotlib color string. Default is `None`.
+    alpha : float, optional
+        Opacity, between 0-1. Default is `None`.
+    preferred_cmap : str, optional
+        The name of the preferred colormap. Default is `None`.
+    linewidth : float, optional
+        The linewidth. Default is 1.
+    linestyle : str, optional
+        The linestyle. Default is `'solid'`.
+    marker : str, optional
+        The matplotlib marker shape. Default is `'o'`.
+    markersize : float, optional
+        The size of the marker. Default is 3.
     """
 
-    def __init__(self, parent=None, color=None, alpha=None, preferred_cmap=None):
+    def __init__(self, parent=None, color=None, alpha=None, preferred_cmap=None, linewidth=1, linestyle='solid', marker='o', markersize=3):
 
         super(VisualAttributes, self).__init__()
 
@@ -44,10 +52,10 @@ class VisualAttributes(HasCallbackProperties):
         self.color = color
         self.alpha = alpha
         self.preferred_cmap = preferred_cmap
-        self.linewidth = 1
-        self.linestyle = 'solid'
-        self.marker = 'o'
-        self.markersize = 3
+        self.linewidth = linewidth
+        self.linestyle = linestyle
+        self.marker = marker
+        self.markersize = markersize
 
     def __eq__(self, other):
         if not isinstance(other, VisualAttributes):
