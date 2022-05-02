@@ -1,4 +1,4 @@
-from matplotlib.colors import ColorConverter
+from matplotlib.colors import ColorConverter, Colormap
 from matplotlib.cm import get_cmap
 
 from glue.config import settings
@@ -128,9 +128,11 @@ class VisualAttributes(HasCallbackProperties):
                         break
                 else:
                     # If the string name fails to be validated
-                    self._preferred_cmap = None
-        else:
+                    raise ValueError(f"{value} is not a valid colormap name.")
+        elif isinstance(value, Colormap) or value is None:
             self._preferred_cmap = value
+        else:
+            raise ValueError("`preferred_cmap` must be a string or an instance of a matplotlib.colors.Colormap")
 
     @callback_property
     def alpha(self):
