@@ -132,7 +132,7 @@ class VisualAttributes(HasCallbackProperties):
         elif isinstance(value, Colormap) or value is None:
             self._preferred_cmap = value
         else:
-            raise ValueError("`preferred_cmap` must be a string or an instance of a matplotlib.colors.Colormap")
+            raise TypeError("`preferred_cmap` must be a string or an instance of a matplotlib.colors.Colormap")
 
     @callback_property
     def alpha(self):
