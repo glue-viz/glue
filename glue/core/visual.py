@@ -19,21 +19,21 @@ class VisualAttributes(HasCallbackProperties):
 
     Parameters
     ----------
-    parent : QObject, optional
+    parent : :class:`~PyQt5.QtCore.QObject`, optional
         The object that this visual attributes object is attached to. Default is `None`.
-    color : str, optional
-        A matplotlib color string. Default is `None`.
-    alpha : float, optional
-        Opacity, between 0-1. Default is `None`.
-    preferred_cmap : str, optional
-        The name of the preferred colormap. Default is `None`.
-    linewidth : float, optional
+    color : `str`, optional
+        A matplotlib color string. Default is is set from `~glue.config.SettingsRegistry`.
+    alpha : `float`, optional
+        Opacity, between 0-1. Default is is set from `~glue.config.SettingsRegistry`.
+    preferred_cmap : `str` or :class:`~matplotlib.colors.Colormap`, optional
+        A colormap to be used as the preferred colormap, by name or instance. Default is `None`.
+    linewidth : `float`, optional
         The linewidth. Default is 1.
-    linestyle : str, optional
+    linestyle : `str`, optional
         The linestyle. Default is `'solid'`.
-    marker : str, optional
+    marker : `str`, optional
         The matplotlib marker shape. Default is `'o'`.
-    markersize : float, optional
+    markersize : `float`, optional
         The size of the marker. Default is 3.
     """
 
