@@ -22,9 +22,9 @@ class VisualAttributes(HasCallbackProperties):
     parent : :class:`~PyQt5.api.qtcore.qobject`, optional
         The object that this visual attributes object is attached to. Default is `None`.
     color : `str`, optional
-        A matplotlib color string. Default is is set from `~glue.config.SettingRegistry`.
+        A matplotlib color string. Default is set from :class:`~glue.config.SettingRegistry`.
     alpha : `float`, optional
-        Opacity, between 0-1. Default is is set from `~glue.config.SettingRegistry`.
+        Opacity, between 0-1. Default is set from :class:`~glue.config.SettingRegistry`.
     preferred_cmap : `str` or :class:`~matplotlib.colors.Colormap`, optional
         A colormap to be used as the preferred colormap, by name or instance. Default is `None`.
     linewidth : `float`, optional
