@@ -62,6 +62,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
+        self.add_callback('x_display_unit', self._reset_x_limits)
         self.add_callback('y_display_unit', self._reset_y_limits)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
@@ -122,9 +123,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
 
+        scale = self._x_unit_scale
+
         with delay_callback(self, 'x_min', 'x_max'):
-            self.x_min = x_min
-            self.x_max = x_max
+            self.x_min = x_min * scale
+            self.x_max = x_max * scale
 
     def _reset_y_limits(self, *event):
         if self.normalize:
@@ -163,15 +166,26 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self._update_combo_ref_data()
         self._update_y_display_unit_choices()
 
+    def _update_x_display_unit_choices(self):
+
+        component = self.reference_data.get_component(self.x_att)
+        if component.units:
+            x_choices = find_unit_choices([component.units])
+        else:
+            x_choices = ['']
+        ProfileViewerState.x_display_unit.set_choices(self, x_choices)
+        self.x_display_unit = component.units
+
     def _update_y_display_unit_choices(self):
+
         component_units = set()
         for layer_state in self.layers:
             if isinstance(layer_state.layer, BaseData):
                 component = layer_state.layer.get_component(layer_state.attribute)
                 if component.units:
                     component_units.add(component.units)
-        choices = [''] + find_unit_choices(component_units)
-        ProfileViewerState.y_display_unit.set_choices(self, choices)
+        y_choices = [''] + find_unit_choices(component_units)
+        ProfileViewerState.y_display_unit.set_choices(self, y_choices)
 
     @defer_draw
     def _reference_data_changed(self, before=None, after=None):
@@ -207,6 +221,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 self._update_att()
 
         self.reset_limits()
+        self._update_x_display_unit_choices()
 
     def _update_priority(self, name):
         if name == 'layers':
@@ -217,6 +232,16 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return 0
         else:
             return 1
+
+    @property
+    def _x_unit_scale(self):
+        if self.x_display_unit is None:
+            return 1
+        target_x_units = self.x_display_unit
+        if target_x_units == '':
+            return 1
+        original_x_units = self.reference_data.get_component(self.x_att).units
+        return unit_scaling(original_x_units, target_x_units)
 
 
 class ProfileLayerState(MatplotlibLayerState, HubListener):
@@ -323,6 +348,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
 
         if not self._viewer_callbacks_set:
             self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('x_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('y_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
@@ -364,7 +390,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            self._profile_cache = axis_values, profile_values * self._y_unit_scale
+            self._profile_cache = axis_values * self.viewer_state._x_unit_scale, profile_values * self._y_unit_scale
 
         if update_limits:
             self.update_limits(update_profile=False)
