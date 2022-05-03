@@ -140,7 +140,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     continue
                 if profile is not None:
                     x, y = profile
-                    y = y * layer._y_unit_scale
                     if len(y) > 0:
                         y_min = min(y_min, np.nanmin(y))
                         y_max = max(y_max, np.nanmax(y))
@@ -365,7 +364,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            self._profile_cache = axis_values, profile_values
+            self._profile_cache = axis_values, profile_values * self._y_unit_scale
 
         if update_limits:
             self.update_limits(update_profile=False)

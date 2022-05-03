@@ -77,9 +77,6 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
 
         x, y = visible_data
 
-        # Convert units
-        y = y * self.state._y_unit_scale
-
         # Update the data values.
         if len(x) > 0:
             self.state.update_limits()
