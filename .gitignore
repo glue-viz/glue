@@ -42,3 +42,5 @@ glue/qt/glue_qt_resources.py
 .pytest_cache
 .tox
 .vscode
+# vscode plugin
+.history
