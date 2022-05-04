@@ -19,7 +19,7 @@ class VisualAttributes(HasCallbackProperties):
 
     Parameters
     ----------
-    parent : :class:`~PyQt5.api.qtcore.qobject`, optional
+    parent : `QObject`, optional
         The object that this visual attributes object is attached to. Default is `None`.
     color : `str`, optional
         A matplotlib color string. Default is set from :class:`~glue.config.SettingRegistry`.
