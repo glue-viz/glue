@@ -293,7 +293,8 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         target_y_units = self.viewer_state.y_display_unit
         if target_y_units == '':
             return 1
-        original_y_units = self.layer.get_component(self.attribute).units
+        data = self.layer.data if isinstance(self.layer, Subset) else self.layer
+        original_y_units = data.get_component(self.attribute).units
         return unit_scaling(original_y_units, target_y_units)
 
     def _on_layer_change(self, *args):

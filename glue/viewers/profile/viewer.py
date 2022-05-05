@@ -37,5 +37,10 @@ class MatplotlibProfileMixin(object):
         if len(self.layers) == 0:
             return
 
+        # Apply inverse unit conversion, converting from display to native units
+        scale = self.state._x_unit_scale
+        roi.min /= scale
+        roi.max /= scale
+
         subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
         self.apply_subset_state(subset_state, override_mode=override_mode)
