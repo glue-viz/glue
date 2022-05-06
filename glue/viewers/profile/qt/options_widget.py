@@ -54,9 +54,10 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
         else:
             if self.profile_slice_helper:
                 self.profile_slice_helper.remove()
+                # Has to be set to None otherwise it will re-appear for other functions
+                self.profile_slice_helper = None
 
     def _on_attribute_change(self, *args):
-
         if (self.viewer_state.reference_data is None or
                 self.viewer_state.x_att_pixel is None or
                 self.viewer_state.x_att is self.viewer_state.x_att_pixel):
@@ -64,12 +65,9 @@ class ProfileOptionsWidget(QtWidgets.QWidget):
             return
 
         if self.viewer_state.function != 'slice':
-
             world_warning = len(dependent_axes(self.viewer_state.reference_data.coords,
                                                self.viewer_state.x_att_pixel.axis)) > 1
-
             self.ui.text_warning.hide()
-
             if world_warning:
                 self.ui.text_warning.show()
                 self.ui.text_warning.setText(WARNING_TEXT.format(label=self.viewer_state.x_att.label))

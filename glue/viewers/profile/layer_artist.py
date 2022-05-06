@@ -49,7 +49,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             warnings.simplefilter("ignore")
             if reset:
                 self.state.reset_cache()
-            self.state.update_profile(update_limits=False)
+            self.state.update_profile(update_limits=True)
 
     def _calculate_profile_postthread(self):
 
