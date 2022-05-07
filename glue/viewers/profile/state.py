@@ -116,9 +116,18 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         data = self.reference_data
 
+        if self.x_att in data.pixel_component_ids:
+            x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
+        else:
+            axis = data.world_component_ids.index(self.x_att)
+            axis_view = [0] * data.ndim
+            axis_view[axis] = slice(None)
+            axis_values = data[self.x_att, tuple(axis_view)]
+            x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
+
         with delay_callback(self, 'x_min', 'x_max'):
-            self.x_min = -0.5
-            self.x_max = data.shape[self.x_att_pixel.axis] - 0.5
+            self.x_min = x_min
+            self.x_max = x_max
 
     def _reset_y_limits(self, *event):
         if self.normalize:
@@ -180,8 +189,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_helper.set_multiple_data([])
                 else:
                     self.x_att_helper.set_multiple_data([self.reference_data])
-                    self.x_att_helper.world_coord = False
-                    self.x_att = self.reference_data.pixel_component_ids[0]
+                    if self._display_world:
+                        self.x_att_helper.world_coord = True
+                        self.x_att = self.reference_data.world_component_ids[0]
+                    else:
+                        self.x_att_helper.world_coord = False
+                        self.x_att = self.reference_data.pixel_component_ids[0]
 
                 self._update_x_att()
 
