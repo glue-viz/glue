@@ -265,6 +265,7 @@ REQUIRED_PLUGINS_QT = ['glue.plugins.tools.pv_slicer.qt',
                        'glue.viewers.image.qt',
                        'glue.viewers.scatter.qt',
                        'glue.viewers.histogram.qt',
+                       'glue.viewers.profile.qt',
                        'glue.viewers.table.qt']
 
 

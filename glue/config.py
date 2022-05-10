@@ -26,7 +26,8 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'SessionPatchRegistry', 'session_patch',
            'AutoLinkerRegistry', 'autolinker',
            'DataTranslatorRegistry', 'data_translator',
-           'SubsetDefinitionTranslatorRegistry', 'subset_state_translator']
+           'SubsetDefinitionTranslatorRegistry', 'subset_state_translator',
+           'UnitConverterRegistry', 'unit_converter']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -608,6 +609,25 @@ class SubsetDefinitionTranslatorRegistry(Registry):
             raise ValueError("Invalid subset state handler format '{0}' - should be one of:".format(format) + format_choices(all_formats))
 
 
+class UnitConverterRegistry(DictRegistry):
+    """
+    Stores unit converters, which are classes that can be used to determine
+    conversion between units and find equivalent units to other units.
+    """
+
+    def add(self, label, converter_cls):
+        if label in self.members:
+            raise ValueError("Unit converter class '{0}' already registered".format(label))
+        else:
+            self.members[label] = converter_cls
+
+    def __call__(self, label):
+        def adder(converter_cls):
+            self.add(label, converter_cls)
+            return converter_cls
+        return adder
+
+
 class QtClientRegistry(Registry):
     """
     Stores QT widgets to visualize data.
@@ -977,6 +997,9 @@ subset_mask_exporter = SubsetMaskExporterRegistry()
 subset_mask_importer = SubsetMaskImporterRegistry()
 data_translator = DataTranslatorRegistry()
 subset_state_translator = SubsetDefinitionTranslatorRegistry()
+
+# Units
+unit_converter = UnitConverterRegistry()
 
 # Backward-compatibility
 single_subset_action = layer_action

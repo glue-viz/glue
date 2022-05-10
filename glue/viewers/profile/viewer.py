@@ -1,3 +1,6 @@
+import numpy as np
+
+from glue.core.units import get_default_unit_converter
 from glue.core.subset import roi_to_subset_state
 
 __all__ = ['MatplotlibProfileMixin']
@@ -38,9 +41,10 @@ class MatplotlibProfileMixin(object):
             return
 
         # Apply inverse unit conversion, converting from display to native units
-        scale = self.state._x_unit_scale
-        roi.min /= scale
-        roi.max /= scale
+        converter = get_default_unit_converter()
+        roi.min, roi.max = converter.to_native(self.state.reference_data,
+                                               self.state.x_att, np.array([roi.min, roi.max]),
+                                               self.state.x_display_unit)
 
         subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
         self.apply_subset_state(subset_state, override_mode=override_mode)

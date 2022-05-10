@@ -3,6 +3,7 @@ from glue.core.hub import HubListener
 
 import numpy as np
 
+from glue.core.units import get_default_unit_converter
 from glue.core import Subset
 from echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -15,7 +16,7 @@ from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
-from glue.core.units import find_unit_choices, unit_scaling
+from glue.core.units import find_unit_choices, get_default_unit_converter, unit_scaling
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -123,11 +124,14 @@ class ProfileViewerState(MatplotlibDataViewerState):
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
 
-        scale = self._x_unit_scale
+        converter = get_default_unit_converter()
+        x_min, x_max = converter.to_unit(self.reference_data,
+                                         self.x_att, np.array([x_min, x_max]),
+                                         self.x_display_unit)
 
         with delay_callback(self, 'x_min', 'x_max'):
-            self.x_min = x_min * scale
-            self.x_max = x_max * scale
+            self.x_min = x_min
+            self.x_max = x_max
 
     def _reset_y_limits(self, *event):
         if self.normalize:
@@ -233,16 +237,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
         else:
             return 1
 
-    @property
-    def _x_unit_scale(self):
-        if self.x_display_unit is None:
-            return 1
-        target_x_units = self.x_display_unit
-        if target_x_units == '':
-            return 1
-        original_x_units = self.reference_data.get_component(self.x_att).units
-        return unit_scaling(original_x_units, target_x_units)
-
 
 class ProfileLayerState(MatplotlibLayerState, HubListener):
     """
@@ -287,15 +281,6 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             self._on_layer_change()
 
         self.update_from_dict(kwargs)
-
-    @property
-    def _y_unit_scale(self):
-        target_y_units = self.viewer_state.y_display_unit
-        if target_y_units == '':
-            return 1
-        data = self.layer.data if isinstance(self.layer, Subset) else self.layer
-        original_y_units = data.get_component(self.attribute).units
-        return unit_scaling(original_y_units, target_y_units)
 
     def _on_layer_change(self, *args):
 
@@ -391,7 +376,14 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            self._profile_cache = axis_values * self.viewer_state._x_unit_scale, profile_values * self._y_unit_scale
+            converter = get_default_unit_converter()
+            axis_values = converter.to_unit(self.viewer_state.reference_data,
+                                            self.viewer_state.x_att, axis_values,
+                                            self.viewer_state.x_display_unit)
+            profile_values = converter.to_unit(data, self.attribute, profile_values,
+                                               self.viewer_state.y_display_unit)
+
+            self._profile_cache = axis_values, profile_values
 
         if update_limits:
             self.update_limits(update_profile=False)
