@@ -89,7 +89,7 @@ class GroupedSubset(Subset):
 
 class SubsetGroup(HubListener):
 
-    def __init__(self, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None, subset_state=None):
+    def __init__(self, label=None, subset_state=None, **kwargs):
         """
         Create a new empty SubsetGroup
 
@@ -105,11 +105,13 @@ class SubsetGroup(HubListener):
 
         self.label = label
 
-        self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
-        self.style.linewidth *= 2.5
-        self.style.color = color
-        self.style.alpha = alpha
+        visual_args = {k: v for k, v in kwargs.items() if k in VisualAttributes.DEFAULT_ATTS}
+        visual_args.setdefault("color", settings.SUBSET_COLORS[0])
+        visual_args.setdefault("alpha", 0.5)
+        visual_args.setdefault("linewidth", 2.5)
+        visual_args.setdefault("markersize", 7.5)
+
+        self.style = VisualAttributes(parent=self, **visual_args)
 
     @contract(data='isinstance(DataCollection)')
     def register(self, data):

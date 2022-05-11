@@ -37,6 +37,9 @@ class VisualAttributes(HasCallbackProperties):
         The size of the marker. Default is 3.
     """
 
+    DEFAULT_ATTS = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
+                    'markersize', 'preferred_cmap']
+
     def __init__(self, parent=None, color=None, alpha=None, preferred_cmap=None, linewidth=1, linestyle='solid', marker='o', markersize=3):
 
         super(VisualAttributes, self).__init__()
@@ -47,8 +50,7 @@ class VisualAttributes(HasCallbackProperties):
         alpha = alpha or settings.DATA_ALPHA
 
         self.parent = parent
-        self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
-                      'markersize', 'preferred_cmap']
+        self._atts = self.DEFAULT_ATTS.copy()
         self.color = color
         self.alpha = alpha
         self.preferred_cmap = preferred_cmap
