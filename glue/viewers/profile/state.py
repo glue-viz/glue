@@ -74,6 +74,15 @@ class ProfileViewerState(MatplotlibDataViewerState):
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))
         ProfileViewerState.function.set_display_func(self, FUNCTIONS.get)
 
+        def format_unit(unit):
+            if unit is None:
+                return 'Native units'
+            else:
+                return unit
+
+        ProfileViewerState.x_display_unit.set_display_func(self, format_unit)
+        ProfileViewerState.y_display_unit.set_display_func(self, format_unit)
+
         self.update_from_dict(kwargs)
 
     def _update_combo_ref_data(self):
@@ -187,7 +196,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 component = layer_state.layer.get_component(layer_state.attribute)
                 if component.units:
                     component_units.add(component.units)
-        y_choices = [''] + find_unit_choices(component_units)
+        y_choices = [None] + find_unit_choices(component_units)
+        ProfileViewerState.y_display_unit.set_choices(self, y_choices)
         ProfileViewerState.y_display_unit.set_choices(self, y_choices)
 
     @defer_draw

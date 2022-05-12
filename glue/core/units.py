@@ -21,7 +21,7 @@ class UnitConverter:
             equivalent_units = []
         return equivalent_units
 
-    def to_display_unit(self, data, cid, values, target_units):
+    def to_unit(self, data, cid, values, target_units):
         if target_units is None:
             return values
         original_units = self._get_units(data, cid)
