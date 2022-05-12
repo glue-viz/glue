@@ -34,7 +34,7 @@ class SimpleAstropyUnitConverter:
             return values
         target_units = self._get_units(data, cid)
         if target_units:
-            return (values * u.Unit(target_units)).to_value(original_units)
+            return (values * u.Unit(original_units)).to_value(target_units)
         else:
             return values
 
