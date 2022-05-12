@@ -59,7 +59,7 @@ class Component(object):
     @units.setter
     def units(self, value):
         if value is None:
-            self._units = ''
+            self._units = None
         else:
             self._units = str(value)
 
@@ -519,7 +519,7 @@ class DaskComponent(Component):
     @units.setter
     def units(self, value):
         if value is None:
-            self._units = ''
+            self._units = None
         else:
             self._units = str(value)
 

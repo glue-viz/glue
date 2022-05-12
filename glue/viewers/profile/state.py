@@ -3,7 +3,6 @@ from glue.core.hub import HubListener
 
 import numpy as np
 
-from glue.core.units import get_default_unit_converter
 from glue.core import Subset
 from echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -16,7 +15,7 @@ from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
-from glue.core.units import find_unit_choices, get_default_unit_converter, unit_scaling
+from glue.core.units import find_unit_choices, UnitConverter, unit_scaling
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -124,7 +123,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
 
-        converter = get_default_unit_converter()
+        converter = UnitConverter()
         x_min, x_max = converter.to_unit(self.reference_data,
                                          self.x_att, np.array([x_min, x_max]),
                                          self.x_display_unit)
@@ -376,7 +375,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            converter = get_default_unit_converter()
+            converter = UnitConverter()
             axis_values = converter.to_unit(self.viewer_state.reference_data,
                                             self.viewer_state.x_att, axis_values,
                                             self.viewer_state.x_display_unit)

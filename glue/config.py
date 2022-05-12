@@ -1090,3 +1090,12 @@ settings.add('SHOW_INFO_PROFILE_OPEN', True, validator=bool)
 settings.add('SHOW_WARN_PROFILE_DUPLICATE', True, validator=bool)
 settings.add('FONT_SIZE', -1.0, validator=float)
 settings.add('AUTOLINK', {}, validator=dict)
+
+
+def check_unit_converter(value):
+    if value != 'default' and value not in unit_converter.members:
+        raise KeyError(f'Unit converter {value} is not defined')
+    return value
+
+
+settings.add('UNIT_CONVERTER', 'default', validator=check_unit_converter)

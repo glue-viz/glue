@@ -1,11 +1,13 @@
 from astropy import units as u
 
-from glue.config import unit_converter
+from glue.config import unit_converter, settings
 from glue.core import Subset
 
 
-@unit_converter('simple-astropy')
-class SimpleAstropyUnitConverter:
+class UnitConverter:
+
+    def __init__(self):
+        self.converter_helper = unit_converter.members[settings.UNIT_CONVERTER]()
 
     def equivalent_units(self, data, cid):
         """
@@ -14,27 +16,26 @@ class SimpleAstropyUnitConverter:
         """
         units = self._get_units(data, cid)
         if units:
-            equivalent_units = u.Unit(units).find_equivalent_units(include_prefix_units=True)
-            equivalent_units = map(equivalent_units, str)
+            equivalent_units = self.converter_helper.equivalent_units(data, cid, units)
         else:
             equivalent_units = []
         return equivalent_units
 
-    def to_unit(self, data, cid, values, target_units):
-        if target_units == '':
+    def to_display_unit(self, data, cid, values, target_units):
+        if target_units is None:
             return values
         original_units = self._get_units(data, cid)
         if original_units:
-            return (values * u.Unit(original_units)).to_value(target_units)
+            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
         else:
             return values
 
     def to_native(self, data, cid, values, original_units):
-        if original_units == '':
+        if original_units is None:
             return values
         target_units = self._get_units(data, cid)
         if target_units:
-            return (values * u.Unit(original_units)).to_value(target_units)
+            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
         else:
             return values
 
@@ -43,9 +44,14 @@ class SimpleAstropyUnitConverter:
         return data.get_component(cid).units
 
 
-def get_default_unit_converter():
-    # TODO: make the default customizable
-    return unit_converter.members['simple-astropy']()
+@unit_converter('default')
+class SimpleAstropyUnitConverter:
+
+    def equivalent_units(self, data, cid, units):
+        return map(u.Unit(units).find_equivalent_units(include_prefix_units=True), str)
+
+    def to_unit(self, data, cid, values, original_units, target_units):
+        return (values * u.Unit(original_units)).to_value(target_units)
 
 
 def find_unit_choices(unit_strings):

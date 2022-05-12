@@ -100,6 +100,7 @@ Customizing/Hacking Glue
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
    customizing_guide/fitting.rst
+   customizing_guide/units.rst
 
 Advanced customization
 ----------------------
