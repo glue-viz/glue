@@ -128,11 +128,11 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
             self.state._y_min = 0
 
         largest_y_max = max(getattr(layer, '_y_max', 0) for layer in self._viewer_state.layers)
-        if largest_y_max != self._viewer_state.y_max:
+        if np.isfinite(largest_y_max) and largest_y_max != self._viewer_state.y_max:
             self._viewer_state.y_max = largest_y_max
 
         smallest_y_min = min(getattr(layer, '_y_min', np.inf) for layer in self._viewer_state.layers)
-        if smallest_y_min != self._viewer_state.y_min:
+        if np.isfinite(smallest_y_min) and smallest_y_min != self._viewer_state.y_min:
             self._viewer_state.y_min = smallest_y_min
 
         self.redraw()
