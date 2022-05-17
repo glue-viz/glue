@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.4.0 (unreleased)
+-------------------
+
+* Modify profile viewer so that when in 'Sum' mode, parts of profiles
+  with no valid values are NaN rather than zero.
+
 v1.3.0 (2022-04-22)
 -------------------
 
