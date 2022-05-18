@@ -109,7 +109,7 @@ class SubsetGroup(HubListener):
         visual_args.setdefault("color", settings.SUBSET_COLORS[0])
         visual_args.setdefault("alpha", 0.5)
         visual_args.setdefault("linewidth", 2.5)
-        visual_args.setdefault("markersize", 7.5)
+        visual_args.setdefault("markersize", 7)
 
         self.style = VisualAttributes(parent=self, **visual_args)
 
