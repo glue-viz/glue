@@ -173,7 +173,40 @@ class TestSubsetGroup(object):
         d = Data(label='z', z=[1, 2, 3])
         self.dc.append(d)
         assert len(d.subsets) == 0
+        
+    def test_visual_attributes_default(self):
+        num_sg = len(self.dc.subset_groups)
+        sg = self.dc.new_subset_group()
+        expected_color = settings.SUBSET_COLORS[num_sg % len(settings.SUBSET_COLORS)]
 
+        # VisualAttributes stores color with lowercase letters
+        # but the values in settings.SUBSET_COLORS use uppercase
+        expected_color = expected_color.lower()
+        assert sg.style.color == expected_color
+        assert sg.style.alpha == 0.5
+        assert sg.style.linewidth == 2.5
+        assert sg.style.markersize == 7
+        assert sg.style.linestyle == 'solid'
+        assert sg.style.marker == 'o'
+        assert sg.style.preferred_cmap is None
+        
+    def test_visual_attributes(self):
+        visual_attributes = dict(
+            color="#ff7f00",
+            alpha=0.3,
+            linewidth=4,
+            markersize=10,
+            marker='x',
+            linestyle='dashed',
+            preferred_cmap='viridis'
+        )
+        sg = self.dc.new_subset_group(**visual_attributes)
+        for attr, value in visual_attributes.items():
+            if attr == 'preferred_cmap':
+                from matplotlib.cm import get_cmap
+                assert sg.style.preferred_cmap == get_cmap(visual_attributes[attr])
+            else:
+                assert getattr(sg.style, attr, None) == value
 
 class TestSerialze(TestSubsetGroup):
 
