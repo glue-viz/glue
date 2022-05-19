@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import cm
 
 from qtpy import QtWidgets
-from glue.core.util import colorize_subsets, facet_subsets
+from glue.core.util import colorize_subsets, facet_subsets, subset_categorical
 from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty
 from glue.utils.qt import load_ui
@@ -11,7 +11,7 @@ from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDCo
 from echo.qt import autoconnect_callbacks_to_qt
 from glue.core.state_objects import StateAttributeLimitsHelper
 
-__all__ = ['SubsetFacetDialog']
+__all__ = ['SubsetFacetDialog', 'SubsetCategoricalsDialog']
 
 
 class SubsetFacetState(State):
@@ -90,7 +90,79 @@ class SubsetFacetDialog(QtWidgets.QDialog):
     @classmethod
     def facet(cls, collect, default=None, parent=None):
         """
-        Class method to create facted subsets.
+        Class method to create faceted subsets.
+
+        The arguments are the same as __init__.
+        """
+        self = cls(collect, parent=parent, default=default)
+        value = self.exec_()
+
+        if value == QtWidgets.QDialog.Accepted:
+            self._apply()
+
+
+class SubsetCategoricalsState(State):
+
+    data = SelectionCallbackProperty()
+    att = SelectionCallbackProperty()
+    cmap = CallbackProperty()
+
+    def __init__(self, data_collection):
+
+        super(SubsetCategoricalsState, self).__init__()
+
+        self.data_helper = DataCollectionComboHelper(self, 'data', data_collection)
+        # Some categoricals may be encoded as integers, so we allow that as an option
+        self.att_helper = ComponentIDComboHelper(self, 'att', numeric=True, categorical=True)
+
+        self.add_callback('data', self._on_data_change)
+        self._on_data_change()
+
+    def _on_data_change(self, *args, **kwargs):
+        self.att_helper.set_multiple_data([] if self.data is None else [self.data])
+
+
+class SubsetCategoricalsDialog(QtWidgets.QDialog):
+    """
+    Create a new dialog to create subsets on a categorical component
+
+    Parameters
+    ----------
+    collect : :class:`~glue.core.data_collection.DataCollection`
+        The data collection to use
+    default : :class:`~glue.core.data.Data`, optional
+        The default dataset in the collection (optional)
+    """
+
+    def __init__(self, collect, default=None, parent=None):
+
+        super(SubsetCategoricalsDialog, self).__init__(parent=parent)
+
+        self.state = SubsetCategoricalsState(collect)
+
+        self.ui = load_ui('subset_categorical.ui', self,
+                          directory=os.path.dirname(__file__))
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
+
+        self._collect = collect
+
+        if default is not None:
+            self.state.data = default
+
+        self.state.cmap = cm.tab20
+
+        self.ui.button_ok.clicked.connect(self.accept)
+        self.ui.button_cancel.clicked.connect(self.reject)
+
+    def _apply(self):
+
+        subsets = subset_categorical(self._collect, self.state.data, self.state.att)
+        # colorize_subsets(subsets, self.state.cmap)
+
+    @classmethod
+    def facet(cls, collect, default=None, parent=None):
+        """
+        Class method to create faceted subsets.
 
         The arguments are the same as __init__.
         """

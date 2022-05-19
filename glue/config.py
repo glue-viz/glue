@@ -418,6 +418,8 @@ class ColormapRegistry(Registry):
         members.append(['Red-Yellow-Blue', cm.RdYlBu])
         members.append(['Purple-Orange', cm.PuOr])
         members.append(['Purple-Green', cm.PRGn])
+        members.append(['Tab20', cm.tab20])
+
         return members
 
     def add(self, label, cmap):
