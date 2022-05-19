@@ -396,6 +396,23 @@ def format_minimal(values):
     return fmt, strings
 
 
+def nansum_with_nan_for_empty(values, axis=None):
+    """
+    Wrapper around nansum which returns NaN instead of zero when no non-NaN
+    values are summed.
+    """
+    result = np.nansum(values, axis=axis)
+    reset = np.sum(~np.isnan(values), axis=axis)
+    if np.isscalar(result):
+        if reset == 0:
+            return np.nan
+        else:
+            return result
+    else:
+        result[reset == 0] = np.nan
+        return result
+
+
 PLAIN_FUNCTIONS = {'minimum': np.min,
                    'maximum': np.max,
                    'mean': np.mean,
@@ -407,7 +424,7 @@ NAN_FUNCTIONS = {'minimum': np.nanmin,
                  'maximum': np.nanmax,
                  'mean': np.nanmean,
                  'median': np.nanmedian,
-                 'sum': np.nansum,
+                 'sum': nansum_with_nan_for_empty,
                  'percentile': np.nanpercentile}
 
 
