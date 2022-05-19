@@ -4,6 +4,8 @@ Full changelog
 v1.4.0 (unreleased)
 -------------------
 
+* Add support for specifying visual attributes when creating a subset group. [#2297]
+
 * Modify profile viewer so that when in 'Sum' mode, parts of profiles
   with no valid values are NaN rather than zero.
 
