@@ -136,11 +136,25 @@ class Roi(object):  # pragma: no cover
         raise NotImplementedError()
 
     def rotate_to(self, theta):
-        """Rotate anticlockwise around center to position angle theta (radian)"""
+        """
+        Rotate anticlockwise around center to position angle theta.
+
+        Parameters
+        ----------
+        theta : float
+            Angle of anticlockwise rotation around center in radian.
+        """
         raise NotImplementedError()
 
     def rotate_by(self, dtheta, **kwargs):
-        """Rotate the Roi around center by angle dtheta (radian)"""
+        """
+        Rotate the Roi around center by angle dtheta.
+
+        Parameters
+        ----------
+        dtheta : float
+            Change in anticlockwise rotation angle around center in radian.
+        """
         self.rotate_to(getattr(self, 'theta', 0.0) + dtheta, **kwargs)
 
     def copy(self):
@@ -697,9 +711,10 @@ class VertexROIBase(Roi):
         self.vy.append(y)
 
     def reset(self):
-        """Reset the vertex lists"""
+        """Reset the vertex lists and position angle"""
         self.vx = []
         self.vy = []
+        self.theta = 0
 
     def replace_last_point(self, x, y):
         if len(self.vx) > 0:
@@ -856,12 +871,27 @@ class PolygonalROI(VertexROIBase):
 
     def rotate_to(self, theta, center=None):
         """
-        Rotate polygon by angle `theta` [radian] around `center` (default centroid).
+        Rotate polygon to position angle `theta` around `center`.
+
+        Parameters
+        ----------
+        theta : float
+            Angle of anticlockwise rotation around center in radian.
+        center : pair of float, optional
+            Coordinates of center of rotation. Defaults to
+            :meth:`~glue.core.roi.PolygonalROI.centroid`, for linear
+            "polygons" to :meth:`~glue.core.roi.PolygonalROI.mean`.
         """
 
         theta = 0 if theta is None else theta
-        center = self.centroid() if center is None else center
+        # For linear (1D) "polygons" centroid is not defined.
+        if center is None:
+            if self.area() == 0:
+                center = self.mean()
+            else:
+                center = self.centroid()
         dtheta = theta - self.theta
+
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
             dx, dy = np.array([self.vx, self.vy]) - np.array(center).reshape(2, 1)
             self.vx, self.vy = (rotation_matrix_2d(dtheta) @ (dx, dy) +

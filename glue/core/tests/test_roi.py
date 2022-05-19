@@ -559,6 +559,20 @@ class TestPolygon(object):
         assert_almost_equal(self.roi.vx, (2/3, -1/3, 2/3), decimal=12)
         assert_almost_equal(self.roi.vy, (0, 0, 1), decimal=12)
 
+    def test_rotate_polyline(self):
+        """ Test rotation of degenerate (linear) ROI around mean """
+        self.roi.reset()
+        self.roi.add_point(-2, 0)
+        self.roi.add_point(4, 0)
+        assert_almost_equal(self.roi.mean(), (1.0, 0.0), decimal=12)
+        self.roi.add_point(-0.5, 0)
+        self.roi.add_point(-1.5, 0)
+        assert_almost_equal(self.roi.mean(), (0.0, 0.0), decimal=12)
+        assert all(np.isnan(self.roi.centroid()))
+        self.roi.rotate_to(np.pi/2)
+        assert_almost_equal(self.roi.vx, (0, 0, 0, 0), decimal=12)
+        assert_almost_equal(self.roi.vy, (-2, 4, -0.5, -1.5), decimal=12)
+
     def test_append_mock_points(self):
         """
         Test that adding points on the side of square ROI conserves area and centroid.
