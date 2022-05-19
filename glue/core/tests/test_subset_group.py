@@ -173,7 +173,7 @@ class TestSubsetGroup(object):
         d = Data(label='z', z=[1, 2, 3])
         self.dc.append(d)
         assert len(d.subsets) == 0
-        
+
     def test_visual_attributes_default(self):
         num_sg = len(self.dc.subset_groups)
         sg = self.dc.new_subset_group()
@@ -189,7 +189,7 @@ class TestSubsetGroup(object):
         assert sg.style.linestyle == 'solid'
         assert sg.style.marker == 'o'
         assert sg.style.preferred_cmap is None
-        
+
     def test_visual_attributes(self):
         visual_attributes = dict(
             color="#ff7f00",
@@ -207,6 +207,7 @@ class TestSubsetGroup(object):
                 assert sg.style.preferred_cmap == get_cmap(visual_attributes[attr])
             else:
                 assert getattr(sg.style, attr, None) == value
+
 
 class TestSerialze(TestSubsetGroup):
 
