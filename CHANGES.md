@@ -1,6 +1,11 @@
 Full changelog
 ==============
 
+v1.4.0 (unreleased)
+-------------------
+
+* Add support for specifying visual attributes when creating a subset group. [#2297]
+
 v1.3.0 (2022-04-22)
 -------------------
 
