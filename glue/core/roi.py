@@ -778,7 +778,7 @@ class PolygonalROI(VertexROIBase):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        result = points_inside_poly(x, y, self.vx, self.vy)
+        result = points_inside_poly(x, y, np.asarray(self.vx), np.asarray(self.vy))
         return result
 
     # There are several possible definitions of the centre; `mean()` is

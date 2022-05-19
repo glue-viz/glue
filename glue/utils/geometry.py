@@ -22,6 +22,21 @@ def rotation_matrix_2d(alpha):
 
 
 def points_inside_poly(x, y, vx, vy):
+    """
+    Test if coordinates ``x``, ``y`` fall inside polygon of vertices ``vx``, ``vy``.
+
+    Parameters
+    ----------
+    x, y : `~numpy.ndarray`
+        Coordinates of the points to test
+    vx, vy : `~numpy.ndarray`
+        The vertices of the polygon
+
+    Returns
+    -------
+    contains : `~numpy.ndarray` of bool
+        Array indicating whether each coordinate pair is inside the polygon.
+    """
 
     if x.dtype.kind == 'M' and vx.dtype.kind == 'M':
         vx = vx.astype(x.dtype).astype(float)
