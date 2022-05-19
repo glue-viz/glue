@@ -35,12 +35,16 @@ class ProjectionMplTransform(object):
 class RadianTransform(object):
     # We define 'next_transform' so that this pre-transform can
     # be chained together with another transformation, if desired
-    def __init__(self, next_transform=None):
+    def __init__(self, coords=[], next_transform=None):
         self._next_transform = next_transform
-        self._state = {"next_transform": next_transform}
+        self._coords = coords
+        self._state = {"coords": coords, "next_transform": next_transform}
 
     def __call__(self, x, y):
-        x = np.deg2rad(x)
+        if 'x' in self._coords:
+            x = np.deg2rad(x)
+        if 'y' in self._coords:
+            y = np.deg2rad(y)
         if self._next_transform is not None:
             return self._next_transform(x, y)
         else:
@@ -52,4 +56,4 @@ class RadianTransform(object):
     @classmethod
     def __setgluestate__(cls, rec, context):
         state = context.object(rec['state'])
-        return cls(state['next_transform'])
+        return cls(state['coords'], state['next_transform'])

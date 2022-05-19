@@ -29,9 +29,9 @@ class MatplotlibScatterMixin(object):
         self._update_axes()
 
     def _update_ticks(self, *args):
+        radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
         if self.state.x_att is not None:
             # Update ticks, which sets the labels to categories if components are categorical
-            radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
             update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log,
                          self.state.x_categories, projection=self.state.plot_mode, radians=radians,
                          label=self.state.x_axislabel)
@@ -39,7 +39,7 @@ class MatplotlibScatterMixin(object):
         if self.state.y_att is not None:
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'y', self.state.y_kinds, self.state.y_log,
-                         self.state.y_categories, projection=self.state.plot_mode, label=self.state.y_axislabel)
+                         self.state.y_categories, projection=self.state.plot_mode, radians=radians, label=self.state.y_axislabel)
 
     def _update_axes(self, *args):
 
@@ -99,6 +99,9 @@ class MatplotlibScatterMixin(object):
 
         self.figure.canvas.draw_idle()
 
+    def using_rectilinear(self):
+        return self.state.plot_mode == 'rectilinear'
+
     def using_polar(self):
         return self.state.plot_mode == 'polar'
 
@@ -149,7 +152,7 @@ class MatplotlibScatterMixin(object):
             roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
                                   yfunc=mpl_to_datetime64 if y_date else None)
 
-        use_transform = self.state.plot_mode != 'rectilinear'
+        use_transform = not self.using_rectilinear()
         subset_state = roi_to_subset_state(roi,
                                            x_att=self.state.x_att, x_categories=self.state.x_categories,
                                            y_att=self.state.y_att, y_categories=self.state.y_categories,
@@ -162,8 +165,9 @@ class MatplotlibScatterMixin(object):
                                                                self.axes.get_yscale())
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
-            if self.using_polar() and self.state.angle_unit == 'degrees':
-                transform = RadianTransform(next_transform=transform)
+            if self.state.using_degrees:
+                coords = ['x'] if self.using_polar() else ['x', 'y']
+                transform = RadianTransform(coords=coords, next_transform=transform)
             subset_state.pretransform = transform
 
         self.apply_subset_state(subset_state, override_mode=override_mode)

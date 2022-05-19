@@ -28,7 +28,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
     y_att = DDSCProperty(docstring='The attribute to show on the y-axis', default_index=1)
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
     plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian, polar or another projection")
-    angle_unit = DDSCProperty(docstring="When plotting in polar mode, whether to use radians or degrees for the angles")
+    angle_unit = DDSCProperty(docstring="Whether to use radians or degrees for any angular coordinates")
 
     def __init__(self, **kwargs):
 
@@ -97,16 +97,24 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_lim_helper.flip_limits()
 
     @property
+    def using_rectilinear(self):
+        return self.plot_mode == 'rectilinear'
+
+    @property
     def using_polar(self):
         return self.plot_mode == 'polar'
 
     @property
+    def using_full_sphere(self):
+        return self.plot_mode in ['aitoff', 'hammer', 'mollweide', 'lambert']
+
+    @property
     def using_degrees(self):
-        return self.using_polar and self.angle_unit == 'degrees'
+        return (self.using_polar or self.using_full_sphere) and self.angle_unit == 'degrees'
 
     @property
     def using_radians(self):
-        return self.using_polar and self.angle_unit == 'radians'
+        return not self.using_rectilinear and self.angle_unit == 'radians'
 
     def full_circle(self):
         if not self.using_polar:
@@ -348,7 +356,7 @@ class ScatterLayerState(MatplotlibLayerState):
         self.update_from_dict(kwargs)
 
     def _update_points_mode(self, *args):
-        if getattr(self.viewer_state, 'using_polar', False):
+        if getattr(self.viewer_state, 'using_polar', False) or getattr(self.viewer_state, 'using_full_sphere', False):
             self.points_mode_helper.choices = ['markers']
             self.points_mode_helper.select = 'markers'
         else:

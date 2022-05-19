@@ -11,7 +11,8 @@ from matplotlib.dates import AutoDateLocator, AutoDateFormatter
 from matplotlib.projections.polar import ThetaFormatter, ThetaLocator
 import matplotlib.ticker as mticker
 
-__all__ = ["ThetaRadianFormatter", "relim", "split_component_view", "join_component_view",
+__all__ = ["ThetaRadianFormatter", "ThetaDegreeFormatter", "PolarRadiusFormatter",
+           "relim", "split_component_view", "join_component_view",
            "facet_subsets", "colorize_subsets", "disambiguate",
            'small_view', 'small_view_array', 'visible_limits',
            'tick_linker', 'update_ticks']
@@ -57,7 +58,8 @@ class ThetaRadianFormatter(mticker.Formatter):
         if n is None or d is None:
             return "{value:0.{digits}f}".format(value=x, digits=digits)
 
-        ns = "" if n == 1 else str(n)
+        absn = abs(n)
+        ns = "" if absn == 1 else str(absn)
         if n == 0:
             return "0"
         elif d == 1:
@@ -473,8 +475,7 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         Currently only the scatter viewer supports different projections.
     """
 
-    # Short circuit the full-sphere projections
-    if projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
+    if projection == 'lambert' and coord == 'y':
         return
 
     if coord == 'x':
@@ -515,6 +516,9 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
             axis.set_major_formatter(PolarRadiusFormatter(label))
             for lbl in axis.get_majorticklabels():
                 lbl.set_fontstyle("italic")
+    elif projection in ['aitoff', 'hammer', 'mollweide', 'lambert']:
+        formatter_type = ThetaRadianFormatter if radians else ThetaDegreeFormatter
+        axis.set_major_formatter(formatter_type())
     else:
         axis.set_major_locator(AutoLocator())
         axis.set_major_formatter(ScalarFormatter())
