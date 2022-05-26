@@ -19,7 +19,7 @@ from glue.core.message import (DataUpdateMessage, DataRemoveComponentMessage,
 from glue.core.decorators import clear_cache
 from glue.core.util import split_component_view
 from glue.core.hub import Hub
-from glue.core.subset import Subset, SubsetState, SliceSubsetState
+from glue.core.subset import Subset, SubsetState, SliceSubsetState, RangeSubsetState
 from glue.core.component_id import ComponentIDList
 from glue.core.component_link import ComponentLink, CoordinateComponentLink
 from glue.core.exceptions import IncompatibleAttribute
@@ -1643,7 +1643,7 @@ class Data(BaseCartesianData):
                 len(axis) > 0 and
                 len(axis) == self.ndim - 1 and
                 self.size > n_chunk_max and
-                not isinstance(subset_state, SliceSubsetState)):
+                not isinstance(subset_state, (SliceSubsetState, RangeSubsetState))):
 
             # We operate in chunks here to avoid memory issues.
 
