@@ -1633,6 +1633,11 @@ class Data(BaseCartesianData):
 
         # TODO: generalize chunking to more types of axis
 
+        if view is None:
+            use_view = False
+        else:
+            use_view = True
+
         # In recent version of Numpy, using lists is not the same as using
         # tuples, so we make sure we always use tuples to avoid confusion.
         if isinstance(view, list):
@@ -1818,18 +1823,19 @@ class Data(BaseCartesianData):
         result = compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                    positive=positive, percentile=percentile)
 
-        if subarray_slices is None or axis is None:
+        if subarray_slices is None or axis is None or use_view:
             return result
         else:
             # Since subarray_slices was set above, we need to determine the
             # shape of the full results had subarray_slices not been set,
             # then insert the result into it. If axis is None, then we don't
             # need to do anything, and this is covered by the first clause
-            # of the if statement above.
+            # of the if statement above. Likewise if a view was specified,
+            # only the result within the view is returned.
             if not isinstance(axis, tuple):
                 axis = (axis,)
             full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
-            full_result = np.zeros(full_shape) * np.nan
+            full_result = np.full(full_shape, np.nan)
             result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
             full_result[result_slices] = result
             return full_result
