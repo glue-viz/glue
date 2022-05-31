@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.4.0 (2022-05-31)
+-------------------
+
+* Fix an issue where the histogram layer artist would not redraw if
+* the histogram sum was zero. [#2300]
+
 v1.3.0 (2022-04-22)
 -------------------
 
