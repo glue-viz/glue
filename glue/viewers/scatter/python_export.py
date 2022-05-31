@@ -10,12 +10,17 @@ def python_export_scatter_layer(layer, *args):
     imports = ["import numpy as np"]
 
     polar = layer._viewer_state.using_polar
-    degrees = polar and getattr(layer._viewer_state, 'using_degrees', False)
-    if polar:
-        theta_formatter = 'ThetaDegreeFormatter' if degrees else 'ThetaRadianFormatter'
+    full_sphere = layer._viewer_state.using_full_sphere
+    degrees = layer._viewer_state.using_degrees
+    theta_formatter = 'ThetaDegreeFormatter' if degrees else 'ThetaRadianFormatter'
+    if polar or full_sphere:
         imports += [
-            "from glue.core.util import polar_tick_alignment, PolarRadiusFormatter, {0}".format(theta_formatter),
-            "from matplotlib.projections.polar import ThetaFormatter, ThetaLocator",
+            "from glue.core.util import {0}".format(theta_formatter),
+        ]
+    if polar:
+        imports += [
+            "from glue.core.util import PolarRadiusFormatter, polar_tick_alignment",
+            "from matplotlib.projections.polar import ThetaLocator",
             "from matplotlib.ticker import AutoLocator"
         ]
 
@@ -24,8 +29,10 @@ def python_export_scatter_layer(layer, *args):
     script += "# Get main data values\n"
     x_transform_open = "np.radians(" if degrees else ""
     x_transform_close = ")" if degrees else ""
+    y_transform_open = "np.radians(" if degrees and full_sphere else ""
+    y_transform_close = ")" if degrees and full_sphere else ""
     script += "x = {0}layer_data['{1}']{2}\n".format(x_transform_open, layer._viewer_state.x_att.label, x_transform_close)
-    script += "y = layer_data['{0}']\n".format(layer._viewer_state.y_att.label)
+    script += "y = {0}layer_data['{1}']{2}\n".format(y_transform_open, layer._viewer_state.y_att.label, y_transform_close)
     script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
     if polar:
         script += 'ax.xaxis.set_major_locator(ThetaLocator(AutoLocator()))\n'
@@ -37,6 +44,10 @@ def python_export_scatter_layer(layer, *args):
         script += 'ax.yaxis.set_major_formatter(PolarRadiusFormatter("{0}"))\n'.format(layer._viewer_state.y_axislabel)
         script += 'for lbl in ax.yaxis.get_majorticklabels():\n'
         script += '\tlbl.set_fontstyle(\'italic\')\n\n'
+    elif full_sphere:
+        script += 'ax.xaxis.set_major_formatter({0}())\n'.format(theta_formatter)
+        if layer._viewer_state.plot_mode != 'lambert':
+            script += 'ax.yaxis.set_major_formatter({0}())\n'.format(theta_formatter)
 
     if layer.state.cmap_mode == 'Linear':
 

@@ -230,8 +230,12 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
 
-                if getattr(self._viewer_state, 'using_degrees', False):
+                full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
+                degrees = getattr(self._viewer_state, 'using_degrees', False)
+                if degrees:
                     x = np.radians(x)
+                    if full_sphere:
+                        y = np.radians(y)
 
                 self.density_artist.set_label(None)
                 if self._use_plot_artist():

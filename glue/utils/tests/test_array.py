@@ -10,7 +10,7 @@ from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_t
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
                      iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
                      nanmin, nanmax, format_minimal, compute_statistic, categorical_ndarray,
-                     index_lookup, broadcast_arrays_minimal)
+                     index_lookup, broadcast_arrays_minimal, nansum_with_nan_for_empty)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -192,6 +192,14 @@ def test_nanfunctions(function, axis):
     name = function.__name__
     np_func = getattr(np, name)
     assert_allclose(function(ARRAY, axis=axis), np_func(ARRAY, axis=axis))
+
+
+def test_custom_nansum():
+    assert np.isnan(nansum_with_nan_for_empty([]))
+    assert_equal(nansum_with_nan_for_empty([np.nan]), np.nan)
+    assert_equal(nansum_with_nan_for_empty([[np.nan, np.nan], [np.nan, 1]]), 1)
+    assert_equal(nansum_with_nan_for_empty([[np.nan, np.nan], [1, np.nan]], axis=0), [1, np.nan])
+    assert_equal(nansum_with_nan_for_empty([[np.nan, np.nan], [1, np.nan]], axis=1), [np.nan, 1])
 
 
 SLICE_CASES = [

@@ -1,4 +1,4 @@
-from matplotlib.colors import ColorConverter
+from matplotlib.colors import ColorConverter, Colormap
 from matplotlib.cm import get_cmap
 
 from glue.config import settings
@@ -15,20 +15,32 @@ __all__ = ['VisualAttributes']
 class VisualAttributes(HasCallbackProperties):
 
     """
-    This class is used to define visual attributes for any kind of objects
+    This class is used to define visual attributes for any kind of objects.
 
-    The essential attributes of a VisualAttributes instance are:
-
-    :param color: A matplotlib color string
-    :param alpha: Opacity (0-1)
-    :param linewidth: The linewidth (float or int)
-    :param linestyle: The linestyle (``'solid' | 'dashed' | 'dash-dot' | 'dotted' | 'none'``)
-    :param marker: The matplotlib marker shape (``'o' | 's' | '^' | etc``)
-    :param markersize: The size of the marker (int)
-
+    Parameters
+    ----------
+    parent : `QObject`, optional
+        The object that this visual attributes object is attached to. Default is `None`.
+    color : `str`, optional
+        A matplotlib color string. Default is set from :class:`~glue.config.SettingRegistry`.
+    alpha : `float`, optional
+        Opacity, between 0-1. Default is set from :class:`~glue.config.SettingRegistry`.
+    preferred_cmap : `str` or :class:`~matplotlib.colors.Colormap`, optional
+        A colormap to be used as the preferred colormap, by name or instance. Default is `None`.
+    linewidth : `float`, optional
+        The linewidth. Default is 1.
+    linestyle : `str`, optional
+        The linestyle. Default is `'solid'`.
+    marker : `str`, optional
+        The matplotlib marker shape. Default is `'o'`.
+    markersize : `float`, optional
+        The size of the marker. Default is 3.
     """
 
-    def __init__(self, parent=None, washout=False, color=None, alpha=None, preferred_cmap=None):
+    DEFAULT_ATTS = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
+                    'markersize', 'preferred_cmap']
+
+    def __init__(self, parent=None, color=None, alpha=None, preferred_cmap=None, linewidth=1, linestyle='solid', marker='o', markersize=3):
 
         super(VisualAttributes, self).__init__()
 
@@ -38,15 +50,14 @@ class VisualAttributes(HasCallbackProperties):
         alpha = alpha or settings.DATA_ALPHA
 
         self.parent = parent
-        self._atts = ['color', 'alpha', 'linewidth', 'linestyle', 'marker',
-                      'markersize', 'preferred_cmap']
+        self._atts = self.DEFAULT_ATTS.copy()
         self.color = color
         self.alpha = alpha
         self.preferred_cmap = preferred_cmap
-        self.linewidth = 1
-        self.linestyle = 'solid'
-        self.marker = 'o'
-        self.markersize = 3
+        self.linewidth = linewidth
+        self.linestyle = linestyle
+        self.marker = marker
+        self.markersize = markersize
 
     def __eq__(self, other):
         if not isinstance(other, VisualAttributes):
@@ -109,13 +120,21 @@ class VisualAttributes(HasCallbackProperties):
     def preferred_cmap(self, value):
         if isinstance(value, str):
             try:
-                for i, element in enumerate(colormaps.members):
+                self._preferred_cmap = get_cmap(value)
+            except ValueError:
+                # This checks for the formal name of the colormap.
+                # e.g., 'viridis' is 'Viridis'
+                for element in colormaps.members:
                     if element[0] == value:
                         self._preferred_cmap = element[1]
-            except TypeError:
-                self._preferred_cmap = get_cmap(value)
-        else:
+                        break
+                else:
+                    # If the string name fails to be validated
+                    raise ValueError(f"{value} is not a valid colormap name.")
+        elif isinstance(value, Colormap) or value is None:
             self._preferred_cmap = value
+        else:
+            raise TypeError("`preferred_cmap` must be a string or an instance of a matplotlib.colors.Colormap")
 
     @callback_property
     def alpha(self):
