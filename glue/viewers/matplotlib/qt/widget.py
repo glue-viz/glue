@@ -5,7 +5,7 @@ import matplotlib
 from matplotlib.figure import Figure
 
 from qtpy import QtCore, QtGui, QtWidgets
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QRectF
 from glue.config import settings
 from glue.utils.matplotlib import DEFER_DRAW_BACKENDS
 
@@ -105,7 +105,7 @@ class MplCanvas(FigureCanvasQTAgg):
                     dpi_ratio = self.devicePixelRatio() or 1
                 except AttributeError:  # Matplotlib <2
                     dpi_ratio = 1
-                painter.drawRect(*(pt / dpi_ratio for pt in rect))
+                painter.drawRect(QRectF(*(pt / dpi_ratio for pt in rect)))
 
         # This function will be called at the end of the paintEvent
         self._draw_zoom_rect = _draw_zoom_rect
