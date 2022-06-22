@@ -1643,7 +1643,7 @@ class Data(BaseCartesianData):
                 len(axis) > 0 and
                 len(axis) == self.ndim - 1 and
                 self.size > n_chunk_max and
-                not isinstance(subset_state, (SliceSubsetState, RangeSubsetState))):
+                not isinstance(subset_state, SliceSubsetState)):
 
             # We operate in chunks here to avoid memory issues.
 
