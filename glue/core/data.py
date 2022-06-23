@@ -1829,9 +1829,10 @@ class Data(BaseCartesianData):
             # then insert the result into it. If axis is None, then we don't
             # need to do anything, and this is covered by the first clause
             # of the if statement above.
-            result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
             if not isinstance(axis, tuple):
                 axis = (axis,)
+            result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
+
             if chunk_view is None:
                 full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
             else:
