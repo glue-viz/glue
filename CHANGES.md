@@ -11,6 +11,9 @@ v1.4.0 (unreleased)
 
 * Add support for using degrees in full-sphere projections. [#2279]
 
+* Fixed a bug in when using `compute_statistic` on an array large enough to
+  need chunking when a subset is defined. [#2302]
+
 v1.3.0 (2022-04-22)
 -------------------
 
