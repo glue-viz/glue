@@ -855,8 +855,53 @@ def test_compute_statistic_chunks(shape):
     data = Data(x=np.random.random(shape))
 
     axis = tuple(range(data.ndim - 1))
+
     assert_allclose(data.compute_statistic('mean', data.id['x'], axis=axis),
                     data.compute_statistic('mean', data.id['x'], axis=axis, n_chunk_max=10))
+
+    subset_state = SliceSubsetState(data, [slice(5)])
+    stats = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
+
+    subset_state = data.id['x'] > 0.25
+    stats = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
+
+    roi = RangeROI('x', min=0.1, max=0.95)
+    subset_state = roi_to_subset_state(roi, x_att='x')
+    stats = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=axis, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
+
+    if data.ndim < 3:
+        return
+
+    assert_allclose(data.compute_statistic('mean', data.id['x'], axis=2),
+                    data.compute_statistic('mean', data.id['x'], axis=2, n_chunk_max=10))
+
+    subset_state = SliceSubsetState(data, [slice(5)])
+    stats = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
+
+    subset_state = data.id['x'] > 0.25
+    stats = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
+
+    roi = RangeROI('x', min=0.1, max=0.95)
+    subset_state = roi_to_subset_state(roi, x_att='x')
+    stats = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state)
+    chunked = data.compute_statistic('mean', data.id['x'], axis=2, subset_state=subset_state,
+                                     n_chunk_max=10)
+    assert_allclose(stats, chunked)
 
 
 def test_compute_statistic_random_subset():
@@ -989,6 +1034,43 @@ def test_compute_statistic_shape():
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
                                     axis=(0, 2))
     assert result.shape == (20,)
+
+
+@pytest.mark.parametrize('view', ((slice(0, 5), slice(4, 14), slice(10, 22)),
+                                  (slice(0, 6), slice(4, 12), slice(0, 16)),
+                                  (slice(2, 5), slice(6, 12), slice(10, 20))))
+def test_compute_statistic_shape_view(view):
+
+    # Test the compute_statistic method with the same optimizations and combined
+    # with different settings of the `view` parameter for sub-slicing the dataset.
+
+    array = np.ones((10, 20, 30))
+    array[3:5, 6:14, 10:21] += 1
+
+    data = Data(x=array, y=array)
+
+    state = data.id['y'] > 1.5
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view)
+    assert np.isscalar(result)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
+    assert result.shape == (view[0].stop - view[0].start, view[2].stop - view[2].start)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
+    assert result.shape == (view[1].stop - view[1].start,)
+
+    roi = RangeROI('x', min=1.5, max=2.0)
+    state = roi_to_subset_state(roi, x_att='x')
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view)
+    assert np.isscalar(result)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
+    assert result.shape == (view[0].stop - view[0].start, view[2].stop - view[2].start)
+
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
+    assert result.shape == (view[1].stop - view[1].start,)
 
 
 def test_compute_histogram_log():

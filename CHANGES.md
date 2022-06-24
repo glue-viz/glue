@@ -11,6 +11,10 @@ v1.4.0 (2022-05-31)
 
 * Add support for using degrees in full-sphere projections. [#2279]
 
+* Fixed a bug on setting a return view in `compute_statistic` when a subset
+  is defined, resulting in a broadcast error in arrays large enough to need
+  chunking. [#2302]
+
 v1.3.0 (2022-04-22)
 -------------------
 

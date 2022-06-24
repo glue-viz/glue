@@ -1694,6 +1694,7 @@ class Data(BaseCartesianData):
         # later we will need to pad out the result of compute_statistic.
         subarray_slices = None
 
+        chunk_view = None
         if subset_state:
             if isinstance(subset_state, SliceSubsetState) and view is None:
                 mask = None
@@ -1766,6 +1767,8 @@ class Data(BaseCartesianData):
                                 mask_idim += 1
                             else:
                                 new_view.append(view[idim])
+                        # This is the chunk view, which we'll need later
+                        chunk_view = view
                         view = tuple(new_view)
                     else:  # pragma: nocover
                         # This should probably never happen, but just in case!
@@ -1825,12 +1828,19 @@ class Data(BaseCartesianData):
             # shape of the full results had subarray_slices not been set,
             # then insert the result into it. If axis is None, then we don't
             # need to do anything, and this is covered by the first clause
-            # of the if statement above.
+            # of the if statement above. Likewise if a view was specified,
+            # only the result within the view is returned.
             if not isinstance(axis, tuple):
                 axis = (axis,)
-            full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
-            full_result = np.zeros(full_shape) * np.nan
             result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
+
+            if chunk_view is None:
+                full_shape = [self.shape[idim] for idim in range(self.ndim) if idim not in axis]
+            else:
+                chunk_shape = subset_state.to_mask(self, chunk_view).shape
+                full_shape = [chunk_shape[idim] for idim in range(self.ndim) if idim not in axis]
+
+            full_result = np.zeros(full_shape) * np.nan
             full_result[result_slices] = result
             return full_result
 
