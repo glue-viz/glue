@@ -1055,7 +1055,7 @@ def test_compute_statistic_shape_view(view):
     assert np.isscalar(result)
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
-    assert result.shape == (view[0].stop - view[0].start, view[1].stop - view[1].start)
+    assert result.shape == (view[0].stop - view[0].start, view[2].stop - view[2].start)
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
     assert result.shape == (view[1].stop - view[1].start,)
@@ -1067,7 +1067,7 @@ def test_compute_statistic_shape_view(view):
     assert np.isscalar(result)
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
-    assert result.shape == (view[0].stop - view[0].start, view[1].stop - view[1].start)
+    assert result.shape == (view[0].stop - view[0].start, view[2].stop - view[2].start)
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
     assert result.shape == (view[1].stop - view[1].start,)
