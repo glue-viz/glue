@@ -1036,45 +1036,41 @@ def test_compute_statistic_shape():
     assert result.shape == (20,)
 
 
-def test_compute_statistic_shape_view():
+@pytest.mark.parametrize('view', ((slice(0, 5), slice(4, 14), slice(10, 22)),
+                                  (slice(0, 6), slice(4, 12), slice(0, 16)),
+                                  (slice(2, 5), slice(6, 12), slice(10, 20))))
+def test_compute_statistic_shape_view(view):
 
-    # Test the compute_statistic method with the same optimizations, but setting
-    # the `view` parameter for sub-slicing the dataset.
+    # Test the compute_statistic method with the same optimizations and combined
+    # with different settings of the `view` parameter for sub-slicing the dataset.
 
-    array = np.ones(10 * 20 * 30).reshape((10, 20, 30))
+    array = np.ones((10, 20, 30))
     array[3:5, 6:14, 10:21] += 1
 
     data = Data(x=array, y=array)
 
-    subset_state = data.id['y'] > 1.5
+    state = data.id['y'] > 1.5
 
-    view = (slice(0, 5), slice(4, 12), slice(0, 10))
-    subset_state = data.id['y'] > 1.5
-
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, view=view)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view)
     assert np.isscalar(result)
 
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
-                                    axis=1, view=view)
-    assert result.shape == (5, 10)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
+    assert result.shape == (view[0].stop - view[0].start, view[1].stop - view[1].start)
 
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
-                                    axis=(0, 2), view=view)
-    assert result.shape == (8,)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
+    assert result.shape == (view[1].stop - view[1].start,)
 
     roi = RangeROI('x', min=1.5, max=2.0)
-    subset_state = roi_to_subset_state(roi, x_att='x')
+    state = roi_to_subset_state(roi, x_att='x')
 
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, view=view)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view)
     assert np.isscalar(result)
 
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
-                                    axis=1, view=view)
-    assert result.shape == (5, 10)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=1)
+    assert result.shape == (view[0].stop - view[0].start, view[1].stop - view[1].start)
 
-    result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state,
-                                    axis=(0, 2), view=view)
-    assert result.shape == (8,)
+    result = data.compute_statistic('sum', data.id['x'], subset_state=state, view=view, axis=(0, 2))
+    assert result.shape == (view[1].stop - view[1].start,)
 
 
 def test_compute_histogram_log():

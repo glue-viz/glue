@@ -1828,7 +1828,8 @@ class Data(BaseCartesianData):
             # shape of the full results had subarray_slices not been set,
             # then insert the result into it. If axis is None, then we don't
             # need to do anything, and this is covered by the first clause
-            # of the if statement above.
+            # of the if statement above. Likewise if a view was specified,
+            # only the result within the view is returned.
             if not isinstance(axis, tuple):
                 axis = (axis,)
             result_slices = tuple([subarray_slices[idim] for idim in range(self.ndim) if idim not in axis])
