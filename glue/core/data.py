@@ -1839,7 +1839,6 @@ class Data(BaseCartesianData):
             else:
                 chunk_shape = subset_state.to_mask(self, chunk_view).shape
                 full_shape = [chunk_shape[idim] for idim in range(self.ndim) if idim not in axis]
-                view_start = [chunk_view[idim].start for idim in range(self.ndim) if idim not in axis][0]
 
             full_result = np.zeros(full_shape) * np.nan
             full_result[result_slices] = result
