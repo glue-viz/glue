@@ -851,7 +851,8 @@ class TestCloneSubsetStates():
         roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4)
 
         subset = self.data.new_subset()
-        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'], roi=roi)
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
+                                             roi=roi)
         assert_equal(self.data.subsets[0].to_mask(), [0, 1, 0, 0])
 
         data_clone = clone(self.data)
@@ -870,6 +871,35 @@ class TestCloneSubsetStates():
         data_clone = clone(self.data)
 
         assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
+
+        roi.move_to(3, 0)
+        roi.rotate_to(-1.5)
+
+        subset = data_clone.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=data_clone.id['a'], yatt=data_clone.id['c'],
+                                             roi=roi, pretransform=example_transform)
+        assert_equal(data_clone.subsets[1].to_mask(), [0, 1, 0, 1])
+
+    def test_roi_subset_state_rotated(self):
+
+        roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4, theta=-np.pi / 3)
+
+        subset = self.data.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],
+                                             roi=roi)
+        assert_equal(self.data.subsets[0].to_mask(), [0, 0, 0, 1])
+
+        data_clone = clone(self.data)
+
+        assert_equal(data_clone.subsets[0].to_mask(), [0, 0, 0, 1])
+
+        roi = RectangularROI(xmin=0, xmax=3, ymin=1.1, ymax=1.4)
+        roi.rotate_by(-0.9)
+
+        subset = data_clone.new_subset()
+        subset.subset_state = RoiSubsetState(xatt=data_clone.id['a'], yatt=data_clone.id['c'],
+                                             roi=roi)
+        assert_equal(data_clone.subsets[1].to_mask(), [0, 0, 0, 1])
 
 
 @requires_scipy
@@ -1041,6 +1071,25 @@ def test_roi_reduction():
     state = RoiSubsetState(xatt=data4d.pixel_component_ids[0], yatt=data4d.pixel_component_ids[1], roi=roi)
     out = state.to_mask(data4d)
     expected_slice = np.array([[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]])
+    assert_equal(out[:, :, 0, 0], expected_slice)
+    assert_equal(out[:, :, 0, 1], expected_slice)
+    assert_equal(out[:, :, 1, 0], expected_slice)
+    assert_equal(out[:, :, 1, 1], expected_slice)
+
+    roi.rotate_by(np.pi / 2)
+    state = RoiSubsetState(xatt=data4d.pixel_component_ids[0], yatt=data4d.pixel_component_ids[1], roi=roi)
+    out = state.to_mask(data4d)
+    expected_slice = np.array([[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]])
+    assert_equal(out[:, :, 0, 0], expected_slice)
+    assert_equal(out[:, :, 0, 1], expected_slice)
+    assert_equal(out[:, :, 1, 0], expected_slice)
+    assert_equal(out[:, :, 1, 1], expected_slice)
+
+    roi = RectangularROI(0.5, 2.5, 1.9, 3.1)
+    roi.rotate_to(np.pi / 4)
+    state = RoiSubsetState(xatt=data4d.pixel_component_ids[0], yatt=data4d.pixel_component_ids[1], roi=roi)
+    out = state.to_mask(data4d)
+    expected_slice = np.array([[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     assert_equal(out[:, :, 0, 0], expected_slice)
     assert_equal(out[:, :, 0, 1], expected_slice)
     assert_equal(out[:, :, 1, 0], expected_slice)

@@ -78,6 +78,17 @@ class TestRectangle(object):
         with pytest.raises(UndefinedROI):
             self.roi.contains(5, 5)
 
+    def test_set_rotation(self):
+        self.roi.update_limits(0, 0, 10, 4)
+        self.roi.rotate_by(np.pi / 6)
+        assert self.roi.contains(8, 6)
+        self.roi.rotate_by(np.pi / 3)
+        assert not self.roi.contains(9, 6)
+        assert self.roi.contains(6, 6.9)
+        self.roi.rotate_to(-np.pi / 3)
+        assert not self.roi.contains(5, 6)
+        assert self.roi.contains(6, -3)
+
     def test_empty_to_polygon(self):
         x, y = self.roi.to_polygon()
         assert x == []
@@ -88,6 +99,12 @@ class TestRectangle(object):
         x, y = self.roi.to_polygon()
         poly = PolygonalROI(vx=x, vy=y)
         assert poly.contains(5, 5)
+        self.roi.update_limits(0, 0, 10, 4)
+        self.roi.rotate_to(np.pi / 3)
+        x, y = self.roi.to_polygon()
+        poly = PolygonalROI(vx=x, vy=y)
+        assert not poly.contains(8, 3)
+        assert poly.contains(6, 6)
 
     def test_ndarray(self):
         self.roi.update_limits(0, 0, 10, 10)
@@ -325,15 +342,19 @@ class TestEllipse(object):
     def setup_method(self, method):
         self.roi_empty = EllipticalROI()
         self.roi = EllipticalROI(1, 2, 3, 4)
+        self.roi_rotated = EllipticalROI(1, 2, 3, 0.4, theta=np.pi / 6)
 
     def test_undefined_on_creation(self):
         assert not self.roi_empty.defined()
         assert self.roi.defined()
+        assert self.roi_rotated.defined()
 
     def test_contains_on_undefined_contains_raises(self):
         with pytest.raises(UndefinedROI):
             self.roi_empty.contains(1, 1)
-        self.roi.contains(1, 1)
+        assert self.roi.contains(1, 1)
+        assert self.roi_rotated.contains(2, 2.5)
+        assert not self.roi_rotated.contains(2, 2)
 
     def test_set_center(self):
         assert self.roi.contains(0, 0)
@@ -353,6 +374,15 @@ class TestEllipse(object):
         assert self.roi.contains(0, 0)
         assert self.roi.contains(12, 12)
 
+    def test_set_rotation(self):
+        self.roi_rotated.rotate_to(0.55)
+        assert self.roi_rotated.contains(-1.5, 0.4)
+        self.roi_rotated.rotate_by(np.pi / 3)
+        assert self.roi_rotated.contains(0.8, 4.5)
+        self.roi_rotated.rotate_to(np.pi / 3)
+        assert not self.roi_rotated.contains(0.8, 4.5)
+        assert self.roi_rotated.contains(0.5, 0.5)
+
     def test_contains_many(self):
         x = [0, 0, 0, 0, 0]
         y = [0, 0, 0, 0, 0]
@@ -365,6 +395,11 @@ class TestEllipse(object):
         poly = PolygonalROI(vx=x, vy=y)
         assert poly.contains(0, 0)
         assert not poly.contains(10, 0)
+
+        x, y = self.roi_rotated.to_polygon()
+        poly = PolygonalROI(vx=x, vy=y)
+        assert poly.contains(2, 2.5)
+        assert not poly.contains(2, 2)
 
     def test_poly_undefined(self):
         x, y = self.roi_empty.to_polygon()
@@ -397,6 +432,12 @@ class TestEllipse(object):
         assert_almost_equal(new_roi.yc, 2)
         assert_almost_equal(new_roi.radius_x, 3)
         assert_almost_equal(new_roi.radius_y, 4)
+
+    def test_serialize_rotated(self):
+        new_roi = roundtrip_roi(self.roi_rotated)
+        assert new_roi.radius_y == 0.4
+        assert new_roi.theta == np.pi / 6
+        assert new_roi.contains(-1.5, 0.5)
 
 
 class TestPolygon(object):
@@ -494,11 +535,70 @@ class TestPolygon(object):
         """ __str__ returns a string """
         assert type(str(self.roi)) == str
 
+    def test_rotate(self):
+        """ Test 45 deg rotation of square ROI """
+        self.define_as_square()
+        self.roi.rotate_to(np.pi/4)
+        assert self.roi.contains([.5, .5, 1.2], [1.2, -0.2, .5]).all()
+        assert not self.roi.contains([1.5, 1.5], [0, 0]).any()
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+
+    def test_rotate_triangle(self):
+        """ Test incremental rotations of triangular (half-square) ROI """
+        self.define_as_square()
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        self.roi.remove_point(1, 1)
+        assert_almost_equal(self.roi.area(), 0.5, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        self.roi.rotate_to(np.pi/3)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        self.roi.rotate_by(np.pi/6)
+        assert_almost_equal(self.roi.area(), 0.5, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (1/3, 1/3), decimal=12)
+        assert_almost_equal(self.roi.vx, (2/3, -1/3, 2/3), decimal=12)
+        assert_almost_equal(self.roi.vy, (0, 0, 1), decimal=12)
+
+    def test_rotate_polyline(self):
+        """ Test rotation of degenerate (linear) ROI around mean """
+        self.roi.reset()
+        self.roi.add_point(-2, 0)
+        self.roi.add_point(4, 0)
+        assert_almost_equal(self.roi.mean(), (1.0, 0.0), decimal=12)
+        self.roi.add_point(-0.5, 0)
+        self.roi.add_point(-1.5, 0)
+        assert_almost_equal(self.roi.mean(), (0.0, 0.0), decimal=12)
+        assert all(np.isnan(self.roi.centroid()))
+        self.roi.rotate_to(np.pi/2)
+        assert_almost_equal(self.roi.vx, (0, 0, 0, 0), decimal=12)
+        assert_almost_equal(self.roi.vy, (-2, 4, -0.5, -1.5), decimal=12)
+
+    def test_append_mock_points(self):
+        """
+        Test that adding points on the side of square ROI conserves area and centroid.
+        """
+        self.define_as_square()
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.area(signed=True), -1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        assert_almost_equal(self.roi.mean(), (0.5, 0.5), decimal=12)
+        self.roi.add_point(0.9, 0)
+        self.roi.add_point(0.7, 0)
+        assert_almost_equal(self.roi.area(), 1, decimal=12)
+        assert_almost_equal(self.roi.centroid(), (0.5, 0.5), decimal=12)
+        assert_almost_equal(self.roi.mean(), (0.6, 1/3), decimal=12)
+
     def test_serialization(self):
         self.define_as_square()
         new_roi = roundtrip_roi(self.roi)
         assert_almost_equal(new_roi.vx, np.array([0, 0, 1, 1]))
         assert_almost_equal(new_roi.vy, np.array([0, 1, 1, 0]))
+        self.roi.rotate_to(np.pi / 4)
+        new_roi = roundtrip_roi(self.roi)
+        assert new_roi.theta == 0
+        sqh = np.sqrt(0.5)
+        assert_almost_equal(new_roi.vx, np.array([0, -sqh, 0, sqh]) + 0.5)
+        assert_almost_equal(new_roi.vy, np.array([-sqh, 0, sqh, 0]) + 0.5)
 
 
 class TestProjected3dROI(object):
@@ -531,6 +631,19 @@ class TestProjected3dROI(object):
         assert roi.contains(self.x, self.y).tolist() == roi_2d.contains(self.x, self.y).tolist()
         assert roi.to_polygon() == roi_2d.to_polygon()
         assert roi.defined() == roi_2d.defined()
+
+    def test_rotate2d(self):
+        """ Test rotation of the 2d ROI """
+        roi_2d = PolygonalROI(vx=[1.5, 3.5, 3.5, 1.5], vy=[4.5, 4.5, 5.5, 5.5])
+        roi = Projected3dROI(roi_2d=roi_2d, projection_matrix=self.xyzw2yxzw)
+        assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, False, False]
+        assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [False, True], [False, False]]
+
+        roi.rotate_by(np.pi / 2)
+        assert_almost_equal(roi.roi_2d.theta, np.pi / 2)
+        assert_almost_equal(roi_2d.theta, np.pi / 2)
+        assert roi.contains3d(self.x, self.y, self.z).tolist() == [True, True, False]
+        assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [True, True], [False, True]]
 
 
 class TestCategorical(object):
@@ -931,7 +1044,7 @@ def test_circular_roi_representation():
 
     # Case 2: linear-linear axes with non-square aspect ratio
 
-    ax.set_xlim(-40, 100)
+    ax.set_xlim(10, 100)
     ax.set_ylim(-2, 5)
     ax.set_xscale('linear')
     ax.set_yscale('linear')

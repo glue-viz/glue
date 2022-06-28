@@ -2,10 +2,41 @@ import numpy as np
 
 from glue.utils import unbroadcast, broadcast_to
 
-__all__ = ['points_inside_poly', 'polygon_line_intersections', 'floodfill']
+__all__ = ['points_inside_poly', 'polygon_line_intersections', 'floodfill', 'rotation_matrix_2d']
+
+
+def rotation_matrix_2d(alpha):
+    """
+    Return rotation matrix for angle alpha around origin.
+
+    Parameters
+    ----------
+    alpha : float
+        Rotation angle in radian, increasing for anticlockwise rotation.
+    """
+    if np.asarray(alpha).ndim > 0:
+        # In principle this works on an array as well; would have to return matrix.T then
+        raise ValueError("Only scalar input for angle accepted")
+
+    return np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])
 
 
 def points_inside_poly(x, y, vx, vy):
+    """
+    Test if coordinates ``x``, ``y`` fall inside polygon of vertices ``vx``, ``vy``.
+
+    Parameters
+    ----------
+    x, y : `~numpy.ndarray`
+        Coordinates of the points to test
+    vx, vy : `~numpy.ndarray`
+        The vertices of the polygon
+
+    Returns
+    -------
+    contains : `~numpy.ndarray` of bool
+        Array indicating whether each coordinate pair is inside the polygon.
+    """
 
     if x.dtype.kind == 'M' and vx.dtype.kind == 'M':
         vx = vx.astype(x.dtype).astype(float)

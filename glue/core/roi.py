@@ -6,7 +6,7 @@ from matplotlib.transforms import IdentityTransform, blended_transform_factory
 
 from glue.core.component import CategoricalComponent
 from glue.core.exceptions import UndefinedROI
-from glue.utils import points_inside_poly, iterate_chunks
+from glue.utils import points_inside_poly, iterate_chunks, rotation_matrix_2d
 
 
 np.seterr(all='ignore')
@@ -23,9 +23,7 @@ SCRUBBING_KEY = 'control'
 
 
 def aspect_ratio(axes):
-    """ Returns the pixel height / width of a box that spans 1
-    data unit in x and y
-    """
+    """Returns the pixel height / width of a box that spans 1 data unit in `x` and `y`"""
     width = axes.get_position().width * axes.figure.get_figwidth()
     height = axes.get_position().height * axes.figure.get_figheight()
     xmin, xmax = axes.get_xlim()
@@ -60,76 +58,111 @@ class Roi(object):  # pragma: no cover
     """
     A geometrical 2D region of interest.
 
-    Glue uses Roi's to represent user-drawn regions on plots. There
+    Glue uses ROIs to represent user-drawn regions on plots. There
     are many specific sub-classes of Roi, but they all have a ``contains``
     method to test whether a collection of 2D points lies inside the region.
+    ROI bounds are generally designed as being exclusive (that is, points
+    situated exactly on a border are considered to lie outside the region).
     """
 
     def contains(self, x, y):
-        """Return true/false for each x/y pair.
-
-        :param x: Array of X locations
-        :param y: Array of Y locations
-
-        :returns: A Boolean array, where each element is True
-                  if the corresponding (x,y) tuple is inside the Roi.
-
-        :raises: UndefinedROI exception if not defined
         """
-        raise NotImplementedError()
-
-    def contains3d(self, x, y, z):
-        """Return true/false for each x/y/z pair.
+        Test which of a set of (`x`, `y`) points fall within the region of interest.
 
         Parameters
         ----------
-        x : :class:`numpy.ndarray`
-            Array of x locations
-        y : :class:`numpy.ndarray`
-            Array of y locations
-        z : :class:`numpy.ndarray`
-            Array of z locations
+        x : float or array-like
+            `x` coordinate(s) of point(s).
+        y : float or array-like
+            `y` coordinate(s) of point(s).
 
         Returns
         -------
-        :class:`numpy.ndarray`
-            A boolean array, where each element is `True` if the corresponding
-            (x,y,z) tuple is inside the Roi.
+        inside : bool or `~numpy.ndarray`
+            An boolean iterable, where each element is `True` if the corresponding
+            (`x`, `y`) tuple is inside the Roi.
 
         Raises
         ------
         UndefinedROI
-            if not defined
+            If not defined.
+        """
+        raise NotImplementedError()
+
+    def contains3d(self, x, y, z):
+        """
+        Test which of a set of projected (`x`, `y`, `z`) points fall within the
+        linked 2D region of interest.
+
+        Parameters
+        ----------
+        x : :class:`~numpy.ndarray`
+            Array of `x` locations
+        y : :class:`~numpy.ndarray`
+            Array of `y` locations
+        z : :class:`~numpy.ndarray`
+            Array of `z` locations
+
+        Returns
+        -------
+        :class:`~numpy.ndarray`
+            A boolean array, where each element is `True` if the corresponding
+            (`x`, `y`, `z`) tuple is projected inside the associated 2D Roi.
+
+        Raises
+        ------
+        UndefinedROI
+            If not defined.
         """
         raise NotImplementedError()
 
     def center(self):
-        """Return the (x,y) coordinates of the ROI center"""
+        """Return the (`x`, `y`) coordinates of the ROI center"""
         raise NotImplementedError()
 
     def move_to(self, x, y):
-        """Translate the ROI to a center of (x, y)"""
+        """Translate the ROI to a center of (`x`, `y`)"""
         raise NotImplementedError()
 
     def defined(self):
-        """ Returns whether or not the subset is properly defined """
+        """Returns `True` if the ROI is defined"""
         raise NotImplementedError()
 
     def to_polygon(self):
-        """ Returns a tuple of x and y points, approximating the ROI
-        as a polygon."""
+        """
+        Returns vertices `vx`, `vy` of a polygon approximating the Roi,
+        where each is an array of vertex coordinates in `x` and `y`.
+        """
         raise NotImplementedError()
 
+    def rotate_to(self, theta):
+        """
+        Rotate anticlockwise around center to position angle theta.
+
+        Parameters
+        ----------
+        theta : float
+            Angle of anticlockwise rotation around center in radian.
+        """
+        raise NotImplementedError()
+
+    def rotate_by(self, dtheta, **kwargs):
+        """
+        Rotate the Roi around center by angle dtheta.
+
+        Parameters
+        ----------
+        dtheta : float
+            Change in anticlockwise rotation angle around center in radian.
+        """
+        self.rotate_to(getattr(self, 'theta', 0.0) + dtheta, **kwargs)
+
     def copy(self):
-        """
-        Return a clone of the ROI
-        """
+        """Return a clone of the Roi"""
         return copy.copy(self)
 
     def transformed(self, xfunc=None, yfunc=None):
-        """
-        A transformed version of the ROI
-        """
+        """A transformed version of the Roi"""
         raise NotImplementedError()
 
 
@@ -163,21 +196,38 @@ class RectangularROI(Roi):
 
     """
     A 2D rectangular region of interest.
+
+    Parameters
+    ----------
+    xmin, xmax : float, optional
+        `x` coordinates of left and right edge.
+    ymin, ymax : float, optional
+        `y` coordinates of lower and upper edge.
+    theta : float, optional
+        Angle of anticlockwise rotation around center in radian.
+
+    Notes
+    -----
+        The input and ``update_limits()`` parameters specify the `x` and `y` edge
+        positions *before* any rotation is applied; the size always remains
+        :math:`width` = `xmax` - `xmin`; `height` = `ymax` - `ymin`.
     """
 
-    def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None):
+    def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None, theta=None):
         super(RectangularROI, self).__init__()
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
+        self.theta = 0 if theta is None else theta
 
     def __str__(self):
-        if self.defined():
-            return "x=[%0.3f, %0.3f], y=[%0.3f, %0.3f]" % (self.xmin,
-                                                           self.xmax,
-                                                           self.ymin,
-                                                           self.ymax)
+        if self.defined() and self.theta == 0:
+            return f"x=[{self.xmin:.3f}, {self.xmax:.3f}], y=[{self.ymin:.3f}, {self.ymax:.3f}]"
+        elif self.defined():
+            return (f"center=({self.center()[0]:.3f}, {self.center()[1]:.3f}), "
+                    f"size=({self.width():.3f} x {self.height():.3f}), "
+                    f"theta={self.theta:.3f} radian")
         else:
             return "Undefined Rectangular ROI"
 
@@ -192,6 +242,9 @@ class RectangularROI(Roi):
         self.xmax += dx
         self.ymin += dy
         self.ymax += dy
+
+    def rotate_to(self, theta):
+        self.theta = 0 if theta is None else theta
 
     def transpose(self, copy=True):
         if copy:
@@ -213,38 +266,43 @@ class RectangularROI(Roi):
         return self.ymax - self.ymin
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A scalar or numpy array of x points
-        :param y: A scalar or numpy array of y points
-
-        *Returns*
-
-            A list of True/False values, for whether each (x,y)
-            point falls within the ROI
-        """
-
         if not self.defined():
             raise UndefinedROI
 
-        return (x > self.xmin) & (x < self.xmax) & \
-               (y > self.ymin) & (y < self.ymax)
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
+
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+            return (x > self.xmin) & (x < self.xmax) & (y > self.ymin) & (y < self.ymax)
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            xc, yc = self.center()
+            xext = self.height() / 2
+            yext = self.width() / 2
+            return (x > xc - xext) & (x < xc + xext) & (y > yc - yext) & (y < yc + yext)
+
+        inside = np.zeros_like(x, dtype=bool)
+        bounds = self.to_polygon()
+        xc, yc = self.center()
+        keep = ((x >= bounds[0].min()) & (x <= bounds[0].max()) &
+                (y >= bounds[1].min()) & (y <= bounds[1].max()))
+        x = x[keep] - xc
+        y = y[keep] - yc
+        shape = (2,) + x.shape
+        x, y = (rotation_matrix_2d(-self.theta) @ [x.flatten(), y.flatten()]).reshape(shape)
+        inside[keep] = (abs(x) <= self.width() / 2) & (abs(y) <= self.height() / 2)
+        return inside
 
     def update_limits(self, xmin, ymin, xmax, ymax):
-        """
-        Update the limits of the rectangle
-        """
+        """Update the limits (edge positions) of the rectangle before rotation"""
         self.xmin = min(xmin, xmax)
         self.xmax = max(xmin, xmax)
         self.ymin = min(ymin, ymax)
         self.ymax = max(ymin, ymax)
 
     def reset(self):
-        """
-        Reset the rectangular region.
-        """
+        """Reset the rectangular region"""
         self.xmin = None
         self.xmax = None
         self.ymin = None
@@ -254,9 +312,19 @@ class RectangularROI(Roi):
         return self.xmin is not None
 
     def to_polygon(self):
+        """
+        Returns vertices `vx`, `vy` of the rectangular region represented as a polygon,
+        where each is an array of vertex coordinates in `x` and `y`.
+        """
         if self.defined():
-            return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
-                    np.array([self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]))
+            if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+                return (np.array([self.xmin, self.xmax, self.xmax, self.xmin, self.xmin]),
+                        np.array([self.ymin, self.ymin, self.ymax, self.ymax, self.ymin]))
+            else:
+                corners = (np.array([-1, 1, 1, -1, -1]) * self.width() / 2,
+                           np.array([-1, -1, 1, 1, -1]) * self.height() / 2)
+            return tuple((rotation_matrix_2d(self.theta) @ corners) +
+                         np.array(self.center()).reshape((2, 1)))
         else:
             return [], []
 
@@ -271,18 +339,30 @@ class RectangularROI(Roi):
         return dict(xmin=context.do(self.xmin),
                     xmax=context.do(self.xmax),
                     ymin=context.do(self.ymin),
-                    ymax=context.do(self.ymax))
+                    ymax=context.do(self.ymax),
+                    theta=context.do(self.theta))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xmin=context.object(rec['xmin']), xmax=context.object(rec['xmax']),
-                   ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']))
+                   ymin=context.object(rec['ymin']), ymax=context.object(rec['ymax']),
+                   theta=context.object(rec.get('theta', 0)))
 
 
 class RangeROI(Roi):
+    """
+    A region of interest representing all points within a range in either `x` or `y`.
 
+    Parameters
+    ----------
+    orientation : str
+        One of 'x' or 'y', setting the axis on which to apply the range.
+    min : float, optional
+        Start value of the range.
+    max : float, optional
+        End value of the range.
+    """
     def __init__(self, orientation, min=None, max=None):
-        """:param orientation: 'x' or 'y'. Sets which axis to range"""
         super(RangeROI, self).__init__()
 
         self.min = min
@@ -380,6 +460,15 @@ class CircularROI(Roi):
 
     """
     A 2D circular region of interest.
+
+    Parameters
+    ----------
+    xc : float, optional
+        `x` coordinate of center.
+    yc : float, optional
+        `y` coordinate of center.
+    radius : float, optional
+        Radius of the circle.
     """
 
     def __init__(self, xc=None, yc=None, radius=None):
@@ -389,19 +478,6 @@ class CircularROI(Roi):
         self.radius = radius
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A list of x points
-        :param y: A list of y points
-
-        *Returns*
-
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
-        """
         if not self.defined():
             raise UndefinedROI
 
@@ -412,16 +488,12 @@ class CircularROI(Roi):
         return (x - self.xc) ** 2 + (y - self.yc) ** 2 < self.radius ** 2
 
     def set_center(self, x, y):
-        """
-        Set the center of the circular region
-        """
+        """Set the center of the circular region"""
         self.xc = x
         self.yc = y
 
     def set_radius(self, radius):
-        """
-        Set the radius of the circular region
-        """
+        """Set the radius of the circular region"""
         self.radius = radius
 
     def get_center(self):
@@ -431,20 +503,16 @@ class CircularROI(Roi):
         return self.radius
 
     def reset(self):
-        """
-        Reset the rectangular region.
-        """
+        """Reset the circular region"""
         self.xc = None
         self.yc = None
         self.radius = 0.
 
     def defined(self):
-        """ Returns True if the ROI is defined """
         return self.xc is not None and \
             self.yc is not None and self.radius is not None
 
     def to_polygon(self):
-        """ Returns x, y, where each is a list of points """
         if not self.defined():
             return [], []
         theta = np.linspace(0, 2 * np.pi, num=20)
@@ -471,32 +539,44 @@ class CircularROI(Roi):
 
 class EllipticalROI(Roi):
     """
-    A 2D elliptical region of interest.
+    A 2D elliptical region of interest with semimajor/minor axes `radius_[xy]`.
+
+    Parameters
+    ----------
+    xc : float, optional
+        `x` coordinate of center.
+    yc : float, optional
+        `y` coordinate of center.
+    radius_x : float, optional
+        Semiaxis along `x` axis.
+    radius_y : float, optional
+        Semiaxis along `y` axis.
+    theta : float, optional
+        Angle of anticlockwise rotation around (`xc`, `yc`) in radian.
+
+    Notes
+    -----
+        The `radius_x`, `radius_y` properties refer to the semiaxes along the `x` and `y`
+        axes *before* any rotation is applied.
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
         super(EllipticalROI, self).__init__()
-        if theta is not None and theta != 0:
-            raise NotImplementedError("Rotated ellipses are not yet supported")
         self.xc = xc
         self.yc = yc
         self.radius_x = radius_x
         self.radius_y = radius_y
+        self.theta = 0 if theta is None else theta
+
+    def __str__(self):
+        if self.defined():
+            return (f"center=({self.xc:.3f}, {self.yc:.3f}), "
+                    f"semiaxes=({self.radius_x:.3f} x {self.radius_y:.3f}), "
+                    f"theta={self.theta:.3f} radian")
+        else:
+            return "Undefined Elliptical ROI"
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A list of x points
-        :param y: A list of y points
-
-        *Returns*
-
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
-        """
         if not self.defined():
             raise UndefinedROI
 
@@ -504,33 +584,65 @@ class EllipticalROI(Roi):
             x = np.asarray(x)
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
-        return (((x - self.xc) ** 2 / self.radius_x ** 2 +
-                 (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
+
+        if np.isclose(self.theta % np.pi, 0.0, atol=1e-9):
+            return (((x - self.xc) ** 2 / self.radius_x ** 2 +
+                     (y - self.yc) ** 2 / self.radius_y ** 2) < 1.)
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            return (((x - self.xc) ** 2 / self.radius_y ** 2 +
+                     (y - self.yc) ** 2 / self.radius_x ** 2) < 1.)
+        else:
+            # Pre-select points inside the bounding rectangle. In principle this could be
+            # used to speed up the non-rotated cases above as well, but will only pay off
+            # the overhead for datasets much larger than the region (e.g. < ~1 % inside).
+            inside = np.zeros_like(x, dtype=bool)
+            bounds = self.bounds()
+            keep = ((x >= bounds[0][0]) & (x <= bounds[0][1]) &
+                    (y >= bounds[1][0]) & (y <= bounds[1][1]))
+            x = x[keep] - self.xc
+            y = y[keep] - self.yc
+            shape = (2,) + x.shape
+            x, y = (rotation_matrix_2d(-self.theta) @ [x.flatten(), y.flatten()]).reshape(shape)
+            inside[keep] = ((x ** 2 / self.radius_x ** 2 + y ** 2 / self.radius_y ** 2) < 1.)
+            return inside
 
     def reset(self):
-        """
-        Reset the rectangular region.
-        """
+        """Reset the rectangular region"""
         self.xc = None
         self.yc = None
         self.radius_x = 0.
         self.radius_y = 0.
 
     def defined(self):
-        """ Returns True if the ROI is defined """
         return (self.xc is not None and
                 self.yc is not None and
                 self.radius_x is not None and
                 self.radius_y is not None)
 
+    def get_center(self):
+        return self.xc, self.yc
+
     def to_polygon(self):
-        """ Returns x, y, where each is a list of points """
         if not self.defined():
             return [], []
         theta = np.linspace(0, 2 * np.pi, num=20)
-        x = self.xc + self.radius_x * np.cos(theta)
-        y = self.yc + self.radius_y * np.sin(theta)
-        return x, y
+        x = self.radius_x * np.cos(theta)
+        y = self.radius_y * np.sin(theta)
+        x, y = rotation_matrix_2d(self.theta) @ (x, y)
+        return x + self.xc, y + self.yc
+
+    def bounds(self):
+        """Returns (conservatively estimated) boundary values in `x` and `y`"""
+        if self.theta is None or np.isclose(self.theta % (np.pi), 0.0, atol=1e-9):
+            return [[self.xc - self.radius_x, self.xc + self.radius_x],
+                    [self.yc - self.radius_y, self.yc + self.radius_y]]
+        elif np.isclose(self.theta % (np.pi / 2), 0.0, atol=1e-9):
+            return [[self.xc - self.radius_y, self.xc + self.radius_y],
+                    [self.yc - self.radius_x, self.yc + self.radius_x]]
+        else:
+            radius = max(self.radius_x, self.radius_y)
+            return [[self.xc - radius, self.xc + radius],
+                    [self.yc - radius, self.yc + radius]]
 
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
@@ -539,34 +651,45 @@ class EllipticalROI(Roi):
         self.xc += xdelta
         self.yc += ydelta
 
+    def rotate_to(self, theta):
+        self.theta = 0 if theta is None else theta
+
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
                     yc=context.do(self.yc),
                     radius_x=context.do(self.radius_x),
-                    radius_y=context.do(self.radius_y))
+                    radius_y=context.do(self.radius_y),
+                    theta=context.do(self.theta))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xc=rec['xc'], yc=rec['yc'],
-                   radius_x=rec['radius_x'], radius_y=rec['radius_y'])
+                   radius_x=rec['radius_x'], radius_y=rec['radius_y'], theta=rec.get('theta', 0))
 
 
 class VertexROIBase(Roi):
 
+    """
+    Class representing a set of vertices e.g. to define a 2D polygon.
+
+    Parameters
+    ----------
+    vx : float or array-like, optional
+        Initial `x` vertices.
+    vy : float or array-like, optional
+        Initial `y` vertices.
+
+    Notes
+    -----
+    This class only comprises the collection of vertices, but does not
+    provide a ``contains`` method.
+    """
+
     def __init__(self, vx=None, vy=None):
-        """
-        :param vx: initial x vertices
-        :type vx: list
-        :param vy: initial y vertices
-        :type vy: list
-        """
         super(VertexROIBase, self).__init__()
-        self.vx = vx
-        self.vy = vy
-        if self.vx is None:
-            self.vx = []
-        if self.vy is None:
-            self.vy = []
+        self.vx = [] if vx is None else list(vx)
+        self.vy = [] if vy is None else list(vy)
+        self.theta = 0
 
     def transformed(self, xfunc=None, yfunc=None):
         vx = self.vx if xfunc is None else xfunc(np.asarray(self.vx))
@@ -575,20 +698,23 @@ class VertexROIBase(Roi):
 
     def add_point(self, x, y):
         """
-        Add another vertex to the ROI
+        Add another vertex to the ROI.
 
-        :param x: The x coordinate
-        :param y: The y coordinate
+        Parameters
+        ----------
+        x : float
+            The `x` coordinate of the point to add.
+        y : float
+            The `y` coordinate of the point to add.
         """
         self.vx.append(x)
         self.vy.append(y)
 
     def reset(self):
-        """
-        Reset the vertex list.
-        """
+        """Reset the vertex lists and position angle"""
         self.vx = []
         self.vy = []
+        self.theta = 0
 
     def replace_last_point(self, x, y):
         if len(self.vx) > 0:
@@ -596,15 +722,18 @@ class VertexROIBase(Roi):
             self.vy[-1] = y
 
     def remove_point(self, x, y, thresh=None):
-        """Remove the vertex closest to a reference (xy) point
+        """
+        Remove the vertex closest to a reference (`x`, `y`) point.
 
-        :param x: The x coordinate of the reference point
-        :param y: The y coordinate of the reference point
-
-        :param thresh: An optional threshold. If present, the vertex
-                closest to (x,y) will only be removed if the distance
-                is less than thresh
-
+        Parameters
+        ----------
+        x : float
+            The `x` coordinate of the reference point.
+        y : float
+            The `y` coordinate of the reference point.
+        thresh : float, optional
+            Threshold. If set, the vertex closest to (`x`, `y`) will only be removed
+            if the distance is less than `thresh`.
         """
         if len(self.vx) == 0:
             return
@@ -633,14 +762,20 @@ class VertexROIBase(Roi):
 
     @classmethod
     def __setgluestate__(cls, rec, context):
-        return cls(vx=context.object(rec['vx']),
-                   vy=context.object(rec['vy']))
+        return cls(vx=context.object(rec['vx']), vy=context.object(rec['vy']))
 
 
 class PolygonalROI(VertexROIBase):
 
     """
-    A class to define 2D polygonal regions-of-interest
+    A class to define 2D polygonal regions of interest.
+
+    Parameters
+    ----------
+    vx : float or array-like, optional
+        Initial `x` vertices.
+    vy : float or array-like, optional
+        Initial `y` vertices.
     """
 
     def __str__(self):
@@ -651,19 +786,6 @@ class PolygonalROI(VertexROIBase):
         return result
 
     def contains(self, x, y):
-        """
-        Test whether a set of (x,y) points falls within
-        the region of interest
-
-        :param x: A list of x points
-        :param y: A list of y points
-
-        *Returns*
-
-           A list of True/False values, for whether each (x,y)
-           point falls within the ROI
-
-        """
         if not self.defined():
             raise UndefinedROI
         if not isinstance(x, np.ndarray):
@@ -671,21 +793,127 @@ class PolygonalROI(VertexROIBase):
         if not isinstance(y, np.ndarray):
             y = np.asarray(y)
 
-        result = points_inside_poly(x, y, self.vx, self.vy)
+        result = points_inside_poly(x, y, np.asarray(self.vx), np.asarray(self.vy))
         return result
+
+    # There are several possible definitions of the centre; `mean()` is
+    # easiest to calculate, but not robust against adding vertices.
+    def mean(self):
+        """Return arithmetic mean (of vertex positions) of polygon."""
+
+        if not self.defined():
+            raise UndefinedROI
+        # Do not include starting vertex twice!
+        if self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]:
+            return np.mean(self.vx[:-1]), np.mean(self.vy[:-1])
+        else:
+            return np.mean(self.vx), np.mean(self.vy)
+
+    def area(self, signed=False):
+        """
+        Return area of polygon using the shoelace formula.
+
+        Parameters
+        ----------
+        signed : bool, optional
+            If `True`, return signed area from the cross product calculation,
+            indicating whether vertices are ordered clockwise (negative) or
+            counter clockwise (positive).
+        """
+
+        # Use offsets to improve numerical precision
+        x0, y0 = self.mean()
+        x_ = self.vx - x0
+        y_ = self.vy - y0
+
+        # Shoelace formula; in case where the start vertex is not already duplicated
+        # at the end, final term added manually to avoid an array copy.
+        area_main = np.dot(x_[:-1], y_[1:]) - np.dot(y_[:-1], x_[1:])
+        if not (self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]):
+            area_main += x_[-1] * y_[0] - y_[-1] * x_[0]
+        if signed:
+            return 0.5 * area_main
+        else:
+            return 0.5 * np.abs(area_main)
+
+    def centroid(self):
+        """Return centroid (centre of mass) of polygon."""
+
+        # See http://paulbourke.net/geometry/polygonmesh/
+        #     https://www.ma.ic.ac.uk/~rn/centroid.pdf
+
+        # Use vertex position offsets from mean to improve numerical precision;
+        # for a triangle the mean already identifies the centroid.
+
+        if len(self.vx) == 3:
+            return self.mean()
+        else:
+            x0, y0 = self.mean()
+
+        if self.vx[-1] == self.vx[0] and self.vy[:-1] == self.vy[0]:
+            x_ = self.vx[:-1] - x0
+            y_ = self.vy[:-1] - y0
+        else:
+            x_ = self.vx - x0
+            y_ = self.vy - y0
+        indices = np.arange(len(x_)) - 1
+
+        xs = x_[indices] + x_
+        ys = y_[indices] + y_
+        dxy = x_[indices] * y_ - y_[indices] * x_
+        scl = 1. / (6 * self.area(signed=True))
+
+        return np.dot(xs, dxy) * scl + x0, np.dot(ys, dxy) * scl + y0
 
     def move_to(self, xdelta, ydelta):
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
+    def rotate_to(self, theta, center=None):
+        """
+        Rotate polygon to position angle `theta` around `center`.
+
+        Parameters
+        ----------
+        theta : float
+            Angle of anticlockwise rotation around center in radian.
+        center : pair of float, optional
+            Coordinates of center of rotation. Defaults to
+            :meth:`~glue.core.roi.PolygonalROI.centroid`, for linear
+            "polygons" to :meth:`~glue.core.roi.PolygonalROI.mean`.
+        """
+
+        theta = 0 if theta is None else theta
+        # For linear (1D) "polygons" centroid is not defined.
+        if center is None:
+            if self.area() == 0:
+                center = self.mean()
+            else:
+                center = self.centroid()
+        dtheta = theta - self.theta
+
+        if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
+            dx, dy = np.array([self.vx, self.vy]) - np.array(center).reshape(2, 1)
+            self.vx, self.vy = (rotation_matrix_2d(dtheta) @ (dx, dy) +
+                                np.array(center).reshape(2, 1)).tolist()
+        self.theta = theta
+
 
 class Projected3dROI(Roi):
-    """"A region of interest defined in screen coordinates.
+    """
+    A region of interest defined in screen coordinates.
 
     The screen coordinates are defined by the projection matrix.
-    The projection matrix converts homogeneous coordinates (x, y, z, w), where
-    w is implicitly 1, to homogeneous screen coordinates (usually the product
-    of the world and projection matrix).
+    The projection matrix converts homogeneous coordinates (`x`, `y`, `z`, `w`),
+    where `w` is implicitly 1, to homogeneous screen coordinates (usually the
+    tensor product of the world coordinate vectors and the projection matrix).
+
+    Parameters
+    ----------
+    2d_roi : `~glue.core.roi.Roi`, optional
+        If specified, this ROI will be used in screen coordinate space.
+    projection_matrix : `~numpy.ndarray`, optional
+        Projection matrix defining the mapping from world onto screen coordinates.
     """
 
     def __init__(self, roi_2d=None, projection_matrix=None):
@@ -694,10 +922,6 @@ class Projected3dROI(Roi):
         self.projection_matrix = np.asarray(projection_matrix)
 
     def contains3d(self, x, y, z):
-        """
-        Test whether the projected coordinates are contained in the 2d ROI.
-        """
-
         if not self.defined():
             raise UndefinedROI
 
@@ -756,6 +980,9 @@ class Projected3dROI(Roi):
 
     def transformed(self, xfunc=None, yfunc=None):
         return self.roi_2d.transformed(xfunc, yfunc)
+
+    def rotate_to(self, theta):
+        return self.roi_2d.rotate_to(theta)
 
 
 class Path(VertexROIBase):
@@ -1544,8 +1771,14 @@ class CategoricalROI(Roi):
         """
         A helper function to do the rigamaroll of getting categorical data.
 
-        :param indata: Any type of input data
-        :return: The best guess at the categorical data associated with indata
+        Parameters
+        ----------
+        indata : object
+            Any type of input data
+
+        Returns
+        -------
+            The best guess at the categorical data associated with indata.
         """
 
         try:
@@ -1558,16 +1791,18 @@ class CategoricalROI(Roi):
 
     def contains(self, x, y):
         """
-        Test whether a set categorical elements fall within
-        the region of interest
+        Test whether a set categorical elements fall within the region of interest.
 
-        :param x: Any array-like object of categories
-                 (includes CategoricalComponenets)
-        :param y: Unused but required for compatibility
+        Parameters
+        ----------
+        x : array-like
+            An array-like object of categories (includes `CategoricalComponents`).
+        y : object or None
+            Unused but required for compatibility
 
-        *Returns*
-
-           A list of True/False values, for whether each x value falls
+        Returns
+        -------
+           A list of True/False values, for whether each `x` value falls
            within the ROI
 
         """
@@ -1583,7 +1818,6 @@ class CategoricalROI(Roi):
         self.categories = np.unique(self._categorical_helper(categories))
 
     def defined(self):
-        """ Returns True if the ROI is defined """
         return self.categories is not None
 
     def reset(self):
@@ -1592,12 +1826,20 @@ class CategoricalROI(Roi):
     @staticmethod
     def from_range(categories, lo, hi):
         """
-        Utility function to help construct the Roi from a range.
+        Utility function to help construct the ROI from a range.
 
-        :param cat_comp: Anything understood by ._categorical_helper ... array, list or component
-        :param lo: lower bound of the range
-        :param hi: upper bound of the range
-        :return: CategoricalROI object
+        Parameters
+        ----------
+        categories : object
+            Anything understood by ``._categorical_helper`` ... array, list or component.
+        lo : int or float
+            Lower bound of the range (rounded up to next integer)
+        hi : int or float
+            Upper bound of the range (rounded up to next integer)
+
+        Returns
+        -------
+            `CategoricalROI` object
         """
 
         # Convert lo and hi to integers. Note that if lo or hi are negative,

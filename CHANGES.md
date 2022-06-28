@@ -15,6 +15,10 @@ v1.4.0 (2022-05-31)
   is defined, resulting in a broadcast error in arrays large enough to need
   chunking. [#2302]
 
+* Added rotation angle ``theta`` as a property to regions of interest,
+  to be set on instantiation or modified using the ``rotate_to`` and
+  ``rotate_by`` methods. [#2235]
+
 v1.3.0 (2022-04-22)
 -------------------
 
