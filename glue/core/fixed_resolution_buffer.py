@@ -90,7 +90,8 @@ def bounds_for_cache(bounds, dimensions):
 
 
 def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
-                                    subset_state=None, broadcast=True, cache_id=None):
+                                    subset_state=None, broadcast=True, cache_id=None,
+                                    affine_matrix=None):
     """
     Get a fixed-resolution buffer for a dataset.
 
@@ -137,15 +138,20 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     if cache_id is not None:
 
+        if affine_matrix is None:
+            affine_hash = b''
+        else:
+            affine_hash = affine_matrix.get_matrix().tobytes()
+
         if subset_state is None:
             # Use uuid for component ID since otherwise component IDs don't return
             # False when comparing two different CIDs (instead they return a subset state).
             # For bounds we use a special wrapper that can identify wildcards.
-            current_array_hash = (data, bounds, target_data, target_cid.uuid, broadcast)
+            current_array_hash = (data, bounds, target_data, target_cid.uuid, broadcast, affine_hash)
         else:
-            current_array_hash = (data, bounds, target_data, subset_state, broadcast)
+            current_array_hash = (data, bounds, target_data, subset_state, broadcast, affine_hash)
 
-        current_pixel_hash = (data, target_data)
+        current_pixel_hash = (data, target_data, affine_hash)
 
         if cache_id in ARRAY_CACHE:
             if ARRAY_CACHE[cache_id]['hash'] == current_array_hash:
@@ -163,6 +169,12 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     # Keep track of the original shape of these arrays
     original_shape = pixel_coords[0].shape
+
+    # Transform these coordinates by the affine transform if specified
+    if affine_matrix is not None:
+        pixel_coords = [pc.ravel() for pc in pixel_coords]
+        pixel_coords = affine_matrix.transform(np.vstack(pixel_coords).T).T
+        pixel_coords = [pc.reshape(original_shape) for pc in pixel_coords]
 
     # Now loop through the dimensions of 'data' to find the corresponding
     # coordinates in the frame of view of this dataset.

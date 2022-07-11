@@ -71,6 +71,8 @@ class ImageViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for an image viewer.
     """
 
+    affine_matrix = DDCProperty(None, docstring='The affine matrix to apply to the viewport')
+
     x_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the x axis')
     y_att = DDCProperty(docstring='The component ID giving the pixel component '
@@ -450,10 +452,12 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         if isinstance(self.layer, BaseData):
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                               target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
+                                                               target_cid=self.attribute, broadcast=False, cache_id=self.uuid,
+                                                               affine_matrix=self.viewer_state.affine_matrix)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                                    subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
+                                                                    subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid,
+                                                                    affine_matrix=self.viewer_state.affine_matrix)
 
         # We apply aggregation functions if needed
 
