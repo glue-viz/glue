@@ -1,4 +1,5 @@
 import os
+from tkinter.messagebox import YESNO
 
 from astropy.wcs import WCS
 
@@ -159,7 +160,19 @@ class MatplotlibImageMixin(object):
 
         subset_state = roi_to_subset_state(roi,
                                            x_att=self.state.x_att,
-                                           y_att=self.state.y_att)
+                                           y_att=self.state.y_att,
+                                           use_pretransform=self.state.affine_matrix is not None)
+
+        if self.state.affine_matrix is not None:
+
+            def wrapper(x, y):
+                import numpy as np
+                shape = x.shape
+                xn, yn = self.state.affine_matrix.transform(np.vstack([x.ravel(), y.ravel()]).T).T
+                xn, yn = xn.reshape(shape), yn.reshape(shape)
+                return xn, yn
+
+            subset_state.pretransform = wrapper
 
         self.apply_subset_state(subset_state, override_mode=override_mode)
 
