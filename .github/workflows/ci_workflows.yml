@@ -9,7 +9,17 @@ on:
   pull_request:
 
 jobs:
+  initial_checks:
+    # Mandatory checks before CI tests
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: false
+      envs: |
+        # Code style
+        - linux: codestyle
+
   tests:
+    needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
@@ -28,11 +38,6 @@ jobs:
           - enchant
 
       envs: |
-        # Code style
-        - linux: codestyle
-          libraries:
-          coverage: false
-
         # Standard tests
         # Linux builds - test on all supported PyQt5 and PySide2 versions,
         # and include all dependencies in some builds
@@ -71,6 +76,7 @@ jobs:
           coverage: false
 
   allowed_failures:
+    needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
