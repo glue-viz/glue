@@ -508,3 +508,24 @@ class BinaryComponentLink(ComponentLink):
 
     def __repr__(self):
         return "<BinaryComponentLink: %s>" % self
+
+
+class JoinLink(ComponentLink):
+    """
+    A dummy class to keep track of join_on_key type joins
+    """
+    def __init__(self):
+        self._from = []
+        self._to = None
+        self._using = None
+        self._inverse = None
+
+    def get_from_ids(self):
+        """ The list of input ComponentIDs """
+        return self._from
+
+    def __str__(self):
+        return '<JoinLink>'
+
+    def __repr__(self):
+        return "<JoinLink>"
