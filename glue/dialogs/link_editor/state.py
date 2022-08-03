@@ -10,6 +10,8 @@ from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
 
+from glue.plugins.join_on_key.link_helpers import Join_Link
+
 __all__ = ['LinkEditorState', 'EditableLinkFunctionState']
 
 
@@ -177,7 +179,7 @@ class EditableLinkFunctionState(State):
 
     def __new__(cls, function, data1=None, data2=None, cids1=None,
                 cid_out=None, names1=None, names2=None,
-                display=None, description=None):
+                display=None, description=None, join_link=False):
 
         if isinstance(function, ComponentLink):
             names1 = function.input_names
@@ -198,8 +200,14 @@ class EditableLinkFunctionState(State):
         if names2 is None:
             names2 = []
 
+        if isinstance(function, Join_Link):
+            join_link = True
+        else:
+            join_link = False
+
         setattr(CustomizedStateClass, 'names1', names1)
         setattr(CustomizedStateClass, 'names2', names2)
+        setattr(CustomizedStateClass, 'join_link', join_link)
 
         for index, input_arg in enumerate(CustomizedStateClass.names1):
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
@@ -211,9 +219,14 @@ class EditableLinkFunctionState(State):
 
     def __init__(self, function, data1=None, data2=None, cids1=None,
                  cids2=None, names1=None, names2=None,
-                 display=None, description=None):
+                 display=None, description=None, join_link=False):
 
         super(EditableLinkFunctionState, self).__init__()
+
+        if isinstance(function, Join_Link):
+            self.join_link = True
+        else:
+            self.join_link = False
 
         if isinstance(function, ComponentLink):
             self._function = function.get_using()
