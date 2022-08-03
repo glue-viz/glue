@@ -200,14 +200,8 @@ class EditableLinkFunctionState(State):
         if names2 is None:
             names2 = []
 
-        if isinstance(function, Join_Link):
-            join_link = True
-        else:
-            join_link = False
-
         setattr(CustomizedStateClass, 'names1', names1)
         setattr(CustomizedStateClass, 'names2', names2)
-        setattr(CustomizedStateClass, 'join_link', join_link)
 
         for index, input_arg in enumerate(CustomizedStateClass.names1):
             setattr(CustomizedStateClass, input_arg, SelectionCallbackProperty(default_index=index))
