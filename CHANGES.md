@@ -1,6 +1,12 @@
 Full changelog
 ==============
 
+v1.6.0 (unreleased)
+-------------------
+
+* Fix an issue where the histogram layer artist would not redraw if
+  the histogram sum was zero. [#2300]
+
 v1.5.0 (2022-06-28)
 -------------------
 
@@ -15,9 +21,6 @@ v1.5.0 (2022-06-28)
 
 v1.4.0 (2022-05-31)
 -------------------
-
-* Fix an issue where the histogram layer artist would not redraw if
-  the histogram sum was zero. [#2300]
 
 * Add support for specifying visual attributes when creating a subset group. [#2297]
 
