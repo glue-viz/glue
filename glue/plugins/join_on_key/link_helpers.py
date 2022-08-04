@@ -35,13 +35,23 @@ on one dataset can always propogate through joins."
     # Define __eq__ and __ne__ to facilitate removing
     # these kinds of links from the link_manager
     def __eq__(self, other):
-        return ((self.data1 == other.data1) and
+        same = ((self.data1 == other.data1) and
                 (self.data2 == other.data2) and
                 (self.cids1 == other.cids1) and
                 (self.cids2 == other.cids2))
+        flip = ((self.data1 == other.data2) and
+                (self.data2 == other.data1) and
+                (self.cids1 == other.cids2) and
+                (self.cids2 == other.cids1))
+        return same or flip
 
     def __ne__(self, other):
-        return ((self.data1 != other.data1) or
+        same = ((self.data1 != other.data1) or
                 (self.data2 != other.data2) or
                 (self.cids1 != other.cids1) or
                 (self.cids2 != other.cids2))
+        flip = ((self.data1 != other.data2) or
+                (self.data2 != other.data1) or
+                (self.cids1 != other.cids2) or
+                (self.cids2 != other.cids1))
+        return same and flip
