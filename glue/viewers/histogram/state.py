@@ -73,8 +73,12 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     def reset_limits(self):
         self._reset_x_limits()
-        self.y_min = min(getattr(layer, '_y_min', np.inf) for layer in self.layers)
-        self.y_max = max(getattr(layer, '_y_max', 0) for layer in self.layers)
+        y_min = min(getattr(layer, '_y_min', np.inf) for layer in self.layers)
+        if np.isfinite(y_min):
+            self.y_min = y_min
+        y_max = max(getattr(layer, '_y_max', 0) for layer in self.layers)
+        if np.isfinite(y_max):
+            self.y_max = y_max
 
     def _update_priority(self, name):
         if name == 'layers':

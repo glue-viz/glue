@@ -16,6 +16,9 @@ v1.5.0 (2022-06-28)
 v1.4.0 (2022-05-31)
 -------------------
 
+* Fix an issue where the histogram layer artist would not redraw if
+  the histogram sum was zero. [#2300]
+
 * Add support for specifying visual attributes when creating a subset group. [#2297]
 
 * Modify profile viewer so that when in 'Sum' mode, parts of profiles
