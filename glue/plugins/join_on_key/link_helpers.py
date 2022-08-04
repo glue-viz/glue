@@ -31,3 +31,17 @@ on one dataset can always propogate through joins."
 
     def __repr__(self):
         return "<Join_Link: %s>" % self
+
+    # Define __eq__ and __ne__ to facilitate removing
+    # these kinds of links from the link_manager
+    def __eq__(self, other):
+        return ((self.data1 == other.data1) and
+                (self.data2 == other.data2) and
+                (self.cids1 == other.cids1) and
+                (self.cids2 == other.cids2))
+
+    def __ne__(self, other):
+        return ((self.data1 != other.data1) or
+                (self.data2 != other.data2) or
+                (self.cids1 != other.cids1) or
+                (self.cids2 != other.cids2))

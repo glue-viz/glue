@@ -160,6 +160,11 @@ class LinkEditorState(State):
             self.current_link = link
 
     def remove_link(self):
+        if self.current_link.join_link:
+            try:
+                self.data_collection.remove_link(self.current_link.link)
+            except ValueError:  # In case the link is not in the link_manager
+                pass
         self.links.remove(self.current_link)
         self._on_data_change()
 
