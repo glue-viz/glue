@@ -185,6 +185,8 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             if link not in self._external_links and isinstance(link, LinkCollection) or link.inverse not in self._external_links:
+                if isinstance(link, Join_Link):
+                    link.data1.join_on_key(link.data2, link.cids1[0], link.cids2[0])
                 self._external_links.append(link)
                 if update_external:
                     self.update_externally_derivable_components()
@@ -198,7 +200,6 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             logging.getLogger(__name__).debug('removing link %s', link)
-            self._external_links.remove(link)
             if isinstance(link, Join_Link):
                 data_to_remove_from_data1 = None
                 data_to_remove_from_data2 = None
@@ -210,6 +211,7 @@ class LinkManager(HubListener):
                             data_to_remove_from_data2 = link.data1
                 link.data1._key_joins.pop(data_to_remove_from_data1)  # Assume these joins are set up right
                 link.data2._key_joins.pop(data_to_remove_from_data2)
+            self._external_links.remove(link)
             if update_external:
                 self.update_externally_derivable_components()
 

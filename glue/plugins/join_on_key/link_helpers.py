@@ -1,6 +1,5 @@
 from glue.config import link_helper
 from glue.core.link_helpers import LinkCollection
-from glue.core.component_link import JoinLink
 
 
 @link_helper(category="Join")
@@ -25,6 +24,10 @@ on one dataset can always propogate through joins."
         self.cids1 = cids1
         self.cids2 = cids2
 
-        data1.join_on_key(data2, cids1[0], cids2[0])
+        self._links = []
 
-        self._links = [JoinLink()]
+    def __str__(self):
+        return '%s >< %s' % (self.cids1, self.cids2)
+
+    def __repr__(self):
+        return "<Join_Link: %s>" % self
