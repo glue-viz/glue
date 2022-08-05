@@ -27,6 +27,7 @@ on one dataset can always propogate through joins."
         self._links = []
 
     def __str__(self):
+        # The >< here is one symbol for a database join
         return '%s >< %s' % (self.cids1, self.cids2)
 
     def __repr__(self):
