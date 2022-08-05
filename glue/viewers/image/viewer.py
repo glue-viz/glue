@@ -6,6 +6,7 @@ from astropy.wcs import WCS
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import Coordinates, LegacyCoordinates
 from glue.core.coordinate_helpers import dependent_axes
+from glue.core.roi_pretransforms import Affine2DTransform
 
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
@@ -164,15 +165,9 @@ class MatplotlibImageMixin(object):
                                            use_pretransform=self.state.affine_matrix is not None)
 
         if self.state.affine_matrix is not None:
+            transform = Affine2DTransform(self.state.affine_matrix)
 
-            def wrapper(x, y):
-                import numpy as np
-                shape = x.shape
-                xn, yn = self.state.affine_matrix.transform(np.vstack([x.ravel(), y.ravel()]).T).T
-                xn, yn = xn.reshape(shape), yn.reshape(shape)
-                return xn, yn
-
-            subset_state.pretransform = wrapper
+            subset_state.pretransform = transform
 
         self.apply_subset_state(subset_state, override_mode=override_mode)
 

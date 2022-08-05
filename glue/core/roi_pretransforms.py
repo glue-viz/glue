@@ -57,3 +57,35 @@ class RadianTransform(object):
     def __setgluestate__(cls, rec, context):
         state = context.object(rec['state'])
         return cls(state['coords'], state['next_transform'])
+
+
+class Affine2DTransform(object):
+    # We define 'next_transform' so that this pre-transform can
+    # be chained together with another transformation, if desired
+    def __init__(self, affine_matrix, theta=0, xy=None, next_transform=None):
+        self._state = {'theta': theta, 'next_transform': next_transform}
+        self._next_transform = next_transform
+        self._transform = affine_matrix
+        # Modify rotation? ToDo: accept Quantity input -> u.radian
+        if xy is None:
+            self._transform.rotate(theta)
+        else:
+            self._transform.rotate_around(*xy, theta)
+
+    def __call__(self, x, y):
+        shape = x.shape
+        res = self._transform.transform(np.vstack([x.ravel(), y.ravel()]).T).T
+        x = x.reshape(shape)
+        y = y.reshape(shape)
+        if self._next_transform is not None:
+            return self._next_transform(x, y)
+        else:
+            return x, y
+
+    def __gluestate__(self, context):
+        return dict(state=context.do(self._state))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        state = context.object(rec['state'])
+        return cls(state['theta'], state['next_transform'])
