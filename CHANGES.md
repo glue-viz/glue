@@ -4,6 +4,8 @@ Full changelog
 v1.6.0 (unreleased)
 -------------------
 
+* Fixed a bug where minor tick marks were not respecting the settings colors. [#2305]
+
 * Fix an issue where the histogram layer artist would not redraw if
   the histogram sum was zero. [#2300]
 
@@ -17,7 +19,6 @@ v1.5.0 (2022-06-28)
 * Added rotation angle ``theta`` as a property to regions of interest,
   to be set on instantiation or modified using the ``rotate_to`` and
   ``rotate_by`` methods. [#2235]
-
 
 v1.4.0 (2022-05-31)
 -------------------
