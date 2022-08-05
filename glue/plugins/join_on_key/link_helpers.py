@@ -36,6 +36,8 @@ on one dataset can always propogate through joins."
     # Define __eq__ and __ne__ to facilitate removing
     # these kinds of links from the link_manager
     def __eq__(self, other):
+        if not isinstance(other, Join_Link):
+            return False
         same = ((self.data1 == other.data1) and
                 (self.data2 == other.data2) and
                 (self.cids1 == other.cids1) and
@@ -47,12 +49,4 @@ on one dataset can always propogate through joins."
         return same or flip
 
     def __ne__(self, other):
-        same = ((self.data1 != other.data1) or
-                (self.data2 != other.data2) or
-                (self.cids1 != other.cids1) or
-                (self.cids2 != other.cids2))
-        flip = ((self.data1 != other.data2) or
-                (self.data2 != other.data1) or
-                (self.cids1 != other.cids2) or
-                (self.cids2 != other.cids1))
-        return same and flip
+        return not self.__eq__(other)
