@@ -112,7 +112,7 @@ def view_cascade(data, view):
     step = max(step, 1)
 
     for i, v in enumerate(v2):
-        if not(isinstance(v, slice)):
+        if not isinstance(v, slice):
             continue
         v2[i] = slice(0, shp[i - 1], step)
 

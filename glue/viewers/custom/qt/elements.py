@@ -50,7 +50,7 @@ class QLabeledSlider(QWidget):
         if self.integer:
             return int(value)
         else:
-            return(value)
+            return value
 
     _in_set_value = False
 
