@@ -12,6 +12,7 @@ from glue.utils import defer_draw, view_shape
 from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
+from glue.core.roi_pretransforms import Affine2DTransform
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -71,8 +72,8 @@ class ImageViewerState(MatplotlibDataViewerState):
     A state class that includes all the attributes for an image viewer.
     """
 
-    affine_matrix = DDCProperty(None, docstring='The affine matrix to apply to the viewport')
-
+    rotation = DDCProperty(0, docstring='Counter-clockwise angle to rotate the '
+                                        'image viewport by, in radians.')
     x_att = DDCProperty(docstring='The component ID giving the pixel component '
                                   'shown on the x axis')
     y_att = DDCProperty(docstring='The component ID giving the pixel component '
@@ -379,6 +380,18 @@ class ImageViewerState(MatplotlibDataViewerState):
         with delay_callback(self, 'y_min', 'y_max'):
             self.y_min, self.y_max = self.y_max, self.y_min
 
+    @property
+    def _affine_pretransform(self):
+        """
+        Return an Affine2DTransform object for the current view rotation.
+        """
+        if self.rotation == 0:
+            return None
+        else:
+            return Affine2DTransform(theta=self.rotation,
+                                    xy=(self.reference_data.shape[1] / 2,
+                                        self.reference_data.shape[0] / 2))
+
 
 class BaseImageLayerState(MatplotlibLayerState):
 
@@ -453,11 +466,11 @@ class BaseImageLayerState(MatplotlibLayerState):
         if isinstance(self.layer, BaseData):
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                target_cid=self.attribute, broadcast=False, cache_id=self.uuid,
-                                                               affine_matrix=self.viewer_state.affine_matrix)
+                                                               affine_transform=self.viewer_state._affine_pretransform)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                     subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid,
-                                                                    affine_matrix=self.viewer_state.affine_matrix)
+                                                                    affine_transform=self.viewer_state._affine_pretransform)
 
         # We apply aggregation functions if needed
 

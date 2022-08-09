@@ -186,7 +186,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('layer', 'attribute',
                                                      'slices', 'x_att', 'y_att',
-                                                     'affine_matrix')):
+                                                     'rotation')):
             self._update_image_data()
             force = True  # make sure scaling and visual attributes are updated
 
