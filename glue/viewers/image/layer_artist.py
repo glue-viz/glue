@@ -347,7 +347,8 @@ class ImageSubsetLayerArtist(BaseImageLayerArtist):
         changed = self.pop_changed_properties()
 
         if force or any(prop in changed for prop in ('layer', 'attribute', 'color',
-                                                     'x_att', 'y_att', 'slices')):
+                                                     'x_att', 'y_att', 'slices',
+                                                     'rotation')):
             self._update_data()
             force = True  # make sure scaling and visual attributes are updated
 
