@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.utils import NumpyRNGContext
 
+from glue.core.roi import RectangularROI
 from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
 from glue.viewers.image.qt import ImageViewer
@@ -84,4 +85,16 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
         self.viewer.state.y_att = self.data.pixel_component_ids[1]
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+        self.assert_same(tmpdir)
+
+    def test_rotation(self, tmpdir):
+        self.viewer.state.rotation = 0.2
+        self.viewer.apply_roi(RectangularROI(xmin=10, xmax=20, ymin=5, ymax=15))
+        self.assert_same(tmpdir)
+
+    def test_rotation_different_axis_order(self, tmpdir):
+        self.viewer.state.rotation = 0.2
+        self.viewer.state.x_att = self.data.pixel_component_ids[1]
+        self.viewer.state.y_att = self.data.pixel_component_ids[0]
+        self.viewer.apply_roi(RectangularROI(xmin=10, xmax=20, ymin=5, ymax=15))
         self.assert_same(tmpdir)

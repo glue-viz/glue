@@ -768,6 +768,12 @@ class TestImageViewer(object):
         assert self.viewer.state.y_min == -0.5
         assert self.viewer.state.y_max == 1.5
 
+    def test_rotation(self):
+        self.viewer.add_data(self.image1)
+        self.viewer.state.rotation = np.pi / 6
+        self.viewer.add_data(self.hypercube)
+        self.viewer.state.reference_data = self.hypercube
+
 
 class TestSessions(object):
 

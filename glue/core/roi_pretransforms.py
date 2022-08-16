@@ -64,11 +64,13 @@ class Affine2DTransform(object):
     # We define 'next_transform' so that this pre-transform can
     # be chained together with another transformation, if desired
     def __init__(self, affine_matrix=None, theta=0, xy=None, next_transform=None):
-        self._state = {'theta': theta, 'next_transform': next_transform}
+        if theta is None:
+            raise ValueError()
         self._next_transform = next_transform
         if affine_matrix is None:
-            affine_matrix = Affine2D()
-        self._transform = affine_matrix
+            self._transform = Affine2D()
+        else:
+            self._transform = Affine2D(affine_matrix)
         # Modify rotation? ToDo: accept Quantity input -> u.radian
         if xy is None:
             self._transform.rotate(theta)
@@ -87,12 +89,14 @@ class Affine2DTransform(object):
 
     @property
     def inverse(self):
-        return Affine2DTransform(self._transform.inverted())
+        return Affine2DTransform(self._transform.inverted().get_matrix())
 
     def __gluestate__(self, context):
-        return dict(state=context.do(self._state))
+        state = {'matrix': self._transform.get_matrix(),
+                 'next_transform': self._next_transform}
+        return dict(state=context.do(state))
 
     @classmethod
     def __setgluestate__(cls, rec, context):
         state = context.object(rec['state'])
-        return cls(state['theta'], state['next_transform'])
+        return cls(affine_matrix=state['matrix'], next_transform=state['next_transform'])

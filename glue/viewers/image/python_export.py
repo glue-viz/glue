@@ -25,6 +25,9 @@ def python_export_image_layer(layer, *args):
     if transpose:
         options['transpose'] = True
 
+    if layer._viewer_state.rotation != 0:
+        options['rotation'] = layer._viewer_state.rotation
+
     script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
 
     script += "composite.allocate('{0}')\n".format(layer.uuid)
@@ -87,6 +90,9 @@ def python_export_image_subset_layer(layer, *args):
 
     if transpose:
         options['transpose'] = True
+
+    if layer._viewer_state.rotation != 0:
+        options['rotation'] = layer._viewer_state.rotation
 
     script += "array_maker = get_sliced_data_maker({0})\n\n".format(serialize_options(options))
 

@@ -18,7 +18,8 @@ __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'Aggr
 
 
 def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
-                          target_cid=None, reference_data=None, transpose=False):
+                          target_cid=None, reference_data=None, transpose=False,
+                          rotation=None):
     """
     Convenience function for use in exported Python scripts.
     """
@@ -32,12 +33,21 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
         full_bounds[y_axis] = bounds[0]
         full_bounds[x_axis] = bounds[1]
 
+        if rotation is not None and rotation != 0:
+            affine_transform = Affine2DTransform(theta=rotation,
+                                                 xy=(reference_data.shape[1] / 2,
+                                                     reference_data.shape[0] / 2))
+        else:
+            affine_transform = None
+
         if isinstance(data, BaseData):
             array = data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                         target_cid=target_cid, broadcast=False)
+                                                         target_cid=target_cid, broadcast=False,
+                                                         affine_transform=affine_transform)
         else:
             array = data.data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
-                                                              subset_state=data.subset_state, broadcast=False)
+                                                              subset_state=data.subset_state, broadcast=False,
+                                                              affine_transform=affine_transform)
 
         if transpose:
             array = array.transpose()
@@ -389,8 +399,8 @@ class ImageViewerState(MatplotlibDataViewerState):
             return None
         else:
             return Affine2DTransform(theta=self.rotation,
-                                    xy=(self.reference_data.shape[1] / 2,
-                                        self.reference_data.shape[0] / 2))
+                                     xy=(self.reference_data.shape[1] / 2,
+                                         self.reference_data.shape[0] / 2))
 
 
 class BaseImageLayerState(MatplotlibLayerState):

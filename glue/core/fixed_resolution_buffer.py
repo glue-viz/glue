@@ -174,8 +174,18 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     # Transform these coordinates by the affine transform if specified
     if affine_transform is not None:
-        pixel_coords = affine_transform(pixel_coords[1], pixel_coords[0])
-        pixel_coords = pixel_coords[1], pixel_coords[0]
+        ix, iy = None, None
+        for ibound, bound in enumerate(bounds):
+            if isinstance(bound, tuple):
+                if ix is None:
+                    ix = ibound
+                elif iy is None:
+                    iy = ibound
+                else:
+                    raise ValueError('Cannot set affine_transform for buffers that are not two-dimensional')
+        result = affine_transform(pixel_coords[iy], pixel_coords[ix])
+        pixel_coords[ix] = result[1]
+        pixel_coords[iy] = result[0]
 
     # Now loop through the dimensions of 'data' to find the corresponding
     # coordinates in the frame of view of this dataset.
