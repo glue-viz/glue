@@ -278,10 +278,10 @@ class ScatterLayerState(MatplotlibLayerState):
                                                           limits_cache=self.limits_cache)
 
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
-                                                      numeric=True, datetime=False, categorical=False)
+                                                      numeric=True, datetime=False, categorical=True)
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_att',
-                                                      numeric=True, datetime=False, categorical=False)
+                                                      numeric=True, datetime=False, categorical=True)
 
         self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_att',
                                                       numeric=True, datetime=False, categorical=False)
