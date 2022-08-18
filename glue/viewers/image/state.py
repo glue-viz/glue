@@ -419,7 +419,7 @@ class ImageViewerState(MatplotlibDataViewerState):
         dr = rotation_new - rotation_old
 
         # Set up transformation
-        tr = Affine2DTransform(theta=-dr,
+        tr = Affine2DTransform(theta=dr,
                                xy=(self.reference_data.shape[1] / 2,
                                    self.reference_data.shape[0] / 2))
 
