@@ -433,6 +433,9 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.x_max = x_cen_new + 0.5 * dx
             self.y_min = y_cen_new - 0.5 * dy
             self.y_max = y_cen_new + 0.5 * dy
+            # We need to adjust the limits in here to avoid triggering all
+            # the update events then changing the limits again.
+            self._adjust_limits_aspect()
 
 
 class BaseImageLayerState(MatplotlibLayerState):
