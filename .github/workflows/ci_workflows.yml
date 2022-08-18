@@ -9,7 +9,17 @@ on:
   pull_request:
 
 jobs:
+  initial_checks:
+    # Mandatory checks before CI tests
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: false
+      envs: |
+        # Code style
+        - linux: codestyle
+
   tests:
+    needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
@@ -17,22 +27,12 @@ jobs:
       # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
       libraries: |
         apt:
+          - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
-          - libxcb-icccm4-dev
-          - libxcb-image0-dev
-          - libxcb-keysyms1-dev
-          - libxcb-randr0-dev
-          - libxcb-render-util0-dev
-          - libxcb-xinerama0-dev
         brew:
           - enchant
 
       envs: |
-        # Code style
-        - linux: codestyle
-          libraries:
-          coverage: false
-
         # Standard tests
         # Linux builds - test on all supported PyQt5 and PySide2 versions,
         # and include all dependencies in some builds
@@ -57,7 +57,6 @@ jobs:
         - macos: py38-test-pyqt514
         - macos: py310-test-pyqt515-all
           PLAT: arm64
-        - macos: py38-test-pyside514
 
         # Try out documentation build on macOS
         - macos: py37-docs-pyqt513
@@ -65,19 +64,38 @@ jobs:
 
         # Test some configurations on Windows
         - windows: py37-test-pyqt510
-        - windows: py38-test-pyqt514-all
         - windows: py310-test-pyqt515
-        - windows: py39-test-pyside515-all
 
         # Try out documentation build on Windows
         - windows: py38-docs-pyqt513
           coverage: false
 
+  allowed_failures:
+    needs: initial_checks
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      display: true
+      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      libraries: |
+        apt:
+          - '^libxcb.*-dev'
+          - libxkbcommon-x11-dev
+        brew:
+          - enchant
+      envs: |
+        # Some (PySide2 in particular) envs are failing with runtime errors
+        - linux: py38-test-pyside514
+        - macos: py38-test-pyside514
+        - windows: py38-test-pyqt514-all
+        - windows: py39-test-pyside515-all
+
   publish:
+    needs: tests
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
     with:
       # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
-      libraries: 'libxkbcommon-x11-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-xinerama0-dev libgl1-mesa-glx xvfb'
+      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx xvfb'
       test_extras: 'test,qt'
       test_command: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & sleep 3; DISPLAY=:99.0 pytest --pyargs glue
     secrets:

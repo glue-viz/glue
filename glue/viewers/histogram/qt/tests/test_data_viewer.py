@@ -11,7 +11,7 @@ from numpy.testing import assert_equal, assert_allclose
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI
-from glue.core.subset import RangeSubsetState, CategoricalROISubsetState, RoiSubsetState
+from glue.core.subset import SubsetState, RangeSubsetState, CategoricalROISubsetState, RoiSubsetState
 from glue import core
 from glue.app.qt import GlueApplication
 from glue.core.component_id import ComponentID
@@ -685,6 +685,15 @@ class TestHistogramViewer(object):
         assert labels[1] == 'test'
 
         assert to_hex(handles[1].get_facecolor()) == viewer_state.layers[1].color
+
+    def test_redraw_empty_subset(self):
+        self.viewer.add_data(self.data)
+        self.data_collection.new_subset_group('redraw_empty', self.data.id['x'] > 1)
+        layer_artist = self.viewer.layers[-1]
+        subset = layer_artist.layer
+        subset.subset_state = SubsetState()
+        for artist in layer_artist.mpl_artists:
+            assert artist.get_height() == 0
 
 
 def test_with_dask_array():

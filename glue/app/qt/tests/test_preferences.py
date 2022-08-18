@@ -292,7 +292,7 @@ def assert_axes_foreground(axes, color):
             assert spine.get_edgecolor() == color
         for tick in axes.xaxis.get_ticklines() + axes.yaxis.get_ticklines():
             assert tick.get_color() == color
-        for label in axes.xaxis.get_ticklabels() + axes.yaxis.get_ticklabels():
+        for label in axes.xaxis.get_ticklabels(which="both") + axes.yaxis.get_ticklabels(which="both"):
             assert label.get_color() == color
         assert axes.xaxis.label.get_color() == color
         assert axes.yaxis.label.get_color() == color
