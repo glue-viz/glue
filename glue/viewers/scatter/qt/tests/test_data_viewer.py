@@ -972,3 +972,21 @@ class TestScatterViewer(object):
             assert pretrans._state['x_scale'] == 'linear'
             assert pretrans._state['y_scale'] == 'linear'
             subset.delete()
+
+    def test_categorical_color_and_size_scaling(self):
+
+        viewer_state = self.viewer.state
+
+        # Use a categorical component for color and size scaling
+        self.viewer.add_data(self.data)
+        self.viewer.state.layers[0].cmap_mode = 'Linear'
+        self.viewer.state.layers[0].cmap_att = self.data.id['z']
+
+        self.viewer.state.layers[0].size_mode = 'Linear'
+        self.viewer.state.layers[0].size_att = self.data.id['z']
+
+        assert_allclose(self.viewer.state.layers[0].cmap_vmin, -0.5)
+        assert_allclose(self.viewer.state.layers[0].cmap_vmax, 2.5)
+
+        assert_allclose(self.viewer.state.layers[0].size_vmin, -0.5)
+        assert_allclose(self.viewer.state.layers[0].size_vmax, 2.5)
