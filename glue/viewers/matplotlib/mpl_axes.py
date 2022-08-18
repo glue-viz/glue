@@ -22,7 +22,8 @@ def set_foreground_color(axes, color):
     else:
         for spine in axes.spines.values():
             spine.set_color(color)
-        axes.tick_params(color=color,
+        axes.tick_params(which="both",
+                         color=color,
                          labelcolor=color)
         axes.xaxis.label.set_color(color)
         axes.yaxis.label.set_color(color)

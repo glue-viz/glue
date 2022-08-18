@@ -969,7 +969,7 @@ class Data(BaseCartesianData):
                 raise TypeError("Cannot add a derived component as a first component")
             component.set_parent(self)
 
-        if not(self._check_can_add(component)):
+        if not self._check_can_add(component):
             raise ValueError("The dimensions of component %s are "
                              "incompatible with the dimensions of this data: "
                              "%r vs %r" % (label, component.shape, self.shape))
