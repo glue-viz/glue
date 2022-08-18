@@ -164,7 +164,7 @@ class MatplotlibImageMixin(object):
                                            use_pretransform=self.state._affine_pretransform is not None)
 
         if self.state._affine_pretransform is not None:
-            subset_state.pretransform = self.state._affine_pretransform.inverse
+            subset_state.pretransform = self.state._affine_pretransform
 
         self.apply_subset_state(subset_state, override_mode=override_mode)
 
