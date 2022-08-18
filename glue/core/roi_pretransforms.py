@@ -78,10 +78,13 @@ class Affine2DTransform(object):
             self._transform.rotate_around(*xy, theta)
 
     def __call__(self, x, y):
-        shape = x.shape
-        x, y = self._transform.transform(np.vstack([x.ravel(), y.ravel()]).T).T
-        x = x.reshape(shape)
-        y = y.reshape(shape)
+        if np.isscalar(x):
+            x, y = self._transform.transform(np.array([[x, y]]))[0]
+        else:
+            shape = x.shape
+            x, y = self._transform.transform(np.vstack([x.ravel(), y.ravel()]).T).T
+            x = x.reshape(shape)
+            y = y.reshape(shape)
         if self._next_transform is not None:
             return self._next_transform(x, y)
         else:

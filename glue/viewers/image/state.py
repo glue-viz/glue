@@ -133,6 +133,8 @@ class ImageViewerState(MatplotlibDataViewerState):
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
 
+        self.add_callback('rotation', self._on_rotation_change, priority=1000, echo_old=True)
+
         aspect_display = {'equal': 'Square Pixels', 'auto': 'Automatic'}
         ImageViewerState.aspect.set_choices(self, ['equal', 'auto'])
         ImageViewerState.aspect.set_display_func(self, aspect_display.get)
@@ -401,6 +403,36 @@ class ImageViewerState(MatplotlibDataViewerState):
             return Affine2DTransform(theta=self.rotation,
                                      xy=(self.reference_data.shape[1] / 2,
                                          self.reference_data.shape[0] / 2))
+
+    def _on_rotation_change(self, rotation_old, rotation_new):
+        """
+        Preserve the center of the field of view when the rotation changes
+        """
+
+        # Determine the center of the field of view and the width/height
+        x_cen = 0.5 * (self.x_min + self.x_max)
+        y_cen = 0.5 * (self.y_min + self.y_max)
+        dx = self.x_max - self.x_min
+        dy = self.y_max - self.y_min
+
+        # Find the net rotation between before/after
+        dr = rotation_new - rotation_old
+
+        # Set up transformation
+        tr = Affine2DTransform(theta=-dr,
+                               xy=(self.reference_data.shape[1] / 2,
+                                   self.reference_data.shape[0] / 2))
+
+
+        # Find new center
+        x_cen_new, y_cen_new = tr(x_cen, y_cen)
+
+        # Set new limits
+        with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.x_min = x_cen_new - 0.5 * dx
+            self.x_max = x_cen_new + 0.5 * dx
+            self.y_min = y_cen_new - 0.5 * dy
+            self.y_max = y_cen_new + 0.5 * dy
 
 
 class BaseImageLayerState(MatplotlibLayerState):
