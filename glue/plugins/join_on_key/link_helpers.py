@@ -3,7 +3,7 @@ from glue.core.link_helpers import LinkCollection
 
 
 @link_helper(category="Join")
-class Join_Link(LinkCollection):
+class JoinLink(LinkCollection):
     cid_independent = False
 
     display = "Join on ID"
@@ -32,12 +32,12 @@ rows/items across two datasets."
         return '%s >< %s' % (self.cids1, self.cids2)
 
     def __repr__(self):
-        return "<Join_Link: %s>" % self
+        return "<JoinLink: %s>" % self
 
     # Define __eq__ and __ne__ to facilitate removing
     # these kinds of links from the link_manager
     def __eq__(self, other):
-        if not isinstance(other, Join_Link):
+        if not isinstance(other, JoinLink):
             return False
         same = ((self.data1 == other.data1) and
                 (self.data2 == other.data2) and

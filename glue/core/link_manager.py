@@ -30,7 +30,7 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
 from glue.utils import unbroadcast
 from glue.core.coordinate_helpers import dependent_axes
-from glue.plugins.join_on_key.link_helpers import Join_Link
+from glue.plugins.join_on_key.link_helpers import JoinLink
 
 __all__ = ['accessible_links', 'discover_links', 'find_dependents',
            'LinkManager', 'is_equivalent_cid', 'pixel_cid_to_pixel_cid_matrix']
@@ -185,7 +185,7 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             if link not in self._external_links and isinstance(link, LinkCollection) or link.inverse not in self._external_links:
-                if isinstance(link, Join_Link):
+                if isinstance(link, JoinLink):
                     link.data1.join_on_key(link.data2, link.cids1[0], link.cids2[0])
                 self._external_links.append(link)
                 if update_external:
@@ -200,7 +200,7 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             logging.getLogger(__name__).debug('removing link %s', link)
-            if isinstance(link, Join_Link):
+            if isinstance(link, JoinLink):
                 data_to_remove_from_data1 = None
                 data_to_remove_from_data2 = None
                 for other_data, key_join in link.data1._key_joins.items():

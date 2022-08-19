@@ -687,9 +687,9 @@ class TestLinkEditorForJoins:
         link_widget = dialog.link_widget
         link_widget.state.data1 = self.data1
         link_widget.state.data2 = self.data2
-        add_join_link = get_action(link_widget, 'Join on ID')
+        add_JoinLink = get_action(link_widget, 'Join on ID')
 
-        add_join_link.trigger()
+        add_JoinLink.trigger()
         # Ensure that all events get processed
         # key_joins only happen on dialog.accept()
         process_events()
@@ -710,7 +710,7 @@ class TestLinkEditorForJoins:
         link_widget.state.current_link.data1 = self.data1
         link_widget.state.current_link.data2 = self.data2
 
-        link_widget.state.current_link.join_link = True  # Not sure why we need to set this in the test
+        link_widget.state.current_link.JoinLink = True  # Not sure why we need to set this in the test
 
         assert link_widget.state.current_link.link in self.data_collection._link_manager._external_links
         assert link_widget.button_remove_link.isEnabled()
