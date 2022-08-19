@@ -466,6 +466,7 @@ def functional_link_collection(function, labels1=None, labels2=None,
 
     return FunctionalLinkCollection
 
+
 @link_helper(category="Join")
 class JoinLink(LinkCollection):
     cid_independent = False

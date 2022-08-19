@@ -158,7 +158,7 @@ class LinkEditorState(State):
             self.current_link = link
 
     def remove_link(self):
-        if self.current_link.join_link:
+        if self.current_link.link_type == 'join':
             try:
                 self.data_collection.remove_link(self.current_link.link)
             except ValueError:  # In case the link is not in the link_manager
@@ -182,7 +182,7 @@ class EditableLinkFunctionState(State):
 
     def __new__(cls, function, data1=None, data2=None, cids1=None,
                 cid_out=None, names1=None, names2=None,
-                display=None, description=None, join_link=False):
+                display=None, description=None, link_type='value'):
 
         if isinstance(function, ComponentLink):
             names1 = function.input_names
@@ -216,14 +216,14 @@ class EditableLinkFunctionState(State):
 
     def __init__(self, function, data1=None, data2=None, cids1=None,
                  cids2=None, names1=None, names2=None,
-                 display=None, description=None, join_link=False):
+                 display=None, description=None, link_type='value'):
 
         super(EditableLinkFunctionState, self).__init__()
 
         if isinstance(function, JoinLink):
-            self.join_link = True
+            self.link_type = "join"
         else:
-            self.join_link = False
+            self.link_type = "value"
 
         if isinstance(function, ComponentLink):
             self._function = function.get_using()

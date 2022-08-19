@@ -710,7 +710,7 @@ class TestLinkEditorForJoins:
         link_widget.state.current_link.data1 = self.data1
         link_widget.state.current_link.data2 = self.data2
 
-        link_widget.state.current_link.JoinLink = True  # Not sure why we need to set this in the test
+        link_widget.state.current_link.link_type = 'join'  # Not sure why we need to set this in the test
 
         assert link_widget.state.current_link.link in self.data_collection._link_manager._external_links
         assert link_widget.button_remove_link.isEnabled()
