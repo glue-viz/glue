@@ -7,9 +7,10 @@ class Join_Link(LinkCollection):
     cid_independent = False
 
     display = "Join on ID"
-    description = "Join two datasets on a common indetifier or index. \
-This is similar to a database join in that subsets defined \
-on one dataset can always propogate through joins."
+    description = "Join two datasets on a common ID. Other links \
+in glue connect data columns (two datasets have 'age' columns but \
+the rows are different objects), while Join on ID connects the same \
+rows/items across two datasets."
 
     labels1 = ["Identifier in dataset 1"]
     labels2 = ["Identifier in dataset 2"]
