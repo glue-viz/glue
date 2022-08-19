@@ -514,11 +514,11 @@ class BaseImageLayerState(MatplotlibLayerState):
                 affine_pretransform = affine_pretransform.inverse
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                target_cid=self.attribute, broadcast=False, cache_id=self.uuid,
-                                                               affine_transform=self.viewer_state._affine_pretransform.inverse)
+                                                               affine_transform=affine_pretransform)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                     subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid,
-                                                                    affine_transform=self.viewer_state._affine_pretransform.inverse)
+                                                                    affine_transform=affine_pretransform)
 
         # We apply aggregation functions if needed
 
