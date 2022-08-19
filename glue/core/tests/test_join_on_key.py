@@ -1,6 +1,6 @@
 from glue.core import Data, DataCollection
 from glue.core.exceptions import IncompatibleAttribute
-from glue.plugins.join_on_key.link_helpers import JoinLink
+from glue.core.link_helpers import JoinLink
 
 from numpy.testing import assert_array_equal
 import pytest

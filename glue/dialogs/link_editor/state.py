@@ -5,12 +5,10 @@ from inspect import getfullargspec
 from glue.config import link_function
 
 from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import LinkCollection
+from glue.core.link_helpers import LinkCollection, JoinLink
 from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
-
-from glue.plugins.join_on_key.link_helpers import JoinLink
 
 __all__ = ['LinkEditorState', 'EditableLinkFunctionState']
 
@@ -160,7 +158,7 @@ class LinkEditorState(State):
             self.current_link = link
 
     def remove_link(self):
-        if self.current_link.JoinLink:
+        if self.current_link.join_link:
             try:
                 self.data_collection.remove_link(self.current_link.link)
             except ValueError:  # In case the link is not in the link_manager
@@ -184,7 +182,7 @@ class EditableLinkFunctionState(State):
 
     def __new__(cls, function, data1=None, data2=None, cids1=None,
                 cid_out=None, names1=None, names2=None,
-                display=None, description=None, JoinLink=False):
+                display=None, description=None, join_link=False):
 
         if isinstance(function, ComponentLink):
             names1 = function.input_names
@@ -218,14 +216,14 @@ class EditableLinkFunctionState(State):
 
     def __init__(self, function, data1=None, data2=None, cids1=None,
                  cids2=None, names1=None, names2=None,
-                 display=None, description=None, JoinLink=False):
+                 display=None, description=None, join_link=False):
 
         super(EditableLinkFunctionState, self).__init__()
 
         if isinstance(function, JoinLink):
-            self.JoinLink = True
+            self.join_link = True
         else:
-            self.JoinLink = False
+            self.join_link = False
 
         if isinstance(function, ComponentLink):
             self._function = function.get_using()

@@ -22,7 +22,7 @@ import numpy as np
 from glue.core.hub import HubListener
 from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMessage
 from glue.core.contracts import contract
-from glue.core.link_helpers import LinkCollection
+from glue.core.link_helpers import LinkCollection, JoinLink
 from glue.core.component_link import ComponentLink
 from glue.core.data import Data, BaseCartesianData
 from glue.core.component import DerivedComponent
@@ -30,7 +30,6 @@ from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
 from glue.utils import unbroadcast
 from glue.core.coordinate_helpers import dependent_axes
-from glue.plugins.join_on_key.link_helpers import JoinLink
 
 __all__ = ['accessible_links', 'discover_links', 'find_dependents',
            'LinkManager', 'is_equivalent_cid', 'pixel_cid_to_pixel_cid_matrix']
