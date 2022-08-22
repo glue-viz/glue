@@ -213,7 +213,7 @@
        <item row="0" column="1">
         <widget class="QComboBox" name="combo_theme">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
          <item>
           <property name="text">

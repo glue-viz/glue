@@ -367,7 +367,7 @@ class PasteSpecialAction(PasteAction):
 
     def __init__(self, *args, **kwargs):
         super(PasteSpecialAction, self).__init__(*args, **kwargs)
-        self.setMenu(self.menu())
+        # self.setMenu(self.menu())
 
     def menu(self):
         m = QtWidgets.QMenu()

@@ -76,14 +76,14 @@
        <item row="1" column="1">
         <widget class="QComboBox" name="combosel_aspect">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="combosel_reference_data">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
         </widget>
        </item>
@@ -126,7 +126,7 @@
        <item row="0" column="1">
         <widget class="QComboBox" name="combosel_color_mode">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
         </widget>
        </item>
@@ -181,14 +181,14 @@
        <item row="5" column="1">
         <widget class="QComboBox" name="combosel_y_att_world">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QComboBox" name="combosel_x_att_world">
          <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
          </property>
         </widget>
        </item>
