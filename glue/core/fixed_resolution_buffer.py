@@ -91,7 +91,7 @@ def bounds_for_cache(bounds, dimensions):
 
 def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=None,
                                     subset_state=None, broadcast=True, cache_id=None,
-                                    affine_transform=None):
+                                    transform=None):
     """
     Get a fixed-resolution buffer for a dataset.
 
@@ -117,6 +117,9 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         is not a scalar does not affect any of the dimensions in ``data``,
         then the final array will be effectively broadcast along this
         dimension, otherwise an error will be raised.
+    transform : `~glue.core.roi_pretransform.Transform`
+        A transform to apply to the pixel locations of the fixed resolution
+        buffer before transforming them to other datasets.
     """
 
     if target_data is None:
@@ -138,12 +141,12 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     if cache_id is not None:
 
-        if affine_transform is None:
+        if transform is None:
             affine_hash = b''
         else:
             # TODO: find a better way to do the following that doesn't rely
             # on a private attribute.
-            affine_hash = affine_transform._transform.get_matrix().tobytes()
+            affine_hash = transform.hash()
 
         if subset_state is None:
             # Use uuid for component ID since otherwise component IDs don't return
@@ -173,7 +176,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     original_shape = pixel_coords[0].shape
 
     # Transform these coordinates by the affine transform if specified
-    if affine_transform is not None:
+    if transform is not None:
         ix, iy = None, None
         for ibound, bound in enumerate(bounds):
             if isinstance(bound, tuple):
@@ -183,7 +186,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
                     iy = ibound
                 else:
                     raise ValueError('Cannot set affine_transform for buffers that are not two-dimensional')
-        result = affine_transform(pixel_coords[iy], pixel_coords[ix])
+        result = transform(pixel_coords[iy], pixel_coords[ix])
         pixel_coords[ix] = result[1]
         pixel_coords[iy] = result[0]
 

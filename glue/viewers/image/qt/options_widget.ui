@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>288</width>
-    <height>238</height>
+    <height>277</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
    <property name="verticalSpacing">
     <number>5</number>
    </property>
-   <item row="14" column="0">
+   <item row="10" column="0">
     <widget class="QTabWidget" name="tab_widget">
      <property name="currentIndex">
       <number>0</number>
@@ -57,6 +57,39 @@
        <property name="verticalSpacing">
         <number>5</number>
        </property>
+       <item row="5" column="0">
+        <widget class="QLabel" name="x_lab">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>y axis</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="combosel_color_mode">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="combosel_aspect">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <layout class="QVBoxLayout" name="layout_slices"/>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_3">
          <property name="font">
@@ -73,28 +106,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="combosel_aspect">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="combosel_reference_data">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
+       <item row="14" column="1">
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -123,13 +135,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="combosel_color_mode">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label">
          <property name="font">
@@ -143,6 +148,27 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="combosel_x_att_world">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="combosel_reference_data">
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -162,22 +188,6 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="x_lab">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>y axis</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="5" column="1">
         <widget class="QComboBox" name="combosel_y_att_world">
          <property name="sizeAdjustPolicy">
@@ -185,17 +195,7 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="combosel_x_att_world">
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <layout class="QVBoxLayout" name="layout_slices"/>
-       </item>
-       <item row="9" column="1">
+       <item row="15" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -207,6 +207,42 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="12" column="1">
+        <widget class="QDoubleSpinBox" name="value_rotation">
+         <property name="minimum">
+          <double>-6.290000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>6.290000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.020000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QLabel" name="rot_lab">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>rotation</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

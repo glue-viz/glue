@@ -5,7 +5,11 @@ from matplotlib.transforms import Affine2D
 import numpy as np
 
 
-class ProjectionMplTransform(object):
+class Transform:
+    pass
+
+
+class ProjectionMplTransform(Transform):
     def __init__(self, projection, x_lim, y_lim, x_scale, y_scale):
         self._state = {'projection': projection, 'x_lim': x_lim, 'y_lim': y_lim,
                        'x_scale': x_scale, 'y_scale': y_scale}
@@ -33,7 +37,7 @@ class ProjectionMplTransform(object):
                    state['x_scale'], state['y_scale'])
 
 
-class RadianTransform(object):
+class RadianTransform(Transform):
     # We define 'next_transform' so that this pre-transform can
     # be chained together with another transformation, if desired
     def __init__(self, coords=[], next_transform=None):
@@ -60,7 +64,7 @@ class RadianTransform(object):
         return cls(state['coords'], state['next_transform'])
 
 
-class Affine2DTransform(object):
+class Affine2DTransform(Transform):
     # We define 'next_transform' so that this pre-transform can
     # be chained together with another transformation, if desired
     def __init__(self, affine_matrix=None, theta=0, xy=None, next_transform=None):
@@ -76,6 +80,9 @@ class Affine2DTransform(object):
             self._transform.rotate(theta)
         else:
             self._transform.rotate_around(*xy, theta)
+
+    def hash(self):
+        return self._transform.get_matrix().tobytes()
 
     def __call__(self, x, y):
         if np.isscalar(x):

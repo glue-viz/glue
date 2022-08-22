@@ -43,11 +43,11 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
         if isinstance(data, BaseData):
             array = data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
                                                          target_cid=target_cid, broadcast=False,
-                                                         affine_transform=affine_transform)
+                                                         transform=affine_transform)
         else:
             array = data.data.compute_fixed_resolution_buffer(full_bounds, target_data=reference_data,
                                                               subset_state=data.subset_state, broadcast=False,
-                                                              affine_transform=affine_transform)
+                                                              transform=affine_transform)
 
         if transpose:
             array = array.transpose()
@@ -423,7 +423,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                                xy=(self.reference_data.shape[1] / 2,
                                    self.reference_data.shape[0] / 2))
 
-
         # Find new center
         x_cen_new, y_cen_new = tr(x_cen, y_cen)
 
@@ -514,11 +513,11 @@ class BaseImageLayerState(MatplotlibLayerState):
                 affine_pretransform = affine_pretransform.inverse
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                target_cid=self.attribute, broadcast=False, cache_id=self.uuid,
-                                                               affine_transform=affine_pretransform)
+                                                               transform=affine_pretransform)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                     subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid,
-                                                                    affine_transform=affine_pretransform)
+                                                                    transform=affine_pretransform)
 
         # We apply aggregation functions if needed
 
