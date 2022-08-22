@@ -507,10 +507,11 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         # We now get the fixed resolution buffer
 
+        affine_pretransform = self.viewer_state._affine_pretransform
+        if affine_pretransform is not None:
+            affine_pretransform = affine_pretransform.inverse
+
         if isinstance(self.layer, BaseData):
-            affine_pretransform = self.viewer_state._affine_pretransform
-            if affine_pretransform is not None:
-                affine_pretransform = affine_pretransform.inverse
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
                                                                target_cid=self.attribute, broadcast=False, cache_id=self.uuid,
                                                                transform=affine_pretransform)
