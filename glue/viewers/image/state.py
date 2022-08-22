@@ -34,7 +34,7 @@ def get_sliced_data_maker(x_axis=None, y_axis=None, slices=None, data=None,
         full_bounds[x_axis] = bounds[1]
 
         if rotation is not None and rotation != 0:
-            affine_transform = Affine2DTransform(theta=rotation,
+            affine_transform = Affine2DTransform(theta=-rotation,
                                                  xy=(reference_data.shape[1] / 2,
                                                      reference_data.shape[0] / 2))
         else:
