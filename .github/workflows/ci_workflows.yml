@@ -76,19 +76,30 @@ jobs:
     with:
       coverage: codecov
       display: true
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      # Linux PyQt 5.15 and 6.3 installations require apt-getting xcb and EGL deps
       libraries: |
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
         brew:
           - enchant
       envs: |
-        # Some (PySide2 in particular) envs are failing with runtime errors
+        # Some (PySide2 in particular) envs are failing with runtime errors;
+        # PyQt6 and PySide6 support in progress
         - linux: py38-test-pyside514
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyside63
+
         - macos: py38-test-pyside514
+        - macos: py310-test-pyqt63
+        - macos: py310-test-pyside63
+
         - windows: py38-test-pyqt514-all
         - windows: py39-test-pyside515-all
+        - windows: py310-test-pyqt63
+        - windows: py310-test-pyside63
+
 
   publish:
     needs: tests
