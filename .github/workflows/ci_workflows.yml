@@ -76,10 +76,13 @@ jobs:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
           - libegl1-mesa
+          - libopenblas-dev
+          - libhdf5-dev
         brew:
           - enchant
       envs: |
         # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
+        # and https://github.com/matplotlib/matplotlib/issues/24155
         - linux: py310-test-pyside64
         - windows: py310-test-pyside64
 
@@ -95,7 +98,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
     with:
       # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
-      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx xvfb'
+      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx libopenblas-dev xvfb'
       test_extras: 'test,qt'
       test_command: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & sleep 3; DISPLAY=:99.0 pytest --pyargs glue
     secrets:
