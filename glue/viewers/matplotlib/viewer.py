@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
+from glue.config import settings
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from echo import delay_callback
 from glue.utils import mpl_to_datetime64
@@ -34,12 +35,31 @@ SCRIPT_FOOTER = """
 {scale_script}
 
 # Set axis label properties
-ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
-ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size})
+ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size}, color={foreground_color})
+ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size}, color={foreground_color})
 
 # Set tick label properties
 ax.tick_params('x', labelsize={x_ticklabel_size})
-ax.tick_params('y', labelsize={x_ticklabel_size})
+ax.tick_params('y', labelsize={y_ticklabel_size})
+
+# Set the foreground color
+if hasattr(ax, 'coords'):
+    ax.coords.frame.set_color({foreground_color})
+    ax.coords.frame.set_linewidth(1)
+    for coord in ax.coords:
+        coord.set_ticks(color={foreground_color})
+        coord.set_ticklabel(color={foreground_color})
+        coord.axislabels.set_color({foreground_color})
+else:
+    for spine in ax.spines.values():
+        spine.set_color({foreground_color})
+    ax.tick_params(which="both",
+                     color={foreground_color},
+                     labelcolor={foreground_color})
+
+# Set the background color
+ax.figure.set_facecolor({background_color})
+ax.patch.set_facecolor({background_color})
 
 # For manual edition of the plot
 #  - Uncomment the next code line (plt.show)
@@ -61,6 +81,7 @@ ax.legend(legend_handles, legend_labels,
     title_fontsize={fontsize},   # fontsize of the title
     fontsize={fontsize},          # fontsize of the labels
     facecolor='{frame_color}',
+    labelcolor='{label_color}',
     edgecolor={edge_color}
 )
 """.strip()
@@ -325,6 +346,8 @@ class MatplotlibViewerMixin(object):
         if mode == 'polar':
             state_dict['x_axislabel'] = ''
             state_dict['y_axislabel'] = ''
+        state_dict['background_color'] = "\"{color}\"".format(color=settings.BACKGROUND_COLOR)
+        state_dict['foreground_color'] = "\"{color}\"".format(color=settings.FOREGROUND_COLOR)
         state_dict['scale_script'] = "# Set scale (log or linear)\n" + temp_str if temp_str else ''
         full_sphere = ['aitoff', 'hammer', 'lambert', 'mollweide']
         state_dict['limit_script'] = '' if mode in full_sphere else LIMIT_SCRIPT.format(**state_dict)
@@ -334,6 +357,7 @@ class MatplotlibViewerMixin(object):
         state_dict = self.state.legend.as_dict()
         state_dict['location'] = self.state.legend.mpl_location
         state_dict['edge_color'] = self.state.legend.edge_color
+        state_dict['label_color'] = settings.FOREGROUND_COLOR
         legend_str = SCRIPT_LEGEND.format(**state_dict)
         if not self.state.legend.visible:
             legend_str = indent(legend_str, "# ")
