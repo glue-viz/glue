@@ -4,6 +4,8 @@ Full changelog
 v1.6.0 (unreleased)
 -------------------
 
+* Update Python exports to respect glue color settings. [#2322]
+
 * Fixed a bug where minor tick marks were not respecting the settings colors. [#2305]
 
 * Fix an issue where the histogram layer artist would not redraw if
