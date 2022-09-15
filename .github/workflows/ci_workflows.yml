@@ -71,6 +71,7 @@ jobs:
       coverage: codecov
       display: true
       # Linux PyQt 5.15 and 6.3 installations require apt-getting xcb and EGL deps
+      # and headless X11 display; as of Python 3.11 Scipy and h5py also need their own deps.
       libraries: |
         apt:
           - '^libxcb.*-dev'
