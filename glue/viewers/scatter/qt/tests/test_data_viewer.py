@@ -208,7 +208,7 @@ class TestScatterViewer(object):
 
         viewer_state.x_log = True
 
-        assert self.viewer.axes.get_xlabel() == 'Log x'
+        assert self.viewer.axes.get_xlabel() == 'x'
         assert self.viewer.axes.get_ylabel() == 'y'
 
         viewer_state.x_att = self.data.id['y']
@@ -219,7 +219,7 @@ class TestScatterViewer(object):
         viewer_state.y_log = True
 
         assert self.viewer.axes.get_xlabel() == 'y'
-        assert self.viewer.axes.get_ylabel() == 'Log y'
+        assert self.viewer.axes.get_ylabel() == 'y'
 
     def test_component_replaced(self):
 
