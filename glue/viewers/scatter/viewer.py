@@ -46,18 +46,10 @@ class MatplotlibScatterMixin(object):
         self._update_ticks(args)
 
         if self.state.x_att is not None:
-
-            if self.state.x_log:
-                self.state.x_axislabel = 'Log ' + self.state.x_att.label
-            else:
-                self.state.x_axislabel = self.state.x_att.label
+            self.state.x_axislabel = self.state.x_att.label
 
         if self.state.y_att is not None:
-
-            if self.state.y_log:
-                self.state.y_axislabel = 'Log ' + self.state.y_att.label
-            else:
-                self.state.y_axislabel = self.state.y_att.label
+            self.state.y_axislabel = self.state.y_att.label
 
         self.axes.figure.canvas.draw_idle()
 
