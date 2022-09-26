@@ -6,6 +6,8 @@ v1.6.0 (unreleased)
 
 * Update Python exports to respect glue color settings. [#2322]
 
+* Modify scatter viewer to not prepend axis labels with 'Log' when using log scale axes. [#2323]
+
 * Fixed a bug where minor tick marks were not respecting the settings colors. [#2305]
 
 * Fix an issue where the histogram layer artist would not redraw if
