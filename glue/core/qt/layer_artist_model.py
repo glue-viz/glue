@@ -74,7 +74,7 @@ class LayerArtistModel(PythonListModel):
         else:  # only drop between rows, where index isn't valid
             result = result | Qt.ItemIsDropEnabled
 
-        return Qt.ItemFlags(int(result))
+        return result
 
     def setData(self, index, value, role):
         if not index.isValid():
