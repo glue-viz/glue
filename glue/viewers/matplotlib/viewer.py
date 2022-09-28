@@ -100,6 +100,7 @@ class MatplotlibViewerMixin(object):
         self.state.add_callback('y_log', self.update_y_log, priority=1000)
 
         self.update_x_log()
+        self.update_y_log()
 
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
