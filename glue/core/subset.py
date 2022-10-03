@@ -56,7 +56,7 @@ class Subset(object):
               color='color',
               alpha=float,
               label='string|None')
-    def __init__(self, data, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None):
+    def __init__(self, data, **kwargs):
         """Create a new subset object.
 
         Note: the preferred way for creating subsets is via
@@ -68,15 +68,17 @@ class Subset(object):
         self._broadcasting = False  # must be first def
 
         self.data = data
-        self.label = label  # trigger disambiguation
+        self.label = kwargs.get("label", None)  # trigger disambiguation
 
         self.subset_state = SubsetState()  # calls proper setter method
 
-        self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
-        self.style.linewidth *= 2.5
-        self.style.color = color
-        self.style.alpha = alpha
+        visual_args = {k: v for k, v in kwargs.items() if k in VisualAttributes.DEFAULT_ATTS}
+        visual_args.setdefault("color", settings.SUBSET_COLORS[0])
+        visual_args.setdefault("alpha", 0.5)
+        visual_args.setdefault("linewidth", 2.5)
+        visual_args.setdefault("markersize", 7)
+
+        self.style = VisualAttributes(parent=self, **visual_args)
 
         # We assign a UUID which can then be used for example in equations
         # for derived components - the idea is that this doesn't change over
