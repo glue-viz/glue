@@ -448,12 +448,16 @@ class BaseImageLayerState(MatplotlibLayerState):
 
         # We now get the fixed resolution buffer
 
+        # When using aggregation, the full_view contains slices even for dimensions that will eventually
+        # be collapsed, so it's easiest to use broadcast=True even though it might be slower.
+        broadcast = agg_func is not None
+
         if isinstance(self.layer, BaseData):
             image = self.layer.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                               target_cid=self.attribute, broadcast=False, cache_id=self.uuid)
+                                                               target_cid=self.attribute, broadcast=broadcast, cache_id=self.uuid)
         else:
             image = self.layer.data.compute_fixed_resolution_buffer(full_view, target_data=self.viewer_state.reference_data,
-                                                                    subset_state=self.layer.subset_state, broadcast=False, cache_id=self.uuid)
+                                                                    subset_state=self.layer.subset_state, broadcast=broadcast, cache_id=self.uuid)
 
         # We apply aggregation functions if needed
 
