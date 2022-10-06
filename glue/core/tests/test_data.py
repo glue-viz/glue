@@ -1163,3 +1163,11 @@ def test_base_cartesian_data_coords():
     data2 = CustomData(coords=IdentityCoordinates(n_dim=3))
     assert len(data2.pixel_component_ids) == 3
     assert len(data2.world_component_ids) == 3
+
+    for idx in range(3):
+
+        assert_allclose(data2[data2.world_component_ids[idx]],
+                        data2[data2.pixel_component_ids[idx]])
+
+        assert_allclose(data2[data2.world_component_ids[idx], (0, slice(2), 2)],
+                        data2[data2.pixel_component_ids[idx], (0, slice(2), 2)])
