@@ -442,13 +442,16 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         if cid in self.pixel_component_ids:
             shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
             pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
-            return broadcast_to(pix, self.shape)[view]
-        elif cid in self.world_component_ids:
-            comp = self.world_components[cid]
-            if view is not None:
-                result = comp[view]
+            if view is None:
+                return broadcast_to(pix, self.shape)
             else:
-                result = comp.data
+                return broadcast_to(pix, self.shape)[view]
+        elif cid in self.world_component_ids:
+            comp = self._world_components[cid]
+            if view is None:
+                return comp.data
+            else:
+                return comp[view]
         else:
             raise IncompatibleAttribute(cid)
 
