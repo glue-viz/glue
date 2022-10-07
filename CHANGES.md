@@ -4,6 +4,8 @@ Full changelog
 v1.6.0 (unreleased)
 -------------------
 
+* Modify histogram viewer to not prepend x-axis label with 'Log' when using a log scale x-axis. [#2325]
+
 * Modify scatter viewer to not prepend axis labels with 'Log' when using log scale axes. [#2323]
 
 * Fixed a bug where minor tick marks were not respecting the settings colors. [#2305]
