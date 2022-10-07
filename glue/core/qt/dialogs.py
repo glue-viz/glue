@@ -23,7 +23,7 @@ def dialog(title, text, icon, setting=None, default=None):
         return True
 
     check = QCheckBox()
-    check.setText('Dont show this message again (can be reset via the preferences)')
+    check.setText('Don\'t show this message again (can be reset via the preferences)')
 
     info = QMessageBox()
     info.setIcon(icon)
