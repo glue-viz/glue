@@ -367,7 +367,7 @@ class PasteSpecialAction(PasteAction):
 
     def __init__(self, *args, **kwargs):
         super(PasteSpecialAction, self).__init__(*args, **kwargs)
-        # self.setMenu(self.menu())
+        self.setMenu(self.menu())
 
     def menu(self):
         m = QtWidgets.QMenu()
@@ -593,7 +593,11 @@ class LayerTreeWidget(QtWidgets.QMainWindow, HubListener):
 
         self._actions['copy'] = CopyAction(self)
         self._actions['paste'] = PasteAction(self)
-        self._actions['paste_special'] = PasteSpecialAction(self)
+        try:
+            self._actions['paste_special'] = PasteSpecialAction(self)
+        except AttributeError:
+            # On some PyQt6 versions setMenu does not exist
+            pass
         self._actions['invert'] = Inverter(self)
         self._actions['new'] = NewAction(self)
         self._actions['clear'] = ClearAction(self)

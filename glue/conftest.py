@@ -121,7 +121,7 @@ def pytest_unconfigure(config):
 # with one of these exceptions.
 
 if PYSIDE2:
-    QTSTANDARD_EXC = "'PySide2.QtGui.QStandardItem' object has no attribute "
+    QTSTANDARD_EXC = "QtGui.QStandardItem' object has no attribute "
     QTSTANDARD_ATTRS = ["'connect'", "'item'", "'triggered'"]
 
     @pytest.hookimpl(hookwrapper=True)

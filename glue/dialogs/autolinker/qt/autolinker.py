@@ -58,8 +58,11 @@ class AutoLinkPreview(QtWidgets.QDialog):
             self.setFixedHeight(100)
 
         # Make sure the dialog is centered on the screen
-        screen = QtWidgets.QApplication.desktop().screenGeometry(0)
-        self.move(screen.center() - self.rect().center())
+        try:
+            screen = QtWidgets.QApplication.desktop().screenGeometry(0)
+            self.move(screen.center() - self.rect().center())
+        except AttributeError:  # PySide6
+            self.move(QtWidgets.QApplication.primaryScreen().geometry().center())
 
     def accept(self):
         # Check what we need to do here to apply links
