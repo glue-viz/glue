@@ -9,7 +9,7 @@ from ..data import BaseCartesianData
 from ..coordinates import IdentityCoordinates
 
 
-class ExampleData(BaseCartesianData):
+class ExampleBaseData(BaseCartesianData):
 
     def __init__(self, cid_label='x', coords=None):
         super().__init__(coords=coords)
@@ -38,7 +38,7 @@ class ExampleData(BaseCartesianData):
             else:
                 return self._array[view]
         else:
-            return super(ExampleData, self).get_data(cid, view=view)
+            return super(ExampleBaseData, self).get_data(cid, view=view)
 
     def get_mask(self, subset_state, view=None):
         return subset_state.to_mask(self, view=view)
@@ -61,11 +61,11 @@ def test_data_coords():
     # Make sure that world_component_ids works in both the case where
     # coords is not defined and when it is defined.
 
-    data1 = ExampleData()
+    data1 = ExampleBaseData()
     assert len(data1.pixel_component_ids) == 3
     assert len(data1.world_component_ids) == 0
 
-    data2 = ExampleData(coords=IdentityCoordinates(n_dim=3))
+    data2 = ExampleBaseData(coords=IdentityCoordinates(n_dim=3))
     assert len(data2.pixel_component_ids) == 3
     assert len(data2.world_component_ids) == 3
 
@@ -80,9 +80,9 @@ def test_data_coords():
 
 def test_linking():
 
-    data1 = ExampleData(cid_label='x')
-    data2 = ExampleData(cid_label='y')
-    data3 = ExampleData(cid_label='z')
+    data1 = ExampleBaseData(cid_label='x')
+    data2 = ExampleBaseData(cid_label='y')
+    data3 = ExampleBaseData(cid_label='z')
 
     dc = DataCollection([data1, data2, data3])
 
@@ -117,9 +117,9 @@ def test_linking():
 
 def test_pixel_aligned():
 
-    data1 = ExampleData(cid_label='x')
-    data2 = ExampleData(cid_label='y')
-    data3 = ExampleData(cid_label='z')
+    data1 = ExampleBaseData(cid_label='x')
+    data2 = ExampleBaseData(cid_label='y')
+    data3 = ExampleBaseData(cid_label='z')
 
     dc = DataCollection([data1, data2, data3])
 

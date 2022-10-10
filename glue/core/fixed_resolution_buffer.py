@@ -48,30 +48,26 @@ def translate_pixel(data, pixel_coords, target_cid):
     # TODO: check that things are efficient if the PixelComponentID is in a
     # pixel-aligned dataset.
 
-    component = data.get_component(target_cid)
+    link = data._get_external_link(target_cid)
 
-    if hasattr(component, 'link'):
-        link = component.link
-        values_all = []
-        dimensions_all = []
-        for cid in link._from:
-            values, dimensions = translate_pixel(data, pixel_coords, cid)
-            values_all.append(values)
-            dimensions_all.extend(dimensions)
-        # Unbroadcast arrays to smallest common shape for performance
-        if len(values_all) > 0:
-            shape = values_all[0].shape
-            values_all = broadcast_arrays_minimal(*values_all)
-            results = link._using(*values_all)
-            result = broadcast_to(results, shape)
-        else:
-            result = None
-        return result, sorted(set(dimensions_all))
-    elif isinstance(component, CoordinateComponent):
-        # FIXME: Hack for now - if we pass arrays in the view, it's interpreted
-        return component._calculate(view=pixel_coords), dependent_axes(data.coords, component.axis)
-    else:
+    if link is None:
         raise Exception("Dependency on non-pixel component", target_cid)
+
+    values_all = []
+    dimensions_all = []
+    for cid in link._from:
+        values, dimensions = translate_pixel(data, pixel_coords, cid)
+        values_all.append(values)
+        dimensions_all.extend(dimensions)
+    # Unbroadcast arrays to smallest common shape for performance
+    if len(values_all) > 0:
+        shape = values_all[0].shape
+        values_all = broadcast_arrays_minimal(*values_all)
+        results = link._using(*values_all)
+        result = broadcast_to(results, shape)
+    else:
+        result = None
+    return result, sorted(set(dimensions_all))
 
 
 class AnyScalar(object):
