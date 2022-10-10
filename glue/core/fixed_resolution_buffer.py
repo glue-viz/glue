@@ -1,7 +1,7 @@
 import numpy as np
 from glue.core import Data
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
-from glue.core.component import CoordinateComponent, DaskComponent
+from glue.core.component import DaskComponent
 from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
 

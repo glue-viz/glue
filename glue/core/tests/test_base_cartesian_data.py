@@ -55,7 +55,6 @@ class ExampleBaseData(BaseCartesianData):
         raise NotImplementedError()
 
 
-
 def test_data_coords():
 
     # Make sure that world_component_ids works in both the case where
