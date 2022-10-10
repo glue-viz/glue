@@ -1,5 +1,6 @@
 import logging
 import warnings
+from packaging.version import Version
 from functools import wraps
 
 import numpy as np
@@ -7,12 +8,16 @@ import matplotlib.units as units
 import matplotlib.dates as dates
 from matplotlib.legend_handler import HandlerBase
 from matplotlib.patches import Rectangle
+from matplotlib import __version__
 
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
 
 from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
+
+MATPLOTLIB_GE_30 = Version(__version__) >= Version('3')
+MATPLOTLIB_GE_36 = Version(__version__) >= Version('3.6')
 
 
 __all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',

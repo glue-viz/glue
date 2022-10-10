@@ -4,7 +4,7 @@ import os
 import zlib
 import tempfile
 from contextlib import contextmanager
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 import pytest
 
@@ -19,7 +19,7 @@ def make_skipper(module, label=None, version=None):
             mod = __import__(module)
             version_installed = mod.__version__
         if version:
-            assert LooseVersion(version_installed) >= LooseVersion(version)
+            assert Version(version_installed) >= Version(version)
         installed = True
     except (ImportError, AssertionError):
         installed = False
