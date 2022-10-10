@@ -8,6 +8,8 @@ from ..subset import SubsetState
 from ..subset_group import coerce_subset_groups
 from .test_state import clone
 
+from ...utils.matplotlib import MATPLOTLIB_GE_36
+
 
 def restore_settings(func):
     def wrapper(*args, **kwargs):
@@ -203,8 +205,13 @@ class TestSubsetGroup(object):
         sg = self.dc.new_subset_group(**visual_attributes)
         for attr, value in visual_attributes.items():
             if attr == 'preferred_cmap':
-                from matplotlib.cm import get_cmap
-                assert sg.style.preferred_cmap == get_cmap(visual_attributes[attr])
+                if MATPLOTLIB_GE_36:
+                    from matplotlib import colormaps
+                    va_cmap = colormaps[visual_attributes[attr]]
+                else:
+                    from matplotlib.cm import get_cmap
+                    va_cmap = get_cmap(visual_attributes[attr])
+                assert sg.style.preferred_cmap == va_cmap
             else:
                 assert getattr(sg.style, attr, None) == value
 

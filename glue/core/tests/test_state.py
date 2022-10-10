@@ -252,7 +252,7 @@ def test_projected3d_roi():
 
 def test_matplotlib_cmap():
     from matplotlib import cm
-    assert clone(cm.gist_heat) is cm.gist_heat
+    assert clone(cm.gist_heat) == cm.gist_heat
 
 
 def test_binary_component_link():
