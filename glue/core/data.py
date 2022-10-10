@@ -647,6 +647,14 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         else:
             return None
 
+    def _get_coordinate_transform(self, world_cid):
+        if world_cid in self._world_components:
+            def transform(values):
+                return self._world_components._calculate(view=values)
+            return transform
+        else:
+            return None
+
     def _set_pixel_aligned_data(self, pixel_aligned_data):
         """
         Pixel-aligned data are datasets that contain pixel component IDs

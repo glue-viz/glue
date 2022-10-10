@@ -1,6 +1,6 @@
 import numpy as np
 from glue.core import Data
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.component import CoordinateComponent, DaskComponent
 from glue.core.coordinate_helpers import dependent_axes
 from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
@@ -51,7 +51,16 @@ def translate_pixel(data, pixel_coords, target_cid):
     link = data._get_external_link(target_cid)
 
     if link is None:
-        raise Exception("Dependency on non-pixel component", target_cid)
+        if target_cid in data.main_components or target_cid in data.derived_components:
+            raise Exception("Dependency on non-pixel component", target_cid)
+        elif target_cid in data.coordinate_components:
+            if isinstance(data, Data):
+                comp = data.get_component(target_cid)
+            else:
+                comp = data._world_components[target_cid]
+            return comp._calculate(view=pixel_coords), dependent_axes(data.coords, comp.axis)
+        else:
+            raise IncompatibleAttribute(target_cid)
 
     values_all = []
     dimensions_all = []
