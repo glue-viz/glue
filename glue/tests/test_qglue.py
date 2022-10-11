@@ -138,7 +138,7 @@ class TestQGlue(object):
 
             @property
             def shape(self):
-                pass
+                return ()
 
             @property
             def main_components(self):

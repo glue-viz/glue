@@ -43,10 +43,6 @@ jobs:
         - linux: py37-test-pyside513-all
         - linux: py38-test-pyside514
         - linux: py39-test-pyqt515
-        - linux: py310-test-pyside515-all
-
-        # Test against latest developer versions of some packages
-        - linux: py310-test-pyqt515-dev-all
 
         # Try out documentation build on Linux and macOS
         - linux: py37-docs-pyqt513
@@ -55,7 +51,6 @@ jobs:
         # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
         - macos: py37-test-pyqt513
         - macos: py38-test-pyqt514
-        - macos: py310-test-pyqt515-all
           PLAT: arm64
 
         # Try out documentation build on macOS
@@ -76,19 +71,37 @@ jobs:
     with:
       coverage: codecov
       display: true
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      # Linux PyQt 5.15 and 6.3 installations require apt-getting xcb and EGL deps
       libraries: |
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
         brew:
           - enchant
       envs: |
-        # Some (PySide2 in particular) envs are failing with runtime errors
+        # Some (PySide2 in particular) envs are failing with runtime errors;
+        # PyQt6 and PySide6 support in progress
         - linux: py38-test-pyside514
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyside63
+        - linux: py310-test-pyside515-all
+        - linux: py310-test-pyqt513-lts
+        - linux: py310-test-pyqt515-lts
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
+
         - macos: py38-test-pyside514
+        - macos: py310-test-pyqt515-all
+        - macos: py310-test-pyqt63
+        - macos: py310-test-pyside63
+
         - windows: py38-test-pyqt514-all
         - windows: py39-test-pyside515-all
+        - windows: py310-test-pyqt63
+        - windows: py310-test-pyside63
+
 
   publish:
     needs: tests

@@ -1,11 +1,7 @@
-from distutils.version import LooseVersion
-
 import numpy as np
-from matplotlib import __version__
 
 from glue.viewers.common.python_export import code, serialize_options
-
-MATPLOTLIB_GE_30 = LooseVersion(__version__) > '3'
+from glue.utils.matplotlib import MATPLOTLIB_GE_30
 
 
 def python_export_histogram_layer(layer, *args):

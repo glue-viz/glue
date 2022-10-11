@@ -398,6 +398,8 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     def __init__(self, coords=None):
         super(BaseCartesianData, self).__init__()
         self._coords = coords
+        self._externally_derivable_components = OrderedDict()
+        self._pixel_aligned_data = OrderedDict()
 
     @property
     def coords(self):
@@ -442,15 +444,26 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         if cid in self.pixel_component_ids:
             shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
             pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
-            return broadcast_to(pix, self.shape)[view]
-        elif cid in self.world_component_ids:
-            comp = self.world_components[cid]
-            if view is not None:
-                result = comp[view]
+            if view is None:
+                return broadcast_to(pix, self.shape)
             else:
-                result = comp.data
+                return broadcast_to(pix, self.shape)[view]
+        elif cid in self.world_component_ids:
+            comp = self._world_components[cid]
+        elif cid in self._externally_derivable_components:
+            comp = self._externally_derivable_components[cid]
         else:
             raise IncompatibleAttribute(cid)
+
+        # Note that above we have extracted Component objects from internal
+        # properties - we don't actually expose Component objects in this class,
+        # only in the Data class, but we use these components internally for
+        # convenience.
+
+        if view is None:
+            return comp.data
+        else:
+            return comp[view]
 
     @abc.abstractmethod
     def get_mask(self, subset_state, view=None):
@@ -593,12 +606,105 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             self._world_component_ids = []
             self._world_components = {}
             for i in range(self.ndim):
+                # Note: we use a Component object here for convenience but we
+                # don't actually expose it via the BaseCartesianData API - in
+                # get_data we extract the data from the component.
                 comp = CoordinateComponent(self, i, world=True)
                 label = axis_label(self.coords, i)
                 cid = ComponentID(label, parent=self)
                 self._world_component_ids.append(cid)
                 self._world_components[cid] = comp
         return self._world_component_ids
+
+    def _set_externally_derivable_components(self, derivable_components):
+        """
+        Externally deriable components are components identified by component
+        IDs from other datasets.
+
+        This method is meant for internal use only and is called by the link
+        manager. The ``derivable_components`` argument should be set to a
+        dictionary where the keys are the derivable component IDs, and the
+        values are DerivedComponent instances which can be used to get the
+        data.
+        """
+
+        # Note that even though Component objects are not normally exposed as
+        # part of the BaseCartesianData API, we use these internally here as
+        # a convenience, and extract the data from them in get_data. The actual
+        # derived components are however used in the Data class.
+
+        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
+
+            return
+
+        elif len(self._externally_derivable_components) == len(derivable_components):
+
+            for key in derivable_components:
+                if key in self._externally_derivable_components:
+                    if self._externally_derivable_components[key].link is not derivable_components[key].link:
+                        break
+                else:
+                    break
+            else:
+                return  # Unchanged!
+
+        self._externally_derivable_components = derivable_components
+
+        if self.hub:
+            msg = ExternallyDerivableComponentsChangedMessage(self)
+            self.hub.broadcast(msg)
+
+    def _get_external_link(self, cid):
+        if cid in self._externally_derivable_components:
+            return self._externally_derivable_components[cid].link
+        else:
+            return None
+
+    def _get_coordinate_transform(self, world_cid):
+        if world_cid in self._world_components:
+            def transform(values):
+                return self._world_components._calculate(view=values)
+            return transform
+        else:
+            return None
+
+    def _set_pixel_aligned_data(self, pixel_aligned_data):
+        """
+        Pixel-aligned data are datasets that contain pixel component IDs
+        that are equivalent (identically, not transformed) with all pixel
+        component IDs in the present dataset.
+
+        Note that the other datasets may have more but not fewer dimensions, so
+        this information may not be symmetric between datasets with differing
+        numbers of dimensions.
+        """
+
+        # First check if anything has changed, as if not then we should just
+        # leave things as-is and avoid emitting a message.
+        if len(self._pixel_aligned_data) == len(pixel_aligned_data):
+            for data in self._pixel_aligned_data:
+                if data not in pixel_aligned_data or pixel_aligned_data[data] != self._pixel_aligned_data[data]:
+                    break
+            else:
+                return
+
+        self._pixel_aligned_data = pixel_aligned_data
+        if self.hub:
+            msg = PixelAlignedDataChangedMessage(self)
+            self.hub.broadcast(msg)
+
+    @property
+    def pixel_aligned_data(self):
+        """
+        Information about other datasets in the same data collection that have
+        matching or a subset of pixel component IDs.
+
+        This is returned as a dictionary where each key is a dataset with
+        matching pixel component IDs, and the value is the order in which the
+        pixel component IDs of the other dataset can be found in the current
+        one.
+        """
+        return self._pixel_aligned_data
 
 
 class Data(BaseCartesianData):
@@ -647,8 +753,6 @@ class Data(BaseCartesianData):
 
         # Components
         self._components = OrderedDict()
-        self._externally_derivable_components = OrderedDict()
-        self._pixel_aligned_data = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
 
@@ -1003,77 +1107,6 @@ class Data(BaseCartesianData):
             self.hub.broadcast(msg)
 
         return component_id
-
-    def _set_externally_derivable_components(self, derivable_components):
-        """
-        Externally deriable components are components identified by component
-        IDs from other datasets.
-
-        This method is meant for internal use only and is called by the link
-        manager. The ``derivable_components`` argument should be set to a
-        dictionary where the keys are the derivable component IDs, and the
-        values are DerivedComponent instances which can be used to get the
-        data.
-        """
-
-        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
-
-            return
-
-        elif len(self._externally_derivable_components) == len(derivable_components):
-
-            for key in derivable_components:
-                if key in self._externally_derivable_components:
-                    if self._externally_derivable_components[key].link is not derivable_components[key].link:
-                        break
-                else:
-                    break
-            else:
-                return  # Unchanged!
-
-        self._externally_derivable_components = derivable_components
-
-        if self.hub:
-            msg = ExternallyDerivableComponentsChangedMessage(self)
-            self.hub.broadcast(msg)
-
-    def _set_pixel_aligned_data(self, pixel_aligned_data):
-        """
-        Pixel-aligned data are datasets that contain pixel component IDs
-        that are equivalent (identically, not transformed) with all pixel
-        component IDs in the present dataset.
-
-        Note that the other datasets may have more but not fewer dimensions, so
-        this information may not be symmetric between datasets with differing
-        numbers of dimensions.
-        """
-
-        # First check if anything has changed, as if not then we should just
-        # leave things as-is and avoid emitting a message.
-        if len(self._pixel_aligned_data) == len(pixel_aligned_data):
-            for data in self._pixel_aligned_data:
-                if data not in pixel_aligned_data or pixel_aligned_data[data] != self._pixel_aligned_data[data]:
-                    break
-            else:
-                return
-
-        self._pixel_aligned_data = pixel_aligned_data
-        if self.hub:
-            msg = PixelAlignedDataChangedMessage(self)
-            self.hub.broadcast(msg)
-
-    @property
-    def pixel_aligned_data(self):
-        """
-        Information about other datasets in the same data collection that have
-        matching or a subset of pixel component IDs.
-
-        This is returned as a dictionary where each key is a dataset with
-        matching pixel component IDs, and the value is the order in which the
-        pixel component IDs of the other dataset can be found in the current
-        one.
-        """
-        return self._pixel_aligned_data
 
     @contract(link=ComponentLink,
               label='cid_like|None',

@@ -6,6 +6,12 @@ v1.6.0 (unreleased)
 
 * Update Python exports to respect glue color settings. [#2322]
 
+* Added one-to-one ``join_on_key``-type links to the link-manager allowing 
+  them to be created and deleted through the UI. This option is available 
+  under 'Create advanced link>Join>Join on ID.' [#2215]
+
+* Modify histogram viewer to not prepend x-axis label with 'Log' when using a log scale x-axis. [#2325]
+
 * Modify scatter viewer to not prepend axis labels with 'Log' when using log scale axes. [#2323]
 
 * Fixed a bug where minor tick marks were not respecting the settings colors. [#2305]

@@ -23,10 +23,7 @@ class MatplotlibHistogramMixin(object):
             # Update ticks, which sets the labels to categories if components are categorical
             update_ticks(self.axes, 'x', self.state.x_kinds, self.state.x_log, self.state.x_categories)
 
-            if self.state.x_log:
-                self.state.x_axislabel = 'Log ' + self.state.x_att.label
-            else:
-                self.state.x_axislabel = self.state.x_att.label
+            self.state.x_axislabel = self.state.x_att.label
 
         if self.state.normalize:
             self.state.y_axislabel = 'Normalized number'

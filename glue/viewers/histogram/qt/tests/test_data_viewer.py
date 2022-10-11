@@ -347,7 +347,7 @@ class TestHistogramViewer(object):
 
         viewer_state.x_log = True
 
-        assert self.viewer.axes.get_xlabel() == 'Log x'
+        assert self.viewer.axes.get_xlabel() == 'x'
         assert self.viewer.axes.get_ylabel() == 'Number'
 
         viewer_state.x_att = self.data.id['y']
