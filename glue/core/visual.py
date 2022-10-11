@@ -1,10 +1,15 @@
 from matplotlib.colors import ColorConverter, Colormap
-from matplotlib.cm import get_cmap
 
-from glue.config import settings
-from glue.config import colormaps
+from glue.config import settings, colormaps
 
 from echo import callback_property, HasCallbackProperties
+
+from glue.utils.matplotlib import MATPLOTLIB_GE_36
+
+if MATPLOTLIB_GE_36:
+    from matplotlib import colormaps as cmap
+else:
+    from matplotlib.cm import get_cmap
 
 # Define acceptable line styles
 VALID_LINESTYLES = ['solid', 'dashed', 'dash-dot', 'dotted', 'none']
@@ -120,8 +125,8 @@ class VisualAttributes(HasCallbackProperties):
     def preferred_cmap(self, value):
         if isinstance(value, str):
             try:
-                self._preferred_cmap = get_cmap(value)
-            except ValueError:
+                self._preferred_cmap = cmap[value] if MATPLOTLIB_GE_36 else get_cmap(value)
+            except (ValueError, KeyError):
                 # This checks for the formal name of the colormap.
                 # e.g., 'viridis' is 'Viridis'
                 for element in colormaps.members:

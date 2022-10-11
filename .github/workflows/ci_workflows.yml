@@ -43,10 +43,6 @@ jobs:
         - linux: py37-test-pyside513-all
         - linux: py38-test-pyside514
         - linux: py39-test-pyqt515
-        - linux: py310-test-pyside515-all
-
-        # Test against latest developer versions of some packages
-        - linux: py310-test-pyqt515-dev-all
 
         # Try out documentation build on Linux and macOS
         - linux: py37-docs-pyqt513
@@ -55,7 +51,6 @@ jobs:
         # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
         - macos: py37-test-pyqt513
         - macos: py38-test-pyqt514
-        - macos: py310-test-pyqt515-all
           PLAT: arm64
 
         # Try out documentation build on macOS
@@ -90,8 +85,15 @@ jobs:
         - linux: py38-test-pyside514
         - linux: py310-test-pyqt63-all
         - linux: py310-test-pyside63
+        - linux: py310-test-pyside515-all
+        - linux: py310-test-pyqt513-lts
+        - linux: py310-test-pyqt515-lts
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
 
         - macos: py38-test-pyside514
+        - macos: py310-test-pyqt515-all
         - macos: py310-test-pyqt63
         - macos: py310-test-pyside63
 
