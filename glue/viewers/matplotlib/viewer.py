@@ -35,31 +35,19 @@ SCRIPT_FOOTER = """
 {scale_script}
 
 # Set axis label properties
-ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size}, color={foreground_color})
-ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size}, color={foreground_color})
+ax.set_xlabel('{x_axislabel}', weight='{x_axislabel_weight}', size={x_axislabel_size})
+ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_size})
 
 # Set tick label properties
 ax.tick_params('x', labelsize={x_ticklabel_size})
 ax.tick_params('y', labelsize={y_ticklabel_size})
 
-# Set the foreground color
-if hasattr(ax, 'coords'):
-    ax.coords.frame.set_color({foreground_color})
-    ax.coords.frame.set_linewidth(1)
-    for coord in ax.coords:
-        coord.set_ticks(color={foreground_color})
-        coord.set_ticklabel(color={foreground_color})
-        coord.axislabels.set_color({foreground_color})
-else:
-    for spine in ax.spines.values():
-        spine.set_color({foreground_color})
-    ax.tick_params(which="both",
-                     color={foreground_color},
-                     labelcolor={foreground_color})
-
-# Set the background color
-ax.figure.set_facecolor({background_color})
-ax.patch.set_facecolor({background_color})
+# Set the figure colors
+# To create the figure with the default settings, comment out the next line
+# Alternatively, to create the figure with colors from the current glue environment:
+#  - from glue.config import settings
+#  - set_figure_colors(ax, background=settings.BACKGROUND_COLOR, foreground=settings.FOREGROUND_COLOR
+set_figure_colors(ax, background={background_color}, foreground={foreground_color})
 
 # For manual edition of the plot
 #  - Uncomment the next code line (plt.show)
@@ -331,7 +319,8 @@ class MatplotlibViewerMixin(object):
         return ['import matplotlib',
                 "matplotlib.use('Agg')",
                 "# matplotlib.use('qt5Agg')",
-                'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
+                'import matplotlib.pyplot as plt',
+                'from glue.viewers.matplotlib.mpl_axes import set_figure_colors'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         mode = 'rectilinear' if not hasattr(self.state, 'plot_mode') else self.state.plot_mode
