@@ -455,6 +455,11 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         else:
             raise IncompatibleAttribute(cid)
 
+        # Note that above we have extracted Component objects from internal
+        # properties - we don't actually expose Component objects in this class,
+        # only in the Data class, but we use these components internally for
+        # convenience.
+
         if view is None:
             return comp.data
         else:
@@ -601,6 +606,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             self._world_component_ids = []
             self._world_components = {}
             for i in range(self.ndim):
+                # Note: we use a Component object here for convenience but we
+                # don't actually expose it via the BaseCartesianData API - in
+                # get_data we extract the data from the component.
                 comp = CoordinateComponent(self, i, world=True)
                 label = axis_label(self.coords, i)
                 cid = ComponentID(label, parent=self)
@@ -619,6 +627,11 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         values are DerivedComponent instances which can be used to get the
         data.
         """
+
+        # Note that even though Component objects are not normally exposed as
+        # part of the BaseCartesianData API, we use these internally here as
+        # a convenience, and extract the data from them in get_data. The actual
+        # derived components are however used in the Data class.
 
         if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
 
