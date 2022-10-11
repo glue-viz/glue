@@ -124,6 +124,10 @@ class LayerArtistBase(PropertySetMixin, metaclass=ABCMeta):
            Used by the UI
         """
         self._disabled_reason = reason
+        # If layer is already disabled, avoid continuing to not repeatadly
+        # disable layer and emit messages which might force a redraw
+        if not self._enabled:
+            return
         self._enabled = False
         self.clear()
         if self._layer is not None and self._layer.hub is not None:

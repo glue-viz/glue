@@ -27,10 +27,10 @@ class RandomData(BaseCartesianData):
         return 'numerical'
 
     def get_data(self, cid, view=None):
-        if cid in self.pixel_component_ids:
-            return super(RandomData, self).get_data(cid, view=view)
-        else:
+        if cid is self.data_cid:
             return np.random.random(view_shape(self.shape, view))
+        else:
+            return super(RandomData, self).get_data(cid, view=view)
 
     def get_mask(self, subset_state, view=None):
         return subset_state.to_mask(self, view=view)

@@ -65,7 +65,11 @@ The methods you need to define are:
   (``view=[(1, 2, 3), (4, 3, 4)]``), and so on. If a view is specified, only that
   subset of values should be returned. For example if the data has an overall
   shape of ``(10,)`` and ``view=slice(1, 6, 2)``, ``get_data`` should
-  return an array with shape ``(3,)``.
+  return an array with shape ``(3,)``. By default, :meth:`BaseCartesianData.get_data <glue.core.data.BaseCartesianData.get_data>`
+  will return values for pixel and world :class:`~glue.core.component_id.ComponentID`
+  objects as well as any linked :class:`~glue.core.component_id.ComponentID`, so we
+  recommend that your implementation calls :meth:`BaseCartesianData.get_data <glue.core.data.BaseCartesianData.get_data>`
+  for any :class:`~glue.core.component_id.ComponentID` you do not expose yourself.
 * :meth:`~glue.core.data.BaseCartesianData.get_mask`: given a
   :class:`~glue.core.subset.SubsetState` object (described in `Subset states`_)
   and optionally a ``view``, return a boolean array describing which values are
@@ -137,6 +141,17 @@ subset states and compute a mask yourself.
 While developing your data class, one way to make sure that glue doesn't crash
 if you haven't yet implemented support for a specific subset state is to
 interpret any unimplemented subset state as simply indicating an empty subset.
+
+Linking
+-------
+
+You should be able to link data objects that inherit from
+:class:`~glue.core.data.BaseCartesianData` with other datasets - however
+for this to work properly you should make sure that your implementation of
+:meth:`~glue.core.data.BaseCartesianData.get_data` calls
+:meth:`BaseCartesianData.get_data <glue.core.data.BaseCartesianData.get_data>`
+for any unrecognized :class:`~glue.core.component_id.ComponentID`, as the base
+implementation will handle returning linked values.
 
 Using your data object
 ----------------------

@@ -24,7 +24,7 @@ from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMe
 from glue.core.contracts import contract
 from glue.core.link_helpers import LinkCollection
 from glue.core.component_link import ComponentLink
-from glue.core.data import Data
+from glue.core.data import Data, BaseCartesianData
 from glue.core.component import DerivedComponent
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
@@ -231,7 +231,7 @@ class LinkManager(HubListener):
             data_collection = self.data_collection
 
         # Only keep actual Data instances since only they support links for now
-        data_collection = [d for d in data_collection if isinstance(d, Data)]
+        data_collection = [d for d in data_collection if isinstance(d, BaseCartesianData)]
 
         for data in data_collection:
             links = discover_links(data, self._links | self._inverse_links)
@@ -295,18 +295,20 @@ def _find_identical_reference_cid(data, cid):
     truly belongs to the dataset (not via a link). Returns None if there is
     no strictly identical component in the dataset.
     """
-    try:
-        target_comp = data.get_component(cid)
-    except IncompatibleAttribute:
-        return None
-    if isinstance(target_comp, DerivedComponent):
-        if target_comp.link.identity:
-            updated_cid = target_comp.link.get_from_ids()[0]
-            return _find_identical_reference_cid(data, updated_cid)
-        else:
-            return None
-    else:
+
+    if cid in data.main_components or cid in data.coordinate_components or cid in data.derived_components:
         return cid
+
+    link = data._get_external_link(cid)
+
+    if link is None:
+        return None
+
+    if link.identity:
+        updated_cid = link.get_from_ids()[0]
+        return _find_identical_reference_cid(data, updated_cid)
+    else:
+        return None
 
 
 def is_equivalent_cid(data, cid1, cid2):

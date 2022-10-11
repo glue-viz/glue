@@ -4,7 +4,10 @@ import numpy as np
 from numpy.testing import assert_equal
 
 from glue.core import Data, DataCollection
-from glue.core.link_helpers import LinkSame
+from glue.core.link_helpers import LinkSame, ComponentLink
+from glue.core.fixed_resolution_buffer import compute_fixed_resolution_buffer
+
+from .test_base_cartesian_data import ExampleBaseData
 
 
 ARRAY = np.arange(3024).reshape((6, 7, 8, 9)).astype(float)
@@ -104,3 +107,52 @@ class TestFixedResolutionBuffer():
         buffer = self.data3.compute_fixed_resolution_buffer(target_data=self.data1, bounds=bounds,
                                                             target_cid=self.data3.id['x'])
         assert_equal(buffer, expected)
+
+
+def test_base_cartesian_data():
+
+    # Make sure that things work properly when using a BaseCartesianData
+    # subclass that isn't necessarily Data.
+
+    data1 = ExampleBaseData(cid_label='x')
+    data2 = ExampleBaseData(cid_label='y')
+
+    dc = DataCollection([data1, data2])
+
+    def add_one(x):
+        return x + 1
+
+    def sub_one(x):
+        return x - 1
+
+    link1 = ComponentLink([data1.pixel_component_ids[0]], data2.pixel_component_ids[0])
+    link2 = ComponentLink([data1.pixel_component_ids[1]], data2.pixel_component_ids[1], using=add_one, inverse=sub_one)
+    link3 = ComponentLink([data1.pixel_component_ids[2]], data2.pixel_component_ids[2], using=sub_one, inverse=add_one)
+
+    dc.add_link(link1)
+    dc.add_link(link2)
+    dc.add_link(link3)
+
+    assert_equal(compute_fixed_resolution_buffer(data1,
+                                                 target_data=data1,
+                                                 bounds=[(-1, 1, 3), (0, 3, 4), 1],
+                                                 target_cid=data1.main_components[0]),
+                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
+                           [1, 4, 7, 10],
+                           [-np.inf, -np.inf, -np.inf, -np.inf]]))
+
+    assert_equal(compute_fixed_resolution_buffer(data2,
+                                                 target_data=data2,
+                                                 bounds=[(-1, 1, 3), (0, 3, 4), 1],
+                                                 target_cid=data2.main_components[0]),
+                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
+                           [1, 4, 7, 10],
+                           [-np.inf, -np.inf, -np.inf, -np.inf]]))
+
+    assert_equal(compute_fixed_resolution_buffer(data1,
+                                                 target_data=data2,
+                                                 bounds=[(-1, 1, 3), (0, 3, 4), 1],
+                                                 target_cid=data1.main_components[0]),
+                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
+                           [-np.inf, 2, 5, 8],
+                           [-np.inf, -np.inf, -np.inf, -np.inf]]))

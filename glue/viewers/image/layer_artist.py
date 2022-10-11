@@ -104,7 +104,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return None, None, None
 
     def enable(self):
-        if hasattr(self, 'composite_image'):
+        if not self.enabled and hasattr(self, 'composite_image'):
             self.composite_image.invalidate_cache()
         super(ImageLayerArtist, self).enable()
 
