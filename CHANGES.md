@@ -1339,7 +1339,7 @@
 
 - Fix a bug that caused saving of scatter plots to SVG files to crash. https://github.com/glue-viz/glue/pull/984
 
-## [v0.8.1](https://github.com/glue-viz/glue/compare/v0.8...v0.8.1) - 2016-05-25
+## [v0.8.1](https://github.com/glue-viz/glue/compare/v0.8.0...v0.8.1) - 2016-05-25
 
 ### What's Changed
 
@@ -1353,7 +1353,7 @@
   lists of data, which is possible if a data factory returns more than one data
   object. https://github.com/glue-viz/glue/pull/1006
 
-## [v0.8](https://github.com/glue-viz/glue/compare/v0.7.3...v0.8) - 2016-05-23
+## [v0.8.0](https://github.com/glue-viz/glue/compare/v0.7.3...v0.8.0) - 2016-05-23
 
 ### What's Changed
 
@@ -1448,7 +1448,7 @@
 - Fix a bug that caused values in exponential notation in text fields to lose
   a trailing zero (e.g. 1.000e+10 would become 1.000e+1). https://github.com/glue-viz/glue/pull/925
 
-## [v0.7.1](https://github.com/glue-viz/glue/compare/v0.7...v0.7.1) - 2016-03-30
+## [v0.7.1](https://github.com/glue-viz/glue/compare/v0.7.0...v0.7.1) - 2016-03-30
 
 ### What's Changed
 
@@ -1467,7 +1467,7 @@
 - Fixed a bug that caused the color in the scatter and histogram style
   editors to not show the correct initial color. https://github.com/glue-viz/glue/pull/907
 
-## [v0.7](https://github.com/glue-viz/glue/compare/v0.6...v0.7) - 2016-03-10
+## [v0.7.0](https://github.com/glue-viz/glue/compare/v0.6.0...v0.7.0) - 2016-03-10
 
 ### What's Changed
 
@@ -1592,7 +1592,7 @@
 
 - Make list of data viewers sorted alphabetically. https://github.com/glue-viz/glue/pull/866
 
-## [v0.6](https://github.com/glue-viz/glue/compare/v0.5.2...v0.6) - 2015-11-20
+## [v0.6.0](https://github.com/glue-viz/glue/compare/v0.5.2...v0.6.0) - 2015-11-20
 
 ### What's Changed
 
@@ -1685,7 +1685,7 @@
 
 - Backward-compatibility fixes after refactoring ``data_factories`` [#696, #703]
 
-## [v0.5.1](https://github.com/glue-viz/glue/compare/v0.5...v0.5.1) - 2015-07-06
+## [v0.5.1](https://github.com/glue-viz/glue/compare/v0.5.0...v0.5.1) - 2015-07-06
 
 ### What's Changed
 
@@ -1696,7 +1696,7 @@
 
 - Users should now press 'control' to drag rather than re-define subsets. https://github.com/glue-viz/glue/pull/689
 
-## [v0.5](https://github.com/glue-viz/glue/compare/v0.4...v0.5) - 2015-07-03
+## [v0.5.0](https://github.com/glue-viz/glue/compare/v0.4.0...v0.5.0) - 2015-07-03
 
 ### What's Changed
 
@@ -1753,7 +1753,7 @@
 
 - Added the ability to reset a session. https://github.com/glue-viz/glue/pull/630
 
-## [v0.4](https://github.com/glue-viz/glue/releases/tag/v0.4) (Released December 22, 2015)
+## [v0.4.0](https://github.com/glue-viz/glue/releases/tag/v0.4.0) (Released December 22, 2015)
 
 ### Release Highlights:
 
