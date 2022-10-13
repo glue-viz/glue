@@ -1,5 +1,5 @@
-How to release a new version of a Glue package
-==============================================
+Releasing a new package version
+===============================
 
 A new release of packages in the `glue-viz <https://glueviz.org/>`_ ecosystem is
 now almost fully automated.
