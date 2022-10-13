@@ -3,6 +3,8 @@ import sys
 import pytest
 import subprocess
 
+from glue.config import settings
+
 import numpy as np
 
 from matplotlib.testing.compare import compare_images
@@ -50,3 +52,11 @@ class BaseTestExportPython:
                 print(b64encode(f.read()).decode())
 
             pytest.fail(msg, pytrace=False)
+
+    def test_color_settings(self, tmpdir):
+        settings.FOREGROUND_COLOR = '#a51d2d'
+        settings.BACKGROUND_COLOR = '#99c1f1'
+        self.viewer._update_appearance_from_settings()
+        self.assert_same(tmpdir)
+        settings.reset_defaults()
+        self.viewer._update_appearance_from_settings()

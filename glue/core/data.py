@@ -179,7 +179,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
               color='color|None',
               label='string|None',
               returns=Subset)
-    def new_subset(self, subset=None, color=None, label=None, **kwargs):
+    def new_subset(self, subset=None, **kwargs):
         """
         Create a new subset, and attach to self.
 
@@ -200,9 +200,9 @@ class BaseData(object, metaclass=abc.ABCMeta):
         Manually-instantiated subsets will **not** be represented properly by the UI.
         """
         nsub = len(self.subsets)
-        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
-        label = label or "%s.%i" % (self.label, nsub + 1)
-        new_subset = Subset(self, color=color, label=label, **kwargs)
+        kwargs.setdefault("color", settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)])
+        kwargs.setdefault("label", "%s.%i" % (self.label, nsub + 1))
+        new_subset = Subset(self, **kwargs)
         if subset is not None:
             new_subset.subset_state = subset.subset_state.copy()
 

@@ -210,6 +210,7 @@ class MatplotlibImageMixin(object):
         imports.append('from glue.viewers.matplotlib.mpl_axes import init_mpl')
         imports.append('from glue.viewers.image.composite_array import CompositeArray')
         imports.append('from glue.viewers.image.frb_artist import imshow')
+        imports.append('from glue.viewers.matplotlib.mpl_axes import set_figure_colors')
 
         script = ""
         script += "fig, ax = init_mpl(wcs=True)\n"
