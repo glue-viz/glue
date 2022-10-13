@@ -315,13 +315,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.xerr_visible and self.state.xerr_att is not None:
                 xerr = ensure_numerical(self.layer[self.state.xerr_att].ravel()).copy()
-                keep &= ~np.isnan(xerr)
+                keep &= ~np.isnan(xerr) & (xerr >= 0.)
             else:
                 xerr = None
 
             if self.state.yerr_visible and self.state.yerr_att is not None:
                 yerr = ensure_numerical(self.layer[self.state.yerr_att].ravel()).copy()
-                keep &= ~np.isnan(yerr)
+                keep &= ~np.isnan(yerr) & (yerr >= 0.)
             else:
                 yerr = None
 
