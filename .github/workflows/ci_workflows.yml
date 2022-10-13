@@ -46,7 +46,7 @@ jobs:
           coverage: false
         - macos: py39-docs-pyqt515
           coverage: false
-        - windows: py310-docs-pyqt63
+        - windows: py310-docs-pyqt515
           coverage: false
 
         # Test a few configurations on MacOS X
