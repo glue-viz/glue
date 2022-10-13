@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 from glue.tests.helpers import requires_astropy, requires_scipy, SCIPY_INSTALLED
 from ..exceptions import IncompatibleAttribute
 from .. import DataCollection, ComponentLink
+from ...config import settings
 from ..data import Data, Component
 from ..roi import CategoricalROI, RectangularROI, Projected3dROI, CircularROI
 from ..message import SubsetDeleteMessage
@@ -193,6 +194,37 @@ class TestSubset(object):
         s = Subset(Data())
         with pytest.raises(TypeError):
             s.subset_state = 5
+
+    def test_visual_attributes_default(self):
+        s = Subset(Data())
+        expected_color = settings.SUBSET_COLORS[0].lower()
+        style = s.style
+        assert style.color == expected_color
+        assert style.alpha == 0.5
+        assert style.linewidth == 2.5
+        assert style.markersize == 7
+        assert style.linestyle == 'solid'
+        assert style.marker == 'o'
+        assert style.preferred_cmap is None
+
+    def test_visual_attributes(self):
+        visual_attributes = dict(
+            color="#ff7f00",
+            alpha=0.3,
+            linewidth=4,
+            markersize=10,
+            marker='x',
+            linestyle='dashed',
+            preferred_cmap='viridis'
+        )
+        d = Data(x=[1, 2, 3])
+        s = d.new_subset(**visual_attributes)
+        for attr, value in visual_attributes.items():
+            if attr == 'preferred_cmap':
+                from matplotlib.cm import get_cmap
+                assert s.style.preferred_cmap == get_cmap(visual_attributes[attr])
+            else:
+                assert getattr(s.style, attr, None) == value
 
 
 target_states = ((op.and_, AndState),
