@@ -4,6 +4,8 @@ Full changelog
 v1.6.0 (unreleased)
 -------------------
 
+* Update Python exports to respect glue color settings. [#2322]
+
 * Added one-to-one ``join_on_key``-type links to the link-manager allowing 
   them to be created and deleted through the UI. This option is available 
   under 'Create advanced link>Join>Join on ID.' [#2215]

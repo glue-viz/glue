@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
+from glue.config import settings
 from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
 from echo import delay_callback
 from glue.utils import mpl_to_datetime64
@@ -39,7 +40,14 @@ ax.set_ylabel('{y_axislabel}', weight='{y_axislabel_weight}', size={y_axislabel_
 
 # Set tick label properties
 ax.tick_params('x', labelsize={x_ticklabel_size})
-ax.tick_params('y', labelsize={x_ticklabel_size})
+ax.tick_params('y', labelsize={y_ticklabel_size})
+
+# Set the figure colors
+# To create the figure with the default settings, comment out the next line
+# Alternatively, to create the figure with colors from the current glue environment:
+#  - from glue.config import settings
+#  - set_figure_colors(ax, background=settings.BACKGROUND_COLOR, foreground=settings.FOREGROUND_COLOR
+set_figure_colors(ax, background={background_color}, foreground={foreground_color})
 
 # For manual edition of the plot
 #  - Uncomment the next code line (plt.show)
@@ -61,6 +69,7 @@ ax.legend(legend_handles, legend_labels,
     title_fontsize={fontsize},   # fontsize of the title
     fontsize={fontsize},          # fontsize of the labels
     facecolor='{frame_color}',
+    labelcolor='{label_color}',
     edgecolor={edge_color}
 )
 """.strip()
@@ -311,7 +320,8 @@ class MatplotlibViewerMixin(object):
         return ['import matplotlib',
                 "matplotlib.use('Agg')",
                 "# matplotlib.use('qt5Agg')",
-                'import matplotlib.pyplot as plt'], SCRIPT_HEADER.format(**state_dict)
+                'import matplotlib.pyplot as plt',
+                'from glue.viewers.matplotlib.mpl_axes import set_figure_colors'], SCRIPT_HEADER.format(**state_dict)
 
     def _script_footer(self):
         mode = 'rectilinear' if not hasattr(self.state, 'plot_mode') else self.state.plot_mode
@@ -326,6 +336,8 @@ class MatplotlibViewerMixin(object):
         if mode == 'polar':
             state_dict['x_axislabel'] = ''
             state_dict['y_axislabel'] = ''
+        state_dict['background_color'] = "\"{color}\"".format(color=settings.BACKGROUND_COLOR)
+        state_dict['foreground_color'] = "\"{color}\"".format(color=settings.FOREGROUND_COLOR)
         state_dict['scale_script'] = "# Set scale (log or linear)\n" + temp_str if temp_str else ''
         full_sphere = ['aitoff', 'hammer', 'lambert', 'mollweide']
         state_dict['limit_script'] = '' if mode in full_sphere else LIMIT_SCRIPT.format(**state_dict)
@@ -335,6 +347,7 @@ class MatplotlibViewerMixin(object):
         state_dict = self.state.legend.as_dict()
         state_dict['location'] = self.state.legend.mpl_location
         state_dict['edge_color'] = self.state.legend.edge_color
+        state_dict['label_color'] = settings.FOREGROUND_COLOR
         legend_str = SCRIPT_LEGEND.format(**state_dict)
         if not self.state.legend.visible:
             legend_str = indent(legend_str, "# ")
