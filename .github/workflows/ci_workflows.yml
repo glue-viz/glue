@@ -40,10 +40,6 @@ jobs:
         - linux: py38-test-pyside514
         - linux: py39-test-pyqt515
         - linux: py39-test-pyside515
-        - linux: py310-test-pyside63
-        - linux: py310-test-pyqt63-all
-        - linux: py310-test-pyside64
-        - linux: py310-test-pyqt64-all
 
         # Documentation build
         - linux: py38-docs-pyqt514
@@ -54,54 +50,43 @@ jobs:
           coverage: false
 
         # Test a few configurations on MacOS X
-        - macos: py38-test-pyqt514
+        - macos: py38-test-pyqt514-all
         - macos: py310-test-pyqt515
-        - macos: py310-test-pyside63
-        - macos: py310-test-pyqt63
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
-        - windows: py310-test-pyqt515
+        - windows: py310-test-pyqt515-all
+
+  allowed_failures:
+    needs: initial_checks
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      display: true
+      # Linux PyQt 5.15 and 6.3 installations require apt-getting xcb and EGL deps
+      libraries: |
+        apt:
+          - '^libxcb.*-dev'
+          - libxkbcommon-x11-dev
+          - libegl1-mesa
+        brew:
+          - enchant
+      envs: |
+        # Some (PySide2 in particular) envs are failing with runtime errors;
+        # PyQt6 and PySide6 support in progress
+        - linux: py310-test-pyside63
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyside64
+        - linux: py310-test-pyqt64-all
+
+        - macos: py310-test-pyside63
+        - macos: py310-test-pyqt64
+
         - windows: py310-test-pyqt63
         - windows: py310-test-pyside64
 
-  # allowed_failures:
-  #   needs: initial_checks
-  #   uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-  #   with:
-  #     coverage: codecov
-  #     display: true
-  #     # Linux PyQt 5.15 and 6.3 installations require apt-getting xcb and EGL deps
-  #     libraries: |
-  #       apt:
-  #         - '^libxcb.*-dev'
-  #         - libxkbcommon-x11-dev
-  #         - libegl1-mesa
-  #       brew:
-  #         - enchant
-  #     envs: |
-  #       # Some (PySide2 in particular) envs are failing with runtime errors;
-  #       # PyQt6 and PySide6 support in progress
-  #       # - linux: py38-test-pyside514
-  #       # - linux: py310-test-pyqt63-all
-  #       # - linux: py310-test-pyside63
-  #       # - linux: py310-test-pyside515-all
-  #       # - linux: py310-test-pyqt513-lts
-  #       # - linux: py310-test-pyqt515-lts
-
-  #       # Test against latest developer versions of some packages
-  #       - linux: py310-test-pyqt515-dev-all
-
-  #       # - macos: py38-test-pyside514
-  #       # - macos: py310-test-pyqt515-all
-  #       # - macos: py310-test-pyqt63
-  #       # - macos: py310-test-pyside63
-
-  #       # - windows: py38-test-pyqt514-all
-  #       # - windows: py39-test-pyside515-all
-  #       # - windows: py310-test-pyqt63
-  #       # - windows: py310-test-pyside63
-
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
 
   publish:
     needs: tests
