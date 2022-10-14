@@ -41,23 +41,23 @@ class TestExportPython(BaseTestExportPython):
     @pytest.mark.parametrize('wcs', [False, True])
     def test_simple(self, tmpdir, wcs):
         if wcs:
-            self.viewer = self.app.new_data_viewer(ImageViewer)
             self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('wcs', [False, True])
     def test_simple_legend(self, tmpdir, wcs):
         if wcs:
-            self.viewer = self.app.new_data_viewer(ImageViewer)
             self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
         self.viewer.state.show_legend = True
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('wcs', [False, True])
     def test_simple_att(self, tmpdir, wcs):
         if wcs:
-            self.viewer = self.app.new_data_viewer(ImageViewer)
             self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
         self.viewer.state.x_att = self.data.pixel_component_ids[1]
         self.viewer.state.y_att = self.data.pixel_component_ids[0]
         self.assert_same(tmpdir)
@@ -65,8 +65,8 @@ class TestExportPython(BaseTestExportPython):
     @pytest.mark.parametrize('wcs', [False, True])
     def test_simple_visual(self, tmpdir, wcs):
         if wcs:
-            self.viewer = self.app.new_data_viewer(ImageViewer)
             self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
         self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].cmap = plt.cm.RdBu
         self.viewer.state.layers[0].v_min = 0.2
@@ -91,17 +91,35 @@ class TestExportPython(BaseTestExportPython):
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
 
-    def test_subset_legend(self, tmpdir):
+    @pytest.mark.parametrize('wcs', [False, True])
+    def test_subset_legend(self, tmpdir, wcs):
+        if wcs:
+            self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
+            self.data_collection.new_subset_group('mysubset', self.data_wcs.id['cube'] > 0.5)
+        else:
+            self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.viewer.state.legend.visible = True
-        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir, tol=0.15)  # transparency and such
 
-    def test_subset_slice(self, tmpdir):
-        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
+    @pytest.mark.parametrize('wcs', [False, True])
+    def test_subset_slice(self, tmpdir, wcs):
+        if wcs:
+            self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
+            self.data_collection.new_subset_group('mysubset', self.data_wcs.id['cube'] > 0.5)
+        else:
+            self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.test_slice(tmpdir)
 
-    def test_subset_transposed(self, tmpdir):
+    @pytest.mark.parametrize('wcs', [False, True])
+    def test_subset_transposed(self, tmpdir, wcs):
+        if wcs:
+            self.viewer.add_data(self.data_wcs)
+            self.viewer.remove_data(self.data)
+            self.data_collection.new_subset_group('mysubset', self.data_wcs.id['cube'] > 0.5)
+        else:
+            self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
         self.viewer.state.y_att = self.data.pixel_component_ids[1]
-        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
