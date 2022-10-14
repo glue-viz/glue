@@ -46,8 +46,6 @@ jobs:
           coverage: false
         - macos: py39-docs-pyqt515
           coverage: false
-        - windows: py310-docs-pyqt515
-          coverage: false
 
         # Test a few configurations on MacOS X
         - macos: py38-test-pyqt514-all
@@ -87,6 +85,10 @@ jobs:
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
+
+        # Windows docs build
+        - windows: py310-docs-pyqt515
+          coverage: false
 
   publish:
     needs: tests
