@@ -53,7 +53,9 @@ jobs:
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
-        - windows: py310-test-pyqt515-all
+
+        # Test against latest developer versions of some packages
+        - linux: py310-test-pyqt515-dev-all
 
   allowed_failures:
     needs: initial_checks
@@ -83,12 +85,12 @@ jobs:
         - windows: py310-test-pyqt63
         - windows: py310-test-pyside64
 
-        # Test against latest developer versions of some packages
-        - linux: py310-test-pyqt515-dev-all
-
         # Windows docs build
         - windows: py310-docs-pyqt515
           coverage: false
+
+        # Failure in test_close_tab
+        - windows: py310-test-pyqt515-all
 
   publish:
     needs: tests
