@@ -223,17 +223,12 @@ class MatplotlibImageMixin(object):
 
         script += f"ref_data = data_collection[{dindex}]\n"
 
-        ref_coords = self.state.reference_data.coords
-
-        if isinstance(ref_coords, WCS):
-            script += f"ax.reset_wcs(slices={self.state.wcsaxes_slice}, wcs=ref_data.coords)\n"
-        elif hasattr(ref_coords, 'wcs'):
-            script += f"ax.reset_wcs(slices={self.state.wcsaxes_slice}, wcs=ref_data.coords.wcs)\n"
-        elif hasattr(ref_coords, 'wcsaxes_dict'):
-            raise NotImplementedError()
-        else:
+        if isinstance(self.state.reference_data.coords, (LegacyCoordinates, type(None))):
             imports.append('from glue.viewers.image.viewer import get_identity_wcs')
-            script += f"ax.reset_wcs(slices={self.state.wcsaxes_slice}, wcs=get_identity_wcs(ref_data.ndim))\n"
+            ref_wcs = "get_identity_wcs(ref_data.ndim)"
+        else:
+            ref_wcs = "ref_data.coords"
+        script += f"ax.reset_wcs(slices={self.state.wcsaxes_slice}, wcs={ref_wcs})\n"
 
         script += "# for the legend\n"
         script += "legend_handles = []\n"
