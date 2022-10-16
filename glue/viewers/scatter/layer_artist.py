@@ -110,6 +110,7 @@ class ColoredLineCollection(LineCollection):
             data_new = np.zeros((len(data) - 1) * 2)
             data_new[::2] = data[:-1]
             data_new[1::2] = data[1:]
+            self.set_color(None)
             set_mpl_artist_cmap(self, data_new, **kwargs)
         else:
             if isinstance(color, np.ndarray):
