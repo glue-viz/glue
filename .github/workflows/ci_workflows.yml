@@ -29,6 +29,7 @@ jobs:
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
         brew:
           - enchant
 
@@ -40,6 +41,9 @@ jobs:
         - linux: py38-test-pyside514
         - linux: py39-test-pyqt515
         - linux: py39-test-pyside515
+        - linux: py310-test-pyside63
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyqt64-all
 
         # Documentation build
         - linux: py38-docs-pyqt514
@@ -50,9 +54,12 @@ jobs:
         # Test a few configurations on MacOS X
         - macos: py38-test-pyqt514-all
         - macos: py310-test-pyqt515
+        - macos: py310-test-pyside63
+        - macos: py310-test-pyqt64
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
+        - windows: py310-test-pyqt63
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
@@ -72,17 +79,8 @@ jobs:
         brew:
           - enchant
       envs: |
-        # Some (PySide2 in particular) envs are failing with runtime errors;
-        # PyQt6 and PySide6 support in progress
-        - linux: py310-test-pyside63
-        - linux: py310-test-pyqt63-all
+        # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
         - linux: py310-test-pyside64
-        - linux: py310-test-pyqt64-all
-
-        - macos: py310-test-pyside63
-        - macos: py310-test-pyqt64
-
-        - windows: py310-test-pyqt63
         - windows: py310-test-pyside64
 
         # Windows docs build

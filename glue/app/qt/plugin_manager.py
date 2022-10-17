@@ -56,7 +56,7 @@ class QtPluginManager(object):
         config = PluginConfig.load()
 
         for name in self._checkboxes:
-            config.plugins[name] = self._checkboxes[name].checkState(0) > 0
+            config.plugins[name] = self._checkboxes[name].checkState(0) == Qt.Checked
 
         try:
             config.save()

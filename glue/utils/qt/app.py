@@ -66,7 +66,10 @@ def get_qapp(icon_path=None):
         qapp.setFont(font)
 
     # Make sure we use high resolution icons for HDPI displays.
-    qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    try:
+        qapp.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    except AttributeError:  # PyQt6/PySide6 don't have this setting as it is default
+        pass
 
     return qapp
 
