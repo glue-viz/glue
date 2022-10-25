@@ -35,7 +35,6 @@ jobs:
           - libhdf5-dev
         brew:
           - enchant
-          - hdf5
 
       envs: |
         # Standard tests
@@ -48,9 +47,8 @@ jobs:
         - linux: py310-test-pyside63
         - linux: py310-test-pyqt63-all
         - linux: py310-test-pyqt64-all
-        - name: Python 3.11 rc with PySide6 (Linux)
-          linux: py311-test-pyside63
-          python-version: '3.11.0-rc.2'
+        - name: Python 3.11 with PyQt5.14 (Linux)
+          linux: py311-test-pyqt514
 
         # Documentation build
         - linux: py38-docs-pyqt514
@@ -63,22 +61,19 @@ jobs:
         - macos: py310-test-pyqt515
         - macos: py310-test-pyside63
         - macos: py310-test-pyqt64
-        - name: Python 3.11 rc with Qt5.15 (macOS)
+        - name: Python 3.11 with PyQt5.15 (macOS)
           macos: py311-test-pyqt515
-          python-version: '3.11.0-rc.2'
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
         - windows: py310-test-pyqt63
-        - name: Python 3.11 rc with Qt5.14 (Windows)
-          windows: py311-test-pyqt514
-          python-version: '3.11.0-rc.2'
+        - name: Python 3.11 with PyQt5.15 (Windows)
+          windows: py311-test-pyqt515
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
-        - name: Python 3.11 rc with Qt6.4 (Linux)
+        - name: Python 3.11 with PyQt6.4 (Linux)
           linux: py311-test-pyqt64-dev
-          python-version: '3.11.0-rc.2'
 
   allowed_failures:
     needs: initial_checks
@@ -101,9 +96,10 @@ jobs:
         # and https://github.com/matplotlib/matplotlib/issues/24155
         - linux: py310-test-pyside64
         - windows: py310-test-pyside64
-        - name: Python 3.11 rc with PySide6 6.4 (macOS)
+        - name: Python 3.11 with PySide6 (Linux)
+          linux: py311-test-pyside64
+        - name: Python 3.11 with PySide6 6.4 (macOS)
           macos: py311-test-pyside64
-          python-version: '3.11.0-rc.2'
 
         # Windows docs build
         - windows: py310-docs-pyqt515
