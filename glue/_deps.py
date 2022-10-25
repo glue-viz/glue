@@ -56,12 +56,12 @@ PIP package name:
 
     def __str__(self):
         if self.installed:
-            status = f'INSTALLED ({self.version:s})'
+            status = f'INSTALLED ({self.version})'
         elif self.failed:
-            status = f'FAILED ({self.info:s})'
+            status = f'FAILED ({self.info})'
         else:
-            status = f'MISSING ({self.info:s})'
-        return f"{self.package:20s}:\t{status:s}"
+            status = f'MISSING ({self.info})'
+        return f"{self.package:>20}:\t{status}"
 
 
 class Python(Dependency):
@@ -84,10 +84,10 @@ class QtDependency(Dependency):
 
     def __str__(self):
         if self.installed:
-            status = f'INSTALLED ({self.version:s})'
+            status = f'INSTALLED ({self.version})'
         else:
             status = 'NOT INSTALLED'
-        return f"{self.module:20s}:\t{status:s}"
+        return f"{self.module:>20}:\t{status}"
 
 
 class PyQt5(QtDependency):
