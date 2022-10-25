@@ -60,12 +60,10 @@ jobs:
         - macos: py310-test-pyqt515
         - macos: py310-test-pyside63
         - macos: py310-test-pyqt64
-        - macos: py311-test-pyqt515
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
         - windows: py310-test-pyqt63
-        - windows: py311-test-pyqt515
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
@@ -90,10 +88,13 @@ jobs:
       envs: |
         # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
         # and https://github.com/matplotlib/matplotlib/issues/24155
+        # Python 3.11.0 not yet available on all platforms.
         - linux: py310-test-pyside64
         - windows: py310-test-pyside64
         - linux: py311-test-pyside64
+        - macos: py311-test-pyqt515
         - macos: py311-test-pyside64
+        - windows: py311-test-pyqt515
 
         # Windows docs build
         - windows: py310-docs-pyqt515
@@ -107,7 +108,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
     with:
       # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
-      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx libopenblas-dev xvfb'
+      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx libopenblas-dev libhdf5-dev xvfb'
       test_extras: 'test,qt'
       test_command: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & sleep 3; DISPLAY=:99.0 pytest --pyargs glue
     secrets:
