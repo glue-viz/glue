@@ -115,8 +115,10 @@ class CompositeArray(object):
         if mode == 'colormap' and minimum_cmap_alpha == 1.:
             start = 0
             for i in range(len(sorted_uuids)):
-                if self.layers[sorted_uuids[i]]['alpha'] == 1:
-                    start = i
+                layer = self.layers[sorted_uuids[i]]
+                if layer['visible']:
+                    if layer['alpha'] == 1:
+                        start = i
             sorted_uuids = sorted_uuids[start:]
 
         for uuid in sorted_uuids:
