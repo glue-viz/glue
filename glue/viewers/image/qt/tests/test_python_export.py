@@ -43,40 +43,34 @@ class TestExportPython(BaseTestExportPython):
     def assert_same(self, tmpdir, tol=0.1):
         BaseTestExportPython.assert_same(self, tmpdir, tol=tol)
 
-    @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
-    def test_simple(self, tmpdir, coords):
+    def viewer_load(self, coords):
         if coords is not None:
             self.viewer.add_data(getattr(self, f'data_{coords}'))
             self.viewer.remove_data(self.data)
+
+    @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
+    def test_simple(self, tmpdir, coords):
+        self.viewer_load(coords)
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_simple_legend(self, tmpdir, coords):
-        if coords is not None:
-            self.viewer.add_data(getattr(self, f'data_{coords}'))
-            self.viewer.remove_data(self.data)
+        self.viewer_load(coords)
         self.viewer.state.show_legend = True
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_simple_att(self, tmpdir, coords):
-        if coords is None:
-            data = self.data
-        else:
-            data = getattr(self, f'data_{coords}')
-            self.viewer.add_data(data)
-            self.viewer.remove_data(self.data)
-        self.viewer.state.x_att = data.pixel_component_ids[1]
-        self.viewer.state.y_att = data.pixel_component_ids[0]
+        self.viewer_load(coords)
+        self.viewer.state.x_att = self.viewer.state.reference_data.pixel_component_ids[1]
+        self.viewer.state.y_att = self.viewer.state.reference_data.pixel_component_ids[0]
         if coords == 'affine':
             pytest.xfail('Known issue with axis label rendering')
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_simple_visual(self, tmpdir, coords):
-        if coords is not None:
-            self.viewer.add_data(getattr(self, f'data_{coords}'))
-            self.viewer.remove_data(self.data)
+        self.viewer_load(coords)
         self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].cmap = plt.cm.RdBu
         self.viewer.state.layers[0].v_min = 0.2
@@ -89,15 +83,9 @@ class TestExportPython(BaseTestExportPython):
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_slice(self, tmpdir, coords):
-        if coords is None:
-            data = self.data
-        else:
-            data = getattr(self, f'data_{coords}')
-            self.viewer.add_data(data)
-            self.viewer.remove_data(self.data)
-
-        self.viewer.state.x_att = data.pixel_component_ids[1]
-        self.viewer.state.y_att = data.pixel_component_ids[0]
+        self.viewer_load(coords)
+        self.viewer.state.x_att = self.viewer.state.reference_data.pixel_component_ids[1]
+        self.viewer.state.y_att = self.viewer.state.reference_data.pixel_component_ids[0]
         self.viewer.state.slices = (2, 3, 4)
         if coords == 'affine':
             pytest.xfail('Known issue with axis label rendering')
@@ -105,52 +93,34 @@ class TestExportPython(BaseTestExportPython):
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_aspect(self, tmpdir, coords):
-        if coords is not None:
-            self.viewer.add_data(getattr(self, f'data_{coords}'))
-            self.viewer.remove_data(self.data)
+        self.viewer_load(coords)
         self.viewer.state.aspect = 'auto'
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_subset(self, tmpdir, coords):
-        if coords is not None:
-            self.viewer.add_data(getattr(self, f'data_{coords}'))
-            self.viewer.remove_data(self.data)
+        self.viewer_load(coords)
         self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.assert_same(tmpdir)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_subset_legend(self, tmpdir, coords):
-        if coords is None:
-            data = self.data
-        else:
-            data = getattr(self, f'data_{coords}')
-            self.viewer.add_data(data)
-            self.viewer.remove_data(self.data)
-        self.data_collection.new_subset_group('mysubset', data.id['cube'] > 0.5)
+        self.viewer_load(coords)
+        self.data_collection.new_subset_group('mysubset',
+                                              self.viewer.state.reference_data.id['cube'] > 0.5)
         self.viewer.state.legend.visible = True
         self.assert_same(tmpdir, tol=0.15)  # transparency and such
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_subset_slice(self, tmpdir, coords):
-        if coords is None:
-            data = self.data
-        else:
-            data = getattr(self, f'data_{coords}')
-            self.viewer.add_data(data)
-            self.viewer.remove_data(self.data)
-        self.data_collection.new_subset_group('mysubset', data.id['cube'] > 0.5)
+        self.viewer_load(coords)
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.test_slice(tmpdir, coords)
 
     @pytest.mark.parametrize('coords', [None, 'wcs', 'affine'])
     def test_subset_transposed(self, tmpdir, coords):
-        if coords is None:
-            data = self.data
-        else:
-            data = getattr(self, f'data_{coords}')
-            self.viewer.add_data(data)
-            self.viewer.remove_data(self.data)
-        self.data_collection.new_subset_group('mysubset', data.id['cube'] > 0.5)
+        self.viewer_load(coords)
+        self.data_collection.new_subset_group('mysubset', self.data.id['cube'] > 0.5)
         self.viewer.state.x_att = self.data.pixel_component_ids[0]
         self.viewer.state.y_att = self.data.pixel_component_ids[1]
         self.assert_same(tmpdir)
