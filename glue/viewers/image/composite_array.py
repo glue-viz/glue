@@ -12,6 +12,8 @@ __all__ = ['CompositeArray']
 
 COLOR_CONVERTER = ColorConverter()
 
+CMAP_SAMPLING = np.linspace(0, 1, 256)
+
 STRETCHES = {
     'linear': LinearStretch,
     'sqrt': SqrtStretch,
@@ -80,7 +82,35 @@ class CompositeArray(object):
         img = None
         visible_layers = 0
 
-        for uuid in sorted(self.layers, key=lambda x: self.layers[x]['zorder']):
+        # We first check that layers are either all colormaps or all single
+        # colors, and at the same time, if we use colormaps we check whether
+        # any of the colormaps have non-1 values in the alpha.
+
+        minimum_cmap_alpha = 1
+
+        mode = None
+        for layer in self.layers.values():
+            if mode is None:
+                if isinstance(layer['color'], Colormap):
+                    if mode is None:
+                        mode = 'colormap'
+                    elif mode == 'color':
+                        raise Exception("Mixed color and colormaps in CompositeArray")
+                    else:
+                        minimum_cmap_alpha = min(layer['color'](CMAP_SAMPLING)[:, 3].min(),
+                                                 minimum_cmap_alpha)
+                else:
+                    if mode is None:
+                        mode = 'color'
+                    elif mode == 'colormap':
+                        raise Exception("Mixed color and colormaps in CompositeArray")
+
+        sorted_uuids = sorted(self.layers, key=lambda x: self.layers[x]['zorder'])
+
+        if mode == 'colormap' and self.layers[sorted_uuids[-1]]['alpha'] == 1:
+            sorted_uuids = sorted_uuids[-1:]
+
+        for uuid in sorted_uuids:
 
             layer = self.layers[uuid]
 
@@ -104,10 +134,13 @@ class CompositeArray(object):
             else:
                 scalar = False
 
-            data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array)))
+            stretch = STRETCHES[layer['stretch']]()
+            data = interval(array)
+            data = contrast_bias(data, out=data)
+            data = stretch(data, out=data)
             data[np.isnan(data)] = 0
 
-            if isinstance(layer['color'], Colormap):
+            if mode == 'colormap':
 
                 if img is None:
                     img = np.ones(data.shape + (4,))
@@ -115,16 +148,27 @@ class CompositeArray(object):
                 # Compute colormapped image
                 plane = layer['color'](data)
 
-                alpha_plane = layer['alpha'] * plane[:, :, 3]
+                if plane[:, :, 3].min() == 1.:
 
-                # Use traditional alpha compositing
-                plane[:, :, 0] = plane[:, :, 0] * alpha_plane
-                plane[:, :, 1] = plane[:, :, 1] * alpha_plane
-                plane[:, :, 2] = plane[:, :, 2] * alpha_plane
+                    if layer['alpha'] == 1:
+                        img[...] = 0
+                    else:
+                        plane *= layer['alpha']
+                        img *= (1 - layer['alpha'])
 
-                img[:, :, 0] *= (1 - alpha_plane)
-                img[:, :, 1] *= (1 - alpha_plane)
-                img[:, :, 2] *= (1 - alpha_plane)
+                else:
+
+                    alpha_plane = layer['alpha'] * plane[:, :, 3]
+
+                    # Use traditional alpha compositing
+                    plane[:, :, 0] = plane[:, :, 0] * alpha_plane
+                    plane[:, :, 1] = plane[:, :, 1] * alpha_plane
+                    plane[:, :, 2] = plane[:, :, 2] * alpha_plane
+
+                    img[:, :, 0] *= (1 - alpha_plane)
+                    img[:, :, 1] *= (1 - alpha_plane)
+                    img[:, :, 2] *= (1 - alpha_plane)
+
                 img[:, :, 3] = 1
 
             else:
