@@ -83,32 +83,41 @@ class CompositeArray(object):
         visible_layers = 0
 
         # We first check that layers are either all colormaps or all single
-        # colors, and at the same time, if we use colormaps we check whether
-        # any of the colormaps have non-1 values in the alpha.
+        # colors, and at the same time, if we use colormaps we ccheck what
+        # the smallest alpha value is - if it is 1 then colormaps do not change
+        # transparency and this allows us to speed things up a little.
 
         minimum_cmap_alpha = 1
-
         mode = None
-        for layer in self.layers.values():
-            if mode is None:
-                if isinstance(layer['color'], Colormap):
-                    if mode is None:
-                        mode = 'colormap'
-                    elif mode == 'color':
-                        raise Exception("Mixed color and colormaps in CompositeArray")
-                    else:
-                        minimum_cmap_alpha = min(layer['color'](CMAP_SAMPLING)[:, 3].min(),
-                                                 minimum_cmap_alpha)
-                else:
-                    if mode is None:
-                        mode = 'color'
-                    elif mode == 'colormap':
-                        raise Exception("Mixed color and colormaps in CompositeArray")
 
+        for layer in self.layers.values():
+            if isinstance(layer['color'], Colormap):
+                if mode is None:
+                    mode = 'colormap'
+                elif mode == 'color':
+                    raise TypeError("Mixed color and colormaps in CompositeArray")
+                else:
+                    minimum_cmap_alpha = min(layer['color'](CMAP_SAMPLING)[:, 3].min(),
+                                                minimum_cmap_alpha)
+            else:
+                if mode is None:
+                    mode = 'color'
+                elif mode == 'colormap':
+                    raise TypeError("Mixed color and colormaps in CompositeArray")
+
+        # Get a sorted list of UUIDs with the top layers last
         sorted_uuids = sorted(self.layers, key=lambda x: self.layers[x]['zorder'])
 
-        if mode == 'colormap' and self.layers[sorted_uuids[-1]]['alpha'] == 1:
-            sorted_uuids = sorted_uuids[-1:]
+        # In the case where we are dealing with colormaps, we can start from
+        # the last layer that has an opacity of 1 because layers below will not
+        # affect the output, assuming also that the colormaps do not change the
+        # alpha
+        if mode == 'colormap' and minimum_cmap_alpha == 1.:
+            start = 0
+            for i in range(len(sorted_uuids)):
+                if self.layers[sorted_uuids[i]]['alpha'] == 1:
+                    start = i
+            sorted_uuids = sorted_uuids[start:]
 
         for uuid in sorted_uuids:
 
@@ -119,6 +128,7 @@ class CompositeArray(object):
 
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
+            stretch = STRETCHES[layer['stretch']]()
 
             if callable(layer['array']):
                 array = layer['array'](bounds=bounds)
@@ -134,7 +144,6 @@ class CompositeArray(object):
             else:
                 scalar = False
 
-            stretch = STRETCHES[layer['stretch']]()
             data = interval(array)
             data = contrast_bias(data, out=data)
             data = stretch(data, out=data)
@@ -148,7 +157,7 @@ class CompositeArray(object):
                 # Compute colormapped image
                 plane = layer['color'](data)
 
-                if plane[:, :, 3].min() == 1.:
+                if minimum_cmap_alpha == 1.:
 
                     if layer['alpha'] == 1:
                         img[...] = 0
@@ -158,9 +167,10 @@ class CompositeArray(object):
 
                 else:
 
+                    # Use traditional alpha compositing
+
                     alpha_plane = layer['alpha'] * plane[:, :, 3]
 
-                    # Use traditional alpha compositing
                     plane[:, :, 0] = plane[:, :, 0] * alpha_plane
                     plane[:, :, 1] = plane[:, :, 1] * alpha_plane
                     plane[:, :, 2] = plane[:, :, 2] * alpha_plane
@@ -199,7 +209,7 @@ class CompositeArray(object):
         if img is None:
             return None
         else:
-            img = np.clip(img, 0, 1)
+            img = np.clip(img, 0, 1, out=img)
 
         return img
 
