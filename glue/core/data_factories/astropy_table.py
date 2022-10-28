@@ -40,7 +40,10 @@ def astropy_table_read(*args, **kwargs):
     # also more generally, we should first try the ASCII readers.
     if 'format' not in kwargs:
         try:
-            return Table.read(*args, format='ascii', **kwargs)
+            t = Table.read(*args, format='ascii', **kwargs)
+            # Double-check for certain FITS files that may be read in as ASCII in Python 3.11
+            if not (len(t) == 1 and [c.value[0] for c in t.itercols()][:3] == ['SIMPLE', '=', 'T']):
+                return t
         except Exception:
             pass
 
