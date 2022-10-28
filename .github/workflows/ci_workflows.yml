@@ -1,4 +1,4 @@
-name: CI Workflows
+name: CI Tests
 
 on:
   push:
@@ -60,6 +60,7 @@ jobs:
         - macos: py310-test-pyqt515
         - macos: py310-test-pyside63
         - macos: py310-test-pyqt64
+        - macos: py311-test-pyqt515
 
         # Test some configurations on Windows
         - windows: py38-test-pyqt514
@@ -88,11 +89,11 @@ jobs:
       envs: |
         # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
         # and https://github.com/matplotlib/matplotlib/issues/24155
-        # Python 3.11.0 not yet available on all platforms.
+        # Python 3.11.0 failing on Windows in test_image.py on
+        # > assert df.find_factory(fname) is df.img_data
         - linux: py310-test-pyside64
         - windows: py310-test-pyside64
         - linux: py311-test-pyside64
-        - macos: py311-test-pyqt515
         - macos: py311-test-pyside64
         - windows: py311-test-pyqt515
 

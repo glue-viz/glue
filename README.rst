@@ -46,7 +46,7 @@ License
 Glue is licensed under the `BSD
 License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__.
 
-.. |Actions Status| image:: https://github.com/glue-viz/glue/workflows/CI%20Workflows/badge.svg
+.. |Actions Status| image:: https://github.com/glue-viz/glue/actions/workflows/ci_workflows.yml/badge.svg
     :target: https://github.com/glue-viz/glue/actions
     :alt: Glue's GitHub Actions CI Status
 .. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue/branch/master/graph/badge.svg
