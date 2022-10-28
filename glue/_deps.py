@@ -43,31 +43,33 @@ class Dependency(object):
                 return 'unknown version'
 
     def help(self):
-        result = """
-{module}:
+        result = f"""
+{self.module}:
 ******************
 
-{info}
+{self.info}
 
 PIP package name:
-{package}
-""".format(module=self.module, info=self.info, package=self.package)
+{self.package}
+"""
         return result
 
     def __str__(self):
         if self.installed:
-            status = 'INSTALLED (%s)' % self.version
+            status = f'INSTALLED ({self.version})'
         elif self.failed:
-            status = 'FAILED (%s)' % self.info
+            status = f'FAILED ({self.info})'
         else:
-            status = 'MISSING (%s)' % self.info
-        return "%20s:\t%s" % (self.package, status)
+            status = f'MISSING ({self.info})'
+        return f"{self.package:>20}:\t{status}"
 
 
 class Python(Dependency):
 
     def __init__(self):
+        self.module = 'Python'
         self.package = 'Python'
+        self.info = 'Interpreter and core library'
 
     @property
     def installed(self):
@@ -82,10 +84,10 @@ class QtDependency(Dependency):
 
     def __str__(self):
         if self.installed:
-            status = 'INSTALLED (%s)' % self.version
+            status = f'INSTALLED ({self.version})'
         else:
             status = 'NOT INSTALLED'
-        return "%20s:\t%s" % (self.module, status)
+        return f"{self.module:>20}:\t{status}"
 
 
 class PyQt5(QtDependency):
@@ -94,7 +96,18 @@ class PyQt5(QtDependency):
     def version(self):
         try:
             from PyQt5 import Qt
-            return "PyQt: {0} - Qt: {1}".format(Qt.PYQT_VERSION_STR, Qt.QT_VERSION_STR)
+            return f"PyQt: {Qt.PYQT_VERSION_STR} - Qt: {Qt.QT_VERSION_STR}"
+        except (ImportError, AttributeError):
+            return 'unknown version'
+
+
+class PyQt6(QtDependency):
+
+    @property
+    def version(self):
+        try:
+            from PyQt6 import QtCore
+            return f"PyQt: {QtCore.PYQT_VERSION_STR} - Qt: {QtCore.QT_VERSION_STR}"
         except (ImportError, AttributeError):
             return 'unknown version'
 
@@ -106,7 +119,19 @@ class PySide2(QtDependency):
         try:
             import PySide2
             from PySide2 import QtCore
-            return "PySide2: {0} - Qt: {1}".format(PySide2.__version__, QtCore.__version__)
+            return f"PySide2: {PySide2.__version__} - Qt: {QtCore.__version__}"
+        except (ImportError, AttributeError):
+            return 'unknown version'
+
+
+class PySide6(QtDependency):
+
+    @property
+    def version(self):
+        try:
+            import PySide6
+            from PySide6 import QtCore
+            return f"PySide6: {PySide6.__version__} - Qt: {QtCore.__version__}"
         except (ImportError, AttributeError):
             return 'unknown version'
 
@@ -132,8 +157,10 @@ python = (
 )
 
 gui_framework = (
-    PyQt5('PyQt5', ''),
-    PySide2('PySide2', '')
+    PyQt5('PyQt5', 'Facultative QtPy backend'),
+    PyQt6('PyQt6', 'Facultative QtPy backend'),
+    PySide2('PySide2', 'Facultative QtPy backend'),
+    PySide6('PySide6', 'Facultative QtPy backend')
 )
 
 required = (
@@ -258,7 +285,7 @@ def main(argv=None):
         dep = dependencies.get(argv[2], None)
 
         if dep is None:
-            sys.stderr.write("Unrecognized dependency: %s\n" % argv[2])
+            sys.stderr.write(f"Unrecognized dependency: {argv[2]:s}\n")
             sys.exit(1)
 
         print(dep.help())
