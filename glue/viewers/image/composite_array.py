@@ -83,7 +83,7 @@ class CompositeArray(object):
         visible_layers = 0
 
         # We first check that layers are either all colormaps or all single
-        # colors, and at the same time, if we use colormaps we ccheck what
+        # colors, and at the same time, if we use colormaps we check what
         # the smallest alpha value is - if it is 1 then colormaps do not change
         # transparency and this allows us to speed things up a little.
 
