@@ -30,15 +30,16 @@ def python_export_image_layer(layer, *args):
     script += "composite.allocate('{0}')\n".format(layer.uuid)
 
     if layer._viewer_state.color_mode == 'Colormaps':
-        color = code('plt.cm.' + layer.state.cmap.name)
+        script += "composite.mode = 'colormap'\n"
     else:
-        color = layer.state.color
+        script += "composite.mode = 'color'\n"
 
     options = dict(array=code('array_maker'),
                    clim=(layer.state.v_min, layer.state.v_max),
                    visible=layer.state.visible,
                    zorder=layer.state.zorder,
-                   color=color,
+                   color=layer.state.color,
+                   cmap=code('plt.cm.' + layer.state.cmap.name),
                    contrast=layer.state.contrast,
                    bias=layer.state.bias,
                    alpha=layer.state.alpha,

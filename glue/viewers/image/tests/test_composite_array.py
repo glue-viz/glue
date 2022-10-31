@@ -49,14 +49,16 @@ class TestCompositeArray(object):
 
     def test_cmap_blending(self):
 
+        self.composite.mode = 'colormap'
+
         self.composite.allocate('a')
         self.composite.allocate('b')
 
         self.composite.set('a', zorder=0, visible=True, array=self.array1,
-                           color=cm.Blues, clim=(0, 2))
+                           cmap=cm.Blues, clim=(0, 2))
 
         self.composite.set('b', zorder=1, visible=True, array=self.array2,
-                           color=cm.Reds, clim=(0, 1))
+                           cmap=cm.Reds, clim=(0, 1))
 
         # Determine expected result for each layer individually in the absence
         # of transparency

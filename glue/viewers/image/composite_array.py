@@ -1,7 +1,11 @@
 # This artist can be used to deal with the sampling of the data as well as any
 # RGB blending.
 
+import warnings
+
 import numpy as np
+
+from glue.config import colormaps
 
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
@@ -32,6 +36,17 @@ class CompositeArray(object):
         self.layers = {}
 
         self._first = True
+        self._mode = 'color'
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value not in ['color', 'colormap']:
+            raise ValueError("mode should be one of 'color' or 'colormap'")
+        self._mode = value
 
     def allocate(self, uuid):
         self.layers[uuid] = {'zorder': 0,
@@ -39,6 +54,7 @@ class CompositeArray(object):
                              'array': None,
                              'shape': None,
                              'color': '0.5',
+                             'cmap': colormaps.members[0][1],
                              'alpha': 1,
                              'clim': (0, 1),
                              'contrast': 1,
@@ -52,6 +68,9 @@ class CompositeArray(object):
         for key, value in kwargs.items():
             if key not in self.layers[uuid]:
                 raise KeyError("Unknown key: {0}".format(key))
+            elif key == 'color' and isinstance(value, Colormap):
+                warnings.warn('Setting colormap using "color" key is deprecated, use "cmap" instead.', UserWarning)
+                self.layers[uuid]['cmap'] = value
             else:
                 self.layers[uuid][key] = value
 
@@ -88,22 +107,10 @@ class CompositeArray(object):
         # transparency and this allows us to speed things up a little.
 
         minimum_cmap_alpha = 1
-        mode = None
-
-        for layer in self.layers.values():
-            if isinstance(layer['color'], Colormap):
-                if mode is None:
-                    mode = 'colormap'
-                elif mode == 'color':
-                    raise TypeError("Mixed color and colormaps in CompositeArray")
-                else:
-                    minimum_cmap_alpha = min(layer['color'](CMAP_SAMPLING)[:, 3].min(),
-                                                minimum_cmap_alpha)
-            else:
-                if mode is None:
-                    mode = 'color'
-                elif mode == 'colormap':
-                    raise TypeError("Mixed color and colormaps in CompositeArray")
+        if self.mode == 'colormap':
+            for layer in self.layers.values():
+                minimum_cmap_alpha = min(layer['cmap'](CMAP_SAMPLING)[:, 3].min(),
+                                            minimum_cmap_alpha)
 
         # Get a sorted list of UUIDs with the top layers last
         sorted_uuids = sorted(self.layers, key=lambda x: self.layers[x]['zorder'])
@@ -112,7 +119,7 @@ class CompositeArray(object):
         # the last layer that has an opacity of 1 because layers below will not
         # affect the output, assuming also that the colormaps do not change the
         # alpha
-        if mode == 'colormap' and minimum_cmap_alpha == 1.:
+        if self.mode == 'colormap' and minimum_cmap_alpha == 1.:
             start = 0
             for i in range(len(sorted_uuids)):
                 layer = self.layers[sorted_uuids[i]]
@@ -151,13 +158,13 @@ class CompositeArray(object):
             data = stretch(data, out=data)
             data[np.isnan(data)] = 0
 
-            if mode == 'colormap':
+            if self.mode == 'colormap':
 
                 if img is None:
                     img = np.ones(data.shape + (4,))
 
                 # Compute colormapped image
-                plane = layer['color'](data)
+                plane = layer['cmap'](data)
 
                 if minimum_cmap_alpha == 1.:
 
