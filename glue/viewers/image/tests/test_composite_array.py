@@ -93,6 +93,15 @@ class TestCompositeArray(object):
         assert_allclose(self.composite(bounds=self.default_bounds),
                         [[expected_a[0, 0], expected_b[0, 1]], expected_a[1]])
 
+        # For the same case with the top layer alpha=0.5 that value should become an equal
+        # blend of both layers again
+
+        self.composite.set('b', alpha=0.5)
+
+        assert_allclose(self.composite(bounds=self.default_bounds),
+                        [[expected_a[0, 0], 0.5 * (expected_a[0, 1] + expected_b[0, 1])],
+                         expected_a[1]])
+
         # For only the bottom layer having such colormap, the top layer should appear just the same
 
         self.composite.set('a', alpha=1., cmap=lambda x: cm.Blues(x, alpha=abs(np.nan_to_num(x))))

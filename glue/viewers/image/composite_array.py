@@ -101,20 +101,10 @@ class CompositeArray(object):
         img = None
         visible_layers = 0
 
-        # We first check that layers are either all colormaps or all single
-        # colors, and at the same time, if we use colormaps we check what
-        # the smallest alpha value is - if it is 1 then colormaps do not change
-        # transparency and this allows us to speed things up a little.
-
-        minimum_cmap_alpha = 1
-        if self.mode == 'colormap':
-            for layer in self.layers.values():
-                minimum_cmap_alpha = min(layer['cmap'](CMAP_SAMPLING)[:, 3].min(),
-                                            minimum_cmap_alpha)
-
         # Get a sorted list of UUIDs with the top layers last
         sorted_uuids = sorted(self.layers, key=lambda x: self.layers[x]['zorder'])
 
+        # We first check that layers are either all colormaps or all single colors.
         # In the case where we are dealing with colormaps, we can start from
         # the last layer that has an opacity of 1 because layers below will not
         # affect the output, assuming also that the colormaps do not change the
@@ -166,7 +156,11 @@ class CompositeArray(object):
                 # Compute colormapped image
                 plane = layer['cmap'](data)
 
-                if minimum_cmap_alpha == 1.:
+                # Check what the smallest colormap alpha value for this layer is
+                # - if it is 1 then this colormap does not change transparency,
+                # and this allows us to speed things up a little.
+
+                if layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
 
                     if layer['alpha'] == 1:
                         img[...] = 0
