@@ -119,12 +119,12 @@ class CompositeArray(object):
         # the last layer that has an opacity of 1 because layers below will not
         # affect the output, assuming also that the colormaps do not change the
         # alpha
-        if self.mode == 'colormap' and minimum_cmap_alpha == 1.:
+        if self.mode == 'colormap':
             start = 0
             for i in range(len(sorted_uuids)):
                 layer = self.layers[sorted_uuids[i]]
                 if layer['visible']:
-                    if layer['alpha'] == 1:
+                    if layer['alpha'] * layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
                         start = i
             sorted_uuids = sorted_uuids[start:]
 

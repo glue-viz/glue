@@ -85,6 +85,21 @@ class TestCompositeArray(object):
 
         assert_allclose(self.composite(bounds=self.default_bounds), 0.5 * (expected_b + expected_a))
 
+        # If the top layer has alpha=1 with a colormap alpha fading proportional to absval,
+        # it should be visible only at the nonzero value [0, 1]
+
+        self.composite.set('b', alpha=1., cmap=lambda x: cm.Reds(x, alpha=abs(np.nan_to_num(x))))
+
+        assert_allclose(self.composite(bounds=self.default_bounds),
+                        [[expected_a[0, 0], expected_b[0, 1]], expected_a[1]])
+
+        # For only the bottom layer having such colormap, the top layer should appear just the same
+
+        self.composite.set('a', alpha=1., cmap=lambda x: cm.Blues(x, alpha=abs(np.nan_to_num(x))))
+        self.composite.set('b', alpha=1., cmap=cm.Reds)
+
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_b)
+
     def test_color_blending(self):
 
         self.composite.allocate('a')
