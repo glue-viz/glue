@@ -77,7 +77,7 @@ class TestStandaloneImageViewer(object):
         cm_mode = self.w.toolbar.tools['image:colormap']
         act = cm_mode.menu_actions()[1]
         act.trigger()
-        assert self.w._composite.layers['image']['color'] is act.cmap
+        assert self.w._composite.layers['image']['cmap'] is act.cmap
 
     def test_double_set_image(self):
         assert len(self.w._axes.images) == 1
