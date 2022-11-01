@@ -1,7 +1,11 @@
 # This artist can be used to deal with the sampling of the data as well as any
 # RGB blending.
 
+import warnings
+
 import numpy as np
+
+from glue.config import colormaps
 
 from matplotlib.colors import ColorConverter, Colormap
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
@@ -11,6 +15,8 @@ from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
 __all__ = ['CompositeArray']
 
 COLOR_CONVERTER = ColorConverter()
+
+CMAP_SAMPLING = np.linspace(0, 1, 256)
 
 STRETCHES = {
     'linear': LinearStretch,
@@ -30,6 +36,17 @@ class CompositeArray(object):
         self.layers = {}
 
         self._first = True
+        self._mode = 'color'
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value not in ['color', 'colormap']:
+            raise ValueError("mode should be one of 'color' or 'colormap'")
+        self._mode = value
 
     def allocate(self, uuid):
         self.layers[uuid] = {'zorder': 0,
@@ -37,6 +54,7 @@ class CompositeArray(object):
                              'array': None,
                              'shape': None,
                              'color': '0.5',
+                             'cmap': colormaps.members[0][1],
                              'alpha': 1,
                              'clim': (0, 1),
                              'contrast': 1,
@@ -50,6 +68,9 @@ class CompositeArray(object):
         for key, value in kwargs.items():
             if key not in self.layers[uuid]:
                 raise KeyError("Unknown key: {0}".format(key))
+            elif key == 'color' and isinstance(value, Colormap):
+                warnings.warn('Setting colormap using "color" key is deprecated, use "cmap" instead.', UserWarning)
+                self.layers[uuid]['cmap'] = value
             else:
                 self.layers[uuid][key] = value
 
@@ -80,7 +101,23 @@ class CompositeArray(object):
         img = None
         visible_layers = 0
 
-        for uuid in sorted(self.layers, key=lambda x: self.layers[x]['zorder']):
+        # Get a sorted list of UUIDs with the top layers last
+        sorted_uuids = sorted(self.layers, key=lambda x: self.layers[x]['zorder'])
+
+        # We first check that layers are either all colormaps or all single colors.
+        # In the case where we are dealing with colormaps, we can start from
+        # the last layer that has an opacity of 1 because layers below will not
+        # affect the output, assuming also that the colormaps do not change the
+        # alpha
+        if self.mode == 'colormap':
+            for i in range(len(sorted_uuids) - 1, -1, -1):
+                layer = self.layers[sorted_uuids[i]]
+                if layer['visible']:
+                    if layer['alpha'] == 1 and layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
+                        sorted_uuids = sorted_uuids[i:]
+                        break
+
+        for uuid in sorted_uuids:
 
             layer = self.layers[uuid]
 
@@ -89,6 +126,7 @@ class CompositeArray(object):
 
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
+            stretch = STRETCHES[layer['stretch']]()
 
             if callable(layer['array']):
                 array = layer['array'](bounds=bounds)
@@ -104,27 +142,45 @@ class CompositeArray(object):
             else:
                 scalar = False
 
-            data = STRETCHES[layer['stretch']]()(contrast_bias(interval(array)))
+            data = interval(array)
+            data = contrast_bias(data, out=data)
+            data = stretch(data, out=data)
             data[np.isnan(data)] = 0
 
-            if isinstance(layer['color'], Colormap):
+            if self.mode == 'colormap':
 
                 if img is None:
                     img = np.ones(data.shape + (4,))
 
                 # Compute colormapped image
-                plane = layer['color'](data)
+                plane = layer['cmap'](data)
 
-                alpha_plane = layer['alpha'] * plane[:, :, 3]
+                # Check what the smallest colormap alpha value for this layer is
+                # - if it is 1 then this colormap does not change transparency,
+                # and this allows us to speed things up a little.
 
-                # Use traditional alpha compositing
-                plane[:, :, 0] = plane[:, :, 0] * alpha_plane
-                plane[:, :, 1] = plane[:, :, 1] * alpha_plane
-                plane[:, :, 2] = plane[:, :, 2] * alpha_plane
+                if layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
 
-                img[:, :, 0] *= (1 - alpha_plane)
-                img[:, :, 1] *= (1 - alpha_plane)
-                img[:, :, 2] *= (1 - alpha_plane)
+                    if layer['alpha'] == 1:
+                        img[...] = 0
+                    else:
+                        plane *= layer['alpha']
+                        img *= (1 - layer['alpha'])
+
+                else:
+
+                    # Use traditional alpha compositing
+
+                    alpha_plane = layer['alpha'] * plane[:, :, 3]
+
+                    plane[:, :, 0] = plane[:, :, 0] * alpha_plane
+                    plane[:, :, 1] = plane[:, :, 1] * alpha_plane
+                    plane[:, :, 2] = plane[:, :, 2] * alpha_plane
+
+                    img[:, :, 0] *= (1 - alpha_plane)
+                    img[:, :, 1] *= (1 - alpha_plane)
+                    img[:, :, 2] *= (1 - alpha_plane)
+
                 img[:, :, 3] = 1
 
             else:
@@ -155,7 +211,7 @@ class CompositeArray(object):
         if img is None:
             return None
         else:
-            img = np.clip(img, 0, 1)
+            img = np.clip(img, 0, 1, out=img)
 
         return img
 

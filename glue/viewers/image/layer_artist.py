@@ -156,15 +156,16 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return
 
         if self._viewer_state.color_mode == 'Colormaps':
-            color = self.state.cmap
+            self.composite.mode = 'colormap'
         else:
-            color = self.state.color
+            self.composite.mode = 'color'
 
         self.composite.set(self.uuid,
                            clim=(self.state.v_min, self.state.v_max),
                            visible=self.state.visible,
                            zorder=self.state.zorder,
-                           color=color,
+                           color=self.state.color,
+                           cmap=self.state.cmap,
                            contrast=self.state.contrast,
                            bias=self.state.bias,
                            alpha=self.state.alpha,
