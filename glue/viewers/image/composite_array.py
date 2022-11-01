@@ -110,13 +110,12 @@ class CompositeArray(object):
         # affect the output, assuming also that the colormaps do not change the
         # alpha
         if self.mode == 'colormap':
-            start = 0
-            for i in range(len(sorted_uuids)):
+            for i in range(len(sorted_uuids) - 1, -1, -1):
                 layer = self.layers[sorted_uuids[i]]
                 if layer['visible']:
-                    if layer['alpha'] * layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
-                        start = i
-            sorted_uuids = sorted_uuids[start:]
+                    if layer['alpha'] == 1 and layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
+                        sorted_uuids = sorted_uuids[i:]
+                        break
 
         for uuid in sorted_uuids:
 
