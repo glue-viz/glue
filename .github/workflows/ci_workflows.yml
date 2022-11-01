@@ -58,7 +58,6 @@ jobs:
         # Test a few configurations on macOS
         - macos: py38-test-pyqt514-all
         - macos: py310-test-pyqt515
-        - macos: py310-test-pyside63
         - macos: py310-test-pyqt64
         - macos: py311-test-pyqt515
 
@@ -92,9 +91,10 @@ jobs:
         # Python 3.11.0 failing on Windows in test_image.py on
         # > assert df.find_factory(fname) is df.img_data
         - linux: py310-test-pyside64
-        - windows: py310-test-pyside64
         - linux: py311-test-pyside64
+        - macos: py310-test-pyside63
         - macos: py311-test-pyside64
+        - windows: py310-test-pyside64
         - windows: py311-test-pyqt515
 
         # Windows docs build
