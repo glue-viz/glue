@@ -55,7 +55,10 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
 
     result = wcs.pixel_to_world_values(*pixel)
 
-    return broadcast_to(result[world_axis], original_shape)
+    if len(pixel) > 1:
+        result = result[world_axis]
+
+    return broadcast_to(result, original_shape)
 
 
 def world2pixel_single_axis(wcs, *world, pixel_axis=None):
