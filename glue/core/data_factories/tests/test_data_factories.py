@@ -122,7 +122,7 @@ def test_dtype_int():
     data = b'# a, b\n1, 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
-    assert d['a'].dtype == np.int
+    assert d['a'].dtype == int
 
 
 def test_dtype_float():

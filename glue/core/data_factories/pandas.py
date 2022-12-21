@@ -17,9 +17,9 @@ def panda_process(indf):
 
     """
     result = Data()
-    for name, column in indf.iteritems():
+    for name, column in indf.items():
 
-        if (column.dtype == np.object) | (column.dtype == np.bool):
+        if (column.dtype == object) | (column.dtype == bool):
 
             # try to salvage numerical data
             try:

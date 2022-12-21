@@ -125,9 +125,9 @@ class DendrogramViewer(MatplotlibDataViewer):
                 if self.state.select_substruct:
                     parent = self.state.reference_data[self.state.parent_att]
                     select = _substructures(parent, select)
-                select = np.asarray(select, dtype=np.int)
+                select = np.asarray(select, dtype=int)
             else:
-                select = np.array([], dtype=np.int)
+                select = np.array([], dtype=int)
 
             subset_state = CategorySubsetState(self.state.reference_data.pixel_component_ids[0], select)
 

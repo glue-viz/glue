@@ -51,7 +51,7 @@ def _substructures(parent, idx):
     while todo:
         result.append(todo.pop())
         todo.extend(children[result[-1]])
-    return np.array(result, dtype=np.int)
+    return np.array(result, dtype=int)
 
 
 def _dendro_children(parent):
@@ -66,7 +66,7 @@ def _dendro_children(parent):
 def _iter_sorted(children, parent, key):
     # must yield both children before parent
     yielded = set()
-    trunks = np.array([i for i, p in enumerate(parent) if p < 0], dtype=np.int)
+    trunks = np.array([i for i, p in enumerate(parent) if p < 0], dtype=int)
     for idx in np.argsort(key[trunks]):
         idx = trunks[idx]
         for item in _postfix_iter(idx, children, parent, yielded, key):

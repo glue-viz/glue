@@ -21,25 +21,22 @@ def make_skipper(module, label=None, version=None):
         if version:
             assert Version(version_installed) >= Version(version)
         installed = True
-    except (ImportError, AssertionError):
+    except (ImportError, AssertionError, AttributeError):
         installed = False
     return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
 
 
-ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy',
-                                                   label='Astropy')
+ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy', label='Astropy')
 
 MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version='2.2')
 
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
-SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
-                                               label='SciPy')
+SCIPY_INSTALLED, requires_scipy = make_skipper('scipy', label='SciPy')
 
 PIL_INSTALLED, requires_pil = make_skipper('PIL', label='PIL')
 
-SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage',
-                                                   label='scikit-image')
+SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage', label='scikit-image')
 
 XLRD_INSTALLED, requires_xlrd = make_skipper('xlrd')
 

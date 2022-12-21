@@ -67,7 +67,7 @@ def test_coerce_numeric():
     assert coerce_numeric(x) is x
 
     x = np.array([0, 1, 1, 0], dtype=bool)
-    np.testing.assert_array_equal(coerce_numeric(x), np.array([0, 1, 1, 0], dtype=np.int))
+    np.testing.assert_array_equal(coerce_numeric(x), np.array([0, 1, 1, 0], dtype=int))
 
 
 @pytest.mark.parametrize(('shape', 'views'),
