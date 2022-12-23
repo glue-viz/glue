@@ -1,7 +1,7 @@
 import numpy as np
 from astropy.wcs import WCS
 
-from glue.utils import unbroadcast, broadcast_to
+from glue.utils import unbroadcast
 from glue.core.coordinates import LegacyCoordinates
 
 
@@ -58,7 +58,7 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
     if len(pixel) > 1 or np.ndim(result) > 1:
         result = result[world_axis]
 
-    return broadcast_to(result, original_shape)
+    return np.broadcast_to(result, original_shape)
 
 
 def world2pixel_single_axis(wcs, *world, pixel_axis=None):
@@ -104,7 +104,7 @@ def world2pixel_single_axis(wcs, *world, pixel_axis=None):
 
     result = wcs.world_to_pixel_values(*world)
 
-    return broadcast_to(result[pixel_axis], original_shape)
+    return np.broadcast_to(result[pixel_axis], original_shape)
 
 
 def world_axis(wcs, data, *, pixel_axis=None, world_axis=None):

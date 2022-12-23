@@ -11,7 +11,7 @@ from glue.core.coordinate_helpers import (dependent_axes, default_world_coords,
                                           world2pixel_single_axis)
 from glue.core.subset import InequalitySubsetState
 from glue.core.util import join_component_view
-from glue.utils import unbroadcast, broadcast_to
+from glue.utils import unbroadcast
 from glue.logger import logger
 
 __all__ = ['ComponentLink', 'BinaryComponentLink', 'CoordinateComponentLink']
@@ -198,7 +198,7 @@ class ComponentLink(object, metaclass=ContractsMeta):
             result.shape = args[0].shape
 
         # Finally we broadcast the final result to desired shape
-        result = broadcast_to(result, original_shape)
+        result = np.broadcast_to(result, original_shape)
 
         return result
 
@@ -386,7 +386,7 @@ class CoordinateComponentLink(ComponentLink):
             args2[f] = a
         for i in range(self.ndim):
             if args2[i] is None:
-                args2[i] = broadcast_to(default[self.ndim - 1 - i], args[0].shape)
+                args2[i] = np.broadcast_to(default[self.ndim - 1 - i], args[0].shape)
         args2 = tuple(args2)
 
         if self.pixel2world:
@@ -487,7 +487,7 @@ class BinaryComponentLink(ComponentLink):
         if original_shape is None:
             return result
         else:
-            return broadcast_to(result, original_shape)
+            return np.broadcast_to(result, original_shape)
 
     def __gluestate__(self, context):
         left = context.id(self._left)

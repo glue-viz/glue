@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 from astropy.utils import NumpyRNGContext
 
 from glue import core
-from glue.utils import broadcast_to
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
@@ -930,10 +929,10 @@ def test_compute_statistic_empty_subset():
     assert_equal(result, np.nan)
 
     result = data.compute_statistic('maximum', data.id['x'], subset_state=subset_state, axis=1)
-    assert_equal(result, broadcast_to(np.nan, (30, 40)))
+    assert_equal(result, np.broadcast_to(np.nan, (30, 40)))
 
     result = data.compute_statistic('median', data.id['x'], subset_state=subset_state, axis=(1, 2))
-    assert_equal(result, broadcast_to(np.nan, (30)))
+    assert_equal(result, np.broadcast_to(np.nan, (30)))
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, axis=(0, 1, 2))
     assert_equal(result, np.nan)

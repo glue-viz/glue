@@ -1,6 +1,6 @@
 import numpy as np
 
-from glue.utils import unbroadcast, broadcast_to
+from glue.utils import unbroadcast
 
 __all__ = ['points_inside_poly', 'polygon_line_intersections', 'floodfill', 'rotation_matrix_2d']
 
@@ -82,7 +82,7 @@ def points_inside_poly(x, y, vx, vy):
     inside[keep][~good] = False
 
     inside = inside.reshape(reduced_shape)
-    inside = broadcast_to(inside, original_shape)
+    inside = np.broadcast_to(inside, original_shape)
 
     return inside
 
