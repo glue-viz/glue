@@ -55,7 +55,7 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
 
     result = wcs.pixel_to_world_values(*pixel)
 
-    if len(pixel) > 1:
+    if len(pixel) > 1 or np.ndim(result) > 1:
         result = result[world_axis]
 
     return broadcast_to(result, original_shape)
