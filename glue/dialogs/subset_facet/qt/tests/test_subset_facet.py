@@ -36,4 +36,5 @@ class TestSubsetFacet(object):
             s._apply()
             p.assert_called_once_with(self.collect, s.state.att,
                                       lo=1, hi=3,
-                                      steps=5, log=False)
+                                      steps=5, log=False,
+                                      cmap=cm.RdYlBu)
