@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import cm
 
 from qtpy import QtWidgets
-from glue.core.util import colorize_subsets, facet_subsets
+from glue.core.util import facet_subsets
 from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty
 from glue.utils.qt import load_ui
@@ -83,9 +83,9 @@ class SubsetFacetDialog(QtWidgets.QDialog):
         if not np.isfinite(lo) or not np.isfinite(hi):
             return
 
-        subsets = facet_subsets(self._collect, self.state.att, lo=lo, hi=hi,
-                                steps=self.state.steps, log=self.state.log)
-        colorize_subsets(subsets, self.state.cmap)
+        facet_subsets(self._collect, self.state.att, lo=lo, hi=hi,
+                      steps=self.state.steps, log=self.state.log,
+                      cmap=self.state.cmap)
 
     @classmethod
     def facet(cls, collect, default=None, parent=None):
