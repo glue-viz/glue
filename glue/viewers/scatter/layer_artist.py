@@ -230,13 +230,17 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
-
                 full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
                 degrees = getattr(self._viewer_state, 'using_degrees', False)
                 if degrees:
                     x = np.radians(x)
                     if full_sphere:
                         y = np.radians(y)
+
+                # The full-sphere projections expect longitude angles in the range [-pi, pi]
+                # so we wrap angles to accommodate this
+                if full_sphere:
+                    x = np.arctan2(np.sin(x), np.cos(x))
 
                 self.density_artist.set_label(None)
                 if self._use_plot_artist():
