@@ -220,7 +220,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         If `True`, space divisions logarithmically. Default is `False`
     style : dict, optional
         Any visual attributes specified here will be used when creating subsets
-    cmap : :class:`matplotlib.colors.Colormap`
+    cmap : :class:`matplotlib.colors.Colormap`, optional
         Matplotlib colormap instance used to generate colors.
         If specified, this will override any colors set in `style`
 
