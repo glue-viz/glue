@@ -363,7 +363,7 @@ class DataGraphWidget(QGraphicsView):
 
     def find_object(self, event):
         for obj in list(self.nodes) + self.edges:
-            if obj.contains(event.localPos()):
+            if obj.contains(event.position()):
                 return obj
 
     def mouseMoveEvent(self, event):
