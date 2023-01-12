@@ -163,11 +163,7 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     from qtpy.QtCore import QTimer
 
-    timer = QTimer()
-    timer.setInterval(1000)
-    timer.setSingleShot(True)
-    timer.timeout.connect(splash.close)
-    timer.start()
+    splash.close()
 
     if gluefile is not None:
         with die_on_error("Error restoring Glue session"):
