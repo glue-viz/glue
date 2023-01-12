@@ -161,8 +161,6 @@ def start_glue(gluefile=None, config=None, datafiles=None, maximized=True,
 
     hub = None
 
-    from qtpy.QtCore import QTimer
-
     splash.close()
 
     if gluefile is not None:
