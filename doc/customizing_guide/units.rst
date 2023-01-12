@@ -6,7 +6,7 @@ Unit conversion in glue
 
 Data components can be assigned units as a string (or `None` to indicate no known units).
 By default, glue uses `astropy.units <https://docs.astropy.org/en/stable/units/index.html>`_ package
-to theb carry out unit conversions based on these units. However, it is possible to customize the
+to carry out unit conversions based on these units. However, it is possible to customize the
 unit conversion machinery, either to use a different unit transformation machinery, or to specify
 e.g. equivalencies in the astropy unit conversion. To customize the unit conversion behavior, you
 will need to define a unit converter as shown below::
