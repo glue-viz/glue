@@ -59,8 +59,7 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
 
     if len(pixel) == 1 and pixel[0].ndim > 1:
         pixel_shape = pixel[0].shape
-        pixel = [pixel[0].ravel()]
-        result = wcs.pixel_to_world_values(*pixel)
+        result = wcs.pixel_to_world_values(pixel[0].ravel())
         result = result.reshape(pixel_shape)
     else:
         result = wcs.pixel_to_world_values(*pixel)
@@ -112,9 +111,21 @@ def world2pixel_single_axis(wcs, *world, pixel_axis=None):
             world_new.append(w.flat[0])
     world = np.broadcast_arrays(*world_new)
 
-    result = wcs.world_to_pixel_values(*world)
+    # In the case of 1D WCS, there is an astropy issue which prevents us from
+    # passing arbitrary shapes - see https://github.com/astropy/astropy/issues/12154
+    # Therefore, we ravel the values and reshape afterwards
 
-    return np.broadcast_to(result[pixel_axis], original_shape)
+    if len(world) == 1 and world[0].ndim > 1:
+        world_shape = world[0].shape
+        result = wcs.world_to_pixel_values(world[0].ravel())
+        result = result.reshape(world_shape)
+    else:
+        result = wcs.world_to_pixel_values(*world)
+
+    if len(world) > 1:
+        result = result[pixel_axis]
+
+    return np.broadcast_to(result, original_shape)
 
 
 def world_axis(wcs, data, *, pixel_axis=None, world_axis=None):

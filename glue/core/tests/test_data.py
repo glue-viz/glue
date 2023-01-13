@@ -818,10 +818,16 @@ def test_update_coords():
             return ['Custom {0}'.format(axis) for axis in range(3)]
 
         def world_to_pixel_values(self, *world):
-            return tuple([0.4 * w for w in world])
+            if self.pixel_n_dim == 1:
+                return 0.4 * world[0]
+            else:
+                return tuple([0.4 * w for w in world])
 
         def pixel_to_world_values(self, *pixel):
-            return tuple([2.5 * p for p in pixel])
+            if self.world_n_dim == 1:
+                return 2.5 * pixel[0]
+            else:
+                return tuple([2.5 * p for p in pixel])
 
     data1.coords = CustomCoordinates()
 
