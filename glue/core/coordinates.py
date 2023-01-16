@@ -90,10 +90,16 @@ class LegacyCoordinates(Coordinates):
         super().__init__(pixel_n_dim=10, world_n_dim=10)
 
     def pixel_to_world_values(self, *pixel):
-        return pixel
+        if len(pixel) == 1:
+            return pixel[0]
+        else:
+            return pixel
 
     def world_to_pixel_values(self, *world):
-        return world
+        if len(world) == 1:
+            return world[0]
+        else:
+            return world
 
 
 class IdentityCoordinates(Coordinates):
@@ -102,10 +108,16 @@ class IdentityCoordinates(Coordinates):
         super().__init__(pixel_n_dim=n_dim, world_n_dim=n_dim)
 
     def pixel_to_world_values(self, *pixel):
-        return pixel
+        if self.pixel_n_dim == 1:
+            return pixel[0]
+        else:
+            return pixel
 
     def world_to_pixel_values(self, *world):
-        return world
+        if self.world_n_dim == 1:
+            return world[0]
+        else:
+            return world
 
     @property
     def axis_correlation_matrix(self):

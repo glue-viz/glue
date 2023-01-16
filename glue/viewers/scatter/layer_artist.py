@@ -9,7 +9,7 @@ from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.utils import defer_draw, broadcast_to, ensure_numerical, datetime64_to_mpl
+from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -413,7 +413,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                         if self.state.size_mode == 'Fixed':
                             s = self.state.size * self.state.size_scaling
-                            s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
+                            s = np.broadcast_to(s, self.scatter_artist.get_sizes().shape)
                         else:
                             s = ensure_numerical(self.layer[self.state.size_att].ravel())
                             s = ((s - self.state.size_vmin) /

@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.colors as mcolors
 
-from glue.utils import defer_draw, broadcast_to
+from glue.utils import defer_draw
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
@@ -238,7 +238,7 @@ class ImageSubsetArray(object):
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return broadcast_to(np.nan, self.shape)
+            return np.broadcast_to(np.nan, self.shape)
 
         # We should compute the mask even if the layer is not visible as we need
         # the layer to show up properly when it is made visible (which doesn't
@@ -248,7 +248,7 @@ class ImageSubsetArray(object):
             mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return broadcast_to(np.nan, self.shape)
+            return np.broadcast_to(np.nan, self.shape)
         else:
             self.layer_artist.enable(redraw=False)
 

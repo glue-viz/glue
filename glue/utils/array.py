@@ -9,7 +9,7 @@ import pandas as pd
 from numpy import nanmin, nanmax, nanmean, nanmedian, nansum  # noqa
 
 __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
-           'coerce_numeric', 'check_sorted', 'broadcast_to', 'unbroadcast',
+           'coerce_numeric', 'check_sorted', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'format_minimal', 'compute_statistic',
            'categorical_ndarray', 'index_lookup', 'ensure_numerical',
            'broadcast_arrays_minimal', 'random_views_for_dask_array']
@@ -199,18 +199,6 @@ def pretty_number(numbers):
             result = result.rstrip('0')
 
     return result
-
-
-def broadcast_to(array, shape):
-    """
-    Compatibility function - can be removed once we support only Numpy 1.10
-    and above
-    """
-    try:
-        return np.broadcast_to(array, shape)
-    except AttributeError:
-        array = np.asarray(array)
-        return np.broadcast_arrays(array, np.ones(shape, array.dtype))[0]
 
 
 def find_chunk_shape(shape, n_max=None):

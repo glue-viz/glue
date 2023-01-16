@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 from astropy.utils import NumpyRNGContext
 
 from glue import core
-from glue.utils import broadcast_to
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
@@ -819,10 +818,16 @@ def test_update_coords():
             return ['Custom {0}'.format(axis) for axis in range(3)]
 
         def world_to_pixel_values(self, *world):
-            return tuple([0.4 * w for w in world])
+            if self.pixel_n_dim == 1:
+                return 0.4 * world[0]
+            else:
+                return tuple([0.4 * w for w in world])
 
         def pixel_to_world_values(self, *pixel):
-            return tuple([2.5 * p for p in pixel])
+            if self.world_n_dim == 1:
+                return 2.5 * pixel[0]
+            else:
+                return tuple([2.5 * p for p in pixel])
 
     data1.coords = CustomCoordinates()
 
@@ -930,10 +935,10 @@ def test_compute_statistic_empty_subset():
     assert_equal(result, np.nan)
 
     result = data.compute_statistic('maximum', data.id['x'], subset_state=subset_state, axis=1)
-    assert_equal(result, broadcast_to(np.nan, (30, 40)))
+    assert_equal(result, np.broadcast_to(np.nan, (30, 40)))
 
     result = data.compute_statistic('median', data.id['x'], subset_state=subset_state, axis=(1, 2))
-    assert_equal(result, broadcast_to(np.nan, (30)))
+    assert_equal(result, np.broadcast_to(np.nan, (30)))
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, axis=(0, 1, 2))
     assert_equal(result, np.nan)

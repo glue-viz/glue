@@ -28,7 +28,7 @@ from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to, categorical_ndarray,
+                        datetime64_to_mpl, categorical_ndarray,
                         format_choices, random_views_for_dask_array)
 from glue.core.coordinate_helpers import axis_label
 
@@ -445,9 +445,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
             pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
             if view is None:
-                return broadcast_to(pix, self.shape)
+                return np.broadcast_to(pix, self.shape)
             else:
-                return broadcast_to(pix, self.shape)[view]
+                return np.broadcast_to(pix, self.shape)[view]
         elif cid in self.world_component_ids:
             comp = self._world_components[cid]
         elif cid in self._externally_derivable_components:
@@ -1822,7 +1822,7 @@ class Data(BaseCartesianData):
                         if isinstance(axis, int):
                             axis = [axis]
                         final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
-                        return broadcast_to(np.nan, final_shape)
+                        return np.broadcast_to(np.nan, final_shape)
         else:
             data = self.get_data(cid, view=view)
             mask = None
