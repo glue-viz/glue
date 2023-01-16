@@ -90,13 +90,13 @@ class LegacyCoordinates(Coordinates):
         super().__init__(pixel_n_dim=10, world_n_dim=10)
 
     def pixel_to_world_values(self, *pixel):
-        if self.pixel_n_dim == 1:
+        if len(pixel) == 1:
             return pixel[0]
         else:
             return pixel
 
     def world_to_pixel_values(self, *world):
-        if self.world_n_dim == 1:
+        if len(world) == 1:
             return world[0]
         else:
             return world

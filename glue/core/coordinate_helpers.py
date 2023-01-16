@@ -63,9 +63,8 @@ def pixel2world_single_axis(wcs, *pixel, world_axis=None):
         result = result.reshape(pixel_shape)
     else:
         result = wcs.pixel_to_world_values(*pixel)
-
-    if len(pixel) > 1:
-        result = result[world_axis]
+        if len(pixel) > 1:
+            result = result[world_axis]
 
     return np.broadcast_to(result, original_shape)
 
@@ -121,9 +120,8 @@ def world2pixel_single_axis(wcs, *world, pixel_axis=None):
         result = result.reshape(world_shape)
     else:
         result = wcs.world_to_pixel_values(*world)
-
-    if len(world) > 1:
-        result = result[pixel_axis]
+        if len(world) > 1:
+            result = result[pixel_axis]
 
     return np.broadcast_to(result, original_shape)
 
