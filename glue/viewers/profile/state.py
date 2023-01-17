@@ -15,7 +15,7 @@ from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
-from glue.core.units import find_unit_choices, UnitConverter, unit_scaling
+from glue.core.units import find_unit_choices, UnitConverter
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -182,7 +182,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         component = self.reference_data.get_component(self.x_att)
         if component.units:
-            x_choices = find_unit_choices([component.units])
+            x_choices = find_unit_choices([(self.reference_data, self.x_att, component.units)])
         else:
             x_choices = ['']
         ProfileViewerState.x_display_unit.set_choices(self, x_choices)
@@ -195,7 +195,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             if isinstance(layer_state.layer, BaseData):
                 component = layer_state.layer.get_component(layer_state.attribute)
                 if component.units:
-                    component_units.add(component.units)
+                    component_units.add((layer_state.layer, layer_state.attribute, component.units))
         y_choices = [None] + find_unit_choices(component_units)
         ProfileViewerState.y_display_unit.set_choices(self, y_choices)
         ProfileViewerState.y_display_unit.set_choices(self, y_choices)

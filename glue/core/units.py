@@ -3,6 +3,8 @@ from astropy import units as u
 from glue.config import unit_converter, settings
 from glue.core import Subset
 
+__all__ = ['UnitConverter', 'find_unit_choices']
+
 
 class UnitConverter:
 
@@ -48,25 +50,22 @@ class UnitConverter:
 class SimpleAstropyUnitConverter:
 
     def equivalent_units(self, data, cid, units):
-        return map(u.Unit(units).find_equivalent_units(include_prefix_units=True), str)
+        return map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True))
 
     def to_unit(self, data, cid, values, original_units, target_units):
         return (values * u.Unit(original_units)).to_value(target_units)
 
 
-def find_unit_choices(unit_strings):
+def find_unit_choices(data_cid_units):
     equivalent_units = []
-    for unit_string in sorted(unit_strings):
+    converter_helper = unit_converter.members[settings.UNIT_CONVERTER]()
+    for data, cid, unit_string in data_cid_units:
         try:
             if unit_string not in equivalent_units:
                 equivalent_units.append(unit_string)
-            for x in u.Unit(unit_string).find_equivalent_units(include_prefix_units=True):
+            for x in converter_helper.equivalent_units(data, cid, unit_string):
                 if x not in equivalent_units:
                     equivalent_units.append(str(x))
         except ValueError:
             pass
     return equivalent_units
-
-
-def unit_scaling(original, target):
-    return u.Unit(original).to(target)
