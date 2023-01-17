@@ -63,7 +63,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
         self.add_callback('x_display_unit', self._reset_x_limits)
-        self.add_callback('y_display_unit', self._reset_y_limits)
+        self.add_callback('y_display_unit', self._reset_y_limits_if_changed, echo_old=True)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -84,6 +84,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
         ProfileViewerState.y_display_unit.set_display_func(self, format_unit)
 
         self.update_from_dict(kwargs)
+
+    def _reset_y_limits_if_changed(self, old, new):
+        # This is needed because otherwise reset_y_limits gets called even if
+        # just the choices in the y units change but not the selected value.
+        if old != new:
+            self._reset_y_limits()
 
     def _update_combo_ref_data(self):
         self.ref_data_helper.set_multiple_data(self.layers_data)
@@ -180,6 +186,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     def _update_x_display_unit_choices(self):
 
+        if self.reference_data is None:
+            return
+
         component = self.reference_data.get_component(self.x_att)
         if component.units:
             x_choices = find_unit_choices([(self.reference_data, self.x_att, component.units)])
@@ -197,7 +206,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 if component.units:
                     component_units.add((layer_state.layer, layer_state.attribute, component.units))
         y_choices = [None] + find_unit_choices(component_units)
-        ProfileViewerState.y_display_unit.set_choices(self, y_choices)
         ProfileViewerState.y_display_unit.set_choices(self, y_choices)
 
     @defer_draw
