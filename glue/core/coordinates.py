@@ -173,14 +173,22 @@ class AffineCoordinates(Coordinates):
         pixel = np.array(np.broadcast_arrays(*(list(pixel) + [np.ones(np.shape(pixel[0]))])))
         pixel = np.moveaxis(pixel, 0, -1)
         world = np.matmul(pixel, self._matrix.T)
-        return tuple(np.moveaxis(world, -1, 0))[:-1]
+        world = tuple(np.moveaxis(world, -1, 0))[:-1]
+        if self._matrix.shape[0] == 2:  # 1D
+            return world[0]
+        else:
+            return world
 
     def world_to_pixel_values(self, *world):
         scalar = np.all([np.isscalar(w) for w in world])
         world = np.array(np.broadcast_arrays(*(list(world) + [np.ones(np.shape(world[0]))])))
         world = np.moveaxis(world, 0, -1)
         pixel = np.matmul(world, self._matrix_inv.T)
-        return tuple(np.moveaxis(pixel, -1, 0))[:-1]
+        pixel = tuple(np.moveaxis(pixel, -1, 0))[:-1]
+        if self._matrix.shape[0] == 2:  # 1D
+            return pixel[0]
+        else:
+            return pixel
 
     @property
     def world_axis_names(self):

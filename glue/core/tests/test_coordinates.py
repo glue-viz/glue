@@ -381,6 +381,21 @@ def test_pixel2world_single_axis_1d():
     assert_allclose(pixel2world_single_axis(coord, x.reshape((3, 1)), world_axis=0), expected.reshape((3, 1)))
 
 
+def test_pixel2world_single_axis_affine_1d():
+
+    # Regression test for issues that occurred for 1D AffineCoordinates
+
+    coord = AffineCoordinates(np.array([[2, 0], [0, 1]]))
+
+    x = np.array([0.2, 0.4, 0.6])
+    expected = np.array([0.4, 0.8, 1.2])
+
+    assert_allclose(pixel2world_single_axis(coord, x, world_axis=0), expected)
+    assert_allclose(pixel2world_single_axis(coord, x.reshape((1, 3)), world_axis=0), expected.reshape((1, 3)))
+    assert_allclose(pixel2world_single_axis(coord, x.reshape((3, 1)), world_axis=0), expected.reshape((3, 1)))
+
+
+
 def test_affine():
 
     matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])
