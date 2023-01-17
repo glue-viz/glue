@@ -181,8 +181,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     @defer_draw
     def _layers_changed(self, *args):
+        # FIXME: should use uuid in following not id() but GroupedSubset doesn't have uuid (yet)
+        current_layers = [id(layer_state.layer) for layer_state in self.layers]
+        if not hasattr(self, '_last_layers') or self._last_layers != current_layers:
         self._update_combo_ref_data()
         self._update_y_display_unit_choices()
+        self._last_layers = current_layers
 
     def _update_x_display_unit_choices(self):
 
