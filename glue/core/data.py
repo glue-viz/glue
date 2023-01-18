@@ -241,7 +241,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
         if subset.data is not self:
             subset.do_broadcast(False)
             subset.data = self
-            subset.label = subset.label  # hacky. disambiguates name if needed
+            subset.label = subset.label  # hacky, disambiguates name if needed
 
         if self.hub is not None:
             msg = SubsetCreateMessage(subset)
@@ -1692,7 +1692,7 @@ class Data(BaseCartesianData):
             #     from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
             #     for att in subset_state.attributes:
             #         # TODO: in principle we cold still deal with non-pixel
-            #         # componnet IDs, so this should be fixed.
+            #         # component IDs, so this should be fixed.
             #         if not isinstance(att, PixelComponentID):
             #             break
             #         matrix = pixel_cid_to_pixel_cid_matrix(att.parent, self)

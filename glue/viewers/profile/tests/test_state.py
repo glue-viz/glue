@@ -46,17 +46,16 @@ class TestProfileViewerState:
 
     def test_basic(self):
         x, y = self.layer_state.profile
-        assert_allclose(x, [0, 2, 4])
+        assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_basic_world(self):
         self.viewer_state.x_att = self.data.world_component_ids[0]
         x, y = self.layer_state.profile
-        assert_allclose(x, [0, 2, 4])
+        assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_x_att(self):
-
         self.viewer_state.x_att = self.data.pixel_component_ids[0]
         x, y = self.layer_state.profile
         assert_allclose(x, [0, 1, 2])
@@ -94,6 +93,9 @@ class TestProfileViewerState:
         x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
+        self.viewer_state.function = 'slice'
+        assert_allclose(y, [3.5, 11.5, 19.5])
+
     def test_subset(self):
 
         subset = self.data.new_subset()
@@ -102,7 +104,7 @@ class TestProfileViewerState:
         self.layer_state.layer = subset
 
         x, y = self.layer_state.profile
-        assert_allclose(x, [0, 2, 4])
+        assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [np.nan, 13., 19.5])
 
         subset.subset_state = self.data.id['x'] > 100
@@ -159,5 +161,5 @@ class TestProfileViewerState:
         self.layer_state.visible = True
 
         x, y = self.layer_state.profile
-        assert_allclose(x, [0, 2, 4])
+        assert_allclose(x, [0, 1, 2])
         assert_allclose(y, [3.5, 11.5, 19.5])

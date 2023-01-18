@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 from glue.core.hub import HubListener
 
@@ -14,6 +15,8 @@ from glue.utils import defer_draw
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
+from glue.core.state_objects import StateAttributeLimitsHelper
+
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -22,7 +25,8 @@ FUNCTIONS = OrderedDict([('maximum', 'Maximum'),
                          ('minimum', 'Minimum'),
                          ('mean', 'Mean'),
                          ('median', 'Median'),
-                         ('sum', 'Sum')])
+                         ('sum', 'Sum'),
+                         ('slice', 'Slice')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -31,7 +35,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
     """
 
     x_att_pixel = DDCProperty(docstring='The component ID giving the pixel component '
-                                  'shown on the x axis')
+                                        'shown on the x axis')
 
     x_att = DDSCProperty(docstring='The component ID giving the pixel or world component '
                                    'shown on the x axis')
@@ -40,6 +44,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
                                             'which the images are shown')
+
+    slices = DDCProperty(docstring='The current slice along all dimensions')
 
     function = DDSCProperty(docstring='The function to use for collapsing data')
 
@@ -56,7 +62,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
-        self.add_callback('x_att', self._update_att)
+        self.add_callback('x_att', self._update_x_att)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -82,7 +88,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
         return getattr(self.reference_data, 'coords', None) is not None
 
     @defer_draw
-    def _update_att(self, *args):
+    def _update_x_att(self, *args):
+        """
+        Defines ``self.x_att_pixel`` in the viewer state.
+        """
         if self.x_att is not None:
             if self._display_world:
                 if self.x_att in self.reference_data.pixel_component_ids:
@@ -187,7 +196,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
                         self.x_att_helper.world_coord = False
                         self.x_att = self.reference_data.pixel_component_ids[0]
 
-                self._update_att()
+                self._update_x_att()
 
         self.reset_limits()
 
@@ -200,6 +209,39 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return 0
         else:
             return 1
+
+    @property
+    def wcsaxes_slice(self):
+        """
+        Returns slicing information usable by WCSAxes.
+
+        This returns an iterable of slices, and including ``'x'`` and ``'y'``
+        for the dimensions along which we are not slicing.
+        """
+        if self.reference_data is None:
+            return None
+        elif self.x_att_pixel is None:
+            # TODO: This should not be here.
+            # I can not work out how to get this to be set at initialisation.
+            self.x_att_helper.set_multiple_data([self.reference_data])
+            self.x_att_helper.world_coord = False
+            self.x_att = self.reference_data.pixel_component_ids[0]
+            self._update_x_att()
+
+        slices = []
+        for i in range(self.reference_data.ndim):
+            if self.x_att_pixel and i == self.x_att_pixel.axis:
+                slices.append('x')
+            else:
+                slices.append(0)
+        return slices[::-1]
+
+    def _set_default_slices(self):
+        # Need to make sure this gets called immediately when reference_data is changed
+        if self.reference_data is None:
+            self.slices = ()
+        else:
+            self.slices = tuple([0] * self.reference_data.ndim)
 
 
 class ProfileLayerState(MatplotlibLayerState, HubListener):
@@ -221,12 +263,19 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
     _layer_subset_updates_subscribed = False
     _profile_cache = None
 
-    def __init__(self, layer=None, viewer_state=None, **kwargs):
+    def __init__(self, layer=None, viewer_state=None, session=None, **kwargs):
 
-        super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state)
+        super(ProfileLayerState, self).__init__(layer=layer, viewer_state=viewer_state, session=session)
 
-        self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
-                                                           numeric=True, categorical=False)
+        self.viewer_state = viewer_state
+
+        self.session = session
+
+        self.attribute_lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
+                                                               percentile='percentile',
+                                                               lower='v_min', upper='v_max')
+
+        self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute')
 
         percentile_display = {100: 'Min/Max',
                               99.5: '99.5%',
@@ -298,7 +347,9 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
 
         if not self._viewer_callbacks_set:
             self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('x_att_pixel', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('slices', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
@@ -307,7 +358,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             raise IncompatibleDataException()
 
         # Check what pixel axis in the current dataset x_att corresponds to
-        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att_pixel)
+        pix_cid = is_convertible_to_single_pixel_cid(self.layer, self.viewer_state.x_att)
 
         if pix_cid is None:
             raise IncompatibleDataException()
@@ -329,7 +380,16 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             data = self.layer
             subset_state = None
 
-        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
+        if self.viewer_state.function == 'slice':
+            data_slice = list(copy.deepcopy(self.viewer_state.slices))
+            data_slice[pix_cid.axis] = slice(None)
+            profile_values = data.get_data(self.attribute, view=tuple(data_slice))
+            if subset_state:
+                subset_profile_mask = data.get_mask(subset_state=subset_state, view=tuple(data_slice))
+                profile_values = profile_values[subset_profile_mask]
+        else:
+            profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes,
+                                                    subset_state=subset_state)
 
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
@@ -344,6 +404,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             self.update_limits(update_profile=False)
 
     def update_limits(self, update_profile=True):
+
         with delay_callback(self, 'v_min', 'v_max'):
             if update_profile:
                 self.update_profile(update_limits=False)

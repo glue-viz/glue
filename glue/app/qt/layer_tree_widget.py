@@ -197,14 +197,14 @@ class DeleteAction(LayerAction):
 
     def _can_trigger(self):
         selection = self.selected_layers()
-        return all(isinstance(s, (core.Data, core.SubsetGroup))
+        return all(isinstance(s, (core.BaseData, core.SubsetGroup))
                    for s in selection)
 
     def _do_action(self):
         assert self._can_trigger()
         selection = self.selected_layers()
         for s in selection:
-            if isinstance(s, core.Data):
+            if isinstance(s, core.BaseData):
                 self._layer_tree.data_collection.remove(s)
             else:
                 assert isinstance(s, core.SubsetGroup)

@@ -1,7 +1,5 @@
 import os
 
-from astropy.wcs import WCS
-
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import Coordinates, LegacyCoordinates
 from glue.core.coordinate_helpers import dependent_axes
@@ -12,19 +10,9 @@ from glue.viewers.image.compat import update_image_viewer_state
 
 from glue.viewers.image.frb_artist import imshow
 from glue.viewers.image.composite_array import CompositeArray
+from glue.utils.wcs import get_identity_wcs
 
 __all__ = ['MatplotlibImageMixin']
-
-
-def get_identity_wcs(naxis):
-
-    wcs = WCS(naxis=naxis)
-    wcs.wcs.ctype = ['X'] * naxis
-    wcs.wcs.crval = [0.] * naxis
-    wcs.wcs.crpix = [1.] * naxis
-    wcs.wcs.cdelt = [1.] * naxis
-
-    return wcs
 
 
 EXTRA_FOOTER = """

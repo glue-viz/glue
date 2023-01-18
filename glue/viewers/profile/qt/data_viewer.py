@@ -29,5 +29,5 @@ class ProfileViewer(MatplotlibProfileMixin, MatplotlibDataViewer):
     tools = ['select:xrange', 'profile-analysis']
 
     def __init__(self, session, parent=None, state=None):
-        MatplotlibDataViewer.__init__(self, session, parent=parent, state=state)
+        MatplotlibDataViewer.__init__(self, session, parent=parent, wcs=True, state=state)
         MatplotlibProfileMixin.setup_callbacks(self)
