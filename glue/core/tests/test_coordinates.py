@@ -395,7 +395,6 @@ def test_pixel2world_single_axis_affine_1d():
     assert_allclose(pixel2world_single_axis(coord, x.reshape((3, 1)), world_axis=0), expected.reshape((3, 1)))
 
 
-
 def test_affine():
 
     matrix = np.array([[2, 3, -1], [1, 2, 2], [0, 0, 1]])

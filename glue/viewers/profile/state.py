@@ -10,7 +10,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, avoid_circular
 from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
@@ -180,13 +180,17 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_min, self.x_max = self.x_max, self.x_min
 
     @defer_draw
+    @avoid_circular
     def _layers_changed(self, *args):
-        # FIXME: should use uuid in following not id() but GroupedSubset doesn't have uuid (yet)
-        current_layers = [id(layer_state.layer) for layer_state in self.layers]
+        # By default if any of the state properties change, this triggers a
+        # callback on anything listening to changes on self.layers - but here
+        # we just want to know if any layers have been removed/added so we keep
+        # track of the UUIDs of the layers and check this before continuing.
+        current_layers = [layer_state.layer.uuid for layer_state in self.layers]
         if not hasattr(self, '_last_layers') or self._last_layers != current_layers:
-            self._last_layers = current_layers
             self._update_combo_ref_data()
             self._update_y_display_unit_choices()
+            self._last_layers = current_layers
 
     def _update_x_display_unit_choices(self):
 
