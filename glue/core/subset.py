@@ -797,6 +797,9 @@ class RangeSubsetState(SubsetState):
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
 
+    def traverse(self):
+        return self.lo, self.hi
+
 
 class MultiRangeSubsetState(SubsetState):
     """
@@ -1095,6 +1098,12 @@ class CompositeSubsetState(SubsetState):
     def __str__(self):
         sym = OPSYM.get(self.op, self.op)
         return "(%s %s %s)" % (self.state1, sym, self.state2)
+
+    def traverse(self):
+        return (self.op,
+                self.state1 if not hasattr(self.state1, 'traverse') else self.state1.traverse(),
+                self.state2 if not hasattr(self.state2, 'traverse') else self.state2.traverse()
+                )
 
 
 class OrState(CompositeSubsetState):
