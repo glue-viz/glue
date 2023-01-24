@@ -376,6 +376,15 @@ def test_unit_conversion():
     assert viewer.state.y_min == 1.
     assert viewer.state.y_max == 3.
 
+    roi = XRangeROI(1.4e9, 2.1e9)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [0, 1, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
+
     viewer.state.x_display_unit = 'GHz'
     viewer.state.y_display_unit = 'mJy'
 
@@ -391,3 +400,12 @@ def test_unit_conversion():
     assert viewer.state.x_max == 3.
     assert viewer.state.y_min == 1000.
     assert viewer.state.y_max == 3000.
+
+    roi = XRangeROI(0.5, 1.2)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
