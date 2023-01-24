@@ -374,20 +374,20 @@ def test_unit_conversion():
     assert viewer.state.x_min == 1.e9
     assert viewer.state.x_max == 3.e9
     assert viewer.state.y_min == 1.
-    assert viewer.state.y_max == 3000.
+    assert viewer.state.y_max == 3.
 
     viewer.state.x_display_unit = 'GHz'
-    viewer.state.y_display_unit = 'Jy'
+    viewer.state.y_display_unit = 'mJy'
 
     x, y = viewer.state.layers[0].profile
     assert_allclose(x, [1, 2, 3])
-    assert_allclose(y, [1, 2, 3])
+    assert_allclose(y, [1000, 2000, 3000])
 
     x, y = viewer.state.layers[1].profile
     assert_allclose(x, 2.99792458 / np.array([1, 2, 3]))
-    assert_allclose(y, [2, 1, 3])
+    assert_allclose(y, [2000, 1000, 3000])
 
     assert viewer.state.x_min == 1.
     assert viewer.state.x_max == 3.
-    assert viewer.state.y_min == 1.
-    assert viewer.state.y_max == 3.
+    assert viewer.state.y_min == 1000.
+    assert viewer.state.y_max == 3000.
