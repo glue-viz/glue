@@ -40,24 +40,69 @@ jobs:
         # Standard tests
         # Linux builds - test on all supported PyQt5/6 and PySide2/6 versions,
         # and include all dependencies in some builds
-        - linux: py39-test-pyqt515-dev
-        - linux: py311-test-pyqt514-dev
+        - linux: py38-test-pyqt514-all
+        - linux: py38-test-pyside514
+        - linux: py39-test-pyqt515
+        - linux: py39-test-pyside515
+        - linux: py310-test-pyside63
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyqt64-all
+        - linux: py311-test-pyqt514
 
         # Documentation build
         - linux: py38-docs-pyqt514
           coverage: false
+        - macos: py39-docs-pyqt515
+          coverage: false
 
         # Test a few configurations on macOS
-        - macos: py310-test-pyqt515-dev
-        - macos: py311-test-pyqt64-dev
+        - macos: py38-test-pyqt514-all
+        - macos: py310-test-pyqt515
+        - macos: py310-test-pyqt64
+        - macos: py311-test-pyqt515
 
         # Test some configurations on Windows
-        - windows: py39-test-pyqt514-dev
-        - windows: py310-test-pyqt63-dev
+        - windows: py38-test-pyqt514
+        - windows: py310-test-pyqt63
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
         - linux: py311-test-pyqt64-dev
+
+  allowed_failures:
+    needs: initial_checks
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      coverage: codecov
+      display: true
+      libraries: |
+        apt:
+          - '^libxcb.*-dev'
+          - libxkbcommon-x11-dev
+          - libegl1-mesa
+          - libopenblas-dev
+          - libhdf5-dev
+        brew:
+          - enchant
+          - hdf5
+      envs: |
+        # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
+        # and https://github.com/matplotlib/matplotlib/issues/24155
+        # Python 3.11.0 failing on Windows in test_image.py on
+        # > assert df.find_factory(fname) is df.img_data
+        - linux: py310-test-pyside64
+        - linux: py311-test-pyside64
+        - macos: py310-test-pyside63
+        - macos: py311-test-pyside64
+        - windows: py310-test-pyside64
+        - windows: py311-test-pyqt515
+
+        # Windows docs build
+        - windows: py310-docs-pyqt515
+          coverage: false
+
+        # Failure in test_close_tab
+        - windows: py310-test-pyqt515-all
 
   publish:
     needs: tests
