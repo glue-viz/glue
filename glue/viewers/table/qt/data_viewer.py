@@ -73,7 +73,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         if orientation == Qt.Horizontal:
             column_name = self.columns[section].label
             units = self._data.get_component(self.columns[section]).units
-            if units != '':
+            if units is not None and units != '':
                 column_name += "\n{0}".format(units)
             return column_name
         elif orientation == Qt.Vertical:

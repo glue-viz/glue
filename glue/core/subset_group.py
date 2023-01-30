@@ -14,6 +14,8 @@ Client code should *only* create Subset Groups via
 It should *not* call :func:`~glue.core.data.BaseData.add_subset` or
 :func:`~glue.core.data.BaseData.new_subset` directly
 """
+
+import uuid
 from warnings import warn
 
 from glue.core.contracts import contract
@@ -56,6 +58,12 @@ class GroupedSubset(Subset):
 
         self.data = data
         self.label = group.label  # trigger disambiguation
+
+        # We assign a UUID which can then be used for example in equations
+        # for derived components - the idea is that this doesn't change over
+        # the life cycle of glue, so it is a more reliable way to refer to
+        # components in strings than using labels
+        self._uuid = str(uuid.uuid4())
 
     @property
     def style(self):

@@ -5,6 +5,8 @@ import os
 import pytest
 import numpy as np
 
+from astropy.wcs import WCS
+
 from numpy.testing import assert_equal, assert_allclose
 
 from glue.core import Data
@@ -17,6 +19,7 @@ from glue.core.coordinates import IdentityCoordinates
 from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.core.tests.test_state import clone
 from glue.core.state import GlueUnSerializer
+from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
 
 from ..data_viewer import ProfileViewer
 
@@ -318,3 +321,91 @@ class TestProfileViewer(object):
         assert self.viewer.layers[0].mpl_artists[0].get_visible() is True
         self.viewer.state.layers[0].visible = False
         assert self.viewer.layers[0].mpl_artists[0].get_visible() is False
+
+
+def test_unit_conversion():
+
+    wcs1 = WCS(naxis=1)
+    wcs1.wcs.ctype = ['FREQ']
+    wcs1.wcs.crval = [1]
+    wcs1.wcs.cdelt = [1]
+    wcs1.wcs.crpix = [1]
+    wcs1.wcs.cunit = ['GHz']
+
+    d1 = Data(f1=[1, 2, 3])
+    d1.get_component('f1').units = 'Jy'
+    d1.coords = wcs1
+
+    wcs2 = WCS(naxis=1)
+    wcs2.wcs.ctype = ['WAVE']
+    wcs2.wcs.crval = [10]
+    wcs2.wcs.cdelt = [10]
+    wcs2.wcs.crpix = [1]
+    wcs2.wcs.cunit = ['cm']
+
+    d2 = Data(f2=[2000, 1000, 3000])
+    d2.get_component('f2').units = 'mJy'
+    d2.coords = wcs2
+
+    app = GlueApplication()
+    session = app.session
+
+    data_collection = session.data_collection
+    data_collection.append(d1)
+    data_collection.append(d2)
+
+    data_collection.add_link(WCSLink(d1, d2))
+
+    viewer = app.new_data_viewer(ProfileViewer)
+    viewer.add_data(d1)
+    viewer.add_data(d2)
+
+    assert viewer.layers[0].enabled
+    assert viewer.layers[1].enabled
+
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [1.e9, 2.e9, 3.e9])
+    assert_allclose(y, [1, 2, 3])
+
+    x, y = viewer.state.layers[1].profile
+    assert_allclose(x, 299792458 / np.array([0.1, 0.2, 0.3]))
+    assert_allclose(y, [2000, 1000, 3000])
+
+    assert viewer.state.x_min == 1.e9
+    assert viewer.state.x_max == 3.e9
+    assert viewer.state.y_min == 1.
+    assert viewer.state.y_max == 3.
+
+    roi = XRangeROI(1.4e9, 2.1e9)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [0, 1, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
+
+    viewer.state.x_display_unit = 'GHz'
+    viewer.state.y_display_unit = 'mJy'
+
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [1, 2, 3])
+    assert_allclose(y, [1000, 2000, 3000])
+
+    x, y = viewer.state.layers[1].profile
+    assert_allclose(x, 2.99792458 / np.array([1, 2, 3]))
+    assert_allclose(y, [2000, 1000, 3000])
+
+    assert viewer.state.x_min == 1.
+    assert viewer.state.x_max == 3.
+    assert viewer.state.y_min == 1000.
+    assert viewer.state.y_max == 3000.
+
+    roi = XRangeROI(0.5, 1.2)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
