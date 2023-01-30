@@ -42,8 +42,6 @@ jobs:
         # and include all dependencies in some builds
         - linux: py38-test-pyqt514-all
         - linux: py39-test-pyqt515
-        - linux: py39-test-pyside515
-        - linux: py310-test-pyside63
         - linux: py310-test-pyqt63-all
         - linux: py310-test-pyqt64-all
         - linux: py311-test-pyqt514
@@ -86,8 +84,10 @@ jobs:
           - hdf5
       envs: |
 
-        # Segmentation fault on test suite exit
+        # Non-deterministic segmentation faults
         - linux: py38-test-pyside514
+        - linux: py39-test-pyside515
+        - linux: py310-test-pyside63
 
         # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
         # and https://github.com/matplotlib/matplotlib/issues/24155
