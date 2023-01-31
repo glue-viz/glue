@@ -49,7 +49,7 @@ jobs:
         # Documentation build
         - linux: py38-docs-pyqt514
           coverage: false
-        - macos: py39-docs-pyqt515
+        - macos: py311-docs-pyqt64
           coverage: false
 
         # Test a few configurations on macOS
