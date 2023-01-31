@@ -139,7 +139,8 @@ nitpick_ignore = [('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.insert
                   ('py:class', 'glue.viewers.image.layer_artist.RGBImageLayerBase'),
                   ('py:class', 'glue.viewers.image.state.BaseImageLayerState'),
                   ('py:class', 'sip.voidptr'),
-                  ('py:class', 'PyQt5.sip.voidptr')]
+                  ('py:class', 'PyQt5.sip.voidptr'),
+                  ('py:class', 'PYQT_SLOT')]
 
 nitpick_ignore_regex = [('py:class', r'PyQt5\.QtCore\.Q[A-Z][a-zA-Z]+'),
                         ('py:class', r'PyQt5\.QtWidgets\.Q[A-Z][a-zA-Z]+'),
