@@ -84,7 +84,7 @@ jobs:
           - hdf5
       envs: |
 
-        # Non-deterministic segmentation faults
+        # Non-deterministic QThread exceptions
         - linux: py38-test-pyside514
         - linux: py39-test-pyside515
         - linux: py310-test-pyside63
