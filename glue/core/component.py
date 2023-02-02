@@ -54,7 +54,7 @@ class Component(object):
 
     @property
     def units(self):
-        return self._units
+        return self._units or ''
 
     @units.setter
     def units(self, value):
@@ -226,7 +226,7 @@ class CoordinateComponent(Component):
     @property
     def units(self):
         if self.world:
-            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis]
+            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis] or ''
         else:
             return ''
 
@@ -514,7 +514,7 @@ class DaskComponent(Component):
 
     @property
     def units(self):
-        return self._units
+        return self._units or ''
 
     @units.setter
     def units(self, value):
