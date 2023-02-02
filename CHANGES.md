@@ -1,5 +1,23 @@
 # Full changelog
 
+## v1.7.0 - 2023-02-02
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Added ability to convert units in profile viewer by @astrofrog in https://github.com/glue-viz/glue/pull/2296
+- Allow specifying visual attributes and colormap when faceting subsets by @Carifio24 in https://github.com/glue-viz/glue/pull/2350
+
+#### Bug Fixes
+
+- Pin numpy-dev to avoid `GlueSerializer` failure on `numpy._ArrayFunctionDispatcher` by @dhomeier in https://github.com/glue-viz/glue/pull/2352
+- Represent `None` `component.units` as empty strings by @dhomeier in https://github.com/glue-viz/glue/pull/2356
+- Ensure unit choices are updated when x_att is changed in profile viewer by @astrofrog in https://github.com/glue-viz/glue/pull/2358
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.6.1...v1.7.0
+
 ## v1.6.1 - 2023-01-24
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -549,23 +567,33 @@
 - 
 - - `glue.core.application_base.ViewerBase` has been removed in favor of
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - - `glue.viewers.common.viewer.Viewer`.
 - 
+- 
 - - 
+- 
 - 
 - - `glue.viewers.common.viewer.Viewer` is now where the base logic is defined
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - - `glue.viewers.common.qt.DataViewerWithState`).
 - 
+- 
 - - 
+- 
 - 
 - - `glue.viewers.common.qt.DataViewerWithState` is now deprecated.
 - 
+- 
 - - 
+- 
 - 
 - 
 - Make it so that the modest image only resamples the data when the
