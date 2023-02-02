@@ -115,6 +115,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             else:
                 self.x_att_pixel = self.x_att
         self._reset_x_limits()
+        self._update_x_display_unit_choices()
 
     def _reset_x_limits(self, *event):
 
@@ -251,7 +252,6 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 self._update_att()
 
         self.reset_limits()
-        self._update_x_display_unit_choices()
 
     def _update_priority(self, name):
         if name == 'layers':
