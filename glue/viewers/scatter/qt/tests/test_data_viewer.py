@@ -891,10 +891,10 @@ class TestScatterViewer(object):
             assert not ui.bool_y_log.isEnabled(), error_msg
             assert not ui.bool_y_log_.isEnabled(), error_msg
             assert not ui.valuetext_x_min.isEnabled(), error_msg
-            assert not ui.button_flip_x.isEnabled(), error_msg
+            assert ui.button_flip_x.isEnabled(), error_msg
             assert not ui.valuetext_x_max.isEnabled(), error_msg
             assert not ui.valuetext_y_min.isEnabled(), error_msg
-            assert not ui.button_flip_y.isEnabled(), error_msg
+            assert ui.button_flip_y.isEnabled(), error_msg
             assert not ui.valuetext_y_max.isEnabled(), error_msg
             assert ui.button_full_circle.isHidden(), error_msg
 
