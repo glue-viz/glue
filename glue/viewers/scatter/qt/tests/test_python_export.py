@@ -1,3 +1,5 @@
+from itertools import product
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.utils import NumpyRNGContext
@@ -242,43 +244,38 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.y_att = self.data.id['d']
         self.assert_same(tmpdir)
 
+    def _fullsphere_common_test(self, tmpdir):
+        # Note that all the full-sphere projections have the same bounds,
+        # so we can use the same sets of min/max values
+        x_bounds = self.viewer.state.x_min, self.viewer.state.x_max
+        y_bounds = self.viewer.state.y_min, self.viewer.state.y_max
+        for order in product([True, False], repeat=2):
+            self.viewer.state.x_min, self.viewer.state.x_max = sorted(x_bounds, reverse=order[0])
+            self.viewer.state.y_min, self.viewer.state.y_max = sorted(y_bounds, reverse=order[1])
+            self.viewer.state.plot_mode = 'aitoff'
+            self.viewer.state.x_att = self.data.id['c']
+            self.viewer.state.y_att = self.data.id['d']
+            self.assert_same(tmpdir)
+            self.viewer.state.plot_mode = 'hammer'
+            self.viewer.state.x_att = self.data.id['e']
+            self.viewer.state.y_att = self.data.id['f']
+            self.assert_same(tmpdir)
+            self.viewer.state.plot_mode = 'lambert'
+            self.viewer.state.x_att = self.data.id['g']
+            self.viewer.state.y_att = self.data.id['h']
+            self.assert_same(tmpdir)
+            self.viewer.state.plot_mode = 'mollweide'
+            self.viewer.state.x_att = self.data.id['a']
+            self.viewer.state.y_att = self.data.id['b']
+            self.assert_same(tmpdir)
+
     def test_full_sphere_degrees(self, tmpdir):
         self.viewer.state.angle_unit = 'degrees'
-        self.viewer.state.plot_mode = 'aitoff'
-        self.viewer.state.x_att = self.data.id['c']
-        self.viewer.state.y_att = self.data.id['d']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'hammer'
-        self.viewer.state.x_att = self.data.id['e']
-        self.viewer.state.y_att = self.data.id['f']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'lambert'
-        self.viewer.state.x_att = self.data.id['g']
-        self.viewer.state.y_att = self.data.id['h']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'mollweide'
-        self.viewer.state.x_att = self.data.id['a']
-        self.viewer.state.y_att = self.data.id['b']
-        self.assert_same(tmpdir)
+        self._fullsphere_common_test(tmpdir)
 
     def test_full_sphere_radians(self, tmpdir):
         self.viewer.state.angle_unit = 'radians'
-        self.viewer.state.plot_mode = 'aitoff'
-        self.viewer.state.x_att = self.data.id['c']
-        self.viewer.state.y_att = self.data.id['d']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'hammer'
-        self.viewer.state.x_att = self.data.id['e']
-        self.viewer.state.y_att = self.data.id['f']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'lambert'
-        self.viewer.state.x_att = self.data.id['g']
-        self.viewer.state.y_att = self.data.id['h']
-        self.assert_same(tmpdir)
-        self.viewer.state.plot_mode = 'mollweide'
-        self.viewer.state.x_att = self.data.id['a']
-        self.viewer.state.y_att = self.data.id['b']
-        self.assert_same(tmpdir)
+        self._fullsphere_common_test(tmpdir)
 
     def test_cmap_size_noncartesian(self, tmpdir):
         self.viewer.state.layers[0].size_mode = 'Linear'

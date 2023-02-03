@@ -22,8 +22,8 @@ class MatplotlibScatterMixin(object):
 
         self.state.add_callback('x_min', self._x_limits_to_mpl)
         self.state.add_callback('x_max', self._x_limits_to_mpl)
-        self.state.add_callback('y_min', self.limits_to_mpl)
-        self.state.add_callback('y_max', self.limits_to_mpl)
+        self.state.add_callback('y_min', self._y_limits_to_mpl)
+        self.state.add_callback('y_max', self._y_limits_to_mpl)
         self.state.add_callback('x_axislabel', self._update_polar_ticks)
         self.state.add_callback('y_axislabel', self._update_polar_ticks)
         self._update_axes()
@@ -97,6 +97,9 @@ class MatplotlibScatterMixin(object):
     def using_polar(self):
         return self.state.plot_mode == 'polar'
 
+    def using_fullsphere(self):
+        return self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']
+
     def _update_angle_unit(self, *args):
         self._update_axes()
         for layer in self.layers:
@@ -105,6 +108,13 @@ class MatplotlibScatterMixin(object):
     def _x_limits_to_mpl(self, *args, **kwargs):
         if self.using_polar():
             self.state.full_circle()
+        elif self.using_fullsphere():
+            return
+        self.limits_to_mpl()
+
+    def _y_limits_to_mpl(self, *args, **kwargs):
+        if self.using_fullsphere():
+            return
         self.limits_to_mpl()
 
     def update_x_axislabel(self, *event):

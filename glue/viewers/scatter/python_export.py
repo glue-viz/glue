@@ -33,6 +33,12 @@ def python_export_scatter_layer(layer, *args):
     y_transform_close = ")" if degrees and full_sphere else ""
     script += "x = {0}layer_data['{1}']{2}\n".format(x_transform_open, layer._viewer_state.x_att.label, x_transform_close)
     script += "y = {0}layer_data['{1}']{2}\n".format(y_transform_open, layer._viewer_state.y_att.label, y_transform_close)
+    if full_sphere:
+        script += "x = np.mod(x + np.pi, 2 * np.pi) - np.pi\n"
+        if layer._viewer_state.x_min > layer._viewer_state.x_max:
+            script += "x = np.negative(x)\n"
+        if layer._viewer_state.y_min > layer._viewer_state.y_max:
+            script += "y = np.negative(y)\n"
     script += "keep = ~np.isnan(x) & ~np.isnan(y)\n\n"
     if polar:
         script += 'ax.xaxis.set_major_locator(ThetaLocator(AutoLocator()))\n'
