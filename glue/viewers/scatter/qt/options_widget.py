@@ -88,10 +88,8 @@ class ScatterOptionsWidget(QtWidgets.QWidget):
         is_polar = self.viewer_state.using_polar
         is_rect = self.viewer_state.using_rectilinear
         self.ui.valuetext_x_min.setEnabled(lim_enabled)
-        self.ui.button_flip_x.setEnabled(lim_enabled)
         self.ui.valuetext_x_max.setEnabled(lim_enabled)
         self.ui.valuetext_y_min.setEnabled(lim_enabled)
-        self.ui.button_flip_y.setEnabled(lim_enabled)
         self.ui.valuetext_y_max.setEnabled(lim_enabled)
         self.ui.button_full_circle.setVisible(False)
         self.ui.angle_unit_lab.setVisible(not is_rect)

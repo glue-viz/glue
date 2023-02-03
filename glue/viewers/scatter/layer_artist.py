@@ -30,6 +30,7 @@ DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
+LIMIT_PROPERTIES = set(['x_min', 'x_max', 'y_min', 'y_max'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'density_map',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
                        'vector_visible', 'vx_att', 'vy_att', 'vector_arrowhead', 'vector_mode',
@@ -241,6 +242,10 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 # so we wrap angles to accommodate this
                 if full_sphere:
                     x = np.mod(x + np.pi, 2 * np.pi) - np.pi
+                    if self._viewer_state.x_min > self._viewer_state.x_max:
+                        x = np.negative(x)
+                    if self._viewer_state.y_min > self._viewer_state.y_max:
+                        y = np.negative(y)
 
                 self.density_artist.set_label(None)
                 if self._use_plot_artist():
@@ -524,7 +529,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # of updated properties is up to date after this method has been called.
         changed = self.pop_changed_properties()
 
-        if force or len(changed & DATA_PROPERTIES) > 0:
+        full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
+        change_from_limits = full_sphere and len(changed & LIMIT_PROPERTIES) > 0
+        if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
             self._update_data()
             force = True
 
