@@ -12,7 +12,7 @@ from glue.config import colormaps
 from glue.core.message import SubsetUpdateMessage
 from glue.core import HubListener, Data
 from glue.core.roi import XRangeROI, RectangularROI, CircularROI
-from glue.core.roi_pretransforms import ProjectionMplTransform
+from glue.core.roi_pretransforms import ProjectionMplTransform, FullSphereLongitudeTransform
 from glue.core.subset import RoiSubsetState, AndState
 from glue import core
 from glue.core.component_id import ComponentID
@@ -965,7 +965,7 @@ class TestScatterViewer(object):
             assert isinstance(state, RoiSubsetState)
             assert state.pretransform
             pretrans = state.pretransform
-            assert isinstance(pretrans, ProjectionMplTransform)
+            assert isinstance(pretrans, FullSphereLongitudeTransform)
             assert pretrans._state['projection'] == proj
             assert_allclose(pretrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
             assert_allclose(pretrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])

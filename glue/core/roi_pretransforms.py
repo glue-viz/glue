@@ -57,3 +57,25 @@ class RadianTransform(object):
     def __setgluestate__(cls, rec, context):
         state = context.object(rec['state'])
         return cls(state['coords'], state['next_transform'])
+
+
+class FullSphereLongitudeTransform(object):
+
+    def __init__(self, next_transform=None):
+        self._next_transform = next_transform
+        self._state = {"next_transform": next_transform}
+
+    def __call__(self, x, y):
+        x = np.mod(x + np.pi, 2 * np.pi) - np.pi
+        if self._next_transform is not None:
+            return self._next_transform(x, y)
+        else:
+            return x, y
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        state = context.object(rec['state'])
+        return cls(state['next_transform'])
+
+    def __gluestate__(self, context):
+        return dict(state=context.do(self._state))
