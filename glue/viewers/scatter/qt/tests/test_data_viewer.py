@@ -911,7 +911,8 @@ class TestScatterViewer(object):
             assert ui.valuetext_y_max.isEnabled()
             assert ui.button_full_circle.isHidden()
 
-    def test_apply_roi_polar(self):
+    @pytest.mark.parametrize('angle_unit,expected_mask', [('radians', [0, 0, 0, 1]), ('degrees', [0, 0, 0, 1])])
+    def test_apply_roi_polar(self, angle_unit, expected_mask):
         self.viewer.add_data(self.data)
         viewer_state = self.viewer.state
         roi = RectangularROI(0.5, 1, 0.5, 1)
@@ -919,85 +920,78 @@ class TestScatterViewer(object):
         viewer_state.full_circle()
         assert len(self.viewer.layers) == 1
 
-        expected_mask = {
-            'degrees': [1, 1, 0, 1],
-            'radians': [0, 0, 0, 1]
-        }
+        viewer_state.angle_unit = angle_unit
 
-        for angle_unit in ['radians', 'degrees']:
+        self.viewer.apply_roi(roi)
 
-            viewer_state.angle_unit = angle_unit
+        assert len(self.viewer.layers) == 2
+        assert len(self.data.subsets) == 1
+
+        assert_allclose(self.data.subsets[0].to_mask(), expected_mask)
+
+        state = self.data.subsets[0].subset_state
+        assert isinstance(state, RoiSubsetState)
+        assert state.pretransform
+        pretrans = state.pretransform
+        if angle_unit == 'radians':
+            assert isinstance(pretrans, ProjectionMplTransform)
+            projtrans = pretrans
+        elif angle_unit == 'degrees':
+            assert isinstance(pretrans, RadianTransform)
+            projtrans = pretrans._next_transform
+            assert isinstance(projtrans, ProjectionMplTransform)
+        assert projtrans._state['projection'] == 'polar'
+        assert_allclose(projtrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
+        assert_allclose(projtrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])
+        assert projtrans._state['x_scale'] == 'linear'
+        assert projtrans._state['y_scale'] == 'linear'
+        self.data.subsets[0].delete()
+
+        viewer_state.y_log = True
+        self.viewer.apply_roi(roi)
+        state = self.data.subsets[0].subset_state
+        assert state.pretransform
+        pretrans = state.pretransform
+        if angle_unit == 'radians':
+            assert isinstance(pretrans, ProjectionMplTransform)
+            projtrans = pretrans
+        elif angle_unit == 'degrees':
+            assert isinstance(pretrans, RadianTransform)
+            projtrans = pretrans._next_transform
+            assert isinstance(projtrans, ProjectionMplTransform)
+        assert projtrans._state['y_scale'] == 'log'
+        viewer_state.y_log = False
+
+    @pytest.mark.parametrize('angle_unit', ['radians', 'degrees'])
+    def test_apply_roi_fullsphere(self, angle_unit):
+        self.viewer.add_data(self.data)
+        viewer_state = self.viewer.state
+        roi = RectangularROI(0, 0.5, 0, 0.5)
+
+        viewer_state.angle_unit = angle_unit
+        for proj in fullsphere_projections:
+            viewer_state.plot_mode = proj
+            assert len(self.viewer.layers) == 1
 
             self.viewer.apply_roi(roi)
 
             assert len(self.viewer.layers) == 2
             assert len(self.data.subsets) == 1
 
-            assert_allclose(self.data.subsets[0].to_mask(), expected_mask[angle_unit])
-
-            state = self.data.subsets[0].subset_state
+            subset = self.data.subsets[0]
+            state = subset.subset_state
             assert isinstance(state, RoiSubsetState)
             assert state.pretransform
             pretrans = state.pretransform
-            if angle_unit == 'radians':
-                assert isinstance(pretrans, ProjectionMplTransform)
-                projtrans = pretrans
-            elif angle_unit == 'degrees':
-                assert isinstance(pretrans, RadianTransform)
-                projtrans = pretrans._next_transform
-                assert isinstance(projtrans, ProjectionMplTransform)
-            assert projtrans._state['projection'] == 'polar'
+            assert isinstance(pretrans, FullSphereLongitudeTransform)
+            projtrans = pretrans._next_transform
+            if angle_unit == 'degrees':
+                projtrans = projtrans._next_transform
+            assert isinstance(projtrans, ProjectionMplTransform)
+
+            assert projtrans._state['projection'] == proj
             assert_allclose(projtrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
             assert_allclose(projtrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])
             assert projtrans._state['x_scale'] == 'linear'
             assert projtrans._state['y_scale'] == 'linear'
-            self.data.subsets[0].delete()
-
-            viewer_state.y_log = True
-            self.viewer.apply_roi(roi)
-            state = self.data.subsets[0].subset_state
-            assert state.pretransform
-            pretrans = state.pretransform
-            if angle_unit == 'radians':
-                assert isinstance(pretrans, ProjectionMplTransform)
-                projtrans = pretrans
-            elif angle_unit == 'degrees':
-                assert isinstance(pretrans, RadianTransform)
-                projtrans = pretrans._next_transform
-                assert isinstance(projtrans, ProjectionMplTransform)
-            assert projtrans._state['y_scale'] == 'log'
-            viewer_state.y_log = False
-
-    def test_apply_roi_fullsphere(self):
-        self.viewer.add_data(self.data)
-        viewer_state = self.viewer.state
-        roi = RectangularROI(0, 0.5, 0, 0.5)
-
-        for angle_unit in ['radians', 'degrees']:
-            viewer_state.angle_unit = angle_unit
-            for proj in fullsphere_projections:
-                viewer_state.plot_mode = proj
-                assert len(self.viewer.layers) == 1
-
-                self.viewer.apply_roi(roi)
-
-                assert len(self.viewer.layers) == 2
-                assert len(self.data.subsets) == 1
-
-                subset = self.data.subsets[0]
-                state = subset.subset_state
-                assert isinstance(state, RoiSubsetState)
-                assert state.pretransform
-                pretrans = state.pretransform
-                assert isinstance(pretrans, FullSphereLongitudeTransform)
-                projtrans = pretrans._next_transform
-                if angle_unit == 'degrees':
-                    projtrans = projtrans._next_transform
-                assert isinstance(projtrans, ProjectionMplTransform)
-
-                assert projtrans._state['projection'] == proj
-                assert_allclose(projtrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
-                assert_allclose(projtrans._state['y_lim'], [viewer_state.y_min, viewer_state.y_max])
-                assert projtrans._state['x_scale'] == 'linear'
-                assert projtrans._state['y_scale'] == 'linear'
-                subset.delete()
+            subset.delete()
