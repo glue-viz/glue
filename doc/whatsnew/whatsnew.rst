@@ -688,7 +688,7 @@ New Slack community
 
 We have now set up Slack for any glue help/discussions, and we encourage you to
 sign up! You will need to first get an account `here
-<https://glueviz-slack-invite.herokuapp.com>`_ after which you will be able to
+<https://join.slack.com/t/glueviz/shared_invite/zt-1p5amn7ee-wTZCJJNlgxCTRup3SrSh3g>`_ after which you will be able to
 sign in to https://glueviz.slack.com.
 
 Improved interface
