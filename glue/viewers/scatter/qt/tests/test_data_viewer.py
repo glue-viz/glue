@@ -43,6 +43,8 @@ class TestScatterViewer(object):
                          y=[3.2, 3.3, 3.4, 3.5], z=['a', 'b', 'c', 'a'])
         self.data_2d = Data(label='d2', a=[[1, 2], [3, 4]], b=[[5, 6], [7, 8]],
                             x=[[3, 5], [5.4, 1]], y=[[1.2, 4], [7, 8]])
+        self.data_fullsphere = Data(label='d3', x=[6.9, -1.1, 1.2, -3.7],
+                                    y=[-0.2, 1.0, 0.5, -1.1])
 
         self.app = GlueApplication()
         self.session = self.app.session
@@ -51,6 +53,7 @@ class TestScatterViewer(object):
         self.data_collection = self.session.data_collection
         self.data_collection.append(self.data)
         self.data_collection.append(self.data_2d)
+        self.data_collection.append(self.data_fullsphere)
 
         self.viewer = self.app.new_data_viewer(ScatterViewer)
 
@@ -962,11 +965,11 @@ class TestScatterViewer(object):
         assert projtrans._state['y_scale'] == 'log'
         viewer_state.y_log = False
 
-    @pytest.mark.parametrize('angle_unit', ['radians', 'degrees'])
-    def test_apply_roi_fullsphere(self, angle_unit):
-        self.viewer.add_data(self.data)
+    @pytest.mark.parametrize('angle_unit,expected_mask', [('radians', [1, 0, 0, 1]), ('degrees', [1, 0, 0, 0])])
+    def test_apply_roi_fullsphere(self, angle_unit, expected_mask):
+        self.viewer.add_data(self.data_fullsphere)
         viewer_state = self.viewer.state
-        roi = RectangularROI(0, 0.5, 0, 0.5)
+        roi = RectangularROI(0.5, 1, 0, 0.5)
 
         viewer_state.angle_unit = angle_unit
         for proj in fullsphere_projections:
@@ -976,18 +979,22 @@ class TestScatterViewer(object):
             self.viewer.apply_roi(roi)
 
             assert len(self.viewer.layers) == 2
-            assert len(self.data.subsets) == 1
+            assert len(self.data_fullsphere.subsets) == 1
 
-            subset = self.data.subsets[0]
+            subset = self.data_fullsphere.subsets[0]
             state = subset.subset_state
             assert isinstance(state, RoiSubsetState)
+
             assert state.pretransform
             pretrans = state.pretransform
+            if angle_unit == 'degrees':
+                assert isinstance(pretrans, RadianTransform)
+                pretrans = pretrans._next_transform
             assert isinstance(pretrans, FullSphereLongitudeTransform)
             projtrans = pretrans._next_transform
-            if angle_unit == 'degrees':
-                projtrans = projtrans._next_transform
             assert isinstance(projtrans, ProjectionMplTransform)
+
+            assert_allclose(subset.to_mask(), expected_mask)
 
             assert projtrans._state['projection'] == proj
             assert_allclose(projtrans._state['x_lim'], [viewer_state.x_min, viewer_state.x_max])
