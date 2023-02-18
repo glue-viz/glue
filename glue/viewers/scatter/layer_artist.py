@@ -80,6 +80,14 @@ def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=N
 
 
 class UpdatablePatchCollection(PatchCollection):
+    """
+    I'm not sure if we generally need this, it depends what properties of polygons
+    we're going to need to update.
+
+    For circles we might be able to just set_radius
+    Taken from https://stackoverflow.com/a/11041426
+    """
+
     def __init__(self, patches, *args, **kwargs):
         self.patches = patches
         PatchCollection.__init__(self, patches, *args, **kwargs)
