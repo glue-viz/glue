@@ -213,8 +213,8 @@ def plugins():
     modules = []
     dependencies = []
     for entry_point in iter_plugin_entry_points():
-        module_name = entry_point.module_name.split('.')[0]
-        package = entry_point.dist.project_name
+        module_name, _, _ = entry_point.module.partition('.')
+        package = entry_point.dist.name
         modules.append((module_name, package))
     for module, package in sorted(set(modules)):
         dependencies.append(Dependency(module, '', package=package))

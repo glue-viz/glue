@@ -1,6 +1,10 @@
-import os
+import sys
 
-import pkg_resources
+if sys.version_info >= (3, 9):
+    import importlib.resources as importlib_resources
+else:
+    import importlib_resources
+
 
 __all__ = ['icon_path']
 
@@ -24,12 +28,8 @@ def icon_path(icon_name, icon_format='png'):
 
     icon_name += '.{0}'.format(icon_format)
 
-    try:
-        if pkg_resources.resource_exists('glue.icons', icon_name):
-            return pkg_resources.resource_filename('glue.icons', icon_name)
-        else:
-            raise RuntimeError("Icon does not exist: %s" % icon_name)
-    except NotImplementedError:  # workaround for mac app
-        result = os.path.dirname(__file__)
-        return os.path.join(result.replace('site-packages.zip', 'glue'),
-                            icon_name)
+    icon_file = importlib_resources.files("glue") / "icons" / icon_name
+    if icon_file.is_file():
+        return str(icon_file)
+    else:
+        raise RuntimeError("Icon does not exist: %s" % icon_name)
