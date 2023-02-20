@@ -914,7 +914,7 @@ class TestScatterViewer(object):
             assert ui.valuetext_y_max.isEnabled()
             assert ui.button_full_circle.isHidden()
 
-    @pytest.mark.parametrize('angle_unit,expected_mask', [('radians', [0, 0, 0, 1]), ('degrees', [0, 0, 0, 1])])
+    @pytest.mark.parametrize('angle_unit,expected_mask', [('radians', [0, 0, 0, 1]), ('degrees', [1, 1, 0, 1])])
     def test_apply_roi_polar(self, angle_unit, expected_mask):
         self.viewer.add_data(self.data)
         viewer_state = self.viewer.state
