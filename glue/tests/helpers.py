@@ -9,7 +9,7 @@ from packaging.version import Version
 import pytest
 
 
-def make_skipper(module, label=None, version=None):
+def make_marker(mark_creator, module, label=None, version=None):
     label = label or module
     try:
         if label == 'PyQt5':  # PyQt5 does not use __version__
@@ -23,12 +23,26 @@ def make_skipper(module, label=None, version=None):
         installed = True
     except (ImportError, AssertionError, AttributeError):
         installed = False
-    return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
+    return installed, mark_creator(installed, label, version)
+
+
+def make_skipper(module, label=None, version=None):
+    def mark_creator(installed, lbl, _vrs):
+        return pytest.mark.skipif(str(not installed), reason='Requires %s' % lbl)
+    return make_marker(mark_creator, module, label=label, version=version)
+
+
+def make_xfailer(module, label=None, version=None):
+    def mark_creator(installed, lbl, vrs):
+        return pytest.mark.xfail(condition=not installed, reason='Fails if %s < %s' % (lbl, vrs))
+    return make_marker(mark_creator, module, label=label, version=version)
 
 
 ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy', label='Astropy')
 
 MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version='2.2')
+
+MATPLOTLIB_GE_37, xfail_matplotlib_le_37 = make_xfailer('matplotlib', version='3.7')
 
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
