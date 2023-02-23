@@ -68,7 +68,7 @@ class SimpleCustomUnitConverter:
         elif units in ['dix', 'vingt', 'trente']:
             return ['dix', 'vingt', 'trente']
         else:
-            raise ValueError(f'Unrecongized unit: {units}')
+            raise ValueError(f'Unrecognized unit: {units}')
 
     numerical = {
         'one': 1,
