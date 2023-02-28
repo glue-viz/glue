@@ -21,8 +21,8 @@ def make_marker(mark_creator, module, label=None, version=None, mark_if='lt'):
         if version:
             options = ['lt', 'le', 'gt', 'ge']
             if mark_if not in options:
-                raise ValueError("mark_if must be one of %s" % options)
-            assert not getattr(Version(version_installed), '__%s__' % mark_if)(Version(version))
+                raise ValueError(f"mark_if must be one of {options}")
+            assert not getattr(Version(version_installed), f'__{mark_if}__')(Version(version))
         installed = True
     except (ImportError, AssertionError, AttributeError):
         installed = False
@@ -30,14 +30,14 @@ def make_marker(mark_creator, module, label=None, version=None, mark_if='lt'):
 
 
 def make_skipper(module, label=None, version=None, skip_if='lt'):
-    def mark_creator(installed, lbl, _vrs):
-        return pytest.mark.skipif(str(not installed), reason='Requires %s' % lbl)
+    def mark_creator(installed, lbl, vrs):
+        return pytest.mark.skipif(str(not installed), reason=f'Requires {lbl} not {skip_if} {vrs}')
     return make_marker(mark_creator, module, label=label, version=version, mark_if=skip_if)
 
 
 def make_xfailer(module, label=None, version=None, xfail_if='lt'):
     def mark_creator(installed, lbl, vrs):
-        return pytest.mark.xfail(condition=not installed, reason='Fails if %s < %s' % (lbl, vrs))
+        return pytest.mark.xfail(condition=not installed, reason=f'Fails if {lbl} {xfail_if} {vrs}')
     return make_marker(mark_creator, module, label=label, version=version, mark_if=xfail_if)
 
 
@@ -45,7 +45,7 @@ ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy', label='Astropy')
 
 MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version='2.2')
 
-MATPLOTLIB_GE_37, xfail_matplotlib_le_37 = make_xfailer('matplotlib', version='3.7')
+MATPLOTLIB_GE_37, xfail_matplotlib_lt_37 = make_xfailer('matplotlib', version='3.7')
 
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 

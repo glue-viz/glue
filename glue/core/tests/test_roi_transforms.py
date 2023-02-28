@@ -3,7 +3,7 @@ from numpy.testing import assert_allclose
 
 from glue.core.roi_pretransforms import ProjectionMplTransform
 from glue.core.state import GlueSerializer, GlueUnSerializer
-from glue.tests.helpers import xfail_matplotlib_le_37
+from glue.tests.helpers import xfail_matplotlib_lt_37
 
 
 def roundtrip_transform(transform):
@@ -29,7 +29,7 @@ def test_simple_polar_mpl_transform():
     assert_allclose(new_y, y, rtol=1e-14)
 
 
-@xfail_matplotlib_le_37
+@xfail_matplotlib_lt_37
 def test_log_polar_mpl_transform():
     angles = np.deg2rad(np.array([0, 90, 180]))
     radii = np.array([10, 100, 1000])
