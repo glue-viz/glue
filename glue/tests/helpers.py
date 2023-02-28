@@ -9,7 +9,7 @@ from packaging.version import Version
 import pytest
 
 
-def make_marker(mark_creator, module, label=None, version=None):
+def make_marker(mark_creator, module, label=None, version=None, mark_if='lt'):
     label = label or module
     try:
         if label == 'PyQt5':  # PyQt5 does not use __version__
@@ -19,23 +19,26 @@ def make_marker(mark_creator, module, label=None, version=None):
             mod = __import__(module)
             version_installed = mod.__version__
         if version:
-            assert Version(version_installed) >= Version(version)
+            options = ['lt', 'le', 'gt', 'ge']
+            if mark_if not in options:
+                raise ValueError("mark_if must be one of %s" % options)
+            assert not getattr(Version(version_installed), '__%s__' % mark_if)(Version(version))
         installed = True
     except (ImportError, AssertionError, AttributeError):
         installed = False
     return installed, mark_creator(installed, label, version)
 
 
-def make_skipper(module, label=None, version=None):
+def make_skipper(module, label=None, version=None, skip_if='lt'):
     def mark_creator(installed, lbl, _vrs):
         return pytest.mark.skipif(str(not installed), reason='Requires %s' % lbl)
-    return make_marker(mark_creator, module, label=label, version=version)
+    return make_marker(mark_creator, module, label=label, version=version, mark_if=skip_if)
 
 
-def make_xfailer(module, label=None, version=None):
+def make_xfailer(module, label=None, version=None, xfail_if='lt'):
     def mark_creator(installed, lbl, vrs):
         return pytest.mark.xfail(condition=not installed, reason='Fails if %s < %s' % (lbl, vrs))
-    return make_marker(mark_creator, module, label=label, version=version)
+    return make_marker(mark_creator, module, label=label, version=version, mark_if=xfail_if)
 
 
 ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy', label='Astropy')
