@@ -43,7 +43,7 @@ a simple unit converter based on `astropy.units`_ would be::
     class ExampleUnitConverter:
 
         def equivalent_units(self, data, cid, units):
-            return map(u.Unit(units).find_equivalent_units(include_prefix_units=True), str)
+            return map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True))
 
         def to_unit(self, data, cid, values, original_units, target_units):
             return (values * u.Unit(original_units)).to_value(target_units)
@@ -58,7 +58,7 @@ This does not actually make use of ``data`` and ``cid``. An example that does wo
 
         def equivalent_units(self, data, cid, units):
             equivalencies = u.temperature() if 'temp' in cid.label.lower() else None
-            return map(u.Unit(units).find_equivalent_units(include_prefix_units=True, equivalencies=equivalencies), str)
+            return map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True, equivalencies=equivalencies))
 
         def to_unit(self, data, cid, values, original_units, target_units):
             equivalencies = u.temperature() if 'temp' in cid.label.lower() else None
