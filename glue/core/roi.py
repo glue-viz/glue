@@ -1612,7 +1612,7 @@ class MplPolygonalROI(AbstractMplRoi):
                           'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
-        self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))), zorder=100)
+        self._patch = Polygon(np.array(list(zip([0.2, 0.3], [0.2, 0.3]))), zorder=100)
         self._patch.set_visible(False)
         if not self._data_space:
             self._patch.set_transform(self._axes.transAxes)
@@ -1621,8 +1621,7 @@ class MplPolygonalROI(AbstractMplRoi):
     def _sync_patch(self):
         if self._roi.defined():
             x, y = self._roi.to_polygon()
-            self._patch.set_xy(list(zip(x + [x[0]],
-                                        y + [y[0]])))
+            self._patch.set_xy(list(zip(x + [x[0]], y + [y[0]])))
             self._patch.set_visible(True)
             self._patch.set(**self.plot_opts)
         else:
