@@ -47,6 +47,8 @@ MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version
 
 MATPLOTLIB_GE_37, xfail_matplotlib_lt_37 = make_xfailer('matplotlib', version='3.7')
 
+MATPLOTLIB_LT_37, xfail_matplotlib_ge_37 = make_xfailer('matplotlib', version='3.7', xfail_if='ge')
+
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
 SCIPY_INSTALLED, requires_scipy = make_skipper('scipy', label='SciPy')

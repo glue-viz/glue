@@ -8,6 +8,7 @@ from glue.core import Data, DataCollection
 from glue.app.qt.application import GlueApplication
 from glue.viewers.matplotlib.qt.tests.test_python_export import BaseTestExportPython, random_with_nan
 from glue.viewers.scatter.qt import ScatterViewer
+from glue.tests.helpers import xfail_matplotlib_ge_37
 
 
 class TestExportPython(BaseTestExportPython):
@@ -33,6 +34,7 @@ class TestExportPython(BaseTestExportPython):
     def test_simple(self, tmpdir):
         self.assert_same(tmpdir)
 
+    @xfail_matplotlib_ge_37
     def test_simple_legend(self, tmpdir):
         self.viewer.state.legend.visible = True
         self.assert_same(tmpdir)
@@ -48,6 +50,7 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].alpha = 0.5
         self.assert_same(tmpdir)
 
+    @xfail_matplotlib_ge_37
     def test_simple_visual_legend(self, tmpdir):
         self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].color = 'blue'
@@ -77,6 +80,7 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].alpha = 0.7
         self.assert_same(tmpdir)
 
+    @xfail_matplotlib_ge_37
     def test_size_mode_legend(self, tmpdir):
         self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].size_mode = 'Linear'
@@ -130,6 +134,7 @@ class TestExportPython(BaseTestExportPython):
         self.viewer.state.layers[0].alpha = 0.5
         self.assert_same(tmpdir)
 
+    @xfail_matplotlib_ge_37
     def test_errorbarxy_legend(self, tmpdir):
         self.viewer.state.legend.visible = True
         self.viewer.state.layers[0].xerr_visible = True
