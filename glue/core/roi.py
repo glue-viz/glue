@@ -1147,7 +1147,6 @@ class MplRectangularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         if not self._data_space:
             self._patch.set_transform(self._axes.transAxes)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
         if event.inaxes != self._axes:
@@ -1229,7 +1228,10 @@ class MplRectangularROI(AbstractMplRoi):
             self._patch.set_height(height)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._axes._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def __str__(self):
@@ -1264,7 +1266,6 @@ class MplXRangeROI(AbstractMplRoi):
             trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -1336,7 +1337,10 @@ class MplXRangeROI(AbstractMplRoi):
             self._patch.set_height(1)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._axes._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1368,7 +1372,6 @@ class MplYRangeROI(AbstractMplRoi):
             trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -1442,7 +1445,10 @@ class MplYRangeROI(AbstractMplRoi):
             self._patch.set_width(1)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._axes._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1476,7 +1482,6 @@ class MplCircularROI(AbstractMplRoi):
         self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
                               width=0., height=0., zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -1487,7 +1492,10 @@ class MplCircularROI(AbstractMplRoi):
             self._patch.height = 2. * r
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._axes._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event):
@@ -1612,11 +1620,10 @@ class MplPolygonalROI(AbstractMplRoi):
                           'facecolor': PATCH_COLOR,
                           'alpha': 0.3}
 
-        self._patch = Polygon(np.array(list(zip([0.2, 0.3], [0.2, 0.3]))), zorder=100)
+        self._patch = Polygon(np.array(list(zip([0, 1], [0, 1]))), zorder=100)
         self._patch.set_visible(False)
         if not self._data_space:
             self._patch.set_transform(self._axes.transAxes)
-        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
         if self._roi.defined():
@@ -1624,7 +1631,10 @@ class MplPolygonalROI(AbstractMplRoi):
             self._patch.set_xy(list(zip(x + [x[0]], y + [y[0]])))
             self._patch.set_visible(True)
             self._patch.set(**self.plot_opts)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._axes._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event, scrubbing=False):
