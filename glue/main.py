@@ -295,11 +295,10 @@ def load_plugins(splash=None, require_qt_plugins=False):
     n_plugins = len(list(iter_plugin_entry_points()))
 
     for iplugin, item in enumerate(iter_plugin_entry_points()):
-
-        if item.module_name not in _installed_plugins:
+        if item.module not in _installed_plugins:
             _installed_plugins.add(item.name)
 
-        if item.module_name in _loaded_plugins:
+        if item.module in _loaded_plugins:
             logger.info("Plugin {0} already loaded".format(item.name))
             continue
 
@@ -321,22 +320,22 @@ def load_plugins(splash=None, require_qt_plugins=False):
         # older pip version.
 
         try:
-            module = import_module(item.module_name)
-            function = getattr(module, item.attrs[0])
+            module = import_module(item.module)
+            function = getattr(module, item.attr)
             function()
         except Exception as exc:
             # Here we check that some of the 'core' plugins load well and
             # raise an actual exception if not.
-            if item.module_name in REQUIRED_PLUGINS:
+            if item.module in REQUIRED_PLUGINS:
                 raise
-            elif item.module_name in REQUIRED_PLUGINS_QT and require_qt_plugins:
+            elif item.module in REQUIRED_PLUGINS_QT and require_qt_plugins:
                 raise
             else:
                 logger.info("Loading plugin {0} failed "
                             "(Exception: {1})".format(item.name, exc))
         else:
             logger.info("Loading plugin {0} succeeded".format(item.name))
-            _loaded_plugins.add(item.module_name)
+            _loaded_plugins.add(item.module)
 
         if splash is not None:
             splash.set_progress(100. * iplugin / float(n_plugins))

@@ -7,12 +7,18 @@
 # wouldn't be used.
 
 import os
+import sys
 from collections import defaultdict
+from importlib.metadata import entry_points
 
 
 def iter_plugin_entry_points():
-    from pkg_resources import iter_entry_points
-    return iter_entry_points(group='glue.plugins', name=None)
+    if sys.version_info >= (3, 10):
+        plugins = entry_points(group='glue.plugins')
+    else:
+        plugins = entry_points().get('glue.plugins', [])
+
+    return iter(plugins)
 
 
 class PluginConfig(object):
