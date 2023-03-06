@@ -5,8 +5,11 @@ from astropy.wcs import WCS
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import Coordinates, LegacyCoordinates
 from glue.core.coordinate_helpers import dependent_axes
+from glue.core.data import RegionData
 
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.viewers.scatter.layer_artist import ScatterRegionLayerArtist
+
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image.compat import update_image_viewer_state
 
@@ -168,15 +171,24 @@ class MatplotlibImageMixin(object):
             raise Exception("Can only add a scatter plot overlay once an image is present")
         return ScatterLayerArtist(axes, state, layer=layer, layer_state=None)
 
+    def _region_artist(self, axes, state, layer=None, layer_state=None):
+        if len(self._layer_artist_container) == 0:
+            raise Exception("Can only add a region plot overlay once an image is present")
+        return ScatterRegionLayerArtist(axes, state, layer=layer, layer_state=None)
+
     def get_data_layer_artist(self, layer=None, layer_state=None):
-        if layer.ndim == 1:
+        if isinstance(layer, RegionData):
+            cls = self._region_artist
+        elif layer.ndim == 1:
             cls = self._scatter_artist
         else:
             cls = ImageLayerArtist
         return self.get_layer_artist(cls, layer=layer, layer_state=layer_state)
 
     def get_subset_layer_artist(self, layer=None, layer_state=None):
-        if layer.ndim == 1:
+        if isinstance(layer.data, RegionData):
+            cls = self._region_artist
+        elif layer.ndim == 1:
             cls = self._scatter_artist
         else:
             cls = ImageSubsetLayerArtist

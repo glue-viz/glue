@@ -2,8 +2,7 @@ import warnings
 import numpy as np
 
 from matplotlib.colors import Normalize
-from matplotlib.collections import LineCollection, PatchCollection
-from matplotlib.patches import Circle
+from matplotlib.collections import LineCollection
 
 from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 
@@ -11,10 +10,12 @@ from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
 from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
-from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.scatter.state import ScatterLayerState, ScatterRegionLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
+from glue.viewers.scatter.plot_polygons import UpdateableRegionCollection, get_geometry_type, _sanitize_geoms, _PolygonPatch
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core import BaseData
 
 from matplotlib.lines import Line2D
 
@@ -77,24 +78,6 @@ def set_mpl_artist_cmap(artist, values, state=None, cmap=None, vmin=None, vmax=N
     else:
         artist.set_clim(vmin, vmax)
         artist.set_norm(Normalize(vmin, vmax))
-
-
-class UpdatablePatchCollection(PatchCollection):
-    """
-    I'm not sure if we generally need this, it depends what properties of polygons
-    we're going to need to update.
-
-    For circles we might be able to just set_radius
-    Taken from https://stackoverflow.com/a/11041426
-    """
-
-    def __init__(self, patches, *args, **kwargs):
-        self.patches = patches
-        PatchCollection.__init__(self, patches, *args, **kwargs)
-
-    def get_paths(self):
-        self.set_paths(self.patches)
-        return self._paths
 
 
 class ColoredLineCollection(LineCollection):
@@ -184,7 +167,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.errorbar_artist = self.axes.errorbar([], [], fmt='none')
         self.vector_artist = None
         self.line_collection = ColoredLineCollection([], [])
-        self.region_collection = UpdatablePatchCollection([])
         self.axes.add_collection(self.line_collection)
         self.axes.add_collection(self.region_collection)
 
@@ -199,8 +181,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.axes.add_artist(self.density_artist)
         self.mpl_artists = [self.scatter_artist, self.plot_artist,
                             self.errorbar_artist, self.vector_artist,
-                            self.line_collection, self.density_artist,
-                            self.region_collection]
+                            self.line_collection, self.density_artist]
 
     def compute_density_map(self, *args, **kwargs):
         try:
@@ -244,12 +225,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
             return
         else:
             self.enable()
-
-        display_regions = True
-        if display_regions:
-            circles = [Circle((xi,yi), radius=10, linewidth=2, color='blue') for xi,yi in zip(x,y)]
-            #c = UpdatablePatchCollection(circles)
-            self.mpl_artists[self.region_index].patches = circles
 
         if self.state.markers_visible:
 
@@ -463,11 +438,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                             s *= 0.95
                             s += 0.05
                             s *= (30 * self.state.size_scaling)
-                        
-                        #print(s)
-                        #for circle,rad in zip(self.mpl_artists[self.region_index].patches,s):
-                        #    print(rad)
-                        #    circle.set_radius(rad)
 
                         # Note, we need to square here because for scatter, s is actually
                         # proportional to the marker area, not radius.
@@ -631,3 +601,164 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         res = self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed'
         return res and (not hasattr(self._viewer_state, 'plot_mode') or
                         not self._viewer_state.plot_mode == 'polar')
+
+
+class ScatterRegionLayerArtist(MatplotlibLayerArtist):
+
+    _layer_state_cls = ScatterRegionLayerState
+    #  _python_exporter = python_export_scatter_layer # Need to do this at some point
+
+    def __init__(self, axes, viewer_state, layer_state=None, layer=None):
+
+        super().__init__(axes, viewer_state,
+                            layer_state=layer_state, layer=layer)
+
+        # Watch for changes in the viewer state which would require the
+        # layers to be redrawn
+
+        if isinstance(layer, BaseData):
+            data = layer
+        else:
+            data = layer.data
+
+        self.region_att = data.extended_component  # RegionData is only allowed to have a single Extended Component
+
+        # This is very restrictive, we could at least allow x/y transposition by flipping
+        # coordinates in the extended component
+        self.region_x_att = self.region_att.parent_component_id_x
+        self.region_y_att = self.region_att.parent_component_id_y
+
+        self._viewer_state.add_global_callback(self._update_scatter_region)
+        self.state.add_global_callback(self._update_scatter_region)
+        self._set_axes(axes)
+
+    def _set_axes(self, axes):
+        self.axes = axes
+        self.region_collection = UpdateableRegionCollection([])
+        self.axes.add_collection(self.region_collection)
+        #  This is a little unnecessary, but keeps code more parallel
+        self.mpl_artists = [self.region_collection]
+
+    @defer_draw
+    def _update_data(self):
+
+        # Layer artist has been cleared already
+        if len(self.mpl_artists) == 0:
+            return
+
+        try:
+            # These must be special attributes that are linked to a region_att
+            # Getting both arrays and checking that they are the same is an
+            # expensive way to do this. There is probably a better way to check
+            # if the component IDs are linked
+            x_att = self.layer[self._viewer_state.x_att]
+            if not np.array_equal(x_att, self.layer[self.region_x_att]):
+                raise IncompatibleAttribute
+            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.x_att)
+            return
+        else:
+            self.enable()
+
+        try:
+            y_att = self.layer[self._viewer_state.y_att]
+            # These must be special attributes that are linked to a region_att
+            if not np.array_equal(y_att, self.layer[self.region_y_att]):
+                raise IncompatibleAttribute
+            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.y_att)
+            return
+        else:
+            self.enable()
+
+        regions = self.layer['regions']  # This is super-fragile
+        # decompose GeometryCollections
+        geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
+        self.multiindex_geometry = multiindex
+
+        geom_types = get_geometry_type(geoms)
+        poly_idx = np.asarray((geom_types == "Polygon") | (geom_types == "MultiPolygon"))
+        polys = geoms[poly_idx]
+
+        # decompose MultiPolygons
+        geoms, multiindex = _sanitize_geoms(polys, prefix="Multi")
+        self.region_collection.patches = [_PolygonPatch(poly) for poly in geoms]
+        self.geoms = geoms
+        self.multiindex = multiindex
+
+    @defer_draw
+    def _update_visual_attributes(self, changed, force=False):
+
+        if not self.enabled:
+            return
+
+        # TEMPORARY: Matplotlib has a bug that causes set_alpha to
+        # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
+        if 'alpha' in changed:
+            force = True
+
+        if self.state.cmap_mode == 'Fixed':
+            if force or 'color' in changed or 'cmap_mode' in changed or 'fill' in changed:
+                self.region_collection.set_array(None)
+                if self.state.fill:
+                    self.region_collection.set_facecolors(self.state.color)
+                    self.region_collection.set_edgecolors('none')
+                else:
+                    self.region_collection.set_facecolors('none')
+                    self.region_collection.set_edgecolors(self.state.color)
+        elif force or any(prop in changed for prop in CMAP_PROPERTIES) or 'fill' in changed:
+            self.region_collection.set_edgecolors(None)
+            self.region_collection.set_facecolors(None)
+            c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
+            c_values = np.take(c, self.multiindex_geometry, axis=0)  # Decompose Geoms
+            c_values = np.take(c_values, self.multiindex, axis=0)  # Decompose MultiPolys
+            set_mpl_artist_cmap(self.region_collection, c_values, self.state)
+            if self.state.fill:
+                self.region_collection.set_edgecolors('none')
+            else:
+                self.region_collection.set_facecolors('none')
+
+        for artist in [self.region_collection]:
+
+            if artist is None:
+                continue
+
+            if force or 'alpha' in changed:
+                artist.set_alpha(self.state.alpha)
+
+            if force or 'zorder' in changed:
+                artist.set_zorder(self.state.zorder)
+
+            if force or 'visible' in changed:
+                artist.set_visible(self.state.visible)
+
+        self.redraw()
+
+    @defer_draw
+    def _update_scatter_region(self, force=False, **kwargs):
+
+        if (self._viewer_state.x_att is None or
+            self._viewer_state.y_att is None or
+                self.state.layer is None):
+            return
+
+        # NOTE: we need to evaluate this even if force=True so that the cache
+        # of updated properties is up to date after this method has been called.
+        changed = self.pop_changed_properties()
+
+        change_from_limits = len(changed & LIMIT_PROPERTIES) > 0
+        if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
+            self._update_data()
+            force = True
+
+        if force or len(changed & VISUAL_PROPERTIES) > 0:
+            self._update_visual_attributes(changed, force=force)
+
+    @defer_draw
+    def update(self):
+        self._update_scatter_region(force=True)
+        self.redraw()

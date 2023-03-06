@@ -475,6 +475,86 @@ class CategoricalComponent(Component):
         return pd.Series(self.labels, dtype=object, **kwargs)
 
 
+class ExtendedComponent(Component):
+    """
+    Container for data that describes an extent
+
+    This component can be used when a dataset describes regions
+    and it does not make sense to convert all those regions
+    to glue subsets.
+
+    Data loaders are required to know how to
+    provide these extended regions as lists of shapely objects and
+    explicitly create these components. If a tabular dataset provides
+    e.g. a range over another component or a circular region then
+    an ExtendedComponent needs to be manually created from these definitions.
+
+    Data Viewers can choose to implement custom Layer Artists for extended
+    components, typically in the form of looking if there is an ExtendedComponent
+    with parent components that are being plotted.
+
+    The challenge with this approach is that we tend to add a LayerArtist when
+    we create a layer... in the mapping context we have distinct LayerArtists
+    and swapping them out when we change state.lon_att and state.lat_att might be annoying?
+
+    NOTE that this implementation precludes support for regions in more than
+    two dimensions
+
+
+    Geopandas does this in a somewhat optimized way
+    https://github.com/geopandas/geopandas/blob/00e3748c987f5b9a14b5df5233421710811d75bf/geopandas/plotting.py#L323
+    Matplotlib has some notes on performance increases:
+    https://matplotlib.org/stable/users/explain/performance.html
+
+    How to draw ellipses using Shapely
+    https://stackoverflow.com/questions/13105915/draw-an-ellipse-using-shapely
+
+    Parameters
+    ----------
+    data: list of Shapely geometries
+    parent_components: a list of parent_components over which the Shapely geometries extend
+
+    """
+
+    def __init__(self, data, parent_component_ids=[], units=None):
+        import shapely
+        # Is this expensive for large data sets?
+        if not all(isinstance(x, shapely.Geometry) for x in data):
+            raise TypeError(
+                "Input data for a ExtendedComponent should a list of shapely.Geometry objects"
+            )
+        if len(parent_component_ids) == 2:
+            self.parent_component_id_x = parent_component_ids[0]
+            self.parent_component_id_y = parent_component_ids[1]
+        elif len(parent_component_ids) == 1:
+            self.parent_component_id_x = parent_component_ids[0]
+            self.parent_component_id_y = None
+        self.units = units
+        self._data = data
+
+    @property
+    def shape(self):
+        """Tuple of array dimensions. Do we need to override?"""
+        return self._data.shape
+
+    @property
+    def ndim(self):
+        """The number of dimensions. Do we need to override?"""
+        return len(self._data.shape)
+
+    @property
+    def extended(self):
+        return True
+
+    @property
+    def numeric(self):
+        return False
+
+    @property
+    def categorical(self):
+        return False
+
+
 class DateTimeComponent(Component):
     """
     A component representing a date/time.

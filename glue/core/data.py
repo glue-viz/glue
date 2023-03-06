@@ -1429,6 +1429,8 @@ class Data(BaseCartesianData):
             return 'numerical'
         elif comp.categorical:
             return 'categorical'
+        elif comp.extended:
+            return 'extended'
         else:
             raise TypeError("Unknown data kind")
 
@@ -2049,6 +2051,19 @@ class Data(BaseCartesianData):
         warnings.warn('Data.visible_components is deprecated', UserWarning)
         return [cid for cid, comp in self._components.items()
                 if not isinstance(comp, CoordinateComponent) and cid.parent is self]
+
+
+class RegionData(Data):
+    """
+    Data that describes a set of regions and properties of those regions.
+
+    extended_component needs to be created as a component and passed into
+    the constructor
+    """
+
+    def __init__(self, label="", coords=None, extended_component=None, **kwargs):
+        self.extended_component = extended_component
+        super().__init__(label=label, coords=coords, **kwargs)
 
 
 @contract(i=int, ndim=int)

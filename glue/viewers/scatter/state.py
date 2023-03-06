@@ -498,3 +498,77 @@ class ScatterLayerState(MatplotlibLayerState):
                 rec['values']['markers_visible'] = False
                 rec['values']['line_visible'] = True
         return super(ScatterLayerState, cls).__setgluestate__(rec, context)
+
+
+class ScatterRegionLayerState(MatplotlibLayerState):
+    """
+    A state class that includes all the attributes for layers in a scatter region layer.
+    """
+    markers_visible = DDCProperty(True, docstring="Whether to show markers")
+
+    # Color
+
+    cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
+    cmap_att = DDSCProperty(docstring="The attribute to use for the color")
+    cmap_vmin = DDCProperty(docstring="The lower level for the colormap")
+    cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
+    cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
+
+    fill = DDCProperty(True, docstring="Whether to fill the regions")
+
+    def __init__(self, viewer_state=None, layer=None, **kwargs):
+
+        super().__init__(viewer_state=viewer_state, layer=layer)
+        self.limits_cache = {}
+
+        self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_att',
+                                                          lower='cmap_vmin', upper='cmap_vmax',
+                                                          limits_cache=self.limits_cache)
+        self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
+                                                      numeric=True, datetime=False,
+                                                      categorical=True)
+
+        ScatterRegionLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        if self.viewer_state is not None:
+            self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
+            self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            self._on_xy_change()
+
+
+        self.add_callback('layer', self._on_layer_change)
+        if layer is not None:
+            self._on_layer_change()
+
+        self.cmap = colormaps.members[0][1]
+
+        self.update_from_dict(kwargs)
+
+    def _on_layer_change(self, layer=None):
+
+        with delay_callback(self, 'cmap_vmin', 'cmap_vmax'):
+
+            if self.layer is None:
+                self.cmap_att_helper.set_multiple_data([])
+            else:
+                self.cmap_att_helper.set_multiple_data([self.layer])
+
+    def _on_xy_change(self, *event):
+
+        if self.viewer_state.x_att is None or self.viewer_state.y_att is None:
+            return
+
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+
+    def flip_cmap(self):
+        """
+        Flip the cmap_vmin/cmap_vmax limits.
+        """
+        self.cmap_lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)
