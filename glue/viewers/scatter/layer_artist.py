@@ -168,7 +168,6 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_artist = None
         self.line_collection = ColoredLineCollection([], [])
         self.axes.add_collection(self.line_collection)
-        self.axes.add_collection(self.region_collection)
 
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message='All-NaN slice encountered')
@@ -650,7 +649,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
             # These must be special attributes that are linked to a region_att
             # Getting both arrays and checking that they are the same is an
             # expensive way to do this. There is probably a better way to check
-            # if the component IDs are linked
+            # if the component IDs are the same/linked
             x_att = self.layer[self._viewer_state.x_att]
             if not np.array_equal(x_att, self.layer[self.region_x_att]):
                 raise IncompatibleAttribute
