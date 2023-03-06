@@ -16,7 +16,7 @@ from glue.core.exceptions import IncompatibleAttribute
 
 from matplotlib.projections import get_projection_names
 
-__all__ = ['ScatterViewerState', 'ScatterLayerState']
+__all__ = ['ScatterViewerState', 'ScatterLayerState', 'ScatterRegionLayerState']
 
 
 class ScatterViewerState(MatplotlibDataViewerState):
@@ -504,8 +504,6 @@ class ScatterRegionLayerState(MatplotlibLayerState):
     """
     A state class that includes all the attributes for layers in a scatter region layer.
     """
-    markers_visible = DDCProperty(True, docstring="Whether to show markers")
-
     # Color
 
     cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
@@ -534,7 +532,6 @@ class ScatterRegionLayerState(MatplotlibLayerState):
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
             self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
             self._on_xy_change()
-
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:

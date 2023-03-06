@@ -612,9 +612,6 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         super().__init__(axes, viewer_state,
                             layer_state=layer_state, layer=layer)
 
-        # Watch for changes in the viewer state which would require the
-        # layers to be redrawn
-
         if isinstance(layer, BaseData):
             data = layer
         else:

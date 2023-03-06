@@ -27,7 +27,7 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
                                ScatterLayerArtist: ScatterLayerStyleEditor,
-                               ScatterRegionLayerArtist: ScatterRegionLayerStyleEditor,  # Need to override this with custom version
+                               ScatterRegionLayerArtist: ScatterRegionLayerStyleEditor,
                                }
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget

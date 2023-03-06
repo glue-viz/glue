@@ -1,5 +1,5 @@
 """
-A lightly modified version of geopandas.plotting.py for efficiently 
+Some lightly code from geopandas.plotting.py for efficiently 
 plotting multiple polygons in matplotlib.
 """
 # Copyright (c) 2013-2022, GeoPandas developers.
@@ -40,9 +40,9 @@ from shapely.geometry.base import BaseMultipartGeometry
 
 from packaging.version import Version
 
-class UpdatablePatchCollection(PatchCollection):
+class UpdateableRegionCollection(PatchCollection):
     """
-    Allow properties of PatchCollection to be modified after creation.
+    Allow paths in PatchCollection to be modified after creation.
     """
 
     def __init__(self, patches, *args, **kwargs):
@@ -52,15 +52,6 @@ class UpdatablePatchCollection(PatchCollection):
     def get_paths(self):
         self.set_paths(self.patches)
         return self._paths
-
-class UpdateableRegionCollection(UpdatablePatchCollection):
-
-    def set_centers(self, x, y):
-        if len(x) == 0:
-            self.patches = []
-            return
-        offsets = np.vstack((x, y)).transpose()
-        self.patches.set_offsets(offsets)
 
 
 def _sanitize_geoms(geoms, prefix="Multi"):
@@ -126,138 +117,7 @@ def get_geometry_type(data):
     return geometry_type_values[np.searchsorted(geometry_type_ids, res)]
 
 
-def plot_series(
-    s, ax, cmap=None, color=None, empty=False, **style_kwds
-):
-    """
-    Plot a GeoSeries.
-    Generate a plot of a GeoSeries geometry with matplotlib.
-    Parameters
-    ----------
-    s : Series
-        The GeoSeries to be plotted. Currently Polygon,
-        MultiPolygon, LineString, MultiLineString, Point and MultiPoint
-        geometries can be plotted.
-    ax : matplotlib.pyplot.Artist
-        axes on which to draw the plot
-    cmap : str (default None)
-        The name of a colormap recognized by matplotlib. Any
-        colormap will work, but categorical colormaps are
-        generally recommended. Examples of useful discrete
-        colormaps include:
-            tab10, tab20, Accent, Dark2, Paired, Pastel1, Set1, Set2
-    color : str, np.array, pd.Series, List (default None)
-        If specified, all objects will be colored uniformly.
-    **style_kwds : dict
-        Color options to be passed on to the actual plot function, such
-        as ``linewidth``, ``alpha``.
-    Returns
-    -------
-    ax : matplotlib axes instance
-    """
 
-    # have colors been given for all geometries?
-    color_given = pd.api.types.is_list_like(color) and len(color) == len(s)
-
-    # if cmap is specified, create range of colors based on cmap
-    values = None
-    if cmap is not None:
-        values = np.arange(len(s))
-        if hasattr(cmap, "N"):
-            values = values % cmap.N
-        style_kwds["vmin"] = style_kwds.get("vmin", values.min())
-        style_kwds["vmax"] = style_kwds.get("vmax", values.max())
-
-    # decompose GeometryCollections
-    s_geometry = get_geometry_type(s)
-    geoms, multiindex = _sanitize_geoms(s, prefix="Geom")
-    values = np.take(values, multiindex, axis=0) if cmap else None
-    # ensure indexes are consistent
-    if color_given and isinstance(color, pd.Series):
-        color = color.reindex(s.index)
-    expl_color = np.take(color, multiindex, axis=0) if color_given else color
-    expl_series = geoms
-
-    geom_types = get_geometry_type(expl_series)
-    poly_idx = np.asarray((geom_types == "Polygon") | (geom_types == "MultiPolygon"))
-    line_idx = np.asarray(
-        (geom_types == "LineString")
-        | (geom_types == "MultiLineString")
-        | (geom_types == "LinearRing")
-    )
-    point_idx = np.asarray((geom_types == "Point") | (geom_types == "MultiPoint"))
-
-    # plot all Polygons and all MultiPolygon components in the same collection
-    polys = expl_series[poly_idx]
-    color_ = expl_color[poly_idx] if color_given else color
-
-    values_ = values[poly_idx] if cmap else None
-    _plot_polygon_collection(
-        ax, polys, values_, color=color_, cmap=cmap, empty=empty, **style_kwds
-    )
-    return ax
-
-
-def _plot_polygon_collection(
-    ax, geoms, values=None, color=None, cmap=None, vmin=None, vmax=None, empty=False, **kwargs
-):
-    """
-    Plots a collection of Polygon and MultiPolygon geometries to `ax`
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        where shapes will be plotted
-    geoms : a sequence of `N` Polygons and/or MultiPolygons (can be mixed)
-    values : a sequence of `N` values, optional
-        Values will be mapped to colors using vmin/vmax/cmap. They should
-        have 1:1 correspondence with the geometries (not their components).
-        Otherwise plot using `color`.
-    color : single color or sequence of `N` colors
-        Sets both `edgecolor` and `facecolor`
-    cmap : str (default None)
-        The name of a colormap recognized by matplotlib.
-    vmin : float
-    vmax : float
-    empty : bool
-        Whether to plot just the outline of the polygons 
-    **kwargs
-        Additional keyword arguments passed to the collection
-    Returns
-    -------
-    collection : matplotlib.collections.Collection that was plotted
-    """
-    from matplotlib.collections import PatchCollection
-
-    geoms, multiindex = _sanitize_geoms(geoms)
-    if values is not None:
-        values = np.take(values, multiindex, axis=0)
-
-    # PatchCollection does not accept some kwargs.
-    kwargs = {
-        att: value
-        for att, value in kwargs.items()
-        if att not in ["markersize", "marker"]
-    }
-
-    # Add to kwargs for easier checking below.
-    if color is not None:
-        kwargs["color"] = color
-
-    _expand_kwargs(kwargs, multiindex)
-
-    collection = PatchCollection([_PolygonPatch(poly) for poly in geoms], **kwargs)
-
-    if values is not None:
-        collection.set_array(np.asarray(values))
-        collection.set_cmap(cmap)
-        if "norm" not in kwargs:
-            collection.set_clim(vmin, vmax)
-
-    if empty:
-        collection.set_facecolor('none')
-    ax.add_collection(collection, autolim=True)
-    ax.autoscale_view()
-    return collection
 
 def _PolygonPatch(polygon, **kwargs):
     """Constructs a matplotlib patch from a Polygon geometry
@@ -279,41 +139,4 @@ def _PolygonPatch(polygon, **kwargs):
         *[Path(np.asarray(ring.coords)[:, :2]) for ring in polygon.interiors],
     )
     return PathPatch(path, **kwargs)
-
-def _expand_kwargs(kwargs, multiindex):
-    """
-    Most arguments to the plot functions must be a (single) value, or a sequence
-    of values. This function checks each key-value pair in 'kwargs' and expands
-    it (in place) to the correct length/formats with help of 'multiindex', unless
-    the value appears to already be a valid (single) value for the key.
-    """
-    import matplotlib
-    from matplotlib.colors import is_color_like
-    from typing import Iterable
-
-    mpl = Version(matplotlib.__version__)
-    if mpl >= Version("3.4"):
-        # alpha is supported as array argument with matplotlib 3.4+
-        scalar_kwargs = ["marker", "path_effects"]
-    else:
-        scalar_kwargs = ["marker", "alpha", "path_effects"]
-
-    for att, value in kwargs.items():
-        if "color" in att:  # color(s), edgecolor(s), facecolor(s)
-            if is_color_like(value):
-                continue
-        elif "linestyle" in att:  # linestyle(s)
-            # A single linestyle can be 2-tuple of a number and an iterable.
-            if (
-                isinstance(value, tuple)
-                and len(value) == 2
-                and isinstance(value[1], Iterable)
-            ):
-                continue
-        elif att in scalar_kwargs:
-            # For these attributes, only a single value is allowed, so never expand.
-            continue
-
-        if pd.api.types.is_list_like(value):
-            kwargs[att] = np.take(value, multiindex, axis=0)
 
