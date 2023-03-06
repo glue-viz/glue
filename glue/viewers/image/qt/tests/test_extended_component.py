@@ -9,7 +9,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from glue.core.data import RegionData, Data
 from glue.core.component import Component, ExtendedComponent
 from glue.core.component_id import ComponentID
-from glue.utils.qt import combo_as_string
+from glue.utils.qt import combo_as_string, process_events
 from glue.app.qt import GlueApplication
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from glue.core.link_helpers import LinkSame
@@ -25,12 +25,12 @@ class TestScatterViewer(object):
 
         poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
         poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
-        poly = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
-        poly3 = Polygon([(10, 20), (15, 20), (15, 30), (10, 30), (12, 25)])
+        poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
+        poly_4 = Polygon([(10, 20), (15, 20), (15, 30), (10, 30), (12, 25)])
 
-        polygons = MultiPolygon([poly_1, poly_2])
+        polygons = MultiPolygon([poly_3, poly_4])
 
-        my_geoms = np.array([poly, polygons, poly3])
+        my_geoms = np.array([poly_1, poly_2, polygons])
 
         representative_points = [s.representative_point() for s in my_geoms]
 
@@ -109,14 +109,40 @@ class TestScatterViewer(object):
 
         assert len(self.viewer.state.layers) == 1
 
+        self.viewer.add_data(self.region_data)
+
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled  # image
+        assert not self.viewer.layers[1].enabled  # regions
+
+        process_events()
+
+        link1 = LinkSame(self.region_data.id['y'], self.data_2d.pixel_component_ids[0])
+        link2 = LinkSame(self.region_data.id['x'], self.data_2d.pixel_component_ids[1])
+
+        self.data_collection.add_link(link1)
+        self.data_collection.add_link(link2)
+        process_events()
+
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled  # image
+        assert self.viewer.layers[1].enabled  # regions
+
+    def test_subset(self):
+        self.viewer.add_data(self.data_2d)
+
+        self.viewer.add_data(self.region_data)
         link1 = LinkSame(self.region_data.id['y'], self.data_2d.pixel_component_ids[0])
         link2 = LinkSame(self.region_data.id['x'], self.data_2d.pixel_component_ids[1])
 
         self.data_collection.add_link(link1)
         self.data_collection.add_link(link2)
 
-        self.viewer.add_data(self.region_data)
+        self.data_collection.new_subset_group(subset_state=self.region_data.id['x'] > 20)
 
-        assert len(self.viewer.state.layers) == 2
+        process_events()
+
         assert self.viewer.layers[0].enabled  # image
         assert self.viewer.layers[1].enabled  # scatter
+        assert self.viewer.layers[2].enabled  # image subset
+        assert self.viewer.layers[3].enabled  # scatter subset
