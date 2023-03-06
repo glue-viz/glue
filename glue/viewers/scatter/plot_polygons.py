@@ -1,13 +1,13 @@
 """
-Some lightly code from geopandas.plotting.py for efficiently 
+Some lightly code from geopandas.plotting.py for efficiently
 plotting multiple polygons in matplotlib.
 """
 # Copyright (c) 2013-2022, GeoPandas developers.
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #  * Redistributions of source code must retain the above copyright notice, this
 #    list of conditions and the following disclaimer.
 # * Redistributions in binary form must reproduce the above copyright notice,
@@ -16,7 +16,7 @@ plotting multiple polygons in matplotlib.
 # * Neither the name of GeoPandas nor the names of its contributors may
 #   be used to endorse or promote products derived from this software without
 #   specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,17 +28,10 @@ plotting multiple polygons in matplotlib.
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-
 import numpy as np
-import pandas as pd
+import shapely
 from matplotlib.collections import PatchCollection
 
-
-import shapely
-from shapely.geometry.base import BaseMultipartGeometry
-
-from packaging.version import Version
 
 class UpdateableRegionCollection(PatchCollection):
     """
@@ -72,12 +65,12 @@ def _sanitize_geoms(geoms, prefix="Multi"):
     # shapely.get_parts(geoms, return_index=True) from shapely 2.0
     components, component_index = [], []
 
-    geom_types = get_geometry_type(geoms).astype('str')
+    geom_types = get_geometry_type(geoms).astype("str")
 
     if (
         not np.char.startswith(geom_types, prefix).any()
-        #and not geoms.is_empty.any()
-        #and not geoms.isna().any()
+        # and not geoms.is_empty.any()
+        # and not geoms.isna().any()
     ):
         return geoms, np.arange(len(geoms))
 
@@ -95,28 +88,25 @@ def _sanitize_geoms(geoms, prefix="Multi"):
     return components, np.array(component_index)
 
 
-
 def get_geometry_type(data):
     _names = {
-    "MISSING": None,
-    "NAG": None,
-    "POINT": "Point",
-    "LINESTRING": "LineString",
-    "LINEARRING": "LinearRing",
-    "POLYGON": "Polygon",
-    "MULTIPOINT": "MultiPoint",
-    "MULTILINESTRING": "MultiLineString",
-    "MULTIPOLYGON": "MultiPolygon",
-    "GEOMETRYCOLLECTION": "GeometryCollection",
-}
+        "MISSING": None,
+        "NAG": None,
+        "POINT": "Point",
+        "LINESTRING": "LineString",
+        "LINEARRING": "LinearRing",
+        "POLYGON": "Polygon",
+        "MULTIPOINT": "MultiPoint",
+        "MULTILINESTRING": "MultiLineString",
+        "MULTIPOLYGON": "MultiPolygon",
+        "GEOMETRYCOLLECTION": "GeometryCollection",
+    }
 
     type_mapping = {p.value: _names[p.name] for p in shapely.GeometryType}
     geometry_type_ids = list(type_mapping.keys())
     geometry_type_values = np.array(list(type_mapping.values()), dtype=object)
     res = shapely.get_type_id(data)
     return geometry_type_values[np.searchsorted(geometry_type_ids, res)]
-
-
 
 
 def _PolygonPatch(polygon, **kwargs):
@@ -139,4 +129,3 @@ def _PolygonPatch(polygon, **kwargs):
         *[Path(np.asarray(ring.coords)[:, :2]) for ring in polygon.interiors],
     )
     return PathPatch(path, **kwargs)
-
