@@ -36,7 +36,7 @@ from glue.core.coordinate_helpers import axis_label
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this
 # file)
-from glue.core.component import Component, CoordinateComponent, DerivedComponent
+from glue.core.component import Component, CoordinateComponent, DerivedComponent, ExtendedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 try:
@@ -2057,13 +2057,18 @@ class RegionData(Data):
     """
     Data that describes a set of regions and properties of those regions.
 
-    extended_component needs to be created as a component and passed into
-    the constructor
+    Components describing regions must be explicitly created as ExtendedComponents
+    and passed into this object at initialization time.
     """
 
-    def __init__(self, label="", coords=None, extended_component=None, **kwargs):
-        self.extended_component = extended_component
+    def __init__(self, label="", coords=None, **kwargs):
         super().__init__(label=label, coords=coords, **kwargs)
+
+        self._extended_component_ids = ComponentIDList()
+
+        for compid, comp in self._components.items():
+            if isinstance(comp, ExtendedComponent):
+                self._extended_component_ids.append(compid)
 
 
 @contract(i=int, ndim=int)

@@ -45,8 +45,8 @@ class TestScatterViewer(object):
         cell_number = Component(np.array([1, 2, 3]))
 
         self.region_data = RegionData(regions=region_component,
-                                      cell_number=cell_number,
-                                      extended_component=region_component)
+                                      cell_number=cell_number)
+
         # This is one way to add these components is a way that we can easily check their IDs
         self.region_data.add_component(center_x, center_x_id)
         self.region_data.add_component(center_y, center_y_id)

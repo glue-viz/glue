@@ -13,7 +13,7 @@ except ImportError:
     DASK_INSTALLED = False
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
-           'CoordinateComponent', 'DateTimeComponent']
+           'CoordinateComponent', 'DateTimeComponent', 'ExtendedComponent']
 
 
 class Component(object):
@@ -497,8 +497,8 @@ class ExtendedComponent(Component):
     we create a layer... in the mapping context we have distinct LayerArtists
     and swapping them out when we change state.lon_att and state.lat_att might be annoying?
 
-    NOTE that this implementation precludes support for regions in more than
-    two dimensions
+    NOTE that this implementation does not support regions in more than
+    two dimensions. (Shapely has some support for 3D shapes, but not more).
 
 
     Geopandas does this in a somewhat optimized way
@@ -548,6 +548,10 @@ class ExtendedComponent(Component):
 
     @property
     def numeric(self):
+        return False
+
+    @property
+    def datetime(self):
         return False
 
     @property

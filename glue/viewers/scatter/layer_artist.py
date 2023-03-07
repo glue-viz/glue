@@ -617,12 +617,13 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         else:
             data = layer.data
 
-        self.region_att = data.extended_component  # RegionData is only allowed to have a single Extended Component
+        self.region_att = data._extended_component_ids[0]  # RegionData is only allowed to have a single Extended Component
 
+        self.region_component = data.get_component(self.region_att)
         # This is very restrictive, we could at least allow x/y transposition by flipping
         # coordinates in the extended component
-        self.region_x_att = self.region_att.parent_component_id_x
-        self.region_y_att = self.region_att.parent_component_id_y
+        self.region_x_att = self.region_component.parent_component_id_x
+        self.region_y_att = self.region_component.parent_component_id_y
 
         self._viewer_state.add_global_callback(self._update_scatter_region)
         self.state.add_global_callback(self._update_scatter_region)
@@ -671,7 +672,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
-        regions = self.layer['regions']  # This is super-fragile
+        regions = self.layer[self.region_att]
         # decompose GeometryCollections
         geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
         self.multiindex_geometry = multiindex
