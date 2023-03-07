@@ -87,7 +87,27 @@ class TestScatterViewer(object):
         if len(ARRAY_CACHE) > 0:
             raise Exception("Array cache contains {0} elements".format(len(ARRAY_CACHE)))
 
-    def test_basic(self):
+    def test_link_first_then_add(self):
+
+        # Check defaults when we add data
+
+        self.viewer.add_data(self.data_2d)
+        link1 = LinkSame(self.region_data.id['y'], self.data_2d.pixel_component_ids[0])
+        link2 = LinkSame(self.region_data.id['x'], self.data_2d.pixel_component_ids[1])
+
+        self.data_collection.add_link(link1)
+        self.data_collection.add_link(link2)
+        process_events()
+
+        assert len(self.viewer.state.layers) == 1
+
+        self.viewer.add_data(self.region_data)
+
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled  # image
+        assert self.viewer.layers[1].enabled  # regions
+
+    def test_add_first_then_link(self):
 
         # Check defaults when we add data
 

@@ -16,6 +16,7 @@ from glue.viewers.scatter.plot_polygons import UpdateableRegionCollection, get_g
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import BaseData
+from glue.core.link_manager import is_equivalent_cid
 
 from matplotlib.lines import Line2D
 
@@ -619,11 +620,11 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         self.region_att = data._extended_component_ids[0]  # RegionData is only allowed to have a single Extended Component
 
-        self.region_component = data.get_component(self.region_att)
-        # This is very restrictive, we could at least allow x/y transposition by flipping
-        # coordinates in the extended component
-        self.region_x_att = self.region_component.parent_component_id_x
-        self.region_y_att = self.region_component.parent_component_id_y
+        self.region_comp = data.get_component(self.region_att)
+
+        self.region_x_att = self.region_comp.parent_component_id_x
+        self.region_y_att = self.region_comp.parent_component_id_y
+        self.region_xy_ids = [self.region_x_att, self.region_y_att]
 
         self._viewer_state.add_global_callback(self._update_scatter_region)
         self.state.add_global_callback(self._update_scatter_region)
@@ -636,6 +637,19 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         #  This is a little unnecessary, but keeps code more parallel
         self.mpl_artists = [self.region_collection]
 
+    def check_if_region_cid(self, data, cid):
+        """
+        Check if a ComponentID is in the set of components that regions are over.
+        """
+        if isinstance(data, BaseData):
+            data = data
+        else:  # Subset
+            data = data.data
+        if is_equivalent_cid(data, cid, self.region_x_att) or is_equivalent_cid(data, cid, self.region_y_att):
+            return True
+        else:
+            return False
+
     @defer_draw
     def _update_data(self):
 
@@ -645,11 +659,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         try:
             # These must be special attributes that are linked to a region_att
-            # Getting both arrays and checking that they are the same is an
-            # expensive way to do this. There is probably a better way to check
-            # if the component IDs are the same/linked
-            x_att = self.layer[self._viewer_state.x_att]
-            if not np.array_equal(x_att, self.layer[self.region_x_att]):
+            if not self.check_if_region_cid(self.layer, self._viewer_state.x_att):
                 raise IncompatibleAttribute
             x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
@@ -660,9 +670,8 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         try:
-            y_att = self.layer[self._viewer_state.y_att]
             # These must be special attributes that are linked to a region_att
-            if not np.array_equal(y_att, self.layer[self.region_y_att]):
+            if not self.check_if_region_cid(self.layer, self._viewer_state.y_att):
                 raise IncompatibleAttribute
             y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
