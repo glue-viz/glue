@@ -11,6 +11,7 @@ from .session import Session  # noqa
 from .subset import Subset  # noqa
 from .subset_group import SubsetGroup  # noqa
 from .visual import VisualAttributes  # noqa
+from .regions import layer_to_subset # noqa
 
 # We import this last to avoid circular imports
 from .application_base import Application  # noqa

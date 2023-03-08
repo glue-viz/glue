@@ -2059,6 +2059,8 @@ class RegionData(Data):
 
     Components describing regions must be explicitly created as ExtendedComponents
     and passed into this object at initialization time.
+
+    I *think* we want to limit to have a single ExtendedComponent
     """
 
     def __init__(self, label="", coords=None, **kwargs):
@@ -2069,6 +2071,8 @@ class RegionData(Data):
         for compid, comp in self._components.items():
             if isinstance(comp, ExtendedComponent):
                 self._extended_component_ids.append(compid)
+                self.ext_x = self.get_component(compid).parent_component_id_x
+                self.ext_y = self.get_component(compid).parent_component_id_y
 
 
 @contract(i=int, ndim=int)
