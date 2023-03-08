@@ -31,7 +31,7 @@ plotting multiple polygons in matplotlib.
 import numpy as np
 import shapely
 from matplotlib.collections import PatchCollection
-
+from shapely.errors import GeometryTypeError
 
 class UpdateableRegionCollection(PatchCollection):
     """
@@ -107,6 +107,31 @@ def get_geometry_type(data):
     geometry_type_values = np.array(list(type_mapping.values()), dtype=object)
     res = shapely.get_type_id(data)
     return geometry_type_values[np.searchsorted(geometry_type_ids, res)]
+
+
+def transform_shapely(func, geom):
+    """
+    A simplified/modified version of shapely.ops.transform where the func
+    call signature is tuned for the coordinate transform functions
+    coming from glue.
+    """
+    if geom.is_empty:
+        return geom
+    if geom.geom_type in ("Point", "LineString", "LinearRing", "Polygon"):
+        if geom.geom_type in ("Point", "LineString", "LinearRing"):
+            return type(geom)(func(geom.coords))
+        elif geom.geom_type == "Polygon":
+            shell = type(geom.exterior)(func(geom.exterior.coords))
+            holes = list(
+                type(ring)(func(ring.coords))
+                for ring in geom.interiors
+            )
+            return type(geom)(shell, holes)
+
+    elif geom.geom_type.startswith("Multi") or geom.geom_type == "GeometryCollection":
+        return type(geom)([transform_shapely(func, part) for part in geom.geoms])
+    else:
+        raise GeometryTypeError(f"Type {geom.geom_type!r} not recognized")
 
 
 def _PolygonPatch(polygon, **kwargs):

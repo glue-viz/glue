@@ -12,7 +12,7 @@ from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
 from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
 from glue.viewers.scatter.state import ScatterLayerState, ScatterRegionLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
-from glue.viewers.scatter.plot_polygons import UpdateableRegionCollection, get_geometry_type, _sanitize_geoms, _PolygonPatch
+from glue.viewers.scatter.plot_polygons import UpdateableRegionCollection, get_geometry_type, _sanitize_geoms, _PolygonPatch, transform_shapely
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core import BaseData
@@ -659,7 +659,8 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         try:
             # These must be special attributes that are linked to a region_att
-            if not self.check_if_region_cid(self.layer, self._viewer_state.x_att):
+            if ((not self.check_if_region_cid(self.layer, self._viewer_state.x_att)) and
+                     (not self.check_if_region_cid(self.layer, self._viewer_state.x_att_world))):
                 raise IncompatibleAttribute
             x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
@@ -671,7 +672,8 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         try:
             # These must be special attributes that are linked to a region_att
-            if not self.check_if_region_cid(self.layer, self._viewer_state.y_att):
+            if ((not self.check_if_region_cid(self.layer, self._viewer_state.y_att)) and
+                      (not self.check_if_region_cid(self.layer, self._viewer_state.y_att_world))):
                 raise IncompatibleAttribute
             y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
@@ -682,6 +684,12 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
             self.enable()
 
         regions = self.layer[self.region_att]
+        # If we are using world coordinates (i.e. the regions are specified in world coordinates)
+        # we need to transform the geometries of the regions into pixel coordinates for display
+        # We should cache this, since it is a waste to recompute it for certain _update_data calls
+        if self._viewer_state._display_world:
+            world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+            regions = np.array([transform_shapely(world2pix, g) for g in regions])
         # decompose GeometryCollections
         geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
         self.multiindex_geometry = multiindex
@@ -693,6 +701,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         # decompose MultiPolygons
         geoms, multiindex = _sanitize_geoms(polys, prefix="Multi")
         self.region_collection.patches = [_PolygonPatch(poly) for poly in geoms]
+
         self.geoms = geoms
         self.multiindex = multiindex
 

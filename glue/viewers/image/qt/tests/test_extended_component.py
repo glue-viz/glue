@@ -19,7 +19,7 @@ from ..data_viewer import ImageViewer
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
-class TestScatterViewer(object):
+class TestRegionScatterViewer(object):
 
     def setup_method(self, method):
 
