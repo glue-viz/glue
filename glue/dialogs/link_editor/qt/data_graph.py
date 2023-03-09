@@ -363,7 +363,7 @@ class DataGraphWidget(QGraphicsView):
 
     def find_object(self, event):
         for obj in list(self.nodes) + self.edges:
-            try:  # event.position() is Qt6 
+            try:  # event.position() is Qt6
                 if obj.contains(event.position()):
                     return obj
             except AttributeError:  # event.pos() is Qt5
