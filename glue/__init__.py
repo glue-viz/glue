@@ -6,12 +6,9 @@ import os
 
 import sys
 
-from pkg_resources import get_distribution, DistributionNotFound
+import importlib.metadata
 
-try:
-    __version__ = get_distribution('glue-core').version
-except DistributionNotFound:
-    __version__ = 'undefined'
+__version__ = importlib.metadata.version('glue-core')
 
 from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
