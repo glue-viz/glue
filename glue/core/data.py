@@ -427,7 +427,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         """
         The size of the data (the product of the shape dimensions), as an integer.
         """
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     def get_data(self, cid, view=None):
         """
@@ -811,7 +811,7 @@ class Data(BaseCartesianData):
 
     @property
     def size(self):
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     @contract(component=Component)
     def _check_can_add(self, component):
