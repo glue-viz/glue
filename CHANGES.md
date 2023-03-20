@@ -1,5 +1,32 @@
 # Full changelog
 
+## v1.8.0 - 2023-03-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Relax longitude range in fullsphere projections by @Carifio24 in https://github.com/glue-viz/glue/pull/2348
+
+#### Bug Fixes
+
+- Update polar log transform test values to correct matplotlib 3.7 representation by @Carifio24 in https://github.com/glue-viz/glue/pull/2366
+- Fix broken link editor under Qt5 by @jfoster17 in https://github.com/glue-viz/glue/pull/2375
+
+#### Documentation
+
+- DOC: Fix equivalent_units in examples by @pllim in https://github.com/glue-viz/glue/pull/2369
+
+#### Other Changes
+
+- Update link for slack invite by @astrofrog in https://github.com/glue-viz/glue/pull/2362
+- Update stable version of standalone app to 2023.02.0 by @astrofrog in https://github.com/glue-viz/glue/pull/2363
+- MNT: drop runtime dependency on pkg_resources (setuptools) by @neutrinoceros in https://github.com/glue-viz/glue/pull/2365
+- BUG: handle deprecation warning from numpy 1.25 (np.product is deprecated in favour of np.prod) by @neutrinoceros in https://github.com/glue-viz/glue/pull/2371
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.7.0...v1.8.0
+
 ## 1.8.0 - 2023-03-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -596,7 +623,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -604,7 +633,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -612,7 +643,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -620,7 +653,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -628,7 +663,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
