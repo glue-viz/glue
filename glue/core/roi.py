@@ -1231,7 +1231,7 @@ class MplRectangularROI(AbstractMplRoi):
             self._axes.add_patch(self._patch)
         else:
             if self._patch in self._axes.patches:
-                self._axes._remove_method(self._patch)
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def __str__(self):
@@ -1340,7 +1340,7 @@ class MplXRangeROI(AbstractMplRoi):
             self._axes.add_patch(self._patch)
         else:
             if self._patch in self._axes.patches:
-                self._axes._remove_method(self._patch)
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1448,7 +1448,7 @@ class MplYRangeROI(AbstractMplRoi):
             self._axes.add_patch(self._patch)
         else:
             if self._patch in self._axes.patches:
-                self._axes._remove_method(self._patch)
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1495,7 +1495,7 @@ class MplCircularROI(AbstractMplRoi):
             self._axes.add_patch(self._patch)
         else:
             if self._patch in self._axes.patches:
-                self._axes._remove_method(self._patch)
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event):
@@ -1634,7 +1634,7 @@ class MplPolygonalROI(AbstractMplRoi):
             self._axes.add_patch(self._patch)
         else:
             if self._patch in self._axes.patches:
-                self._axes._remove_method(self._patch)
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event, scrubbing=False):
