@@ -16,6 +16,7 @@ from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
 from glue.core.units import find_unit_choices, UnitConverter
+from glue.core.component_id import PixelComponentID
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -41,6 +42,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
     x_display_unit = DDSCProperty(docstring='The units to use to display the x-axis.')
     y_display_unit = DDSCProperty(docstring='The units to use to display the y-axis')
 
+    x_show_world = DDCProperty(False, docstring='Whether to show world coordinate labels even if in pixel space.')
+
     reference_data = DDSCProperty(docstring='The dataset that is used to define the '
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
@@ -64,6 +67,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('x_att', self._update_att)
         self.add_callback('x_display_unit', self._reset_x_limits)
         self.add_callback('y_display_unit', self._reset_y_limits_if_changed, echo_old=True)
+        self.add_callback('x_show_world', self._update_x_display_unit_choices)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -114,8 +118,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_pixel = self.reference_data.pixel_component_ids[index]
             else:
                 self.x_att_pixel = self.x_att
-        self._reset_x_limits()
         self._update_x_display_unit_choices()
+        self._reset_x_limits()
 
     def _reset_x_limits(self, *event):
 
@@ -193,15 +197,20 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self._update_y_display_unit_choices()
             self._last_layers = current_layers
 
-    def _update_x_display_unit_choices(self):
+    def _update_x_display_unit_choices(self, *args):
 
         if self.reference_data is None:
             ProfileViewerState.x_display_unit.set_choices(self, [])
             return
 
-        component = self.reference_data.get_component(self.x_att)
+        if self.x_show_world and isinstance(self.x_att, PixelComponentID):
+            x_att = self.reference_data.world_component_ids[self.x_att.axis]
+        else:
+            x_att = self.x_att
+
+        component = self.reference_data.get_component(x_att)
         if component.units:
-            x_choices = find_unit_choices([(self.reference_data, self.x_att, component.units)])
+            x_choices = find_unit_choices([(self.reference_data, x_att, component.units)])
         else:
             x_choices = ['']
         ProfileViewerState.x_display_unit.set_choices(self, x_choices)
@@ -402,12 +411,13 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
-            converter = UnitConverter()
-            axis_values = converter.to_unit(self.viewer_state.reference_data,
-                                            self.viewer_state.x_att, axis_values,
-                                            self.viewer_state.x_display_unit)
-            profile_values = converter.to_unit(data, self.attribute, profile_values,
-                                               self.viewer_state.y_display_unit)
+            if not isinstance(self.viewer_state.x_att, PixelComponentID):
+                converter = UnitConverter()
+                axis_values = converter.to_unit(self.viewer_state.reference_data,
+                                                self.viewer_state.x_att, axis_values,
+                                                self.viewer_state.x_display_unit)
+                profile_values = converter.to_unit(data, self.attribute, profile_values,
+                                                self.viewer_state.y_display_unit)
 
             self._profile_cache = axis_values, profile_values
 
