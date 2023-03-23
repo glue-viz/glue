@@ -166,7 +166,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         visible = np.zeros(self.order.shape, dtype=bool)
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
-                mask = layer_artist.layer.to_mask()
+                mask = layer_artist.layer.to_mask()[self.order]
                 if DASK_INSTALLED and isinstance(mask, da.Array):
                     mask = mask.compute()
                 visible |= mask
@@ -295,6 +295,13 @@ class TableViewer(DataViewer):
                 break
         else:
             return
+
+        # If we aren't changing the data layer, we don't need to
+        # reset the model, just update visible rows
+        if layer_state.layer == self.data:
+            self.model._update_visible()
+            return
+
         self.data = layer_state.layer
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
