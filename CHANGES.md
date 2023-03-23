@@ -1,5 +1,19 @@
 # Full changelog
 
+## v1.8.1 - 2023-03-23
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Fixed a bug in the plugin iteration on Python 3.8 and 3.9 by @neutrinoceros in https://github.com/glue-viz/glue/pull/2377
+- Avoid interference of ROI patches with legend auto-placement by @dhomeier in https://github.com/glue-viz/glue/pull/2370
+- Add pretransform for full-sphere selection by @Carifio24 in https://github.com/glue-viz/glue/pull/2360
+- Only recreate table model when Data layer changes by @Carifio24 in https://github.com/glue-viz/glue/pull/2372
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.8.0...v1.8.1
+
 ## v1.8.0 - 2023-03-20
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -597,7 +611,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -607,7 +623,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -617,7 +635,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -627,7 +647,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -637,7 +659,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
