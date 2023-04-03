@@ -1,5 +1,21 @@
 # Full changelog
 
+## v1.9.0 - 2023-04-03
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Add a LinkSameWithUnits class that links respecting units by @astrofrog in https://github.com/glue-viz/glue/pull/2379
+
+#### Bug Fixes
+
+- Save legend state by @Carifio24 in https://github.com/glue-viz/glue/pull/2380
+- Fix bugs related to generic BaseCartesianData subclasses by @astrofrog in https://github.com/glue-viz/glue/pull/2344
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.8.1...v1.9.0
+
 ## v1.8.1 - 2023-03-23
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -612,7 +628,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -624,7 +642,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -636,7 +656,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -648,7 +670,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -660,7 +684,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
