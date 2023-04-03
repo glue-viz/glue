@@ -1,6 +1,7 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
 import os
+from contextlib import nullcontext
 
 import pytest
 import numpy as np
@@ -142,14 +143,17 @@ class TestSessions(object):
     @pytest.mark.parametrize('protocol', [0, 1])
     def test_session_back_compat(self, protocol):
 
-        filename = os.path.join(DATA, 'dendro_v{0}.glu'.format(protocol))
+        filename = os.path.join(DATA, f'dendro_v{protocol}.glu')
 
         with open(filename, 'r') as f:
             session = f.read()
 
         state = GlueUnSerializer.loads(session)
 
-        ga = state.object('__main__')
+        # This is raised (only) on initial import, so depends on prior state unfortunately
+        with (pytest.warns(UserWarning, match='glue.external.echo is deprecated, import from echo')
+                           if protocol == 1 else nullcontext()):
+            ga = state.object('__main__')
 
         dc = ga.session.data_collection
 

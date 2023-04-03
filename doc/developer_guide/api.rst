@@ -64,6 +64,7 @@ User Interface
 
 .. automodapi:: glue.viewers.common.qt.base_widget
    :no-inheritance-diagram:
+   :skip: BaseQtViewerWidget
 
 .. automodapi:: glue.viewers.matplotlib.state
    :no-inheritance-diagram:
@@ -104,6 +105,7 @@ User Interface
 .. automodapi:: glue.viewers.common.qt.toolbar
    :no-inheritance-diagram:
    :inherited-members:
+   :skip: BasicToolbar
 
 .. automodapi:: glue.viewers.matplotlib.mpl_axes
    :no-inheritance-diagram:
@@ -148,6 +150,7 @@ User Interface
 
 .. automodapi:: glue.viewers.image.qt
    :no-inheritance-diagram:
+   :skip: StandaloneImageViewer
 
 .. automodapi:: glue.viewers.histogram.viewer
    :no-inheritance-diagram:
@@ -209,6 +212,8 @@ Utilities
 
 .. automodapi:: glue.utils.qt
    :no-inheritance-diagram:
+   :skip: QColorBox
+   :skip: Worker
 
 .. automodapi:: glue.utils.qt.widget_properties
    :no-inheritance-diagram:

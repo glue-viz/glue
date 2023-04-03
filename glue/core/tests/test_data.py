@@ -7,13 +7,12 @@ from unittest.mock import MagicMock
 from astropy.utils import NumpyRNGContext
 
 from glue import core
-from glue.utils import broadcast_to
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
 from ..component_link import ComponentLink, CoordinateComponentLink, BinaryComponentLink
 from ..coordinates import Coordinates, IdentityCoordinates
-from ..data import Data, pixel_label, BaseCartesianData
+from ..data import Data, pixel_label
 from ..link_helpers import LinkSame
 from ..data_collection import DataCollection
 from ..exceptions import IncompatibleAttribute
@@ -819,10 +818,16 @@ def test_update_coords():
             return ['Custom {0}'.format(axis) for axis in range(3)]
 
         def world_to_pixel_values(self, *world):
-            return tuple([0.4 * w for w in world])
+            if self.pixel_n_dim == 1:
+                return 0.4 * world[0]
+            else:
+                return tuple([0.4 * w for w in world])
 
         def pixel_to_world_values(self, *pixel):
-            return tuple([2.5 * p for p in pixel])
+            if self.world_n_dim == 1:
+                return 2.5 * pixel[0]
+            else:
+                return tuple([2.5 * p for p in pixel])
 
     data1.coords = CustomCoordinates()
 
@@ -930,10 +935,10 @@ def test_compute_statistic_empty_subset():
     assert_equal(result, np.nan)
 
     result = data.compute_statistic('maximum', data.id['x'], subset_state=subset_state, axis=1)
-    assert_equal(result, broadcast_to(np.nan, (30, 40)))
+    assert_equal(result, np.broadcast_to(np.nan, (30, 40)))
 
     result = data.compute_statistic('median', data.id['x'], subset_state=subset_state, axis=(1, 2))
-    assert_equal(result, broadcast_to(np.nan, (30)))
+    assert_equal(result, np.broadcast_to(np.nan, (30)))
 
     result = data.compute_statistic('sum', data.id['x'], subset_state=subset_state, axis=(0, 1, 2))
     assert_equal(result, np.nan)
@@ -1127,39 +1132,3 @@ def test_compute_histogram_dask_mixed():
 
     result = data.compute_histogram([data.id['y'], data.id['x']], range=[[-0.5, 11.25], [-0.5, 11.25]], bins=[2, 3], subset_state=data.id['x'] > 4.5)
     assert_allclose(result, [[0, 1, 0], [0, 2, 2]])
-
-
-def test_base_cartesian_data_coords():
-
-    # Make sure that world_component_ids works in both the case where
-    # coords is not defined and when it is defined.
-
-    class CustomData(BaseCartesianData):
-
-        def get_kind(self):
-            pass
-
-        def compute_histogram(self):
-            pass
-
-        def compute_statistic(self):
-            pass
-
-        def get_mask(self):
-            pass
-
-        @property
-        def shape(self):
-            return (1, 4, 3)
-
-        @property
-        def main_components(self):
-            return []
-
-    data1 = CustomData()
-    assert len(data1.pixel_component_ids) == 3
-    assert len(data1.world_component_ids) == 0
-
-    data2 = CustomData(coords=IdentityCoordinates(n_dim=3))
-    assert len(data2.pixel_component_ids) == 3
-    assert len(data2.world_component_ids) == 3

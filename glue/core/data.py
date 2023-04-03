@@ -28,7 +28,7 @@ from glue.core.contracts import contract
 from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
-                        datetime64_to_mpl, broadcast_to, categorical_ndarray,
+                        datetime64_to_mpl, categorical_ndarray,
                         format_choices, random_views_for_dask_array)
 from glue.core.coordinate_helpers import axis_label
 
@@ -179,7 +179,7 @@ class BaseData(object, metaclass=abc.ABCMeta):
               color='color|None',
               label='string|None',
               returns=Subset)
-    def new_subset(self, subset=None, color=None, label=None, **kwargs):
+    def new_subset(self, subset=None, **kwargs):
         """
         Create a new subset, and attach to self.
 
@@ -200,9 +200,9 @@ class BaseData(object, metaclass=abc.ABCMeta):
         Manually-instantiated subsets will **not** be represented properly by the UI.
         """
         nsub = len(self.subsets)
-        color = color or settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)]
-        label = label or "%s.%i" % (self.label, nsub + 1)
-        new_subset = Subset(self, color=color, label=label, **kwargs)
+        kwargs.setdefault("color", settings.SUBSET_COLORS[nsub % len(settings.SUBSET_COLORS)])
+        kwargs.setdefault("label", "%s.%i" % (self.label, nsub + 1))
+        new_subset = Subset(self, **kwargs)
         if subset is not None:
             new_subset.subset_state = subset.subset_state.copy()
 
@@ -398,6 +398,8 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
     def __init__(self, coords=None):
         super(BaseCartesianData, self).__init__()
         self._coords = coords
+        self._externally_derivable_components = OrderedDict()
+        self._pixel_aligned_data = OrderedDict()
 
     @property
     def coords(self):
@@ -425,7 +427,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         """
         The size of the data (the product of the shape dimensions), as an integer.
         """
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     def get_data(self, cid, view=None):
         """
@@ -442,15 +444,26 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         if cid in self.pixel_component_ids:
             shape = tuple(-1 if i == cid.axis else 1 for i in range(self.ndim))
             pix = np.arange(self.shape[cid.axis], dtype=float).reshape(shape)
-            return broadcast_to(pix, self.shape)[view]
-        elif cid in self.world_component_ids:
-            comp = self.world_components[cid]
-            if view is not None:
-                result = comp[view]
+            if view is None:
+                return np.broadcast_to(pix, self.shape)
             else:
-                result = comp.data
+                return np.broadcast_to(pix, self.shape)[view]
+        elif cid in self.world_component_ids:
+            comp = self._world_components[cid]
+        elif cid in self._externally_derivable_components:
+            comp = self._externally_derivable_components[cid]
         else:
             raise IncompatibleAttribute(cid)
+
+        # Note that above we have extracted Component objects from internal
+        # properties - we don't actually expose Component objects in this class,
+        # only in the Data class, but we use these components internally for
+        # convenience.
+
+        if view is None:
+            return comp.data
+        else:
+            return comp[view]
 
     @abc.abstractmethod
     def get_mask(self, subset_state, view=None):
@@ -593,12 +606,105 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
             self._world_component_ids = []
             self._world_components = {}
             for i in range(self.ndim):
+                # Note: we use a Component object here for convenience but we
+                # don't actually expose it via the BaseCartesianData API - in
+                # get_data we extract the data from the component.
                 comp = CoordinateComponent(self, i, world=True)
                 label = axis_label(self.coords, i)
                 cid = ComponentID(label, parent=self)
                 self._world_component_ids.append(cid)
                 self._world_components[cid] = comp
         return self._world_component_ids
+
+    def _set_externally_derivable_components(self, derivable_components):
+        """
+        Externally deriable components are components identified by component
+        IDs from other datasets.
+
+        This method is meant for internal use only and is called by the link
+        manager. The ``derivable_components`` argument should be set to a
+        dictionary where the keys are the derivable component IDs, and the
+        values are DerivedComponent instances which can be used to get the
+        data.
+        """
+
+        # Note that even though Component objects are not normally exposed as
+        # part of the BaseCartesianData API, we use these internally here as
+        # a convenience, and extract the data from them in get_data. The actual
+        # derived components are however used in the Data class.
+
+        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
+
+            return
+
+        elif len(self._externally_derivable_components) == len(derivable_components):
+
+            for key in derivable_components:
+                if key in self._externally_derivable_components:
+                    if self._externally_derivable_components[key].link is not derivable_components[key].link:
+                        break
+                else:
+                    break
+            else:
+                return  # Unchanged!
+
+        self._externally_derivable_components = derivable_components
+
+        if self.hub:
+            msg = ExternallyDerivableComponentsChangedMessage(self)
+            self.hub.broadcast(msg)
+
+    def _get_external_link(self, cid):
+        if cid in self._externally_derivable_components:
+            return self._externally_derivable_components[cid].link
+        else:
+            return None
+
+    def _get_coordinate_transform(self, world_cid):
+        if world_cid in self._world_components:
+            def transform(values):
+                return self._world_components._calculate(view=values)
+            return transform
+        else:
+            return None
+
+    def _set_pixel_aligned_data(self, pixel_aligned_data):
+        """
+        Pixel-aligned data are datasets that contain pixel component IDs
+        that are equivalent (identically, not transformed) with all pixel
+        component IDs in the present dataset.
+
+        Note that the other datasets may have more but not fewer dimensions, so
+        this information may not be symmetric between datasets with differing
+        numbers of dimensions.
+        """
+
+        # First check if anything has changed, as if not then we should just
+        # leave things as-is and avoid emitting a message.
+        if len(self._pixel_aligned_data) == len(pixel_aligned_data):
+            for data in self._pixel_aligned_data:
+                if data not in pixel_aligned_data or pixel_aligned_data[data] != self._pixel_aligned_data[data]:
+                    break
+            else:
+                return
+
+        self._pixel_aligned_data = pixel_aligned_data
+        if self.hub:
+            msg = PixelAlignedDataChangedMessage(self)
+            self.hub.broadcast(msg)
+
+    @property
+    def pixel_aligned_data(self):
+        """
+        Information about other datasets in the same data collection that have
+        matching or a subset of pixel component IDs.
+
+        This is returned as a dictionary where each key is a dataset with
+        matching pixel component IDs, and the value is the order in which the
+        pixel component IDs of the other dataset can be found in the current
+        one.
+        """
+        return self._pixel_aligned_data
 
 
 class Data(BaseCartesianData):
@@ -647,8 +753,6 @@ class Data(BaseCartesianData):
 
         # Components
         self._components = OrderedDict()
-        self._externally_derivable_components = OrderedDict()
-        self._pixel_aligned_data = OrderedDict()
         self._pixel_component_ids = ComponentIDList()
         self._world_component_ids = ComponentIDList()
 
@@ -707,7 +811,7 @@ class Data(BaseCartesianData):
 
     @property
     def size(self):
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     @contract(component=Component)
     def _check_can_add(self, component):
@@ -1003,77 +1107,6 @@ class Data(BaseCartesianData):
             self.hub.broadcast(msg)
 
         return component_id
-
-    def _set_externally_derivable_components(self, derivable_components):
-        """
-        Externally deriable components are components identified by component
-        IDs from other datasets.
-
-        This method is meant for internal use only and is called by the link
-        manager. The ``derivable_components`` argument should be set to a
-        dictionary where the keys are the derivable component IDs, and the
-        values are DerivedComponent instances which can be used to get the
-        data.
-        """
-
-        if len(self._externally_derivable_components) == 0 and len(derivable_components) == 0:
-
-            return
-
-        elif len(self._externally_derivable_components) == len(derivable_components):
-
-            for key in derivable_components:
-                if key in self._externally_derivable_components:
-                    if self._externally_derivable_components[key].link is not derivable_components[key].link:
-                        break
-                else:
-                    break
-            else:
-                return  # Unchanged!
-
-        self._externally_derivable_components = derivable_components
-
-        if self.hub:
-            msg = ExternallyDerivableComponentsChangedMessage(self)
-            self.hub.broadcast(msg)
-
-    def _set_pixel_aligned_data(self, pixel_aligned_data):
-        """
-        Pixel-aligned data are datasets that contain pixel component IDs
-        that are equivalent (identically, not transformed) with all pixel
-        component IDs in the present dataset.
-
-        Note that the other datasets may have more but not fewer dimensions, so
-        this information may not be symmetric between datasets with differing
-        numbers of dimensions.
-        """
-
-        # First check if anything has changed, as if not then we should just
-        # leave things as-is and avoid emitting a message.
-        if len(self._pixel_aligned_data) == len(pixel_aligned_data):
-            for data in self._pixel_aligned_data:
-                if data not in pixel_aligned_data or pixel_aligned_data[data] != self._pixel_aligned_data[data]:
-                    break
-            else:
-                return
-
-        self._pixel_aligned_data = pixel_aligned_data
-        if self.hub:
-            msg = PixelAlignedDataChangedMessage(self)
-            self.hub.broadcast(msg)
-
-    @property
-    def pixel_aligned_data(self):
-        """
-        Information about other datasets in the same data collection that have
-        matching or a subset of pixel component IDs.
-
-        This is returned as a dictionary where each key is a dataset with
-        matching pixel component IDs, and the value is the order in which the
-        pixel component IDs of the other dataset can be found in the current
-        one.
-        """
-        return self._pixel_aligned_data
 
     @contract(link=ComponentLink,
               label='cid_like|None',
@@ -1789,7 +1822,7 @@ class Data(BaseCartesianData):
                         if isinstance(axis, int):
                             axis = [axis]
                         final_shape = [mask.shape[i] for i in range(mask.ndim) if i not in axis]
-                        return broadcast_to(np.nan, final_shape)
+                        return np.broadcast_to(np.nan, final_shape)
         else:
             data = self.get_data(cid, view=view)
             mask = None

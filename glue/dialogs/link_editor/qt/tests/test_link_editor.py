@@ -669,3 +669,57 @@ class TestLinkEditor:
         dialog.show()
 
         dialog.accept()
+
+
+class TestLinkEditorForJoins:
+
+    def setup_method(self, method):
+
+        self.data1 = Data(x=['101', '102', '105'], y=[2, 3, 4], z=[6, 5, 4], label='data1')
+        self.data2 = Data(a=['102', '104', '105'], b=[4, 5, 4], c=[3, 4, 1], label='data2')
+
+        self.data_collection = DataCollection([self.data1, self.data2])
+
+    def test_make_and_delete_link(self):
+        # Make sure the dialog opens and closes and check default settings.
+        dialog = LinkEditor(self.data_collection)
+        dialog.show()
+        link_widget = dialog.link_widget
+        link_widget.state.data1 = self.data1
+        link_widget.state.data2 = self.data2
+        add_JoinLink = get_action(link_widget, 'Join on ID')
+
+        add_JoinLink.trigger()
+        # Ensure that all events get processed
+        # key_joins only happen on dialog.accept()
+        process_events()
+        dialog.accept()
+
+        assert len(self.data_collection.links) == 0
+        assert len(self.data_collection._link_manager._external_links) == 1
+
+        assert self.data1._key_joins != {}
+        assert self.data2._key_joins != {}
+
+        dialog.show()
+        link_widget = dialog.link_widget
+
+        # With two datasets this will select the current link
+        assert link_widget.listsel_current_link.count() == 1
+        assert link_widget.link_details.text().startswith('Join two datasets')
+        link_widget.state.current_link.data1 = self.data1
+        link_widget.state.current_link.data2 = self.data2
+
+        link_widget.state.current_link.link_type = 'join'  # Not sure why we need to set this in the test
+
+        assert link_widget.state.current_link.link in self.data_collection._link_manager._external_links
+        assert link_widget.button_remove_link.isEnabled()
+
+        link_widget.button_remove_link.click()
+        process_events()
+
+        dialog.accept()
+        assert len(self.data_collection.links) == 0
+        assert len(self.data_collection._link_manager._external_links) == 0
+        assert self.data1._key_joins == {}
+        assert self.data2._key_joins == {}

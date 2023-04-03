@@ -1,4 +1,4 @@
-name: CI Workflows
+name: CI Tests
 
 on:
   push:
@@ -24,51 +24,47 @@ jobs:
     with:
       coverage: codecov
       display: true
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
+      # Linux PyQt 5.15 and 6.x installations require apt-getting xcb and EGL deps
+      # and headless X11 display; as of Python 3.11 Scipy and h5py also need their own deps.
       libraries: |
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
+          - libopenblas-dev
+          - libhdf5-dev
         brew:
           - enchant
 
       envs: |
         # Standard tests
-        # Linux builds - test on all supported PyQt5 and PySide2 versions,
+        # Linux builds - test on all supported PyQt5/6 and PySide2/6 versions,
         # and include all dependencies in some builds
-        - linux: py37-test-pyqt510
-        - linux: py37-test-pyqt511-all
-        - linux: py37-test-pyqt512
-        - linux: py37-test-pyqt513-all
-        - linux: py37-test-pyside513-all
-        - linux: py38-test-pyside514
+        - linux: py38-test-pyqt514-all
         - linux: py39-test-pyqt515
-        - linux: py310-test-pyside515-all
+        - linux: py310-test-pyqt63-all
+        - linux: py310-test-pyqt64-all
+        - linux: py311-test-pyqt514
+
+        # Documentation build
+        - linux: py38-docs-pyqt514
+          coverage: false
+        - macos: py311-docs-pyqt64
+          coverage: false
+
+        # Test a few configurations on macOS
+        - macos: py38-test-pyqt514-all
+        - macos: py310-test-pyqt515
+        - macos: py310-test-pyqt64
+        - macos: py311-test-pyqt515
+
+        # Test some configurations on Windows
+        - windows: py38-test-pyqt514
+        - windows: py310-test-pyqt63
 
         # Test against latest developer versions of some packages
         - linux: py310-test-pyqt515-dev-all
-
-        # Try out documentation build on Linux and macOS
-        - linux: py37-docs-pyqt513
-          coverage: false
-
-        # Test a few configurations on MacOS X (Big Sur/Monterey on arm64 for py310)
-        - macos: py37-test-pyqt513
-        - macos: py38-test-pyqt514
-        - macos: py310-test-pyqt515-all
-          PLAT: arm64
-
-        # Try out documentation build on macOS
-        - macos: py37-docs-pyqt513
-          coverage: false
-
-        # Test some configurations on Windows
-        - windows: py37-test-pyqt510
-        - windows: py310-test-pyqt515
-
-        # Try out documentation build on Windows
-        - windows: py38-docs-pyqt513
-          coverage: false
+        - linux: py311-test-pyqt64-dev
 
   allowed_failures:
     needs: initial_checks
@@ -76,26 +72,47 @@ jobs:
     with:
       coverage: codecov
       display: true
-      # The Linux PyQt 5.15 installation requires apt-getting its xcb deps and headless X11 display
       libraries: |
         apt:
           - '^libxcb.*-dev'
           - libxkbcommon-x11-dev
+          - libegl1-mesa
+          - libopenblas-dev
+          - libhdf5-dev
         brew:
           - enchant
+          - hdf5
       envs: |
-        # Some (PySide2 in particular) envs are failing with runtime errors
+
+        # Non-deterministic QThread exceptions
         - linux: py38-test-pyside514
-        - macos: py38-test-pyside514
-        - windows: py38-test-pyqt514-all
-        - windows: py39-test-pyside515-all
+        - linux: py39-test-pyside515
+        - linux: py310-test-pyside63
+
+        # PySide6 6.4 failures due to https://github.com/spyder-ide/qtpy/issues/373
+        # and https://github.com/matplotlib/matplotlib/issues/24155
+        # Python 3.11.0 failing on Windows in test_image.py on
+        # > assert df.find_factory(fname) is df.img_data
+        - linux: py310-test-pyside64
+        - linux: py311-test-pyside64
+        - macos: py310-test-pyside63
+        - macos: py311-test-pyside64
+        - windows: py310-test-pyside64
+        - windows: py311-test-pyqt515
+
+        # Windows docs build
+        - windows: py310-docs-pyqt515
+          coverage: false
+
+        # Failure in test_close_tab
+        - windows: py310-test-pyqt515-all
 
   publish:
     needs: tests
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@v1
     with:
       # Setup PyQt5 deps and headless X server as per pyvista/setup-headless-display-action@v1
-      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx xvfb'
+      libraries: '^libxcb.*-dev libxkbcommon-x11-dev libgl1-mesa-glx libopenblas-dev libhdf5-dev xvfb'
       test_extras: 'test,qt'
       test_command: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & sleep 3; DISPLAY=:99.0 pytest --pyargs glue
     secrets:

@@ -14,17 +14,21 @@ COLOR_CONNECTED = (0.6, 0.9, 0.9)
 COLOR_DISCONNECTED = (0.9, 0.6, 0.6)
 
 
-def get_pen(color, linewidth=1):
+def get_pen(color, linewidth=1, linestyle=Qt.SolidLine):
     color = mpl_to_qt_color(color)
-    return QPen(color, linewidth, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+    return QPen(color, linewidth, linestyle, Qt.RoundCap, Qt.RoundJoin)
 
 
 class Edge(QGraphicsLineItem):
 
-    def __init__(self, node_source, node_dest, linewidth=3, zindex=5):
+    def __init__(self, node_source, node_dest, linewidth=3, zindex=5, link_type="value"):
         self.linewidth = linewidth
         self.node_source = node_source
         self.node_dest = node_dest
+        if link_type == 'join':
+            self.linestyle = Qt.DashLine
+        else:
+            self.linestyle = Qt.SolidLine
         super(Edge, self).__init__(0, 0, 1, 1)
         self.setZValue(zindex)
         self.color = '0.5'
@@ -40,7 +44,7 @@ class Edge(QGraphicsLineItem):
 
     @color.setter
     def color(self, value):
-        self.setPen(get_pen(value, self.linewidth))
+        self.setPen(get_pen(value, self.linewidth, self.linestyle))
 
     def add_to_scene(self, scene):
         scene.addItem(self)
@@ -163,7 +167,7 @@ def get_connections(dc_links):
         data1 = link.data1
         data2 = link.data2
         if (data1, data2) not in links and (data2, data1) not in links:
-            links.append((data1, data2))
+            links.append((data1, data2, link.link_type))
 
     return links
 
@@ -276,14 +280,14 @@ class DataGraphWidget(QGraphicsView):
         # Get links and set up edges
 
         if old_links:
-            self.background_edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], linewidth=1, zindex=1)
-                                     for data1, data2 in get_connections(data_collection.external_links)]
+            self.background_edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], linewidth=1, zindex=1, link_type=link_type)
+                                     for data1, data2, link_type in get_connections(data_collection.external_links)]
         else:
             self.background_edges = []
 
         if new_links:
-            self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
-                          for data1, data2 in get_connections(new_links)]
+            self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], link_type=link_type)
+                          for data1, data2, link_type in get_connections(new_links)]
         else:
             self.edges = []
 
@@ -309,8 +313,8 @@ class DataGraphWidget(QGraphicsView):
         for edge in self.edges:
             edge.remove_from_scene(self.scene)
 
-        self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2])
-                      for data1, data2 in get_connections(links)]
+        self.edges = [Edge(self.data_to_nodes[data1], self.data_to_nodes[data2], link_type=link_type)
+                      for data1, data2, link_type in get_connections(links)]
 
         for edge in self.edges:
             edge.update_position()
@@ -359,8 +363,12 @@ class DataGraphWidget(QGraphicsView):
 
     def find_object(self, event):
         for obj in list(self.nodes) + self.edges:
-            if obj.contains(event.localPos()):
-                return obj
+            try:  # event.position() is Qt6
+                if obj.contains(event.position()):
+                    return obj
+            except AttributeError:  # event.pos() is Qt5
+                if obj.contains(event.pos()):
+                    return obj
 
     def mouseMoveEvent(self, event):
 

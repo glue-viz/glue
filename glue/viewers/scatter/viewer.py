@@ -1,6 +1,6 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
-from glue.core.roi_pretransforms import ProjectionMplTransform, RadianTransform
+from glue.core.roi_pretransforms import FullSphereLongitudeTransform, ProjectionMplTransform, RadianTransform
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
@@ -22,8 +22,8 @@ class MatplotlibScatterMixin(object):
 
         self.state.add_callback('x_min', self._x_limits_to_mpl)
         self.state.add_callback('x_max', self._x_limits_to_mpl)
-        self.state.add_callback('y_min', self.limits_to_mpl)
-        self.state.add_callback('y_max', self.limits_to_mpl)
+        self.state.add_callback('y_min', self._y_limits_to_mpl)
+        self.state.add_callback('y_max', self._y_limits_to_mpl)
         self.state.add_callback('x_axislabel', self._update_polar_ticks)
         self.state.add_callback('y_axislabel', self._update_polar_ticks)
         self._update_axes()
@@ -46,18 +46,10 @@ class MatplotlibScatterMixin(object):
         self._update_ticks(args)
 
         if self.state.x_att is not None:
-
-            if self.state.x_log:
-                self.state.x_axislabel = 'Log ' + self.state.x_att.label
-            else:
-                self.state.x_axislabel = self.state.x_att.label
+            self.state.x_axislabel = self.state.x_att.label
 
         if self.state.y_att is not None:
-
-            if self.state.y_log:
-                self.state.y_axislabel = 'Log ' + self.state.y_att.label
-            else:
-                self.state.y_axislabel = self.state.y_att.label
+            self.state.y_axislabel = self.state.y_att.label
 
         self.axes.figure.canvas.draw_idle()
 
@@ -105,6 +97,9 @@ class MatplotlibScatterMixin(object):
     def using_polar(self):
         return self.state.plot_mode == 'polar'
 
+    def using_fullsphere(self):
+        return self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']
+
     def _update_angle_unit(self, *args):
         self._update_axes()
         for layer in self.layers:
@@ -113,6 +108,13 @@ class MatplotlibScatterMixin(object):
     def _x_limits_to_mpl(self, *args, **kwargs):
         if self.using_polar():
             self.state.full_circle()
+        elif self.using_fullsphere():
+            return
+        self.limits_to_mpl()
+
+    def _y_limits_to_mpl(self, *args, **kwargs):
+        if self.using_fullsphere():
+            return
         self.limits_to_mpl()
 
     def update_x_axislabel(self, *event):
@@ -165,6 +167,8 @@ class MatplotlibScatterMixin(object):
                                                                self.axes.get_yscale())
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
+            if self.state.using_full_sphere:
+                transform = FullSphereLongitudeTransform(next_transform=transform)
             if self.state.using_degrees:
                 coords = ['x'] if self.using_polar() else ['x', 'y']
                 transform = RadianTransform(coords=coords, next_transform=transform)

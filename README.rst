@@ -1,4 +1,4 @@
-|Azure Status| |Coverage Status| |DOI| |User mailing list| |Developer mailing list|
+|Actions Status| |Coverage Status| |DOI| |User mailing list| |Developer mailing list|
 
 Glue
 ====
@@ -46,8 +46,9 @@ License
 Glue is licensed under the `BSD
 License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__.
 
-.. |Azure Status| image:: https://dev.azure.com/glue-viz/glue/_apis/build/status/glue-viz.glue?branchName=master
-   :target: https://dev.azure.com/glue-viz/glue/_build/latest?definitionId=4&branchName=master
+.. |Actions Status| image:: https://github.com/glue-viz/glue/actions/workflows/ci_workflows.yml/badge.svg
+    :target: https://github.com/glue-viz/glue/actions
+    :alt: Glue's GitHub Actions CI Status
 .. |Coverage Status| image:: https://codecov.io/gh/glue-viz/glue/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/glue-viz/glue
 .. |DOI| image:: https://zenodo.org/badge/doi/10.5281/zenodo.13866.svg

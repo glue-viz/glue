@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.colors as mcolors
 
-from glue.utils import defer_draw, broadcast_to
+from glue.utils import defer_draw
 
 from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
@@ -104,7 +104,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return None, None, None
 
     def enable(self):
-        if hasattr(self, 'composite_image'):
+        if not self.enabled and hasattr(self, 'composite_image'):
             self.composite_image.invalidate_cache()
         super(ImageLayerArtist, self).enable()
 
@@ -156,15 +156,16 @@ class ImageLayerArtist(BaseImageLayerArtist):
             return
 
         if self._viewer_state.color_mode == 'Colormaps':
-            color = self.state.cmap
+            self.composite.mode = 'colormap'
         else:
-            color = self.state.color
+            self.composite.mode = 'color'
 
         self.composite.set(self.uuid,
                            clim=(self.state.v_min, self.state.v_max),
                            visible=self.state.visible,
                            zorder=self.state.zorder,
-                           color=color,
+                           color=self.state.color,
+                           cmap=self.state.cmap,
                            contrast=self.state.contrast,
                            bias=self.state.bias,
                            alpha=self.state.alpha,
@@ -237,7 +238,7 @@ class ImageSubsetArray(object):
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return broadcast_to(np.nan, self.shape)
+            return np.broadcast_to(np.nan, self.shape)
 
         # We should compute the mask even if the layer is not visible as we need
         # the layer to show up properly when it is made visible (which doesn't
@@ -247,7 +248,7 @@ class ImageSubsetArray(object):
             mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return broadcast_to(np.nan, self.shape)
+            return np.broadcast_to(np.nan, self.shape)
         else:
             self.layer_artist.enable(redraw=False)
 
@@ -267,7 +268,7 @@ class ImageSubsetArray(object):
 
     @property
     def size(self):
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
 
 class ImageSubsetLayerArtist(BaseImageLayerArtist):

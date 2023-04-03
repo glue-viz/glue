@@ -9,7 +9,7 @@ from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
-from glue.utils import defer_draw, broadcast_to, ensure_numerical, datetime64_to_mpl
+from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
@@ -30,6 +30,7 @@ DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
+LIMIT_PROPERTIES = set(['x_min', 'x_max', 'y_min', 'y_max'])
 DATA_PROPERTIES = set(['layer', 'x_att', 'y_att', 'cmap_mode', 'size_mode', 'density_map',
                        'xerr_att', 'yerr_att', 'xerr_visible', 'yerr_visible',
                        'vector_visible', 'vx_att', 'vy_att', 'vector_arrowhead', 'vector_mode',
@@ -110,6 +111,7 @@ class ColoredLineCollection(LineCollection):
             data_new = np.zeros((len(data) - 1) * 2)
             data_new[::2] = data[:-1]
             data_new[1::2] = data[1:]
+            self.set_color(None)
             set_mpl_artist_cmap(self, data_new, **kwargs)
         else:
             if isinstance(color, np.ndarray):
@@ -229,13 +231,21 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 self.plot_artist.set_data([], [])
                 self.scatter_artist.set_offsets(np.zeros((0, 2)))
             else:
-
                 full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
                 degrees = getattr(self._viewer_state, 'using_degrees', False)
                 if degrees:
                     x = np.radians(x)
                     if full_sphere:
                         y = np.radians(y)
+
+                # The full-sphere projections expect longitude angles in the range [-pi, pi]
+                # so we wrap angles to accommodate this
+                if full_sphere:
+                    x = np.mod(x + np.pi, 2 * np.pi) - np.pi
+                    if self._viewer_state.x_min > self._viewer_state.x_max:
+                        x = np.negative(x)
+                    if self._viewer_state.y_min > self._viewer_state.y_max:
+                        y = np.negative(y)
 
                 self.density_artist.set_label(None)
                 if self._use_plot_artist():
@@ -315,13 +325,13 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
             if self.state.xerr_visible and self.state.xerr_att is not None:
                 xerr = ensure_numerical(self.layer[self.state.xerr_att].ravel()).copy()
-                keep &= ~np.isnan(xerr)
+                keep &= ~np.isnan(xerr) & (xerr >= 0.)
             else:
                 xerr = None
 
             if self.state.yerr_visible and self.state.yerr_att is not None:
                 yerr = ensure_numerical(self.layer[self.state.yerr_att].ravel()).copy()
-                keep &= ~np.isnan(yerr)
+                keep &= ~np.isnan(yerr) & (yerr >= 0.)
             else:
                 yerr = None
 
@@ -412,7 +422,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
 
                         if self.state.size_mode == 'Fixed':
                             s = self.state.size * self.state.size_scaling
-                            s = broadcast_to(s, self.scatter_artist.get_sizes().shape)
+                            s = np.broadcast_to(s, self.scatter_artist.get_sizes().shape)
                         else:
                             s = ensure_numerical(self.layer[self.state.size_att].ravel())
                             s = ((s - self.state.size_vmin) /
@@ -519,7 +529,9 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         # of updated properties is up to date after this method has been called.
         changed = self.pop_changed_properties()
 
-        if force or len(changed & DATA_PROPERTIES) > 0:
+        full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
+        change_from_limits = full_sphere and len(changed & LIMIT_PROPERTIES) > 0
+        if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
             self._update_data()
             force = True
 

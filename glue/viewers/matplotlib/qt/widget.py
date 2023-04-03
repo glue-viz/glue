@@ -2,12 +2,13 @@
 
 import warnings
 import matplotlib
+from matplotlib.backend_bases import KeyEvent, MouseEvent, ResizeEvent
 from matplotlib.figure import Figure
 
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Qt, QRectF
 from glue.config import settings
-from glue.utils.matplotlib import DEFER_DRAW_BACKENDS
+from glue.utils.matplotlib import DEFER_DRAW_BACKENDS, MATPLOTLIB_GE_36
 
 from matplotlib.backends.backend_qt5 import FigureManagerQT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -126,6 +127,32 @@ class MplCanvas(FigureCanvasQTAgg):
     def keyPressEvent(self, event):
         event.setAccepted(False)
         super(MplCanvas, self).keyPressEvent(event)
+
+    # FigureCanvasBase methods deprecated in 3.6 - see
+    # https://github.com/matplotlib/matplotlib/pull/16931
+    # adding replacements here for tests convenience.
+
+    if MATPLOTLIB_GE_36:
+        def resize_event(self):
+            self.callbacks.process('resize_event', ResizeEvent('resize_event', self))
+
+        def key_press_event(self, event):
+            self.callbacks.process('key_press_event', KeyEvent('key_press_event', self, event))
+
+        def key_release_event(self, event):
+            self.callbacks.process('key_release_event', KeyEvent('key_release_event', self, event))
+
+        def button_press_event(self, *event):
+            self.callbacks.process('button_press_event',
+                                   MouseEvent('button_press_event', self, *event))
+
+        def button_release_event(self, *event):
+            self.callbacks.process('button_release_event',
+                                   MouseEvent('button_release_event', self, *event))
+
+        def motion_notify_event(self, *event):
+            self.callbacks.process('motion_notify_event',
+                                   MouseEvent('motion_notify_event', self, *event))
 
 
 class MplWidget(QtWidgets.QWidget):

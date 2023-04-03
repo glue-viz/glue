@@ -25,9 +25,9 @@ should check one of the other installation methods mentioned in
 MacOS X
 -------
 
-Donwload the :download:`glue 2021.10.2.dmg
-<https://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.dmg>`
-file, open it and copy the **glue 2021.10.2.app** application to your
+Donwload the :download:`glue 2023.02.0.dmg
+<https://glueviz.s3.amazonaws.com/installers/2023.02.0/glue%202023.02.0.dmg>`
+file, open it and copy the **glue 2023.02.0.app** application to your
 **Applications** folder (or any other location you want to use).
 
 Open the copied application - after a short wait, you will likely see a dialog that looks like:
@@ -55,9 +55,9 @@ installing a new version, if you relaunch the same application it should now wor
 Windows
 -------
 
-Donwload the :download:`glue 2021.10.2.exe
-<https://glueviz.s3.amazonaws.com/installers/2021.10.2/glue%202021.10.2.exe>` file.
-Once the file has downloaded, open the **glue 2021.10.2.exe** application. You
+Donwload the :download:`glue 2023.02.0.exe
+<https://glueviz.s3.amazonaws.com/installers/2023.02.0/glue%202023.02.0.exe>` file.
+Once the file has downloaded, open the **glue 2023.02.0.exe** application. You
 will likely then see a dialog such as:
 
 .. image:: images/warning1_windows.png

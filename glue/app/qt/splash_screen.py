@@ -39,7 +39,10 @@ class QtSplashScreen(QtWidgets.QWidget):
         # Adapted from StackOverflow
         # https://stackoverflow.com/questions/20243637/pyqt4-center-window-on-active-screen
         frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
+        try:
+            screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+            centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
+        except AttributeError:
+            centerPoint = QtWidgets.QApplication.primaryScreen().geometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())

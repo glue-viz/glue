@@ -6,6 +6,8 @@ import pytest
 import numpy as np
 from unittest.mock import MagicMock
 
+from astropy.wcs import WCS
+
 from glue import core
 from glue.tests.helpers import requires_astropy
 
@@ -386,3 +388,18 @@ def test_update_cid_used_in_derived():
     np.testing.assert_equal(data['b'], [4, 5, 2])
     data.update_id(data.id['a'], ComponentID('x'))
     np.testing.assert_equal(data['b'], [4, 5, 2])
+
+
+def test_coordinate_component_1d_coord():
+
+    # Regression test for a bug that caused incorrect world coordinate values
+    # for 1D coordinates.
+
+    wcs = WCS(naxis=1)
+    wcs.wcs.ctype = ['FREQ']
+    wcs.wcs.crpix = [1]
+    wcs.wcs.crval = [1]
+    wcs.wcs.cdelt = [1]
+
+    data = Data(flux=np.random.random(5), coords=wcs, label='data')
+    np.testing.assert_equal(data['Frequency'], [1, 2, 3, 4, 5])

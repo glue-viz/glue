@@ -3,8 +3,8 @@
 import numpy as np
 from matplotlib.cm import gray
 
-from .. import Data, DataCollection
-from ..util import facet_subsets, colorize_subsets
+from .. import Data, DataCollection, VisualAttributes
+from ..util import facet_subsets, colorize_subsets, sample_colormap
 
 
 class TestRelim(object):
@@ -80,6 +80,21 @@ class TestFacetSubsets(object):
         np.testing.assert_array_equal(grps[1].subsets[0].to_mask(),
                                       [True, True, False, False, False,
                                        False, False])
+
+    def test_facet_styling(self):
+        visual_attrs = dict(alpha=0.7, markersize=8, marker='o',
+                            linewidth=2, linestyle='dashed')
+        style = VisualAttributes(**visual_attrs)
+
+        lo, hi, steps = 3, 6, 3
+        grps = facet_subsets(self.collect, self.data.id['x'],
+                             lo=lo, hi=hi, steps=steps,
+                             style=visual_attrs, cmap=gray)
+
+        colors = sample_colormap(steps, gray)
+        for sg, color in zip(grps, colors):
+            style.color = color
+            assert sg.style == style
 
 
 def test_colorize_subsets():

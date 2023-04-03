@@ -194,7 +194,7 @@ def join_component_view(component, view):
 
 
 def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
-                  prefix='', log=False):
+                  prefix='', log=False, style=None, cmap=None):
     """
     Create a series of subsets that partition the values of a particular
     attribute into several bins
@@ -218,6 +218,11 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
         If present, the new subset labels will begin with `prefix`
     log : bool, optional
         If `True`, space divisions logarithmically. Default is `False`
+    style : dict, optional
+        Any visual attributes specified here will be used when creating subsets
+    cmap : :class:`matplotlib.colors.Colormap`, optional
+        Matplotlib colormap instance used to generate colors.
+        If specified, this will override any colors set in `style`
 
     Returns
     -------
@@ -247,6 +252,11 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
     Note that the last range is inclusive on both sides. For example, if ``lo``
     is 0 and ``hi`` is 5, and ``steps`` is 5, then the intervals for the subsets
     are [0,1), [1,2), [2,3), [3,4), and [4,5].
+
+        facet_subset(data, data.id['mass'], lo=0, hi=10, steps=2, style=dict(alpha=0.5, markersize=5))
+
+    Performs the same faceting operation in the first example, but now each created subset
+    will have an alpha of 0.5 and a marker size of 5.
     """
     from glue.core.exceptions import IncompatibleAttribute
     if lo is None or hi is None:
@@ -294,11 +304,55 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
                 labels.append(prefix + '{0}<={1}<={2}'.format(rng[i], cid, rng[i + 1]))
 
     result = []
+    style = style or {}
+    use_cmap = cmap is not None
+    if use_cmap:
+        colors = iter(sample_colormap(len(states), cmap))
+
     for lbl, s in zip(labels, states):
-        sg = data_collection.new_subset_group(label=lbl, subset_state=s)
+        kwargs = dict(label=lbl, subset_state=s, **style)
+        if use_cmap:
+            kwargs.update(color=next(colors))
+        sg = data_collection.new_subset_group(**kwargs)
         result.append(sg)
 
     return result
+
+
+def sample_colormap(nsamples, cmap, lo=0, hi=1):
+    """
+    Sample a colormap. The colormap will be sampled at `nsamples` even intervals
+    between `lo` and `hi`. Results are returned as hexadecimal strings.
+
+     Parameters
+    ----------
+    nsamples: int
+        The number of samples
+    cmap : :class:`matplotlib.colors.Colormap`
+        Matplotlib colormap instancecmap is not None
+    lo : float, optional
+        Start location in colormap. 0-1. Defaults to 0
+    hi : float, optional
+        End location in colormap. 0-1. Defaults to 1
+    """
+
+    from matplotlib import cm
+    sm = cm.ScalarMappable(cmap=cmap)
+    sm.norm.vmin = 0
+    sm.norm.vmax = 1
+
+    vals = np.linspace(lo, hi, nsamples)
+    rgbas = sm.to_rgba(vals)
+
+    samples = []
+    for color in rgbas:
+        r, g, b, a = color
+        r = int(255 * r)
+        g = int(255 * g)
+        b = int(255 * b)
+        samples.append('#%2.2x%2.2x%2.2x' % (r, g, b))
+
+    return samples
 
 
 def colorize_subsets(subsets, cmap, lo=0, hi=1):
@@ -307,7 +361,7 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
 
     The colormap will be sampled at `len(subsets)` even intervals
     between `lo` and `hi`. The color at the `ith` interval will be
-    applied to `subsets[i]`
+    applied to `subsets[i]`.
 
     Parameters
     ----------
@@ -321,20 +375,9 @@ def colorize_subsets(subsets, cmap, lo=0, hi=1):
         End location in colormap. 0-1. Defaults to 1
     """
 
-    from matplotlib import cm
-    sm = cm.ScalarMappable(cmap=cmap)
-    sm.norm.vmin = 0
-    sm.norm.vmax = 1
-
-    vals = np.linspace(lo, hi, len(subsets))
-    rgbas = sm.to_rgba(vals)
-
+    rgbas = sample_colormap(len(subsets), cmap, lo=lo, hi=hi)
     for color, subset in zip(rgbas, subsets):
-        r, g, b, a = color
-        r = int(255 * r)
-        g = int(255 * g)
-        b = int(255 * b)
-        subset.style.color = '#%2.2x%2.2x%2.2x' % (r, g, b)
+        subset.style.color = color
 
 
 def disambiguate(label, taken):

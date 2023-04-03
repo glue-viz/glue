@@ -22,9 +22,9 @@ import numpy as np
 from glue.core.hub import HubListener
 from glue.core.message import DataCollectionDeleteMessage, DataRemoveComponentMessage
 from glue.core.contracts import contract
-from glue.core.link_helpers import LinkCollection
+from glue.core.link_helpers import LinkCollection, JoinLink
 from glue.core.component_link import ComponentLink
-from glue.core.data import Data
+from glue.core.data import Data, BaseCartesianData
 from glue.core.component import DerivedComponent
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset import Subset
@@ -184,6 +184,8 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             if link not in self._external_links and isinstance(link, LinkCollection) or link.inverse not in self._external_links:
+                if isinstance(link, JoinLink):
+                    link.data1.join_on_key(link.data2, link.cids1[0], link.cids2[0])
                 self._external_links.append(link)
                 if update_external:
                     self.update_externally_derivable_components()
@@ -197,6 +199,17 @@ class LinkManager(HubListener):
                 self.update_externally_derivable_components()
         else:
             logging.getLogger(__name__).debug('removing link %s', link)
+            if isinstance(link, JoinLink):
+                data_to_remove_from_data1 = None
+                data_to_remove_from_data2 = None
+                for other_data, key_join in link.data1._key_joins.items():
+                    cid, cid_other = key_join
+                    if (other_data == link.data2):
+                        if (cid[0] == link.cids1[0]) and (cid_other[0] == link.cids2[0]):  # assumes single-linkage
+                            data_to_remove_from_data1 = other_data
+                            data_to_remove_from_data2 = link.data1
+                link.data1._key_joins.pop(data_to_remove_from_data1)  # Assume these joins are set up right
+                link.data2._key_joins.pop(data_to_remove_from_data2)
             self._external_links.remove(link)
             if update_external:
                 self.update_externally_derivable_components()
@@ -231,7 +244,7 @@ class LinkManager(HubListener):
             data_collection = self.data_collection
 
         # Only keep actual Data instances since only they support links for now
-        data_collection = [d for d in data_collection if isinstance(d, Data)]
+        data_collection = [d for d in data_collection if isinstance(d, BaseCartesianData)]
 
         for data in data_collection:
             links = discover_links(data, self._links | self._inverse_links)
@@ -295,18 +308,20 @@ def _find_identical_reference_cid(data, cid):
     truly belongs to the dataset (not via a link). Returns None if there is
     no strictly identical component in the dataset.
     """
-    try:
-        target_comp = data.get_component(cid)
-    except IncompatibleAttribute:
-        return None
-    if isinstance(target_comp, DerivedComponent):
-        if target_comp.link.identity:
-            updated_cid = target_comp.link.get_from_ids()[0]
-            return _find_identical_reference_cid(data, updated_cid)
-        else:
-            return None
-    else:
+
+    if cid in data.main_components or cid in data.coordinate_components or cid in data.derived_components:
         return cid
+
+    link = data._get_external_link(cid)
+
+    if link is None:
+        return None
+
+    if link.identity:
+        updated_cid = link.get_from_ids()[0]
+        return _find_identical_reference_cid(data, updated_cid)
+    else:
+        return None
 
 
 def is_equivalent_cid(data, cid1, cid2):

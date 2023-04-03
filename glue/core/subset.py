@@ -14,8 +14,8 @@ from glue.core.message import SubsetDeleteMessage, SubsetUpdateMessage
 from glue.core.decorators import memoize
 from glue.core.visual import VisualAttributes
 from glue.config import settings
-from glue.utils import (view_shape, broadcast_to, floodfill, combine_slices,
-                        polygon_line_intersections, categorical_ndarray, iterate_chunks)
+from glue.utils import (categorical_ndarray, combine_slices, floodfill, iterate_chunks,
+                        polygon_line_intersections, view_shape)
 
 
 __all__ = ['Subset', 'SubsetState', 'RoiSubsetStateNd', 'RoiSubsetState', 'CategoricalROISubsetState',
@@ -56,7 +56,7 @@ class Subset(object):
               color='color',
               alpha=float,
               label='string|None')
-    def __init__(self, data, color=settings.SUBSET_COLORS[0], alpha=0.5, label=None):
+    def __init__(self, data, **kwargs):
         """Create a new subset object.
 
         Note: the preferred way for creating subsets is via
@@ -68,15 +68,17 @@ class Subset(object):
         self._broadcasting = False  # must be first def
 
         self.data = data
-        self.label = label  # trigger disambiguation
+        self.label = kwargs.get("label", None)  # trigger disambiguation
 
         self.subset_state = SubsetState()  # calls proper setter method
 
-        self.style = VisualAttributes(parent=self)
-        self.style.markersize *= 2.5
-        self.style.linewidth *= 2.5
-        self.style.color = color
-        self.style.alpha = alpha
+        visual_args = {k: v for k, v in kwargs.items() if k in VisualAttributes.DEFAULT_ATTS}
+        visual_args.setdefault("color", settings.SUBSET_COLORS[0])
+        visual_args.setdefault("alpha", 0.5)
+        visual_args.setdefault("linewidth", 2.5)
+        visual_args.setdefault("markersize", 7)
+
+        self.style = VisualAttributes(parent=self, **visual_args)
 
         # We assign a UUID which can then be used for example in equations
         # for derived components - the idea is that this doesn't change over
@@ -456,7 +458,7 @@ class SubsetState(object):
             Any object that returns a valid view for a Numpy array.
         """
         shp = view_shape(data.shape, view)
-        return broadcast_to(False, shp)
+        return np.broadcast_to(False, shp)
 
     @contract(returns='isinstance(SubsetState)')
     def copy(self):
@@ -1325,7 +1327,7 @@ class SliceSubsetState(SubsetState):
 
             if order is None:
                 # We use broadcast_to for minimal memory usage
-                return broadcast_to(False, shape)
+                return np.broadcast_to(False, shape)
             else:
                 # Reorder slices
                 slices = [self.slices[idx] for idx in order]
@@ -1348,7 +1350,7 @@ class SliceSubsetState(SubsetState):
                 elif np.isscalar(view[i]):
                     beg, end, stp = slices[i].indices(data.shape[i])
                     if view[i] < beg or view[i] >= end or (view[i] - beg) % stp != 0:
-                        return broadcast_to(False, shape)
+                        return np.broadcast_to(False, shape)
                 elif isinstance(view[i], slice):
                     if view[i].step is not None and view[i].step < 0:
                         beg, end, step = view[i].indices(data.shape[i])

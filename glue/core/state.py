@@ -80,8 +80,12 @@ from glue.core.component_link import CoordinateComponentLink
 from glue.core.roi import Roi
 from glue.core import glue_pickle as gp
 from glue.core.subset_group import coerce_subset_groups
-from glue.utils import lookup_class
 from glue.config import session_patch
+from glue.utils import lookup_class
+from glue.utils.matplotlib import MATPLOTLIB_GE_36
+
+if MATPLOTLIB_GE_36:
+    from matplotlib import colormaps
 
 literals = tuple([type(None), float, int, bytes, bool])
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
@@ -1211,7 +1215,7 @@ def _save_cmap(cmap, context):
 
 @loader(Colormap)
 def _load_cmap(rec, context):
-    return cm.get_cmap(rec['cmap'])
+    return colormaps[rec['cmap']] if MATPLOTLIB_GE_36 else cm.get_cmap(rec['cmap'])
 
 
 @saver(np.datetime64)

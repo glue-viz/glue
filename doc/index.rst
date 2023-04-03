@@ -53,7 +53,7 @@ Glue application to the more advanced ways of interacting with Glue from Python.
 .. note:: For any questions or help with using glue, you can always join the
           `user support mailing list <https://groups.google.com/forum/#!forum/glue-viz>`_
           or ask questions on `Slack <https://glueviz.slack.com>`_
-          (note that you will need to sign up for an account `here <https://glueviz-slack-invite.herokuapp.com>`_).
+          (note that you will need to sign up for an account `here <https://join.slack.com/t/glueviz/shared_invite/zt-1p5amn7ee-wTZCJJNlgxCTRup3SrSh3g>`_).
 
 Using the Glue application
 --------------------------
@@ -100,6 +100,7 @@ Customizing/Hacking Glue
    customizing_guide/custom_viewer.rst
    python_guide/liveupdate.rst
    customizing_guide/fitting.rst
+   customizing_guide/units.rst
 
 Advanced customization
 ----------------------

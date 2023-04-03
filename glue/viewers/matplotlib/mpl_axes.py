@@ -29,10 +29,14 @@ def set_foreground_color(axes, color):
         axes.yaxis.label.set_color(color)
 
 
+def set_figure_colors(axes, background, foreground):
+    set_background_color(axes, background)
+    set_foreground_color(axes, foreground)
+
+
 def update_appearance_from_settings(axes):
     from glue.config import settings
-    set_background_color(axes, settings.BACKGROUND_COLOR)
-    set_foreground_color(axes, settings.FOREGROUND_COLOR)
+    set_figure_colors(axes, settings.BACKGROUND_COLOR, settings.FOREGROUND_COLOR)
 
 
 def init_mpl(figure=None, axes=None, wcs=False, axes_factory=None, projection=None):

@@ -6,7 +6,7 @@ from numpy.testing import assert_equal, assert_allclose
 
 from glue.tests.helpers import HYPOTHESIS_INSTALLED
 
-from ..array import (view_shape, coerce_numeric, stack_view, unique, broadcast_to,
+from ..array import (view_shape, coerce_numeric, stack_view, unique,
                      shape_to_string, check_sorted, pretty_number, unbroadcast,
                      iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
                      nanmin, nanmax, format_minimal, compute_statistic, categorical_ndarray,
@@ -67,7 +67,7 @@ def test_coerce_numeric():
     assert coerce_numeric(x) is x
 
     x = np.array([0, 1, 1, 0], dtype=bool)
-    np.testing.assert_array_equal(coerce_numeric(x), np.array([0, 1, 1, 0], dtype=np.int))
+    np.testing.assert_array_equal(coerce_numeric(x), np.array([0, 1, 1, 0], dtype=int))
 
 
 @pytest.mark.parametrize(('shape', 'views'),
@@ -129,7 +129,7 @@ class TestPrettyNumber(object):
 def test_unbroadcast():
 
     x = np.array([1, 2, 3])
-    y = broadcast_to(x, (2, 4, 3))
+    y = np.broadcast_to(x, (2, 4, 3))
 
     z = unbroadcast(y)
     assert z.shape == (1, 1, 3)
@@ -139,10 +139,10 @@ def test_unbroadcast():
 def test_broadcast_arrays_minimal():
 
     a = np.array([1, 2, 3])
-    b = broadcast_to(a, (2, 4, 3))
+    b = np.broadcast_to(a, (2, 4, 3))
 
     c = np.ones((2, 1, 1))
-    d = broadcast_to(c, (2, 4, 3))
+    d = np.broadcast_to(c, (2, 4, 3))
 
     e, f = broadcast_arrays_minimal(b, d)
     assert e.shape == (2, 1, 3)

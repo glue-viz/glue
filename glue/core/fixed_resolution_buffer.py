@@ -1,9 +1,9 @@
 import numpy as np
 from glue.core import Data
-from glue.core.exceptions import IncompatibleDataException
-from glue.core.component import CoordinateComponent, DaskComponent
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
+from glue.core.component import DaskComponent
 from glue.core.coordinate_helpers import dependent_axes
-from glue.utils import unbroadcast, broadcast_to, broadcast_arrays_minimal
+from glue.utils import unbroadcast, broadcast_arrays_minimal
 
 # TODO: cache needs to be updated when links are removed/changed
 
@@ -48,30 +48,35 @@ def translate_pixel(data, pixel_coords, target_cid):
     # TODO: check that things are efficient if the PixelComponentID is in a
     # pixel-aligned dataset.
 
-    component = data.get_component(target_cid)
+    link = data._get_external_link(target_cid)
 
-    if hasattr(component, 'link'):
-        link = component.link
-        values_all = []
-        dimensions_all = []
-        for cid in link._from:
-            values, dimensions = translate_pixel(data, pixel_coords, cid)
-            values_all.append(values)
-            dimensions_all.extend(dimensions)
-        # Unbroadcast arrays to smallest common shape for performance
-        if len(values_all) > 0:
-            shape = values_all[0].shape
-            values_all = broadcast_arrays_minimal(*values_all)
-            results = link._using(*values_all)
-            result = broadcast_to(results, shape)
+    if link is None:
+        if target_cid in data.main_components or target_cid in data.derived_components:
+            raise Exception("Dependency on non-pixel component", target_cid)
+        elif target_cid in data.coordinate_components:
+            if isinstance(data, Data):
+                comp = data.get_component(target_cid)
+            else:
+                comp = data._world_components[target_cid]
+            return comp._calculate(view=pixel_coords), dependent_axes(data.coords, comp.axis)
         else:
-            result = None
-        return result, sorted(set(dimensions_all))
-    elif isinstance(component, CoordinateComponent):
-        # FIXME: Hack for now - if we pass arrays in the view, it's interpreted
-        return component._calculate(view=pixel_coords), dependent_axes(data.coords, component.axis)
+            raise IncompatibleAttribute(target_cid)
+
+    values_all = []
+    dimensions_all = []
+    for cid in link._from:
+        values, dimensions = translate_pixel(data, pixel_coords, cid)
+        values_all.append(values)
+        dimensions_all.extend(dimensions)
+    # Unbroadcast arrays to smallest common shape for performance
+    if len(values_all) > 0:
+        shape = values_all[0].shape
+        values_all = broadcast_arrays_minimal(*values_all)
+        results = link._using(*values_all)
+        result = np.broadcast_to(results, shape)
     else:
-        raise Exception("Dependency on non-pixel component", target_cid)
+        result = None
+    return result, sorted(set(dimensions_all))
 
 
 class AnyScalar(object):
@@ -217,7 +222,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         invalid_all |= invalid
 
         # Broadcast back to the original shape and add to the list
-        translated_coords.append(broadcast_to(translated_coord, original_shape))
+        translated_coords.append(np.broadcast_to(translated_coord, original_shape))
 
         # Also keep track of all the dimensions that contributed to this coordinate
         dimensions_all.extend(dimensions)

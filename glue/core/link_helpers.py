@@ -9,7 +9,8 @@ multiple ComponentLinks easily. They are meant to be passed to
 
 import types
 
-from glue.config import link_function
+from glue.config import link_function, link_helper
+
 from glue.core.data import ComponentID
 from glue.core.component_link import ComponentLink
 
@@ -17,7 +18,8 @@ from inspect import getfullargspec
 
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
-           'LinkAligned', 'BaseMultiLink', 'ManualLinkCollection']
+           'LinkAligned', 'BaseMultiLink', 'ManualLinkCollection',
+           'JoinLink']
 
 
 @link_function("Link conceptually identical components",
@@ -411,6 +413,9 @@ class LinkTwoWay(MultiLink):
             kwargs['data2'] = cid2.parent
             kwargs['cids2'] = [cid2]
 
+        self._cid1 = cid1
+        self._cid2 = cid2
+
         super(LinkTwoWay, self).__init__(forwards=forwards, backwards=backwards, **kwargs)
 
     def __gluestate__(self, context):
@@ -428,6 +433,32 @@ class LinkTwoWay(MultiLink):
                    context.object(rec['forwards']),
                    context.object(rec['backwards']))
         return self
+
+
+class LinkSameWithUnits(LinkTwoWay):
+
+    def __init__(self, cid1=None, cid2=None, **kwargs):
+
+        self.units1 = cid1.parent.get_component(cid1).units
+        self.units2 = cid2.parent.get_component(cid2).units
+
+        from glue.core.units import UnitConverter
+
+        self._converter = UnitConverter()
+
+        super().__init__(cid1=cid1, cid2=cid2, forwards=self.forwards, backwards=self.backwards)
+
+        # Pre-check that unit conversions work properly as if there are any
+        # issues it is better to report them when the link is set up rather
+        # than when the links are used as issues may be hidden.
+        self.forwards(1)
+        self.backwards(1)
+
+    def forwards(self, values):
+        return self._converter.to_unit(self._cid1.parent, self._cid1, values, self.units2)
+
+    def backwards(self, values):
+        return self._converter.to_unit(self._cid2.parent, self._cid2, values, self.units1)
 
 
 class LinkAligned(LinkCollection):
@@ -463,3 +494,54 @@ def functional_link_collection(function, labels1=None, labels2=None,
     FunctionalLinkCollection.description = description or ''
 
     return FunctionalLinkCollection
+
+
+@link_helper(category="Join")
+class JoinLink(LinkCollection):
+    cid_independent = False
+
+    display = "Join on ID"
+    description = "Join two datasets on a common ID. Other links \
+in glue connect data columns (two datasets have 'age' columns but \
+the rows are different objects), while Join on ID connects the same \
+rows/items across two datasets."
+
+    labels1 = ["Identifier in dataset 1"]
+    labels2 = ["Identifier in dataset 2"]
+
+    def __init__(self, *args, cids1=None, cids2=None, data1=None, data2=None):
+        # only support linking by one value now, even though link_by_value supports multiple
+        assert len(cids1) == 1
+        assert len(cids2) == 1
+
+        self.data1 = data1
+        self.data2 = data2
+        self.cids1 = cids1
+        self.cids2 = cids2
+
+        self._links = []
+
+    def __str__(self):
+        # The >< here is one symbol for a database join
+        return '%s >< %s' % (self.cids1, self.cids2)
+
+    def __repr__(self):
+        return "<JoinLink: %s>" % self
+
+    # Define __eq__ and __ne__ to facilitate removing
+    # these kinds of links from the link_manager
+    def __eq__(self, other):
+        if not isinstance(other, JoinLink):
+            return False
+        same = ((self.data1 == other.data1) and
+                (self.data2 == other.data2) and
+                (self.cids1 == other.cids1) and
+                (self.cids2 == other.cids2))
+        flip = ((self.data1 == other.data2) and
+                (self.data2 == other.data1) and
+                (self.cids1 == other.cids2) and
+                (self.cids2 == other.cids1))
+        return same or flip
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

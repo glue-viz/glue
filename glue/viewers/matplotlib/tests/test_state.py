@@ -1,7 +1,35 @@
-from ..state import MatplotlibLegendState
+from ..state import MatplotlibLegendState, MatplotlibDataViewerState
 from glue.config import settings
+from glue.core.tests.test_state import clone
 
 from matplotlib.colors import to_rgba
+
+
+class TestMatplotlibDataViewerState:
+    def setup_method(self, method):
+        self.state = MatplotlibDataViewerState()
+
+    def test_legend_serialization(self):
+        legend_state = self.state.legend
+        legend_state.visible = True
+        legend_state.location = "best"
+        legend_state.title = "Legend"
+        legend_state.fontsize = 13
+        legend_state.alpha = 0.7
+        legend_state.frame_color = "#1e00f1"
+        legend_state.show_edge = False
+        legend_state.text_color = "#fad8f1"
+
+        new_state = clone(self.state)
+        new_legend_state = new_state.legend
+        assert new_legend_state.visible
+        assert new_legend_state.location == "best"
+        assert new_legend_state.title == "Legend"
+        assert new_legend_state.fontsize == 13
+        assert new_legend_state.alpha == 0.7
+        assert new_legend_state.frame_color == "#1e00f1"
+        assert not new_legend_state.show_edge
+        assert new_legend_state.text_color == "#fad8f1"
 
 
 class TestMatplotlibLegendState:

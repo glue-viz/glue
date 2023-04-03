@@ -259,6 +259,18 @@ class MatplotlibDataViewerState(ViewerState):
         else:
             return 1
 
+    def __gluestate__(self, context):
+        state = super(MatplotlibDataViewerState, self).__gluestate__(context)
+        state["legend"] = self.legend.as_dict()
+        return state
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        state = super(MatplotlibDataViewerState, cls).__setgluestate__(rec, context)
+        if "legend" in rec:
+            state.legend.update_from_dict(rec["legend"])
+        return state
+
 
 class MatplotlibLayerState(LayerState):
     """

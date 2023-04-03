@@ -37,7 +37,11 @@ class PyMimeData(QtCore.QMimeData):
         return fmt in self._instances or super(PyMimeData, self).hasFormat(fmt)
 
     def setData(self, mime, data):
-        super(PyMimeData, self).setData(mime, QtCore.QByteArray(1, '1'))
+        try:
+            super(PyMimeData, self).setData(mime, QtCore.QByteArray(1, b'1'))
+        except TypeError:  # PySide6
+            super(PyMimeData, self).setData(mime, QtCore.QByteArray(b'1'))
+
         self._instances[mime] = data
 
     def data(self, mime_type):

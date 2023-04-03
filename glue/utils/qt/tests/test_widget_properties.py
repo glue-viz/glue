@@ -93,7 +93,7 @@ def test_button():
 
     tc = TestClass()
 
-    assert tc.but == tc._button.checkState()
+    assert tc.but == tc._button.isChecked()
 
     tc.but = True
     assert tc._button.isChecked()

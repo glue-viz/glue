@@ -86,6 +86,10 @@ class MatplotlibImageMixin(object):
             self._set_wcs()
         return result
 
+    def _update_data(self, *args, **kwargs):
+        super()._update_data(*args, **kwargs)
+        self.state._reference_data_changed(force=True)
+
     def _on_slice_change(self, event=None):
         if self._changing_slice_requires_wcs_update:
             self._set_wcs(relim=False)
@@ -210,27 +214,25 @@ class MatplotlibImageMixin(object):
         imports.append('from glue.viewers.matplotlib.mpl_axes import init_mpl')
         imports.append('from glue.viewers.image.composite_array import CompositeArray')
         imports.append('from glue.viewers.image.frb_artist import imshow')
+        imports.append('from glue.viewers.matplotlib.mpl_axes import set_figure_colors')
 
         script = ""
         script += "fig, ax = init_mpl(wcs=True)\n"
-        script += "ax.set_aspect('{0}')\n".format(self.state.aspect)
+        script += f"ax.set_aspect('{self.state.aspect}')\n"
 
         script += '\ncomposite = CompositeArray()\n'
-        script += "image = imshow(ax, composite, origin='lower', interpolation='nearest', aspect='{0}')\n\n".format(self.state.aspect)
+        script += f"image = imshow(ax, composite, origin='lower', interpolation='nearest', aspect='{self.state.aspect}')\n\n"
 
         dindex = self.session.data_collection.index(self.state.reference_data)
 
-        script += "ref_data = data_collection[{0}]\n".format(dindex)
+        script += f"ref_data = data_collection[{dindex}]\n"
 
-        ref_coords = self.state.reference_data.coords
-
-        if hasattr(ref_coords, 'wcs'):
-            script += "ax.reset_wcs(slices={0}, wcs=ref_data.coords.wcs)\n".format(self.state.wcsaxes_slice)
-        elif hasattr(ref_coords, 'wcsaxes_dict'):
-            raise NotImplementedError()
-        else:
+        if isinstance(self.state.reference_data.coords, (LegacyCoordinates, type(None))):
             imports.append('from glue.viewers.image.viewer import get_identity_wcs')
-            script += "ax.reset_wcs(slices={0}, wcs=get_identity_wcs(ref_data.ndim))\n".format(self.state.wcsaxes_slice)
+            ref_wcs = "get_identity_wcs(ref_data.ndim)"
+        else:
+            ref_wcs = "ref_data.coords"
+        script += f"ax.reset_wcs(slices={self.state.wcsaxes_slice}, wcs={ref_wcs})\n"
 
         script += "# for the legend\n"
         script += "legend_handles = []\n"

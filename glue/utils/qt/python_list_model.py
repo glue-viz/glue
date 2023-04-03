@@ -105,7 +105,7 @@ class PythonListModel(QtCore.QAbstractListModel):
             Which row to remove. Default=last
 
         Returns
-        --------
+        -------
         popped : object
         """
         if row is None:

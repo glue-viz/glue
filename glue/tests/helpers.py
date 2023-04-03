@@ -4,12 +4,12 @@ import os
 import zlib
 import tempfile
 from contextlib import contextmanager
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 import pytest
 
 
-def make_skipper(module, label=None, version=None):
+def make_marker(mark_creator, module, label=None, version=None, mark_if='lt'):
     label = label or module
     try:
         if label == 'PyQt5':  # PyQt5 does not use __version__
@@ -19,27 +19,41 @@ def make_skipper(module, label=None, version=None):
             mod = __import__(module)
             version_installed = mod.__version__
         if version:
-            assert LooseVersion(version_installed) >= LooseVersion(version)
+            options = ['lt', 'le', 'gt', 'ge']
+            if mark_if not in options:
+                raise ValueError(f"mark_if must be one of {options}")
+            assert not getattr(Version(version_installed), f'__{mark_if}__')(Version(version))
         installed = True
-    except (ImportError, AssertionError):
+    except (ImportError, AssertionError, AttributeError):
         installed = False
-    return installed, pytest.mark.skipif(str(not installed), reason='Requires %s' % label)
+    return installed, mark_creator(installed, label, version)
 
 
-ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy',
-                                                   label='Astropy')
+def make_skipper(module, label=None, version=None, skip_if='lt'):
+    def mark_creator(installed, lbl, vrs):
+        return pytest.mark.skipif(str(not installed), reason=f'Requires {lbl} not {skip_if} {vrs}')
+    return make_marker(mark_creator, module, label=label, version=version, mark_if=skip_if)
+
+
+def make_xfailer(module, label=None, version=None, xfail_if='lt'):
+    def mark_creator(installed, lbl, vrs):
+        return pytest.mark.xfail(condition=not installed, reason=f'Fails if {lbl} {xfail_if} {vrs}')
+    return make_marker(mark_creator, module, label=label, version=version, mark_if=xfail_if)
+
+
+ASTROPY_INSTALLED, requires_astropy = make_skipper('astropy', label='Astropy')
 
 MATPLOTLIB_GE_22, requires_matplotlib_ge_22 = make_skipper('matplotlib', version='2.2')
 
+MATPLOTLIB_GE_37, xfail_matplotlib_lt_37 = make_xfailer('matplotlib', version='3.7')
+
 ASTRODENDRO_INSTALLED, requires_astrodendro = make_skipper('astrodendro')
 
-SCIPY_INSTALLED, requires_scipy = make_skipper('scipy',
-                                               label='SciPy')
+SCIPY_INSTALLED, requires_scipy = make_skipper('scipy', label='SciPy')
 
 PIL_INSTALLED, requires_pil = make_skipper('PIL', label='PIL')
 
-SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage',
-                                                   label='scikit-image')
+SKIMAGE_INSTALLED, requires_skimage = make_skipper('skimage', label='scikit-image')
 
 XLRD_INSTALLED, requires_xlrd = make_skipper('xlrd')
 

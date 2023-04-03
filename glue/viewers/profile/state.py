@@ -10,10 +10,12 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
-from glue.utils import defer_draw
+from glue.utils import defer_draw, avoid_circular
+from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
+from glue.core.units import find_unit_choices, UnitConverter
 
 __all__ = ['ProfileViewerState', 'ProfileLayerState']
 
@@ -36,6 +38,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
     x_att = DDSCProperty(docstring='The component ID giving the pixel or world component '
                                    'shown on the x axis')
 
+    x_display_unit = DDSCProperty(docstring='The units to use to display the x-axis.')
+    y_display_unit = DDSCProperty(docstring='The units to use to display the y-axis')
+
     reference_data = DDSCProperty(docstring='The dataset that is used to define the '
                                             'available pixel/world components, and '
                                             'which defines the coordinate frame in '
@@ -57,6 +62,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
+        self.add_callback('x_display_unit', self._reset_x_limits)
+        self.add_callback('y_display_unit', self._reset_y_limits_if_changed, echo_old=True)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -67,7 +74,22 @@ class ProfileViewerState(MatplotlibDataViewerState):
         ProfileViewerState.function.set_choices(self, list(FUNCTIONS))
         ProfileViewerState.function.set_display_func(self, FUNCTIONS.get)
 
+        def format_unit(unit):
+            if unit is None:
+                return 'Native units'
+            else:
+                return unit
+
+        ProfileViewerState.x_display_unit.set_display_func(self, format_unit)
+        ProfileViewerState.y_display_unit.set_display_func(self, format_unit)
+
         self.update_from_dict(kwargs)
+
+    def _reset_y_limits_if_changed(self, old, new):
+        # This is needed because otherwise reset_y_limits gets called even if
+        # just the choices in the y units change but not the selected value.
+        if old != new:
+            self._reset_y_limits()
 
     def _update_combo_ref_data(self):
         self.ref_data_helper.set_multiple_data(self.layers_data)
@@ -93,6 +115,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
             else:
                 self.x_att_pixel = self.x_att
         self._reset_x_limits()
+        self._update_x_display_unit_choices()
 
     def _reset_x_limits(self, *event):
 
@@ -115,6 +138,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
             axis_view[axis] = slice(None)
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
+
+        converter = UnitConverter()
+        x_min, x_max = converter.to_unit(self.reference_data,
+                                         self.x_att, np.array([x_min, x_max]),
+                                         self.x_display_unit)
 
         with delay_callback(self, 'x_min', 'x_max'):
             self.x_min = x_min
@@ -153,8 +181,42 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self.x_min, self.x_max = self.x_max, self.x_min
 
     @defer_draw
+    @avoid_circular
     def _layers_changed(self, *args):
-        self._update_combo_ref_data()
+        # By default if any of the state properties change, this triggers a
+        # callback on anything listening to changes on self.layers - but here
+        # we just want to know if any layers have been removed/added so we keep
+        # track of the UUIDs of the layers and check this before continuing.
+        current_layers = [layer_state.layer.uuid for layer_state in self.layers]
+        if not hasattr(self, '_last_layers') or self._last_layers != current_layers:
+            self._update_combo_ref_data()
+            self._update_y_display_unit_choices()
+            self._last_layers = current_layers
+
+    def _update_x_display_unit_choices(self):
+
+        if self.reference_data is None:
+            ProfileViewerState.x_display_unit.set_choices(self, [])
+            return
+
+        component = self.reference_data.get_component(self.x_att)
+        if component.units:
+            x_choices = find_unit_choices([(self.reference_data, self.x_att, component.units)])
+        else:
+            x_choices = ['']
+        ProfileViewerState.x_display_unit.set_choices(self, x_choices)
+        self.x_display_unit = component.units
+
+    def _update_y_display_unit_choices(self):
+
+        component_units = set()
+        for layer_state in self.layers:
+            if isinstance(layer_state.layer, BaseData):
+                component = layer_state.layer.get_component(layer_state.attribute)
+                if component.units:
+                    component_units.add((layer_state.layer, layer_state.attribute, component.units))
+        y_choices = [None] + find_unit_choices(component_units)
+        ProfileViewerState.y_display_unit.set_choices(self, y_choices)
 
     @defer_draw
     def _reference_data_changed(self, before=None, after=None):
@@ -298,6 +360,8 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
 
         if not self._viewer_callbacks_set:
             self.viewer_state.add_callback('x_att', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('x_display_unit', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('y_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
@@ -337,6 +401,13 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             axis_view = [0] * data.ndim
             axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
+
+            converter = UnitConverter()
+            axis_values = converter.to_unit(self.viewer_state.reference_data,
+                                            self.viewer_state.x_att, axis_values,
+                                            self.viewer_state.x_display_unit)
+            profile_values = converter.to_unit(data, self.attribute, profile_values,
+                                               self.viewer_state.y_display_unit)
 
             self._profile_cache = axis_values, profile_values
 

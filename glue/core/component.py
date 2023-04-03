@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 
 from glue.core.coordinate_helpers import dependent_axes, pixel2world_single_axis
-from glue.utils import (shape_to_string, coerce_numeric,
-                        broadcast_to, categorical_ndarray)
+from glue.utils import shape_to_string, coerce_numeric, categorical_ndarray
 
 try:
     import dask.array as da
@@ -55,12 +54,12 @@ class Component(object):
 
     @property
     def units(self):
-        return self._units
+        return self._units or ''
 
     @units.setter
     def units(self, value):
         if value is None:
-            self._units = ''
+            self._units = None
         else:
             self._units = str(value)
 
@@ -227,7 +226,7 @@ class CoordinateComponent(Component):
     @property
     def units(self):
         if self.world:
-            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis]
+            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis] or ''
         else:
             return ''
 
@@ -330,7 +329,7 @@ class CoordinateComponent(Component):
                 world_coords = world_coords[tuple(final_slice)]
 
             # We then broadcast the final array back to what it should be
-            world_coords = broadcast_to(world_coords, tuple(final_shape))
+            world_coords = np.broadcast_to(world_coords, tuple(final_shape))
 
             # We apply the view if we weren't able to optimize before
             if optimize_view:
@@ -515,12 +514,12 @@ class DaskComponent(Component):
 
     @property
     def units(self):
-        return self._units
+        return self._units or ''
 
     @units.setter
     def units(self, value):
         if value is None:
-            self._units = ''
+            self._units = None
         else:
             self._units = str(value)
 
