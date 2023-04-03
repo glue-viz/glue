@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock
-from pandas.util.testing import (assert_series_equal,
+from pandas.testing import (assert_series_equal,
                                  assert_frame_equal)
 
 from ..component import Component, DerivedComponent, CategoricalComponent
