@@ -1197,7 +1197,7 @@ def _save_session(session, context):
 @loader(np.ndarray)
 def _load_numpy(rec, context):
     s = BytesIO(b64decode(rec['data']))
-    return np.load(s, allow_pickle=True)
+    return np.load(s)
 
 
 @saver(np.ndarray)
