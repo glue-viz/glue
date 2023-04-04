@@ -3,7 +3,7 @@ Functions to support data that defines regions
 """
 import numpy as np
 
-from glue.core.roi import CircularROI, PointROI, RectangularROI, PolygonalROI
+from glue.core.roi import PolygonalROI
 from glue.core.data import RegionData
 
 from glue.config import layer_action

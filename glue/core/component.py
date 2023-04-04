@@ -107,6 +107,13 @@ class Component(object):
         """
         return False
 
+    @property
+    def extended(self):
+        """
+        Whether or not or not the datatype is extended
+        """
+        return False
+
     def __str__(self):
         return "%s with shape %s" % (self.__class__.__name__, shape_to_string(self.shape))
 
@@ -477,31 +484,45 @@ class CategoricalComponent(Component):
 
 class ExtendedComponent(Component):
     """
-    Container for data that describes an extent
+    Container for data that describes an extent, region, or range
 
-    This component can be used when a dataset describes regions
-    and it does not make sense to convert all those regions
-    to glue subsets.
+    This component can be used when a dataset describes regions, perhaps
+    with information about those regions, and it does not make sense to
+    convert all those regions to glue subsets.
 
-    Data loaders are required to know how to
-    provide these extended regions as lists of shapely objects and
-    explicitly create these components. If a tabular dataset provides
-    e.g. a range over another component or a circular region then
-    an ExtendedComponent needs to be manually created from these definitions.
+    Data loaders are required to know how to provide these extended regions
+    as lists of Shapely objects and explicitly create these components.
+    If a tabular dataset provides e.g. a range over another component or a
+    circular region then an ExtendedComponent needs to be explicitly created
+    from these definitions.
 
-    Data Viewers can choose to implement custom Layer Artists for extended
-    components, typically in the form of looking if there is an ExtendedComponent
-    with parent components that are being plotted.
+    A circular region can be represented as:
 
-    The challenge with this approach is that we tend to add a LayerArtist when
-    we create a layer... in the mapping context we have distinct LayerArtists
-    and swapping them out when we change state.lon_att and state.lat_att might be annoying?
+        >>> circle = shapely.Point(x, y).buffer(rad)
+
+    This provides a polygon approximation of a circle, which can be made more
+    exact by providing quad_segs to buffer (default is 16, provide >16 for more
+    precision).
+
+    A range in one dimension can be represented as:
+
+        >>> range = shapely.LineString([[x0,0],[x1,0]])
+
+    This is a bit of an odd representation, since we are forced to specify a y
+    coordinate for this line. We adopt a convention of y == 0 but this should
+    not be required. For something like a very large number of ranges over the
+    gene (e.g. genes) this might be more expensive a representation than
+    we need or want.
+
+    Data Viewers can choose to implement custom Layer Artists for Data objects
+    with extended components. Since we need to create a LayerArtist when we add
+    the data, this requires a Data Viewer to know whether it is displaying the
+    ExtendedComponent when the Data is added.
 
     NOTE that this implementation does not support regions in more than
-    two dimensions. (Shapely has some support for 3D shapes, but not more).
+    two dimensions. (Shapely has partial support for 3D shapes, but not more).
 
-
-    Geopandas does this in a somewhat optimized way
+    Geopandas plots Shapely objects in a somewhat optimized way
     https://github.com/geopandas/geopandas/blob/00e3748c987f5b9a14b5df5233421710811d75bf/geopandas/plotting.py#L323
     Matplotlib has some notes on performance increases:
     https://matplotlib.org/stable/users/explain/performance.html
@@ -511,9 +532,12 @@ class ExtendedComponent(Component):
 
     Parameters
     ----------
-    data: list of Shapely geometries
-    parent_components: a list of parent_components over which the Shapely geometries extend
-
+    data : :class:`~shapely.Geometry`
+        The underlying array of Shapely geometries
+    parent_components: `list`
+        The list of regular components over which the Shapely geometries extend
+    units : `str`, optional
+        Unit description.
     """
 
     def __init__(self, data, parent_component_ids=[], units=None):
@@ -531,16 +555,6 @@ class ExtendedComponent(Component):
             self.parent_component_id_y = None
         self.units = units
         self._data = data
-
-    @property
-    def shape(self):
-        """Tuple of array dimensions. Do we need to override?"""
-        return self._data.shape
-
-    @property
-    def ndim(self):
-        """The number of dimensions. Do we need to override?"""
-        return len(self._data.shape)
 
     @property
     def extended(self):

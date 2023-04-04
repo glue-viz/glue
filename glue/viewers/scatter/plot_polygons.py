@@ -1,5 +1,5 @@
 """
-Some lightly code from geopandas.plotting.py for efficiently
+Some lightly edited code from geopandas.plotting.py for efficiently
 plotting multiple polygons in matplotlib.
 """
 # Copyright (c) 2013-2022, GeoPandas developers.
@@ -32,6 +32,7 @@ import numpy as np
 import shapely
 from matplotlib.collections import PatchCollection
 from shapely.errors import GeometryTypeError
+
 
 class UpdateableRegionCollection(PatchCollection):
     """
