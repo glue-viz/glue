@@ -214,7 +214,8 @@ class ArithmeticEditorWidget(QtWidgets.QDialog):
         references = {}
         for cid in (self.data.main_components +
                     self.data.pixel_component_ids +
-                    self.data.world_component_ids):
+                    self.data.world_component_ids +
+                    [x for x in self._components_derived[self.data] if x is not derived_cid]):
             if cid is not derived_cid:
                 mapping[cid] = cid.label
                 references[cid.label] = cid
