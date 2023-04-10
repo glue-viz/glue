@@ -149,11 +149,11 @@ class ImageViewerState(MatplotlibDataViewerState):
     def _display_world(self):
         return getattr(self.reference_data, 'coords', None) is not None
 
-    def _reference_data_changed(self, *args, force=False):
+    def _reference_data_changed(self, *args):
         # This signal can get emitted if just the choices but not the actual
         # reference data change, so we check here that the reference data has
         # actually changed
-        if self.reference_data is not getattr(self, '_last_reference_data', None) or force:
+        if self.reference_data is not getattr(self, '_last_reference_data', None):
             self._last_reference_data = self.reference_data
             # Note that we deliberately use nested delay_callback here, because
             # we want to make sure that x_att_world and y_att_world both get

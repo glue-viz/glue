@@ -86,10 +86,6 @@ class MatplotlibImageMixin(object):
             self._set_wcs()
         return result
 
-    def _update_data(self, *args, **kwargs):
-        super()._update_data(*args, **kwargs)
-        self.state._reference_data_changed(force=True)
-
     def _on_slice_change(self, event=None):
         if self._changing_slice_requires_wcs_update:
             self._set_wcs(relim=False)

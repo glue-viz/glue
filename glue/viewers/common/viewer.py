@@ -39,14 +39,12 @@ class BaseViewer(HubListener):
     The base class for all viewers.
     """
 
-    LABEL = None
+    LABEL = 'Override this'
 
     def __init__(self, session):
         self._session = session
         self._data = session.data_collection
         self._hub = None
-        if self.LABEL is None:
-            self.LABEL = str(self.__class__)
 
     def register_to_hub(self, hub):
         self._hub = hub

@@ -424,7 +424,7 @@ class DataCollection(HubListener):
         if not isinstance(key, str):
             raise TypeError("item key should be a string, but got {0}".format(type(key)))
 
-        if not isinstance(data, BaseCartesianData):
+        if not isinstance(data, Data):
 
             handler, preferred = data_translator.get_handler_for(data)
 
