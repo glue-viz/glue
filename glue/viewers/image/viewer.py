@@ -86,8 +86,8 @@ class MatplotlibImageMixin(object):
             self._set_wcs()
         return result
 
-    def _update_data(self, *args, **kwargs):
-        super()._update_data(*args, **kwargs)
+    def _update_data_numerical(self, *args, **kwargs):
+        super()._update_data_numerical(*args, **kwargs)
         self.state._reference_data_changed(force=True)
 
     def _on_slice_change(self, event=None):
