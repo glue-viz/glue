@@ -276,6 +276,12 @@ class Viewer(BaseViewer):
     def _add_subset(self, message):
         self.add_subset(message.subset)
 
+    def _update_data_numerical(self, message):
+        # For some viewers, we might want to do additional things when the
+        # actual numerical values or shape of a dataset change, but by default
+        # we just pass this on to _update_data
+        self._update_data(message)
+
     def _update_data(self, message):
         if message.data in self._layer_artist_container:
             for layer_artist in self._layer_artist_container:
@@ -329,7 +335,7 @@ class Viewer(BaseViewer):
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
-                      handler=self._update_data,
+                      handler=self._update_data_numerical,
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
