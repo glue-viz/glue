@@ -1,5 +1,17 @@
 # Full changelog
 
+## v1.9.1 - 2023-04-13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+- Use new location for pandas.testing by @jfoster17 in https://github.com/glue-viz/glue/pull/2381
+- Only force reference data change if message indicates that numerical values of data have changed by @astrofrog in https://github.com/glue-viz/glue/pull/2385
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.9.0...v1.9.1
+
 ## v1.9.0 - 2023-04-03
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -629,7 +641,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -643,7 +657,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -657,7 +673,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -671,7 +689,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -685,7 +705,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
