@@ -124,7 +124,7 @@ class TutorialLayerStateWidget(QWidget):
         self.setLayout(layout)
 
         self.layer_state = layer_artist.state
-        connect_checkable_button(self.layer_state, 'fill', self.checkbox)
+        self._connection = connect_checkable_button(self.layer_state, 'fill', self.checkbox)
 
 
 class TutorialDataViewer(MatplotlibDataViewer):
