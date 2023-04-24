@@ -260,6 +260,7 @@ class TableViewer(DataViewer):
         self.data = None
         self.model = None
 
+
         self.ui.table.selection_changed.connect(self.selection_changed)
 
         self.state.add_callback('layers', self._on_layers_changed)
@@ -305,8 +306,13 @@ class TableViewer(DataViewer):
         self.data = layer_state.layer
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
-        self.ui.table.setModel(self.model)
+        
         self.setUpdatesEnabled(True)
+        self.proxyModel = QtCore.QSortFilterProxyModel(self)
+        self.proxyModel.setSourceModel(self.model)
+        self.proxyModel.setFilterFixedString("cat")
+        self.proxyModel.setFilterKeyColumn(1)
+        self.ui.table.setModel(self.proxyModel)
 
     @messagebox_on_error("Failed to add data")
     def add_data(self, data):
