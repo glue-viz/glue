@@ -7,6 +7,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, QtWidgets
 from matplotlib.colors import ColorConverter
 
+from echo.qt import connect_combo_selection, connect_text
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
 from glue.core import BaseData, Data
@@ -20,6 +21,7 @@ from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.table.compat import update_table_viewer_state
+from glue.viewers.table.state import TableViewerState
 
 try:
     import dask.array as da
@@ -238,6 +240,7 @@ class TableViewer(DataViewer):
     _toolbar_cls = BasicToolbar
     _data_artist_cls = TableLayerArtist
     _subset_artist_cls = TableLayerArtist
+    _state_cls = TableViewerState
 
     inherit_tools = False
     tools = ['table:rowselect']
@@ -260,11 +263,26 @@ class TableViewer(DataViewer):
         self.data = None
         self.model = None
 
+        self.proxyModel = QtCore.QSortFilterProxyModel(self)
+
+        self._connection1 = connect_combo_selection(self.state, 'filter_att', self.ui.combosel_filter_att)
+        self._connection2 = connect_text(self.state, 'filter', self.ui.valuetext_filter)
+
+        self.state.add_callback('filter', self._on_filter_changed)
+        self.state.add_callback('filter_att', self._on_filter_changed)
 
         self.ui.table.selection_changed.connect(self.selection_changed)
-
         self.state.add_callback('layers', self._on_layers_changed)
         self._on_layers_changed()
+
+    def get_col(self, cid):
+        """
+        Get the column id for a ComponentID, necessary for QtFilterProxy
+        """
+        for i, comp in enumerate(self.model.columns):
+            if comp == cid:
+                return i
+        return -1  # This defaults to searching all columns
 
     def selection_changed(self):
         app = get_qapp()
@@ -290,6 +308,13 @@ class TableViewer(DataViewer):
             self.ui.table.clearSelection()
             self.ui.table.blockSignals(False)
 
+    def _on_filter_changed(self, *args):
+        if (self.proxyModel is None) or (self.model is None):
+            return
+        self.proxyModel.invalidateFilter()
+        self.proxyModel.setFilterFixedString(self.state.filter)
+        self.proxyModel.setFilterKeyColumn(self.get_col(self.state.filter_att))
+
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
             if isinstance(layer_state.layer, BaseData):
@@ -304,15 +329,16 @@ class TableViewer(DataViewer):
             return
 
         self.data = layer_state.layer
+        self.state.filter_att_helper.set_multiple_data([self.data])
+
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
-        
-        self.setUpdatesEnabled(True)
-        self.proxyModel = QtCore.QSortFilterProxyModel(self)
+        self.proxyModel.invalidateFilter()
         self.proxyModel.setSourceModel(self.model)
-        self.proxyModel.setFilterFixedString("cat")
-        self.proxyModel.setFilterKeyColumn(1)
+        self.proxyModel.setFilterFixedString(self.state.filter)
+        self.proxyModel.setFilterKeyColumn(self.get_col(self.state.filter_att))
         self.ui.table.setModel(self.proxyModel)
+        self.setUpdatesEnabled(True)
 
     @messagebox_on_error("Failed to add data")
     def add_data(self, data):
