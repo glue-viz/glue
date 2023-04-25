@@ -263,7 +263,7 @@ class TableViewer(DataViewer):
         self.data = None
         self.model = None
 
-        self.proxyModel = QtCore.QSortFilterProxyModel(self)
+        self.proxy_model = QtCore.QSortFilterProxyModel(self)
 
         self._connection1 = connect_combo_selection(self.state, 'filter_att', self.ui.combosel_filter_att)
         self._connection2 = connect_text(self.state, 'filter', self.ui.valuetext_filter)
@@ -309,11 +309,11 @@ class TableViewer(DataViewer):
             self.ui.table.blockSignals(False)
 
     def _on_filter_changed(self, *args):
-        if (self.proxyModel is None) or (self.model is None):
+        if (self.proxy_model is None) or (self.model is None):
             return
-        self.proxyModel.invalidateFilter()
-        self.proxyModel.setFilterFixedString(self.state.filter)
-        self.proxyModel.setFilterKeyColumn(self.get_col(self.state.filter_att))
+        self.proxy_model.invalidateFilter()
+        self.proxy_model.setFilterFixedString(self.state.filter)
+        self.proxy_model.setFilterKeyColumn(self.get_col(self.state.filter_att))
 
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
@@ -333,11 +333,11 @@ class TableViewer(DataViewer):
 
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
-        self.proxyModel.invalidateFilter()
-        self.proxyModel.setSourceModel(self.model)
-        self.proxyModel.setFilterFixedString(self.state.filter)
-        self.proxyModel.setFilterKeyColumn(self.get_col(self.state.filter_att))
-        self.ui.table.setModel(self.proxyModel)
+        self.proxy_model.invalidateFilter()
+        self.proxy_model.setSourceModel(self.model)
+        self.proxy_model.setFilterFixedString(self.state.filter)
+        self.proxy_model.setFilterKeyColumn(self.get_col(self.state.filter_att))
+        self.ui.table.setModel(self.proxy_model)
         self.setUpdatesEnabled(True)
 
     @messagebox_on_error("Failed to add data")
