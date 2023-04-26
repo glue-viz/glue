@@ -158,8 +158,7 @@ class DataTableModel(QtCore.QAbstractTableModel):
         p = re.compile(self._state.filter)
         comp = self._data.get_component(self._state.filter_att)
         self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
-        self.data_changed() # This might be overkill
-
+        self.data_changed()  # This might be overkill
 
     def _update_visible(self):
         """

@@ -22,4 +22,3 @@ class TableViewerState(ViewerState):
         self.filter_att_helper = ComponentIDComboHelper(self, 'filter_att', categorical=True, numeric=False)
 
         self.update_from_dict(kwargs)
-
