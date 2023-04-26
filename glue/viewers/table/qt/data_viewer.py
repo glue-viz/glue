@@ -1,5 +1,6 @@
 import os
 from functools import lru_cache
+import re
 
 import numpy as np
 
@@ -42,6 +43,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
             raise ValueError("Can only use Table widget for 1D data")
         self._table_viewer = table_viewer
         self._data = table_viewer.data
+        self._state = table_viewer.state
+        self.filter_mask = None
         self.show_coords = False
         self.order = np.arange(self._data.shape[0])
         self._update_visible()
@@ -151,9 +154,17 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.data_by_row_and_column.cache_clear()
         self.layoutChanged.emit()
 
+    def get_filter_mask(self):
+        p = re.compile(self._state.filter)
+        comp = self._data.get_component(self._state.filter_att)
+        self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
+        self.data_changed() # This might be overkill
+
+
     def _update_visible(self):
         """
-        Given which layers are visible or not, convert order to order_visible.
+        Given which layers are visible or not, convert order to order_visible
+        after applying the current filter_mask
         """
 
         self.data_by_row_and_column.cache_clear()
@@ -161,11 +172,19 @@ class DataTableModel(QtCore.QAbstractTableModel):
         # First, if the data layer is visible, show all rows
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
-                self.order_visible = self.order
-                return
+                if self.filter_mask is None:
+                    self.order_visible = self.order
+                    return
+                else:
+                    mask = self.filter_mask[self.order]
+                    self.order_visible = self.order[mask]
+                    return
 
         # If not then we need to show only the rows with visible subsets
-        visible = np.zeros(self.order.shape, dtype=bool)
+        if self.filter_mask is None:
+            visible = np.zeros(self.order.shape, dtype=bool)
+        else:
+            visible = self.filter_mask[self.order]
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
                 mask = layer_artist.layer.to_mask()[self.order]
@@ -216,7 +235,7 @@ class RowSelectTool(CheckableTool):
     def activate(self):
         self.viewer.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-    def deactivate(self):
+    def deactivate(self, block=False):
         # Don't do anything if the viewer has already been closed
         if self.viewer is None:
             return
@@ -225,7 +244,9 @@ class RowSelectTool(CheckableTool):
 
 
 class TableViewWithSelectionSignal(QtWidgets.QTableView):
-
+    """
+    This is the TableViewer.ui.table object
+    """
     selection_changed = QtCore.Signal()
 
     def selectionChanged(self, *args, **kwargs):
@@ -262,8 +283,6 @@ class TableViewer(DataViewer):
 
         self.data = None
         self.model = None
-
-        self.proxy_model = QtCore.QSortFilterProxyModel(self)
 
         self._connection1 = connect_combo_selection(self.state, 'filter_att', self.ui.combosel_filter_att)
         self._connection2 = connect_text(self.state, 'filter', self.ui.valuetext_filter)
@@ -309,11 +328,16 @@ class TableViewer(DataViewer):
             self.ui.table.blockSignals(False)
 
     def _on_filter_changed(self, *args):
-        if (self.proxy_model is None) or (self.model is None):
-            return
-        self.proxy_model.invalidateFilter()
-        self.proxy_model.setFilterFixedString(self.state.filter)
-        self.proxy_model.setFilterKeyColumn(self.get_col(self.state.filter_att))
+        # If we change the filter we deactivate the toolbar to keep
+        # any subset defined before we change what is displayed
+        if self.toolbar.active_tool is self.toolbar.tools['table:rowselect']:
+            old_tool = self.toolbar.active_tool
+            old_tool.deactivate(block=True)
+            button = self.toolbar.actions[old_tool.tool_id]
+            if button.isChecked():
+                button.setChecked(False)
+        if self.model:
+            self.model.get_filter_mask()
 
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
@@ -333,11 +357,7 @@ class TableViewer(DataViewer):
 
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
-        self.proxy_model.invalidateFilter()
-        self.proxy_model.setSourceModel(self.model)
-        self.proxy_model.setFilterFixedString(self.state.filter)
-        self.proxy_model.setFilterKeyColumn(self.get_col(self.state.filter_att))
-        self.ui.table.setModel(self.proxy_model)
+        self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
 
     @messagebox_on_error("Failed to add data")
