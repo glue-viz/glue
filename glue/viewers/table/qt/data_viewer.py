@@ -343,7 +343,6 @@ class TableViewer(DataViewer):
             return
 
         self.data = layer_state.layer
-        self.state.filter_att_helper.set_multiple_data([self.data])
 
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)

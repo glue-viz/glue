@@ -20,5 +20,25 @@ class TableViewerState(ViewerState):
         super(TableViewerState, self).__init__()
 
         self.filter_att_helper = ComponentIDComboHelper(self, 'filter_att', categorical=True, numeric=False)
+        self.add_callback('layers', self._layers_changed)
 
         self.update_from_dict(kwargs)
+
+    def _layers_changed(self, *args):
+
+        layers_data = self.layers_data
+
+        layers_data_cache = getattr(self, '_layers_data_cache', [])
+
+        if layers_data == layers_data_cache:
+            return
+
+        self.filter_att_helper.set_multiple_data(self.layers_data)
+
+        self._layers_data_cache = layers_data
+
+    def _update_priority(self, name):
+        if name == 'layers':
+            return 2
+        else:
+            return 1
