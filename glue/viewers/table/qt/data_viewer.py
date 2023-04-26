@@ -293,15 +293,6 @@ class TableViewer(DataViewer):
         self.state.add_callback('layers', self._on_layers_changed)
         self._on_layers_changed()
 
-    def get_col(self, cid):
-        """
-        Get the column id for a ComponentID, necessary for QtFilterProxy
-        """
-        for i, comp in enumerate(self.model.columns):
-            if comp == cid:
-                return i
-        return -1  # This defaults to searching all columns
-
     def selection_changed(self):
         app = get_qapp()
         if app.queryKeyboardModifiers() == Qt.AltModifier:
