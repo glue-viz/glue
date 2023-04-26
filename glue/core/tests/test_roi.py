@@ -273,16 +273,16 @@ class TestCircle(object):
             self.roi.contains(1, 1)
 
     def test_set_center(self):
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         self.roi.set_radius(1)
         assert self.roi.contains(0, 0)
         assert not self.roi.contains(2, 2)
-        self.roi.set_center(2, 2)
+        self.roi.move_to(2, 2)
         assert not self.roi.contains(0, 0)
         assert self.roi.contains(2, 2)
 
     def test_set_radius(self):
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         self.roi.set_radius(1)
         assert not self.roi.contains(1.5, 0)
         self.roi.set_radius(5)
@@ -291,14 +291,14 @@ class TestCircle(object):
     def test_contains_many(self):
         x = [0, 0, 0, 0, 0]
         y = [0, 0, 0, 0, 0]
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         self.roi.set_radius(1)
         assert all(self.roi.contains(x, y))
         assert all(self.roi.contains(np.asarray(x), np.asarray(y)))
         assert not any(self.roi.contains(np.asarray(x) + 10, y))
 
     def test_poly(self):
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         self.roi.set_radius(1)
         x, y = self.roi.to_polygon()
         poly = PolygonalROI(vx=x, vy=y)
@@ -312,7 +312,7 @@ class TestCircle(object):
 
     def test_reset(self):
         assert not self.roi.defined()
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         assert not self.roi.defined()
         self.roi.set_radius(2)
         assert self.roi.defined()
@@ -320,7 +320,7 @@ class TestCircle(object):
         assert not self.roi.defined()
 
     def test_multidim(self):
-        self.roi.set_center(0, 0)
+        self.roi.move_to(0, 0)
         self.roi.set_radius(1)
         x = np.array([.1, .2, .3, .4]).reshape(2, 2)
         y = np.array([-.1, -.2, -.3, -.4]).reshape(2, 2)
@@ -329,7 +329,7 @@ class TestCircle(object):
         assert self.roi.contains(x, y).shape == (2, 2)
 
     def test_serialization(self):
-        self.roi.set_center(3, 4)
+        self.roi.move_to(3, 4)
         self.roi.set_radius(5)
         new_roi = roundtrip_roi(self.roi)
         assert_almost_equal(new_roi.xc, 3)

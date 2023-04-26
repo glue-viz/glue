@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
@@ -487,17 +488,20 @@ class CircularROI(Roi):
             y = np.asarray(y)
         return (x - self.xc) ** 2 + (y - self.yc) ** 2 < self.radius ** 2
 
-    def set_center(self, x, y):
+    def set_center(self, x, y):  # pragma: no cover
         """Set the center of the circular region"""
-        self.xc = x
-        self.yc = y
+        warnings.warn("set_center is deprecated and may be removed "
+                      "in a future release, use move_to", DeprecationWarning)
+        self.move_to(x, y)
 
     def set_radius(self, radius):
         """Set the radius of the circular region"""
         self.radius = radius
 
-    def get_center(self):
-        return self.xc, self.yc
+    def get_center(self):  # pragma: no cover
+        warnings.warn("get_center is deprecated and may be removed "
+                      "in a future release, use center", DeprecationWarning)
+        return self.center()
 
     def get_radius(self):
         return self.radius
@@ -509,8 +513,8 @@ class CircularROI(Roi):
         self.radius = 0.
 
     def defined(self):
-        return self.xc is not None and \
-            self.yc is not None and self.radius is not None
+        return (self.xc is not None and
+                self.yc is not None and self.radius is not None)
 
     def to_polygon(self):
         if not self.defined():
@@ -523,9 +527,12 @@ class CircularROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
-    def move_to(self, xdelta, ydelta):
-        self.xc += xdelta
-        self.yc += ydelta
+    def center(self):
+        return self.xc, self.yc
+
+    def move_to(self, x, y):
+        self.xc = x
+        self.yc = y
 
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
@@ -556,8 +563,8 @@ class EllipticalROI(Roi):
 
     Notes
     -----
-        The `radius_x`, `radius_y` properties refer to the semiaxes along the `x` and `y`
-        axes *before* any rotation is applied.
+    The `radius_x`, `radius_y` properties refer to the semiaxes along the `x` and `y`
+    axes *before* any rotation is applied.
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
@@ -619,8 +626,10 @@ class EllipticalROI(Roi):
                 self.radius_x is not None and
                 self.radius_y is not None)
 
-    def get_center(self):
-        return self.xc, self.yc
+    def get_center(self):  # pragma: no cover
+        warnings.warn("get_center is deprecated and may be removed "
+                      "in a future release, use center", DeprecationWarning)
+        return self.center()
 
     def to_polygon(self):
         if not self.defined():
@@ -647,9 +656,12 @@ class EllipticalROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
-    def move_to(self, xdelta, ydelta):
-        self.xc += xdelta
-        self.yc += ydelta
+    def center(self):
+        return self.xc, self.yc
+
+    def move_to(self, x, y):
+        self.xc = x
+        self.yc = y
 
     def rotate_to(self, theta):
         self.theta = 0 if theta is None else theta
@@ -865,7 +877,13 @@ class PolygonalROI(VertexROIBase):
 
         return np.dot(xs, dxy) * scl + x0, np.dot(ys, dxy) * scl + y0
 
-    def move_to(self, xdelta, ydelta):
+    def center(self):
+        return self.centroid()  # centroid is more robust than mean
+
+    def move_to(self, new_x, new_y):
+        xcen, ycen = self.center()
+        xdelta = new_x - xcen
+        ydelta = new_y - ycen
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
@@ -1485,7 +1503,7 @@ class MplCircularROI(AbstractMplRoi):
 
     def _sync_patch(self):
         if self._roi.defined():
-            xy = self._roi.get_center()
+            xy = self._roi.center()
             r = self._roi.get_radius()
             self._patch.center = xy
             self._patch.width = 2. * r
@@ -1518,12 +1536,12 @@ class MplCircularROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
-            (xc, yc) = self._roi.get_center()
+            (xc, yc) = self._roi.center()
             self._dx = xc - xi
             self._dy = yc - yi
         else:
             self.reset()
-            self._roi.set_center(xi, yi)
+            self._roi.move_to(xi, yi)
             self._roi.set_radius(0.)
             self._xi = xi
             self._yi = yi
@@ -1547,7 +1565,7 @@ class MplCircularROI(AbstractMplRoi):
                 return False
 
         if self._scrubbing:
-            self._roi.set_center(xi + self._dx, yi + self._dy)
+            self._roi.move_to(xi + self._dx, yi + self._dy)
         else:
             dx = xy[0, 0] - self._xi
             dy = xy[0, 1] - self._yi
@@ -1561,7 +1579,7 @@ class MplCircularROI(AbstractMplRoi):
             return PolygonalROI()
 
         # Get the circular ROI parameters in pixel units
-        xy_center = self._roi.get_center()
+        xy_center = self._roi.center()
         rad = self._roi.get_radius()
 
         # At this point, if one of the axes is not linear, we convert to a polygon
@@ -1688,8 +1706,10 @@ class MplPolygonalROI(AbstractMplRoi):
             xval, yval = axes_trans.transform([event.x, event.y])
 
         if self._scrubbing:
-            self._roi.move_to(xval - self._cx,
-                              yval - self._cy)
+            old_x, old_y = self._roi.centroid()
+            new_x = old_x + xval - self._cx
+            new_y = old_y + yval - self._cy
+            self._roi.move_to(new_x, new_y)
             self._cx = xval
             self._cy = yval
         else:

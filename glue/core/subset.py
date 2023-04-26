@@ -441,6 +441,10 @@ class SubsetState(object):
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        pass  # no-op until explicitly implemented by subclass
+
     @contract(data='isinstance(Data)')
     def to_index_list(self, data):
         return np.where(data.get_mask(self.subset_state).flat)[0]
@@ -537,6 +541,9 @@ class RoiSubsetStateNd(SubsetState):
     @property
     def attributes(self):
         return tuple(self._atts)
+
+    def move_to(self, *args):
+        self._roi.move_to(*args)
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
@@ -1078,6 +1085,12 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         return type(self)(self.state1, self.state2)
+
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        self.state1.move_to(*args)
+        if self.state2:
+            self.state2.move_to(*args)
 
     @property
     def attributes(self):
