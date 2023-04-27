@@ -94,12 +94,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
             converter = UnitConverter()
 
             limits_native = converter.to_native(self.reference_data,
-                                            self.x_att, limits,
-                                            old_unit)
+                                                self.x_att, limits,
+                                                old_unit)
 
             limits_new = converter.to_unit(self.reference_data,
-                                            self.x_att, limits_native,
-                                            new_unit)
+                                           self.x_att, limits_native,
+                                           new_unit)
 
             with delay_callback(self, 'x_min', 'x_max'):
                 self.x_min, self.x_max = sorted(limits_new)
@@ -134,12 +134,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 data = layer_state.layer
 
             limits_native = converter.to_native(data,
-                                            layer_state.attribute, limits,
-                                            old_unit)
+                                                layer_state.attribute, limits,
+                                                old_unit)
 
             limits_new = converter.to_unit(self.reference_data,
-                                            layer_state.attribute, limits_native,
-                                            new_unit)
+                                           layer_state.attribute, limits_native,
+                                           new_unit)
 
             with delay_callback(self, 'y_min', 'y_max'):
                 self.y_min, self.y_max = sorted(limits_new)
