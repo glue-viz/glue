@@ -221,8 +221,8 @@ class TestSubset(object):
         s = d.new_subset(**visual_attributes)
         for attr, value in visual_attributes.items():
             if attr == 'preferred_cmap':
-                from matplotlib.cm import get_cmap
-                assert s.style.preferred_cmap == get_cmap(visual_attributes[attr])
+                import matplotlib
+                assert s.style.preferred_cmap == matplotlib.colormaps[visual_attributes[attr]]
             else:
                 assert getattr(s.style, attr, None) == value
 
