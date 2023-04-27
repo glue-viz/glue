@@ -257,8 +257,10 @@ class TestGlueApplication(object):
         # Check that we do nothing if the given tab is the same as the
         # viewer's current tab
         parent = viewer.parent()
+        viewer_state = viewer.state
         self.app.move_viewer_to_tab(viewer, 0)
         assert parent is viewer.parent()
+        assert viewer_state is viewer.state
 
     # FIXME: The following test fails and causes subsequent issues if run with
     #
