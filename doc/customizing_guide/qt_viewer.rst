@@ -51,7 +51,7 @@ with the ``fill`` option. You could implement a layer options widget by doing::
              self.setLayout(layout)
 
              self.layer_state = layer_artist.state
-             connect_checkable_button(self.layer_state, 'fill', self.checkbox)
+             self._connection = connect_checkable_button(self.layer_state, 'fill', self.checkbox)
 
 In the above example, you can see that we use the
 :class:`~echo.qt.connect_checkable_button` function to link the
