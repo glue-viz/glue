@@ -643,6 +643,8 @@ def test_table_widget_filter(tmpdir):
 
     # Test matching regular expressions
     widget.state.filter_att = d.components[3]
+    widget.state.regex = True
+
     widget.state.filter = '^[a-z]{1}o'
     np.testing.assert_equal(model.filter_mask, [False, True, False, False, True])
 
@@ -655,6 +657,16 @@ def test_table_widget_filter(tmpdir):
     colors = [None, '#aa0000']
 
     check_values_and_color(model, data, colors)
+
+    widget.state.regex = False
+    widget.state.filter = '^[a-z]{1}o'
+    np.testing.assert_equal(model.filter_mask, [False, False, False, False, False])
+
+    # Check that changing the filter disables the rowselect tool
+    widget.toolbar.actions['table:rowselect'].toggle()
+    process_events()
+    widget.state.filter_att = d.components[2]
+    assert widget.toolbar.active_tool is None
 
 
 def test_table_widget_session_filter(tmpdir):

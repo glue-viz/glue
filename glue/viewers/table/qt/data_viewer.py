@@ -8,7 +8,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, QtWidgets
 from matplotlib.colors import ColorConverter
 
-from echo.qt import connect_combo_selection, connect_text
+from echo.qt import connect_combo_selection, connect_text, connect_checkable_button
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
 from glue.core import BaseData, Data
@@ -158,9 +158,13 @@ class DataTableModel(QtCore.QAbstractTableModel):
         if (self._state.filter is None) or (self._state.filter_att is None):
             self.filter_mask = np.ones(self.order.shape, dtype=bool)
             return
-        p = re.compile(self._state.filter)
         comp = self._data.get_component(self._state.filter_att)
-        self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
+
+        if self._state.regex:
+            p = re.compile(self._state.filter)
+            self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
+        else:
+            self.filter_mask = np.array([self._state.filter in x for x in comp.data])
         self.data_changed()  # This might be overkill
 
     def _update_visible(self):
@@ -288,7 +292,9 @@ class TableViewer(DataViewer):
 
         self._connection1 = connect_combo_selection(self.state, 'filter_att', self.ui.combosel_filter_att)
         self._connection2 = connect_text(self.state, 'filter', self.ui.valuetext_filter)
+        self._connection3 = connect_checkable_button(self.state, 'regex', self.ui.bool_regex)
 
+        self.state.add_callback('regex', self._on_filter_changed)
         self.state.add_callback('filter', self._on_filter_changed)
         self.state.add_callback('filter_att', self._on_filter_changed)
 

@@ -14,11 +14,11 @@ class TableViewerState(ViewerState):
 
     filter_att = SelectionCallbackProperty(docstring='The component/column to filter/search on', default_index=0)
     filter = CallbackProperty(docstring='The text string to filter/search on')
+    regex = CallbackProperty(docstring='Whether to apply regex to filter/search', default=False)
 
     def __init__(self, **kwargs):
 
         super(TableViewerState, self).__init__()
-
         self.filter_att_helper = ComponentIDComboHelper(self, 'filter_att', categorical=True, numeric=False)
         self.add_callback('layers', self._layers_changed)
 

@@ -49,6 +49,13 @@
      <item>
       <widget class="QComboBox" name="combosel_filter_att"/>
      </item>
+     <item>
+      <widget class="QCheckBox" name="bool_regex">
+       <property name="text">
+        <string>Use regex</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="1" column="0">
