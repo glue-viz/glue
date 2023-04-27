@@ -23,9 +23,6 @@ def update_table_viewer_state(rec, context):
         rec['state']['values'] = {}
 
         properties = rec.pop('properties')
-        viewer_state = rec['state']['values']
-        viewer_state['filter_att'] = properties['filter_att']
-        viewer_state['filter'] = properties['filter']
 
         layer_states = []
 
