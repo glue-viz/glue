@@ -403,6 +403,12 @@ def test_unit_conversion():
     assert viewer.state.y_min == 1.
     assert viewer.state.y_max == 3.
 
+    # Change the limits to make sure they are always converted
+    viewer.state.x_min = 5e8
+    viewer.state.x_max = 4e9
+    viewer.state.y_min = 0.5
+    viewer.state.y_max = 3.5
+
     roi = XRangeROI(1.4e9, 2.1e9)
     viewer.apply_roi(roi)
 
@@ -423,10 +429,18 @@ def test_unit_conversion():
     assert_allclose(x, 2.99792458 / np.array([1, 2, 3]))
     assert_allclose(y, [2000, 1000, 3000])
 
-    assert viewer.state.x_min == 1.
-    assert viewer.state.x_max == 3.
+    assert viewer.state.x_min == 0.5
+    assert viewer.state.x_max == 4.
+
+    # Units get reset because they were originally 'native' and 'native' to a
+    # specific unit always trigger resetting the limits since different datasets
+    # might be converted in different ways.
     assert viewer.state.y_min == 1000.
     assert viewer.state.y_max == 3000.
+
+    # Now set the limits explicitly again and make sure in future they are converted
+    viewer.state.y_min = 500.
+    viewer.state.y_max = 3500.
 
     roi = XRangeROI(0.5, 1.2)
     viewer.apply_roi(roi)
@@ -438,6 +452,7 @@ def test_unit_conversion():
     assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
 
     viewer.state.x_display_unit = 'cm'
+    viewer.state.y_display_unit = 'Jy'
 
     roi = XRangeROI(15, 35)
     viewer.apply_roi(roi)
@@ -447,3 +462,8 @@ def test_unit_conversion():
 
     assert len(d2.subsets) == 1
     assert_equal(d2.subsets[0].to_mask(), [0, 1, 1])
+
+    assert_allclose(viewer.state.x_min, (4 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
+    assert_allclose(viewer.state.x_max, (0.5 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
+    assert_allclose(viewer.state.y_min, 0.5)
+    assert_allclose(viewer.state.y_max, 3.5)
