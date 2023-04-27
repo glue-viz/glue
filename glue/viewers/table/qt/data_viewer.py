@@ -155,6 +155,9 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
     def get_filter_mask(self):
+        if (self._state.filter is None) or (self._state.filter_att is None):
+            self.filter_mask = np.ones(self.order.shape, dtype=bool)
+            return
         p = re.compile(self._state.filter)
         comp = self._data.get_component(self._state.filter_att)
         self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
@@ -346,6 +349,8 @@ class TableViewer(DataViewer):
 
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
+        self.model.get_filter_mask()
+
         self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
 

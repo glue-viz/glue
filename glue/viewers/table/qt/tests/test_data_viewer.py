@@ -611,3 +611,88 @@ def test_table_preserve_model_after_selection():
     colors[1] = color
 
     check_values_and_color(post_model, data, colors)
+
+
+def test_table_widget_filter(tmpdir):
+
+    # Test table interactions with filtering
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=['cat', 'dog', 'cat', 'dog', 'fish'],
+             c=['fluffy', 'rover', 'fluffball', 'spot', 'moby'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableViewer)
+    widget.add_data(d)
+
+    widget.state.filter_att = d.components[2]
+
+    widget.state.filter = 'cat'
+    model = widget.ui.table.model()
+
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    widget.state.filter_att = d.components[3]
+    widget.state.filter = 'ff'
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    # Test matching regular expressions
+    widget.state.filter_att = d.components[3]
+    widget.state.filter = '^[a-z]{1}o'
+    np.testing.assert_equal(model.filter_mask, [False, True, False, False, True])
+
+    sg1 = dc.new_subset_group('test subset 1', d.id['a'] > 2)
+    sg1.style.color = '#aa0000'
+    data = {'a': [2, 5],
+            'b': ['dog', 'fish'],
+            'c': ['rover', 'moby']}
+
+    colors = [None, '#aa0000']
+
+    check_values_and_color(model, data, colors)
+
+
+def test_table_widget_session_filter(tmpdir):
+
+    # Test that filtering works with save/restore
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=['cat', 'dog', 'cat', 'dog', 'fish'],
+             c=['fluffy', 'rover', 'fluffball', 'spot', 'moby'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableViewer)
+    widget.add_data(d)
+
+    widget.state.filter_att = d.components[2]
+    widget.state.filter = 'cat'
+    model = widget.ui.table.model()
+
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    session_file = tmpdir.join('table.glu').strpath
+
+    gapp.save_session(session_file)
+
+    gapp2 = GlueApplication.restore_session(session_file)
+    gapp2.show()
+
+    d = gapp2.data_collection[0]
+
+    widget2 = gapp2.viewers[0][0]
+
+    model2 = widget2.ui.table.model()
+
+    assert widget2.state.filter_att == d.components[2]
+    assert widget2.state.filter == 'cat'
+    np.testing.assert_equal(model2.filter_mask, [True, False, True, False, False])
