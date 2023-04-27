@@ -42,9 +42,16 @@ class MatplotlibProfileMixin(object):
 
         # Apply inverse unit conversion, converting from display to native units
         converter = UnitConverter()
-        roi.min, roi.max = converter.to_native(self.state.reference_data,
-                                               self.state.x_att, np.array([roi.min, roi.max]),
-                                               self.state.x_display_unit)
+        cmin, cmax = converter.to_native(self.state.reference_data,
+                                         self.state.x_att, np.array([roi.min, roi.max]),
+                                         self.state.x_display_unit)
+
+        # Sometimes unit conversions can cause the min/max to be swapped
+        if cmin > cmax:
+            cmin, cmax = cmax, cmin
+
+        roi.min = cmin
+        roi.max = cmax
 
         subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
         self.apply_subset_state(subset_state, override_mode=override_mode)

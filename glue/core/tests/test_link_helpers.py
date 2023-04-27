@@ -14,6 +14,18 @@ from ..link_helpers import (LinkTwoWay, MultiLink,
                             LinkSameWithUnits)
 
 
+def setup_function(func):
+    func.ORIGINAL_UNIT_CONVERTER = settings.UNIT_CONVERTER
+
+
+def teardown_function(func):
+    settings.UNIT_CONVERTER = func.ORIGINAL_UNIT_CONVERTER
+
+
+def teardown_module():
+    unit_converter._members.pop('test-spectral1')
+
+
 R, D, L, B = (ComponentID('ra'), ComponentID('dec'),
               ComponentID('lon'), ComponentID('lat'))
 
@@ -158,7 +170,7 @@ def test_link_units_invalid():
         LinkSameWithUnits(data1.id['weight_kg'], data2.id['distance_m'])
 
 
-@unit_converter('test-spectral')
+@unit_converter('test-spectral1')
 class SpectralUnitConverter:
 
     def equivalent_units(self, data, cid, units):
@@ -179,7 +191,7 @@ def test_link_units_custom():
     with pytest.raises(u.UnitConversionError, match='not convertible'):
         LinkSameWithUnits(data1.id['wav_mm'], data2.id['freq_ghz'])
 
-    settings.UNIT_CONVERTER = 'test-spectral'
+    settings.UNIT_CONVERTER = 'test-spectral1'
 
     links = LinkSameWithUnits(data1.id['wav_mm'], data2.id['freq_ghz'])
     dc = DataCollection([data1, data2])

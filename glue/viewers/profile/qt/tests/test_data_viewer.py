@@ -5,6 +5,7 @@ import os
 import pytest
 import numpy as np
 
+from astropy import units as u
 from astropy.wcs import WCS
 
 from numpy.testing import assert_equal, assert_allclose
@@ -20,10 +21,24 @@ from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.core.tests.test_state import clone
 from glue.core.state import GlueUnSerializer
 from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
+from glue.config import settings, unit_converter
 
 from ..data_viewer import ProfileViewer
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
+
+
+def setup_function(func):
+    func.ORIGINAL_UNIT_CONVERTER = settings.UNIT_CONVERTER
+
+
+def teardown_function(func):
+    settings.UNIT_CONVERTER = func.ORIGINAL_UNIT_CONVERTER
+
+
+def teardown_module():
+    unit_converter._members.pop('test-spectral2')
+    print(unit_converter._members)
 
 
 class TestProfileCommon(BaseTestMatplotlibDataViewer):
@@ -323,7 +338,19 @@ class TestProfileViewer(object):
         assert self.viewer.layers[0].mpl_artists[0].get_visible() is False
 
 
+@unit_converter('test-spectral2')
+class SpectralUnitConverter:
+
+    def equivalent_units(self, data, cid, units):
+        return map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True, equivalencies=u.spectral()))
+
+    def to_unit(self, data, cid, values, original_units, target_units):
+        return (values * u.Unit(original_units)).to_value(target_units, equivalencies=u.spectral())
+
+
 def test_unit_conversion():
+
+    settings.UNIT_CONVERTER = 'test-spectral2'
 
     wcs1 = WCS(naxis=1)
     wcs1.wcs.ctype = ['FREQ']
@@ -409,3 +436,14 @@ def test_unit_conversion():
 
     assert len(d2.subsets) == 1
     assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
+
+    viewer.state.x_display_unit = 'cm'
+
+    roi = XRangeROI(15, 35)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 1])
