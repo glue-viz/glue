@@ -87,7 +87,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     def _convert_units_x_limits(self, old_unit, new_unit):
 
-        if old_unit != new_unit:
+        if old_unit != new_unit and self.reference_data is not None:
 
             limits = np.array([self.x_min, self.x_max])
 
