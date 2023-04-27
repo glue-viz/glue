@@ -1706,7 +1706,7 @@ class MplPolygonalROI(AbstractMplRoi):
             xval, yval = axes_trans.transform([event.x, event.y])
 
         if self._scrubbing:
-            old_x, old_y = self._roi.centroid()
+            old_x, old_y = self._roi.center()
             new_x = old_x + xval - self._cx
             new_y = old_y + yval - self._cy
             self._roi.move_to(new_x, new_y)
