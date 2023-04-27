@@ -878,7 +878,12 @@ class PolygonalROI(VertexROIBase):
         return np.dot(xs, dxy) * scl + x0, np.dot(ys, dxy) * scl + y0
 
     def center(self):
-        return self.centroid()  # centroid is more robust than mean
+        # centroid is more robust than mean, but
+        # for linear (1D) "polygons" centroid is not defined.
+        if self.area() == 0:
+            return self.mean()
+        else:
+            return self.centroid()
 
     def move_to(self, new_x, new_y):
         xcen, ycen = self.center()
@@ -902,12 +907,7 @@ class PolygonalROI(VertexROIBase):
         """
 
         theta = 0 if theta is None else theta
-        # For linear (1D) "polygons" centroid is not defined.
-        if center is None:
-            if self.area() == 0:
-                center = self.mean()
-            else:
-                center = self.centroid()
+        center = self.center() if center is None else center
         dtheta = theta - self.theta
 
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
