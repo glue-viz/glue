@@ -14,7 +14,7 @@ from ..exceptions import IncompatibleAttribute
 from .. import DataCollection, ComponentLink
 from ...config import settings
 from ..data import Data, Component
-from ..roi import CategoricalROI, RectangularROI, Projected3dROI, CircularROI
+from ..roi import CategoricalROI, RectangularROI, Projected3dROI, CircularROI, EllipticalROI, RangeROI
 from ..message import SubsetDeleteMessage
 from ..registry import Registry
 from ..link_helpers import LinkSame
@@ -221,8 +221,8 @@ class TestSubset(object):
         s = d.new_subset(**visual_attributes)
         for attr, value in visual_attributes.items():
             if attr == 'preferred_cmap':
-                from matplotlib.cm import get_cmap
-                assert s.style.preferred_cmap == get_cmap(visual_attributes[attr])
+                import matplotlib
+                assert s.style.preferred_cmap == matplotlib.colormaps[visual_attributes[attr]]
             else:
                 assert getattr(s.style, attr, None) == value
 
@@ -932,6 +932,43 @@ class TestCloneSubsetStates():
         subset.subset_state = RoiSubsetState(xatt=data_clone.id['a'], yatt=data_clone.id['c'],
                                              roi=roi)
         assert_equal(data_clone.subsets[1].to_mask(), [0, 0, 0, 1])
+
+        # Also test move_to for simple subset state
+        theta = roi.theta
+        assert subset.subset_state.center() == roi.center()
+        subset.subset_state.move_to(2, 3)
+        assert_allclose(subset.subset_state.center(), (2, 3))
+        assert_allclose(subset.subset_state._roi.center(), (2, 3))
+        assert_allclose(subset.subset_state._roi.theta, theta)
+
+    def test_roi_subset_state_composite_move_to(self):
+        xatt = self.data.id['a']
+        yatt = self.data.id['c']
+        roi_1 = RectangularROI(xmin=0, xmax=4, ymin=1, ymax=5)  # xc=2, yc=3
+        roi_2 = CircularROI(xc=1, yc=1, radius=2)
+        roi_3 = EllipticalROI(xc=3, yc=4, radius_x=2, radius_y=3, theta=0.785)
+        subset_state = AndState(
+            AndState(RoiSubsetState(xatt=xatt, yatt=yatt, roi=roi_1),
+                     RoiSubsetState(xatt=xatt, yatt=yatt, roi=roi_2)),
+            InvertState(RoiSubsetState(xatt=xatt, yatt=yatt, roi=roi_3)))
+        assert_allclose(subset_state.center(), (2, 3))
+
+        subset_state.move_to(20, 30)
+        assert_allclose(subset_state.center(), (20, 30))
+        assert_allclose(subset_state.state1.state1.center(), (20, 30))  # RectangularROI
+        assert_allclose(subset_state.state1.state2.center(), (19, 28))  # CircularROI
+        assert_allclose(subset_state.state2.state1.center(), (21, 31))  # EllipticalROI
+        assert_allclose(subset_state.state2.state1._roi.theta, 0.785)
+        assert not subset_state.state2.state2
+
+    def test_roi_subset_state_1d_move_to(self):
+        roi = RangeROI('x', min=0, max=5)
+        subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'], roi=roi)
+        assert_allclose(subset_state.center(), 2.5)
+
+        subset_state.move_to(3)
+        assert_allclose(subset_state.center(), 3)
+        assert_allclose((subset_state._roi.min, subset_state._roi.max), (0.5, 5.5))
 
 
 @requires_scipy

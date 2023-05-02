@@ -156,7 +156,7 @@ def polygon_line_intersections(px, py, xval=None, yval=None):
 
 def floodfill(data, start_coords, threshold):
 
-    from scipy.ndimage.measurements import label
+    from scipy.ndimage import label
 
     # Determine value at the starting coordinates
     value = data[start_coords]

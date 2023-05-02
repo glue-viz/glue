@@ -441,6 +441,14 @@ class SubsetState(object):
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
+    def center(self):
+        """Return center of underlying ROI, if any."""
+        return  # None until explicitly implemented by subclass
+
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        pass  # no-op until explicitly implemented by subclass
+
     @contract(data='isinstance(Data)')
     def to_index_list(self, data):
         return np.where(data.get_mask(self.subset_state).flat)[0]
@@ -537,6 +545,12 @@ class RoiSubsetStateNd(SubsetState):
     @property
     def attributes(self):
         return tuple(self._atts)
+
+    def center(self):
+        return self._roi.center()
+
+    def move_to(self, *args):
+        self._roi.move_to(*args)
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
@@ -1078,6 +1092,28 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         return type(self)(self.state1, self.state2)
+
+    def center(self):
+        cen = self.state1.center()
+        if cen is None and self.state2:
+            cen = self.state2.center()
+        return cen
+
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        if self.state2:
+            cen1 = self.state1.center()
+            cen2 = self.state2.center()
+            if cen2 is not None and cen1 is not None:
+                offset = np.asarray(cen2) - np.asarray(cen1)
+                if np.isscalar(offset):
+                    mt_args = (args[0] + offset, )
+                else:
+                    mt_args = tuple(map(operator.add, args, offset))
+            else:
+                mt_args = args
+            self.state2.move_to(*mt_args)
+        self.state1.move_to(*args)
 
     @property
     def attributes(self):
