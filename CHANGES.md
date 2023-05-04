@@ -1,5 +1,25 @@
 # Full changelog
 
+## v1.10. - 2023-05-04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Fix subset creation with unit flip by @astrofrog in https://github.com/glue-viz/glue/pull/2393
+- Avoid resetting limits when changing display units in profile viewer by @astrofrog in https://github.com/glue-viz/glue/pull/2394
+
+#### Documentation
+
+- Fix bad connections in tutorial examples by @Carifio24 in https://github.com/glue-viz/glue/pull/2389
+
+#### Other Changes
+
+- Make ROI.move_to() behave consistently and expose it at subset_state level by @pllim in https://github.com/glue-viz/glue/pull/2391
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.9.1...v1.10.0
+
 ## v1.9.1 - 2023-04-13
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -642,7 +662,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -658,7 +680,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -674,7 +698,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -690,7 +716,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -706,7 +734,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
