@@ -65,6 +65,7 @@ class PreferencesDialog(QtWidgets.QDialog):
     theme = CurrentComboTextProperty('ui.combo_theme')
     background = ColorProperty('ui.color_background')
     foreground = ColorProperty('ui.color_foreground')
+    dark_mode = ButtonProperty('ui.checkbox_dark_mode')
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
@@ -100,8 +101,10 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
         self.font_size = settings.FONT_SIZE
+        self.dark_mode = settings.DARK_MODE
 
         self._update_theme_from_colors()
+        self.ui.checkbox_dark_mode.toggled.connect(self._toggle_dark_mode)
 
         self._autolink_pane = AutolinkPreferencesPane()
         self.ui.tab_widget.addTab(self._autolink_pane, 'Autolinking')
@@ -138,6 +141,13 @@ class PreferencesDialog(QtWidgets.QDialog):
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
+    def _toggle_dark_mode(self, *args):
+        if self.dark_mode and self.theme == 'Black on White':
+            self.theme = 'White on Black'
+        elif not self.dark_mode and self.theme == 'White on Black':
+            self.theme = 'Black on White'
+        self._update_colors_from_theme()
+
     def _reset_dialogs(self, *args):
         from glue.config import settings
         for key, _, _ in settings:
@@ -154,6 +164,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
         settings.FONT_SIZE = self.font_size
+        settings.DARK_MODE = self.dark_mode
 
         self._autolink_pane.finalize()
 

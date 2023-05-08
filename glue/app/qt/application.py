@@ -8,7 +8,9 @@ import webbrowser
 
 from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QColor, QPalette
 
+from glue.config import settings
 from glue.core.application_base import Application
 from glue.core.message import ApplicationClosedMessage, DataCollectionMessage, SettingsChangeMessage
 from glue.core import command, BaseData
@@ -43,6 +45,62 @@ from glue.app.qt.save_data import SaveDataDialog
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
+
+DARK_PALETTE = QPalette()
+DARK_PALETTE.setColor(QPalette.Window, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.WindowText, Qt.white)
+DARK_PALETTE.setColor(QPalette.Base, QColor(35, 35, 35))
+DARK_PALETTE.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.ToolTipBase, QColor(25, 25, 25))
+DARK_PALETTE.setColor(QPalette.ToolTipText, Qt.white)
+DARK_PALETTE.setColor(QPalette.Text, Qt.white)
+DARK_PALETTE.setColor(QPalette.Button, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.ButtonText, Qt.white)
+DARK_PALETTE.setColor(QPalette.BrightText, Qt.red)
+DARK_PALETTE.setColor(QPalette.Link, QColor(42, 130, 218))
+DARK_PALETTE.setColor(QPalette.Highlight, QColor(42, 130, 218))
+DARK_PALETTE.setColor(QPalette.HighlightedText, QColor(35, 35, 35))
+DARK_PALETTE.setColor(QPalette.Active, QPalette.Button, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.WindowText, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Text, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Light, QColor(53, 53, 53))
+
+DEFAULT_TERMINAL_STYLESHEET = """
+    QPlainTextEdit, QTextEdit {
+        background-color: white;
+        background-clip: padding;
+        color: black;
+        selection-background-color: #ccc;
+    }
+    .inverted {
+        background-color: black;
+        color: white;
+    }
+    .error { color: red; }
+    .in-prompt-number { font-weight: bold; }
+    .out-prompt-number { font-weight: bold; }
+    .in-prompt { color: navy; }
+    .out-prompt { color: darkred; }
+ """
+
+DARK_TERMINAL_STYLESHEET = """
+     QPlainTextEdit, QTextEdit {
+        background-color: black;
+        background-clip: padding;
+        color: white;
+        selection-background-color: #ccc;
+    }
+    .inverted {
+        background-color: white;
+        color: black;
+    }
+    .error { color: red; }
+    .in-prompt-number { font-weight: bold; }
+    .out-prompt-number { font-weight: bold; }
+    .in-prompt { color: deepskyblue; }
+    .out-prompt { color: crimson; }
+"""
 
 
 def _fix_ipython_pylab():
@@ -319,6 +377,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._connect()
         self.new_tab()
         self._update_viewer_in_focus()
+        self._on_ui_settings_change()
 
     def _update_viewer_in_focus(self, *args):
 
@@ -494,6 +553,21 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
 
     def _on_ui_settings_change(self, *event):
         update_global_font_size()
+
+        # Update the global app palette
+        palette = DARK_PALETTE if settings.DARK_MODE else self.app.style().standardPalette()
+        self.app.setPalette(palette)
+
+        # Update the background color of the data canvas on each tab
+        c = 53 if settings.DARK_MODE else 250
+        for i in range(self.tab_count):
+            tab = self.tab(i)
+            tab.setBackground(QtGui.QColor(c, c, c))
+
+        if self.has_terminal():
+            terminal = self._terminal.widget()
+            terminal.style_sheet = DARK_TERMINAL_STYLESHEET if settings.DARK_MODE else DEFAULT_TERMINAL_STYLESHEET
+            terminal.syntax_style = 'rrt' if settings.DARK_MODE else 'default'
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
