@@ -10,10 +10,13 @@ from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
                                    AsinhStretch, LogStretch)
 
 from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
-from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.scatter.state import ScatterLayerState, ScatterRegionLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
+from glue.viewers.scatter.plot_polygons import UpdateableRegionCollection, get_geometry_type, _sanitize_geoms, _PolygonPatch, transform_shapely
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core import BaseData
+from glue.core.link_manager import is_equivalent_cid
 
 from matplotlib.lines import Line2D
 
@@ -150,6 +153,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self._set_axes(axes)
         self.errorbar_index = 2
         self.vector_index = 3
+        self.region_index = 6
 
         # NOTE: Matplotlib can't deal with NaN values in errorbar correctly, so
         # we need to prefilter values - the following variable is used to store
@@ -165,6 +169,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         self.vector_artist = None
         self.line_collection = ColoredLineCollection([], [])
         self.axes.add_collection(self.line_collection)
+
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message='All-NaN slice encountered')
             self.density_artist = GenericDensityArtist(self.axes, color='white',
@@ -596,3 +601,179 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         res = self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed'
         return res and (not hasattr(self._viewer_state, 'plot_mode') or
                         not self._viewer_state.plot_mode == 'polar')
+
+
+class ScatterRegionLayerArtist(MatplotlibLayerArtist):
+
+    _layer_state_cls = ScatterRegionLayerState
+    #  _python_exporter = python_export_scatter_layer # Need to do this at some point
+
+    def __init__(self, axes, viewer_state, layer_state=None, layer=None):
+
+        super().__init__(axes, viewer_state,
+                            layer_state=layer_state, layer=layer)
+
+        if isinstance(layer, BaseData):
+            data = layer
+        else:
+            data = layer.data
+
+        self.region_att = data._extended_component_ids[0]  # RegionData is only allowed to have a single Extended Component
+
+        self.region_comp = data.get_component(self.region_att)
+
+        self.region_x_att = self.region_comp.parent_component_id_x
+        self.region_y_att = self.region_comp.parent_component_id_y
+        self.region_xy_ids = [self.region_x_att, self.region_y_att]
+
+        self._viewer_state.add_global_callback(self._update_scatter_region)
+        self.state.add_global_callback(self._update_scatter_region)
+        self._set_axes(axes)
+
+    def _set_axes(self, axes):
+        self.axes = axes
+        self.region_collection = UpdateableRegionCollection([])
+        self.axes.add_collection(self.region_collection)
+        #  This is a little unnecessary, but keeps code more parallel
+        self.mpl_artists = [self.region_collection]
+
+    def check_if_region_cid(self, data, cid):
+        """
+        Check if a ComponentID is in the set of components that regions are over.
+        """
+        if isinstance(data, BaseData):
+            data = data
+        else:  # Subset
+            data = data.data
+        if is_equivalent_cid(data, cid, self.region_x_att) or is_equivalent_cid(data, cid, self.region_y_att):
+            return True
+        else:
+            return False
+
+    @defer_draw
+    def _update_data(self):
+
+        # Layer artist has been cleared already
+        if len(self.mpl_artists) == 0:
+            return
+
+        try:
+            # These must be special attributes that are linked to a region_att
+            if ((not self.check_if_region_cid(self.layer, self._viewer_state.x_att)) and
+                     (not self.check_if_region_cid(self.layer, self._viewer_state.x_att_world))):
+                raise IncompatibleAttribute
+            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.x_att)
+            return
+        else:
+            self.enable()
+
+        try:
+            # These must be special attributes that are linked to a region_att
+            if ((not self.check_if_region_cid(self.layer, self._viewer_state.y_att)) and
+                      (not self.check_if_region_cid(self.layer, self._viewer_state.y_att_world))):
+                raise IncompatibleAttribute
+            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.y_att)
+            return
+        else:
+            self.enable()
+
+        regions = self.layer[self.region_att]
+        # If we are using world coordinates (i.e. the regions are specified in world coordinates)
+        # we need to transform the geometries of the regions into pixel coordinates for display
+        # We should cache this, since it is a waste to recompute it for certain _update_data calls
+        if self._viewer_state._display_world:
+            world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+            regions = np.array([transform_shapely(world2pix, g) for g in regions])
+        # decompose GeometryCollections
+        geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
+        self.multiindex_geometry = multiindex
+
+        geom_types = get_geometry_type(geoms)
+        poly_idx = np.asarray((geom_types == "Polygon") | (geom_types == "MultiPolygon"))
+        polys = geoms[poly_idx]
+
+        # decompose MultiPolygons
+        geoms, multiindex = _sanitize_geoms(polys, prefix="Multi")
+        self.region_collection.patches = [_PolygonPatch(poly) for poly in geoms]
+
+        self.geoms = geoms
+        self.multiindex = multiindex
+
+    @defer_draw
+    def _update_visual_attributes(self, changed, force=False):
+
+        if not self.enabled:
+            return
+
+        # TEMPORARY: Matplotlib has a bug that causes set_alpha to
+        # change the colors back: https://github.com/matplotlib/matplotlib/issues/8953
+        if 'alpha' in changed:
+            force = True
+
+        if self.state.cmap_mode == 'Fixed':
+            if force or 'color' in changed or 'cmap_mode' in changed or 'fill' in changed:
+                self.region_collection.set_array(None)
+                if self.state.fill:
+                    self.region_collection.set_facecolors(self.state.color)
+                    self.region_collection.set_edgecolors('none')
+                else:
+                    self.region_collection.set_facecolors('none')
+                    self.region_collection.set_edgecolors(self.state.color)
+        elif force or any(prop in changed for prop in CMAP_PROPERTIES) or 'fill' in changed:
+            self.region_collection.set_edgecolors(None)
+            self.region_collection.set_facecolors(None)
+            c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
+            c_values = np.take(c, self.multiindex_geometry, axis=0)  # Decompose Geoms
+            c_values = np.take(c_values, self.multiindex, axis=0)  # Decompose MultiPolys
+            set_mpl_artist_cmap(self.region_collection, c_values, self.state)
+            if self.state.fill:
+                self.region_collection.set_edgecolors('none')
+            else:
+                self.region_collection.set_facecolors('none')
+
+        for artist in [self.region_collection]:
+
+            if artist is None:
+                continue
+
+            if force or 'alpha' in changed:
+                artist.set_alpha(self.state.alpha)
+
+            if force or 'zorder' in changed:
+                artist.set_zorder(self.state.zorder)
+
+            if force or 'visible' in changed:
+                artist.set_visible(self.state.visible)
+
+        self.redraw()
+
+    @defer_draw
+    def _update_scatter_region(self, force=False, **kwargs):
+
+        if (self._viewer_state.x_att is None or
+            self._viewer_state.y_att is None or
+                self.state.layer is None):
+            return
+
+        # NOTE: we need to evaluate this even if force=True so that the cache
+        # of updated properties is up to date after this method has been called.
+        changed = self.pop_changed_properties()
+
+        change_from_limits = len(changed & LIMIT_PROPERTIES) > 0
+        if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
+            self._update_data()
+            force = True
+
+        if force or len(changed & VISUAL_PROPERTIES) > 0:
+            self._update_visual_attributes(changed, force=force)
+
+    @defer_draw
+    def update(self):
+        self._update_scatter_region(force=True)
+        self.redraw()

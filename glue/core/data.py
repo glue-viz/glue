@@ -36,7 +36,7 @@ from glue.core.coordinate_helpers import axis_label
 # Note: leave all the following imports for component and component_id since
 # they are here for backward-compatibility (the code used to live in this
 # file)
-from glue.core.component import Component, CoordinateComponent, DerivedComponent
+from glue.core.component import Component, CoordinateComponent, DerivedComponent, ExtendedComponent
 from glue.core.component_id import ComponentID, ComponentIDDict, PixelComponentID
 
 try:
@@ -1429,6 +1429,8 @@ class Data(BaseCartesianData):
             return 'numerical'
         elif comp.categorical:
             return 'categorical'
+        elif comp.extended:
+            return 'extended'
         else:
             raise TypeError("Unknown data kind")
 
@@ -2049,6 +2051,63 @@ class Data(BaseCartesianData):
         warnings.warn('Data.visible_components is deprecated', UserWarning)
         return [cid for cid, comp in self._components.items()
                 if not isinstance(comp, CoordinateComponent) and cid.parent is self]
+
+
+class RegionData(Data):
+    """
+    Data that describes a set of regions and (potentially) the properties of
+    those regions.
+
+    Components describing regions must be explicitly created as ExtendedComponents
+    and passed into this object at initialization time.
+    """
+
+    def __init__(self, label="", coords=None, **kwargs):
+        self._extended_component_ids = ComponentIDList()
+        self.ext_x = None
+        self.ext_y = None
+
+        # __init__ calls add_component which deals with ExtendedComponent logic
+        super().__init__(label=label, coords=coords, **kwargs)
+
+    def check_extended_components(self):
+        for compid, comp in self._components.items():
+            if isinstance(comp, ExtendedComponent):
+                self._extended_component_ids.append(compid)
+                self.ext_x = self.get_component(compid).parent_component_id_x
+                self.ext_y = self.get_component(compid).parent_component_id_y
+
+        num_ext = len(self._extended_component_ids)
+        if num_ext > 1:
+            raise Exception("RegionData has {0} extended_components, but should only have 1".format(num_ext))
+        elif num_ext < 1:
+            raise Exception("RegionData must be created with 1 extended_component")
+
+    @contract(component='component_like', label='cid_like')
+    def add_component(self, component, label):
+        """ Add a new component to this data set, allowing only one ExtendedComponent
+
+        Parameters
+        ----------
+        component : :class:`~glue.core.component.Component` or array-like
+            Object to add.
+        label : `str` or :class:`~glue.core.component_id.ComponentID`
+              The label. If this is a string, a new
+              :class:`glue.core.component_id.ComponentID`
+              with this label will be created and associated with the Component.
+
+        Raises
+        ------
+           `ValueError`, if the RegionData already has an extended component
+        """
+        if isinstance(component, ExtendedComponent):
+            if len(self._extended_component_ids) > 0:
+                raise ValueError("Cannot add a derived component as a first component")
+            else:
+                super().add_component(component, label)
+                self.check_extended_components()
+        else:
+            super().add_component(component, label)
 
 
 @contract(i=int, ndim=int)
