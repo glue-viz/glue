@@ -62,10 +62,10 @@ class AutolinkPreferencesPane(QtWidgets.QWidget):
 
 class PreferencesDialog(QtWidgets.QDialog):
 
+    app_theme = CurrentComboTextProperty('ui.combo_app_theme')
     theme = CurrentComboTextProperty('ui.combo_theme')
     background = ColorProperty('ui.color_background')
     foreground = ColorProperty('ui.color_foreground')
-    dark_mode = ButtonProperty('ui.checkbox_dark_mode')
     data_color = ColorProperty('ui.color_default_data')
     data_alpha = ValueProperty('ui.slider_alpha', value_range=(0, 1))
     data_apply = ButtonProperty('ui.checkbox_apply')
@@ -85,6 +85,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.ui.ok.clicked.connect(self.accept)
 
         self.ui.combo_theme.currentIndexChanged.connect(self._update_colors_from_theme)
+        self.ui.combo_app_theme.currentIndexChanged.connect(self._update_app_theme)
 
         self.ui.button_reset_dialogs.clicked.connect(self._reset_dialogs)
 
@@ -101,10 +102,9 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
         self.font_size = settings.FONT_SIZE
-        self.dark_mode = settings.DARK_MODE
+        self.app_theme = settings.APP_THEME
 
         self._update_theme_from_colors()
-        self.ui.checkbox_dark_mode.toggled.connect(self._toggle_dark_mode)
 
         self._autolink_pane = AutolinkPreferencesPane()
         self.ui.tab_widget.addTab(self._autolink_pane, 'Autolinking')
@@ -141,10 +141,10 @@ class PreferencesDialog(QtWidgets.QDialog):
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
-    def _toggle_dark_mode(self, *args):
-        if self.dark_mode and self.theme == 'Black on White':
+    def _update_app_theme(self, *args):
+        if self.app_theme == 'Dark' and self.theme == 'Black on White':
             self.theme = 'White on Black'
-        elif not self.dark_mode and self.theme == 'White on Black':
+        elif self.app_theme == 'Light' and self.theme == 'White on Black':
             self.theme = 'Black on White'
         self._update_colors_from_theme()
 
@@ -164,7 +164,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
         settings.FONT_SIZE = self.font_size
-        settings.DARK_MODE = self.dark_mode
+        settings.APP_THEME = self.app_theme
 
         self._autolink_pane.finalize()
 
@@ -182,7 +182,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         app = self._app()
 
         if app is not None:
-            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE')))
+            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE', 'APP_THEME'))) 
             if self.data_apply:  # If requested, trigger data to update color
                 app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 

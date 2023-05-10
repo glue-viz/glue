@@ -1090,8 +1090,7 @@ settings.add('SHOW_INFO_PROFILE_OPEN', True, validator=bool)
 settings.add('SHOW_WARN_PROFILE_DUPLICATE', True, validator=bool)
 settings.add('FONT_SIZE', -1.0, validator=float)
 settings.add('AUTOLINK', {}, validator=dict)
-settings.add('DARK_MODE', False, validator=bool)
-
+settings.add('APP_THEME', 'Light', validator=str)
 
 def check_unit_converter(value):
     if value != 'default' and value not in unit_converter.members:

@@ -66,41 +66,45 @@ DARK_PALETTE.setColor(QPalette.Disabled, QPalette.WindowText, Qt.darkGray)
 DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Text, Qt.darkGray)
 DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Light, QColor(53, 53, 53))
 
-DEFAULT_TERMINAL_STYLESHEET = """
-    QPlainTextEdit, QTextEdit {
-        background-color: white;
-        background-clip: padding;
-        color: black;
-        selection-background-color: #ccc;
-    }
-    .inverted {
-        background-color: black;
-        color: white;
-    }
-    .error { color: red; }
-    .in-prompt-number { font-weight: bold; }
-    .out-prompt-number { font-weight: bold; }
-    .in-prompt { color: navy; }
-    .out-prompt { color: darkred; }
- """
+LIGHT_PALETTE = QPalette()
+LIGHT_PALETTE.setColor(QPalette.Window, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.WindowText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Base, Qt.white)
+LIGHT_PALETTE.setColor(QPalette.AlternateBase, QColor(247, 247, 247))
+LIGHT_PALETTE.setColor(QPalette.ToolTipBase, QColor(255, 255, 220))
+LIGHT_PALETTE.setColor(QPalette.ToolTipText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Text, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Button, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.ButtonText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.BrightText, Qt.red)
+LIGHT_PALETTE.setColor(QPalette.Link, Qt.blue)
+LIGHT_PALETTE.setColor(QPalette.Highlight, QColor(48, 140, 198))
+LIGHT_PALETTE.setColor(QPalette.HighlightedText, Qt.white)
+LIGHT_PALETTE.setColor(QPalette.Active, QPalette.Button, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.WindowText, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.Text, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.Light, Qt.white)
 
-DARK_TERMINAL_STYLESHEET = """
-     QPlainTextEdit, QTextEdit {
-        background-color: black;
+
+def _stylesheet(text_color='black', bg_color='white', in_prompt_color='deepskyblue', out_prompt_color='crimson'):
+    return f"""
+    QPlainTextEdit, QTextEdit {{
+        background-color: {bg_color};
         background-clip: padding;
-        color: white;
+        color: {text_color};
         selection-background-color: #ccc;
-    }
-    .inverted {
-        background-color: white;
-        color: black;
-    }
-    .error { color: red; }
-    .in-prompt-number { font-weight: bold; }
-    .out-prompt-number { font-weight: bold; }
-    .in-prompt { color: deepskyblue; }
-    .out-prompt { color: crimson; }
-"""
+    }}
+    .inverted {{
+        background-color: {text_color};
+        color: {bg_color};
+    }}
+    .error {{ color: red; }}
+    .in-prompt-number {{ font-weight: bold; }}
+    .out-prompt-number {{ font-weight: bold; }}
+    .in-prompt {{ color: {in_prompt_color}; }}
+    .out-prompt {{ color: {out_prompt_color}; }}
+    """
 
 
 def _fix_ipython_pylab():
@@ -555,19 +559,37 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         update_global_font_size()
 
         # Update the global app palette
-        palette = DARK_PALETTE if settings.DARK_MODE else self.app.style().standardPalette()
+        if settings.APP_THEME == 'Light':
+            palette = LIGHT_PALETTE
+        elif settings.APP_THEME == 'Dark':
+            palette = DARK_PALETTE
+        else:
+            palette = self.app.style().standardPalette()
         self.app.setPalette(palette)
 
         # Update the background color of the data canvas on each tab
-        c = 53 if settings.DARK_MODE else 250
         for i in range(self.tab_count):
             tab = self.tab(i)
-            tab.setBackground(QtGui.QColor(c, c, c))
+            tab.setBackground(palette.color(QPalette.Window))
 
-        if self.has_terminal():
+        if settings.APP_THEME == 'System default':
+            # Try to identify whether we think the system theme is light or dark
+            window_color = palette.color(QPalette.Window)
+            text_color = palette.color(QPalette.WindowText)
+            dark = window_color.lightness() < text_color.lightness()
+        else:
+            dark = settings.APP_THEME == 'Dark'
+
+        if self.has_terminal(create_if_not=True):
             terminal = self._terminal.widget()
-            terminal.style_sheet = DARK_TERMINAL_STYLESHEET if settings.DARK_MODE else DEFAULT_TERMINAL_STYLESHEET
-            terminal.syntax_style = 'rrt' if settings.DARK_MODE else 'default'
+            terminal_colors = dict(
+                text_color='white' if dark else 'black',
+                bg_color='black' if dark else 'white',
+                in_prompt_color='deepskyblue' if dark else 'navy',
+                out_prompt_color='crimson' if dark else 'darkred'
+            )
+            terminal.style_sheet = _stylesheet(**terminal_colors)
+            terminal.syntax_style = 'rrt' if dark else 'default'
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
