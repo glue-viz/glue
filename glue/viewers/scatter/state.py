@@ -543,6 +543,7 @@ class ScatterRegionLayerState(MatplotlibLayerState):
 
     def _on_layer_change(self, layer=None):
 
+        print("Got an _on_layer_change message...")
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax'):
 
             if self.layer is None:

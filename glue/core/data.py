@@ -1547,7 +1547,7 @@ class Data(BaseCartesianData):
 
         # alert hub of the change
         if self.hub is not None:
-            msg = NumericalDataChangedMessage(self)
+            msg = NumericalDataChangedMessage(self, components_changed=list(mapping.keys()))
             self.hub.broadcast(msg)
 
         for subset in self.subsets:
