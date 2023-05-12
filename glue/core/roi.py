@@ -597,14 +597,21 @@ class CircularAnnulusROI(Roi):
             status = False
         return status
 
-    # FIXME: We need 2 polygons, with the inner one inverted, just like subset state.
     def to_polygon(self):
         if not self.defined():
             return [], []
-        raise NotImplementedError("Cannot transform annulus to simple polygon")
+        theta = np.linspace(0, 2 * np.pi, num=20)
+        x_inner = self.xc + self.inner_radius * np.cos(theta)
+        y_inner = self.yc + self.inner_radius * np.sin(theta)
+        x_outer = self.xc + self.outer_radius * np.cos(theta)
+        y_outer = self.yc + self.outer_radius * np.sin(theta)
+        # theta=2pi=360deg=0deg --> x=r, y=0
+        x = np.concatenate((x_inner, x_outer[::-1], x_inner[0]), axis=None)
+        y = np.concatenate((y_inner, y_outer[::-1], y_inner[0]), axis=None)
+        return x, y
 
     def transformed(self, xfunc=None, yfunc=None):
-        raise NotImplementedError("Cannot transform annulus to simple polygon")
+        return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
     def center(self):
         return self.xc, self.yc

@@ -371,8 +371,11 @@ def test_circular_annulus_defined():
     assert_almost_equal(new_roi.outer_radius, roi.outer_radius)
 
     # test_poly
-    with pytest.raises(NotImplementedError, match="Cannot transform annulus to simple polygon"):
-        roi.to_polygon()
+    x, y = roi.to_polygon()
+    poly = PolygonalROI(vx=x, vy=y)
+    assert not poly.contains(0, 0)
+    assert poly.contains(0, 2)
+    assert not poly.contains(2, 0)  # We have to cut it at theta=0
 
     # test_reset
     assert roi.defined()
