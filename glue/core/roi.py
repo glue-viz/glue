@@ -518,7 +518,7 @@ class CircularROI(Roi):
     def to_polygon(self):
         if not self.defined():
             return [], []
-        theta = np.linspace(0, 2 * np.pi, num=20)
+        theta = np.linspace(0, 2 * np.pi, num=100)
         x = self.xc + self.radius * np.cos(theta)
         y = self.yc + self.radius * np.sin(theta)
         return x, y
@@ -600,7 +600,7 @@ class CircularAnnulusROI(Roi):
     def to_polygon(self):
         if not self.defined():
             return [], []
-        theta = np.linspace(0, 2 * np.pi, num=20)
+        theta = np.linspace(0, 2 * np.pi, num=100)
         x_inner = self.xc + self.inner_radius * np.cos(theta)
         y_inner = self.yc + self.inner_radius * np.sin(theta)
         x_outer = self.xc + self.outer_radius * np.cos(theta)
@@ -724,7 +724,7 @@ class EllipticalROI(Roi):
     def to_polygon(self):
         if not self.defined():
             return [], []
-        theta = np.linspace(0, 2 * np.pi, num=20)
+        theta = np.linspace(0, 2 * np.pi, num=100)
         x = self.radius_x * np.cos(theta)
         y = self.radius_y * np.sin(theta)
         x, y = rotation_matrix_2d(self.theta) @ (x, y)
