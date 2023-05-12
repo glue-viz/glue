@@ -22,7 +22,7 @@ def update_table_viewer_state(rec, context):
         rec['state'] = {}
         rec['state']['values'] = {}
 
-        properties = rec.pop('properties')
+        _ = rec.pop('properties')
 
         layer_states = []
 
