@@ -87,7 +87,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     def _convert_units_x_limits(self, old_unit, new_unit):
 
-        if old_unit != new_unit and self.reference_data is not None:
+        if (
+            getattr(self, '_previous_x_att', None) is self.x_att and
+            old_unit != new_unit and
+            self.reference_data is not None
+        ):
 
             limits = np.array([self.x_min, self.x_max])
 
@@ -103,6 +107,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
             with delay_callback(self, 'x_min', 'x_max'):
                 self.x_min, self.x_max = sorted(limits_new)
+
+        # Make sure that we keep track of what attribute the limits
+        # are for - if the attribute changes, we should not try and
+        # update the limits.
+        self._previous_x_att = self.x_att
 
     def _convert_units_y_limits(self, old_unit, new_unit):
 
@@ -167,8 +176,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_pixel = self.reference_data.pixel_component_ids[index]
             else:
                 self.x_att_pixel = self.x_att
-        self._reset_x_limits()
         self._update_x_display_unit_choices()
+        self._reset_x_limits()
 
     def _reset_x_limits(self, *event):
 
@@ -236,6 +245,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
     @defer_draw
     @avoid_circular
     def _layers_changed(self, *args):
+
         # By default if any of the state properties change, this triggers a
         # callback on anything listening to changes on self.layers - but here
         # we just want to know if any layers have been removed/added so we keep
@@ -245,6 +255,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self._update_combo_ref_data()
             self._update_y_display_unit_choices()
             self._last_layers = current_layers
+            return
+
+        current_attributes = [id(layer_state.attribute) for layer_state in self.layers]
+        if not hasattr(self, '_last_attributes') or self._last_attributes != current_attributes:
+            self._update_y_display_unit_choices()
+            self._last_attributes = current_attributes
 
     def _update_x_display_unit_choices(self):
 

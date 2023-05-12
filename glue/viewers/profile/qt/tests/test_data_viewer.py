@@ -38,7 +38,6 @@ def teardown_function(func):
 
 def teardown_module():
     unit_converter._members.pop('test-spectral2')
-    print(unit_converter._members)
 
 
 class TestProfileCommon(BaseTestMatplotlibDataViewer):
@@ -467,3 +466,89 @@ def test_unit_conversion():
     assert_allclose(viewer.state.x_max, (0.5 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
     assert_allclose(viewer.state.y_min, 0.5)
     assert_allclose(viewer.state.y_max, 3.5)
+
+
+def test_unit_conversion_limits():
+
+    # Regression test for issues that happened when changing attributes with
+    # different units.
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = ['A', 'B']
+    wcs1.wcs.crval = [1, 3]
+    wcs1.wcs.cdelt = [1, 2]
+    wcs1.wcs.crpix = [1, 1]
+    wcs1.wcs.cunit = ['deg', 'm']
+
+    d1 = Data(f1=[[1, 2, 3]], f2=[[10, 20, 30]])
+    d1.get_component('f1').units = 'Jy'
+    d1.get_component('f2').units = 's'
+    d1.coords = wcs1
+
+    app = GlueApplication()
+    session = app.session
+
+    data_collection = session.data_collection
+    data_collection.append(d1)
+
+    viewer = app.new_data_viewer(ProfileViewer)
+    viewer.add_data(d1)
+
+    assert viewer.state.x_att is d1.id['B']
+
+    assert viewer.state.x_min == 3.0
+    assert viewer.state.x_max == 3.0
+    assert viewer.state.y_min == 0.
+    assert viewer.state.y_max == 1.
+
+    # Explicitly set unit on y axis to enable unit conversion
+    viewer.state.y_display_unit = 'Jy'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [3])
+    assert_allclose(viewer.state.layers[0].profile[1], [3])
+
+    # Change the limits to see if they are updated or reset
+    viewer.state.x_min = 0.
+    viewer.state.x_max = 10
+    viewer.state.y_min = 0.0
+    viewer.state.y_max = 4.0
+
+    viewer.state.x_display_unit = 'cm'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [300])
+    assert_allclose(viewer.state.layers[0].profile[1], [3])
+
+    assert_allclose(viewer.state.x_min, 0)
+    assert_allclose(viewer.state.x_max, 1000)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4)
+
+    viewer.state.y_display_unit = 'mJy'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [300])
+    assert_allclose(viewer.state.layers[0].profile[1], [3000])
+
+    assert_allclose(viewer.state.x_min, 0)
+    assert_allclose(viewer.state.x_max, 1000)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4000)
+
+    viewer.state.x_att = d1.id['A']
+
+    assert_allclose(viewer.state.layers[0].profile[0], [1, 2, 3])
+    assert_allclose(viewer.state.layers[0].profile[1], [1000, 2000, 3000])
+
+    assert_allclose(viewer.state.x_min, 1)
+    assert_allclose(viewer.state.x_max, 3)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4000)
+
+    viewer.state.layers[0].attribute = d1.id['f2']
+
+    assert_allclose(viewer.state.layers[0].profile[0], [1, 2, 3])
+    assert_allclose(viewer.state.layers[0].profile[1], [10, 20, 30])
+
+    assert_allclose(viewer.state.x_min, 1)
+    assert_allclose(viewer.state.x_max, 3)
+    assert_allclose(viewer.state.y_min, 10)
+    assert_allclose(viewer.state.y_max, 30)
