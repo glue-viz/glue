@@ -37,7 +37,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="valuetext_filter"/>
+      <widget class="QLineEdit" name="text_filter"/>
      </item>
      <item>
       <widget class="QLabel" name="filter_label_2">

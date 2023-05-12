@@ -8,7 +8,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, QtWidgets
 from matplotlib.colors import ColorConverter
 
-from echo.qt import connect_combo_selection, connect_text, connect_checkable_button
+from echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
 from glue.core import BaseData, Data
@@ -290,9 +290,7 @@ class TableViewer(DataViewer):
         self.data = None
         self.model = None
 
-        self._connection1 = connect_combo_selection(self.state, 'filter_att', self.ui.combosel_filter_att)
-        self._connection2 = connect_text(self.state, 'filter', self.ui.valuetext_filter)
-        self._connection3 = connect_checkable_button(self.state, 'regex', self.ui.bool_regex)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
 
         self.state.add_callback('regex', self._on_filter_changed)
         self.state.add_callback('filter', self._on_filter_changed)
