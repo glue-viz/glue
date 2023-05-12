@@ -536,7 +536,7 @@ class DaskComponent(Component):
         return len(self._data.shape)
 
     def __getitem__(self, key):
-        return self._data[key].compute()
+        return np.asarray(self._data[key].compute())
 
     @property
     def numeric(self):
