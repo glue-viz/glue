@@ -5,7 +5,8 @@ import operator
 import numpy as np
 
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, Projected3dROI)
+                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, CircularAnnulusROI,
+                           Projected3dROI)
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -2018,7 +2019,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_catego
 
         # The selection is polygon-like or requires a pretransform and components are numerical
 
-        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI)):
+        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI,
+                                CircularAnnulusROI)):
             roi = PolygonalROI(*roi.to_polygon())
 
         subset_state = RoiSubsetState()
