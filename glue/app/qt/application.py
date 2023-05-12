@@ -1422,12 +1422,18 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         if new_tab is None:
             raise ValueError(f"Invalid tab index: {tab}")
         if current_tab is not new_tab:
+
             # We do this rather than just use setParent on current_window
             # so that the moved window is put in a reasonable place
             # in the new tab (i.e. not on top of another viewer),
             # because there may be another viewer in the new tab
-            # with the same position
+            # with the same position.
+            # Also, if we don't resize, moved windows will get progressively
+            # smaller. This is because the new MDI window will be sized
+            # according to the size of the old viewer, which is slightly
+            # smaller than the parent window.
             current_tab.removeSubWindow(current_window)
+            viewer.resize(current_window.size())
             current_window.setWidget(None)
             current_window.close()
 
