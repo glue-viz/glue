@@ -27,7 +27,7 @@ class MoveTabTool(Tool):
 
     def activate(self):
         app = self.viewer.session.application
-        default = 1 if (app.tab_count > 0 and app.current_tab == app.tab(0)) else 0
+        default = 1 if (app.tab_count > 1 and app.current_tab == app.tab(0)) else 0
         tab = pick_item(range(app.tab_count), app.tab_names, title="Move Viewer", label="Select a tab", default=default)
         if tab is not None:
             app.move_viewer_to_tab(self.viewer, tab)
