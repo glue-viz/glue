@@ -828,11 +828,17 @@ class TestCloneSubsetStates():
 
         subset = self.data.new_subset()
         subset.subset_state = RangeSubsetState(1.1, 1.4, self.data.id['c'])
+        assert_allclose(subset.subset_state.center(), 1.25)
         assert_equal(self.data.subsets[0].to_mask(), [1, 1, 0, 0])
 
         data_clone = clone(self.data)
 
         assert_equal(data_clone.subsets[0].to_mask(), [1, 1, 0, 0])
+
+        # Also test moving it.
+        subset.subset_state.move_to(2)
+        assert_allclose((subset.subset_state.lo, subset.subset_state.hi), (1.85, 2.15))
+        assert_allclose(subset.subset_state.center(), 2)
 
     def test_and_subset_state(self):
 

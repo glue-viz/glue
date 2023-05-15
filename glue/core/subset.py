@@ -809,6 +809,14 @@ class RangeSubsetState(SubsetState):
         result = (x >= self.lo) & (x <= self.hi)
         return result
 
+    def center(self):
+        return (self.hi - self.lo) * 0.5 + self.lo
+
+    def move_to(self, new_cen):
+        dx = new_cen - self.center()
+        self.lo = self.lo + dx
+        self.hi = self.hi + dx
+
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
 
