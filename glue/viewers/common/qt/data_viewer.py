@@ -65,8 +65,11 @@ class DataViewer(Viewer, BaseQtViewerWidget,
     _default_mouse_mode_cls = None
 
     inherit_tools = True
-    tools = ['save']
-    subtools = {'save': []}
+    tools = ['save', 'window']
+    subtools = {
+        'save': [],
+        'window': ['window:movetab']
+    }
 
     _close_on_last_layer_removed = True
 

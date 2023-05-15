@@ -1410,6 +1410,35 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         image.save(filename)
         painter.end()
 
+    def move_viewer_to_tab(self, viewer, tab):
+        """
+        Move the given viewer to the given tab.
+        If the given tab is the same as the current tab,
+        do nothing.
+        """
+        current_window = viewer.parent()
+        current_tab = current_window.mdiArea()
+        new_tab = self.tab(tab)
+        if new_tab is None:
+            raise ValueError(f"Invalid tab index: {tab}")
+        if current_tab is not new_tab:
+
+            # We do this rather than just use setParent on current_window
+            # so that the moved window is put in a reasonable place
+            # in the new tab (i.e. not on top of another viewer),
+            # because there may be another viewer in the new tab
+            # with the same position.
+            # Also, if we don't resize, moved windows will get progressively
+            # smaller. This is because the new MDI window will be sized
+            # according to the size of the old viewer, which is slightly
+            # smaller than the parent window.
+            current_tab.removeSubWindow(current_window)
+            viewer.resize(current_window.size())
+            current_window.setWidget(None)
+            current_window.close()
+
+            self.add_widget(viewer, tab=tab)
+
     def add_datasets(self, *args, **kwargs):
         result = super(GlueApplication, self).add_datasets(*args, **kwargs)
         run_autolinker(self.data_collection)
