@@ -12,7 +12,7 @@ from numpy.testing import assert_almost_equal
 
 from .. import roi as r
 from ..component import CategoricalComponent
-from ..roi import (RectangularROI, UndefinedROI, CircularROI, PolygonalROI, CategoricalROI,
+from ..roi import (RectangularROI, UndefinedROI, CircularROI, CircularAnnulusROI, PolygonalROI, CategoricalROI,
                    MplCircularROI, MplRectangularROI, MplPolygonalROI, MplPickROI, PointROI,
                    XRangeROI, MplXRangeROI, YRangeROI, MplYRangeROI, RangeROI, Projected3dROI,
                    EllipticalROI)
@@ -30,7 +30,7 @@ def roundtrip_roi(roi):
     return obj.object('__main__')
 
 
-class TestPoint(object):
+class TestPoint:
 
     def setup_method(self, method):
         self.roi = PointROI(1, 2)
@@ -55,7 +55,7 @@ class TestPoint(object):
         assert self.roi.center() == (1, 2)
 
 
-class TestRectangle(object):
+class TestRectangle:
 
     def setup_method(self, method):
         self.roi = RectangularROI()
@@ -155,14 +155,14 @@ class TestRectangle(object):
         assert_almost_equal(new_roi.ymax, 4)
 
 
-class TestRange(object):
+class TestRange:
 
     def test_wrong_orientation(self):
         with pytest.raises(ValueError):
             RangeROI(orientation='a')
 
 
-class TestXRange(object):
+class TestXRange:
 
     def test_undefined_on_init(self):
         assert not XRangeROI().defined()
@@ -212,7 +212,7 @@ class TestXRange(object):
         assert new_roi.ori == 'x'
 
 
-class TestYRange(object):
+class TestYRange:
     def test_undefined_on_init(self):
         assert not YRangeROI().defined()
 
@@ -261,7 +261,7 @@ class TestYRange(object):
         assert new_roi.ori == 'y'
 
 
-class TestCircle(object):
+class TestCircle:
     def setup_method(self, method):
         self.roi = CircularROI()
 
@@ -337,7 +337,73 @@ class TestCircle(object):
         assert_almost_equal(new_roi.radius, 5)
 
 
-class TestEllipse(object):
+# NOTE: Unlike the other tests here, we use test functions and not different
+# class methods to guarantee tests run in given order, just in case.
+
+def test_circular_annulus_defined():
+    roi = CircularAnnulusROI(xc=-1.6, yc=100, inner_radius=1, outer_radius=3.5)
+
+    # test_set_center
+    roi.move_to(0, 0)
+    assert not roi.contains(0, 0)
+    assert roi.contains(0, 2)
+
+    # test_contains_many
+    x = y = [2] * 5
+    x_arr = np.asarray(x)
+    assert all(roi.contains(x, y))
+    assert all(roi.contains(x_arr, np.asarray(y)))
+    assert not any(roi.contains(x_arr + 10, y))
+
+    # test_multidim
+    shape = (2, 2)
+    x = np.array([1.1, 1.2, 1.3, 1.4]).reshape(shape)
+    y = np.array([-1.1, -1.2, -1.3, -1.4]).reshape(shape)
+    assert roi.contains(x, y).all()
+    assert not roi.contains(x + 3.5, y).any()
+    assert roi.contains(x, y).shape == shape
+
+    # test_serialization
+    new_roi = roundtrip_roi(roi)
+    assert_almost_equal(new_roi.xc, roi.xc)
+    assert_almost_equal(new_roi.yc, roi.yc)
+    assert_almost_equal(new_roi.inner_radius, roi.inner_radius)
+    assert_almost_equal(new_roi.outer_radius, roi.outer_radius)
+
+    # test_poly
+    x, y = roi.to_polygon()
+    poly = PolygonalROI(vx=x, vy=y)
+    assert not poly.contains(0, 0)
+    assert poly.contains(0, 2)
+    assert not poly.contains(2, 0)  # We have to cut it at theta=0
+
+    # test_reset
+    assert roi.defined()
+    roi.reset()
+    assert not roi.defined()
+
+
+@pytest.mark.parametrize(
+    ('xc', 'yc', 'r1', 'r2'),
+    [(None, None, None, None),
+     (0, 0, None, None),
+     (0, 0, 1, 1),
+     (0, 0, 2, 1)])
+def test_circular_annulus_undefined(xc, yc, r1, r2):
+    roi = CircularAnnulusROI(xc=xc, yc=yc, inner_radius=r1, outer_radius=r2)
+    assert not roi.defined()
+
+    # test_contains_on_undefined_contains_raises
+    with pytest.raises(UndefinedROI):
+        roi.contains(1, 1)
+
+    # test_poly_undefined
+    x, y = roi.to_polygon()
+    assert x == []
+    assert y == []
+
+
+class TestEllipse:
 
     def setup_method(self, method):
         self.roi_empty = EllipticalROI()
@@ -440,7 +506,7 @@ class TestEllipse(object):
         assert new_roi.contains(-1.5, 0.5)
 
 
-class TestPolygon(object):
+class TestPolygon:
     def setup_method(self, method):
         self.roi = PolygonalROI()
 
@@ -601,7 +667,7 @@ class TestPolygon(object):
         assert_almost_equal(new_roi.vy, np.array([-sqh, 0, sqh, 0]) + 0.5)
 
 
-class TestProjected3dROI(object):
+class TestProjected3dROI:
     # matrix that converts xyzw to yxzw
     xyzw2yxzw = np.array([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
     x = [1, 2, 3]
@@ -646,7 +712,7 @@ class TestProjected3dROI(object):
         assert roi.contains3d(self.x_nd, self.y_nd, self.z_nd).tolist() == [[True, False], [True, True], [False, True]]
 
 
-class TestCategorical(object):
+class TestCategorical:
 
     def test_empty(self):
 
@@ -696,7 +762,7 @@ class TestCategorical(object):
         np.testing.assert_array_equal(contains, [0, 0, 0])
 
 
-class DummyEvent(object):
+class DummyEvent:
     def __init__(self, x, y, inaxes=True, key=None):
         self.inaxes = inaxes
         self.xdata = x
@@ -704,7 +770,7 @@ class DummyEvent(object):
         self.key = key
 
 
-class MockAxes(object):
+class MockAxes:
     def __init__(self):
         self.figure = MagicMock()
         self.figure.canvas = MagicMock()
@@ -713,7 +779,7 @@ class MockAxes(object):
         pass
 
 
-class TestMpl(object):
+class TestMpl:
 
     def setup_method(self, method):
         self.axes = MagicMock()
@@ -1235,7 +1301,7 @@ class TestPickMpl(TestMpl):
         """No patch to test for."""
 
 
-class TestUtil(object):
+class TestUtil:
 
     def setup_method(self, method):
         self.axes = AXES
