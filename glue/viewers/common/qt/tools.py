@@ -36,7 +36,7 @@ class MoveTabTool(Tool):
 @viewer_tool
 class ChangeTitleTool(Tool):
 
-    icon = 'windows'  # TODO: Change this
+    icon = 'window_title' 
     tool_id = 'window:title'
     action_text = 'Change viewer title'
     tool_tip = 'Change the viewer title'
