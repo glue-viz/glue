@@ -20,7 +20,7 @@ class WindowTool(SimpleToolMenu):
 @viewer_tool
 class MoveTabTool(Tool):
 
-    icon = 'windows'
+    icon = 'window_tab'
     tool_id = 'window:movetab'
     action_text = 'Move to another tab'
     tool_tip = 'Move viewer to another tab'
