@@ -570,7 +570,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         # Update the background color of the data canvas on each tab
         for i in range(self.tab_count):
             tab = self.tab(i)
-            tab.setBackground(palette.color(QPalette.Window))
+            tab.setBackground(palette.color(QPalette.AlternateBase))
 
         if settings.APP_THEME == 'System default':
             # Try to identify whether we think the system theme is light or dark
@@ -584,7 +584,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             terminal = self._terminal.widget()
             terminal_colors = dict(
                 text_color='white' if dark else 'black',
-                bg_color='black' if dark else 'white',
+                bg_color='#282828' if dark else 'white',
                 in_prompt_color='deepskyblue' if dark else 'navy',
                 out_prompt_color='crimson' if dark else 'darkred'
             )
