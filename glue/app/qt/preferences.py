@@ -182,7 +182,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         app = self._app()
 
         if app is not None:
-            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE', 'APP_THEME'))) 
+            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE', 'APP_THEME')))
             if self.data_apply:  # If requested, trigger data to update color
                 app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 
