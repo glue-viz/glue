@@ -160,8 +160,12 @@ class LinkManager(HubListener):
         for link in self._external_links:
             for cid in msg.data.components:
                 if cid in link and cid.parent is msg.data:
-                    remove.append(link)
-                    break
+                    needed_by_subset = [[cid in s.attributes and s.data != msg.data for
+                                         s in sg.subsets] for sg in
+                                            self.data_collection.subset_groups]
+                    if not np.any(needed_by_subset):
+                        remove.append(link)
+                        break
         for link in remove:
             self.remove_link(link)
 
