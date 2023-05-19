@@ -36,13 +36,12 @@ class MoveTabTool(Tool):
 @viewer_tool
 class ChangeTitleTool(Tool):
 
-    icon = 'window_title' 
+    icon = 'window_title'
     tool_id = 'window:title'
     action_text = 'Change viewer title'
     tool_tip = 'Change the viewer title'
 
     def activate(self):
-        title = get_text("Enter a new title")
+        title = get_text(title="Enter a new title")
         if title:
             self.viewer.state.title = title
-
