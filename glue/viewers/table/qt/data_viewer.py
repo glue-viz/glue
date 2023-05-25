@@ -270,7 +270,10 @@ class TableViewer(DataViewer):
     _state_cls = TableViewerState
 
     inherit_tools = False
-    tools = ['table:rowselect']
+    tools = ['table:rowselect', 'window']
+    subtools = {
+        'window': ['window:movetab', 'window:title']
+    }
 
     def __init__(self, session, state=None, parent=None, widget=None):
 
@@ -377,7 +380,9 @@ class TableViewer(DataViewer):
 
     @property
     def window_title(self):
-        if len(self.state.layers) > 0:
+        if self.state.title:
+            return self.state.title
+        elif len(self.state.layers) > 0:
             return 'Table: ' + self.state.layers[0].layer.label
         else:
             return 'Table'

@@ -152,7 +152,6 @@ class Viewer(BaseViewer):
         # the current state of the viewer
         self.state = state or self._state_cls()
         self.state.data_collection = session.data_collection
-        self.state.title = self.state.title or self.LABEL
 
         # Create the layer artist container, which is the object in which
         # we will add LayerArtist objects
