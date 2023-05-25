@@ -1,5 +1,29 @@
 # Full changelog
 
+## v1.11.0 - 2023-05-25
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- New CircularAnnulusROI class to represent circular annulus ROI by @pllim in https://github.com/glue-viz/glue/pull/2403
+- Add center and move_to methods to RangeSubsetState by @pllim in https://github.com/glue-viz/glue/pull/2404
+- Add filter/search to table viewer by @jfoster17 in https://github.com/glue-viz/glue/pull/2392
+- Add functionality for moving viewers between tabs by @Carifio24 in https://github.com/glue-viz/glue/pull/2387
+
+#### Bug Fixes
+
+- Disallow broken qtconsole 5.4.2 by @jfoster17 in https://github.com/glue-viz/glue/pull/2396
+- Fix bugs with unit conversion when changing x/y attributes by @astrofrog in https://github.com/glue-viz/glue/pull/2400
+- Make sure **getitem** always returns a numpy array by @jfoster17 in https://github.com/glue-viz/glue/pull/2399
+
+#### Other Changes
+
+- MNT: Remove unused .travis.yml by @pllim in https://github.com/glue-viz/glue/pull/2401
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.10.0...v1.11.0
+
 ## v1.10. - 2023-05-04
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -663,7 +687,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -681,7 +707,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -699,7 +727,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -717,7 +747,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -735,7 +767,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
