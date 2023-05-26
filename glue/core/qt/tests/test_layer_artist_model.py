@@ -194,13 +194,34 @@ def test_check_syncs_to_visible():
 
     m0.visible = True
     assert m0.visible
-    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.Checked
+    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.CheckState.Checked
     m0.visible = False
     assert not m0.visible
-    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.Unchecked
+    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.CheckState.Unchecked
 
-    model.setData(model.index(0), Qt.Checked, Qt.CheckStateRole)
+    model.setData(model.index(0), Qt.CheckState.Checked, Qt.CheckStateRole)
     assert m0.visible
+
+
+def test_artist_check_uncheck_works():
+    """
+    Because of https://bugreports.qt.io/browse/QTBUG-104688, under Qt6
+    the checkbox in the UI actually sends a bare integer (0 for unchecked,
+    2 for checked) so we have to check this against Qt.CheckState.Checked.value
+    in setData. This is a regression test for this behavior.
+    """
+    mgrs = [LayerArtist(Data(label='A'))]
+    mgrs[0].artists = [MagicMock()]
+
+    model = LayerArtistModel(mgrs)
+    mgrs[0].visible = True
+    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.CheckState.Checked
+
+    model.setData(model.index(0), 0, Qt.CheckStateRole)
+    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.CheckState.Unchecked
+
+    model.setData(model.index(0), 2, Qt.CheckStateRole)
+    assert model.data(model.index(0), Qt.CheckStateRole) == Qt.CheckState.Checked
 
 
 def test_data():
