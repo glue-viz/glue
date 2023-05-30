@@ -7,13 +7,14 @@ import numpy as np
 from unittest.mock import MagicMock
 
 from astropy.wcs import WCS
+from shapely.geometry import MultiPolygon, Polygon, Point
 
 from glue import core
 from glue.tests.helpers import requires_astropy
 
 from ..coordinates import Coordinates
 from ..component import (Component, DerivedComponent, CoordinateComponent,
-                         CategoricalComponent)
+                         CategoricalComponent, ExtendedComponent)
 from ..component_id import ComponentID
 from ..data import Data
 from ..parse import ParsedCommand, ParsedComponentLink
@@ -403,3 +404,49 @@ def test_coordinate_component_1d_coord():
 
     data = Data(flux=np.random.random(5), coords=wcs, label='data')
     np.testing.assert_equal(data['Frequency'], [1, 2, 3, 4, 5])
+
+
+class TestExtendedComponent(object):
+
+    def setup_method(self, method):
+        poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
+        poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
+        poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
+        poly_4 = Polygon([(10, 20), (15, 20), (15, 30), (10, 30), (12, 25)])
+
+        polygons = MultiPolygon([poly_3, poly_4])
+
+        polys = np.array([poly_1, poly_2, polygons])
+
+        representative_points = [s.representative_point() for s in polys]
+
+        cen_x_id = ComponentID('x')
+        cen_y_id = ComponentID('y')
+
+        center_x = Component(np.array([s.x for s in representative_points]))
+        center_y = Component(np.array([s.y for s in representative_points]))
+
+        self.reg_comp_2d_poly = ExtendedComponent(polys, parent_component_ids=[cen_x_id, cen_y_id])
+
+        circle_1 = Point(1.0, 0.0).buffer(1)
+        circle_2 = Point(2.0, 3.0).buffer(2)
+
+        polys = np.array([circle_1, circle_2])
+
+        representative_points = [s.representative_point() for s in polys]
+
+    def test_autodetection(self):
+        assert Component.autotyped(self.array_data).categorical
+        assert Component.autotyped(self.list_data).categorical
+
+        x = np.array([True, False, True, False])
+        assert not Component.autotyped(x).categorical
+
+        x = np.array([1, 2, 3, 4])
+        assert not Component.autotyped(x).categorical
+
+        x = np.array(['1', '2', '3', '4'])
+        assert not Component.autotyped(x).categorical
+
+        d = Data(x=['a', 'b', 'c'])
+        assert d.get_component('x').categorical
