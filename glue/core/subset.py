@@ -5,7 +5,8 @@ import operator
 import numpy as np
 
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, Projected3dROI)
+                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, CircularAnnulusROI,
+                           Projected3dROI)
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -807,6 +808,14 @@ class RangeSubsetState(SubsetState):
         x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
         return result
+
+    def center(self):
+        return (self.hi - self.lo) * 0.5 + self.lo
+
+    def move_to(self, new_cen):
+        dx = new_cen - self.center()
+        self.lo = self.lo + dx
+        self.hi = self.hi + dx
 
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
@@ -2018,7 +2027,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_catego
 
         # The selection is polygon-like or requires a pretransform and components are numerical
 
-        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI)):
+        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI,
+                                CircularAnnulusROI)):
             roi = PolygonalROI(*roi.to_polygon())
 
         subset_state = RoiSubsetState()
