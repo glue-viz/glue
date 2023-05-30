@@ -76,7 +76,6 @@ class LayerArtistModel(PythonListModel):
 
         return result
 
-
     def setData(self, index, value, role):
         if not index.isValid():
             return False
