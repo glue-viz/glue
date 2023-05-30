@@ -683,6 +683,17 @@ def test_table_widget_filter(tmpdir):
 
     check_values_and_color(model, data, colors)
 
+    widget.state.filter_att = d.components[2]
+    widget.state.filter = 'cat'
+
+    data = {'a': [3],
+            'b': ['cat'],
+            'c': ['fluffball']}
+
+    colors = ['#aa0000']
+
+    check_values_and_color(model, data, colors)
+
 
 def test_table_widget_session_filter(tmpdir):
 
