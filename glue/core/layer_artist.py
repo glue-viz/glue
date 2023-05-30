@@ -228,6 +228,12 @@ class LayerArtistBase(PropertySetMixin, metaclass=ABCMeta):
             self._changed = True
             self._state = state
 
+    def update_component_limits(self, components_changed):
+        """
+        Update component limits for this layer
+        """
+        pass
+
     def __str__(self):
         return "%s for %s" % (self.__class__.__name__, self.layer.label)
 

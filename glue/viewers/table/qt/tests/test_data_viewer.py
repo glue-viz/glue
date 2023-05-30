@@ -6,7 +6,7 @@ from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt
 
 from glue.utils.qt import get_qapp, process_events
-from glue.core import Data, DataCollection
+from glue.core import Data, DataCollection, BaseData
 from glue.utils.qt import qt_to_mpl_color
 from glue.app.qt import GlueApplication
 
@@ -668,6 +668,31 @@ def test_table_widget_filter(tmpdir):
     widget.state.filter_att = d.components[2]
     assert widget.toolbar.active_tool is None
 
+    # Check that disabling the full dataset means we only see the subset
+    # This is a regression test since filtering originally broke this.
+    widget.state.filter = ''
+    for layer_artist in widget.layers:
+        if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
+            layer_artist.visible = False
+
+    data = {'a': [3, 4, 5],
+            'b': ['cat', 'dog', 'fish'],
+            'c': ['fluffball', 'spot', 'moby']}
+
+    colors = ['#aa0000', '#aa0000', '#aa0000']
+
+    check_values_and_color(model, data, colors)
+
+    widget.state.filter_att = d.components[2]
+    widget.state.filter = 'cat'
+
+    data = {'a': [3],
+            'b': ['cat'],
+            'c': ['fluffball']}
+
+    colors = ['#aa0000']
+
+    check_values_and_color(model, data, colors)
 
 def test_table_widget_session_filter(tmpdir):
 

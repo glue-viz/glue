@@ -197,6 +197,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
                 if DASK_INSTALLED and isinstance(mask, da.Array):
                     mask = mask.compute()
                 visible |= mask
+        if self.filter_mask is not None:
+            visible &= self.filter_mask[self.order]
 
         self.order_visible = self.order[visible]
 

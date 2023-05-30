@@ -13,7 +13,7 @@ except ImportError:
     DASK_INSTALLED = False
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
-           'CoordinateComponent', 'DateTimeComponent']
+           'CoordinateComponent', 'DateTimeComponent', 'ExtendedComponent']
 
 
 class Component(object):
@@ -104,6 +104,13 @@ class Component(object):
     def datetime(self):
         """
         Whether or not or not the datatype is a date/time
+        """
+        return False
+
+    @property
+    def extended(self):
+        """
+        Whether or not or not the datatype is extended
         """
         return False
 
@@ -473,6 +480,97 @@ class CategoricalComponent(Component):
         """
 
         return pd.Series(self.labels, dtype=object, **kwargs)
+
+
+class ExtendedComponent(Component):
+    """
+    Container for data that describes an extent, region, or range
+
+    This component can be used when a dataset describes regions, perhaps
+    with information about those regions, and it does not make sense to
+    convert all those regions to glue subsets.
+
+    Data loaders are required to know how to provide these extended regions
+    as lists of Shapely objects and explicitly create these components.
+    If a tabular dataset provides e.g. a range over another component or a
+    circular region then an ExtendedComponent needs to be explicitly created
+    from these definitions.
+
+    A circular region can be represented as:
+
+        >>> circle = shapely.Point(x, y).buffer(rad)
+
+    This provides a polygon approximation of a circle, which can be made more
+    exact by providing quad_segs to buffer (default is 16, provide >16 for more
+    precision).
+
+    A range in one dimension can be represented as:
+
+        >>> range = shapely.LineString([[x0,0],[x1,0]])
+
+    This is a bit of an odd representation, since we are forced to specify a y
+    coordinate for this line. We adopt a convention of y == 0 but this should
+    not be required. For something like a very large number of ranges over the
+    gene (e.g. genes) this might be more expensive a representation than
+    we need or want.
+
+    Data Viewers can choose to implement custom Layer Artists for Data objects
+    with extended components. Since we need to create a LayerArtist when we add
+    the data, this requires a Data Viewer to know whether it is displaying the
+    ExtendedComponent when the Data is added.
+
+    NOTE that this implementation does not support regions in more than
+    two dimensions. (Shapely has partial support for 3D shapes, but not more).
+
+    Geopandas plots Shapely objects in a somewhat optimized way
+    https://github.com/geopandas/geopandas/blob/00e3748c987f5b9a14b5df5233421710811d75bf/geopandas/plotting.py#L323
+    Matplotlib has some notes on performance increases:
+    https://matplotlib.org/stable/users/explain/performance.html
+
+    How to draw ellipses using Shapely
+    https://stackoverflow.com/questions/13105915/draw-an-ellipse-using-shapely
+
+    Parameters
+    ----------
+    data : :class:`~shapely.Geometry`
+        The underlying array of Shapely geometries
+    parent_components: `list`
+        The list of regular components over which the Shapely geometries extend
+    units : `str`, optional
+        Unit description.
+    """
+
+    def __init__(self, data, parent_component_ids=[], units=None):
+        import shapely
+        # Is this expensive for large data sets?
+        if not all(isinstance(x, shapely.Geometry) for x in data):
+            raise TypeError(
+                "Input data for a ExtendedComponent should a list of shapely.Geometry objects"
+            )
+        if len(parent_component_ids) == 2:
+            self.parent_component_id_x = parent_component_ids[0]
+            self.parent_component_id_y = parent_component_ids[1]
+        elif len(parent_component_ids) == 1:
+            self.parent_component_id_x = parent_component_ids[0]
+            self.parent_component_id_y = None
+        self.units = units
+        self._data = data
+
+    @property
+    def extended(self):
+        return True
+
+    @property
+    def numeric(self):
+        return False
+
+    @property
+    def datetime(self):
+        return False
+
+    @property
+    def categorical(self):
+        return False
 
 
 class DateTimeComponent(Component):

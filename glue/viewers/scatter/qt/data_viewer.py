@@ -15,7 +15,9 @@ __all__ = ['ScatterViewer']
 class ScatterViewer(MatplotlibScatterMixin, MatplotlibDataViewer):
 
     LABEL = '2D Scatter'
-    _layer_style_widget_cls = ScatterLayerStyleEditor
+    _layer_style_widget_cls = {
+        ScatterLayerArtist: ScatterLayerStyleEditor,
+    }
     _state_cls = ScatterViewerState
     _options_cls = ScatterOptionsWidget
     _data_artist_cls = ScatterLayerArtist

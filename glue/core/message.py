@@ -182,7 +182,10 @@ class DataUpdateMessage(DataMessage):
 
 
 class NumericalDataChangedMessage(DataMessage):
-    pass
+
+    def __init__(self, sender, components_changed, tag=None):
+        super(NumericalDataChangedMessage, self).__init__(sender, tag=tag)
+        self.components_changed = components_changed
 
 
 class DataCollectionMessage(Message):
