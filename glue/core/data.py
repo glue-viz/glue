@@ -1981,7 +1981,7 @@ class Data(BaseCartesianData):
         # For now, compute dask arrays at this point. In future we could delegate
         # the histogram calculation to dask. The extra call to
         # np.asarray is to coerce dask arrays read from
-        # disk with lazy loaders to definitely be numpy arrays 
+        # disk with lazy loaders to definitely be numpy arrays
         if DASK_INSTALLED:
             if isinstance(x, da.Array):
                 x = np.asarray(x.compute())
