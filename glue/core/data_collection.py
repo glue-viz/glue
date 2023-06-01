@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 
+import numpy as np
+
 from glue.core.message import (DataCollectionAddMessage,
                                DataCollectionDeleteMessage,
                                ComponentsChangedMessage)
@@ -10,6 +12,8 @@ from glue.core.hub import Hub, HubListener
 from glue.core.coordinates import WCSCoordinates
 from glue.config import settings, data_translator
 from glue.utils import as_list, common_prefix
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.subset import MultiMaskSubsetState
 
 
 __all__ = ['DataCollection']
@@ -108,22 +112,82 @@ class DataCollection(HubListener):
                 self.append(d)
         self._sync_link_manager()
 
-    def remove(self, data):
+    def remove(self, data, freeze_subsets=False):
         """
         Remove a data set from the collection, if present.
 
         Emits a DataCollectionDeleteMessage.
 
+        Parameters
+        ----------
         data : :class:`~glue.core.data.Data`
             The data object to remove.
+        freeze_subsets : bool
+            By default, subsets relying on attributes defined in the dataset
+            being removed are also removed. However, if ``freeze_subsets`` is
+            set to `True`, the subsets are computed one last time for all other
+            datasets and the subset states are set to be mask-based. Note that
+            this may be slow if large datasets are present and should be used
+            with caution.
         """
+
         if data not in self._data:
             return
         self._data.remove(data)
+
+        if freeze_subsets:
+
+            # Some subsets may rely on attributes from the dataset that has been
+            # removed, or might rely on links that used to transit through the
+            # removed dataset. If so, then we should replace the subset state for those
+            # subset states with a 'static' subset mask. The easiest way to know
+            # which subsets no longer work is to compute them before and after and see
+            # which ones stop working. This can be quite inefficient but should be
+            # reliable.
+
+            all_masks = []
+
+            for isubset, subset_group in enumerate(self.subset_groups):
+
+                masks = {}
+                for other_data in self:
+                    if other_data is not data:
+                        try:
+                            masks[other_data.uuid] = other_data.subsets[isubset].to_mask()
+                        except IncompatibleAttribute:
+                            masks[other_data.uuid] = None
+
+                all_masks.append(masks)
+
         Registry().unregister(data, Data)
+
         if self.hub:
             msg = DataCollectionDeleteMessage(self, data)
             self.hub.broadcast(msg)
+
+        if freeze_subsets:
+
+            # Now that links should have been removed, try and compute subsets again
+
+            for isubset, subset_group in enumerate(self.subset_groups):
+
+                masks = {}
+                any_new_failing = False
+                for other_data in self:
+                    if other_data is not data:
+                        if all_masks[isubset][other_data.uuid] is None:
+                            masks[other_data.uuid] = None
+                        else:
+                            try:
+                                masks[other_data.uuid] = other_data.subsets[isubset].to_mask()
+                            except IncompatibleAttribute:
+                                masks[other_data.uuid] = all_masks[isubset][other_data.uuid]
+                                any_new_failing = True
+                            else:
+                                pass
+
+                if any_new_failing:
+                    subset_group.subset_state = MultiMaskSubsetState(masks)
 
     def clear(self):
         with self._ignore_link_manager_update():

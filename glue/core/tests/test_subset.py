@@ -24,7 +24,7 @@ from ..subset import (Subset, SubsetState,
                       CategorySubsetState, MaskSubsetState,
                       CategoricalROISubsetState2D, RoiSubsetState3d,
                       CategoricalMultiRangeSubsetState, FloodFillSubsetState,
-                      SliceSubsetState, MultiOrState)
+                      SliceSubsetState, MultiOrState, MultiMaskSubsetState)
 from ..subset import AndState
 from ..subset import InvertState
 from ..subset import OrState
@@ -1128,7 +1128,8 @@ def test_roi_reduction():
     assert_equal(out[:, :, 1, 1], expected_slice)
 
 
-def test_subset_on_data_removal():
+@pytest.mark.parametrize('freeze_subsets', [False, True])
+def test_subset_on_data_removal(freeze_subsets):
 
     # This checks what happens when multiple datasets are linked
     # and one of the datasets is removed. There are two separate
@@ -1161,23 +1162,54 @@ def test_subset_on_data_removal():
 
     dc.add_link(link2)
 
-    # We now define a subset using d2
+    # We now define a subset using d1 and one using d2
 
-    subset_state = RangeSubsetState(3.5, 6.5, att=d2.pixel_component_ids[0])
-    sub = dc.new_subset_group(label='subset', subset_state=subset_state)
+    subset_state1 = RangeSubsetState(1.5, 3.5, att=d1.pixel_component_ids[0])
+    dc.new_subset_group(label='subset1', subset_state=subset_state1)
+
+    subset_state2 = RangeSubsetState(3.5, 6.5, att=d2.pixel_component_ids[0])
+    dc.new_subset_group(label='subset2', subset_state=subset_state2)
 
     # Check that the masks all look sensible
 
-    assert_equal(d1.subsets[0].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
-    assert_equal(d2.subsets[0].to_mask(), [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0])
-    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+    assert_equal(d1.subsets[0].to_mask(), [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+    assert_equal(d2.subsets[0].to_mask(), [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0])
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0])
+
+    assert_equal(d1.subsets[1].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+    assert_equal(d2.subsets[1].to_mask(), [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0])
+    assert_equal(d3.subsets[1].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
 
     # Now remove d2
 
-    dc.remove(d2)
+    dc.remove(d2, freeze_subsets=freeze_subsets)
 
-    # At this point we want the masks on d1 and d3 to still work. This requires
-    # changing the subset state to a MultiMaskSubsetState
+    if freeze_subsets:
 
-    assert_equal(d1.subsets[0].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
-    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+        # At this point we want the masks on d1 and d3 to still work. This requires
+        # changing the subset state to a MultiMaskSubsetState for both links.
+
+        assert isinstance(dc.subset_groups[0].subset_state, MultiMaskSubsetState)
+        assert isinstance(dc.subset_groups[1].subset_state, MultiMaskSubsetState)
+
+        assert_equal(d1.subsets[0].to_mask(), [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+        assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0])
+
+        assert_equal(d1.subsets[1].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+        assert_equal(d3.subsets[1].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+
+    else:
+
+        assert not isinstance(dc.subset_groups[0].subset_state, MultiMaskSubsetState)
+        assert not isinstance(dc.subset_groups[1].subset_state, MultiMaskSubsetState)
+
+        assert_equal(d1.subsets[0].to_mask(), [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+
+        with pytest.raises(IncompatibleAttribute):
+            assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0])
+
+        with pytest.raises(IncompatibleAttribute):
+            assert_equal(d1.subsets[1].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+
+        with pytest.raises(IncompatibleAttribute):
+            assert_equal(d3.subsets[1].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
