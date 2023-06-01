@@ -1126,3 +1126,58 @@ def test_roi_reduction():
     assert_equal(out[:, :, 0, 1], expected_slice)
     assert_equal(out[:, :, 1, 0], expected_slice)
     assert_equal(out[:, :, 1, 1], expected_slice)
+
+
+def test_subset_on_data_removal():
+
+    # This checks what happens when multiple datasets are linked
+    # and one of the datasets is removed. There are two separate
+    # things that we need to think about when removing a dataset:
+    #
+    # * Subsets defined using components from that dataset will need
+    #   to be removed or updated if those components no longer exist
+    # * Links that 'hopped' through the dataset that has been removed
+    #   will be broken unless we fix this somehow.
+    #
+    # We start off by defining three datasets with simple links:
+
+    d1 = Data(a=np.arange(11))
+    d2 = Data(b=np.arange(11) + 10)
+    d3 = Data(b=np.arange(11) + 20)
+
+    dc = DataCollection([d1, d2, d3])
+
+    link1 = ComponentLink(d2.pixel_component_ids,
+                          d1.pixel_component_ids[0],
+                          using=lambda x: x - 3,
+                          inverse=lambda x: x + 3)
+
+    dc.add_link(link1)
+
+    link2 = ComponentLink(d3.pixel_component_ids,
+                          d2.pixel_component_ids[0],
+                          using=lambda x: x - 3,
+                          inverse=lambda x: x + 3)
+
+    dc.add_link(link2)
+
+    # We now define a subset using d2
+
+    subset_state = RangeSubsetState(3.5, 6.5, att=d2.pixel_component_ids[0])
+    sub = dc.new_subset_group(label='subset', subset_state=subset_state)
+
+    # Check that the masks all look sensible
+
+    assert_equal(d1.subsets[0].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+    assert_equal(d2.subsets[0].to_mask(), [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0])
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
+
+    # Now remove d2
+
+    dc.remove(d2)
+
+    # At this point we want the masks on d1 and d3 to still work. This requires
+    # changing the subset state to a MultiMaskSubsetState
+
+    assert_equal(d1.subsets[0].to_mask(), [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0])
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0])
