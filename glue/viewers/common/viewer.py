@@ -370,6 +370,9 @@ class Viewer(BaseViewer):
     def _update_appearance_from_settings(self, message=None):
         pass
 
+    def __str__(self):
+        return self.state.title or self.LABEL
+
     def __gluestate__(self, context):
         return dict(state=self.state.__gluestate__(context),
                     session=context.id(self._session),

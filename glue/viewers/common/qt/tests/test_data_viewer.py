@@ -93,6 +93,33 @@ class BaseTestDataViewer(object):
         app.close()
         app2.close()
 
+    def test_correct_window_title(self):
+
+        # check that the viewer is displaying the correct title
+
+        d = Data(x=np.random.random((2,) * self.ndim))
+        dc = DataCollection([d])
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(self.widget_cls, data=d)
+        w.state.title = "My Viewer"
+        assert w.parent().windowTitle() == "My Viewer"
+
+    def test_viewer_title_tool(self):
+
+        # check that the viewer title tool correctly updates the title
+
+        d = Data(x=np.random.random((2,) * self.ndim))
+        dc = DataCollection([d])
+        app = GlueApplication(dc)
+        w = app.new_data_viewer(self.widget_cls, data=d)
+
+        tool = w.toolbar.tools["window"].subtools[1]
+        with patch('glue.viewers.common.qt.tools.get_text') as gt:
+            gt.return_value = "My Viewer"
+            tool.activate()
+        assert w.state.title == "My Viewer"
+        assert w.parent().windowTitle() == "My Viewer"
+
 
 class TestDataViewerScatter(BaseTestDataViewer):
     widget_cls = ScatterViewer
