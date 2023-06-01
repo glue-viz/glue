@@ -187,16 +187,15 @@ class DataTableModel(QtCore.QAbstractTableModel):
                     return
 
         # If not then we need to show only the rows with visible subsets
-        if self.filter_mask is None:
-            visible = np.zeros(self.order.shape, dtype=bool)
-        else:
-            visible = self.filter_mask[self.order]
+        visible = np.zeros(self.order.shape, dtype=bool)
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
                 mask = layer_artist.layer.to_mask()[self.order]
                 if DASK_INSTALLED and isinstance(mask, da.Array):
                     mask = mask.compute()
                 visible |= mask
+        if self.filter_mask is not None:
+            visible &= self.filter_mask[self.order]
 
         self.order_visible = self.order[visible]
 
