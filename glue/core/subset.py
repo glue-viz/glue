@@ -1255,6 +1255,43 @@ class MaskSubsetState(SubsetState):
                    [context.object(c) for c in rec['cids']])
 
 
+class MultiMaskSubsetState(SubsetState):
+    """
+    A subset state that can include a different mask for different datasets.
+
+    Parameters
+    ----------
+    masks : dict
+        A dictionary mapping data UUIDs to boolean arrays with the same
+        dimensions as the data arrays.
+    """
+
+    def __init__(self, masks=None):
+        super(MultiMaskSubsetState, self).__init__()
+        self._masks = masks
+
+    def to_mask(self, data, view=None):
+        if data.uuid in self._masks:
+            mask = self._masks[data.uuid]
+            if view is not None:
+                mask = mask[view]
+            return mask
+        else:
+            raise IncompatibleAttribute()
+
+    def copy(self):
+        return MultiMaskSubsetState(masks=self._masks)
+
+    def __gluestate__(self, context):
+        serialized = {key: context.do(value) for key, value in self._masks.items()}
+        return {'masks': serialized}
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        masks = {key: context.object(value) for key, value in rec['masks'].items()}
+        return cls(masks=masks)
+
+
 class SliceSubsetState(SubsetState):
     """
     A subset defined by a set of array slices.
