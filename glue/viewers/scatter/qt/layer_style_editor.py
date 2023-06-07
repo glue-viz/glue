@@ -4,6 +4,7 @@ import numpy as np
 
 from qtpy import QtWidgets, QtGui
 from qtpy.QtCore import Qt
+from echo import delay_callback
 
 from glue.core import BaseData
 from echo.qt import autoconnect_callbacks_to_qt, connect_value
@@ -49,6 +50,8 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self.layer_state.viewer_state.add_callback('x_att', self._update_checkboxes)
         self.layer_state.viewer_state.add_callback('y_att', self._update_checkboxes)
+        self.layer_state.add_callback('cmap_att', self._update_cmaps, priority=10000)
+
         if hasattr(self.layer_state.viewer_state, 'plot_mode'):
             self.layer_state.viewer_state.add_callback('plot_mode', self._update_vectors_visible)
 
@@ -68,8 +71,23 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
 
         self._update_warnings()
 
-    def _update_warnings(self, *args):
+    def _update_cmaps(self, *args):
 
+        with delay_callback(self.layer_state, 'cmap'):
+            if isinstance(self.layer_state.layer, BaseData):
+                layer = self.layer_state.layer
+            else:
+                layer = self.layer_state.layer.data
+
+            actual_component = layer.get_component(self.layer_state.cmap_att)
+            if getattr(actual_component, 'preferred_cmap', False):
+                cmap = actual_component.preferred_cmap
+                name = actual_component.cmap_name
+                self.ui.combodata_cmap.refresh_options(colormaps=[(name, cmap)])
+            else:
+                self.ui.combodata_cmap.refresh_options()
+
+    def _update_warnings(self, *args):
         if self.layer_state.layer is None:
             n_points = 0
         else:

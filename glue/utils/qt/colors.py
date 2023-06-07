@@ -195,6 +195,18 @@ class QColormapCombo(QtWidgets.QComboBox):
             self.addItem(label, userData=UserDataWrapper(cmap))
         self._update_icons()
 
+    def refresh_options(self, colormaps=None):
+        if colormaps is None:
+            self.clear()
+            for label, cmap in config.colormaps:
+                self.addItem(label, userData=UserDataWrapper(cmap))
+            self._update_icons()
+        else:
+            self.clear()
+            for label, cmap in colormaps:
+                self.addItem(label, userData=UserDataWrapper(cmap))
+            self._update_icons()
+
     def _update_icons(self):
         self.setIconSize(QtCore.QSize(self.width(), 15))
         for index in range(self.count()):
