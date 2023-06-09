@@ -11,6 +11,7 @@ class ViewerState(State):
     """
 
     layers = ListCallbackProperty(docstring='A collection of all layers in the viewer')
+    title = CallbackProperty(docstring='The title of the viewer')
 
     @property
     def layers_data(self):

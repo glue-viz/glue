@@ -5,6 +5,7 @@ import os
 import pytest
 import numpy as np
 
+from astropy import units as u
 from astropy.wcs import WCS
 
 from numpy.testing import assert_equal, assert_allclose
@@ -20,10 +21,23 @@ from glue.viewers.profile.tests.test_state import SimpleCoordinates
 from glue.core.tests.test_state import clone
 from glue.core.state import GlueUnSerializer
 from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
+from glue.config import settings, unit_converter
 
 from ..data_viewer import ProfileViewer
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
+
+
+def setup_function(func):
+    func.ORIGINAL_UNIT_CONVERTER = settings.UNIT_CONVERTER
+
+
+def teardown_function(func):
+    settings.UNIT_CONVERTER = func.ORIGINAL_UNIT_CONVERTER
+
+
+def teardown_module():
+    unit_converter._members.pop('test-spectral2')
 
 
 class TestProfileCommon(BaseTestMatplotlibDataViewer):
@@ -323,7 +337,19 @@ class TestProfileViewer(object):
         assert self.viewer.layers[0].mpl_artists[0].get_visible() is False
 
 
+@unit_converter('test-spectral2')
+class SpectralUnitConverter:
+
+    def equivalent_units(self, data, cid, units):
+        return map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True, equivalencies=u.spectral()))
+
+    def to_unit(self, data, cid, values, original_units, target_units):
+        return (values * u.Unit(original_units)).to_value(target_units, equivalencies=u.spectral())
+
+
 def test_unit_conversion():
+
+    settings.UNIT_CONVERTER = 'test-spectral2'
 
     wcs1 = WCS(naxis=1)
     wcs1.wcs.ctype = ['FREQ']
@@ -376,6 +402,12 @@ def test_unit_conversion():
     assert viewer.state.y_min == 1.
     assert viewer.state.y_max == 3.
 
+    # Change the limits to make sure they are always converted
+    viewer.state.x_min = 5e8
+    viewer.state.x_max = 4e9
+    viewer.state.y_min = 0.5
+    viewer.state.y_max = 3.5
+
     roi = XRangeROI(1.4e9, 2.1e9)
     viewer.apply_roi(roi)
 
@@ -396,10 +428,18 @@ def test_unit_conversion():
     assert_allclose(x, 2.99792458 / np.array([1, 2, 3]))
     assert_allclose(y, [2000, 1000, 3000])
 
-    assert viewer.state.x_min == 1.
-    assert viewer.state.x_max == 3.
+    assert viewer.state.x_min == 0.5
+    assert viewer.state.x_max == 4.
+
+    # Units get reset because they were originally 'native' and 'native' to a
+    # specific unit always trigger resetting the limits since different datasets
+    # might be converted in different ways.
     assert viewer.state.y_min == 1000.
     assert viewer.state.y_max == 3000.
+
+    # Now set the limits explicitly again and make sure in future they are converted
+    viewer.state.y_min = 500.
+    viewer.state.y_max = 3500.
 
     roi = XRangeROI(0.5, 1.2)
     viewer.apply_roi(roi)
@@ -409,3 +449,106 @@ def test_unit_conversion():
 
     assert len(d2.subsets) == 1
     assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
+
+    viewer.state.x_display_unit = 'cm'
+    viewer.state.y_display_unit = 'Jy'
+
+    roi = XRangeROI(15, 35)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
+
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 1])
+
+    assert_allclose(viewer.state.x_min, (4 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
+    assert_allclose(viewer.state.x_max, (0.5 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
+    assert_allclose(viewer.state.y_min, 0.5)
+    assert_allclose(viewer.state.y_max, 3.5)
+
+
+def test_unit_conversion_limits():
+
+    # Regression test for issues that happened when changing attributes with
+    # different units.
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = ['A', 'B']
+    wcs1.wcs.crval = [1, 3]
+    wcs1.wcs.cdelt = [1, 2]
+    wcs1.wcs.crpix = [1, 1]
+    wcs1.wcs.cunit = ['deg', 'm']
+
+    d1 = Data(f1=[[1, 2, 3]], f2=[[10, 20, 30]])
+    d1.get_component('f1').units = 'Jy'
+    d1.get_component('f2').units = 's'
+    d1.coords = wcs1
+
+    app = GlueApplication()
+    session = app.session
+
+    data_collection = session.data_collection
+    data_collection.append(d1)
+
+    viewer = app.new_data_viewer(ProfileViewer)
+    viewer.add_data(d1)
+
+    assert viewer.state.x_att is d1.id['B']
+
+    assert viewer.state.x_min == 3.0
+    assert viewer.state.x_max == 3.0
+    assert viewer.state.y_min == 0.
+    assert viewer.state.y_max == 1.
+
+    # Explicitly set unit on y axis to enable unit conversion
+    viewer.state.y_display_unit = 'Jy'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [3])
+    assert_allclose(viewer.state.layers[0].profile[1], [3])
+
+    # Change the limits to see if they are updated or reset
+    viewer.state.x_min = 0.
+    viewer.state.x_max = 10
+    viewer.state.y_min = 0.0
+    viewer.state.y_max = 4.0
+
+    viewer.state.x_display_unit = 'cm'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [300])
+    assert_allclose(viewer.state.layers[0].profile[1], [3])
+
+    assert_allclose(viewer.state.x_min, 0)
+    assert_allclose(viewer.state.x_max, 1000)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4)
+
+    viewer.state.y_display_unit = 'mJy'
+
+    assert_allclose(viewer.state.layers[0].profile[0], [300])
+    assert_allclose(viewer.state.layers[0].profile[1], [3000])
+
+    assert_allclose(viewer.state.x_min, 0)
+    assert_allclose(viewer.state.x_max, 1000)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4000)
+
+    viewer.state.x_att = d1.id['A']
+
+    assert_allclose(viewer.state.layers[0].profile[0], [1, 2, 3])
+    assert_allclose(viewer.state.layers[0].profile[1], [1000, 2000, 3000])
+
+    assert_allclose(viewer.state.x_min, 1)
+    assert_allclose(viewer.state.x_max, 3)
+    assert_allclose(viewer.state.y_min, 0)
+    assert_allclose(viewer.state.y_max, 4000)
+
+    viewer.state.layers[0].attribute = d1.id['f2']
+
+    assert_allclose(viewer.state.layers[0].profile[0], [1, 2, 3])
+    assert_allclose(viewer.state.layers[0].profile[1], [10, 20, 30])
+
+    assert_allclose(viewer.state.x_min, 1)
+    assert_allclose(viewer.state.x_max, 3)
+    assert_allclose(viewer.state.y_min, 10)
+    assert_allclose(viewer.state.y_max, 30)

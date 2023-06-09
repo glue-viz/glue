@@ -1,5 +1,118 @@
 # Full changelog
 
+## v1.11.0 - 2023-05-25
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- New CircularAnnulusROI class to represent circular annulus ROI by @pllim in https://github.com/glue-viz/glue/pull/2403
+- Add center and move_to methods to RangeSubsetState by @pllim in https://github.com/glue-viz/glue/pull/2404
+- Add filter/search to table viewer by @jfoster17 in https://github.com/glue-viz/glue/pull/2392
+- Add functionality for moving viewers between tabs by @Carifio24 in https://github.com/glue-viz/glue/pull/2387
+
+#### Bug Fixes
+
+- Disallow broken qtconsole 5.4.2 by @jfoster17 in https://github.com/glue-viz/glue/pull/2396
+- Fix bugs with unit conversion when changing x/y attributes by @astrofrog in https://github.com/glue-viz/glue/pull/2400
+- Make sure **getitem** always returns a numpy array by @jfoster17 in https://github.com/glue-viz/glue/pull/2399
+
+#### Other Changes
+
+- MNT: Remove unused .travis.yml by @pllim in https://github.com/glue-viz/glue/pull/2401
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.10.0...v1.11.0
+
+## v1.10. - 2023-05-04
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Fix subset creation with unit flip by @astrofrog in https://github.com/glue-viz/glue/pull/2393
+- Avoid resetting limits when changing display units in profile viewer by @astrofrog in https://github.com/glue-viz/glue/pull/2394
+
+#### Documentation
+
+- Fix bad connections in tutorial examples by @Carifio24 in https://github.com/glue-viz/glue/pull/2389
+
+#### Other Changes
+
+- Make ROI.move_to() behave consistently and expose it at subset_state level by @pllim in https://github.com/glue-viz/glue/pull/2391
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.9.1...v1.10.0
+
+## v1.9.1 - 2023-04-13
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+- Use new location for pandas.testing by @jfoster17 in https://github.com/glue-viz/glue/pull/2381
+- Only force reference data change if message indicates that numerical values of data have changed by @astrofrog in https://github.com/glue-viz/glue/pull/2385
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.9.0...v1.9.1
+
+## v1.9.0 - 2023-04-03
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Add a LinkSameWithUnits class that links respecting units by @astrofrog in https://github.com/glue-viz/glue/pull/2379
+
+#### Bug Fixes
+
+- Save legend state by @Carifio24 in https://github.com/glue-viz/glue/pull/2380
+- Fix bugs related to generic BaseCartesianData subclasses by @astrofrog in https://github.com/glue-viz/glue/pull/2344
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.8.1...v1.9.0
+
+## v1.8.1 - 2023-03-23
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Fixed a bug in the plugin iteration on Python 3.8 and 3.9 by @neutrinoceros in https://github.com/glue-viz/glue/pull/2377
+- Avoid interference of ROI patches with legend auto-placement by @dhomeier in https://github.com/glue-viz/glue/pull/2370
+- Add pretransform for full-sphere selection by @Carifio24 in https://github.com/glue-viz/glue/pull/2360
+- Only recreate table model when Data layer changes by @Carifio24 in https://github.com/glue-viz/glue/pull/2372
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.8.0...v1.8.1
+
+## v1.8.0 - 2023-03-20
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Relax longitude range in fullsphere projections by @Carifio24 in https://github.com/glue-viz/glue/pull/2348
+
+#### Bug Fixes
+
+- Update polar log transform test values to correct matplotlib 3.7 representation by @Carifio24 in https://github.com/glue-viz/glue/pull/2366
+- Fix broken link editor under Qt5 by @jfoster17 in https://github.com/glue-viz/glue/pull/2375
+
+#### Documentation
+
+- DOC: Fix equivalent_units in examples by @pllim in https://github.com/glue-viz/glue/pull/2369
+
+#### Other Changes
+
+- Update link for slack invite by @astrofrog in https://github.com/glue-viz/glue/pull/2362
+- Update stable version of standalone app to 2023.02.0 by @astrofrog in https://github.com/glue-viz/glue/pull/2363
+- MNT: drop runtime dependency on pkg_resources (setuptools) by @neutrinoceros in https://github.com/glue-viz/glue/pull/2365
+- BUG: handle deprecation warning from numpy 1.25 (np.product is deprecated in favour of np.prod) by @neutrinoceros in https://github.com/glue-viz/glue/pull/2371
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.7.0...v1.8.0
+
 ## v1.7.0 - 2023-02-02
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -568,31 +681,101 @@
 - - `glue.core.application_base.ViewerBase` has been removed in favor of
 - 
 - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - 
 - 
 - - `glue.viewers.common.viewer.Viewer`.
 - 
 - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - 
 - 
 - - `glue.viewers.common.viewer.Viewer` is now where the base logic is defined
 - 
 - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - - for using state classes in viewers (instead of
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - 
 - 
 - - `glue.viewers.common.qt.DataViewerWithState`).
 - 
 - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - 
 - 
 - - `glue.viewers.common.qt.DataViewerWithState` is now deprecated.
 - 
 - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - - 
+- 
+- 
+- 
+- 
+- 
+- 
+- 
 - 
 - 
 - 

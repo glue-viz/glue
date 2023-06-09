@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 import numpy as np
 from matplotlib.patches import Ellipse, Polygon, Rectangle, Path as MplPath, PathPatch
@@ -12,7 +13,7 @@ from glue.utils import points_inside_poly, iterate_chunks, rotation_matrix_2d
 np.seterr(all='ignore')
 
 
-__all__ = ['Roi', 'RectangularROI', 'CircularROI', 'PolygonalROI',
+__all__ = ['Roi', 'RectangularROI', 'CircularROI', 'CircularAnnulusROI', 'PolygonalROI',
            'AbstractMplRoi', 'MplRectangularROI', 'MplCircularROI',
            'MplPolygonalROI', 'MplXRangeROI', 'MplYRangeROI',
            'XRangeROI', 'RangeROI', 'YRangeROI', 'VertexROIBase',
@@ -53,7 +54,7 @@ def pixel_to_axes(axes, x, y):
     return axes.transAxes.inverted().transform(xy)
 
 
-class Roi(object):  # pragma: no cover
+class Roi:  # pragma: no cover
 
     """
     A geometrical 2D region of interest.
@@ -214,7 +215,7 @@ class RectangularROI(Roi):
     """
 
     def __init__(self, xmin=None, xmax=None, ymin=None, ymax=None, theta=None):
-        super(RectangularROI, self).__init__()
+        super().__init__()
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
@@ -363,7 +364,7 @@ class RangeROI(Roi):
         End value of the range.
     """
     def __init__(self, orientation, min=None, max=None):
-        super(RangeROI, self).__init__()
+        super().__init__()
 
         self.min = min
         self.max = max
@@ -447,17 +448,16 @@ class RangeROI(Roi):
 class XRangeROI(RangeROI):
 
     def __init__(self, min=None, max=None):
-        super(XRangeROI, self).__init__('x', min=min, max=max)
+        super().__init__('x', min=min, max=max)
 
 
 class YRangeROI(RangeROI):
 
     def __init__(self, min=None, max=None):
-        super(YRangeROI, self).__init__('y', min=min, max=max)
+        super().__init__('y', min=min, max=max)
 
 
 class CircularROI(Roi):
-
     """
     A 2D circular region of interest.
 
@@ -472,7 +472,7 @@ class CircularROI(Roi):
     """
 
     def __init__(self, xc=None, yc=None, radius=None):
-        super(CircularROI, self).__init__()
+        super().__init__()
         self.xc = xc
         self.yc = yc
         self.radius = radius
@@ -487,17 +487,20 @@ class CircularROI(Roi):
             y = np.asarray(y)
         return (x - self.xc) ** 2 + (y - self.yc) ** 2 < self.radius ** 2
 
-    def set_center(self, x, y):
+    def set_center(self, x, y):  # pragma: no cover
         """Set the center of the circular region"""
-        self.xc = x
-        self.yc = y
+        warnings.warn("set_center is deprecated and may be removed "
+                      "in a future release, use move_to", DeprecationWarning)
+        self.move_to(x, y)
 
     def set_radius(self, radius):
         """Set the radius of the circular region"""
         self.radius = radius
 
-    def get_center(self):
-        return self.xc, self.yc
+    def get_center(self):  # pragma: no cover
+        warnings.warn("get_center is deprecated and may be removed "
+                      "in a future release, use center", DeprecationWarning)
+        return self.center()
 
     def get_radius(self):
         return self.radius
@@ -509,13 +512,13 @@ class CircularROI(Roi):
         self.radius = 0.
 
     def defined(self):
-        return self.xc is not None and \
-            self.yc is not None and self.radius is not None
+        return (self.xc is not None and
+                self.yc is not None and self.radius is not None)
 
     def to_polygon(self):
         if not self.defined():
             return [], []
-        theta = np.linspace(0, 2 * np.pi, num=20)
+        theta = np.linspace(0, 2 * np.pi, num=100)
         x = self.xc + self.radius * np.cos(theta)
         y = self.yc + self.radius * np.sin(theta)
         return x, y
@@ -523,9 +526,12 @@ class CircularROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
-    def move_to(self, xdelta, ydelta):
-        self.xc += xdelta
-        self.yc += ydelta
+    def center(self):
+        return self.xc, self.yc
+
+    def move_to(self, x, y):
+        self.xc = x
+        self.yc = y
 
     def __gluestate__(self, context):
         return dict(xc=context.do(self.xc),
@@ -535,6 +541,97 @@ class CircularROI(Roi):
     @classmethod
     def __setgluestate__(cls, rec, context):
         return cls(xc=rec['xc'], yc=rec['yc'], radius=rec['radius'])
+
+
+class CircularAnnulusROI(Roi):
+    """
+    A 2D circular annulus region of interest.
+
+    Parameters
+    ----------
+    xc : float, optional
+        `x` coordinate of center.
+    yc : float, optional
+        `y` coordinate of center.
+    inner_radius : float, optional
+        Inner radius of the circular annulus.
+    outer_radius : float, optional
+        Outer radius of the circular annulus.
+    """
+    def __init__(self, xc=None, yc=None, inner_radius=None, outer_radius=None):
+        super().__init__()
+        self.xc = xc
+        self.yc = yc
+        self.inner_radius = inner_radius
+        self.outer_radius = outer_radius
+
+    def contains(self, x, y):
+        if not self.defined():
+            raise UndefinedROI
+
+        if not isinstance(x, np.ndarray):
+            x = np.asarray(x)
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y)
+
+        dx = x - self.xc
+        dy = y - self.yc
+        r = np.sqrt((dx * dx) + (dy * dy))
+        # Python likes to do inclusive for min limit and exclusive for max limit, so why not.
+        return (r >= self.inner_radius) & (r < self.outer_radius)
+
+    def reset(self):
+        """Reset the circular annulus region."""
+        self.xc = None
+        self.yc = None
+        self.inner_radius = None
+        self.outer_radius = None
+
+    def defined(self):
+        number = (float, int)
+        if (isinstance(self.xc, number) and isinstance(self.yc, number) and
+                isinstance(self.inner_radius, number) and isinstance(self.outer_radius, number) and
+                (self.inner_radius > 0) and (self.outer_radius > self.inner_radius)):
+            status = True
+        else:
+            status = False
+        return status
+
+    def to_polygon(self):
+        if not self.defined():
+            return [], []
+        theta = np.linspace(0, 2 * np.pi, num=100)
+        x_inner = self.xc + self.inner_radius * np.cos(theta)
+        y_inner = self.yc + self.inner_radius * np.sin(theta)
+        x_outer = self.xc + self.outer_radius * np.cos(theta)
+        y_outer = self.yc + self.outer_radius * np.sin(theta)
+        # theta=2pi=360deg=0deg --> x=r, y=0
+        x = np.concatenate((x_inner, x_outer[::-1], x_inner[0]), axis=None)
+        y = np.concatenate((y_inner, y_outer[::-1], y_inner[0]), axis=None)
+        return x, y
+
+    def transformed(self, xfunc=None, yfunc=None):
+        return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
+
+    def center(self):
+        return self.xc, self.yc
+
+    def move_to(self, x, y):
+        self.xc = x
+        self.yc = y
+
+    def __gluestate__(self, context):
+        return dict(xc=context.do(self.xc),
+                    yc=context.do(self.yc),
+                    inner_radius=context.do(self.inner_radius),
+                    outer_radius=context.do(self.outer_radius))
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        return cls(xc=rec['xc'],
+                   yc=rec['yc'],
+                   inner_radius=rec['inner_radius'],
+                   outer_radius=rec['outer_radius'])
 
 
 class EllipticalROI(Roi):
@@ -556,12 +653,12 @@ class EllipticalROI(Roi):
 
     Notes
     -----
-        The `radius_x`, `radius_y` properties refer to the semiaxes along the `x` and `y`
-        axes *before* any rotation is applied.
+    The `radius_x`, `radius_y` properties refer to the semiaxes along the `x` and `y`
+    axes *before* any rotation is applied.
     """
 
     def __init__(self, xc=None, yc=None, radius_x=None, radius_y=None, theta=None):
-        super(EllipticalROI, self).__init__()
+        super().__init__()
         self.xc = xc
         self.yc = yc
         self.radius_x = radius_x
@@ -619,13 +716,15 @@ class EllipticalROI(Roi):
                 self.radius_x is not None and
                 self.radius_y is not None)
 
-    def get_center(self):
-        return self.xc, self.yc
+    def get_center(self):  # pragma: no cover
+        warnings.warn("get_center is deprecated and may be removed "
+                      "in a future release, use center", DeprecationWarning)
+        return self.center()
 
     def to_polygon(self):
         if not self.defined():
             return [], []
-        theta = np.linspace(0, 2 * np.pi, num=20)
+        theta = np.linspace(0, 2 * np.pi, num=100)
         x = self.radius_x * np.cos(theta)
         y = self.radius_y * np.sin(theta)
         x, y = rotation_matrix_2d(self.theta) @ (x, y)
@@ -647,9 +746,12 @@ class EllipticalROI(Roi):
     def transformed(self, xfunc=None, yfunc=None):
         return PolygonalROI(*self.to_polygon()).transformed(xfunc=xfunc, yfunc=yfunc)
 
-    def move_to(self, xdelta, ydelta):
-        self.xc += xdelta
-        self.yc += ydelta
+    def center(self):
+        return self.xc, self.yc
+
+    def move_to(self, x, y):
+        self.xc = x
+        self.yc = y
 
     def rotate_to(self, theta):
         self.theta = 0 if theta is None else theta
@@ -686,7 +788,7 @@ class VertexROIBase(Roi):
     """
 
     def __init__(self, vx=None, vy=None):
-        super(VertexROIBase, self).__init__()
+        super().__init__()
         self.vx = [] if vx is None else list(vx)
         self.vy = [] if vy is None else list(vy)
         self.theta = 0
@@ -865,7 +967,18 @@ class PolygonalROI(VertexROIBase):
 
         return np.dot(xs, dxy) * scl + x0, np.dot(ys, dxy) * scl + y0
 
-    def move_to(self, xdelta, ydelta):
+    def center(self):
+        # centroid is more robust than mean, but
+        # for linear (1D) "polygons" centroid is not defined.
+        if self.area() == 0:
+            return self.mean()
+        else:
+            return self.centroid()
+
+    def move_to(self, new_x, new_y):
+        xcen, ycen = self.center()
+        xdelta = new_x - xcen
+        ydelta = new_y - ycen
         self.vx = list(map(lambda x: x + xdelta, self.vx))
         self.vy = list(map(lambda y: y + ydelta, self.vy))
 
@@ -884,12 +997,7 @@ class PolygonalROI(VertexROIBase):
         """
 
         theta = 0 if theta is None else theta
-        # For linear (1D) "polygons" centroid is not defined.
-        if center is None:
-            if self.area() == 0:
-                center = self.mean()
-            else:
-                center = self.centroid()
+        center = self.center() if center is None else center
         dtheta = theta - self.theta
 
         if self.defined() and not np.isclose(dtheta % np.pi, 0.0, atol=1e-9):
@@ -917,7 +1025,7 @@ class Projected3dROI(Roi):
     """
 
     def __init__(self, roi_2d=None, projection_matrix=None):
-        super(Projected3dROI, self).__init__()
+        super().__init__()
         self.roi_2d = roi_2d
         self.projection_matrix = np.asarray(projection_matrix)
 
@@ -995,7 +1103,7 @@ class Path(VertexROIBase):
         return result
 
 
-class AbstractMplRoi(object):
+class AbstractMplRoi:
     """
     Base class for objects which use Matplotlib user events to edit/display ROIs.
 
@@ -1135,7 +1243,7 @@ class MplRectangularROI(AbstractMplRoi):
 
     def __init__(self, axes, data_space=True):
 
-        super(MplRectangularROI, self).__init__(axes, data_space=data_space)
+        super().__init__(axes, data_space=data_space)
 
         self._xi = None
         self._yi = None
@@ -1147,7 +1255,6 @@ class MplRectangularROI(AbstractMplRoi):
         self._patch.set_visible(False)
         if not self._data_space:
             self._patch.set_transform(self._axes.transAxes)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
         if event.inaxes != self._axes:
@@ -1229,7 +1336,10 @@ class MplRectangularROI(AbstractMplRoi):
             self._patch.set_height(height)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def __str__(self):
@@ -1250,7 +1360,7 @@ class MplXRangeROI(AbstractMplRoi):
 
     def __init__(self, axes, data_space=True):
 
-        super(MplXRangeROI, self).__init__(axes, data_space=data_space)
+        super().__init__(axes, data_space=data_space)
 
         self._xi = None
 
@@ -1264,7 +1374,6 @@ class MplXRangeROI(AbstractMplRoi):
             trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -1336,7 +1445,10 @@ class MplXRangeROI(AbstractMplRoi):
             self._patch.set_height(1)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1354,7 +1466,7 @@ class MplYRangeROI(AbstractMplRoi):
 
     def __init__(self, axes, data_space=True):
 
-        super(MplYRangeROI, self).__init__(axes, data_space=data_space)
+        super().__init__(axes, data_space=data_space)
 
         self._yi = None
 
@@ -1368,7 +1480,6 @@ class MplYRangeROI(AbstractMplRoi):
             trans = self._axes.transAxes
         self._patch = Rectangle((0., 0.), 1., 1., transform=trans, zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def start_selection(self, event):
 
@@ -1442,7 +1553,10 @@ class MplYRangeROI(AbstractMplRoi):
             self._patch.set_width(1)
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
 
@@ -1464,7 +1578,7 @@ class MplCircularROI(AbstractMplRoi):
 
     def __init__(self, axes, data_space=True):
 
-        super(MplCircularROI, self).__init__(axes, data_space=data_space)
+        super().__init__(axes, data_space=data_space)
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
@@ -1476,18 +1590,20 @@ class MplCircularROI(AbstractMplRoi):
         self._patch = Ellipse((0., 0.), transform=IdentityTransform(),
                               width=0., height=0., zorder=100)
         self._patch.set_visible(False)
-        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
         if self._roi.defined():
-            xy = self._roi.get_center()
+            xy = self._roi.center()
             r = self._roi.get_radius()
             self._patch.center = xy
             self._patch.width = 2. * r
             self._patch.height = 2. * r
             self._patch.set(**self.plot_opts)
             self._patch.set_visible(True)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event):
@@ -1510,12 +1626,12 @@ class MplCircularROI(AbstractMplRoi):
 
         if event.key == SCRUBBING_KEY:
             self._scrubbing = True
-            (xc, yc) = self._roi.get_center()
+            (xc, yc) = self._roi.center()
             self._dx = xc - xi
             self._dy = yc - yi
         else:
             self.reset()
-            self._roi.set_center(xi, yi)
+            self._roi.move_to(xi, yi)
             self._roi.set_radius(0.)
             self._xi = xi
             self._yi = yi
@@ -1539,7 +1655,7 @@ class MplCircularROI(AbstractMplRoi):
                 return False
 
         if self._scrubbing:
-            self._roi.set_center(xi + self._dx, yi + self._dy)
+            self._roi.move_to(xi + self._dx, yi + self._dy)
         else:
             dx = xy[0, 0] - self._xi
             dy = xy[0, 1] - self._yi
@@ -1553,7 +1669,7 @@ class MplCircularROI(AbstractMplRoi):
             return PolygonalROI()
 
         # Get the circular ROI parameters in pixel units
-        xy_center = self._roi.get_center()
+        xy_center = self._roi.center()
         rad = self._roi.get_radius()
 
         # At this point, if one of the axes is not linear, we convert to a polygon
@@ -1606,7 +1722,7 @@ class MplPolygonalROI(AbstractMplRoi):
 
     def __init__(self, axes, roi=None, data_space=True):
 
-        super(MplPolygonalROI, self).__init__(axes, roi=roi, data_space=data_space)
+        super().__init__(axes, roi=roi, data_space=data_space)
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
@@ -1616,16 +1732,17 @@ class MplPolygonalROI(AbstractMplRoi):
         self._patch.set_visible(False)
         if not self._data_space:
             self._patch.set_transform(self._axes.transAxes)
-        self._axes.add_patch(self._patch)
 
     def _sync_patch(self):
         if self._roi.defined():
             x, y = self._roi.to_polygon()
-            self._patch.set_xy(list(zip(x + [x[0]],
-                                        y + [y[0]])))
+            self._patch.set_xy(list(zip(x + [x[0]], y + [y[0]])))
             self._patch.set_visible(True)
             self._patch.set(**self.plot_opts)
+            self._axes.add_patch(self._patch)
         else:
+            if self._patch in self._axes.patches:
+                self._patch._remove_method(self._patch)
             self._patch.set_visible(False)
 
     def start_selection(self, event, scrubbing=False):
@@ -1679,8 +1796,10 @@ class MplPolygonalROI(AbstractMplRoi):
             xval, yval = axes_trans.transform([event.x, event.y])
 
         if self._scrubbing:
-            self._roi.move_to(xval - self._cx,
-                              yval - self._cy)
+            old_x, old_y = self._roi.center()
+            new_x = old_x + xval - self._cx
+            new_y = old_y + yval - self._cy
+            self._roi.move_to(new_x, new_y)
             self._cx = xval
             self._cy = yval
         else:
@@ -1710,7 +1829,7 @@ class MplPathROI(MplPolygonalROI):
 
     def __init__(self, axes, roi=None):
 
-        super(MplPolygonalROI, self).__init__(axes)
+        super().__init__(axes)
 
         self.plot_opts = {'edgecolor': PATCH_COLOR,
                           'facecolor': PATCH_COLOR,
@@ -1727,7 +1846,7 @@ class MplPathROI(MplPolygonalROI):
         self._background_cache = None
         self._axes.figure.canvas.draw()
 
-        super(MplPathROI, self).start_selection(event)
+        super().start_selection(event)
 
     def _sync_patch(self):
 

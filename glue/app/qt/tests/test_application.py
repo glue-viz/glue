@@ -235,6 +235,33 @@ class TestGlueApplication(object):
         with patch('glue.dialogs.subset_facet.qt.SubsetFacetDialog.exec_'):
             act._do_action()
 
+    def test_move_viewer_to_tab(self):
+
+        # Create a viewer in the first tab
+        viewer = self.app.new_data_viewer(ScatterViewer)
+        assert viewer.parent().mdiArea() is self.app.tab(0)
+
+        # Move it to a new tab
+        self.app.new_tab()
+        self.app.move_viewer_to_tab(viewer, 1)
+        assert viewer.parent().mdiArea() is self.app.tab(1)
+        assert set(self.app.tab(0).subWindowList()) == {self.app._terminal}
+        assert set(self.app.tab(1).subWindowList()) == {viewer.parent()}
+
+        # Move it back to the first tab
+        self.app.move_viewer_to_tab(viewer, 0)
+        assert viewer.parent().mdiArea() is self.app.tab(0)
+        assert set(self.app.tab(0).subWindowList()) == {self.app._terminal, viewer.parent()}
+        assert len(self.app.tab(1).subWindowList()) == 0
+
+        # Check that we do nothing if the given tab is the same as the
+        # viewer's current tab
+        parent = viewer.parent()
+        viewer_state = viewer.state
+        self.app.move_viewer_to_tab(viewer, 0)
+        assert parent is viewer.parent()
+        assert viewer_state is viewer.state
+
     # FIXME: The following test fails and causes subsequent issues if run with
     #
     # pytest -s -v -x glue

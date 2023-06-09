@@ -39,12 +39,14 @@ class BaseViewer(HubListener):
     The base class for all viewers.
     """
 
-    LABEL = 'Override this'
+    LABEL = None
 
     def __init__(self, session):
         self._session = session
         self._data = session.data_collection
         self._hub = None
+        if self.LABEL is None:
+            self.LABEL = str(self.__class__)
 
     def register_to_hub(self, hub):
         self._hub = hub
@@ -274,15 +276,31 @@ class Viewer(BaseViewer):
     def _add_subset(self, message):
         self.add_subset(message.subset)
 
+    def _update_data_numerical(self, message):
+        # For some viewers, we might want to do additional things when the
+        # actual numerical values or shape of a dataset change, but by default
+        # we just pass this on to _update_data
+        self._update_data(message)
+
     def _update_data(self, message):
         if message.data in self._layer_artist_container:
             for layer_artist in self._layer_artist_container:
                 if isinstance(layer_artist.layer, Subset):
                     if layer_artist.layer.data is message.data:
                         layer_artist.update()
+                        try:
+                            components_changed = message.components_changed
+                            layer_artist.update_component_limits(components_changed)
+                        except AttributeError:
+                            pass
                 else:
                     if layer_artist.layer is message.data:
                         layer_artist.update()
+                        try:
+                            components_changed = message.components_changed
+                            layer_artist.update_component_limits(components_changed)
+                        except AttributeError:
+                            pass
 
     def _update_subset(self, message):
         if message.attribute == 'style':
@@ -327,7 +345,7 @@ class Viewer(BaseViewer):
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.NumericalDataChangedMessage,
-                      handler=self._update_data,
+                      handler=self._update_data_numerical,
                       filter=self._has_data_or_subset)
 
         hub.subscribe(self, msg.DataCollectionDeleteMessage,
@@ -361,6 +379,9 @@ class Viewer(BaseViewer):
 
     def _update_appearance_from_settings(self, message=None):
         pass
+
+    def __str__(self):
+        return self.state.title or self.LABEL
 
     def __gluestate__(self, context):
         return dict(state=self.state.__gluestate__(context),

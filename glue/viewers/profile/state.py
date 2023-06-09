@@ -62,8 +62,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('layers', self._layers_changed)
         self.add_callback('reference_data', self._reference_data_changed, echo_old=True)
         self.add_callback('x_att', self._update_att)
-        self.add_callback('x_display_unit', self._reset_x_limits)
-        self.add_callback('y_display_unit', self._reset_y_limits_if_changed, echo_old=True)
+        self.add_callback('x_display_unit', self._convert_units_x_limits, echo_old=True)
+        self.add_callback('y_display_unit', self._convert_units_y_limits, echo_old=True)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
 
@@ -85,11 +85,73 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         self.update_from_dict(kwargs)
 
-    def _reset_y_limits_if_changed(self, old, new):
-        # This is needed because otherwise reset_y_limits gets called even if
-        # just the choices in the y units change but not the selected value.
-        if old != new:
-            self._reset_y_limits()
+    def _convert_units_x_limits(self, old_unit, new_unit):
+
+        if (
+            getattr(self, '_previous_x_att', None) is self.x_att and
+            old_unit != new_unit and
+            self.reference_data is not None
+        ):
+
+            limits = np.array([self.x_min, self.x_max])
+
+            converter = UnitConverter()
+
+            limits_native = converter.to_native(self.reference_data,
+                                                self.x_att, limits,
+                                                old_unit)
+
+            limits_new = converter.to_unit(self.reference_data,
+                                           self.x_att, limits_native,
+                                           new_unit)
+
+            with delay_callback(self, 'x_min', 'x_max'):
+                self.x_min, self.x_max = sorted(limits_new)
+
+        # Make sure that we keep track of what attribute the limits
+        # are for - if the attribute changes, we should not try and
+        # update the limits.
+        self._previous_x_att = self.x_att
+
+    def _convert_units_y_limits(self, old_unit, new_unit):
+
+        if old_unit != new_unit:
+
+            if old_unit is None or new_unit is None:
+                self._reset_y_limits()
+                return
+
+            limits = np.array([self.y_min, self.y_max])
+
+            converter = UnitConverter()
+
+            # We can use any layer, just find the first one that works and
+            # exit if none of them do.
+            for layer_state in self.layers:
+                try:
+                    layer_state.profile
+                except Exception:  # e.g. incompatible subset
+                    continue
+                else:
+                    break
+            else:
+                return
+
+            if isinstance(layer_state.layer, Subset):
+                data = layer_state.layer.data
+            else:
+                data = layer_state.layer
+
+            limits_native = converter.to_native(data,
+                                                layer_state.attribute, limits,
+                                                old_unit)
+
+            limits_new = converter.to_unit(self.reference_data,
+                                           layer_state.attribute, limits_native,
+                                           new_unit)
+
+            with delay_callback(self, 'y_min', 'y_max'):
+                self.y_min, self.y_max = sorted(limits_new)
 
     def _update_combo_ref_data(self):
         self.ref_data_helper.set_multiple_data(self.layers_data)
@@ -114,8 +176,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
                     self.x_att_pixel = self.reference_data.pixel_component_ids[index]
             else:
                 self.x_att_pixel = self.x_att
-        self._reset_x_limits()
         self._update_x_display_unit_choices()
+        self._reset_x_limits()
 
     def _reset_x_limits(self, *event):
 
@@ -183,6 +245,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
     @defer_draw
     @avoid_circular
     def _layers_changed(self, *args):
+
         # By default if any of the state properties change, this triggers a
         # callback on anything listening to changes on self.layers - but here
         # we just want to know if any layers have been removed/added so we keep
@@ -192,6 +255,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self._update_combo_ref_data()
             self._update_y_display_unit_choices()
             self._last_layers = current_layers
+            return
+
+        current_attributes = [id(layer_state.attribute) for layer_state in self.layers]
+        if not hasattr(self, '_last_attributes') or self._last_attributes != current_attributes:
+            self._update_y_display_unit_choices()
+            self._last_attributes = current_attributes
 
     def _update_x_display_unit_choices(self):
 

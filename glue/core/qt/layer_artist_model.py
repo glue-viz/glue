@@ -82,10 +82,15 @@ class LayerArtistModel(PythonListModel):
         if role == Qt.EditRole:
             self.change_label(index.row(), str(value))
         if role == Qt.CheckStateRole:
-            vis = value == Qt.Checked
+            if isinstance(value, int):
+                try:  # Qt6
+                    vis = value == Qt.Checked.value  # https://bugreports.qt.io/browse/QTBUG-104688
+                except AttributeError:  # Qt5
+                    vis = value == Qt.Checked
+            else:
+                vis = value == Qt.Checked
             self.artists[index.row()].visible = vis
             self.artists[index.row()].redraw()
-
         self.dataChanged.emit(index, index)
         return True
 

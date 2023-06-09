@@ -1,6 +1,6 @@
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
-from glue.core.roi_pretransforms import ProjectionMplTransform, RadianTransform
+from glue.core.roi_pretransforms import FullSphereLongitudeTransform, ProjectionMplTransform, RadianTransform
 
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
@@ -167,6 +167,8 @@ class MatplotlibScatterMixin(object):
                                                                self.axes.get_yscale())
 
             # If we're using degrees, we need to staple on the degrees -> radians conversion beforehand
+            if self.state.using_full_sphere:
+                transform = FullSphereLongitudeTransform(next_transform=transform)
             if self.state.using_degrees:
                 coords = ['x'] if self.using_polar() else ['x', 'y']
                 transform = RadianTransform(coords=coords, next_transform=transform)

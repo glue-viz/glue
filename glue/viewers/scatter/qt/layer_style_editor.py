@@ -91,7 +91,7 @@ class ScatterLayerStyleEditor(QtWidgets.QWidget):
         if self.layer_state.layer is None:
             n_points = 0
         else:
-            n_points = np.product(self.layer_state.layer.shape)
+            n_points = np.prod(self.layer_state.layer.shape)
 
         warning = " (may be slow given data size)"
 

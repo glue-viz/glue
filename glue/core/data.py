@@ -427,7 +427,7 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         """
         The size of the data (the product of the shape dimensions), as an integer.
         """
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     def get_data(self, cid, view=None):
         """
@@ -811,7 +811,7 @@ class Data(BaseCartesianData):
 
     @property
     def size(self):
-        return np.product(self.shape)
+        return np.prod(self.shape)
 
     @contract(component=Component)
     def _check_can_add(self, component):
@@ -1547,7 +1547,7 @@ class Data(BaseCartesianData):
 
         # alert hub of the change
         if self.hub is not None:
-            msg = NumericalDataChangedMessage(self)
+            msg = NumericalDataChangedMessage(self, components_changed=list(mapping.keys()))
             self.hub.broadcast(msg)
 
         for subset in self.subsets:
@@ -1981,14 +1981,16 @@ class Data(BaseCartesianData):
             w = w[keep]
 
         # For now, compute dask arrays at this point. In future we could delegate
-        # the histogram calculation to dask.
+        # the histogram calculation to dask. The extra call to
+        # np.asarray is to coerce dask arrays read from
+        # disk with lazy loaders to definitely be numpy arrays
         if DASK_INSTALLED:
             if isinstance(x, da.Array):
-                x = x.compute()
+                x = np.asarray(x.compute())
             if ndim > 1 and isinstance(y, da.Array):
-                y = y.compute()
+                y = np.asarray(y.compute())
             if isinstance(w, da.Array):
-                w = w.compute()
+                w = np.asarray(w.compute())
 
         if len(x) == 0:
             return np.zeros(bins)

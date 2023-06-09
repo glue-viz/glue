@@ -413,6 +413,9 @@ class LinkTwoWay(MultiLink):
             kwargs['data2'] = cid2.parent
             kwargs['cids2'] = [cid2]
 
+        self._cid1 = cid1
+        self._cid2 = cid2
+
         super(LinkTwoWay, self).__init__(forwards=forwards, backwards=backwards, **kwargs)
 
     def __gluestate__(self, context):
@@ -430,6 +433,32 @@ class LinkTwoWay(MultiLink):
                    context.object(rec['forwards']),
                    context.object(rec['backwards']))
         return self
+
+
+class LinkSameWithUnits(LinkTwoWay):
+
+    def __init__(self, cid1=None, cid2=None, **kwargs):
+
+        self.units1 = cid1.parent.get_component(cid1).units
+        self.units2 = cid2.parent.get_component(cid2).units
+
+        from glue.core.units import UnitConverter
+
+        self._converter = UnitConverter()
+
+        super().__init__(cid1=cid1, cid2=cid2, forwards=self.forwards, backwards=self.backwards)
+
+        # Pre-check that unit conversions work properly as if there are any
+        # issues it is better to report them when the link is set up rather
+        # than when the links are used as issues may be hidden.
+        self.forwards(1)
+        self.backwards(1)
+
+    def forwards(self, values):
+        return self._converter.to_unit(self._cid1.parent, self._cid1, values, self.units2)
+
+    def backwards(self, values):
+        return self._converter.to_unit(self._cid2.parent, self._cid2, values, self.units1)
 
 
 class LinkAligned(LinkCollection):

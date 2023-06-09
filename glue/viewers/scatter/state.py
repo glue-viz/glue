@@ -549,7 +549,6 @@ class ScatterRegionLayerState(MatplotlibLayerState):
 
         self.cmap = colormaps.members[0][1]
         self.add_callback('cmap_att', self._check_for_preferred_cmap)
-
         self.update_from_dict(kwargs)
 
     def _check_for_preferred_cmap(self, *args):
@@ -562,7 +561,6 @@ class ScatterRegionLayerState(MatplotlibLayerState):
             self.cmap = actual_component.preferred_cmap
 
     def _on_layer_change(self, layer=None):
-
         with delay_callback(self, 'cmap_vmin', 'cmap_vmax'):
 
             if self.layer is None:

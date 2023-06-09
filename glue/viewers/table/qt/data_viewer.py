@@ -1,5 +1,6 @@
 import os
 from functools import lru_cache
+import re
 
 import numpy as np
 
@@ -7,6 +8,7 @@ from qtpy.QtCore import Qt
 from qtpy import QtCore, QtGui, QtWidgets
 from matplotlib.colors import ColorConverter
 
+from echo.qt import autoconnect_callbacks_to_qt
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
 from glue.core import BaseData, Data
@@ -20,6 +22,7 @@ from glue.utils.colors import alpha_blend_colors
 from glue.utils.qt import mpl_to_qt_color, messagebox_on_error
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.table.compat import update_table_viewer_state
+from glue.viewers.table.state import TableViewerState
 
 try:
     import dask.array as da
@@ -40,6 +43,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
             raise ValueError("Can only use Table widget for 1D data")
         self._table_viewer = table_viewer
         self._data = table_viewer.data
+        self._state = table_viewer.state
+        self.filter_mask = None
         self.show_coords = False
         self.order = np.arange(self._data.shape[0])
         self._update_visible()
@@ -149,9 +154,23 @@ class DataTableModel(QtCore.QAbstractTableModel):
         self.data_by_row_and_column.cache_clear()
         self.layoutChanged.emit()
 
+    def get_filter_mask(self):
+        if (self._state.filter is None) or (self._state.filter_att is None):
+            self.filter_mask = np.ones(self.order.shape, dtype=bool)
+            return
+        comp = self._data.get_component(self._state.filter_att)
+
+        if self._state.regex:
+            p = re.compile(self._state.filter)
+            self.filter_mask = np.array([bool(p.search(x)) for x in comp.data])
+        else:
+            self.filter_mask = np.array([self._state.filter in x for x in comp.data])
+        self.data_changed()  # This might be overkill
+
     def _update_visible(self):
         """
-        Given which layers are visible or not, convert order to order_visible.
+        Given which layers are visible or not, convert order to order_visible
+        after applying the current filter_mask
         """
 
         self.data_by_row_and_column.cache_clear()
@@ -159,17 +178,27 @@ class DataTableModel(QtCore.QAbstractTableModel):
         # First, if the data layer is visible, show all rows
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
-                self.order_visible = self.order
-                return
+                if self.filter_mask is None:
+                    self.order_visible = self.order
+                    return
+                else:
+                    mask = self.filter_mask[self.order]
+                    self.order_visible = self.order[mask]
+                    return
 
         # If not then we need to show only the rows with visible subsets
-        visible = np.zeros(self.order.shape, dtype=bool)
+        if self.filter_mask is None:
+            visible = np.zeros(self.order.shape, dtype=bool)
+        else:
+            visible = self.filter_mask[self.order]
         for layer_artist in self._table_viewer.layers:
             if layer_artist.visible:
-                mask = layer_artist.layer.to_mask()
+                mask = layer_artist.layer.to_mask()[self.order]
                 if DASK_INSTALLED and isinstance(mask, da.Array):
                     mask = mask.compute()
                 visible |= mask
+        if self.filter_mask is not None:
+            visible &= self.filter_mask[self.order]
 
         self.order_visible = self.order[visible]
 
@@ -214,7 +243,7 @@ class RowSelectTool(CheckableTool):
     def activate(self):
         self.viewer.ui.table.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-    def deactivate(self):
+    def deactivate(self, block=False):
         # Don't do anything if the viewer has already been closed
         if self.viewer is None:
             return
@@ -223,7 +252,9 @@ class RowSelectTool(CheckableTool):
 
 
 class TableViewWithSelectionSignal(QtWidgets.QTableView):
-
+    """
+    This is the TableViewer.ui.table object
+    """
     selection_changed = QtCore.Signal()
 
     def selectionChanged(self, *args, **kwargs):
@@ -238,9 +269,13 @@ class TableViewer(DataViewer):
     _toolbar_cls = BasicToolbar
     _data_artist_cls = TableLayerArtist
     _subset_artist_cls = TableLayerArtist
+    _state_cls = TableViewerState
 
     inherit_tools = False
-    tools = ['table:rowselect']
+    tools = ['table:rowselect', 'window']
+    subtools = {
+        'window': ['window:movetab', 'window:title']
+    }
 
     def __init__(self, session, state=None, parent=None, widget=None):
 
@@ -260,8 +295,13 @@ class TableViewer(DataViewer):
         self.data = None
         self.model = None
 
-        self.ui.table.selection_changed.connect(self.selection_changed)
+        self._connections = autoconnect_callbacks_to_qt(self.state, self.ui)
 
+        self.state.add_callback('regex', self._on_filter_changed)
+        self.state.add_callback('filter', self._on_filter_changed)
+        self.state.add_callback('filter_att', self._on_filter_changed)
+
+        self.ui.table.selection_changed.connect(self.selection_changed)
         self.state.add_callback('layers', self._on_layers_changed)
         self._on_layers_changed()
 
@@ -289,15 +329,37 @@ class TableViewer(DataViewer):
             self.ui.table.clearSelection()
             self.ui.table.blockSignals(False)
 
+    def _on_filter_changed(self, *args):
+        # If we change the filter we deactivate the toolbar to keep
+        # any subset defined before we change what is displayed
+        if self.toolbar.active_tool is self.toolbar.tools['table:rowselect']:
+            old_tool = self.toolbar.active_tool
+            old_tool.deactivate(block=True)
+            button = self.toolbar.actions[old_tool.tool_id]
+            if button.isChecked():
+                button.setChecked(False)
+        if self.model:
+            self.model.get_filter_mask()
+
     def _on_layers_changed(self, *args):
         for layer_state in self.state.layers:
             if isinstance(layer_state.layer, BaseData):
                 break
         else:
             return
+
+        # If we aren't changing the data layer, we don't need to
+        # reset the model, just update visible rows
+        if layer_state.layer == self.data:
+            self.model._update_visible()
+            return
+
         self.data = layer_state.layer
+
         self.setUpdatesEnabled(False)
         self.model = DataTableModel(self)
+        self.model.get_filter_mask()
+
         self.ui.table.setModel(self.model)
         self.setUpdatesEnabled(True)
 
@@ -320,7 +382,9 @@ class TableViewer(DataViewer):
 
     @property
     def window_title(self):
-        if len(self.state.layers) > 0:
+        if self.state.title:
+            return self.state.title
+        elif len(self.state.layers) > 0:
             return 'Table: ' + self.state.layers[0].layer.label
         else:
             return 'Table'

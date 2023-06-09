@@ -6,7 +6,7 @@ from qtpy import QtCore, QtGui
 from qtpy.QtCore import Qt
 
 from glue.utils.qt import get_qapp, process_events
-from glue.core import Data, DataCollection
+from glue.core import Data, DataCollection, BaseData
 from glue.utils.qt import qt_to_mpl_color
 from glue.app.qt import GlueApplication
 
@@ -549,3 +549,187 @@ def test_table_with_dask_column():
     colors = ['#aa0000', '#aa0000', '#aa0000', None, None]
 
     check_values_and_color(model, data, colors)
+
+
+def test_table_preserve_model_after_selection():
+
+    # Regression test for a bug that caused table viewers to return
+    # to default sorting after a new subset was created with the row
+    # selection tool. This occurred because the model was reset.
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=[3.2, 1.2, 4.5, 3.3, 2.2],
+             c=['e', 'b', 'c', 'a', 'f'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    viewer = gapp.new_data_viewer(TableViewer)
+    viewer.add_data(d)
+
+    model = viewer.ui.table.model()
+
+    model.sort(1, Qt.AscendingOrder)
+
+    data = {'a': [2, 5, 1, 4, 3],
+            'b': [1.2, 2.2, 3.2, 3.3, 4.5],
+            'c': ['b', 'f', 'e', 'a', 'c']}
+    colors = [None for _ in range(5)]
+
+    check_values_and_color(model, data, colors)
+
+    # Create a new subset using the row selection tool
+
+    subset_mode = gapp._session.edit_subset_mode
+    subset_mode.edit_subset = None
+    viewer.toolbar.actions['table:rowselect'].toggle()
+
+    def press_key(key):
+        event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, key, Qt.NoModifier)
+        app.postEvent(viewer.ui.table, event)
+        app.processEvents()
+
+    # Select the second row
+    press_key(Qt.Key_Tab)
+    press_key(Qt.Key_Down)
+    press_key(Qt.Key_Enter)
+
+    process_events()
+
+    # Check that the table model is still the same, which it
+    # should be since we aren't changing the viewer Data
+
+    post_model = viewer.ui.table.model()
+    assert post_model == model
+
+    # Check that the order is still the same
+
+    color = d.subsets[0].style.color
+    colors[1] = color
+
+    check_values_and_color(post_model, data, colors)
+
+
+def test_table_widget_filter(tmpdir):
+
+    # Test table interactions with filtering
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=['cat', 'dog', 'cat', 'dog', 'fish'],
+             c=['fluffy', 'rover', 'fluffball', 'spot', 'moby'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableViewer)
+    widget.add_data(d)
+
+    widget.state.filter_att = d.components[2]
+
+    widget.state.filter = 'cat'
+    model = widget.ui.table.model()
+
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    widget.state.filter_att = d.components[3]
+    widget.state.filter = 'ff'
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    # Test matching regular expressions
+    widget.state.filter_att = d.components[3]
+    widget.state.regex = True
+
+    widget.state.filter = '^[a-z]{1}o'
+    np.testing.assert_equal(model.filter_mask, [False, True, False, False, True])
+
+    sg1 = dc.new_subset_group('test subset 1', d.id['a'] > 2)
+    sg1.style.color = '#aa0000'
+    data = {'a': [2, 5],
+            'b': ['dog', 'fish'],
+            'c': ['rover', 'moby']}
+
+    colors = [None, '#aa0000']
+
+    check_values_and_color(model, data, colors)
+
+    widget.state.regex = False
+    widget.state.filter = '^[a-z]{1}o'
+    np.testing.assert_equal(model.filter_mask, [False, False, False, False, False])
+
+    # Check that changing the filter disables the rowselect tool
+    widget.toolbar.actions['table:rowselect'].toggle()
+    process_events()
+    widget.state.filter_att = d.components[2]
+    assert widget.toolbar.active_tool is None
+
+    # Check that disabling the full dataset means we only see the subset
+    # This is a regression test since filtering originally broke this.
+    widget.state.filter = ''
+    for layer_artist in widget.layers:
+        if layer_artist.visible and isinstance(layer_artist.layer, BaseData):
+            layer_artist.visible = False
+
+    data = {'a': [3, 4, 5],
+            'b': ['cat', 'dog', 'fish'],
+            'c': ['fluffball', 'spot', 'moby']}
+
+    colors = ['#aa0000', '#aa0000', '#aa0000']
+
+    check_values_and_color(model, data, colors)
+
+    widget.state.filter_att = d.components[2]
+    widget.state.filter = 'cat'
+
+    data = {'a': [3],
+            'b': ['cat'],
+            'c': ['fluffball']}
+
+    colors = ['#aa0000']
+
+    check_values_and_color(model, data, colors)
+
+def test_table_widget_session_filter(tmpdir):
+
+    # Test that filtering works with save/restore
+
+    app = get_qapp()  # noqa
+
+    d = Data(a=[1, 2, 3, 4, 5],
+             b=['cat', 'dog', 'cat', 'dog', 'fish'],
+             c=['fluffy', 'rover', 'fluffball', 'spot', 'moby'], label='test')
+
+    dc = DataCollection([d])
+
+    gapp = GlueApplication(dc)
+
+    widget = gapp.new_data_viewer(TableViewer)
+    widget.add_data(d)
+
+    widget.state.filter_att = d.components[2]
+    widget.state.filter = 'cat'
+    model = widget.ui.table.model()
+
+    np.testing.assert_equal(model.filter_mask, [True, False, True, False, False])
+
+    session_file = tmpdir.join('table.glu').strpath
+
+    gapp.save_session(session_file)
+
+    gapp2 = GlueApplication.restore_session(session_file)
+    gapp2.show()
+
+    d = gapp2.data_collection[0]
+
+    widget2 = gapp2.viewers[0][0]
+
+    model2 = widget2.ui.table.model()
+
+    assert widget2.state.filter_att == d.components[2]
+    assert widget2.state.filter == 'cat'
+    np.testing.assert_equal(model2.filter_mask, [True, False, True, False, False])

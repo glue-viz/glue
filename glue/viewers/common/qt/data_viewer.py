@@ -1,5 +1,6 @@
 from qtpy.QtCore import Qt
 from qtpy import QtWidgets
+from echo import add_callback
 from glue.core.qt.layer_artist_model import QtLayerArtistContainer, LayerArtistWidget
 from glue.utils.qt import set_cursor, messagebox_on_error
 from glue.core.qt.dialogs import warn
@@ -65,8 +66,11 @@ class DataViewer(Viewer, BaseQtViewerWidget,
     _default_mouse_mode_cls = None
 
     inherit_tools = True
-    tools = ['save']
-    subtools = {'save': []}
+    tools = ['save', 'window']
+    subtools = {
+        'save': [],
+        'window': ['window:movetab', 'window:title']
+    }
 
     _close_on_last_layer_removed = True
 
@@ -104,6 +108,8 @@ class DataViewer(Viewer, BaseQtViewerWidget,
             self._layer_artist_container.on_empty(self._close_nowarn)
         self._layer_artist_container.on_changed(self.update_window_title)
 
+        add_callback(self.state, 'title', self._on_title_change)
+
         self.update_window_title()
 
     @property
@@ -127,6 +133,9 @@ class DataViewer(Viewer, BaseQtViewerWidget,
         # circular references
         if self.toolbar:
             self.toolbar.cleanup()
+
+    def _on_title_change(self, title):
+        self.update_window_title()
 
     def layer_view(self):
         return self._view

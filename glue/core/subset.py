@@ -5,7 +5,8 @@ import operator
 import numpy as np
 
 from glue.core.roi import (PolygonalROI, CategoricalROI, RangeROI, XRangeROI,
-                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, Projected3dROI)
+                           YRangeROI, RectangularROI, CircularROI, EllipticalROI, CircularAnnulusROI,
+                           Projected3dROI)
 from glue.core.contracts import contract
 from glue.core.util import split_component_view
 from glue.core.registry import Registry
@@ -441,6 +442,14 @@ class SubsetState(object):
     def subset_state(self):  # convenience method, mimic interface of Subset
         return self
 
+    def center(self):
+        """Return center of underlying ROI, if any."""
+        return  # None until explicitly implemented by subclass
+
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        pass  # no-op until explicitly implemented by subclass
+
     @contract(data='isinstance(Data)')
     def to_index_list(self, data):
         return np.where(data.get_mask(self.subset_state).flat)[0]
@@ -537,6 +546,12 @@ class RoiSubsetStateNd(SubsetState):
     @property
     def attributes(self):
         return tuple(self._atts)
+
+    def center(self):
+        return self._roi.center()
+
+    def move_to(self, *args):
+        self._roi.move_to(*args)
 
     @contract(data='isinstance(Data)', view='array_view')
     def to_mask(self, data, view=None):
@@ -793,6 +808,14 @@ class RangeSubsetState(SubsetState):
         x = data[self.att, view]
         result = (x >= self.lo) & (x <= self.hi)
         return result
+
+    def center(self):
+        return (self.hi - self.lo) * 0.5 + self.lo
+
+    def move_to(self, new_cen):
+        dx = new_cen - self.center()
+        self.lo = self.lo + dx
+        self.hi = self.hi + dx
 
     def copy(self):
         return RangeSubsetState(self.lo, self.hi, self.att)
@@ -1078,6 +1101,28 @@ class CompositeSubsetState(SubsetState):
 
     def copy(self):
         return type(self)(self.state1, self.state2)
+
+    def center(self):
+        cen = self.state1.center()
+        if cen is None and self.state2:
+            cen = self.state2.center()
+        return cen
+
+    def move_to(self, *args):
+        """Move any underlying ROI to the new given center."""
+        if self.state2:
+            cen1 = self.state1.center()
+            cen2 = self.state2.center()
+            if cen2 is not None and cen1 is not None:
+                offset = np.asarray(cen2) - np.asarray(cen1)
+                if np.isscalar(offset):
+                    mt_args = (args[0] + offset, )
+                else:
+                    mt_args = tuple(map(operator.add, args, offset))
+            else:
+                mt_args = args
+            self.state2.move_to(*mt_args)
+        self.state1.move_to(*args)
 
     @property
     def attributes(self):
@@ -1982,7 +2027,8 @@ def roi_to_subset_state(roi, x_att=None, y_att=None, x_categories=None, y_catego
 
         # The selection is polygon-like or requires a pretransform and components are numerical
 
-        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI)):
+        if not isinstance(roi, (PolygonalROI, RectangularROI, CircularROI, EllipticalROI, RangeROI,
+                                CircularAnnulusROI)):
             roi = PolygonalROI(*roi.to_polygon())
 
         subset_state = RoiSubsetState()
