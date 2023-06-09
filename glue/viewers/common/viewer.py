@@ -288,9 +288,19 @@ class Viewer(BaseViewer):
                 if isinstance(layer_artist.layer, Subset):
                     if layer_artist.layer.data is message.data:
                         layer_artist.update()
+                        try:
+                            components_changed = message.components_changed
+                            layer_artist.update_component_limits(components_changed)
+                        except AttributeError:
+                            pass
                 else:
                     if layer_artist.layer is message.data:
                         layer_artist.update()
+                        try:
+                            components_changed = message.components_changed
+                            layer_artist.update_component_limits(components_changed)
+                        except AttributeError:
+                            pass
 
     def _update_subset(self, message):
         if message.attribute == 'style':

@@ -1,6 +1,6 @@
 from glue.viewers.matplotlib.qt.data_viewer import MatplotlibDataViewer
-from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor
-from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.viewers.scatter.qt.layer_style_editor import ScatterLayerStyleEditor, ScatterRegionLayerStyleEditor
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist, ScatterRegionLayerArtist
 from glue.viewers.image.qt.layer_style_editor import ImageLayerStyleEditor
 from glue.viewers.image.qt.layer_style_editor_subset import ImageLayerSubsetStyleEditor
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
@@ -26,7 +26,9 @@ class ImageViewer(MatplotlibImageMixin, MatplotlibDataViewer):
     _default_mouse_mode_cls = RoiClickAndDragMode
     _layer_style_widget_cls = {ImageLayerArtist: ImageLayerStyleEditor,
                                ImageSubsetLayerArtist: ImageLayerSubsetStyleEditor,
-                               ScatterLayerArtist: ScatterLayerStyleEditor}
+                               ScatterLayerArtist: ScatterLayerStyleEditor,
+                               ScatterRegionLayerArtist: ScatterRegionLayerStyleEditor,
+                               }
     _state_cls = ImageViewerState
     _options_cls = ImageOptionsWidget
 

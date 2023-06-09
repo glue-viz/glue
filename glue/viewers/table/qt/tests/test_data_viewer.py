@@ -694,7 +694,6 @@ def test_table_widget_filter(tmpdir):
 
     check_values_and_color(model, data, colors)
 
-
 def test_table_widget_session_filter(tmpdir):
 
     # Test that filtering works with save/restore
