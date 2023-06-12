@@ -289,17 +289,17 @@
         <widget class="QComboBox" name="combo_app_theme">
          <item>
           <property name="text">
+           <string>System default</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Light</string>
           </property>
          </item>
          <item>
           <property name="text">
            <string>Dark</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>System default</string>
           </property>
          </item>
         </widget>

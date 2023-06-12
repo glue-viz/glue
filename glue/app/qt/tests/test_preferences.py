@@ -36,6 +36,7 @@ class TestPreferences():
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -49,6 +50,7 @@ class TestPreferences():
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
             assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
     def test_theme_autodetect(self):
 
@@ -61,6 +63,7 @@ class TestPreferences():
             settings.DATA_COLOR = '0.75'
             settings.DATA_ALPHA = 0.8
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -72,13 +75,14 @@ class TestPreferences():
             settings.DATA_COLOR = '0.35'
             settings.DATA_ALPHA = 0.8
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
             assert dialog.theme == 'Black on White'
             dialog.accept()
 
-    def test_themes(self):
+    def test_viewer_themes(self):
 
         # Check that themes work
 
@@ -89,6 +93,7 @@ class TestPreferences():
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -99,7 +104,8 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (0, 0, 0)
             assert rgb(settings.DATA_COLOR) == (0.75, 0.75, 0.75)
             assert settings.DATA_ALPHA == 0.8
-            settings.FONT_SIZE = 8.0
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -110,7 +116,72 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 1, 1)
             assert rgb(settings.DATA_COLOR) == (0.35, 0.35, 0.35)
             assert settings.DATA_ALPHA == 0.8
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
+
+    def test_application_themes(self):
+
+        # Check that application themes work
+
+        with patch('glue.config.settings') as settings:
+
+            settings.FOREGROUND_COLOR = 'red'
+            settings.BACKGROUND_COLOR = (0, 0.5, 1)
+            settings.DATA_COLOR = (1, 0.5, 0.25)
+            settings.DATA_ALPHA = 0.3
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.app_theme = 'Light'
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (1, 0, 0)
+            assert rgb(settings.BACKGROUND_COLOR) == (0, 0.5, 1)
+            assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
+            assert settings.DATA_ALPHA == 0.3
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'Light'
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.app_theme = 'Dark'
+            assert dialog.theme == 'White on Black'
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (1, 1, 1)
+            assert rgb(settings.BACKGROUND_COLOR) == (0, 0, 0)
+            assert rgb(settings.DATA_COLOR) == (0.75, 0.75, 0.75)
+            assert settings.DATA_ALPHA == 0.8
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'Dark'
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.app_theme = 'Light'
+            assert dialog.theme == 'Black on White'
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (0, 0, 0)
+            assert rgb(settings.BACKGROUND_COLOR) == (1, 1, 1)
+            assert rgb(settings.DATA_COLOR) == (0.35, 0.35, 0.35)
+            assert settings.DATA_ALPHA == 0.8
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'Light'
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.app_theme = 'System default'
+            assert dialog.theme == 'Black on White'
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (0, 0, 0)
+            assert rgb(settings.BACKGROUND_COLOR) == (1, 1, 1)
+            assert rgb(settings.DATA_COLOR) == (0.35, 0.35, 0.35)
+            assert settings.DATA_ALPHA == 0.8
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
     def test_custom_changes(self):
 
@@ -123,6 +194,7 @@ class TestPreferences():
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -133,7 +205,8 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (0, 0.5, 1)
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
-            settings.FONT_SIZE = 8.0
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -144,7 +217,8 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 0.5, 0.25)
             assert settings.DATA_ALPHA == 0.3
-            settings.FONT_SIZE = 8.0
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -155,7 +229,8 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
             assert settings.DATA_ALPHA == 0.3
-            settings.FONT_SIZE = 8.0
+            assert settings.FONT_SIZE == 8.0
+            assert settings.APP_THEME == 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -166,6 +241,7 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
             assert settings.DATA_ALPHA == 0.4
+            assert settings.APP_THEME == 'System default'
             settings.FONT_SIZE = 8.0
 
             dialog = PreferencesDialog(self.app)
@@ -177,7 +253,20 @@ class TestPreferences():
             assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
             assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
             assert settings.DATA_ALPHA == 0.4
-            settings.FONT_SIZE = 16.0
+            assert settings.FONT_SIZE == 16.0
+            assert settings.APP_THEME == 'System default'
+
+            dialog = PreferencesDialog(self.app)
+            dialog.show()
+            dialog.app_theme = 'Light'
+            dialog.accept()
+
+            assert rgb(settings.FOREGROUND_COLOR) == (0, 1, 1)
+            assert rgb(settings.BACKGROUND_COLOR) == (1, 0, 1)
+            assert rgb(settings.DATA_COLOR) == (1, 1, 0.5)
+            assert settings.DATA_ALPHA == 0.4
+            assert settings.FONT_SIZE == 16.0
+            assert settings.APP_THEME == 'Light'
 
     def test_custom_pane(self):
 
@@ -238,6 +327,7 @@ class TestPreferences():
             settings.DATA_COLOR = (1, 0.5, 0.25)
             settings.DATA_ALPHA = 0.3
             settings.FONT_SIZE = 8.0
+            settings.APP_THEME = 'System default'
 
             dialog = PreferencesDialog(self.app)
             dialog.show()
@@ -245,7 +335,7 @@ class TestPreferences():
             dialog.accept()
 
         assert len(listener.received) == 1
-        assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE')
+        assert listener.received[0].settings == ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE', 'APP_THEME')
 
     def test_save_to_disk(self, tmpdir):
 
@@ -257,6 +347,7 @@ class TestPreferences():
                 settings.DATA_COLOR = (1, 0.5, 0.25)
                 settings.DATA_ALPHA = 0.3
                 settings.FONT_SIZE = 8.0
+                settings.APP_THEME = 'System default'
 
                 dialog = PreferencesDialog(self.app)
                 dialog.show()
@@ -362,6 +453,7 @@ def test_foreground_background_settings():
         settings.DATA_COLOR = '0.5'
         settings.DATA_ALPHA = 0.5
         settings.FONT_SIZE = 8.0
+        settings.APP_THEME = 'System default'
 
         dialog = PreferencesDialog(app)
         dialog.show()
