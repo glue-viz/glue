@@ -555,6 +555,16 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_link_data.setEnabled(len(self.data_collection) > 1)
         self._button_edit_components.setEnabled(len(self.data_collection) > 0)
 
+    def _use_dark_terminal(self):
+        if settings.APP_THEME == 'System default':
+            # Try to identify whether we think the system theme is light or dark
+            palette = self.app.palette()
+            window_color = palette.color(QPalette.Window)
+            text_color = palette.color(QPalette.WindowText)
+            return window_color.lightness() < text_color.lightness()
+        else:
+            return settings.APP_THEME == 'Dark'
+
     def _on_ui_settings_change(self, *event):
         update_global_font_size()
 
@@ -572,24 +582,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             tab = self.tab(i)
             tab.setBackground(palette.color(QPalette.AlternateBase))
 
-        if settings.APP_THEME == 'System default':
-            # Try to identify whether we think the system theme is light or dark
-            window_color = palette.color(QPalette.Window)
-            text_color = palette.color(QPalette.WindowText)
-            dark = window_color.lightness() < text_color.lightness()
-        else:
-            dark = settings.APP_THEME == 'Dark'
-
-        if self.has_terminal(create_if_not=True):
-            terminal = self._terminal.widget()
-            terminal_colors = dict(
-                text_color='white' if dark else 'black',
-                bg_color='#282828' if dark else 'white',
-                in_prompt_color='deepskyblue' if dark else 'navy',
-                out_prompt_color='crimson' if dark else 'darkred'
-            )
-            terminal.style_sheet = _stylesheet(**terminal_colors)
-            terminal.syntax_style = 'rrt' if dark else 'default'
+        self._update_terminal_style()
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
@@ -1258,6 +1251,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._button_ipython.setEnabled(False)
         else:
             self._terminal = self.add_widget(widget)
+            self._update_terminal_style()
             self._terminal.closed.connect(self._on_terminal_close)
             self._hide_terminal()
 
@@ -1287,6 +1281,19 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
     def _show_terminal(self):
         self._terminal.show()
         self._terminal.widget().show()
+
+    def _update_terminal_style(self):
+        if self.has_terminal(create_if_not=False):
+            dark = self._use_dark_terminal()
+            terminal = self._terminal.widget()
+            terminal_colors = dict(
+                text_color='white' if dark else 'black',
+                bg_color='#282828' if dark else 'white',
+                in_prompt_color='deepskyblue' if dark else 'navy',
+                out_prompt_color='crimson' if dark else 'darkred'
+            )
+            terminal.style_sheet = _stylesheet(**terminal_colors)
+            terminal.syntax_style = 'rrt' if dark else 'default'
 
     def start(self, size=None, position=None, block=True, maximized=True):
         """
