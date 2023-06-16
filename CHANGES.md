@@ -1,5 +1,22 @@
 # Full changelog
 
+## v1.12.0 - 2023-06-16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Add subtool for changing window title by @Carifio24 in https://github.com/glue-viz/glue/pull/2407
+
+#### Bug Fixes
+
+- Ensure lazy dask arrays become numpy arrays in calculate_histogram by @jfoster17 in https://github.com/glue-viz/glue/pull/2412
+- Fix filter logic so that table viewer can hide main data layer by @jfoster17 in https://github.com/glue-viz/glue/pull/2411
+- Fix Qt6 bug that prevented layers from being re-enabled by @jfoster17 in https://github.com/glue-viz/glue/pull/2410
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.11.0...v1.12.0
+
 ## v1.11.0 - 2023-05-25
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -688,7 +705,9 @@
 - 
 - 
 - 
+- 
 - - `glue.viewers.common.viewer.BaseViewer` and
+- 
 - 
 - 
 - 
@@ -708,7 +727,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -728,7 +749,9 @@
 - 
 - 
 - 
+- 
 - - for using state classes in viewers (instead of
+- 
 - 
 - 
 - 
@@ -748,7 +771,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
@@ -768,7 +793,9 @@
 - 
 - 
 - 
+- 
 - - 
+- 
 - 
 - 
 - 
