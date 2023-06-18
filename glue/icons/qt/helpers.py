@@ -57,7 +57,10 @@ def layer_artist_icon(artist):
         else:
             bm = QtGui.QBitmap(icon_path('glue_box_point'))
         color = mpl_to_qt_color(color)
-        pm = tint_pixmap(bm, color)
+        if min(color.red(), color.green(), color.blue()) > 240:
+            pm = tint_pixmap(bm, color, background_color=QtGui.QColor(0, 0, 0))
+        else:
+            pm = tint_pixmap(bm, color)
 
     return QtGui.QIcon(pm)
 
