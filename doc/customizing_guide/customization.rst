@@ -268,7 +268,9 @@ and the output array should be returned::
         else:
             return x ** 1/3
 
-    stretches.add('cbrt', cbrt)
+    stretches.add('cbrt', cbrt, display='Cube root')
+
+The ``display=`` argument can optionally be used to specify the name to use in drop-down menus.
 
 .. _custom-actions:
 
