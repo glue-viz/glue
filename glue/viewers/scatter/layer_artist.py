@@ -17,6 +17,9 @@ from glue.core.exceptions import IncompatibleAttribute
 
 from matplotlib.lines import Line2D
 
+# We keep the following so that scripts exported with previous versions of glue
+# continue to work, as they imported STRETCHES from here.
+STRETCHES = stretches.members
 
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size', 'fill'])
