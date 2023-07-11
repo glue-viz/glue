@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core import BaseData, Subset
 
-from glue.config import colormaps
+from glue.config import colormaps, stretches
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
@@ -327,13 +327,8 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
         ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
-        stretch_display = {'linear': 'Linear',
-                           'sqrt': 'Square Root',
-                           'arcsinh': 'Arcsinh',
-                           'log': 'Logarithmic'}
-
         ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
-        ScatterLayerState.stretch.set_display_func(self, stretch_display.get)
+        ScatterLayerState.stretch.set_display_func(self, stretches.display_func)
 
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)

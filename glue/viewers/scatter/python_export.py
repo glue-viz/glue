@@ -92,7 +92,7 @@ def python_export_scatter_layer(layer, *args):
                 options['color'] = layer.state.color
                 options['vmin'] = code('density_limits.min')
                 options['vmax'] = code('density_limits.max')
-                options['norm'] = code("ImageNormalize(stretch=stretches['{0}']())".format(layer.state.stretch))
+                options['norm'] = code("ImageNormalize(stretch=stretches.members['{0}'])".format(layer.state.stretch))
             else:
                 options['c'] = code("layer_data['{0}']".format(layer.state.cmap_att.label))
                 options['cmap'] = code("plt.cm.{0}".format(layer.state.cmap.name))

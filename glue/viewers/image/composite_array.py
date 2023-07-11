@@ -118,7 +118,7 @@ class CompositeArray(object):
 
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
-            stretch = stretches[layer['stretch']]()
+            stretch = stretches.members[layer['stretch']]
 
             if callable(layer['array']):
                 array = layer['array'](bounds=bounds)

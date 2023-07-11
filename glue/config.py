@@ -634,17 +634,25 @@ class StretchRegistry(DictRegistry):
     Stores custom stretches
     """
 
-    def add(self, label, stretch_cls):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._display = {}
+
+    def add(self, label, stretch_cls, display=None):
         if label in self.members:
             raise ValueError("Stretch class '{0}' already registered".format(label))
         else:
             self.members[label] = stretch_cls
+            self._display[label] = display or label
 
     def __call__(self, label):
         def adder(stretch_cls):
             self.add(label, stretch_cls)
             return stretch_cls
         return adder
+
+    def display_func(self, label):
+        return self._display[label]
 
 
 class QtClientRegistry(Registry):
@@ -1024,10 +1032,10 @@ unit_converter = UnitConverterRegistry()
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch)
 stretches = StretchRegistry()
-stretches.add('linear', LinearStretch)
-stretches.add('sqrt', SqrtStretch)
-stretches.add('arcsinh', AsinhStretch)
-stretches.add('log', LogStretch)
+stretches.add('linear', LinearStretch(), display='Linear')
+stretches.add('sqrt', SqrtStretch(), display='Square Root')
+stretches.add('arcsinh', AsinhStretch(), display='Arcsinh')
+stretches.add('log', LogStretch(), display='Logarithmic')
 
 # Backward-compatibility
 single_subset_action = layer_action
