@@ -249,6 +249,17 @@ the following code into ``config.py``::
     from matplotlib.cm import Paired
     colormaps.add('Paired', Paired)
 
+
+Custom Stretches
+----------------
+
+You can add additional stretches for use in e.g. the image viewer. Stretches should be
+provided as callables (e.g. functions or classes with a ``__call__`` method) which take
+values in the range [0:1] and return values in the range [0:1]:
+
+    from glue.config import stretches
+    stretches.add('cbrt', lambda x: x ** (1/3))
+
 .. _custom-actions:
 
 Custom Actions
