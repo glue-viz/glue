@@ -249,6 +249,29 @@ the following code into ``config.py``::
     from matplotlib.cm import Paired
     colormaps.add('Paired', Paired)
 
+
+Custom Stretches
+----------------
+
+You can add additional stretches for use in e.g. the image viewer. Stretches should be
+provided as a function or an initialized class with a ``__call__`` method which takes
+values in the range [0:1] and return values in the range [0:1], and takes an optional
+``out=`` keyword argument. If this is set, the array values should be modified in-place
+and the output array should be returned::
+
+    from glue.config import stretches
+
+    def cbrt(x, out=None):
+        if out is not None:
+            out[:] = out ** 1/3
+            return out
+        else:
+            return x ** 1/3
+
+    stretches.add('cbrt', cbrt, display='Cube root')
+
+The ``display=`` argument can optionally be used to specify the name to use in drop-down menus.
+
 .. _custom-actions:
 
 Custom Actions

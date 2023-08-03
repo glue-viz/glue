@@ -5,11 +5,10 @@ import warnings
 
 import numpy as np
 
-from glue.config import colormaps
+from glue.config import colormaps, stretches
 
 from matplotlib.colors import ColorConverter, Colormap
-from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
-                                   LogStretch, ManualInterval, ContrastBiasStretch)
+from astropy.visualization import ManualInterval, ContrastBiasStretch
 
 
 __all__ = ['CompositeArray']
@@ -17,13 +16,6 @@ __all__ = ['CompositeArray']
 COLOR_CONVERTER = ColorConverter()
 
 CMAP_SAMPLING = np.linspace(0, 1, 256)
-
-STRETCHES = {
-    'linear': LinearStretch,
-    'sqrt': SqrtStretch,
-    'arcsinh': AsinhStretch,
-    'log': LogStretch
-}
 
 
 class CompositeArray(object):
@@ -126,7 +118,7 @@ class CompositeArray(object):
 
             interval = ManualInterval(*layer['clim'])
             contrast_bias = ContrastBiasStretch(layer['contrast'], layer['bias'])
-            stretch = STRETCHES[layer['stretch']]()
+            stretch = stretches.members[layer['stretch']]
 
             if callable(layer['array']):
                 array = layer['array'](bounds=bounds)
