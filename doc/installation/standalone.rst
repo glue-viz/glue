@@ -24,9 +24,9 @@ should check one of the other installation methods mentioned in
 MacOS X
 -------
 
-Donwload the :download:`glue 2023.06.3.dmg
-<https://glueviz.s3.amazonaws.com/installers/2023.06.3/glue%202023.06.3.dmg>`
-file, open it and copy the **glue 2023.06.3.app** application to your
+Donwload the :download:`glue 2023.06.4.dmg
+<https://glueviz.s3.amazonaws.com/installers/2023.06.4/glue%202023.06.4.dmg>`
+file, open it and copy the **glue 2023.06.4.app** application to your
 **Applications** folder (or any other location you want to use). You will
 likely see a dialog asking you whether to continue opening the application as it
 was downloaded from the internet - if so, you can proceed (this is a standard
@@ -35,9 +35,9 @@ warning for any application not installed via the Mac App Store).
 Windows
 -------
 
-Donwload the :download:`glue 2023.06.3.exe
-<https://glueviz.s3.amazonaws.com/installers/2023.06.3/glue%202023.06.3.exe>` file.
-Once the file has downloaded, open the **glue 2023.06.3.exe** application. You
+Donwload the :download:`glue 2023.06.4.exe
+<https://glueviz.s3.amazonaws.com/installers/2023.06.4/glue%202023.06.4.exe>` file.
+Once the file has downloaded, open the **glue 2023.06.4.exe** application. You
 will likely then see a dialog such as:
 
 .. image:: images/warning1_windows.png
