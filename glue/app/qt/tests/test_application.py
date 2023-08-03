@@ -311,7 +311,7 @@ def check_clone_app(app):
     for tab1, tab2 in zip(app.viewers, copy.viewers):
         assert len(tab1) == len(tab2)
         for v1, v2 in zip(tab1, tab2):
-            assert type(v1) == type(v2)
+            assert type(v1) is type(v2)
             # same window properties
             assert v1.viewer_size == v2.viewer_size
             assert v1.position == v2.position

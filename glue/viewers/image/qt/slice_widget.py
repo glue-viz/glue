@@ -88,7 +88,7 @@ class MultiSliceWidgetHelper(object):
                 # but we will need to generalize this in future. We deliberately
                 # check the type of data.coords here since we want to treat
                 # subclasses differently.
-                if getattr(self.data, 'coords') is not None and type(self.data.coords) != LegacyCoordinates:
+                if getattr(self.data, 'coords') is not None and type(self.data.coords) is not LegacyCoordinates:
                     world_axis_index = self.data.ndim - 1 - i
                     world = world_axis(self.data.coords, self.data,
                                        pixel_axis=world_axis_index,

@@ -179,7 +179,7 @@ class SubsetGroupItem(Item):
 
     @property
     def tooltip(self):
-        if type(self.subset_group.subset_state) == core.subset.SubsetState:
+        if type(self.subset_group.subset_state) is core.subset.SubsetState:
             return "Empty subset"
 
         atts = self.subset_group.subset_state.attributes

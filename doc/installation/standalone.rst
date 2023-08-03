@@ -6,10 +6,9 @@ Standalone MacOS X and Windows applications
 On MacOS X and Windows, the easiest way to install glue along with a few of
 the common glue plugins is to download pre-built single-file applications.
 
-.. note:: This installation method is very recent, so if you run into any issues
+.. note:: If you run into any issues
           it would be really helpful if you could let us know by `opening an issue
-          <https://github.com/glue-viz/glue-standalone-apps/issues/new>`_. In the
-          mean time, you can always try one of the other installation methods.
+          <https://github.com/glue-viz/glue-standalone-apps/issues/new>`_.
 
 The plugins included by default in the standalone applications are:
 
@@ -25,39 +24,20 @@ should check one of the other installation methods mentioned in
 MacOS X
 -------
 
-Donwload the :download:`glue 2023.02.0.dmg
-<https://glueviz.s3.amazonaws.com/installers/2023.02.0/glue%202023.02.0.dmg>`
-file, open it and copy the **glue 2023.02.0.app** application to your
-**Applications** folder (or any other location you want to use).
-
-Open the copied application - after a short wait, you will likely see a dialog that looks like:
-
-.. image:: images/warning1_osx.png
-   :align: center
-   :width: 300
-
-Click **OK** then go to the MacOS X **Settings**, then **Security and Privacy**, then go to the
-**General** tab. You will likely see the following message:
-
-.. image:: images/warning2_osx.png
-   :align: center
-   :width: 600
-
-Click on **Open anyway**, then in the following dialog:
-
-.. image:: images/warning3_osx.png
-   :align: center
-   :width: 300
-
-Click **Open**. The glue application should now open! You should only need to do all this when
-installing a new version, if you relaunch the same application it should now work straight away.
+Donwload the :download:`glue 2023.06.4.dmg
+<https://glueviz.s3.amazonaws.com/installers/2023.06.4/glue%202023.06.4.dmg>`
+file, open it and copy the **glue 2023.06.4.app** application to your
+**Applications** folder (or any other location you want to use). You will
+likely see a dialog asking you whether to continue opening the application as it
+was downloaded from the internet - if so, you can proceed (this is a standard
+warning for any application not installed via the Mac App Store).
 
 Windows
 -------
 
-Donwload the :download:`glue 2023.02.0.exe
-<https://glueviz.s3.amazonaws.com/installers/2023.02.0/glue%202023.02.0.exe>` file.
-Once the file has downloaded, open the **glue 2023.02.0.exe** application. You
+Donwload the :download:`glue 2023.06.4.exe
+<https://glueviz.s3.amazonaws.com/installers/2023.06.4/glue%202023.06.4.exe>` file.
+Once the file has downloaded, open the **glue 2023.06.4.exe** application. You
 will likely then see a dialog such as:
 
 .. image:: images/warning1_windows.png
@@ -81,6 +61,5 @@ and are checked to make sure they all work correctly. We also provide
 glue packages and plugins. These are generated automatically and are
 not hand-checked, so may be unstable. The download links are:
 
-* Linux: :download:`glue-nightly <https://glueviz.s3.amazonaws.com/installers/nightly/glue-nightly>`
-* MacOS X: :download:`glue nightly.dmg <https://glueviz.s3.amazonaws.com/installers/nightly/glue%20nightly.dmg>`
-* Windows: :download:`glue nightly.exe <https://glueviz.s3.amazonaws.com/installers/nightly/glue%20nightly.exe>`
+* MacOS X: :download:`glue main.dmg <https://glueviz.s3.amazonaws.com/installers/main/glue%20main.dmg>`
+* Windows: :download:`glue main.exe <https://glueviz.s3.amazonaws.com/installers/main/glue%20main.exe>`

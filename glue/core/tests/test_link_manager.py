@@ -36,10 +36,10 @@ def example_components(self, add_derived=True):
 
     dummy_using = lambda x, y: (x, y)
     self.cs = [c1, c2, c3, c4, c5, c6, c7, c8]
-    self.links = [ComponentLink([c1], c3, lambda x:x),
-                  ComponentLink([c2], c4, lambda x:x),
-                  ComponentLink([c3], c1, lambda x:x),
-                  ComponentLink([c4], c2, lambda x:x),
+    self.links = [ComponentLink([c1], c3, lambda x: x),
+                  ComponentLink([c2], c4, lambda x: x),
+                  ComponentLink([c3], c1, lambda x: x),
+                  ComponentLink([c4], c2, lambda x: x),
                   ComponentLink([c3, c4], c5, dummy_using),
                   ComponentLink([c3, c4], c6, dummy_using)]
 

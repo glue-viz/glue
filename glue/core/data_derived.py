@@ -73,7 +73,7 @@ class IndexedData(BaseCartesianData, HubListener):
             changed = False
             for idim in range(self._original_data.ndim):
                 before, after = self._indices[idim], value[idim]
-                if type(before) != type(after):
+                if type(before) is not type(after):
                     raise TypeError("Can't change where the ``None`` values are in indices")
                 elif before != after:
                     changed = True
