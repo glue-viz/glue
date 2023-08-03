@@ -440,7 +440,7 @@ class TestCompositeSubsetStateCopy(object):
         s1 = cls(state1, state2)
         s2 = s1.copy()
 
-        assert type(s1) == type(s2)
+        assert type(s1) is type(s2)
         assert s1.state1.copy() is s2.state1
         assert s1.state2.copy() is s2.state2
 
