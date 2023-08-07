@@ -29,6 +29,7 @@ class CompositeArray(object):
 
         self._first = True
         self._mode = 'color'
+        self._set_nans_to_zero = True
 
     @property
     def mode(self):
@@ -137,7 +138,8 @@ class CompositeArray(object):
             data = interval(array)
             data = contrast_bias(data, out=data)
             data = stretch(data, out=data)
-            data[np.isnan(data)] = 0
+            if self._set_nans_to_zero:
+                data[np.isnan(data)] = 0
 
             if self.mode == 'colormap':
 
