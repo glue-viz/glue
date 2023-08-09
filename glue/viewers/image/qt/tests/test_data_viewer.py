@@ -3,6 +3,7 @@
 import os
 import gc
 from collections import Counter
+from packaging.version import Version
 
 import pytest
 
@@ -29,6 +30,8 @@ from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
 from glue.core.data_derived import IndexedData
 
 from ..data_viewer import ImageViewer
+
+NPY_GE_1_25 = Version(np.__version__) >= Version('1.25')
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -663,6 +666,7 @@ class TestImageViewer(object):
         assert not self.viewer.layers[2].enabled  # image subset
         assert self.viewer.layers[3].enabled  # scatter subset
 
+    @pytest.mark.skipif(NPY_GE_1_25, reason='`np.sum` can not be serialized after numpy/numpy#23020')
     def test_save_aggregate_slice(self, tmpdir):
 
         # Regression test to make sure that image viewers that include
