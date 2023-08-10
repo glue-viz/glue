@@ -76,13 +76,6 @@ def pytest_configure(config):
     load_plugins()
 
 
-def pytest_report_header(config):
-    from glue import __version__
-    glue_version = "%20s:\t%s" % ("glue", __version__)
-    from glue._deps import get_status
-    return os.linesep + glue_version + os.linesep + os.linesep + get_status()
-
-
 def pytest_unconfigure(config):
 
     os.environ.pop('GLUE_TESTING')
