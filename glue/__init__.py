@@ -1,6 +1,6 @@
 # Set up configuration variables
 
-__all__ = ['custom_viewer', 'qglue', 'test']
+__all__ = ['custom_viewer', 'test']
 
 import os
 
@@ -18,8 +18,6 @@ from glue.viewers.custom.helper import custom_viewer
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
-
-from .qglue import qglue
 
 from .main import load_plugins  # noqa
 
