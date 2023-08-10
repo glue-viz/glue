@@ -71,11 +71,9 @@ def custom_viewer(name, **kwargs):
         but uses the keys as dropdown labels and values as the setting
         passed to viewer functions.
       * ``keyword='att(foo)'`` doesn't create any widget, but passes
-        in the attribute named ``foo`` to the viewer functions, as an
-        :class:`~glue.viewers.custom.qt.custom_viewer.AttributeWithInfo` object.
+        in the attribute named ``foo`` to the viewer functions.
       * ``keyword='att'`` creates a dropdown to let the user select
-        one of the attributes from the data. The selected attribute
-        is passed as an :class:`~glue.viewers.custom.qt.custom_viewer.AttributeWithInfo`
+        one of the attributes from the data.
 
     **Viewer Functions**
 
