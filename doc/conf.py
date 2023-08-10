@@ -21,12 +21,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'numpydoc',
               'sphinx_automodapi.automodapi',
-              'sphinx_automodapi.smart_resolver',
-              'sphinxcontrib.spelling']
-
-# Add the redirect.py plugin which is in this directory
-sys.path.insert(0, os.path.abspath('.'))
-extensions.append('redirect')
+              'sphinx_automodapi.smart_resolver']
 
 # Workaround for RTD where the default encoding is ASCII
 if os.environ.get('READTHEDOCS') == 'True':
@@ -152,11 +147,6 @@ nitpick_ignore_regex = [('py:class', r'PyQt5\.QtCore\.Q[A-Z][a-zA-Z]+'),
                         ('py:class', r'QPalette\.[A-Z][a-zA-Z]+'),
                         ('py:class', r'QWidget\.[A-Z][a-zA-Z]+'),
                         ('py:class', r'Q[A-Z][a-zA-Z]+')]
-
-# coax Sphinx into treating descriptors as attributes
-# see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
-from glue.utils.qt.widget_properties import WidgetProperty
-WidgetProperty.__get__ = lambda self, *args, **kwargs: self
 
 viewcode_follow_imported_members = False
 
