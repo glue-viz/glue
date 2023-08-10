@@ -74,6 +74,7 @@ import numpy as np
 from qtpy.QtWidgets import QWidget, QGridLayout, QLabel
 
 from echo.qt import autoconnect_callbacks_to_qt
+from echo import ignore_callback
 
 from glue.config import qt_client
 
@@ -751,6 +752,25 @@ class CustomMatplotlibDataViewer(MatplotlibDataViewer):
 
         subset_state = self._coordinator._build_subset_state(roi=roi)
         self.apply_subset_state(subset_state)
+
+    def add_data(self, data):
+        """
+        For convenience, we set x/y limits from the Matplotlib
+        dataLim box when we add data if and only if we haven't
+        set the x_min and y_min limits to something different
+        from the default 0-1 range. This way we do not
+        override custom limits set in a setup function but
+        most custom viewers will show data as expected.
+        """
+        super(CustomMatplotlibDataViewer, self).add_data(data)
+        if (self.state.x_min == 0 and self.state.x_max == 1 and self.state.y_min == 0 and self.state.y_max == 1):
+            with ignore_callback(self.state, "x_min", "x_max", "y_min", "y_max"):
+                self.state.x_min = self.axes.dataLim.xmin
+                self.state.x_max = self.axes.dataLim.xmax
+                self.state.y_min = self.axes.dataLim.ymin
+                self.state.y_max = self.axes.dataLim.ymax
+        self.limits_to_mpl()
+        return True
 
 
 class CustomMatplotlibViewerState(MatplotlibDataViewerState):
