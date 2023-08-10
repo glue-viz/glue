@@ -3,7 +3,6 @@
 # Glue documentation build configuration file
 
 import os
-import sys
 from pkg_resources import get_distribution
 
 # -- General configuration ----------------------------------------------------

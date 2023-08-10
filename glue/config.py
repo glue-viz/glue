@@ -12,18 +12,14 @@ Objects used to configure Glue at runtime.
 """
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
-           'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
+           'ColormapRegistry', 'DataFactoryRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
-           'LayerActionRegistry', 'ProfileFitterRegistry', 'qt_client', 'data_factory',
+           'ProfileFitterRegistry', 'data_factory',
            'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
-           'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
-           'preference_panes', 'PreferencePanesRegistry',
+           'fit_plugin', 'importer', 'DictRegistry',
            'DataExporterRegistry', 'data_exporter', 'layer_action',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
-           'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
-           'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
            'LayerArtistMakerRegistry', 'layer_artist_maker',
-           'SessionPatchRegistry', 'session_patch',
            'AutoLinkerRegistry', 'autolinker',
            'DataTranslatorRegistry', 'data_translator',
            'SubsetDefinitionTranslatorRegistry', 'subset_state_translator',
@@ -277,49 +273,6 @@ class DataImportRegistry(Registry):
             self.add(label, func)
             return func
         return adder
-
-
-class MenubarPluginRegistry(Registry):
-    """
-    Stores menubar plugins.
-
-    The members property is a list of menubar plugins, each represented as a
-    ``(label, function)`` tuple. The ``function`` should take two items which
-    are a reference to the session and to the data collection respectively.
-    """
-
-    def add(self, label, function):
-        """
-        Add a new menubar plugin
-        :param label: Short label for the plugin
-        :type label: str
-
-        :param function: function
-        :type function: function()
-        """
-        self.members.append((label, function))
-
-    def __call__(self, label):
-        def adder(func):
-            self.add(label, func)
-            return func
-        return adder
-
-
-class PreferencePanesRegistry(DictRegistry):
-    """
-    Stores preference panes
-
-    The members property is a list of tuples of Qt widget classes that can have
-    their own tab in the preferences window.
-    """
-
-    def add(self, label, widget_cls):
-        self._members[label] = widget_cls
-
-    def __iter__(self):
-        for label in self._members:
-            yield label, self._members[label]
 
 
 class AutoLinkerRegistry(Registry):
@@ -655,32 +608,6 @@ class StretchRegistry(DictRegistry):
         return self._display[label]
 
 
-class QtClientRegistry(Registry):
-    """
-    Stores QT widgets to visualize data.
-
-    The members property is a list of Qt widget classes
-
-    New widgets can be registered via::
-
-        @qt_client
-        class CustomWidget(QMainWindow):
-            ...
-    """
-
-
-class QtFixedLayoutTabRegistry(Registry):
-    """
-    Stores Qt pre-defined tabs (non-MDI)
-
-    New widgets can be registered via::
-
-        @qt_fixed_layout_tab
-        class CustomTab(QWidget):
-            ...
-    """
-
-
 class ViewerToolRegistry(DictRegistry):
 
     def add(self, tool_cls):
@@ -697,37 +624,6 @@ class ViewerToolRegistry(DictRegistry):
     def __call__(self, tool_cls):
         self.add(tool_cls)
         return tool_cls
-
-
-class StartupActionRegistry(DictRegistry):
-
-    def add(self, startup_name, startup_function):
-        """
-        Add a startup function to the registry. This is a function that will
-        get called once glue has been started and any data loaded, and can
-        be used to set up specific layouts and create links.
-
-        Startup actions are triggered by either specifying comma-separated names
-        of actions on the command-line::
-
-            glue --startup=mystartupaction
-
-        or by passing an iterable of startup action names to the ``startup``
-        keyword of ``GlueApplication``.
-
-        The startup function will be given the session object and the data
-        collection object.
-        """
-        if startup_name in self.members:
-            raise ValueError("A startup action with the name '{0}' already exists".format(startup_name))
-        else:
-            self.members[startup_name] = startup_function
-
-    def __call__(self, name):
-        def adder(func):
-            self.add(name, func)
-            return func
-        return adder
 
 
 class LinkFunctionRegistry(Registry):
@@ -994,8 +890,6 @@ class SessionPatchRegistry(Registry):
 
 
 layer_artist_maker = LayerArtistMakerRegistry()
-qt_client = QtClientRegistry()
-qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -1004,12 +898,7 @@ importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
-layer_action = LayerActionRegistry()
-menubar_plugin = MenubarPluginRegistry()
-preference_panes = PreferencePanesRegistry()
 cli_parser = CLIParserRegistry()
-startup_action = StartupActionRegistry()
-keyboard_shortcut = KeyboardShortcut()
 autolinker = AutoLinkerRegistry()
 session_patch = SessionPatchRegistry()
 
@@ -1038,7 +927,6 @@ stretches.add('arcsinh', AsinhStretch(), display='Arcsinh')
 stretches.add('log', LogStretch(), display='Logarithmic')
 
 # Backward-compatibility
-single_subset_action = layer_action
 qglue_parser = cli_parser
 
 
