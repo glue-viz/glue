@@ -8,7 +8,9 @@ import webbrowser
 
 from qtpy import QtCore, QtWidgets, QtGui, compat
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QColor, QPalette
 
+from glue.config import settings
 from glue.core.application_base import Application
 from glue.core.message import ApplicationClosedMessage, DataCollectionMessage, SettingsChangeMessage
 from glue.core import command, BaseData
@@ -43,6 +45,66 @@ from glue.app.qt.save_data import SaveDataDialog
 
 __all__ = ['GlueApplication']
 DOCS_URL = 'http://www.glueviz.org'
+
+DARK_PALETTE = QPalette()
+DARK_PALETTE.setColor(QPalette.Window, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.WindowText, Qt.white)
+DARK_PALETTE.setColor(QPalette.Base, QColor(35, 35, 35))
+DARK_PALETTE.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.ToolTipBase, QColor(25, 25, 25))
+DARK_PALETTE.setColor(QPalette.ToolTipText, Qt.white)
+DARK_PALETTE.setColor(QPalette.Text, Qt.white)
+DARK_PALETTE.setColor(QPalette.Button, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.ButtonText, Qt.white)
+DARK_PALETTE.setColor(QPalette.BrightText, Qt.red)
+DARK_PALETTE.setColor(QPalette.Link, QColor(42, 130, 218))
+DARK_PALETTE.setColor(QPalette.Highlight, QColor(42, 130, 218))
+DARK_PALETTE.setColor(QPalette.HighlightedText, QColor(35, 35, 35))
+DARK_PALETTE.setColor(QPalette.Active, QPalette.Button, QColor(53, 53, 53))
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.WindowText, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Text, Qt.darkGray)
+DARK_PALETTE.setColor(QPalette.Disabled, QPalette.Light, QColor(53, 53, 53))
+
+LIGHT_PALETTE = QPalette()
+LIGHT_PALETTE.setColor(QPalette.Window, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.WindowText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Base, Qt.white)
+LIGHT_PALETTE.setColor(QPalette.AlternateBase, QColor(247, 247, 247))
+LIGHT_PALETTE.setColor(QPalette.ToolTipBase, QColor(255, 255, 220))
+LIGHT_PALETTE.setColor(QPalette.ToolTipText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Text, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.Button, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.ButtonText, Qt.black)
+LIGHT_PALETTE.setColor(QPalette.BrightText, Qt.red)
+LIGHT_PALETTE.setColor(QPalette.Link, Qt.blue)
+LIGHT_PALETTE.setColor(QPalette.Highlight, QColor(48, 140, 198))
+LIGHT_PALETTE.setColor(QPalette.HighlightedText, Qt.white)
+LIGHT_PALETTE.setColor(QPalette.Active, QPalette.Button, QColor(239, 239, 239))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.WindowText, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.Text, QColor(190, 190, 190))
+LIGHT_PALETTE.setColor(QPalette.Disabled, QPalette.Light, Qt.white)
+
+
+def _stylesheet(text_color='black', bg_color='white', in_prompt_color='deepskyblue', out_prompt_color='crimson'):
+    return f"""
+    QPlainTextEdit, QTextEdit {{
+        background-color: {bg_color};
+        background-clip: padding;
+        color: {text_color};
+        selection-background-color: #ccc;
+    }}
+    .inverted {{
+        background-color: {text_color};
+        color: {bg_color};
+    }}
+    .error {{ color: red; }}
+    .in-prompt-number {{ font-weight: bold; }}
+    .out-prompt-number {{ font-weight: bold; }}
+    .in-prompt {{ color: {in_prompt_color}; }}
+    .out-prompt {{ color: {out_prompt_color}; }}
+    """
 
 
 def _fix_ipython_pylab():
@@ -319,6 +381,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._connect()
         self.new_tab()
         self._update_viewer_in_focus()
+        self._on_ui_settings_change()
 
     def _update_viewer_in_focus(self, *args):
 
@@ -492,8 +555,34 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
         self._button_link_data.setEnabled(len(self.data_collection) > 1)
         self._button_edit_components.setEnabled(len(self.data_collection) > 0)
 
+    def _use_dark_terminal(self):
+        if settings.APP_THEME == 'System default':
+            # Try to identify whether we think the system theme is light or dark
+            palette = self.app.palette()
+            window_color = palette.color(QPalette.Window)
+            text_color = palette.color(QPalette.WindowText)
+            return window_color.lightness() < text_color.lightness()
+        else:
+            return settings.APP_THEME == 'Dark'
+
     def _on_ui_settings_change(self, *event):
         update_global_font_size()
+
+        # Update the global app palette
+        if settings.APP_THEME == 'Light':
+            palette = LIGHT_PALETTE
+        elif settings.APP_THEME == 'Dark':
+            palette = DARK_PALETTE
+        else:
+            palette = self.app.style().standardPalette()
+        self.app.setPalette(palette)
+
+        # Update the background color of the data canvas on each tab
+        for i in range(self.tab_count):
+            tab = self.tab(i)
+            tab.setBackground(palette.color(QPalette.AlternateBase))
+
+        self._update_terminal_style()
 
     def keyPressEvent(self, event):
         if self.current_tab.activeSubWindow() and self.current_tab.activeSubWindow().widget():
@@ -1162,6 +1251,7 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
             self._button_ipython.setEnabled(False)
         else:
             self._terminal = self.add_widget(widget)
+            self._update_terminal_style()
             self._terminal.closed.connect(self._on_terminal_close)
             self._hide_terminal()
 
@@ -1191,6 +1281,19 @@ class GlueApplication(Application, QtWidgets.QMainWindow):
     def _show_terminal(self):
         self._terminal.show()
         self._terminal.widget().show()
+
+    def _update_terminal_style(self):
+        if self.has_terminal(create_if_not=False):
+            dark = self._use_dark_terminal()
+            terminal = self._terminal.widget()
+            terminal_colors = dict(
+                text_color='white' if dark else 'black',
+                bg_color='#282828' if dark else 'white',
+                in_prompt_color='deepskyblue' if dark else 'navy',
+                out_prompt_color='crimson' if dark else 'darkred'
+            )
+            terminal.style_sheet = _stylesheet(**terminal_colors)
+            terminal.syntax_style = 'rrt' if dark else 'default'
 
     def start(self, size=None, position=None, block=True, maximized=True):
         """

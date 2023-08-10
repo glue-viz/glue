@@ -62,6 +62,7 @@ class AutolinkPreferencesPane(QtWidgets.QWidget):
 
 class PreferencesDialog(QtWidgets.QDialog):
 
+    app_theme = CurrentComboTextProperty('ui.combo_app_theme')
     theme = CurrentComboTextProperty('ui.combo_theme')
     background = ColorProperty('ui.color_background')
     foreground = ColorProperty('ui.color_foreground')
@@ -84,6 +85,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.ui.ok.clicked.connect(self.accept)
 
         self.ui.combo_theme.currentIndexChanged.connect(self._update_colors_from_theme)
+        self.ui.combo_app_theme.currentIndexChanged.connect(self._update_app_theme)
 
         self.ui.button_reset_dialogs.clicked.connect(self._reset_dialogs)
 
@@ -100,6 +102,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.data_color = settings.DATA_COLOR
         self.data_alpha = settings.DATA_ALPHA
         self.font_size = settings.FONT_SIZE
+        self.app_theme = settings.APP_THEME
 
         self._update_theme_from_colors()
 
@@ -138,6 +141,13 @@ class PreferencesDialog(QtWidgets.QDialog):
         elif self.theme != 'Custom':
             raise ValueError("Unknown theme: {0}".format(self.theme))
 
+    def _update_app_theme(self, *args):
+        if self.app_theme == 'Dark' and self.theme == 'Black on White':
+            self.theme = 'White on Black'
+        elif self.app_theme == 'Light' and self.theme == 'White on Black':
+            self.theme = 'Black on White'
+        self._update_colors_from_theme()
+
     def _reset_dialogs(self, *args):
         from glue.config import settings
         for key, _, _ in settings:
@@ -154,6 +164,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         settings.DATA_COLOR = self.data_color
         settings.DATA_ALPHA = self.data_alpha
         settings.FONT_SIZE = self.font_size
+        settings.APP_THEME = self.app_theme
 
         self._autolink_pane.finalize()
 
@@ -171,7 +182,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         app = self._app()
 
         if app is not None:
-            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE')))
+            app._hub.broadcast(SettingsChangeMessage(self, ('FOREGROUND_COLOR', 'BACKGROUND_COLOR', 'FONT_SIZE', 'APP_THEME')))
             if self.data_apply:  # If requested, trigger data to update color
                 app.set_data_color(settings.DATA_COLOR, settings.DATA_ALPHA)
 

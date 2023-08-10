@@ -303,6 +303,7 @@ class MatplotlibViewerMixin(object):
         self.state._set_axes_aspect_ratio(self.axes_ratio)
 
     def _update_appearance_from_settings(self, message=None):
+        super(MatplotlibViewerMixin, self)._update_appearance_from_settings(message)
         update_appearance_from_settings(self.axes)
         self.redraw()
 

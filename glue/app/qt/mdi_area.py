@@ -24,7 +24,7 @@ class GlueMdiArea(QtWidgets.QMdiArea):
         self._application = weakref.ref(application)
         self.setAcceptDrops(True)
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setBackground(QtGui.QBrush(QtGui.QColor(250, 250, 250)))
+        self.setBackground(QtGui.QBrush(application.app.palette().color(QtGui.QPalette.AlternateBase)))
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 

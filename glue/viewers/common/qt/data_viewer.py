@@ -206,6 +206,11 @@ class DataViewer(Viewer, BaseQtViewerWidget,
         else:
             self.hide_toolbars()
 
+    def _update_appearance_from_settings(self, message=None):
+        if message and 'APP_THEME' in message.settings:
+            self.remove_all_toolbars()
+            self.initialize_toolbar()
+
     def __gluestate__(self, context):
         state = Viewer.__gluestate__(self, context)
         state['size'] = self.viewer_size
