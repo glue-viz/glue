@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from glue.core.coordinates import coordinates_from_header, WCSCoordinates
 from glue.core.data import Component, Data
-from glue.config import data_factory, qglue_parser
+from glue.config import data_factory, cli_parser
 
 __all__ = ['is_fits', 'fits_reader', 'is_casalike', 'casalike_cube']
 
@@ -234,7 +234,7 @@ except ImportError:
     pass
 else:
     # Put HDUList parser before list parser
-    @qglue_parser(HDUList, priority=100)
+    @cli_parser(HDUList, priority=100)
     def _parse_data_hdulist(data, label):
         from glue.core.data_factories.fits import fits_reader
         return fits_reader(data, label=label)

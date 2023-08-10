@@ -3,7 +3,7 @@ import numpy as np
 
 from glue.core.data_factories.helpers import has_extension
 from glue.core.data import Component, Data
-from glue.config import data_factory, qglue_parser
+from glue.config import data_factory, cli_parser
 
 
 __all__ = ['astropy_tabular_data', 'sextractor_factory', 'cds_factory',
@@ -134,7 +134,7 @@ try:
 except ImportError:
     pass
 else:
-    @qglue_parser(Table)
+    @cli_parser(Table)
     def _parse_data_astropy_table(data, label):
         kwargs = dict((c, data[c]) for c in data.columns)
         return [Data(label=label, **kwargs)]

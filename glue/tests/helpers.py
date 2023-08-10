@@ -15,6 +15,9 @@ def make_marker(mark_creator, module, label=None, version=None, mark_if='lt'):
         if label == 'PyQt5':  # PyQt5 does not use __version__
             from PyQt5 import QtCore
             version_installed = QtCore.PYQT_VERSION_STR
+        elif label == 'PyQt6':  # PyQt6 does not use __version__
+            from PyQt6 import QtCore
+            version_installed = QtCore.PYQT_VERSION_STR
         else:
             mod = __import__(module)
             version_installed = mod.__version__
@@ -73,11 +76,13 @@ PLOTLY_INSTALLED, requires_plotly = make_skipper('plotly')
 H5PY_INSTALLED, requires_h5py = make_skipper('h5py')
 
 PYQT5_INSTALLED, requires_pyqt5 = make_skipper('PyQt5')
+PYQT6_INSTALLED, requires_pyqt6 = make_skipper('PyQt6')
 PYSIDE2_INSTALLED, requires_pyside2 = make_skipper('PySide2')
+PYSIDE6_INSTALLED, requires_pyside6 = make_skipper('PySide6')
 
 HYPOTHESIS_INSTALLED, requires_hypothesis = make_skipper('hypothesis')
 
-QT_INSTALLED = PYQT5_INSTALLED or PYSIDE2_INSTALLED
+QT_INSTALLED = PYQT5_INSTALLED or PYQT6_INSTALLED or PYSIDE2_INSTALLED or PYSIDE6_INSTALLED
 
 SPECTRAL_CUBE_INSTALLED, requires_spectral_cube = make_skipper('spectral_cube',
                                                                label='spectral-cube')

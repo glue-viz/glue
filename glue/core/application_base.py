@@ -231,7 +231,7 @@ class Application(HubListener):
 
         links = kwargs.pop('links', None)
 
-        from glue.qglue import parse_data, parse_links
+        from glue.core.parsers import parse_data, parse_links
 
         for label, data in kwargs.items():
             datasets.extend(parse_data(data, label))
