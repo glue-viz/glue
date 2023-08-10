@@ -254,7 +254,8 @@ def load_data(path, factory=None, **kwargs):
 
         Extra keywords are passed through to factory functions.
     """
-    from glue.qglue import parse_data
+
+    from glue.core.parsers import parse_data
 
     coord_first = kwargs.pop('coord_first', True)
     force_coords = kwargs.pop('force_coords', False)

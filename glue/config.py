@@ -202,7 +202,7 @@ class SettingRegistry(DictRegistry):
         return setting in self._defaults and setting not in self._members
 
 
-class QGlueParserRegistry(Registry):
+class CLIParserRegistry(Registry):
     """
     Registry for parsers that can be used to interpret arguments to the
     :func:`~glue.qglue` function.
@@ -1007,7 +1007,7 @@ fit_plugin = ProfileFitterRegistry()
 layer_action = LayerActionRegistry()
 menubar_plugin = MenubarPluginRegistry()
 preference_panes = PreferencePanesRegistry()
-qglue_parser = QGlueParserRegistry()
+cli_parser = CLIParserRegistry()
 startup_action = StartupActionRegistry()
 keyboard_shortcut = KeyboardShortcut()
 autolinker = AutoLinkerRegistry()
@@ -1039,6 +1039,7 @@ stretches.add('log', LogStretch(), display='Logarithmic')
 
 # Backward-compatibility
 single_subset_action = layer_action
+qglue_parser = cli_parser
 
 
 def load_configuration(search_path=None):
