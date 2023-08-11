@@ -94,5 +94,5 @@ def custom_viewer(name, **kwargs):
     """
     # For now we only support Qt, but this function should be extended to work
     # with non-Qt front-ends in future.
-    from glue_qt.viewers.custom.qt import CustomViewer
+    from glue_qt.viewers.custom import CustomViewer
     return CustomViewer.create_new_subclass(name, **kwargs)
