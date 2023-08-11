@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-import optparse
 from importlib import import_module
 
-from glue import __version__
 from glue.logger import logger
 
 
