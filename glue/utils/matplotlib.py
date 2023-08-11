@@ -13,7 +13,6 @@ from matplotlib import __version__
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
 
-from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
 MATPLOTLIB_GE_30 = Version(__version__) >= Version('3')
