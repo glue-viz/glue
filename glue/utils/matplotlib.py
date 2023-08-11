@@ -20,20 +20,10 @@ MATPLOTLIB_GE_30 = Version(__version__) >= Version('3')
 MATPLOTLIB_GE_36 = Version(__version__) >= Version('3.6')
 
 
-__all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
+__all__ = ['all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
            'color2rgb', 'point_contour',
            'datetime64_to_mpl', 'mpl_to_datetime64', 'color2hex']
-
-
-def renderless_figure():
-    # Matplotlib figure that skips the render step, for test speed
-    from unittest.mock import MagicMock
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    fig.canvas.draw = MagicMock()
-    plt.close('all')
-    return fig
 
 
 def all_artists(fig):
