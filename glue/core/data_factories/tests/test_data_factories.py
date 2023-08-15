@@ -213,8 +213,6 @@ def test_data_reload_shape_change():
     assert d.coords is coords_old
 
 
-# TODO: this doesn't belong in the core since it relies on Qt
-@requires_qt
 def test_file_watch():
     cb = MagicMock()
     with make_file(b'test', 'csv') as fname:
@@ -232,7 +230,6 @@ def test_file_watch():
         assert cb.call_count == 1
 
 
-@requires_qt
 @pytest.mark.skipif(sys.platform.startswith('win'), reason='file deletion doesn\'t work on Windows')
 def test_file_watch_os_error():
     cb = MagicMock()
