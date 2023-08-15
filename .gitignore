@@ -20,7 +20,6 @@ glue/_githash.py
 # Other
 .pylintrc
 *.ropeproject
-glue/qt/glue_qt_resources.py
 *.__junk*
 *.orig
 *~

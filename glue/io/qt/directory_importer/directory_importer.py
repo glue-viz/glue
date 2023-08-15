@@ -1,7 +1,4 @@
-from glue.config import importer
-from glue.dialogs.data_wizard.qt import data_wizard
-
-
-@importer("Import from directory")
-def directory_importer():
-    return data_wizard(mode='directories')
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.io.qt.directory_importer.directory_importer is deprecated, use glue_qt.io.directory_importer.directory_importer) instead', GlueDeprecationWarning)
+from glue_qt.io.directory_importer.directory_importer import *  # noqa

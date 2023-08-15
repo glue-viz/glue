@@ -5,18 +5,18 @@ def setup():
 
     from glue.plugins.tools import python_export  # noqa
 
-    from glue.viewers.histogram.qt.data_viewer import HistogramViewer
+    from glue_qt.viewers.histogram.data_viewer import HistogramViewer
     HistogramViewer.subtools = deepcopy(HistogramViewer.subtools)
     HistogramViewer.subtools['save'].append('save:python')
 
-    from glue.viewers.image.qt.data_viewer import ImageViewer
+    from glue_qt.viewers.image.data_viewer import ImageViewer
     ImageViewer.subtools = deepcopy(ImageViewer.subtools)
     ImageViewer.subtools['save'].append('save:python')
 
-    from glue.viewers.scatter.qt.data_viewer import ScatterViewer
+    from glue_qt.viewers.scatter.data_viewer import ScatterViewer
     ScatterViewer.subtools = deepcopy(ScatterViewer.subtools)
     ScatterViewer.subtools['save'].append('save:python')
 
-    from glue.viewers.profile.qt.data_viewer import ProfileViewer
+    from glue_qt.viewers.profile.data_viewer import ProfileViewer
     ProfileViewer.subtools = deepcopy(ProfileViewer.subtools)
     ProfileViewer.subtools['save'].append('save:python')

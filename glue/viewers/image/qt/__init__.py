@@ -1,7 +1,4 @@
-from .data_viewer import ImageViewer  # noqa
-from .standalone_image_viewer import StandaloneImageViewer  # noqa
-
-
-def setup():
-    from glue.config import qt_client
-    qt_client.add(ImageViewer)
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.viewers.image.qt is deprecated, use glue_qt.viewers.image) instead', GlueDeprecationWarning)
+from glue_qt.viewers.image import *  # noqa

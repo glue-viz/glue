@@ -10,7 +10,3 @@
 # def jpeg_reader(file_name):
 #    ...
 #    return data
-
-
-"""Extra qt clients"""
-# qt_client(ClientClass)

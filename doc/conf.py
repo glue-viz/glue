@@ -3,7 +3,6 @@
 # Glue documentation build configuration file
 
 import os
-import sys
 from pkg_resources import get_distribution
 
 # -- General configuration ----------------------------------------------------
@@ -21,12 +20,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'numpydoc',
               'sphinx_automodapi.automodapi',
-              'sphinx_automodapi.smart_resolver',
-              'sphinxcontrib.spelling']
-
-# Add the redirect.py plugin which is in this directory
-sys.path.insert(0, os.path.abspath('.'))
-extensions.append('redirect')
+              'sphinx_automodapi.smart_resolver']
 
 # Workaround for RTD where the default encoding is ASCII
 if os.environ.get('READTHEDOCS') == 'True':
@@ -41,7 +35,6 @@ intersphinx_mapping = {
     'astropy': ('https://docs.astropy.org/en/stable/', None),
     'echo': ('https://echo.readthedocs.io/en/latest/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'PyQt5': ('https://www.riverbankcomputing.com/static/Docs/PyQt5/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -131,32 +124,11 @@ texinfo_documents = [
 todo_include_todos = True
 autoclass_content = 'both'
 
-nitpick_ignore = [('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.insertAction'),
-                  ('py:obj', 'glue.viewers.common.qt.toolbar.BasicToolbar.setTabOrder'),
-                  ('py:class', 'glue.viewers.histogram.layer_artist.HistogramLayerBase'),
+nitpick_ignore = [('py:class', 'glue.viewers.histogram.layer_artist.HistogramLayerBase'),
                   ('py:class', 'glue.viewers.scatter.layer_artist.ScatterLayerBase'),
                   ('py:class', 'glue.viewers.image.layer_artist.ImageLayerBase'),
                   ('py:class', 'glue.viewers.image.layer_artist.RGBImageLayerBase'),
-                  ('py:class', 'glue.viewers.image.state.BaseImageLayerState'),
-                  ('py:class', 'glue.viewers.common.qt.toolbar.BasicToolbar'),
-                  ('py:class', 'glue.viewers.common.qt.base_widget.BaseQtViewerWidget'),
-                  ('py:class', 'sip.voidptr'),
-                  ('py:class', 'PyQt5.sip.voidptr'),
-                  ('py:class', 'PYQT_SLOT')]
-
-nitpick_ignore_regex = [('py:class', r'PyQt5\.QtCore\.Q[A-Z][a-zA-Z]+'),
-                        ('py:class', r'PyQt5\.QtWidgets\.Q[A-Z][a-zA-Z]+'),
-                        ('py:class', r'PyQt6\.QtCore\.Q[A-Z][a-zA-Z]+'),
-                        ('py:class', r'PyQt6\.QtWidgets\.Q[A-Z][a-zA-Z]+'),
-                        ('py:class', r'Qt\.[A-Z][a-zA-Z]+'),
-                        ('py:class', r'QPalette\.[A-Z][a-zA-Z]+'),
-                        ('py:class', r'QWidget\.[A-Z][a-zA-Z]+'),
-                        ('py:class', r'Q[A-Z][a-zA-Z]+')]
-
-# coax Sphinx into treating descriptors as attributes
-# see https://bitbucket.org/birkenfeld/sphinx/issue/1254/#comment-7587063
-from glue.utils.qt.widget_properties import WidgetProperty
-WidgetProperty.__get__ = lambda self, *args, **kwargs: self
+                  ('py:class', 'glue.viewers.image.state.BaseImageLayerState')]
 
 viewcode_follow_imported_members = False
 

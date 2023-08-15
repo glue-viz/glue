@@ -733,8 +733,6 @@ class Data(BaseCartesianData):
         data[xid, 0:2]
         data[xid, [True, False, True]]
 
-    See also: :ref:`data_tutorial`
-
     Parameters
     ----------
     label : `str`

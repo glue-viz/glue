@@ -1,1 +1,0 @@
-from echo.qt import *
