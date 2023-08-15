@@ -1,5 +1,31 @@
 # Full changelog
 
+## v1.13.0 - 2023-08-15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Add support for defining custom image stretches by @astrofrog in https://github.com/glue-viz/glue/pull/2423
+
+#### Bug Fixes
+
+- Set better starting xlim and ylim for custom viewers by @jfoster17 in https://github.com/glue-viz/glue/pull/2422
+
+#### Documentation
+
+- Update standalone application instructions by @astrofrog in https://github.com/glue-viz/glue/pull/2426
+
+#### Other Changes
+
+- Skip `test_save_aggregate_slice` for Numpy 1.25.x and unpin numpy-dev by @dhomeier in https://github.com/glue-viz/glue/pull/2429
+- Move frontend-independent data/link parsing code from glue.qglue to glue.core by @astrofrog in https://github.com/glue-viz/glue/pull/2432
+- Remove Qt-specific code being split into glue-qt by @astrofrog in https://github.com/glue-viz/glue/pull/2431
+- Added glue-qt dependency by @astrofrog in https://github.com/glue-viz/glue/pull/2433
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.12.0...v1.13.0
+
 ## v1.12.0 - 2023-06-16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -695,7 +721,8 @@
 - 
 - Refactored the viewer class base classes https://github.com/glue-viz/glue/pull/1746:
 - 
-- - `glue.core.application_base.ViewerBase` has been removed in favor of
+- - `glue.core.application_base.ViewerBase` has been removed in favor of   
+  
 - 
 - 
 - 
@@ -706,7 +733,8 @@
 - 
 - 
 - 
-- - `glue.viewers.common.viewer.BaseViewer` and
+- - `glue.viewers.common.viewer.BaseViewer` and   
+  
 - 
 - 
 - 
@@ -717,7 +745,8 @@
 - 
 - 
 - 
-- - `glue.viewers.common.viewer.Viewer`.
+- - `glue.viewers.common.viewer.Viewer`.   
+  
 - 
 - 
 - 
@@ -728,7 +757,8 @@
 - 
 - 
 - 
-- - 
+- -    
+  
 - 
 - 
 - 
@@ -739,7 +769,8 @@
 - 
 - 
 - 
-- - `glue.viewers.common.viewer.Viewer` is now where the base logic is defined
+- - `glue.viewers.common.viewer.Viewer` is now where the base logic is defined   
+  
 - 
 - 
 - 
@@ -750,7 +781,8 @@
 - 
 - 
 - 
-- - for using state classes in viewers (instead of
+- - for using state classes in viewers (instead of   
+  
 - 
 - 
 - 
@@ -761,7 +793,8 @@
 - 
 - 
 - 
-- - `glue.viewers.common.qt.DataViewerWithState`).
+- - `glue.viewers.common.qt.DataViewerWithState`).   
+  
 - 
 - 
 - 
@@ -772,7 +805,8 @@
 - 
 - 
 - 
-- - 
+- -    
+  
 - 
 - 
 - 
@@ -783,7 +817,8 @@
 - 
 - 
 - 
-- - `glue.viewers.common.qt.DataViewerWithState` is now deprecated.
+- - `glue.viewers.common.qt.DataViewerWithState` is now deprecated.   
+  
 - 
 - 
 - 
@@ -794,7 +829,8 @@
 - 
 - 
 - 
-- - 
+- -    
+  
 - 
 - 
 - 
