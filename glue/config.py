@@ -16,10 +16,11 @@ __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
            'ProfileFitterRegistry', 'data_factory',
            'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
-           'fit_plugin', 'importer', 'DictRegistry',
+           'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
            'DataExporterRegistry', 'data_exporter',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
            'LayerArtistMakerRegistry', 'layer_artist_maker',
+           'SessionPatchRegistry', 'session_patch',
            'AutoLinkerRegistry', 'autolinker',
            'DataTranslatorRegistry', 'data_translator',
            'SubsetDefinitionTranslatorRegistry', 'subset_state_translator',
@@ -656,46 +657,6 @@ class LinkFunctionRegistry(Registry):
         return adder
 
 
-class LayerActionRegistry(Registry):
-    """
-    Stores custom menu actions available when the user select one or more
-    datasets, subset group, or subset in the data collection view.
-
-    This members property is a list of named tuples with the following
-    attributes:
-
-    * ``label``: the user-facing name of the action
-    * ``tooltip``: the text that appears when hovering with the mouse over the action
-    * ``callback``: the function to call when the action is triggered
-    * ``icon``: an icon image to use for the layer action
-    * ``single``: whether to show this action only when selecting single layers (default: `False`)
-    * ``data``: if ``single`` is `True` whether to only show the action when selecting a dataset
-    * ``subset_group``: if ``single`` is `True` whether to only show the action when selecting a subset group
-    * ``subset``: if ``single`` is `True` whether to only show the action when selecting a subset
-
-    The callback function is called with two arguments. If ``single`` is
-    `True`, the first argument is the selected layer, otherwise it is the list
-    of selected layers. The second argument is the
-    `~glue.core.data_collection.DataCollection` object.
-    """
-    item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
-
-    def __call__(self, label, callback=None, tooltip=None, icon=None, single=False,
-                 data=False, subset_group=False, subset=False):
-
-        # Backward-compatibility
-        if callback is not None:
-            self.add(self.item(label, tooltip, callback, icon, True,
-                               False, False, True))
-            return True
-
-        def adder(func):
-            self.add(self.item(label, tooltip, func, icon, single,
-                               data, subset_group, subset))
-            return func
-        return adder
-
-
 class LinkHelperRegistry(Registry):
     """
     Stores helper objects that compute many ComponentLinks at once
@@ -768,52 +729,6 @@ class BooleanSetting(object):
             self.state = state
 
         return self.state
-
-
-class KeyboardShortcut(DictRegistry):
-    """
-    Stores keyboard shortcuts.
-    The members property is a dictionary within a dictionary of keyboard
-    shortcuts, which is represented as (viewer,(keybind,function)). The
-    ``function`` should take one item, which is a reference to the session.
-    """
-
-    def add(self, valid_viewers, keybind, function):
-        """
-        Add a new keyboard shortcut
-
-        Parameters
-        ----------
-        arg1: list
-            list of viewers where event can be fired
-        arg2: Qt.Key
-            type of key event
-        arg3: function()
-            function to be run that corresponds with key
-        """
-        if valid_viewers:
-            for viewer in valid_viewers:
-                if viewer in self.members:
-                    if keybind in self.members[viewer]:
-                        raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, viewer))
-                    else:
-                        self.members[viewer][keybind] = function
-                else:
-                    self.members[viewer] = {keybind: function}
-        else:
-            if None in self.members:
-                if keybind in self.members[None]:
-                    raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, None))
-                else:
-                    self.members[None][keybind] = function
-            else:
-                self.members[None] = {keybind: function}
-
-    def __call__(self, keybind, valid_viewers):
-        def adder(func):
-            self.add(valid_viewers, keybind, func)
-            return func
-        return adder
 
 
 class LayerArtistMakerRegistry(Registry):
@@ -1024,3 +939,19 @@ def check_unit_converter(value):
 
 
 settings.add('UNIT_CONVERTER', 'default', validator=check_unit_converter)
+
+# It is difficult to emit deprecation warnigns for the following, so we just
+# import these if glue-qt is installed. We can still remove these in future if
+# needed but because we can't easily deprecate, we should leave them for a
+# little while.
+
+try:
+    from glue_qt.config import (QtClientRegistry, qt_client,   # noqa
+                                LayerActionRegistry, layer_action,
+                                MenubarPluginRegistry, menubar_plugin,
+                                PreferencePanesRegistry, preference_panes,
+                                StartupActionRegistry, startup_action,
+                                QtFixedLayoutTabRegistry, qt_fixed_layout_tab,
+                                KeyboardShortcut, keyboard_shortcut)
+except ImportError:
+    pass
