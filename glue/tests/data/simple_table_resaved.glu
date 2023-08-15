@@ -84,7 +84,6 @@
       "glue.plugins.wcs_autolinking",
       "glue.io.formats.fits",
       "glue.plugins.tools.pv_slicer",
-      "glue.plugins.export_d3po",
       "glue.viewers.profile.qt"
     ],
     "session": "Session",

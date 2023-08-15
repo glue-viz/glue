@@ -208,7 +208,6 @@
     "data": "DataCollection",
     "plugins": [
       "glue.plugins.tools",
-      "glue.plugins.export_d3po",
       "glue.core.data_exporters",
       "mosviz",
       "glue.io.formats.fits",

@@ -295,7 +295,6 @@
       "glue.viewers.histogram",
       "glue.viewers.scatter",
       "glue_ginga",
-      "glue.plugins.export_d3po"
     ],
     "session": "Session",
     "tab_names": [

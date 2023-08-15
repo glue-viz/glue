@@ -80,7 +80,6 @@
       "glue.viewers.histogram.qt",
       "glue.plugins.coordinate_helpers",
       "glue.viewers.image.qt",
-      "glue.plugins.export_d3po",
       "glue.plugins.tools",
       "glue.viewers.scatter.qt",
       "glue.plugins.wcs_autolinking",
