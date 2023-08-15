@@ -52,7 +52,7 @@ class QtTimer(TimerBase):
 
 def get_timer():
     try:
-        from qtpy import QtCore
+        from qtpy import QtCore  # noqa
     except ImportError:
         return SimpleTimer
     else:

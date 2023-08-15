@@ -8,7 +8,7 @@ from glue.core.component import CategoricalComponent
 from glue.core.data import BaseCartesianData, Data
 from glue.core import data_factories as df
 from glue.config import data_factory
-from glue.tests.helpers import requires_astropy, make_file, requires_qt
+from glue.tests.helpers import requires_astropy, make_file
 
 
 def test_load_data_auto_assigns_label():
