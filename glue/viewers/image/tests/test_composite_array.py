@@ -66,15 +66,19 @@ class TestCompositeArray(object):
         expected_a = np.array([[cm.Blues(1.), cm.Blues(0.5)],
                                [cm.Blues(0.), cm.Blues(0.)]])
 
-        expected_b = np.array([[cm.Reds(0.), cm.Reds(1.)],
-                               [cm.Reds(0.), cm.Reds(0.)]])
+        bad_value = cm.Reds.with_extremes(
+            # set "bad" to the default color and alpha=1
+            bad=cm.Reds.get_bad().tolist()[:3] + [1.]
+        )(np.nan)
+        expected_b = np.array(
+            [[bad_value, cm.Reds(1.)],
+             [cm.Reds(0.), cm.Reds(0.)]]
+        )
 
         # If both layers have alpha=1, the top layer should be the only one visible
-
         assert_allclose(self.composite(bounds=self.default_bounds), expected_b)
 
         # If the top layer has alpha=0, the bottom layer should be the only one visible
-
         self.composite.set('b', alpha=0.)
 
         assert_allclose(self.composite(bounds=self.default_bounds), expected_a)
@@ -96,7 +100,7 @@ class TestCompositeArray(object):
                            cmap=cm.Blues, clim=(0, 2))
 
         self.composite.set('b', zorder=1, visible=True, array=self.array2,
-                           cmap=lambda x: cm.Reds(x, alpha=abs(np.nan_to_num(x))), clim=(0, 1))
+                           cmap=lambda x: cm.Reds(x, alpha=abs(x)), clim=(0, 1))
 
         # Determine expected result for each layer individually in the absence
         # of transparency
@@ -104,14 +108,18 @@ class TestCompositeArray(object):
         expected_a = np.array([[cm.Blues(1.), cm.Blues(0.5)],
                                [cm.Blues(0.), cm.Blues(0.)]])
 
-        expected_b = np.array([[cm.Reds(0.), cm.Reds(1.)],
-                               [cm.Reds(0.), cm.Reds(0.)]])
+        bad_value = cm.Reds.with_extremes(
+            # set "bad" to the default color and alpha=0
+            bad=cm.Reds.get_bad().tolist()[:3] + [0.]
+        )(np.nan)
+        expected_b_1 = np.array([[bad_value, cm.Reds(1.)],
+                                 [cm.Reds(0.), cm.Reds(0.)]])
 
         # If the top layer has alpha=1 with a colormap alpha fading proportional to absval,
         # it should be visible only at the nonzero value [0, 1]
 
         assert_allclose(self.composite(bounds=self.default_bounds),
-                        [[expected_a[0, 0], expected_b[0, 1]], expected_a[1]])
+                        [[expected_a[0, 0], expected_b_1[0, 1]], expected_a[1]])
 
         # For the same case with the top layer alpha=0.5 that value should become an equal
         # blend of both layers again
@@ -119,7 +127,7 @@ class TestCompositeArray(object):
         self.composite.set('b', alpha=0.5)
 
         assert_allclose(self.composite(bounds=self.default_bounds),
-                        [[expected_a[0, 0], 0.5 * (expected_a[0, 1] + expected_b[0, 1])],
+                        [[expected_a[0, 0], 0.5 * (expected_a[0, 1] + expected_b_1[0, 1])],
                          expected_a[1]])
 
         # A third layer added at the bottom should not be visible in the output
@@ -129,21 +137,27 @@ class TestCompositeArray(object):
                            cmap=cm.Greens, clim=(0, 2))
 
         assert_allclose(self.composite(bounds=self.default_bounds),
-                        [[expected_a[0, 0], 0.5 * (expected_a[0, 1] + expected_b[0, 1])],
+                        [[expected_a[0, 0], 0.5 * (expected_a[0, 1] + expected_b_1[0, 1])],
                          expected_a[1]])
 
         # For only the bottom layer having such colormap, the top layer should appear just the same
 
-        self.composite.set('a', alpha=1., cmap=lambda x: cm.Blues(x, alpha=abs(np.nan_to_num(x))))
+        self.composite.set('a', alpha=1., cmap=lambda x: cm.Blues(x, alpha=abs(x)))
         self.composite.set('b', alpha=1., cmap=cm.Reds)
 
-        assert_allclose(self.composite(bounds=self.default_bounds), expected_b)
+        bad_value = cm.Reds.with_extremes(
+            # set "bad" to the default color and alpha=1
+            bad=cm.Reds.get_bad().tolist()[:3] + [1.]
+        )(np.nan)
+        expected_b_2 = np.array([[bad_value, cm.Reds(1.)],
+                                 [cm.Reds(0.), cm.Reds(0.)]])
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_b_2)
 
-        # Settin the third layer on top with alpha=0 should not affect the appearance
+        # Setting the third layer on top with alpha=0 should not affect the appearance
 
         self.composite.set('c', zorder=2, alpha=0.)
 
-        assert_allclose(self.composite(bounds=self.default_bounds), expected_b)
+        assert_allclose(self.composite(bounds=self.default_bounds), expected_b_2)
 
     def test_color_blending(self):
 

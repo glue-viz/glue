@@ -137,21 +137,29 @@ class CompositeArray(object):
             data = interval(array)
             data = contrast_bias(data, out=data)
             data = stretch(data, out=data)
-            data[np.isnan(data)] = 0
 
             if self.mode == 'colormap':
+
+                # ensure "bad" values have the same alpha as the
+                # rest of the layer:
+                if hasattr(layer['cmap'], 'get_bad'):
+                    bad_color = layer['cmap'].get_bad().tolist()[:3]
+                    layer_cmap = layer['cmap'].with_extremes(
+                        bad=bad_color + [layer['alpha']]
+                    )
+                else:
+                    layer_cmap = layer['cmap']
 
                 if img is None:
                     img = np.ones(data.shape + (4,))
 
                 # Compute colormapped image
-                plane = layer['cmap'](data)
+                plane = layer_cmap(data)
 
                 # Check what the smallest colormap alpha value for this layer is
                 # - if it is 1 then this colormap does not change transparency,
                 # and this allows us to speed things up a little.
-
-                if layer['cmap'](CMAP_SAMPLING)[:, 3].min() == 1:
+                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1:
 
                     if layer['alpha'] == 1:
                         img[...] = 0
@@ -162,7 +170,6 @@ class CompositeArray(object):
                 else:
 
                     # Use traditional alpha compositing
-
                     alpha_plane = layer['alpha'] * plane[:, :, 3]
 
                     plane[:, :, 0] = plane[:, :, 0] * alpha_plane
@@ -176,7 +183,6 @@ class CompositeArray(object):
                 img[:, :, 3] = 1
 
             else:
-
                 if img is None:
                     img = np.zeros(data.shape + (4,))
 
