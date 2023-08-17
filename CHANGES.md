@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.13.1 - 2023-08-17
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Add back parsing functions to qglue temporarily by @astrofrog in https://github.com/glue-viz/glue/pull/2435
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.13.0...v1.13.1
+
 ## v1.13.0 - 2023-08-15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -672,54 +683,84 @@
 
 ### What's Changed
 
-- Improved how we handle equal aspect ratio to not depend on
-- Matplotlib. https://github.com/glue-viz/glue/pull/1894
+- Improved how we handle equal aspect ratio to not depend on   
+  
+- Matplotlib. https://github.com/glue-viz/glue/pull/1894   
+  
 - 
-- Avoid showing a warning when closing an empty tab. https://github.com/glue-viz/glue/pull/1890
+- Avoid showing a warning when closing an empty tab. https://github.com/glue-viz/glue/pull/1890   
+  
 - 
-- Fix bug that caused component arithmetic to not work if
-- Numpy was imported in user's config.py file. https://github.com/glue-viz/glue/pull/1887
+- Fix bug that caused component arithmetic to not work if   
+  
+- Numpy was imported in user's config.py file. https://github.com/glue-viz/glue/pull/1887   
+  
 - 
-- Added the ability to define custom layer artist makers to
-- override default layer artists in viewers. https://github.com/glue-viz/glue/pull/1850
+- Added the ability to define custom layer artist makers to   
+  
+- override default layer artists in viewers. https://github.com/glue-viz/glue/pull/1850   
+  
 - 
-- Fix Plot.ly exporter for categorical components and histogram
-- viewer. https://github.com/glue-viz/glue/pull/1886
+- Fix Plot.ly exporter for categorical components and histogram   
+  
+- viewer. https://github.com/glue-viz/glue/pull/1886   
+  
 - 
-- Fix issues with reading very large FITS files on some systems. https://github.com/glue-viz/glue/pull/1884
+- Fix issues with reading very large FITS files on some systems. https://github.com/glue-viz/glue/pull/1884   
+  
 - 
-- Added documentation about plugins. https://github.com/glue-viz/glue/pull/1837
+- Added documentation about plugins. https://github.com/glue-viz/glue/pull/1837   
+  
 - 
-- Better isolate code related to pixel selection tool in image
-- viewer that depended on Qt. https://github.com/glue-viz/glue/pull/1763
+- Better isolate code related to pixel selection tool in image   
+  
+- viewer that depended on Qt. https://github.com/glue-viz/glue/pull/1763   
+  
 - 
-- Improve handling of units in FITS files. https://github.com/glue-viz/glue/pull/1723
+- Improve handling of units in FITS files. https://github.com/glue-viz/glue/pull/1723   
+  
 - 
-- Added documentation about creating viewers for glue using the
-- new state-based infrastructure. https://github.com/glue-viz/glue/pull/1740
+- Added documentation about creating viewers for glue using the   
+  
+- new state-based infrastructure. https://github.com/glue-viz/glue/pull/1740   
+  
 - 
-- Make it possible to pass the initial state of a viewer to an
-- application's `new_data_viewer` method. https://github.com/glue-viz/glue/pull/1877
+- Make it possible to pass the initial state of a viewer to an   
+  
+- application's `new_data_viewer` method. https://github.com/glue-viz/glue/pull/1877   
+  
 - 
-- Ensure that glue can be imported if QtPy is installed but PyQt
-- and PySide aren't. [#1865, #1836]
+- Ensure that glue can be imported if QtPy is installed but PyQt   
+  
+- and PySide aren't. [#1865, #1836]   
+  
 - 
-- Fix unit display for coordinates from WCS headers that don't have
-- CTYPE but have CUNIT. https://github.com/glue-viz/glue/pull/1856
+- Fix unit display for coordinates from WCS headers that don't have   
+  
+- CTYPE but have CUNIT. https://github.com/glue-viz/glue/pull/1856   
+  
 - 
-- Enable tab completion on Data objects. https://github.com/glue-viz/glue/pull/1874
+- Enable tab completion on Data objects. https://github.com/glue-viz/glue/pull/1874   
+  
 - 
-- Automatically select datasets in link editor if there are only two. https://github.com/glue-viz/glue/pull/1837
+- Automatically select datasets in link editor if there are only two. https://github.com/glue-viz/glue/pull/1837   
+  
 - 
-- Change 'Export Session' dialog to offer to save with relative paths to data
-- by default instead of absolute paths. https://github.com/glue-viz/glue/pull/1803
+- Change 'Export Session' dialog to offer to save with relative paths to data   
+  
+- by default instead of absolute paths. https://github.com/glue-viz/glue/pull/1803   
+  
 - 
-- Added a new method `screenshot` on `GlueApplication` to save a
-- screenshot of the current view. https://github.com/glue-viz/glue/pull/1808
+- Added a new method `screenshot` on `GlueApplication` to save a   
+  
+- screenshot of the current view. https://github.com/glue-viz/glue/pull/1808   
+  
 - 
-- Show the active subset in the toolbar. https://github.com/glue-viz/glue/pull/1797
+- Show the active subset in the toolbar. https://github.com/glue-viz/glue/pull/1797   
+  
 - 
-- Refactored the viewer class base classes https://github.com/glue-viz/glue/pull/1746:
+- Refactored the viewer class base classes https://github.com/glue-viz/glue/pull/1746:   
+  
 - 
 - - `glue.core.application_base.ViewerBase` has been removed in favor of   
   
@@ -842,65 +883,107 @@
 - 
 - 
 - 
-- Make it so that the modest image only resamples the data when the
-- mouse is no longer pressed - this avoids too many refreshes when
-- panning/zooming. https://github.com/glue-viz/glue/pull/1866
+- Make it so that the modest image only resamples the data when the   
+  
+- mouse is no longer pressed - this avoids too many refreshes when   
+  
+- panning/zooming. https://github.com/glue-viz/glue/pull/1866   
+  
 - 
-- Make it possible to unglue multiple links in one go. https://github.com/glue-viz/glue/pull/1809
+- Make it possible to unglue multiple links in one go. https://github.com/glue-viz/glue/pull/1809   
+  
 - 
-- Make it so that adding a subset to a viewer no longer adds the
-- associated data, since in some cases the viewer can handle the
-- subset size, but not the full data. https://github.com/glue-viz/glue/pull/1807
+- Make it so that adding a subset to a viewer no longer adds the   
+  
+- associated data, since in some cases the viewer can handle the   
+  
+- subset size, but not the full data. https://github.com/glue-viz/glue/pull/1807   
+  
 - 
-- Defined a new abstract base class for all datasets, `BaseData`,
-- and a base class `BaseCartesianData`,
-- which can be used to implement interfaces to datasets that may be
-- remote or may not be stored as regular cartesian data. https://github.com/glue-viz/glue/pull/1768
+- Defined a new abstract base class for all datasets, `BaseData`,   
+  
+- and a base class `BaseCartesianData`,   
+  
+- which can be used to implement interfaces to datasets that may be   
+  
+- remote or may not be stored as regular cartesian data. https://github.com/glue-viz/glue/pull/1768   
+  
 - 
-- Add a new method `Data.compute_statistic` which can be used
-- to find scalar and array statistics on the data, and use for
-- the profile viewer and the state limits helpers. https://github.com/glue-viz/glue/pull/1737
+- Add a new method `Data.compute_statistic` which can be used   
+  
+- to find scalar and array statistics on the data, and use for   
+  
+- the profile viewer and the state limits helpers. https://github.com/glue-viz/glue/pull/1737   
+  
 - 
-- Add a new method `Data.compute_histogram` which can be used
-- to find histograms of specific components, with or without
-- subsets applied. https://github.com/glue-viz/glue/pull/1739
+- Add a new method `Data.compute_histogram` which can be used   
+  
+- to find histograms of specific components, with or without   
+  
+- subsets applied. https://github.com/glue-viz/glue/pull/1739   
+  
 - 
-- Removed `Data.get_pixel_component_ids` and `Data.get_world_component_ids`
-- in favor of `Data.pixel_component_ids` and `Data.world_component_ids`.
-- https://github.com/glue-viz/glue/pull/1784
+- Removed `Data.get_pixel_component_ids` and `Data.get_world_component_ids`   
+  
+- in favor of `Data.pixel_component_ids` and `Data.world_component_ids`.   
+  
+- https://github.com/glue-viz/glue/pull/1784   
+  
 - 
-- Deprecated `Data.visible_components` and `Data.primary_components`. https://github.com/glue-viz/glue/pull/1788
+- Deprecated `Data.visible_components` and `Data.primary_components`. https://github.com/glue-viz/glue/pull/1788   
+  
 - 
-- Speed up histogram calculations by using the fast-histogram package instead of
-- np.histogram. https://github.com/glue-viz/glue/pull/1806
+- Speed up histogram calculations by using the fast-histogram package instead of   
+  
+- np.histogram. https://github.com/glue-viz/glue/pull/1806   
+  
 - 
-- In the case of categorical attributes, `Data[name]` now returns a
-- `categorical_ndarray` object rather than the indices of the categories. You
-- can access the indices with `Data[name].codes` and the unique categories
-- with `Data[name].categories`.  https://github.com/glue-viz/glue/pull/1784
+- In the case of categorical attributes, `Data[name]` now returns a   
+  
+- `categorical_ndarray` object rather than the indices of the categories. You   
+  
+- can access the indices with `Data[name].codes` and the unique categories   
+  
+- with `Data[name].categories`.  https://github.com/glue-viz/glue/pull/1784   
+  
 - 
-- Compute profiles and histograms asynchronously when dataset is large
-- to avoid holding up the UI, and compute profiles in chunks to avoid
-- excessive memory usage. [#1736, #1764]
+- Compute profiles and histograms asynchronously when dataset is large   
+  
+- to avoid holding up the UI, and compute profiles in chunks to avoid   
+  
+- excessive memory usage. [#1736, #1764]   
+  
 - 
-- Improved naming of components when merging datasets. https://github.com/glue-viz/glue/pull/1249
+- Improved naming of components when merging datasets. https://github.com/glue-viz/glue/pull/1249   
+  
 - 
-- Fixed an issue that caused residual references to viewers
-- after they were closed if they were accessed through the
-- IPython console. https://github.com/glue-viz/glue/pull/1770
+- Fixed an issue that caused residual references to viewers   
+  
+- after they were closed if they were accessed through the   
+  
+- IPython console. https://github.com/glue-viz/glue/pull/1770   
+  
 - 
-- Don't show layer edit options if layer is not visible. https://github.com/glue-viz/glue/pull/1805
+- Don't show layer edit options if layer is not visible. https://github.com/glue-viz/glue/pull/1805   
+  
 - 
-- Make the Matplotlib viewer code that doesn't depend on Qt accessible
-- to non-Qt frontends. https://github.com/glue-viz/glue/pull/1841
+- Make the Matplotlib viewer code that doesn't depend on Qt accessible   
+  
+- to non-Qt frontends. https://github.com/glue-viz/glue/pull/1841   
+  
 - 
-- Avoid repeated coordinate components in merged datasets. https://github.com/glue-viz/glue/pull/1792
+- Avoid repeated coordinate components in merged datasets. https://github.com/glue-viz/glue/pull/1792   
+  
 - 
-- Fix bug that caused new subset to be created when dragging an existing
-- subset in an image viewer. https://github.com/glue-viz/glue/pull/1793
+- Fix bug that caused new subset to be created when dragging an existing   
+  
+- subset in an image viewer. https://github.com/glue-viz/glue/pull/1793   
+  
 - 
-- Better preserve data types when exporting data/subsets to FITS
-- and HDF5 formats. https://github.com/glue-viz/glue/pull/1800
+- Better preserve data types when exporting data/subsets to FITS   
+  
+- and HDF5 formats. https://github.com/glue-viz/glue/pull/1800   
+  
 - 
 
 ## [v0.13.4](https://github.com/glue-viz/glue/compare/v0.13.3...v0.13.4) - 2018-10-19
