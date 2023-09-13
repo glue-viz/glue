@@ -7,13 +7,14 @@ import numpy as np
 from unittest.mock import MagicMock
 
 from astropy.wcs import WCS
+from shapely.geometry import MultiPolygon, Polygon, Point, LineString
 
 from glue import core
 from glue.tests.helpers import requires_astropy
 
 from ..coordinates import Coordinates
 from ..component import (Component, DerivedComponent, CoordinateComponent,
-                         CategoricalComponent)
+                         CategoricalComponent, ExtendedComponent)
 from ..component_id import ComponentID
 from ..data import Data
 from ..parse import ParsedCommand, ParsedComponentLink
@@ -403,3 +404,52 @@ def test_coordinate_component_1d_coord():
 
     data = Data(flux=np.random.random(5), coords=wcs, label='data')
     np.testing.assert_equal(data['Frequency'], [1, 2, 3, 4, 5])
+
+
+class TestExtendedComponent(object):
+
+    def setup_method(self):
+
+        self.cen_x_id = ComponentID('x')
+        self.cen_y_id = ComponentID('y')
+
+        poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
+        poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
+        poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
+        poly_4 = Polygon([(10, 20), (15, 20), (15, 30), (10, 30), (12, 25)])
+
+        polygons = MultiPolygon([poly_3, poly_4])
+        self.polys = np.array([poly_1, poly_2, polygons])
+        self.poly2d = ExtendedComponent(self.polys, center_comp_ids=[self.cen_x_id, self.cen_y_id])
+
+        circle_1 = Point(1.0, 0.0).buffer(1)
+        circle_2 = Point(2.0, 3.0).buffer(2)
+        circles = np.array([circle_1, circle_2])
+        self.circles = ExtendedComponent(circles, center_comp_ids=[self.cen_x_id, self.cen_y_id])
+
+        ranges = np.array([LineString([(0, 0), (1, 0)]), LineString([(0, 0), (4, 0)])])
+        self.ranges = ExtendedComponent(ranges, center_comp_ids=[self.cen_x_id])
+
+    def test_basic_proprties(self):
+        assert self.poly2d.ndim == 1
+        assert isinstance(self.poly2d, ExtendedComponent)
+        assert self.poly2d.shape == (3,)
+        assert self.poly2d.x == self.cen_x_id
+        assert self.poly2d.y == self.cen_y_id
+
+        assert self.ranges.ndim == 1
+        assert isinstance(self.ranges, ExtendedComponent)
+        assert self.ranges.shape == (2,)
+        assert self.ranges.x == self.cen_x_id
+        assert self.ranges.y is None
+
+    def test_incorrect_inputs(self):
+        with pytest.raises(TypeError, match='Input data for a ExtendedComponent should be a list of shapely.Geometry objects'):
+            bad_data = np.array([1, 2, 3])
+            bad_data_comp = ExtendedComponent(bad_data, center_comp_ids=[self.cen_x_id, self.cen_y_id])
+
+        with pytest.raises(ValueError, match='ExtendedComponent must be initialized with one or two ComponentIDs'):
+            no_center_ids_comp = ExtendedComponent(self.polys, center_comp_ids=[])
+
+        with pytest.raises(ValueError, match='ExtendedComponent must be initialized with one or two ComponentIDs'):
+            no_center_ids_comp = ExtendedComponent(self.polys, center_comp_ids=[self.cen_x_id, self.cen_y_id, self.cen_x_id])

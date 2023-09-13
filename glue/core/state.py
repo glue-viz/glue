@@ -66,12 +66,14 @@ import numpy as np
 from matplotlib.colors import Colormap
 from matplotlib import cm
 from astropy.wcs import WCS
+import shapely
 
 from glue import core
-from glue.core.data import Data
+from glue.core.data import Data, RegionData
 from glue.core.component_id import ComponentID, PixelComponentID
 from glue.core.component import (Component, CategoricalComponent,
-                                 DerivedComponent, CoordinateComponent)
+                                 DerivedComponent, CoordinateComponent,
+                                 ExtendedComponent)
 from glue.core.subset import (OPSYM, SYMOP, CompositeSubsetState,
                               SubsetState, Subset, RoiSubsetState,
                               InequalitySubsetState, RangeSubsetState)
@@ -1228,6 +1230,16 @@ def _load_datetime64(rec, context):
     return np.datetime64(rec['datetime64'])
 
 
+@saver(shapely.Geometry)
+def _save_shapelygeometry(shape, context):
+    return {'shapelygeometry': str(shapely.to_wkt(shape))}
+
+
+@loader(shapely.Geometry)
+def _load_shapelygeometry(rec, context):
+    return shapely.from_wkt(rec['shapelygeometry'])
+
+
 def apply_inplace_patches(rec):
     """
     Apply in-place patches to a loaded session file. Ideally this should be
@@ -1263,3 +1275,170 @@ def apply_inplace_patches(rec):
                     contents = state['contents']
                     if 'st__coords' not in contents:
                         contents['st__coords'] = ['x']
+
+
+@saver(RegionData, version=1)
+def _save_regiondata(data, context):
+    result = dict(
+        components=[
+            (context.id(c), context.id(data.get_component(c))) for c in data._components
+        ],
+        subsets=[context.id(s) for s in data.subsets],
+        label=data.label,
+    )
+
+    if data.coords is not None:
+        result["coords"] = context.id(data.coords)
+
+    if data._extended_component_id is not None:
+        result["_extended_component_id"] = context.id(data._extended_component_id)
+
+    result["style"] = context.do(data.style)
+
+    def save_cid_tuple(cids):
+        return tuple(context.id(cid) for cid in cids)
+
+    result["_key_joins"] = [
+        [context.id(k), save_cid_tuple(v0), save_cid_tuple(v1)]
+        for k, (v0, v1) in data._key_joins.items()
+    ]
+    result["uuid"] = data.uuid
+
+    result["primary_owner"] = [
+        context.id(cid) for cid in data.components if cid.parent is data
+    ]
+    # Filter out keys/values that can't be serialized
+    meta_filtered = OrderedDict()
+    for key, value in data.meta.items():
+        try:
+            context.do(key)
+            context.do(value)
+        except GlueSerializeError:
+            continue
+        else:
+            meta_filtered[key] = value
+    result["meta"] = context.do(meta_filtered)
+
+    return result
+
+
+@loader(RegionData, version=1)
+def _load_regiondata(rec, context):
+    """
+    Custom load function for RegionData.
+    This is the same as the chain of logic in
+    _save_data_5 for Data, but result is an RegionData object
+    instead.
+    """
+
+    label = rec["label"]
+    result = RegionData(label=label)
+
+    # we manually rebuild pixel/world components, so
+    # we override this function. This is pretty ugly
+    result._create_pixel_and_world_components = lambda ndim: None
+
+    comps = [list(map(context.object, [cid, comp])) for cid, comp in rec["components"]]
+
+    for icomp, (cid, comp) in enumerate(comps):
+        if isinstance(comp, CoordinateComponent):
+            comp._data = result
+
+            # For backward compatibility, we need to check for cases where
+            # the component ID for the pixel components was not a PixelComponentID
+            # and upgrade it to one. This can be removed once we no longer
+            # support pre-v0.8 session files.
+            if not comp.world and not isinstance(cid, PixelComponentID):
+                cid = PixelComponentID(comp.axis, cid.label, parent=cid.parent)
+                comps[icomp] = (cid, comp)
+
+        result.add_component(comp, cid)
+
+    assert result._world_component_ids == []
+
+    coord = [c for c in comps if isinstance(c[1], CoordinateComponent)]
+    coord = [x[0] for x in sorted(coord, key=lambda x: x[1])]
+
+    if getattr(result, "coords") is not None:
+        assert len(coord) == result.ndim * 2
+        # Might black formatting break this?
+        result._world_component_ids = coord[: len(coord) // 2]
+        result._pixel_component_ids = coord[len(coord) // 2 :]  # noqa E203
+    else:
+        assert len(coord) == result.ndim
+        result._pixel_component_ids = coord
+
+    # We can now re-generate the coordinate links
+    result._set_up_coordinate_component_links(result.ndim)
+
+    for s in rec["subsets"]:
+        result.add_subset(context.object(s))
+
+    result.style = context.object(rec["style"])
+
+    if "primary_owner" in rec:
+        for cid in rec["primary_owner"]:
+            cid = context.object(cid)
+            cid.parent = result
+    yield result
+
+    def load_cid_tuple(cids):
+        return tuple(context.object(cid) for cid in cids)
+
+    result._key_joins = dict(
+        (context.object(k), (load_cid_tuple(v0), load_cid_tuple(v1)))
+        for k, v0, v1 in rec["_key_joins"]
+    )
+    if "uuid" in rec and rec["uuid"] is not None:
+        result.uuid = rec["uuid"]
+    else:
+        result.uuid = str(uuid.uuid4())
+    if "meta" in rec:
+        result.meta.update(context.object(rec["meta"]))
+
+    result._extended_component_id = context.object(rec["_extended_component_id"])
+
+    def fix_special_component_ids(ext_data):
+        """
+        We need to update the .x and .y attributes on the extended component
+        to be the actual component IDs in the data object. This is a fragile
+        way to do it because it assumes that the component labels are
+        unique.
+        """
+        ext_comp = ext_data.get_component(ext_data.extended_component_id)
+        old_x = ext_comp.x
+        old_y = ext_comp.y
+
+        for comp_id in ext_data.component_ids():
+            if comp_id.label == old_x.label:
+                new_x = comp_id
+            elif comp_id.label == old_y.label:
+                new_y = comp_id
+        ext_comp.x = new_x
+        ext_comp.y = new_y
+    yield fix_special_component_ids(result)
+
+
+@saver(ExtendedComponent)
+def _save_extended_component(component, context):
+    if not context.include_data and hasattr(component, "_load_log"):
+        log = component._load_log
+        return dict(log=context.id(log), log_item=log.id(component))
+
+    data_to_save = [x for x in component.data]
+
+    return dict(data=context.do(data_to_save),
+                x=context.do(component.x),
+                y=context.do(component.y),
+                units=component.units)
+
+
+@loader(ExtendedComponent)
+def _load_extended_component(rec, context):
+    if "log" in rec:
+        return context.object(rec["log"]).component(rec["log_item"])
+
+    data_to_load = np.asarray([x for x in context.object(rec["data"])])
+    return ExtendedComponent(data=data_to_load,
+                             center_comp_ids=[context.object(rec['x']), context.object(rec['y'])],
+                             units=rec["units"])
