@@ -61,7 +61,7 @@ class TestRegionData(object):
 
 
 class TestRegionDataSaveRestore(object):
-    
+
     @pytest.fixture(autouse=True)
     def setup_method(self, tmpdir):
         app = MockApplication()
