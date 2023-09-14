@@ -574,11 +574,11 @@ class ExtendedComponent(Component):
 
     A circular region can be represented as:
 
-        circle = shapely.Point(x, y).buffer(rad)
+        >>> circle = shapely.Point(x, y).buffer(rad)
 
     A range in one dimension can be represented as:
 
-        range = shapely.LineString([[x0,0],[x1,0]])
+        >>> range = shapely.LineString([[x0,0],[x1,0]])
 
     (This is a bit of an odd representation, since we are forced to specify a y
     coordinate for this line. We adopt a convention of y == 0.)
@@ -595,12 +595,12 @@ class ExtendedComponent(Component):
 
     Parameters
     ----------
-    data : list of :class:`~shapely.Geometry` objects
+    data : list of `shapely.Geometry`` objects
         The data to store.
     center_comp_ids : list of :class:`glue.core.component_id.ComponentID` objects
         The ComponentIDs of the `center` of the extended region. These do not
         have to be the literal center of the region, but they must be in the x (and y)
-        coordinates of the regions. These componentIDs are used in the linking
+        coordinates of the regions. These ComponentIDs are used in the linking
         framework to allow an ExtendedComponent to be linked to other components.
     units : `str`, optional
         Unit description.
@@ -615,7 +615,7 @@ class ExtendedComponent(Component):
     Raises
     ------
     TypeError
-        If data is not a list of shapely.Geometry objects
+        If data is not a list of ``shapely.Geometry`` objects
     ValueError
         If center_comp_ids is not a list of length 1 or 2
     """

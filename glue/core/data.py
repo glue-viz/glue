@@ -46,7 +46,7 @@ try:
 except ImportError:
     DASK_INSTALLED = False
 
-__all__ = ['Data', 'BaseCartesianData', 'BaseData']
+__all__ = ['Data', 'BaseCartesianData', 'BaseData', 'RegionData']
 
 
 class BaseData(object, metaclass=abc.ABCMeta):
@@ -2069,18 +2069,22 @@ class RegionData(Data):
     which contains the boundaries of the regions, and must also contain
     one or two components that give the center of the regions in whatever data
     coordinates the regions are described in. Links in glue are not made
-    directly on the ExtendedComponent, but instead on the center components.
+    directly on the :class:`~glue.core.component.ExtendedComponent`, but instead
+    on the center components.
+
     Thus, a subset that includes the center of a region will include that region,
     but a subset that includes just a little part of the region will not include
     that region. These center components are not the same pixel components. For
-    example, a dataset that is a table of 2D regions with have a single PixelComponent,
-    but must have two of these center components.
+    example, a dataset that is a table of 2D regions will have a single
+    :class:`~glue.core.component.CoordinateComponent`, but must have two of these center
+    components.
 
     A typical use case for this object is to store the properties of geographic
-    regions, where the boundaries of the regions are stored in an ExtendedComponent,
-    and the centers of the regions are stored in two components, one for the
-    longitude and one for the latitude. Additional components may describe
-    arbitrary properties of these geographic regions (e.g. population, area, etc).
+    regions, where the boundaries of the regions are stored in an
+    :class:`~glue.core.component.ExtendedComponent` and the centers of the
+    regions are stored in two components, one for the longitude and one for the
+    latitude. Additional components may describe arbitrary properties of these
+    geographic regions (e.g. population, area, etc).
 
 
     Parameters
@@ -2096,8 +2100,8 @@ class RegionData(Data):
     Attributes
     ----------
     extended_component_id : :class:`~glue.core.component_id.ComponentID`
-        The ID of the ExtendedComponent object that contains the boundaries of
-        the regions.
+        The ID of the :class:`~glue.core.component.ExtendedComponent` object
+        that contains the boundaries of the regions.
     center_x_id : :class:`~glue.core.component_id.ComponentID`
         The ID of the Component object that contains the x-coordinate of the
         center of the regions. This is actually stored in the component
@@ -2109,24 +2113,27 @@ class RegionData(Data):
 
     Examples
     --------
-     There are two main options for initializing a RegionData object. The first is
-    to simply pass in a list of Shapely objects with dimesionality N, from which
-    we will create N+1 components: one ExtendedComponent with the boundaries, and
-    N regular Component(s) with the center coordinates computed from the Shapley
-    method :meth:`~shapely.geometry.base.BaseGeometry.representative_point`.
+
+    There are two main options for initializing a :class:`~glue.core.data.RegionData`
+    object. The first is to simply pass in a list of ``Shapely.Geometry`` objects
+    with dimesionality N, from which we will create N+1 components: one
+    :class:`~glue.core.component.ExtendedComponent` with the boundaries, and N
+    regular Component(s) with the center coordinates computed from the Shapley
+    method :meth:`~shapely.GeometryCollection.representative_point`:
 
         >>> geometries = [shapely.geometry.Point(0, 0).buffer(1), shapely.geometry.Point(1, 1).buffer(1)]
         >>> my_region_data = RegionData(label='My Regions', boundary=geometries)
 
-    This will create a RegionData object with three components: one ExtendedComponent
-    with label "geo" and two regular Components with labels "Center [x] for boundary"
+    This will create a :class:`~glue.core.data.RegionData` object with three
+    components: one :class:`~glue.core.component.ExtendedComponent` with label
+    "geo" and two regular Components with labels "Center [x] for boundary"
     and "Center [y] for boundary".
 
-    The second is to explicitly create an ExtendedComponent (which requires passing
-    in the ComponentIDs for the center coordinates) and then use `add_component` to
-    add this component to a RegionData object. You might use this point if your
-    dataset already contains points that represent the centers of your regions and
-    you want to avoid re-calculating them. For example:
+    The second is to explicitly create an :class:`~glue.core.component.ExtendedComponent`
+    (which requires passing in the ComponentIDs for the center coordinates) and
+    then use `add_component` to add this component to a :class:`~glue.core.data.RegionData`
+    object. You might use this approach if your dataset already contains points that
+    represent the centers of your regions and you want to avoid re-calculating them. For example:
 
         >>> center_x = [0, 1]
         >>> center_y = [0, 1]
@@ -2165,17 +2172,17 @@ class RegionData(Data):
 
     @contract(component='component_like', label='cid_like')
     def add_component(self, component, label):
-        """ Add a new component to this data set, allowing only one ExtendedComponent
+        """ Add a new component to this data set, allowing only one :class:`~glue.core.component.ExtendedComponent`
 
         If component is an array of Shapely objects then we use
-        :meth:`~shapely.geometry.base.BaseGeometry.representative_point` to
+        :meth:`~shapely.GeometryCollection.representative_point`: to
         create two new components for the center coordinates of the regions and
-        add them to the RegionData object as well.
+        add them to the :class:`~glue.core.data.RegionData` object as well.
 
-        If component is an ExtendedComponent, then we simply add it to the
-        RegionData object.
+        If component is an :class:`~glue.core.component.ExtendedComponent`,
+        then we simply add it to the :class:`~glue.core.data.RegionData` object.
 
-        We do this here instead of extending `Component.autotyped` because
+        We do this here instead of extending ``Component.autotyped`` because
         we only want to use :class:`~glue.core.component.ExtendedComponent` objects
         in the context of a :class:`~glue.core.data.RegionData` object.
 
@@ -2192,7 +2199,7 @@ class RegionData(Data):
 
         Raises
         ------
-           `ValueError`, if the RegionData already has an extended component
+           `ValueError`, if the :class:`~glue.core.data.RegionData` already has an extended component
         """
 
         if not isinstance(component, Component):
