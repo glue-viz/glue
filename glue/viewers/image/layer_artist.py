@@ -242,13 +242,15 @@ class ImageSubsetArray(object):
 
         # We should compute the mask even if the layer is not visible as we need
         # the layer to show up properly when it is made visible (which doesn't
-        # trigger __getitem__)
+        # trigger __getitem__). However, if the layer is disabled, then we will
+        # call this method when it is enabled, so in this case we just return
+        # an empty mask.
 
         try:
             mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return np.broadcast_to(np.nan, (bounds[0][-1], bounds[1][-1], 4))
+            return None
         else:
             self.layer_artist.enable(redraw=False)
 
