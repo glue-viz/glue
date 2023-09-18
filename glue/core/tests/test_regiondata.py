@@ -40,6 +40,7 @@ class TestRegionData(object):
         assert self.region_data.shape == SHAPELY_POLYGON_ARRAY.shape
         assert self.region_data.ndim == 1
         assert self.region_data.size == 3
+        assert len(self.region_data.components) == 4
         assert_array_equal(self.region_data['boundary'], SHAPELY_POLYGON_ARRAY)
         assert len(self.region_data.main_components) == 3
         component_labels = [cid.label for cid in self.region_data.main_components]
@@ -52,12 +53,22 @@ class TestRegionData(object):
         assert self.manual_region_data.shape == np.asarray(SHAPELY_CIRCLE_ARRAY).shape
         assert self.manual_region_data.ndim == 1
         assert self.manual_region_data.size == 2
+        assert len(self.manual_region_data.components) == 4
         assert_array_equal(self.manual_region_data['circles'], SHAPELY_CIRCLE_ARRAY)
         assert len(self.region_data.main_components) == 3
         component_labels = [cid.label for cid in self.manual_region_data.main_components]
         assert 'circles' in component_labels
         assert 'Center [x]' in component_labels
         assert 'Center [y]' in component_labels
+
+    def test_get_kind(self):
+        assert self.region_data.get_kind('Center [x] for boundary') == 'numerical'
+        assert self.region_data.get_kind('Center [y] for boundary') == 'numerical'
+        assert self.region_data.get_kind('boundary') == 'extended'
+
+        assert self.manual_region_data.get_kind('Center [x]') == 'numerical'
+        assert self.manual_region_data.get_kind('Center [y]') == 'numerical'
+        assert self.manual_region_data.get_kind('circles') == 'extended'
 
 
 class TestRegionDataSaveRestore(object):
