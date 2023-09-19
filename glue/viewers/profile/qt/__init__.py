@@ -1,6 +1,4 @@
-from .data_viewer import ProfileViewer  # noqa
-
-
-def setup():
-    from glue.config import qt_client
-    qt_client.add(ProfileViewer)
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.viewers.profile.qt is deprecated, use glue_qt.viewers.profile instead', GlueDeprecationWarning)
+from glue_qt.viewers.profile import *  # noqa

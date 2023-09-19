@@ -1,7 +1,4 @@
-from .pv_slicer import *  # noqa
-
-
-def setup():
-    from glue.viewers.image.qt import ImageViewer
-    from glue.plugins.tools.pv_slicer.qt import PVSlicerMode  # noqa
-    ImageViewer.tools.append('slice')
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.plugins.tools.pv_slicer.qt is deprecated, use glue_qt.plugins.tools.pv_slicer instead', GlueDeprecationWarning)
+from glue_qt.plugins.tools.pv_slicer import *  # noqa

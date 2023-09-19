@@ -1,6 +1,4 @@
 import warnings
-
-from glue.viewers.common.tool import *  # noqa
-
-warnings.warn('glue.viewers.common.qt.tool is deprecated, use '
-              'glue.viewers.common.tool instead', UserWarning)
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.viewers.common.qt.tool is deprecated, use glue_qt.viewers.common.tool instead', GlueDeprecationWarning)
+from glue_qt.viewers.common.tool import *  # noqa

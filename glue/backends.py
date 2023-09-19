@@ -22,6 +22,19 @@ class TimerBase(object):
         pass
 
 
+class SimpleTimer(TimerBase):
+
+    def __init__(self, interval, callback):
+        from threading import Timer
+        self._timer = Timer(interval / 1000., callback)
+
+    def start(self):
+        self._timer.start()
+
+    def stop(self):
+        self._timer.cancel()
+
+
 class QtTimer(TimerBase):
 
     def __init__(self, interval, callback):
@@ -37,12 +50,13 @@ class QtTimer(TimerBase):
         self._timer.stop()
 
 
-def get_timer(backend='qt'):
-
-    if backend == 'qt':
-        return QtTimer
+def get_timer():
+    try:
+        from qtpy import QtCore  # noqa
+    except ImportError:
+        return SimpleTimer
     else:
-        raise ValueError("Only QT Backend supported")
+        return QtTimer
 
 
 def get_backend(backend='qt'):

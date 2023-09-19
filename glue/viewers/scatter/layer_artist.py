@@ -6,9 +6,9 @@ from matplotlib.collections import LineCollection
 
 from mpl_scatter_density.generic_density_artist import GenericDensityArtist
 
-from astropy.visualization import (ImageNormalize, LinearStretch, SqrtStretch,
-                                   AsinhStretch, LogStretch)
+from astropy.visualization import ImageNormalize
 
+from glue.config import stretches
 from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
 from glue.viewers.scatter.state import ScatterLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
@@ -17,11 +17,9 @@ from glue.core.exceptions import IncompatibleAttribute
 
 from matplotlib.lines import Line2D
 
-
-STRETCHES = {'linear': LinearStretch,
-             'sqrt': SqrtStretch,
-             'arcsinh': AsinhStretch,
-             'log': LogStretch}
+# We keep the following so that scripts exported with previous versions of glue
+# continue to work, as they imported STRETCHES from here.
+STRETCHES = stretches.members
 
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size', 'fill'])
@@ -367,7 +365,7 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
 
                 if force or 'stretch' in changed:
-                    self.density_artist.set_norm(ImageNormalize(stretch=STRETCHES[self.state.stretch]()))
+                    self.density_artist.set_norm(ImageNormalize(stretch=stretches.members[self.state.stretch]))
 
                 if force or 'dpi' in changed:
                     self.density_artist.set_dpi(self._viewer_state.dpi)

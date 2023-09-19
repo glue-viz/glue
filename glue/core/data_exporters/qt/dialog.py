@@ -1,29 +1,4 @@
-from qtpy import compat
-from glue import config
-
-
-def export_data(data, components=None, exporter=None):
-
-    if exporter is None:
-        exporters = {}
-        for e in config.data_exporter:
-            if e.extension == '':
-                fltr = "{0} (*)".format(e.label)
-            else:
-                fltr = "{0} ({1})".format(e.label, ' '.join('*.' + ext for ext in e.extension))
-            exporters[fltr] = e.function
-        filters = ';;'.join(sorted(exporters))
-    else:
-        filters = None
-
-    filename, fltr = compat.getsavefilename(caption="Choose an output filename",
-                                            filters=filters)
-
-    filename = str(filename)
-    if not filename:
-        return
-
-    if filters is not None:
-        exporter = exporters[fltr]
-
-    exporter(filename, data, components=components)
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.core.data_exporters.qt.dialog is deprecated, use glue_qt.core.data_exporters.dialog instead', GlueDeprecationWarning)
+from glue_qt.core.data_exporters.dialog import *  # noqa

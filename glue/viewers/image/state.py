@@ -2,7 +2,7 @@ import uuid
 from collections import defaultdict
 
 from glue.core import BaseData
-from glue.config import colormaps
+from glue.config import colormaps, stretches
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
@@ -525,13 +525,8 @@ class ImageLayerState(BaseImageLayerState):
         ImageLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
         ImageLayerState.percentile.set_display_func(self, percentile_display.get)
 
-        stretch_display = {'linear': 'Linear',
-                           'sqrt': 'Square Root',
-                           'arcsinh': 'Arcsinh',
-                           'log': 'Logarithmic'}
-
-        ImageLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
-        ImageLayerState.stretch.set_display_func(self, stretch_display.get)
+        ImageLayerState.stretch.set_choices(self, list(stretches.members))
+        ImageLayerState.stretch.set_display_func(self, stretches.display_func)
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)

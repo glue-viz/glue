@@ -1,25 +1,4 @@
-from ..config import qt_client, link_function, data_factory
-from glue.tests.helpers import requires_qt
-
-
-@requires_qt
-def test_default_clients():
-
-    from glue.viewers.image.qt import ImageViewer
-    from glue.viewers.scatter.qt import ScatterViewer
-    from glue.viewers.histogram.qt import HistogramViewer
-
-    assert ImageViewer in qt_client
-    assert ScatterViewer in qt_client
-    assert HistogramViewer in qt_client
-
-
-def test_add_client():
-    @qt_client
-    class TestClient(object):
-        pass
-
-    assert TestClient in qt_client
+from ..config import link_function, data_factory
 
 
 def test_add_link_default():

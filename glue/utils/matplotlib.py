@@ -13,27 +13,16 @@ from matplotlib import __version__
 # We avoid importing matplotlib up here otherwise Matplotlib and therefore Qt
 # get imported as soon as glue.utils is imported.
 
-from glue.external.axescache import AxesCache
 from glue.utils.misc import DeferredMethod
 
 MATPLOTLIB_GE_30 = Version(__version__) >= Version('3')
 MATPLOTLIB_GE_36 = Version(__version__) >= Version('3.6')
 
 
-__all__ = ['renderless_figure', 'all_artists', 'new_artists', 'remove_artists',
+__all__ = ['all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
-           'color2rgb', 'point_contour', 'cache_axes',
+           'color2rgb', 'point_contour',
            'datetime64_to_mpl', 'mpl_to_datetime64', 'color2hex']
-
-
-def renderless_figure():
-    # Matplotlib figure that skips the render step, for test speed
-    from unittest.mock import MagicMock
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    fig.canvas.draw = MagicMock()
-    plt.close('all')
-    return fig
 
 
 def all_artists(fig):
@@ -332,31 +321,6 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     axes.resizer = AxesResizer(axes, margins)
     axes.figure.canvas.mpl_connect('resize_event', axes.resizer.on_resize)
-
-
-def cache_axes(axes, toolbar):
-    """
-    Set up caching for an axes object.
-
-    After this, cached renders will be used to quickly re-render an axes during
-    window resizing or interactive pan/zooming.
-
-    This function returns an AxesCache instance.
-
-    Parameters
-    ----------
-    axes : :class:`matplotlib.axes.Axes`
-        The axes to cache
-    toolbar : :class:`glue.viewers.common.qt.toolbar.BasicToolbar`
-        The toolbar managing the axes' canvas
-    """
-    canvas = axes.figure.canvas
-    cache = AxesCache(axes)
-    canvas.resize_begin.connect(cache.enable)
-    canvas.resize_end.connect(cache.disable)
-    toolbar.pan_begin.connect(cache.enable)
-    toolbar.pan_end.connect(cache.disable)
-    return cache
 
 
 class ColormapPatchHandler(HandlerBase):

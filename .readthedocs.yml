@@ -3,6 +3,11 @@ version: 2
 build:
   image: latest
 
+sphinx:
+  builder: html
+  configuration: doc/conf.py
+  fail_on_warning: true
+
 python:
   version: 3.8
   install:
@@ -10,7 +15,6 @@ python:
       path: .
       extra_requirements:
         - docs
-        - qt
         - all
 
 formats: []

@@ -5,6 +5,7 @@ __all__ = ['custom_viewer', 'qglue', 'test']
 import os
 
 import sys
+import warnings
 
 import importlib.metadata
 
@@ -14,12 +15,18 @@ from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
 
 from glue.viewers.custom.helper import custom_viewer
+from glue.utils.error import GlueDeprecationWarning
 
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
 
-from .qglue import qglue
+
+def qglue(*args, **kwargs):
+    warnings.warn('glue.qglue is deprecated, import qglue from the glue_qt module instead', GlueDeprecationWarning)
+    from glue_qt import qglue
+    return qglue(*args, **kwargs)
+
 
 from .main import load_plugins  # noqa
 
@@ -35,17 +42,3 @@ def test(no_optional_skip=False):
 
 from glue._settings_helpers import load_settings
 load_settings()
-
-
-# In PyQt 5.5+, PyQt overrides the default exception catching and fatally
-# crashes the Qt application without printing out any details about the error.
-# Below we revert the exception hook to the original Python one. Note that we
-# can't just do sys.excepthook = sys.__excepthook__ otherwise PyQt will detect
-# the default excepthook is in place and override it.
-
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
-
-
-sys.excepthook = handle_exception

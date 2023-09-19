@@ -147,7 +147,7 @@ class LoadLog(object):
             mapping = dict((c, log.component(self.id(c)).data)
                            for c in dold._components.values()
                            if c in self.components and
-                           type(c) == Component)
+                           type(c) is Component)
             dold.coords = dnew.coords
             dold.update_components(mapping)
 
@@ -254,7 +254,8 @@ def load_data(path, factory=None, **kwargs):
 
         Extra keywords are passed through to factory functions.
     """
-    from glue.qglue import parse_data
+
+    from glue.core.parsers import parse_data
 
     coord_first = kwargs.pop('coord_first', True)
     force_coords = kwargs.pop('force_coords', False)

@@ -5,8 +5,6 @@ construct GUIs, without having to write GUI code in the form class itself.
 
 :class:`Option` objects are defined at the class-level. To instances of
 these classes, an :class:`Option` behaves like a normal instance attribute.
-
-See :ref:`custom-fitting` for example usage.
 """
 
 

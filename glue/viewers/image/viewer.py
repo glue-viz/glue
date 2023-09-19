@@ -127,7 +127,7 @@ class MatplotlibImageMixin(object):
             self.state.reset_limits()
 
         # Determine whether changing slices requires changing the WCS
-        if ref_coords is None or type(ref_coords) == Coordinates:
+        if ref_coords is None or type(ref_coords) is Coordinates:
             self._changing_slice_requires_wcs_update = False
         else:
             ix = self.state.x_att.axis

@@ -1,15 +1,4 @@
-import os
-
-from qtpy import QtWidgets
-
-from glue.utils.qt import load_ui
-
-__all__ = ['LegendEditorWidget']
-
-
-class LegendEditorWidget(QtWidgets.QWidget):
-
-    def __init__(self, parent=None):
-        super(LegendEditorWidget, self).__init__(parent=parent)
-        self.ui = load_ui('legend_editor.ui', self,
-                          directory=os.path.dirname(__file__))
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.viewers.matplotlib.qt.legend_editor is deprecated, use glue_qt.viewers.matplotlib.legend_editor instead', GlueDeprecationWarning)
+from glue_qt.viewers.matplotlib.legend_editor import *  # noqa

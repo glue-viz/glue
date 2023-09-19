@@ -4,9 +4,19 @@ Glue
 ====
 
 Glue is a python project to link visualizations of scientific datasets
-across many files. Click on the image for a quick demo:
+across many files.
 
 |Glue demo|
+
+This repository contains the **glue-core** package which includes much of the core
+functionality of glue that is used for the different front-ends, including the Qt-based
+application and the Jupyter-based application. Other key repositories include:
+
+* `glue-qt <https://github.com/astrofrog/glue-qt/>`_: the original Qt/desktop application for glue
+* `glue-jupyter <https://github.com/astrofrog/glue-jupyter/>`_: a Jupyter front-end for glue
+
+In addition to these, there are a number of plugin packages available. For a full list of repositories,
+see https://github.com/glue-viz/.
 
 Features
 --------
@@ -57,5 +67,5 @@ License <https://github.com/glue-viz/glue/blob/master/LICENSE>`__.
    :target: https://groups.google.com/forum/#!forum/glue-viz
 .. |Developer mailing list| image:: http://img.shields.io/badge/mailing%20list-development-green.svg?style=flat
    :target: https://groups.google.com/forum/#!forum/glue-viz-dev
-.. |Glue demo| image:: https://raw.githubusercontent.com/glue-viz/glue/master/doc/readme.gif
+.. |Glue demo| image:: https://raw.githubusercontent.com/glue-viz/glue-qt/main/doc/readme.gif
    :target: http://vimeo.com/53378575

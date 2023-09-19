@@ -12,22 +12,20 @@ Objects used to configure Glue at runtime.
 """
 
 __all__ = ['Registry', 'SettingRegistry', 'ExporterRegistry',
-           'ColormapRegistry', 'DataFactoryRegistry', 'QtClientRegistry',
+           'ColormapRegistry', 'DataFactoryRegistry',
            'LinkFunctionRegistry', 'LinkHelperRegistry', 'ViewerToolRegistry',
-           'LayerActionRegistry', 'ProfileFitterRegistry', 'qt_client', 'data_factory',
+           'ProfileFitterRegistry', 'data_factory',
            'link_function', 'link_helper', 'colormaps', 'exporters', 'settings',
            'fit_plugin', 'auto_refresh', 'importer', 'DictRegistry',
-           'preference_panes', 'PreferencePanesRegistry',
-           'DataExporterRegistry', 'data_exporter', 'layer_action',
+           'DataExporterRegistry', 'data_exporter',
            'SubsetMaskExporterRegistry', 'SubsetMaskImporterRegistry',
-           'StartupActionRegistry', 'startup_action', 'QtFixedLayoutTabRegistry',
-           'qt_fixed_layout_tab', 'KeyboardShortcut', 'keyboard_shortcut',
            'LayerArtistMakerRegistry', 'layer_artist_maker',
            'SessionPatchRegistry', 'session_patch',
            'AutoLinkerRegistry', 'autolinker',
            'DataTranslatorRegistry', 'data_translator',
            'SubsetDefinitionTranslatorRegistry', 'subset_state_translator',
-           'UnitConverterRegistry', 'unit_converter']
+           'UnitConverterRegistry', 'unit_converter',
+           'StretchRegistry', 'stretches']
 
 
 CFG_DIR = os.path.join(os.path.expanduser('~'), '.glue')
@@ -201,7 +199,7 @@ class SettingRegistry(DictRegistry):
         return setting in self._defaults and setting not in self._members
 
 
-class QGlueParserRegistry(Registry):
+class CLIParserRegistry(Registry):
     """
     Registry for parsers that can be used to interpret arguments to the
     :func:`~glue.qglue` function.
@@ -276,49 +274,6 @@ class DataImportRegistry(Registry):
             self.add(label, func)
             return func
         return adder
-
-
-class MenubarPluginRegistry(Registry):
-    """
-    Stores menubar plugins.
-
-    The members property is a list of menubar plugins, each represented as a
-    ``(label, function)`` tuple. The ``function`` should take two items which
-    are a reference to the session and to the data collection respectively.
-    """
-
-    def add(self, label, function):
-        """
-        Add a new menubar plugin
-        :param label: Short label for the plugin
-        :type label: str
-
-        :param function: function
-        :type function: function()
-        """
-        self.members.append((label, function))
-
-    def __call__(self, label):
-        def adder(func):
-            self.add(label, func)
-            return func
-        return adder
-
-
-class PreferencePanesRegistry(DictRegistry):
-    """
-    Stores preference panes
-
-    The members property is a list of tuples of Qt widget classes that can have
-    their own tab in the preferences window.
-    """
-
-    def add(self, label, widget_cls):
-        self._members[label] = widget_cls
-
-    def __iter__(self):
-        for label in self._members:
-            yield label, self._members[label]
 
 
 class AutoLinkerRegistry(Registry):
@@ -628,30 +583,30 @@ class UnitConverterRegistry(DictRegistry):
         return adder
 
 
-class QtClientRegistry(Registry):
+class StretchRegistry(DictRegistry):
     """
-    Stores QT widgets to visualize data.
-
-    The members property is a list of Qt widget classes
-
-    New widgets can be registered via::
-
-        @qt_client
-        class CustomWidget(QMainWindow):
-            ...
+    Stores custom stretches
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._display = {}
 
-class QtFixedLayoutTabRegistry(Registry):
-    """
-    Stores Qt pre-defined tabs (non-MDI)
+    def add(self, label, stretch_cls, display=None):
+        if label in self.members:
+            raise ValueError("Stretch class '{0}' already registered".format(label))
+        else:
+            self.members[label] = stretch_cls
+            self._display[label] = display or label
 
-    New widgets can be registered via::
+    def __call__(self, label):
+        def adder(stretch_cls):
+            self.add(label, stretch_cls)
+            return stretch_cls
+        return adder
 
-        @qt_fixed_layout_tab
-        class CustomTab(QWidget):
-            ...
-    """
+    def display_func(self, label):
+        return self._display[label]
 
 
 class ViewerToolRegistry(DictRegistry):
@@ -670,37 +625,6 @@ class ViewerToolRegistry(DictRegistry):
     def __call__(self, tool_cls):
         self.add(tool_cls)
         return tool_cls
-
-
-class StartupActionRegistry(DictRegistry):
-
-    def add(self, startup_name, startup_function):
-        """
-        Add a startup function to the registry. This is a function that will
-        get called once glue has been started and any data loaded, and can
-        be used to set up specific layouts and create links.
-
-        Startup actions are triggered by either specifying comma-separated names
-        of actions on the command-line::
-
-            glue --startup=mystartupaction
-
-        or by passing an iterable of startup action names to the ``startup``
-        keyword of ``GlueApplication``.
-
-        The startup function will be given the session object and the data
-        collection object.
-        """
-        if startup_name in self.members:
-            raise ValueError("A startup action with the name '{0}' already exists".format(startup_name))
-        else:
-            self.members[startup_name] = startup_function
-
-    def __call__(self, name):
-        def adder(func):
-            self.add(name, func)
-            return func
-        return adder
 
 
 class LinkFunctionRegistry(Registry):
@@ -729,46 +653,6 @@ class LinkFunctionRegistry(Registry):
 
         def adder(func):
             self.add(self.item(func, info, out, category))
-            return func
-        return adder
-
-
-class LayerActionRegistry(Registry):
-    """
-    Stores custom menu actions available when the user select one or more
-    datasets, subset group, or subset in the data collection view.
-
-    This members property is a list of named tuples with the following
-    attributes:
-
-    * ``label``: the user-facing name of the action
-    * ``tooltip``: the text that appears when hovering with the mouse over the action
-    * ``callback``: the function to call when the action is triggered
-    * ``icon``: an icon image to use for the layer action
-    * ``single``: whether to show this action only when selecting single layers (default: `False`)
-    * ``data``: if ``single`` is `True` whether to only show the action when selecting a dataset
-    * ``subset_group``: if ``single`` is `True` whether to only show the action when selecting a subset group
-    * ``subset``: if ``single`` is `True` whether to only show the action when selecting a subset
-
-    The callback function is called with two arguments. If ``single`` is
-    `True`, the first argument is the selected layer, otherwise it is the list
-    of selected layers. The second argument is the
-    `~glue.core.data_collection.DataCollection` object.
-    """
-    item = namedtuple('LayerAction', 'label tooltip callback icon single data subset_group, subset')
-
-    def __call__(self, label, callback=None, tooltip=None, icon=None, single=False,
-                 data=False, subset_group=False, subset=False):
-
-        # Backward-compatibility
-        if callback is not None:
-            self.add(self.item(label, tooltip, callback, icon, True,
-                               False, False, True))
-            return True
-
-        def adder(func):
-            self.add(self.item(label, tooltip, func, icon, single,
-                               data, subset_group, subset))
             return func
         return adder
 
@@ -847,52 +731,6 @@ class BooleanSetting(object):
         return self.state
 
 
-class KeyboardShortcut(DictRegistry):
-    """
-    Stores keyboard shortcuts.
-    The members property is a dictionary within a dictionary of keyboard
-    shortcuts, which is represented as (viewer,(keybind,function)). The
-    ``function`` should take one item, which is a reference to the session.
-    """
-
-    def add(self, valid_viewers, keybind, function):
-        """
-        Add a new keyboard shortcut
-
-        Parameters
-        ----------
-        arg1: list
-            list of viewers where event can be fired
-        arg2: Qt.Key
-            type of key event
-        arg3: function()
-            function to be run that corresponds with key
-        """
-        if valid_viewers:
-            for viewer in valid_viewers:
-                if viewer in self.members:
-                    if keybind in self.members[viewer]:
-                        raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, viewer))
-                    else:
-                        self.members[viewer][keybind] = function
-                else:
-                    self.members[viewer] = {keybind: function}
-        else:
-            if None in self.members:
-                if keybind in self.members[None]:
-                    raise ValueError("Keyboard shortcut '{0}' already registered in {1}".format(keybind, None))
-                else:
-                    self.members[None][keybind] = function
-            else:
-                self.members[None] = {keybind: function}
-
-    def __call__(self, keybind, valid_viewers):
-        def adder(func):
-            self.add(valid_viewers, keybind, func)
-            return func
-        return adder
-
-
 class LayerArtistMakerRegistry(Registry):
     """
     A registry that allows customization of layer artists based on the data
@@ -967,8 +805,6 @@ class SessionPatchRegistry(Registry):
 
 
 layer_artist_maker = LayerArtistMakerRegistry()
-qt_client = QtClientRegistry()
-qt_fixed_layout_tab = QtFixedLayoutTabRegistry()
 viewer_tool = ViewerToolRegistry()
 link_function = LinkFunctionRegistry()
 link_helper = LinkHelperRegistry()
@@ -977,12 +813,7 @@ importer = DataImportRegistry()
 exporters = ExporterRegistry()
 settings = SettingRegistry()
 fit_plugin = ProfileFitterRegistry()
-layer_action = LayerActionRegistry()
-menubar_plugin = MenubarPluginRegistry()
-preference_panes = PreferencePanesRegistry()
-qglue_parser = QGlueParserRegistry()
-startup_action = StartupActionRegistry()
-keyboard_shortcut = KeyboardShortcut()
+cli_parser = CLIParserRegistry()
 autolinker = AutoLinkerRegistry()
 session_patch = SessionPatchRegistry()
 
@@ -1001,8 +832,17 @@ subset_state_translator = SubsetDefinitionTranslatorRegistry()
 # Units
 unit_converter = UnitConverterRegistry()
 
+# Stretch classes
+from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
+                                   LogStretch)
+stretches = StretchRegistry()
+stretches.add('linear', LinearStretch(), display='Linear')
+stretches.add('sqrt', SqrtStretch(), display='Square Root')
+stretches.add('arcsinh', AsinhStretch(), display='Arcsinh')
+stretches.add('log', LogStretch(), display='Logarithmic')
+
 # Backward-compatibility
-single_subset_action = layer_action
+qglue_parser = cli_parser
 
 
 def load_configuration(search_path=None):
@@ -1099,3 +939,19 @@ def check_unit_converter(value):
 
 
 settings.add('UNIT_CONVERTER', 'default', validator=check_unit_converter)
+
+# It is difficult to emit deprecation warnigns for the following, so we just
+# import these if glue-qt is installed. We can still remove these in future if
+# needed but because we can't easily deprecate, we should leave them for a
+# little while.
+
+try:
+    from glue_qt.config import (QtClientRegistry, qt_client,   # noqa
+                                LayerActionRegistry, layer_action,
+                                MenubarPluginRegistry, menubar_plugin,
+                                PreferencePanesRegistry, preference_panes,
+                                StartupActionRegistry, startup_action,
+                                QtFixedLayoutTabRegistry, qt_fixed_layout_tab,
+                                KeyboardShortcut, keyboard_shortcut)
+except ImportError:
+    pass

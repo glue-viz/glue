@@ -61,26 +61,9 @@ def pytest_configure(config):
     from glue import config
     config.CFG_DIR = tempfile.mkdtemp()
 
-    # Start up QApplication, if the Qt code is present
-    try:
-        from glue.utils.qt import get_qapp
-    except Exception:
-        # Note that we catch any exception, not just ImportError, because
-        # QtPy can raise a PythonQtError.
-        pass
-    else:
-        get_qapp()
-
     # Force loading of plugins
     from glue.main import load_plugins
     load_plugins()
-
-
-def pytest_report_header(config):
-    from glue import __version__
-    glue_version = "%20s:\t%s" % ("glue", __version__)
-    from glue._deps import get_status
-    return os.linesep + glue_version + os.linesep + os.linesep + get_status()
 
 
 def pytest_unconfigure(config):

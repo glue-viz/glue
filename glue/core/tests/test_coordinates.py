@@ -170,31 +170,31 @@ class TestCoordinatesFromHeader(object):
     def test_2d_nowcs(self):
         hdr = {"NAXIS": 2}
         coord = coordinates_from_header(hdr)
-        assert type(coord) == IdentityCoordinates
+        assert type(coord) is IdentityCoordinates
         assert coord.pixel_n_dim == 2
         assert coord.world_n_dim == 2
 
     def test_2d(self):
         hdr = header_from_string(HDR_2D_VALID)
         coord = coordinates_from_header(hdr)
-        assert type(coord) == WCSCoordinates
+        assert type(coord) is WCSCoordinates
 
     def test_3d_nowcs(self):
         hdr = HDR_3D_VALID_NOWCS
         coord = coordinates_from_header(header_from_string(hdr))
-        assert type(coord) == IdentityCoordinates
+        assert type(coord) is IdentityCoordinates
         assert coord.pixel_n_dim == 3
         assert coord.world_n_dim == 3
 
     def test_3d(self):
         hdr = header_from_string(HDR_3D_VALID_WCS)
         coord = coordinates_from_header(hdr)
-        assert type(coord) == WCSCoordinates
+        assert type(coord) is WCSCoordinates
 
     def test_nod(self):
         hdr = 0
         coord = coordinates_from_header(hdr)
-        assert type(coord) == IdentityCoordinates
+        assert type(coord) is IdentityCoordinates
 
 
 HDR_2D_VALID = """

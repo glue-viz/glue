@@ -1,11 +1,4 @@
-from qtpy import QtWidgets
-from glue.utils.qt import PyMimeData, GlueItemWidget
-
-# some standard glue mime types
-LAYER_MIME_TYPE = 'glue/layer'
-LAYERS_MIME_TYPE = 'glue/layers'
-INSTANCE_MIME_TYPE = PyMimeData.MIME_TYPE
-
-
-class GlueMimeListWidget(GlueItemWidget, QtWidgets.QListWidget):
-    SUPPORTED_MIME_TYPE = LAYERS_MIME_TYPE
+import warnings
+from glue.utils.error import GlueDeprecationWarning
+warnings.warn('Importing from glue.core.qt.mime is deprecated, use glue_qt.core.mime instead', GlueDeprecationWarning)
+from glue_qt.core.mime import *  # noqa

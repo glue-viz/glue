@@ -13,4 +13,5 @@ from .subset_group import SubsetGroup  # noqa
 from .visual import VisualAttributes  # noqa
 
 # We import this last to avoid circular imports
+from . import parsers  # noqa
 from .application_base import Application  # noqa

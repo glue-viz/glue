@@ -265,7 +265,7 @@ class LayerArtistContainer(object):
 
     def _duplicate(self, artist):
         for a in self.artists:
-            if type(a) == type(artist) and a.layer is artist.layer:
+            if type(a) is type(artist) and a.layer is artist.layer:
                 return True
         return False
 
