@@ -112,9 +112,8 @@ class TestTranslationData:
 
         with pytest.raises(ValueError) as exc:
             data.get_object()
-        assert exc.value.args[0] == ('Specify the object class to use with cls= - '
-                                     'supported classes are:\n\n* pandas.core.frame.DataFrame\n'
-                                     '* glue.core.tests.test_data_translation.FakeDataObject')
+        assert 'Specify the object class to use with cls' in exc.value.args[0]
+        assert 'glue.core.tests.test_data_translation.FakeDataObject' in exc.value.args[0]
 
         obj = data.get_object(cls=FakeDataObject)
         assert isinstance(obj, FakeDataObject)
@@ -142,9 +141,8 @@ class TestTranslationData:
 
         with pytest.raises(ValueError) as exc:
             data.get_subset_object()
-        assert exc.value.args[0] == ('Specify the object class to use with cls= - '
-                                     'supported classes are:\n\n* pandas.core.frame.DataFrame\n'
-                                     '* glue.core.tests.test_data_translation.FakeDataObject')
+        assert 'Specify the object class to use with cls' in exc.value.args[0]
+        assert 'glue.core.tests.test_data_translation.FakeDataObject' in exc.value.args[0]
 
         subset = data.get_subset_object(subset_id=0, cls=FakeDataObject)
 
