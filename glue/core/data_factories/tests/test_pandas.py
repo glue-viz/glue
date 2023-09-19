@@ -47,7 +47,7 @@ def test_translator_from_data():
         df = data.get_object()
     #  Do not specify full error message in case plugins add new translations
     assert 'Specify the object class to use with cls' in exc.value.args[0]
-    
+
     df = data.get_object(cls=DataFrame)
     assert_equal(list(df.columns), ['a', 'b', 'c'])
     assert_equal(df['a'].values, [3, 5, 6, 7])
