@@ -612,21 +612,6 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         super().__init__(axes, viewer_state,
                             layer_state=layer_state, layer=layer)
-
-        if isinstance(layer, BaseData):
-            data = layer
-        else:
-            data = layer.data
-
-        self.data = data
-        self.region_att = data._extended_component_id
-
-        self.region_comp = data.get_component(self.region_att)
-
-        self.region_x_att = self.data.center_x_id
-        self.region_y_att = self.data.center_y_id
-        self.region_xy_ids = [self.region_x_att, self.region_y_att]
-
         self._viewer_state.add_global_callback(self._update_scatter_region)
         self.state.add_global_callback(self._update_scatter_region)
         self._set_axes(axes)
@@ -643,6 +628,21 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         # Layer artist has been cleared already
         if len(self.mpl_artists) == 0:
             return
+
+        if self.layer is not None:
+            if isinstance(self.layer, BaseData):
+                data = self.layer
+            else:
+                data = self.layer.data
+
+            self.data = data
+            self.region_att = data._extended_component_id
+
+            self.region_comp = data.get_component(self.region_att)
+
+            self.region_x_att = self.data.center_x_id
+            self.region_y_att = self.data.center_y_id
+            self.region_xy_ids = [self.region_x_att, self.region_y_att]
 
         try:
             # These must be special attributes that are linked to a region_att
