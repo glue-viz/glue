@@ -4,7 +4,7 @@ Functions to support data that defines regions
 import numpy as np
 
 from glue.core.roi import PolygonalROI
-from glue.core.data import RegionData
+from glue.core.data_region import RegionData
 
 from glue.config import layer_action
 from glue.core.subset import RoiSubsetState, MultiOrState

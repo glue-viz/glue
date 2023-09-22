@@ -69,7 +69,8 @@ from astropy.wcs import WCS
 import shapely
 
 from glue import core
-from glue.core.data import Data, RegionData
+from glue.core.data import Data
+from glue.core.data_region import RegionData
 from glue.core.component_id import ComponentID, PixelComponentID
 from glue.core.component import (Component, CategoricalComponent,
                                  DerivedComponent, CoordinateComponent,

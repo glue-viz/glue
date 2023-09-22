@@ -4,7 +4,8 @@ from numpy.testing import assert_array_equal
 import numpy as np
 from shapely.geometry import MultiPolygon, Polygon, Point
 
-from glue.core.data import Data, RegionData
+from glue.core.data import Data
+from glue.core.data_region import RegionData
 from glue.core.component import ExtendedComponent
 from glue.core.state import GlueUnSerializer
 from glue.core.tests.test_application_base import MockApplication
