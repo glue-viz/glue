@@ -56,7 +56,7 @@ def test_viewer_update_data():
 
     class CustomUpdateLayerArtist(LayerArtist):
 
-        def update_component_limits(self, components_changed):
+        def _on_components_changed(self, components_changed):
             self.called_component_limits = True
             self.num_components_changed = len(components_changed)
 

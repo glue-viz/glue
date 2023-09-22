@@ -290,7 +290,7 @@ class Viewer(BaseViewer):
                         layer_artist.update()
                         try:
                             components_changed = message.components_changed
-                            layer_artist.update_component_limits(components_changed)
+                            layer_artist._on_components_changed(components_changed)
                         except AttributeError:
                             pass
 
@@ -299,7 +299,7 @@ class Viewer(BaseViewer):
                         layer_artist.update()
                         try:
                             components_changed = message.components_changed
-                            layer_artist.update_component_limits(components_changed)
+                            layer_artist._on_components_changed(components_changed)
                         except AttributeError:
                             pass
 

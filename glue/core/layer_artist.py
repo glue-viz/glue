@@ -228,9 +228,9 @@ class LayerArtistBase(PropertySetMixin, metaclass=ABCMeta):
             self._changed = True
             self._state = state
 
-    def update_component_limits(self, components_changed):
+    def _on_components_changed(self, components_changed):
         """
-        Update component limits for this layer
+        React to a change to one or more of the components in this layer.
         """
         pass
 
