@@ -246,7 +246,14 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     # array. This won't be very efficient when dealing with 3d fixed
     # resolution buffers, but it will at least work as opposed to not.
 
-    if target_cid is not None and isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent):
+    # Since subset definitions can be pretty arbitrary, we do not rely
+    # on fancy indexing if the target dataset has any DaskComponents
+    # when we apply subset_state.
+
+    target_cid_is_dask = target_cid is not None and isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent)
+    subset_over_dask_data = subset_state is not None and any([isinstance(data.get_component(comp), DaskComponent) for comp in data.main_components])
+
+    if target_cid_is_dask or subset_over_dask_data:
 
         # Extract sub-region of data first, then fetch exact coordinate values
         subregion = tuple([slice(np.nanmin(coord), np.nanmax(coord) + 1) for coord in translated_coords])
