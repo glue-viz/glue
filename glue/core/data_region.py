@@ -180,3 +180,82 @@ class RegionData(Data):
                 return self._extended_component_id
         else:
             return super().add_component(component, label)
+
+    def get_transform_to_cid(self, axis, other_cid):
+        """
+        Return the function that maps one of the center components to a different component.
+
+        We can use this to get the transformation from the x,y coordinates
+        that the ExtendedComponent are in to x and y attributes that are
+        visualized in a Viewer so that we can translate the geometries
+        in the ExtendedComponent to the new coordinates before displaying them.
+
+        Parameters
+        ----------
+        axis : str
+            Either 'x' or 'y'.
+        other_cid : :class:`~glue.core.component.ComponentID`
+            The other ComponentID (typically the one that is
+            visualized in a Viewer).
+
+        Returns
+        -------
+        func : `callable`
+            The function that converts this_cid to other_cid which can then
+            be used to transform the geometries before display.
+
+        Raises
+        ------
+        ValueError
+            If axis is not 'x' or 'y'.
+        """
+        if axis == 'x':
+            this_cid = self.center_x_id
+        elif axis == 'y':
+            this_cid = self.center_y_id
+        else:
+            raise ValueError("axis must be 'x' or 'y'")
+        func = None
+        link = self._get_external_link(other_cid)
+        if this_cid in link.get_from_ids():
+            func = link.get_using()
+        elif this_cid in link.get_to_ids():
+            func = link.get_inverse()
+        if func:
+            return func
+        else:
+            return None
+
+    def check_if_can_display(self, target_cid):
+        """
+        Check if target_cid can be mapped to one of the center components.
+
+        If target_cid is one of the center components, then we can display
+        the ExtendedComponent in a Viewer.
+
+        Parameters
+        ----------
+        target_cid : :class:`~glue.core.component.ComponentID`
+            The ComponentID (typically displayed in a Viewer) which we
+            want to check if it is one of the special center components.
+
+        Returns
+        -------
+        bool
+            True if target_cid can be mapped to one of the center components, False otherwise.
+        """
+        from glue.core.link_manager import is_equivalent_cid  # avoid circular import
+
+        center_cids = [self.center_x_id, self.center_y_id]
+        for center_cid in center_cids:
+            if is_equivalent_cid(self, center_cid, target_cid):
+                return True
+        else:
+            link = self._get_external_link(target_cid)
+            if not link:
+                return False
+            for center_cid in center_cids:
+                if center_cid in link:
+                    return True
+            else:
+                return False
