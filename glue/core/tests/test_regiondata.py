@@ -15,6 +15,8 @@ from glue.core.tests.test_application_base import MockApplication
 from glue.core.link_helpers import LinkSame, LinkTwoWay
 from glue.core.exceptions import IncompatibleAttribute
 
+from glue.plugins.wcs_autolinking.wcs_autolinking import AffineLink
+
 poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
 poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
 poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
@@ -236,6 +238,22 @@ class TestRegionData(object):
         x_data = self.region_data[self.region_data.center_x_id]
         assert_array_equal(self.region_data[viewer_x_att], full_trans(x_data))
         assert_array_equal(self.region_data.get_transform_to_cid('x', viewer_x_att)(test_arr), full_trans(test_arr))
+
+    def test_get_multilink_transformation(self):
+        dc = DataCollection([self.region_data, self.other_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+        
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        
+        dc.add_link(AffineLink(self.region_data, self.other_data, 
+                               [self.region_data.center_x_id, self.region_data.center_y_id],
+                               [viewer_x_att, viewer_y_att], 
+                               matrix=matrix))
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+        #trans_func = self.region_data.get_transform_to_cid('x', viewer_x_att)
 
 
 class TestRegionDataSaveRestore(object):

@@ -280,4 +280,4 @@ class RegionData(Data):
             if center_cid in link:
                 return True
             else:
-                return self.linked_to_center_comp(link.get_from_ids()[0])
+                return any([self.linked_to_center_comp(x) for x in link.get_from_ids()])
