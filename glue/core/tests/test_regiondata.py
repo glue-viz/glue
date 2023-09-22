@@ -2,14 +2,18 @@ import pytest
 from numpy.testing import assert_array_equal
 
 import numpy as np
+import shapely
 from shapely.geometry import MultiPolygon, Polygon, Point
 
+
 from glue.core.data import Data
+from glue.core.data_collection import DataCollection
 from glue.core.data_region import RegionData
 from glue.core.component import ExtendedComponent
 from glue.core.state import GlueUnSerializer
 from glue.core.tests.test_application_base import MockApplication
-from glue.core.link_helpers import LinkSame
+from glue.core.link_helpers import LinkSame, LinkTwoWay
+from glue.core.exceptions import IncompatibleAttribute
 
 poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
 poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
@@ -24,6 +28,76 @@ CENTER_X = [0, 1]
 CENTER_Y = [0, 1]
 
 
+def shift(x):
+    return x + 1
+
+
+def unshift(x):
+    return x - 1
+
+
+def forwards(x):
+    return x * 2
+
+
+def backwards(x):
+    return x / 2
+
+
+class TestRegionDataLinks(object):
+    def setup_method(self):
+        self.region_data = RegionData(label='My Regions',
+                                      color=np.array(['red', 'blue', 'green']),
+                                      area=shapely.area(SHAPELY_POLYGON_ARRAY),
+                                      boundary=SHAPELY_POLYGON_ARRAY)
+        self.other_data = Data(label='Other Data',
+                               x=np.array([1, 2, 3]),
+                               y=np.array([5, 6, 7]),
+                               color=np.array(['yellow', 'pink', 'orange']),
+                               area=np.array([10, 20, 30]))
+
+    def test_linked_properly(self):
+        dc = DataCollection([self.region_data, self.other_data])
+
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.region_data.center_x_id, self.other_data.id['x']))
+        dc.add_link(LinkSame(self.region_data.center_y_id, self.other_data.id['y']))
+
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+    def test_linked_incorrectly(self):
+        dc = DataCollection([self.region_data, self.other_data])
+
+        viewer_x_att = self.other_data.id['color']
+        viewer_y_att = self.other_data.id['area']
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.region_data.id['color'], self.other_data.id['color']))
+        dc.add_link(LinkSame(self.region_data.id['area'], self.other_data.id['area']))
+
+        # This is how a Viewer typically checks to see if is being asked
+        # to plot an incompatible dataset. RegionData is a special case
+        # because we need to know if the viewer is showing the center components
+        # (in which case we can show the regions) or some other components
+        # (in which case we can't). In this case we need to know that we
+        # CANNOT show the center component.
+        try:
+            x = self.region_data[viewer_x_att]
+        except IncompatibleAttribute:
+            assert False
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+
 class TestRegionData(object):
 
     def setup_method(self):
@@ -35,6 +109,9 @@ class TestRegionData(object):
         self.cen_y_id = self.manual_region_data.add_component(CENTER_Y, label='Center [y]')
         self.extended_comp = ExtendedComponent(SHAPELY_CIRCLE_ARRAY, center_comp_ids=[self.cen_x_id, self.cen_y_id])
         self.manual_region_data.add_component(self.extended_comp, label='circles')
+
+        self.other_data = Data(x=np.array([1, 2, 3]), y=np.array([5, 6, 7]), label='Other Data')
+        self.mid_data = Data(x=np.array([4, 5, 6]), y=np.array([2, 3, 4]), label='Middle Data')
 
     def test_basic_properties_simple(self):
         assert self.region_data.label == 'My Regions'
@@ -70,6 +147,95 @@ class TestRegionData(object):
         assert self.manual_region_data.get_kind('Center [x]') == 'numerical'
         assert self.manual_region_data.get_kind('Center [y]') == 'numerical'
         assert self.manual_region_data.get_kind('circles') == 'extended'
+
+    def test_check_if_can_display(self):
+        dc = DataCollection([self.region_data, self.other_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.region_data.center_x_id, self.other_data.id['x']))
+        dc.add_link(LinkSame(self.region_data.center_y_id, self.other_data.id['y']))
+
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+    def test_check_if_can_display_through_intermediate(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.region_data.center_x_id, self.mid_data.id['x']))
+        dc.add_link(LinkSame(self.region_data.center_y_id, self.mid_data.id['y']))
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.other_data.id['x'], self.mid_data.id['x']))
+
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.other_data.id['y'], self.mid_data.id['y']))
+
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+    def test_check_if_can_display_through_complicated_intermediate(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkSame(self.region_data.center_x_id, self.mid_data.id['x']))
+        dc.add_link(LinkSame(self.region_data.center_y_id, self.mid_data.id['y']))
+
+        assert not self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkTwoWay(self.other_data.id['x'], self.mid_data.id['x'], forwards, backwards))
+
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert not self.region_data.linked_to_center_comp(viewer_y_att)
+
+        dc.add_link(LinkTwoWay(self.other_data.id['y'], self.mid_data.id['y'], forwards, backwards))
+
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+    def test_get_transformation_to_cid(self):
+        dc = DataCollection([self.region_data, self.other_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, viewer_x_att, forwards, backwards))
+        dc.add_link(LinkTwoWay(self.region_data.center_y_id, viewer_y_att, backwards, forwards))
+
+        assert self.region_data.get_transform_to_cid('x', viewer_x_att) == forwards
+        assert self.region_data.get_transform_to_cid('y', viewer_y_att) == backwards
+
+        assert_array_equal(self.region_data[viewer_x_att], forwards(self.region_data[self.region_data.center_x_id]))
+        with pytest.raises(ValueError, match="axis must be 'x' or 'y'"):
+            _ = self.region_data.get_transform_to_cid('z', viewer_x_att)
+
+    def test_get_transformation_to_cid_through_mid(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        viewer_x_att = self.other_data.id['x']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, self.mid_data.id['x'], shift, unshift))
+        dc.add_link(LinkTwoWay(self.mid_data.id['x'], viewer_x_att, forwards, backwards))
+
+        def full_trans(x):
+            return forwards(shift(x))
+        test_arr = np.array([0.2, 5, 10])
+
+        x_data = self.region_data[self.region_data.center_x_id]
+        assert_array_equal(self.region_data[viewer_x_att], full_trans(x_data))
+        assert_array_equal(self.region_data.get_transform_to_cid('x', viewer_x_att)(test_arr), full_trans(test_arr))
 
 
 class TestRegionDataSaveRestore(object):

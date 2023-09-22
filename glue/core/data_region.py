@@ -181,14 +181,25 @@ class RegionData(Data):
         else:
             return super().add_component(component, label)
 
+    def _get_trans_to_cid(self, cen_cid, other_cid):
+        link = self._get_external_link(other_cid)
+        func = link.get_using()
+        self.list_of_functions.append(func)
+        if cen_cid in link.get_from_ids():
+            return
+        else:
+            self._get_trans_to_cid(cen_cid, link.get_from_ids()[0])
+
     def get_transform_to_cid(self, axis, other_cid):
         """
-        Return the function that maps one of the center components to a different component.
+        Return the function that converts one of the center components to other_cid.
 
         We can use this to get the transformation from the x,y coordinates
         that the ExtendedComponent are in to x and y attributes that are
         visualized in a Viewer so that we can translate the geometries
         in the ExtendedComponent to the new coordinates before displaying them.
+
+        TODO: Extend to make this work if there is a MultiLink in the chain.
 
         Parameters
         ----------
@@ -215,23 +226,34 @@ class RegionData(Data):
             this_cid = self.center_y_id
         else:
             raise ValueError("axis must be 'x' or 'y'")
-        func = None
-        link = self._get_external_link(other_cid)
-        if this_cid in link.get_from_ids():
-            func = link.get_using()
-        elif this_cid in link.get_to_ids():
-            func = link.get_inverse()
-        if func:
-            return func
-        else:
+        self.list_of_functions = []
+        self._get_trans_to_cid(this_cid, other_cid)
+        if not self.list_of_functions:
             return None
+        elif len(self.list_of_functions) == 1:
+            return self.list_of_functions[0]
+        else:
+            def conv_function(x):
+                for f in self.list_of_functions[::-1]:
+                    x = f(x)
+                return x
+            return conv_function
 
-    def check_if_can_display(self, target_cid):
+    def linked_to_center_comp(self, target_cid):
         """
         Check if target_cid can be mapped to one of the center components.
 
-        If target_cid is one of the center components, then we can display
-        the ExtendedComponent in a Viewer.
+        This is used to see if we can display the ExtendedComponent in a Viewer.
+
+        It is not sufficient to simply see if we can retrieve data from
+        target_cid like is commonly done in Viewers:
+
+                >>> _ = self[target_cid]
+
+        Because if target_cid is mapped to a Component that is not one of the
+        center components, then we cannot display the regions.
+
+        TODO: Extend to make this work if there is a MultiLink in the chain.
 
         Parameters
         ----------
@@ -250,12 +272,12 @@ class RegionData(Data):
         for center_cid in center_cids:
             if is_equivalent_cid(self, center_cid, target_cid):
                 return True
-        else:
-            link = self._get_external_link(target_cid)
-            if not link:
-                return False
-            for center_cid in center_cids:
-                if center_cid in link:
-                    return True
+
+        link = self._get_external_link(target_cid)
+        if not link:
+            return False
+        for center_cid in center_cids:
+            if center_cid in link:
+                return True
             else:
-                return False
+                return self.linked_to_center_comp(link.get_from_ids()[0])
