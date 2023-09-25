@@ -228,7 +228,7 @@ class RegionData(Data):
         Can be called in viewers as:
 
             >>> tfunc = region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
-        
+
         And the function can be used to transform the geometries as:
 
             >>> from shapely.ops import transform
