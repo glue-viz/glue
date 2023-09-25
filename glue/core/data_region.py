@@ -197,11 +197,11 @@ class RegionData(Data):
         if len(linkx.get_from_ids()) > 2 or len(linky.get_from_ids()) > 2:
             raise ValueError("Can only display regions if links depend on 2 or fewer other components.")
 
-        def conv_function(x):
+        def conv_function(x, y=None):
             if len(linkx.get_from_ids()) == 1 and len(linky.get_from_ids()) == 1:
-                return [funcx(x[0]), funcy(x[1])]
+                return [funcx(x), funcy(y)]
             else:
-                return [funcx(x[0], x[1]), funcy(x[0], x[1])]
+                return [funcx(x, y), funcy(x, y)]
 
         self.list_of_functions.append(conv_function)
         if len(linkx.get_from_ids()) == 2:
@@ -228,6 +228,11 @@ class RegionData(Data):
         Can be called in viewers as:
 
             >>> tfunc = region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+        
+        And the function can be used to transform the geometries as:
+
+            >>> from shapely.ops import transform
+            >>> new_geoms = [transform(tfunc, g) for g in old_geoms]
 
         TODO: This is currently hard-coded to work with 2D transformations,
               but could be extended to work with 1D viewers as well. Our region
@@ -246,7 +251,8 @@ class RegionData(Data):
         func : `callable`
             The function that converts center_x_id and center_y_id to
             other_cids which can then be used to transform the
-            geometries before display.
+            geometries before display. Returns None if there is no
+            such valid transformation.
         """
 
         self.list_of_functions = []
@@ -256,11 +262,11 @@ class RegionData(Data):
         elif len(self.list_of_functions) == 1:
             return self.list_of_functions[0]
         else:
-            def conv_function(x):
+            def conv_function(*args):
                 # Our list of functions is built up in reverse order
                 for f in self.list_of_functions[::-1]:
-                    x = f(x)
-                return x
+                    args = f(*args)
+                return args
             return conv_function
 
     def linked_to_center_comp(self, target_cid):

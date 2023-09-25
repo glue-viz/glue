@@ -4,7 +4,8 @@ from numpy.testing import assert_array_equal
 import numpy as np
 import shapely
 from shapely.geometry import MultiPolygon, Polygon, Point
-
+from shapely.affinity import affine_transform
+from shapely.ops import transform
 
 from glue.core.data import Data
 from glue.core.data_collection import DataCollection
@@ -221,7 +222,7 @@ class TestRegionData(object):
         x_data = self.region_data[self.region_data.center_x_id]
         y_data = self.region_data[self.region_data.center_y_id]
 
-        assert_array_equal(translation_func([x_data, y_data]),
+        assert_array_equal(translation_func(x_data, y_data),
                            [forwards(self.region_data[self.region_data.center_x_id]),
                             backwards(self.region_data[self.region_data.center_y_id])])
 
@@ -231,7 +232,7 @@ class TestRegionData(object):
         viewer_y_att = self.other_data.id['y']
 
         matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
-
+        shap_matrix = [2, 0, 0, 2, 0, 0]  # This is how shapely defines this affine matrix
         dc.add_link(AffineLink(self.region_data, self.other_data,
                                [self.region_data.center_x_id, self.region_data.center_y_id],
                                [viewer_x_att, viewer_y_att],
@@ -242,8 +243,12 @@ class TestRegionData(object):
         translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
         x_data = self.region_data[self.region_data.center_x_id]
         y_data = self.region_data[self.region_data.center_y_id]
-        assert_array_equal(translation_func(np.array([x_data, y_data])),
+        assert_array_equal(translation_func(x_data, y_data),
                            [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
+
+        new_regions = [transform(translation_func, g) for g in self.region_data['boundary']]
+        shapley_trans = [affine_transform(g, shap_matrix) for g in SHAPELY_POLYGON_ARRAY]
+        assert_array_equal(new_regions, shapley_trans)
 
     def test_get_multilink_transformation_through_int(self):
         dc = DataCollection([self.region_data, self.other_data, self.mid_data])
@@ -265,7 +270,7 @@ class TestRegionData(object):
         translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
         x_data = self.region_data[self.region_data.center_x_id]
         y_data = self.region_data[self.region_data.center_y_id]
-        assert_array_equal(translation_func(np.array([x_data, y_data])),
+        assert_array_equal(translation_func(x_data, y_data),
                            [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
 
     def test_get_multilink_transformation_through_int_mixed(self):
@@ -288,7 +293,7 @@ class TestRegionData(object):
         translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
         x_data = self.region_data[self.region_data.center_x_id]
         y_data = self.region_data[self.region_data.center_y_id]
-        assert_array_equal(translation_func(np.array([x_data, y_data])),
+        assert_array_equal(translation_func(x_data, y_data),
                            [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
 
     def test_errors_too_many_viewer_comps(self):
