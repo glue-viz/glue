@@ -243,17 +243,67 @@ class TestRegionData(object):
         dc = DataCollection([self.region_data, self.other_data])
         viewer_x_att = self.other_data.id['x']
         viewer_y_att = self.other_data.id['y']
-        
+
         matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
-        
-        dc.add_link(AffineLink(self.region_data, self.other_data, 
+
+        dc.add_link(AffineLink(self.region_data, self.other_data,
                                [self.region_data.center_x_id, self.region_data.center_y_id],
-                               [viewer_x_att, viewer_y_att], 
+                               [viewer_x_att, viewer_y_att],
                                matrix=matrix))
         assert self.region_data.linked_to_center_comp(viewer_x_att)
         assert self.region_data.linked_to_center_comp(viewer_y_att)
 
-        #trans_func = self.region_data.get_transform_to_cid('x', viewer_x_att)
+        translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+        x_data = self.region_data[self.region_data.center_x_id]
+        y_data = self.region_data[self.region_data.center_y_id]
+        assert_array_equal(translation_func(np.array([x_data, y_data])),
+                           [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
+
+    def test_get_multilink_transformation_through_int(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, self.mid_data.id['x'], shift, unshift))
+        dc.add_link(LinkTwoWay(self.region_data.center_y_id, self.mid_data.id['y'], unshift, shift))
+
+        matrix = np.array([[2, 0, 0], [0, 3, 0], [0, 0, 1]])
+
+        dc.add_link(AffineLink(self.mid_data, self.other_data,
+                               [self.mid_data.id['x'], self.mid_data.id['y']],
+                               [viewer_x_att, viewer_y_att],
+                               matrix=matrix))
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+        translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+        x_data = self.region_data[self.region_data.center_x_id]
+        y_data = self.region_data[self.region_data.center_y_id]
+        assert_array_equal(translation_func(np.array([x_data, y_data])),
+                           [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
+
+    def test_get_multilink_transformation_through_int_mixed(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, self.mid_data.id['x'], shift, unshift))
+        dc.add_link(LinkTwoWay(self.region_data.center_y_id, self.mid_data.id['y'], unshift, shift))
+
+        matrix = np.array([[2, 2, 0], [1, 3, 3], [0, 0, 1]])
+
+        dc.add_link(AffineLink(self.mid_data, self.other_data,
+                               [self.mid_data.id['x'], self.mid_data.id['y']],
+                               [viewer_x_att, viewer_y_att],
+                               matrix=matrix))
+        assert self.region_data.linked_to_center_comp(viewer_x_att)
+        assert self.region_data.linked_to_center_comp(viewer_y_att)
+
+        translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+        x_data = self.region_data[self.region_data.center_x_id]
+        y_data = self.region_data[self.region_data.center_y_id]
+        assert_array_equal(translation_func(np.array([x_data, y_data])),
+                           [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
 
 
 class TestRegionDataSaveRestore(object):

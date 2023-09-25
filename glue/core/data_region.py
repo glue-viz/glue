@@ -181,6 +181,50 @@ class RegionData(Data):
         else:
             return super().add_component(component, label)
 
+    def _get_trans_to_cids(self, cen_cids, other_cids):
+        if len(other_cids) != 2:
+            raise ValueError("Can only deal with 2D transformations")
+        linkx = self._get_external_link(other_cids[0])
+        linky = self._get_external_link(other_cids[1])
+
+        funcx = linkx.get_using()
+        funcy = linky.get_using()
+
+        def conv_function(x):
+            if len(linkx.get_from_ids()) == 1 and len(linky.get_from_ids()) == 1:
+                return [funcx(x[0]), funcy(x[1])]
+            else:
+                return [funcx(x[0], x[1]), funcy(x[0], x[1])]
+
+        self.list_of_functions.append(conv_function)
+        if len(linkx.get_from_ids()) == 2:
+            other_cids = linkx.get_from_ids()
+        else:
+            other_cids = linkx.get_from_ids() + linky.get_from_ids()
+        if cen_cids[0] in other_cids and cen_cids[1] in other_cids:
+            return
+        else:
+            self._get_trans_to_cids(cen_cids, other_cids)
+
+    def get_transform_to_cids(self, other_cids):
+        """
+        Assume that we input 2 other_cids and need to get a function
+        that converts to _both_ center components.
+        """
+
+        self.list_of_functions = []
+        self._get_trans_to_cids([self.center_x_id, self.center_y_id], other_cids)
+        if not self.list_of_functions:
+            return None
+        elif len(self.list_of_functions) == 1:
+            return self.list_of_functions[0]
+        else:
+            def conv_function(x):
+                for f in self.list_of_functions[::-1]:
+                    x = f(x)
+                return x
+            return conv_function
+
     def _get_trans_to_cid(self, cen_cid, other_cid):
         link = self._get_external_link(other_cid)
         func = link.get_using()
@@ -252,8 +296,6 @@ class RegionData(Data):
 
         Because if target_cid is mapped to a Component that is not one of the
         center components, then we cannot display the regions.
-
-        TODO: Extend to make this work if there is a MultiLink in the chain.
 
         Parameters
         ----------
