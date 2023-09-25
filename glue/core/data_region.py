@@ -182,6 +182,10 @@ class RegionData(Data):
             return super().add_component(component, label)
 
     def _get_trans_to_cids(self, cen_cids, other_cids):
+        """
+        Use recursion to traverse the links and build up a list of functions
+        to convert cen_ids to other_cids.
+        """
         if len(other_cids) != 2:
             raise ValueError("Can only deal with 2D transformations")
         linkx = self._get_external_link(other_cids[0])
@@ -189,6 +193,9 @@ class RegionData(Data):
 
         funcx = linkx.get_using()
         funcy = linky.get_using()
+
+        if len(linkx.get_from_ids()) > 2 or len(linky.get_from_ids()) > 2:
+            raise ValueError("Can only display regions if links depend on 2 or fewer other components.")
 
         def conv_function(x):
             if len(linkx.get_from_ids()) == 1 and len(linky.get_from_ids()) == 1:
@@ -201,15 +208,45 @@ class RegionData(Data):
             other_cids = linkx.get_from_ids()
         else:
             other_cids = linkx.get_from_ids() + linky.get_from_ids()
-        if cen_cids[0] in other_cids and cen_cids[1] in other_cids:
-            return
+        if cen_cids[0] in other_cids or cen_cids[1] in other_cids:
+            if set([cen_cids[0]]+[cen_cids[1]]) == set(other_cids):
+                return
+            else:
+                raise ValueError("Cannot display regions if links depend on other components.")
         else:
             self._get_trans_to_cids(cen_cids, other_cids)
 
     def get_transform_to_cids(self, other_cids):
         """
-        Assume that we input 2 other_cids and need to get a function
-        that converts to _both_ center components.
+        Return the function that converts the center components to other_cids.
+
+        We can use this to get the transformation from the x,y coordinates
+        that the ExtendedComponent are in to x and y attributes that are
+        visualized in a Viewer so that we can translate the geometries
+        in the ExtendedComponent to the new coordinates before displaying them.
+
+        Can be called in viewers as:
+
+            >>> tfunc = region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+
+        TODO: This is currently hard-coded to work with 2D transformations,
+              but could be extended to work with 1D viewers as well. Our region
+              geometries are limited to be 2D (or 1D ranges), so links
+              that require more than 2 input components do not admit to
+              a valid transformation.
+
+        Parameters
+        ----------
+        other_cid : list of :class:`~glue.core.component.ComponentID`
+            The other ComponentIDs (typically the ones that are
+            visualized in a Viewer).
+
+        Returns
+        -------
+        func : `callable`
+            The function that converts center_x_id and center_y_id to
+            other_cids which can then be used to transform the
+            geometries before display.
         """
 
         self.list_of_functions = []
@@ -220,64 +257,7 @@ class RegionData(Data):
             return self.list_of_functions[0]
         else:
             def conv_function(x):
-                for f in self.list_of_functions[::-1]:
-                    x = f(x)
-                return x
-            return conv_function
-
-    def _get_trans_to_cid(self, cen_cid, other_cid):
-        link = self._get_external_link(other_cid)
-        func = link.get_using()
-        self.list_of_functions.append(func)
-        if cen_cid in link.get_from_ids():
-            return
-        else:
-            self._get_trans_to_cid(cen_cid, link.get_from_ids()[0])
-
-    def get_transform_to_cid(self, axis, other_cid):
-        """
-        Return the function that converts one of the center components to other_cid.
-
-        We can use this to get the transformation from the x,y coordinates
-        that the ExtendedComponent are in to x and y attributes that are
-        visualized in a Viewer so that we can translate the geometries
-        in the ExtendedComponent to the new coordinates before displaying them.
-
-        TODO: Extend to make this work if there is a MultiLink in the chain.
-
-        Parameters
-        ----------
-        axis : str
-            Either 'x' or 'y'.
-        other_cid : :class:`~glue.core.component.ComponentID`
-            The other ComponentID (typically the one that is
-            visualized in a Viewer).
-
-        Returns
-        -------
-        func : `callable`
-            The function that converts this_cid to other_cid which can then
-            be used to transform the geometries before display.
-
-        Raises
-        ------
-        ValueError
-            If axis is not 'x' or 'y'.
-        """
-        if axis == 'x':
-            this_cid = self.center_x_id
-        elif axis == 'y':
-            this_cid = self.center_y_id
-        else:
-            raise ValueError("axis must be 'x' or 'y'")
-        self.list_of_functions = []
-        self._get_trans_to_cid(this_cid, other_cid)
-        if not self.list_of_functions:
-            return None
-        elif len(self.list_of_functions) == 1:
-            return self.list_of_functions[0]
-        else:
-            def conv_function(x):
+                # Our list of functions is built up in reverse order
                 for f in self.list_of_functions[::-1]:
                     x = f(x)
                 return x

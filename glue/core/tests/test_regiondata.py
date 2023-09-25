@@ -217,27 +217,13 @@ class TestRegionData(object):
         dc.add_link(LinkTwoWay(self.region_data.center_x_id, viewer_x_att, forwards, backwards))
         dc.add_link(LinkTwoWay(self.region_data.center_y_id, viewer_y_att, backwards, forwards))
 
-        assert self.region_data.get_transform_to_cid('x', viewer_x_att) == forwards
-        assert self.region_data.get_transform_to_cid('y', viewer_y_att) == backwards
-
-        assert_array_equal(self.region_data[viewer_x_att], forwards(self.region_data[self.region_data.center_x_id]))
-        with pytest.raises(ValueError, match="axis must be 'x' or 'y'"):
-            _ = self.region_data.get_transform_to_cid('z', viewer_x_att)
-
-    def test_get_transformation_to_cid_through_mid(self):
-        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
-        viewer_x_att = self.other_data.id['x']
-
-        dc.add_link(LinkTwoWay(self.region_data.center_x_id, self.mid_data.id['x'], shift, unshift))
-        dc.add_link(LinkTwoWay(self.mid_data.id['x'], viewer_x_att, forwards, backwards))
-
-        def full_trans(x):
-            return forwards(shift(x))
-        test_arr = np.array([0.2, 5, 10])
-
+        translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
         x_data = self.region_data[self.region_data.center_x_id]
-        assert_array_equal(self.region_data[viewer_x_att], full_trans(x_data))
-        assert_array_equal(self.region_data.get_transform_to_cid('x', viewer_x_att)(test_arr), full_trans(test_arr))
+        y_data = self.region_data[self.region_data.center_y_id]
+
+        assert_array_equal(translation_func([x_data, y_data]),
+                           [forwards(self.region_data[self.region_data.center_x_id]),
+                            backwards(self.region_data[self.region_data.center_y_id])])
 
     def test_get_multilink_transformation(self):
         dc = DataCollection([self.region_data, self.other_data])
@@ -304,6 +290,57 @@ class TestRegionData(object):
         y_data = self.region_data[self.region_data.center_y_id]
         assert_array_equal(translation_func(np.array([x_data, y_data])),
                            [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
+
+    def test_errors_too_many_viewer_comps(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        self.other_data.add_component(np.array([4, 5, 6]), label='z')
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+        viewer_z_att = self.other_data.id['z']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, self.mid_data.id['x'], shift, unshift))
+        dc.add_link(LinkTwoWay(self.region_data.center_y_id, self.mid_data.id['y'], unshift, shift))
+
+        with pytest.raises(ValueError, match="Can only deal with 2D transformations"):
+            _ = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att, viewer_z_att])
+
+    def test_errors_too_many_comps_in_transform(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        self.other_data.add_component(np.array([4, 5, 6]), label='z')
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+        viewer_z_att = self.other_data.id['z']
+        self.region_data.add_component(np.array([90, 80, 70]), label='zz')
+
+        matrix = np.array([[2, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
+        dc.add_link(AffineLink(self.region_data, self.other_data,
+                               [self.region_data.center_x_id,
+                                self.region_data.center_y_id,
+                                self.region_data.id['zz']],
+                               [viewer_x_att, viewer_y_att, viewer_z_att],
+                               matrix=matrix))
+
+        with pytest.raises(ValueError, match="Can only display regions if links depend on 2 or fewer other components."):
+            _ = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+
+    def test_errors_bad_link(self):
+        dc = DataCollection([self.region_data, self.other_data, self.mid_data])
+        self.other_data.add_component(np.array([4, 5, 6]), label='z')
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+        viewer_z_att = self.other_data.id['z']
+        self.region_data.add_component(np.array([90, 80, 70]), label='zz')
+        self.region_data.add_component(np.array([90, 80, 70]), label='fakey')
+
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        dc.add_link(AffineLink(self.region_data, self.other_data,
+                               [self.region_data.center_x_id,
+                                self.region_data.id['fakey']],
+                               [viewer_x_att, viewer_y_att],
+                               matrix=matrix))
+
+        with pytest.raises(ValueError, match="Cannot display regions if links depend on other components."):
+            _ = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
 
 
 class TestRegionDataSaveRestore(object):
