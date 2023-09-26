@@ -1031,12 +1031,18 @@ def _load_data_5(rec, context):
 
 @saver(ComponentID)
 def _save_component_id(cid, context):
-    return dict(label=cid.label)
+    return dict(label=cid.label,
+                uuid=cid.uuid)
 
 
 @loader(ComponentID)
 def _load_component_id(rec, context):
-    return ComponentID(rec['label'])
+    if 'uuid' in rec and rec['uuid'] is not None:
+        result = ComponentID(rec['label'])
+        result._uuid = rec['uuid']
+        return result
+    else:
+        return ComponentID(rec['label'])
 
 
 @saver(PixelComponentID)
@@ -1060,7 +1066,6 @@ def _save_component(component, context):
         log = component._load_log
         return dict(log=context.id(log),
                     log_item=log.id(component))
-
     return dict(data=context.do(component.data),
                 units=component.units)
 
@@ -1304,7 +1309,8 @@ def _save_regiondata(data, context):
         for k, (v0, v1) in data._key_joins.items()
     ]
     result["uuid"] = data.uuid
-
+    result["xuuid"] = data.center_x_id.uuid
+    result["yuuid"] = data.center_y_id.uuid
     result["primary_owner"] = [
         context.id(cid) for cid in data.components if cid.parent is data
     ]
@@ -1407,13 +1413,11 @@ def _load_regiondata(rec, context):
         unique.
         """
         ext_comp = ext_data.get_component(ext_data.extended_component_id)
-        old_x = ext_comp.x
-        old_y = ext_comp.y
 
         for comp_id in ext_data.component_ids():
-            if comp_id.label == old_x.label:
+            if comp_id.uuid == rec['xuuid']:
                 new_x = comp_id
-            elif comp_id.label == old_y.label:
+            elif comp_id.uuid == rec['yuuid']:
                 new_y = comp_id
         ext_comp.x = new_x
         ext_comp.y = new_y
