@@ -1237,13 +1237,13 @@ def _load_datetime64(rec, context):
 
 
 @saver(shapely.Geometry)
-def _save_shapelygeometry(shape, context):
-    return {'shapelygeometry': str(shapely.to_wkt(shape))}
+def _save_shapely_geometry(shape, context):
+    return {'shapely_geometry': str(shapely.to_wkt(shape))}
 
 
 @loader(shapely.Geometry)
-def _load_shapelygeometry(rec, context):
-    return shapely.from_wkt(rec['shapelygeometry'])
+def _load_shapely_geometry(rec, context):
+    return shapely.from_wkt(rec['shapely_geometry'])
 
 
 def apply_inplace_patches(rec):
