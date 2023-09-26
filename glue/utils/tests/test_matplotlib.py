@@ -7,6 +7,7 @@ from matplotlib.patches import Circle
 from matplotlib.artist import Artist
 from numpy.testing import assert_allclose
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.backend_bases import ResizeEvent
 
 from glue.tests.helpers import requires_scipy, requires_skimage
 from glue.utils.misc import DeferredMethod
@@ -152,7 +153,8 @@ def test_freeze_margins():
     # np.testing.assert_allclose(bbox.x1, 0.9)
     # np.testing.assert_allclose(bbox.y1, 0.9)
 
-    fig.canvas.resize_event()
+    resize_event = ResizeEvent("resize_event", fig.canvas)
+    fig.canvas.callbacks.process(resize_event.name, resize_event)
 
     bbox = ax.get_position()
     np.testing.assert_allclose(bbox.x0, 0.25)
@@ -161,7 +163,8 @@ def test_freeze_margins():
     np.testing.assert_allclose(bbox.y1, 0.75)
 
     fig.set_size_inches(8, 8)
-    fig.canvas.resize_event()
+    resize_event = ResizeEvent("resize_event", fig.canvas)
+    fig.canvas.callbacks.process(resize_event.name, resize_event)
 
     bbox = ax.get_position()
     np.testing.assert_allclose(bbox.x0, 0.125)
@@ -170,7 +173,8 @@ def test_freeze_margins():
     np.testing.assert_allclose(bbox.y1, 0.875)
 
     ax.resizer.margins = [0, 1, 2, 4]
-    fig.canvas.resize_event()
+    resize_event = ResizeEvent("resize_event", fig.canvas)
+    fig.canvas.callbacks.process(resize_event.name, resize_event)
 
     bbox = ax.get_position()
     np.testing.assert_allclose(bbox.x0, 0.)
