@@ -36,14 +36,15 @@ class RegionData(Data):
     latitude. Additional components may describe arbitrary properties of these
     geographic regions (e.g. population, area, etc).
 
-    This class is mostly a convenience class. Data Loaders can create RegionData
-    directly from an iterable of geometries, since this class deals with
-    creating representative points. Viewers can assume that when adding
-    a RegionData object they are probably being asked to visualize the
-    ExtendedComponent, and this class provide some convenience methods for
-    use in reasoning about whether the components currently visualized
-    in a Viewer are the correct ones to enable display of the ExtendedComponent.
-
+    This class is mostly a convenience class. By using this class, Data
+    Loaders can create RegionData directly from an iterable of geometries,
+    since this class deals with creating representative points. Viewers
+    can assume that when adding a RegionData object they are probably
+    being asked to visualize the ExtendedComponent, and this class provides
+    convenience methods for ascertaining whether the components currently
+    visualized in a Viewer are the correct ones to enable display of the
+    ExtendedComponent and to transform the regions through the glue
+    linking architecture into the correct coordinates for display.
 
     Parameters
     ----------
@@ -183,8 +184,22 @@ class RegionData(Data):
 
     def _get_trans_to_cids(self, cen_cids, other_cids):
         """
-        Use recursion to traverse the links and build up a list of functions
+        Use recursion to traverse links and build up a list of functions
         to convert cen_ids to other_cids.
+
+        Parameters
+        ----------
+        cen_cids : list of :class:`~glue.core.component_id.ComponentID`
+            The ComponentIDs that are the inputs to the transformation
+            function.
+        other_cids : list of :class:`~glue.core.component_id.ComponentID`
+            The ComponentIDs that are the outputs of the transformation
+            function.
+
+        Raises
+        ------
+        ValueError
+            If the links imply a transformation that cannot be done by Shapely.
         """
         if len(other_cids) != 2:
             raise ValueError("Can only deal with 2D transformations")

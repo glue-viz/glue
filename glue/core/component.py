@@ -564,10 +564,10 @@ class ExtendedComponent(Component):
     A data component representing an extent or a region.
 
     This component can be used when a dataset describes regions or ranges
-    and is typically used with a :class:`~glue.core.data_region.RegionData` object.
-    For example, a :class:`~glue.core.data_region.RegionData` object might provide
-    properties of geographic regions, and the boundaries of these regions
-    would be an ExtendedComponent.
+    and is typically used with a `RegionData` object, since that object
+    provides helper functions to display regions on viewers. For example,
+    a `RegionData` object might provide properties of geographic
+    regions, and the boundaries of these regions would be an ExtendedComponent.
 
     Data loaders are required to know how to convert regions to a list
     of Shapely objects which can be used to initialize an ExtendedComponent.
@@ -586,7 +586,7 @@ class ExtendedComponent(Component):
     ExtendedComponents are NOT used directly in linking. Instead, ExtendedComponents
     always have corresponding ComponentIDs that represent the x (and y) coordinates
     over which the regions are defined. If not specified otherwise, a
-    :class:`~glue.core.data_region.RegionData` object will create `representative points`
+    `RegionData` object will create 'representative points'
     for each region, representing a point near the center of the reigon that is
     guaranteed to be inside the region.
 
