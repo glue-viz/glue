@@ -5,7 +5,7 @@ from astropy.wcs import WCS
 from glue.core.subset import roi_to_subset_state
 from glue.core.coordinates import Coordinates, LegacyCoordinates
 from glue.core.coordinate_helpers import dependent_axes
-from glue.core.data import RegionData
+from glue.core.data_region import RegionData
 
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist, ScatterRegionLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist

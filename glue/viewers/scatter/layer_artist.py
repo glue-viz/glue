@@ -634,20 +634,12 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                 data = self.layer
             else:
                 data = self.layer.data
-
-            self.data = data
-            self.region_att = data._extended_component_id
-
-            self.region_comp = data.get_component(self.region_att)
-
-            self.region_x_att = self.data.center_x_id
-            self.region_y_att = self.data.center_y_id
-            self.region_xy_ids = [self.region_x_att, self.region_y_att]
+            region_att = data.extended_component_id
 
         try:
             # These must be special attributes that are linked to a region_att
-            if ((not self.data.check_if_linked_cid(self.region_xy_ids, self._viewer_state.x_att)) and
-                     (not self.data.check_if_linked_cid(self.region_xy_ids, self._viewer_state.x_att_world))):
+            if ((not data.linked_to_center_comp(self._viewer_state.x_att)) and
+                     (not data.linked_to_center_comp(self._viewer_state.x_att_world))):
                 raise IncompatibleAttribute
             x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
         except (IncompatibleAttribute, IndexError):
@@ -659,8 +651,8 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         try:
             # These must be special attributes that are linked to a region_att
-            if ((not self.data.check_if_linked_cid(self.region_xy_ids, self._viewer_state.y_att)) and
-                      (not self.data.check_if_linked_cid(self.region_xy_ids, self._viewer_state.y_att_world))):
+            if ((not data.linked_to_center_comp(self._viewer_state.y_att)) and
+                      (not data.linked_to_center_comp(self._viewer_state.y_att_world))):
                 raise IncompatibleAttribute
             y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
         except (IncompatibleAttribute, IndexError):
@@ -670,18 +662,10 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
-        regions = self.layer[self.region_att]
+        regions = self.layer[region_att]
 
-        x_conversion_func = self.data.get_transform_to_cid(self.region_x_att, self._viewer_state.x_att)
-        y_conversion_func = self.data.get_transform_to_cid(self.region_y_att, self._viewer_state.y_att)
-
-        def conversion_func(x, y, z=None):
-            if x_conversion_func:
-                x = x_conversion_func(x)
-            if y_conversion_func:
-                y = y_conversion_func(y)
-            return tuple([x, y])
-        regions = np.array([transform(conversion_func, g) for g in regions])
+        tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
+        regions = np.array([transform(tfunc, g) for g in regions])
 
         # If we are using world coordinates (i.e. the regions are specified in world coordinates)
         # we need to transform the geometries of the regions into pixel coordinates for display
