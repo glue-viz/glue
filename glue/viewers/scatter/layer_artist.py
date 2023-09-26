@@ -664,7 +664,6 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         regions = self.layer[region_att]
 
-
         # If we are using world coordinates (i.e. the regions are specified in world coordinates)
         # we need to transform the geometries of the regions into pixel coordinates for display
         # Note that this calls a custom version of the transform function from shapely
