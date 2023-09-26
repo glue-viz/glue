@@ -664,16 +664,23 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         regions = self.layer[region_att]
 
-        tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
-        regions = np.array([transform(tfunc, g) for g in regions])
 
         # If we are using world coordinates (i.e. the regions are specified in world coordinates)
         # we need to transform the geometries of the regions into pixel coordinates for display
         # Note that this calls a custom version of the transform function from shapely
         # to accomodate glue WCS objects
         if self._viewer_state._display_world:
+            # First, convert to world coordinates
+            tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+            regions = np.array([transform(tfunc, g) for g in regions])
+
+            # Then convert to pixels for display
             world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
             regions = np.array([transform_shapely(world2pix, g) for g in regions])
+        else:
+            tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
+            regions = np.array([transform(tfunc, g) for g in regions])
+
         # decompose GeometryCollections
         geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
         self.multiindex_geometry = multiindex
