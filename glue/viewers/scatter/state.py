@@ -516,6 +516,8 @@ class ScatterRegionLayerState(MatplotlibLayerState):
     cmap_vmin = DDCProperty(docstring="The lower level for the colormap")
     cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
     cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
+    percentile = DDSCProperty(docstring='The percentile value used to '
+                                        'automatically calculate levels')
 
     fill = DDCProperty(True, docstring="Whether to fill the regions")
 
@@ -526,10 +528,22 @@ class ScatterRegionLayerState(MatplotlibLayerState):
 
         self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_att',
                                                           lower='cmap_vmin', upper='cmap_vmax',
+                                                          percentile='percentile',
                                                           limits_cache=self.limits_cache)
+
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
                                                       numeric=True, datetime=False,
                                                       categorical=True)
+
+        percentile_display = {100: 'Min/Max',
+                              99.5: '99.5%',
+                              99: '99%',
+                              95: '95%',
+                              90: '90%',
+                              'Custom': 'Custom'}
+
+        ScatterRegionLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
+        ScatterRegionLayerState.percentile.set_display_func(self, percentile_display.get)
 
         ScatterRegionLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
 
