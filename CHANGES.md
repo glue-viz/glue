@@ -1,5 +1,29 @@
 # Full changelog
 
+## v1.14.0 - 2023-10-23
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Support dynamic components by @jfoster17 in https://github.com/glue-viz/glue/pull/2446
+- Add regiondata by @jfoster17 in https://github.com/glue-viz/glue/pull/2442
+
+#### Bug Fixes
+
+- Render nans as 'bad' in mpl cmaps when mode='colormap' by @bmorris3 in https://github.com/glue-viz/glue/pull/2427
+- Update deprecated call to resize_event in test by @jfoster17 in https://github.com/glue-viz/glue/pull/2443
+- Do not use fancy index for subsets over Dask data by @jfoster17 in https://github.com/glue-viz/glue/pull/2444
+- Fix bug that caused incompatible subsets to be rendered in some contexts rather than be hidden by @jfoster17 in https://github.com/glue-viz/glue/pull/2425
+
+#### Other Changes
+
+- Switch to Sphinx book theme and tidied up Sphinx configuration by @astrofrog in https://github.com/glue-viz/glue/pull/2436
+- Make tests robust to plugins adding new translators by @jfoster17 in https://github.com/glue-viz/glue/pull/2445
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.13.1...v1.14.0
+
 ## v1.13.1 - 2023-08-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
