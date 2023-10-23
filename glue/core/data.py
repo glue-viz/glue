@@ -1427,6 +1427,8 @@ class Data(BaseCartesianData):
             return 'numerical'
         elif comp.categorical:
             return 'categorical'
+        elif comp.extended:
+            return 'extended'
         else:
             raise TypeError("Unknown data kind")
 
