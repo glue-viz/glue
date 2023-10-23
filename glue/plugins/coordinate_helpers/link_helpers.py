@@ -21,12 +21,12 @@ class BaseCelestialMultiLink(BaseMultiLink):
 
     def forwards(self, in_lon, in_lat):
         cin = self.frame_in(in_lon * u.deg, in_lat * u.deg)
-        cout = cin.transform_to(self.frame_out)
+        cout = cin.transform_to(self.frame_out())
         return cout.spherical.lon.degree, cout.spherical.lat.degree
 
     def backwards(self, out_lon, out_lat):
         cout = self.frame_out(out_lon * u.deg, out_lat * u.deg)
-        cin = cout.transform_to(self.frame_in)
+        cin = cout.transform_to(self.frame_in())
         return cin.spherical.lon.degree, cin.spherical.lat.degree
 
     # Backward-compatibility with glue-core <0.15
