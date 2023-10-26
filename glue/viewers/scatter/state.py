@@ -4,7 +4,7 @@ import numpy as np
 
 from glue.core import BaseData, Subset
 
-from glue.config import colormaps, stretches
+from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
@@ -13,6 +13,7 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from echo import keep_in_sync, delay_callback
 from glue.core.data_combo_helper import ComponentIDComboHelper, ComboHelper
 from glue.core.exceptions import IncompatibleAttribute
+from glue.viewers.common.stretch_state_mixin import StretchStateMixin
 
 from matplotlib.projections import get_projection_names
 
@@ -201,7 +202,7 @@ def display_func_slow(x):
         return x
 
 
-class ScatterLayerState(MatplotlibLayerState):
+class ScatterLayerState(MatplotlibLayerState, StretchStateMixin):
     """
     A state class that includes all the attributes for layers in a scatter plot.
     """
@@ -232,9 +233,6 @@ class ScatterLayerState(MatplotlibLayerState):
     # Density map
 
     density_map = DDCProperty(False, docstring="Whether to show the points as a density map")
-    stretch = DDSCProperty(default='log', docstring='The stretch used to render the layer, '
-                                                    'which should be one of ``linear``, '
-                                                    '``sqrt``, ``log``, or ``arcsinh``')
     density_contrast = DDCProperty(1, docstring="The dynamic range of the density map")
 
     # Note that we keep the dpi in the viewer state since we want it to always
@@ -327,8 +325,7 @@ class ScatterLayerState(MatplotlibLayerState):
         ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
         ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
-        ScatterLayerState.stretch.set_choices(self, ['linear', 'sqrt', 'arcsinh', 'log'])
-        ScatterLayerState.stretch.set_display_func(self, stretches.display_func)
+        self.setup_stretch_callback()
 
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)

@@ -19,12 +19,12 @@ from matplotlib.lines import Line2D
 
 # We keep the following so that scripts exported with previous versions of glue
 # continue to work, as they imported STRETCHES from here.
-STRETCHES = stretches.members
+STRETCHES = {key: value() for key, value in stretches.members.items()}
 
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size', 'fill'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
-DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
+DENSITY_PROPERTIES = set(['dpi', 'stretch', 'stretch_parameters', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
@@ -364,8 +364,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
 
-                if force or 'stretch' in changed:
-                    self.density_artist.set_norm(ImageNormalize(stretch=stretches.members[self.state.stretch]))
+                if force or 'stretch' in changed or 'stretch_parameters' in changed:
+                    self.density_artist.set_norm(ImageNormalize(stretch=self.state.stretch_object))
 
                 if force or 'dpi' in changed:
                     self.density_artist.set_dpi(self._viewer_state.dpi)

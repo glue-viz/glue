@@ -12,6 +12,7 @@ from glue.utils import defer_draw, view_shape
 from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
+from glue.viewers.common.stretch_state_mixin import StretchStateMixin
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -481,7 +482,7 @@ class BaseImageLayerState(MatplotlibLayerState):
         return image
 
 
-class ImageLayerState(BaseImageLayerState):
+class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     """
     A state class that includes all the attributes for data layers in an image plot.
     """
@@ -495,9 +496,6 @@ class ImageLayerState(BaseImageLayerState):
     bias = DDCProperty(0.5, docstring='A constant value that is added to the '
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
-    stretch = DDSCProperty(docstring='The stretch used to render the layer, '
-                                     'which should be one of ``linear``, '
-                                     '``sqrt``, ``log``, or ``arcsinh``')
     global_sync = DDCProperty(False, docstring='Whether the color and transparency '
                                                'should be synced with the global '
                                                'color and transparency for the data')
@@ -525,8 +523,7 @@ class ImageLayerState(BaseImageLayerState):
         ImageLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
         ImageLayerState.percentile.set_display_func(self, percentile_display.get)
 
-        ImageLayerState.stretch.set_choices(self, list(stretches.members))
-        ImageLayerState.stretch.set_display_func(self, stretches.display_func)
+        self.setup_stretch_callback()
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
