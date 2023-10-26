@@ -9,6 +9,7 @@ from echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
+from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper', 'StateAttributeHistogramHelper']
@@ -192,6 +193,7 @@ class StateAttributeCacheHelper(object):
             self.update_values(attribute=self.component_id, use_default_modifiers=True)
 
     def _update_values(self, **properties):
+
         if hasattr(self, '_in_set'):
             if self._in_set:
                 return
@@ -427,11 +429,16 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
             self._common_n_bin = None
 
     def _apply_common_n_bin(self):
-        print('_apply_common_n_bin')
-        for att in self._cache:
-            print('att', att.label, att.parent.label)
-            if not self.data.get_kind(att) == 'categorical':
-                self._cache[att]['n_bin'] = self._common_n_bin
+        for att in list(self._cache):
+            try:
+                if not self.data.get_kind(att) == 'categorical':
+                    self._cache[att]['n_bin'] = self._common_n_bin
+            except IncompatibleAttribute:
+                # This can indicate that a dataset has been removed from the
+                # data collection or that the attribute has changed to a
+                # new dataset that is not compatible with the previous one.
+                # In this case we should remove the entry
+                self._cache.pop(att)
 
     def _update_common_n_bin(self, common_n_bin):
         if common_n_bin:
@@ -444,8 +451,6 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
             self._common_n_bin = None
 
     def update_values(self, force=False, use_default_modifiers=False, **properties):
-
-        print('main update_values', properties)
 
         if not force and not any(prop in properties for prop in ('attribute', 'n_bin')) or self.data is None:
             self.set()
