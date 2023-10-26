@@ -2,7 +2,7 @@ import uuid
 from collections import defaultdict
 
 from glue.core import BaseData
-from glue.config import colormaps, stretches
+from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
