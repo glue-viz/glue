@@ -1,5 +1,20 @@
 # Full changelog
 
+## v1.14.1 - 2023-10-26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+- Fix bug when changing the number of bins on a histogram with modified/deleted data by @astrofrog in https://github.com/glue-viz/glue/pull/2451
+
+#### Documentation
+
+- Fix docs failure related to theme warning by @astrofrog in https://github.com/glue-viz/glue/pull/2452
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.14.0...v1.14.1
+
 ## v1.14.0 - 2023-10-23
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
