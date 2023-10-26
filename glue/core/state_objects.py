@@ -9,9 +9,10 @@ from echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
+from glue.core.exceptions import IncompatibleAttribute
 
 __all__ = ['State', 'StateAttributeCacheHelper',
-           'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper']
+           'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper', 'StateAttributeHistogramHelper']
 
 
 @saver(CallbackList)
@@ -428,9 +429,16 @@ class StateAttributeHistogramHelper(StateAttributeCacheHelper):
             self._common_n_bin = None
 
     def _apply_common_n_bin(self):
-        for att in self._cache:
-            if not self.data.get_kind(att) == 'categorical':
-                self._cache[att]['n_bin'] = self._common_n_bin
+        for att in list(self._cache):
+            try:
+                if not self.data.get_kind(att) == 'categorical':
+                    self._cache[att]['n_bin'] = self._common_n_bin
+            except IncompatibleAttribute:
+                # This can indicate that a dataset has been removed from the
+                # data collection or that the attribute has changed to a
+                # new dataset that is not compatible with the previous one.
+                # In this case we should remove the entry
+                self._cache.pop(att)
 
     def _update_common_n_bin(self, common_n_bin):
         if common_n_bin:

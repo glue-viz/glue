@@ -93,6 +93,9 @@ class Application(HubListener):
         self.add_widget(c)
         return c
 
+    def add_widget(self, viewer):
+        pass
+
     @catch_error("Failed to save session")
     def save_session(self, path, include_data=False, absolute_paths=True):
         """
