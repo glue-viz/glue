@@ -77,8 +77,7 @@ def python_export_scatter_layer(layer, *args):
         if layer.state.density_map:
 
             imports += ["from mpl_scatter_density import ScatterDensityArtist"]
-            imports += ["from glue.config import stretches"]
-            imports += ["from glue.viewers.scatter.layer_artist import DensityMapLimits"]
+            imports += ["from glue.viewers.scatter.layer_artist import DensityMapLimits, STRETCHES"]
             imports += ["from astropy.visualization import ImageNormalize"]
 
             script += "density_limits = DensityMapLimits()\n"
@@ -92,7 +91,7 @@ def python_export_scatter_layer(layer, *args):
                 options['color'] = layer.state.color
                 options['vmin'] = code('density_limits.min')
                 options['vmax'] = code('density_limits.max')
-                options['norm'] = code("ImageNormalize(stretch=stretches.members['{0}'])".format(layer.state.stretch))
+                options['norm'] = code("ImageNormalize(stretch=STRETCHES['{0}'])".format(layer.state.stretch))
             else:
                 options['c'] = code("layer_data['{0}']".format(layer.state.cmap_att.label))
                 options['cmap'] = code("plt.cm.{0}".format(layer.state.cmap.name))
