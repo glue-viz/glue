@@ -768,5 +768,5 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
     def _on_components_changed(self, components_changed):
         for limit_helper in [self.state.cmap_lim_helper]:
             if limit_helper.attribute in components_changed:
-                limit_helper.update_values(force=True)
+                limit_helper.update_values('attribute')
         self.redraw()
