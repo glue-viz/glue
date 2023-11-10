@@ -115,7 +115,7 @@ class ProfileLayerArtist(MatplotlibLayerArtist):
             mpl_artist.set_zorder(self.state.zorder)
             mpl_artist.set_color(self.state.color)
             mpl_artist.set_alpha(self.state.alpha)
-            mpl_artist.set_linewidth(self.state.linewidth)
+            mpl_artist.set_linewidth(1)
             mpl_artist.set_drawstyle('steps-mid' if self.state.as_steps else 'default')
 
         self.redraw()
