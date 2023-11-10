@@ -1,10 +1,12 @@
 import numpy as np
 
+from glue.tests.visual.helpers import visual_test
 from glue.viewers.image.viewer import SimpleImageViewer
 from glue.core.application_base import Application
 from glue.core.data import Data
 
 
+@visual_test
 def test_simple_viewer():
 
     # Make sure the simple viewer can be instantiated
@@ -20,4 +22,6 @@ def test_simple_viewer():
     viewer.add_data(data1)
     viewer.add_data(data2)
 
-    app.data_collection.new_subset_group(label='subset1', subset_state=data1.id['x'] > 2)
+    app.data_collection.new_subset_group(label='subset1', subset_state=data1.pixel_component_ids[1] > 1.2)
+
+    return viewer.figure

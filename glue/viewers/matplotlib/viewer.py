@@ -358,5 +358,6 @@ class MatplotlibViewerMixin(object):
 class SimpleMatplotlibViewer(MatplotlibViewerMixin, Viewer):
 
     def __init__(self, session, parent=None, wcs=None, state=None, projection=None):
-        self.figure, self.axes = init_mpl(wcs=wcs, projection=projection)
         super().__init__(session, state=state)
+        self.figure, self.axes = init_mpl(wcs=wcs, projection=projection)
+        MatplotlibViewerMixin.setup_callbacks(self)
