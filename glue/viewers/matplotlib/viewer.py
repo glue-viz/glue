@@ -11,7 +11,7 @@ from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings, in
 from echo import delay_callback
 from glue.utils import mpl_to_datetime64
 
-__all__ = ['MatplotlibViewerMixin']
+__all__ = ['MatplotlibViewerMixin', 'SimpleMatplotlibViewer']
 
 SCRIPT_HEADER = """
 # Initialize figure
