@@ -6,7 +6,8 @@ from matplotlib.patches import Rectangle
 from matplotlib.artist import setp as msetp
 
 from glue.config import settings
-from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings
+from glue.viewers.common.viewer import Viewer
+from glue.viewers.matplotlib.mpl_axes import update_appearance_from_settings, init_mpl
 from echo import delay_callback
 from glue.utils import mpl_to_datetime64
 
@@ -352,3 +353,10 @@ class MatplotlibViewerMixin(object):
         if not self.state.legend.visible:
             legend_str = indent(legend_str, "# ")
         return [], legend_str
+
+
+class SimpleMatplotlibViewer(MatplotlibViewerMixin, Viewer):
+
+    def __init__(self, session, parent=None, wcs=None, state=None, projection=None):
+        self.figure, self.axes = init_mpl(wcs=wcs, projection=projection)
+        super().__init__(session, state=state)

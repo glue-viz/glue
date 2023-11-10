@@ -1,11 +1,24 @@
-from glue.viewers.common.viewer import Viewer
-from glue.viewers.histogram.state import HistogramViewerState
+from glue.viewers.histogram.viewer import SimpleHistogramViewer
 from glue.core.application_base import Application
 from glue.core.data import Data
 
 
-class TestHistogramViewer(Viewer):
-    _state_cls = HistogramViewerState
+def test_simple_viewer():
+
+    # Make sure the simple viewer can be instantiated
+
+    data1 = Data(x=[1, 2, 3], label='data1')
+    data2 = Data(y=[1, 2, 3], label='data2')
+
+    app = Application()
+    app.data_collection.append(data1)
+    app.data_collection.append(data2)
+
+    viewer = app.new_data_viewer(SimpleHistogramViewer)
+    viewer.add_data(data1)
+    viewer.add_data(data2)
+
+    app.data_collection.new_subset_group(label='subset1', subset_state=data1.id['x'] > 2)
 
 
 def test_remove_data_collection():
@@ -22,7 +35,7 @@ def test_remove_data_collection():
     app.data_collection.append(data1)
     app.data_collection.append(data2)
 
-    viewer = app.new_data_viewer(TestHistogramViewer)
+    viewer = app.new_data_viewer(SimpleHistogramViewer)
     viewer.add_data(data1)
     viewer.add_data(data2)
 
@@ -46,7 +59,7 @@ def test_incompatible_datasets():
     app.data_collection.append(data1)
     app.data_collection.append(data2)
 
-    viewer = app.new_data_viewer(TestHistogramViewer)
+    viewer = app.new_data_viewer(SimpleHistogramViewer)
     viewer.add_data(data1)
     viewer.add_data(data2)
 
