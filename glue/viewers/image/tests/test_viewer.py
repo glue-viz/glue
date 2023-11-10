@@ -58,4 +58,6 @@ def test_region_layer():
     viewer.add_data(image_data)
     viewer.add_data(region_data)
 
+    app.data_collection.new_subset_group(label='subset1', subset_state=region_data.id['values'] > 2)
+
     return viewer.figure
