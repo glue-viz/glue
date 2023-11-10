@@ -16,7 +16,7 @@ from glue.core.exceptions import IncompatibleAttribute
 
 from matplotlib.projections import get_projection_names
 
-__all__ = ['ScatterViewerState', 'ScatterLayerState']
+__all__ = ['ScatterViewerState', 'ScatterLayerState', 'ScatterRegionLayerState']
 
 
 class ScatterViewerState(MatplotlibDataViewerState):
@@ -343,12 +343,22 @@ class ScatterLayerState(MatplotlibLayerState):
             self._on_layer_change()
 
         self.cmap = colormaps.members[0][1]
+        self.add_callback('cmap_att', self._check_for_preferred_cmap)
 
         self.size = self.layer.style.markersize
 
         self._sync_size = keep_in_sync(self, 'size', self.layer.style, 'markersize')
 
         self.update_from_dict(kwargs)
+
+    def _check_for_preferred_cmap(self, *args):
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+        actual_component = layer.get_component(self.cmap_att)
+        if getattr(actual_component, 'preferred_cmap', False):
+            self.cmap = actual_component.preferred_cmap
 
     def _update_points_mode(self, *args):
         if getattr(self.viewer_state, 'using_polar', False) or getattr(self.viewer_state, 'using_full_sphere', False):
@@ -493,3 +503,97 @@ class ScatterLayerState(MatplotlibLayerState):
                 rec['values']['markers_visible'] = False
                 rec['values']['line_visible'] = True
         return super(ScatterLayerState, cls).__setgluestate__(rec, context)
+
+
+class ScatterRegionLayerState(MatplotlibLayerState):
+    """
+    A state class that includes all the attributes for layers in a scatter region layer.
+    """
+    # Color
+
+    cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
+    cmap_att = DDSCProperty(docstring="The attribute to use for the color")
+    cmap_vmin = DDCProperty(docstring="The lower level for the colormap")
+    cmap_vmax = DDCProperty(docstring="The upper level for the colormap")
+    cmap = DDCProperty(docstring="The colormap to use (when in colormap mode)")
+    percentile = DDSCProperty(docstring='The percentile value used to '
+                                        'automatically calculate levels')
+
+    fill = DDCProperty(True, docstring="Whether to fill the regions")
+
+    def __init__(self, viewer_state=None, layer=None, **kwargs):
+
+        super().__init__(viewer_state=viewer_state, layer=layer)
+        self.limits_cache = {}
+
+        self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_att',
+                                                          lower='cmap_vmin', upper='cmap_vmax',
+                                                          percentile='percentile',
+                                                          limits_cache=self.limits_cache)
+
+        self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
+                                                      numeric=True, datetime=False,
+                                                      categorical=True)
+
+        percentile_display = {100: 'Min/Max',
+                              99.5: '99.5%',
+                              99: '99%',
+                              95: '95%',
+                              90: '90%',
+                              'Custom': 'Custom'}
+
+        ScatterRegionLayerState.percentile.set_choices(self, [100, 99.5, 99, 95, 90, 'Custom'])
+        ScatterRegionLayerState.percentile.set_display_func(self, percentile_display.get)
+
+        ScatterRegionLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
+
+        if self.viewer_state is not None:
+            self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
+            self.viewer_state.add_callback('y_att', self._on_xy_change, priority=10000)
+            self._on_xy_change()
+
+        self.add_callback('layer', self._on_layer_change)
+        if layer is not None:
+            self._on_layer_change()
+
+        self.cmap = colormaps.members[0][1]
+
+        self.add_callback('cmap_att', self._check_for_preferred_cmap)
+        self.update_from_dict(kwargs)
+
+    def _check_for_preferred_cmap(self, *args):
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+        actual_component = layer.get_component(self.cmap_att)
+        if getattr(actual_component, 'preferred_cmap', False):
+            self.cmap = actual_component.preferred_cmap
+
+    def _on_layer_change(self, layer=None):
+        with delay_callback(self, 'cmap_vmin', 'cmap_vmax'):
+
+            if self.layer is None:
+                self.cmap_att_helper.set_multiple_data([])
+            else:
+                self.cmap_att_helper.set_multiple_data([self.layer])
+
+    def _on_xy_change(self, *event):
+
+        if self.viewer_state.x_att is None or self.viewer_state.y_att is None:
+            return
+
+        if isinstance(self.layer, BaseData):
+            layer = self.layer
+        else:
+            layer = self.layer.data
+
+    def flip_cmap(self):
+        """
+        Flip the cmap_vmin/cmap_vmax limits.
+        """
+        self.cmap_lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)
