@@ -9,6 +9,7 @@ from glue.core.data_region import RegionData
 
 from shapely.geometry import Polygon, MultiPolygon
 
+
 @visual_test
 def test_simple_viewer():
 
