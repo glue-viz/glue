@@ -3,9 +3,12 @@ from glue.core.roi import RangeROI
 from glue.core.subset import roi_to_subset_state
 from glue.utils import mpl_to_datetime64
 
+from glue.viewers.matplotlib.viewer import SimpleMatplotlibViewer
 from glue.viewers.histogram.compat import update_histogram_viewer_state
+from glue.viewers.histogram.layer_artist import HistogramLayerArtist
+from glue.viewers.histogram.state import HistogramViewerState
 
-__all__ = ['MatplotlibHistogramMixin']
+__all__ = ['MatplotlibHistogramMixin', 'SimpleHistogramViewer']
 
 
 class MatplotlibHistogramMixin(object):
@@ -69,3 +72,14 @@ class MatplotlibHistogramMixin(object):
     @staticmethod
     def update_viewer_state(rec, context):
         return update_histogram_viewer_state(rec, context)
+
+
+class SimpleHistogramViewer(MatplotlibHistogramMixin, SimpleMatplotlibViewer):
+
+    _state_cls = HistogramViewerState
+    _data_artist_cls = HistogramLayerArtist
+    _subset_artist_cls = HistogramLayerArtist
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        MatplotlibHistogramMixin.setup_callbacks(self)

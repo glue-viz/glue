@@ -1,0 +1,6 @@
+{
+    "glue.viewers.histogram.tests.test_viewer.test_simple_viewer": "cb08123fbad135ab614bb7ec13475fcc83321057d884fe80c3a32970b2d14762",
+    "glue.viewers.image.tests.test_viewer.test_simple_viewer": "72abd60b484d14f721254f027bb0ab9b36245d5db77eb87693f4dd9998fd28be",
+    "glue.viewers.profile.tests.test_viewer.test_simple_viewer": "f68a21be5080fec513388b2d2b220512e7b0df5498e2489da54e58708de435b3",
+    "glue.viewers.scatter.tests.test_viewer.test_simple_viewer": "1020a7bd3abe40510b9e03047c3b423b75c3c64ac18e6dcd6257173cec1ed53f"
+  }

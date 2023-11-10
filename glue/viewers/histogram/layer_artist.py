@@ -12,6 +12,8 @@ from glue.viewers.histogram.python_export import python_export_histogram_layer
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 
+__all__ = ["HistogramLayerArtist"]
+
 
 class HistogramLayerArtist(MatplotlibLayerArtist):
 

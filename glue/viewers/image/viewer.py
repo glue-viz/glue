@@ -7,14 +7,16 @@ from glue.core.coordinates import Coordinates, LegacyCoordinates
 from glue.core.coordinate_helpers import dependent_axes
 from glue.core.data_region import RegionData
 
+from glue.viewers.matplotlib.viewer import SimpleMatplotlibViewer
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist, ScatterRegionLayerArtist
 from glue.viewers.image.layer_artist import ImageLayerArtist, ImageSubsetLayerArtist
 from glue.viewers.image.compat import update_image_viewer_state
+from glue.viewers.image.state import ImageViewerState
 
 from glue.viewers.image.frb_artist import imshow
 from glue.viewers.image.composite_array import CompositeArray
 
-__all__ = ['MatplotlibImageMixin']
+__all__ = ['MatplotlibImageMixin', 'SimpleImageViewer']
 
 
 def get_identity_wcs(naxis):
@@ -258,3 +260,13 @@ class MatplotlibImageMixin(object):
                        x_ticklabel_size=self.state.x_ticklabel_size,
                        y_ticklabel_size=self.state.y_ticklabel_size)
         return [], EXTRA_FOOTER.format(**options) + os.linesep * 2 + script
+
+
+class SimpleImageViewer(MatplotlibImageMixin, SimpleMatplotlibViewer):
+
+    _state_cls = ImageViewerState
+
+    def __init__(self, *args, **kwargs):
+        kwargs['wcs'] = True
+        super().__init__(*args, **kwargs)
+        MatplotlibImageMixin.setup_callbacks(self)
