@@ -38,6 +38,10 @@ class HistogramViewerState(MatplotlibDataViewerState):
     common_n_bin = DDCProperty(True, docstring='The number of bins to use for '
                                                'all numerical components')
 
+    x_limits_percentile = DDCProperty(100, docstring="Percentile to use when automatically determining x limits")
+
+    update_bins_on_reset_limits = DDCProperty(True, docstring="Whether to update the bins to match the view when resetting limits")
+
     def __init__(self, **kwargs):
 
         super(HistogramViewerState, self).__init__()
@@ -67,9 +71,10 @@ class HistogramViewerState(MatplotlibDataViewerState):
         if self.x_att is None:
             return
         with delay_callback(self, 'hist_x_min', 'hist_x_max', 'x_min', 'x_max', 'x_log'):
-            self.x_lim_helper.percentile = 100
+            self.x_lim_helper.percentile = self.x_limits_percentile
             self.x_lim_helper.update_values(force=True)
-            self.update_bins_to_view()
+            if self.update_bins_on_reset_limits:
+                self.update_bins_to_view()
 
     def reset_limits(self):
         self._reset_x_limits()

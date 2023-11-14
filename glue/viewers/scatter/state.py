@@ -30,6 +30,9 @@ class ScatterViewerState(MatplotlibDataViewerState):
     plot_mode = DDSCProperty(docstring="Whether to plot the data in cartesian, polar or another projection")
     angle_unit = DDSCProperty(docstring="Whether to use radians or degrees for any angular coordinates")
 
+    x_limits_percentile = DDCProperty(100, docstring="Percentile to use when automatically determining x limits")
+    y_limits_percentile = DDCProperty(100, docstring="Percentile to use when automatically determining y limits")
+
     def __init__(self, **kwargs):
 
         super(ScatterViewerState, self).__init__()
@@ -70,13 +73,13 @@ class ScatterViewerState(MatplotlibDataViewerState):
     def _reset_x_limits(self, *args):
         if self.x_att is None:
             return
-        self.x_lim_helper.percentile = 100
+        self.x_lim_helper.percentile = self.x_limits_percentile
         self.x_lim_helper.update_values(force=True)
 
     def _reset_y_limits(self, *args):
         if self.y_att is None:
             return
-        self.y_lim_helper.percentile = 100
+        self.y_lim_helper.percentile = self.y_limits_percentile
         self.y_lim_helper.update_values(force=True)
 
     def reset_limits(self):

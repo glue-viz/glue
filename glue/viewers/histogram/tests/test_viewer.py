@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.testing import assert_allclose
 
 from astropy.utils import NumpyRNGContext
 
@@ -80,3 +81,41 @@ def test_incompatible_datasets():
     viewer.state.x_att = data2.id['y']
 
     viewer.state.hist_n_bin = 20
+
+
+def test_reset_limits():
+
+    data1 = Data(x=np.arange(1000), label='data')
+
+    app = Application()
+    app.data_collection.append(data1)
+
+    viewer = app.new_data_viewer(SimpleHistogramViewer)
+    viewer.add_data(data1)
+
+    viewer.state.reset_limits()
+
+    assert_allclose(viewer.state.x_min, 0)
+    assert_allclose(viewer.state.x_max, 999)
+
+    viewer.state.x_limits_percentile = 90
+
+    viewer.state.reset_limits()
+
+    assert_allclose(viewer.state.x_min, 49.95)
+    assert_allclose(viewer.state.x_max, 949.05)
+
+    assert_allclose(viewer.state.hist_x_min, 49.95)
+    assert_allclose(viewer.state.hist_x_max, 949.05)
+
+    viewer.state.update_bins_on_reset_limits = False
+
+    viewer.state.x_limits_percentile = 80
+
+    viewer.state.reset_limits()
+
+    assert_allclose(viewer.state.x_min, 99.9)
+    assert_allclose(viewer.state.x_max, 899.1)
+
+    assert_allclose(viewer.state.hist_x_min, 49.95)
+    assert_allclose(viewer.state.hist_x_max, 949.05)
