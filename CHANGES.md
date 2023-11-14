@@ -1,5 +1,23 @@
 # Full changelog
 
+## v1.15.0 - 2023-11-14
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Support regions in image viewer by @jfoster17 in https://github.com/glue-viz/glue/pull/2456
+- Added 'simple' viewers which can be used for testing or simple use cases by @astrofrog in https://github.com/glue-viz/glue/pull/2458
+
+#### Other Changes
+
+- Added giles configuration by @astrofrog in https://github.com/glue-viz/glue/pull/2460
+- Add visual test for ScatterRegionLayerArtist by @jfoster17 in https://github.com/glue-viz/glue/pull/2461
+- Ignore all test files in coverage calculation by @astrofrog in https://github.com/glue-viz/glue/pull/2462
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.14.1...v1.15.0
+
 ## v1.14.1 - 2023-10-26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
