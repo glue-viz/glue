@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.16.0 - 2023-11-16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+- Customizable limits percentile and behavior on updating bins when resetting limits by @astrofrog in https://github.com/glue-viz/glue/pull/2455
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.15.0...v1.16.0
+
 ## v1.15.0 - 2023-11-14
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
