@@ -1,4 +1,7 @@
-from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
+from echo import (CallbackProperty,
+                  SelectionCallbackProperty,
+                  DictCallbackProperty,
+                  keep_in_sync, delay_callback)
 
 from matplotlib.colors import to_rgba
 
@@ -33,6 +36,17 @@ class DeferredDrawSelectionCallbackProperty(SelectionCallbackProperty):
     @defer_draw
     def notify(self, *args, **kwargs):
         super(DeferredDrawSelectionCallbackProperty, self).notify(*args, **kwargs)
+
+
+class DeferredDrawDictCallbackProperty(DictCallbackProperty):
+    """
+    A callback property where drawing is deferred until
+    after notify has called all callback functions.
+    """
+
+    @defer_draw
+    def notify(self, *args, **kwargs):
+        super(DeferredDrawDictCallbackProperty, self).notify(*args, **kwargs)
 
 
 VALID_WEIGHTS = ['light', 'normal', 'medium', 'semibold', 'bold', 'heavy', 'black']

@@ -836,10 +836,10 @@ unit_converter = UnitConverterRegistry()
 from astropy.visualization import (LinearStretch, SqrtStretch, AsinhStretch,
                                    LogStretch)
 stretches = StretchRegistry()
-stretches.add('linear', LinearStretch(), display='Linear')
-stretches.add('sqrt', SqrtStretch(), display='Square Root')
-stretches.add('arcsinh', AsinhStretch(), display='Arcsinh')
-stretches.add('log', LogStretch(), display='Logarithmic')
+stretches.add('linear', LinearStretch, display='Linear')
+stretches.add('sqrt', SqrtStretch, display='Square Root')
+stretches.add('arcsinh', AsinhStretch, display='Arcsinh')
+stretches.add('log', LogStretch, display='Logarithmic')
 
 # Backward-compatibility
 qglue_parser = cli_parser

@@ -1,4 +1,4 @@
-from echo import keep_in_sync, CallbackProperty
+from echo import keep_in_sync, CallbackProperty, CallbackDict
 from glue.core.layer_artist import LayerArtistBase
 from glue.viewers.common.state import LayerState
 from glue.core.message import LayerArtistVisibilityMessage
@@ -77,5 +77,16 @@ class LayerArtist(LayerArtistBase):
 
         self._last_viewer_state.update(self._viewer_state.as_dict())
         self._last_layer_state.update(self.state.as_dict())
+
+        # If any of the items are CallbackDict, we make a copy otherwise both
+        # the 'last' and new values will remain the same.
+
+        for key, value in self._last_viewer_state.items():
+            if isinstance(value, CallbackDict):
+                self._last_viewer_state[key] = dict(value)
+
+        for key, value in self._last_layer_state.items():
+            if isinstance(value, CallbackDict):
+                self._last_layer_state[key] = dict(value)
 
         return changed
