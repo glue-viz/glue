@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+import matplotlib.pyplot as plt
+
 from glue.tests.visual.helpers import visual_test
 
 from glue.viewers.scatter.viewer import SimpleScatterViewer
