@@ -29,6 +29,45 @@ def test_simple_viewer():
     return viewer.figure
 
 
+@visual_test
+def test_density_map():
+
+    # Make sure the simple viewer can be instantiated
+
+    app = Application()
+
+    x = np.random.normal(3, 1, 100)
+    y = np.random.normal(2, 1.5, 100)
+    c = np.hypot(x - 3, y - 2)
+    s = (x - 3)
+
+    data1 = app.add_data(a={"x": x, "y": y, "c": c, "s": s})[0]
+
+    xx = np.random.normal(3, 1, 1000000)
+    yy = np.random.normal(2, 1.5, 1000000)
+
+    data2 = app.add_data(a={"x": xx, "y": yy})[0]
+
+    app.add_link(data1, 'x', data2, 'x')
+    app.add_link(data1, 'y', data2, 'y')
+
+    viewer = app.new_data_viewer(SimpleScatterViewer)
+    viewer.add_data(data1)
+    viewer.add_data(data2)
+
+    viewer.state.layers[0].cmap_mode = 'Linear'
+    viewer.state.layers[0].cmap_att = data1.id['c']
+    viewer.state.layers[0].cmap = plt.cm.viridis
+    viewer.state.layers[0].size_mode = 'Linear'
+    viewer.state.layers[0].size_att = data1.id['s']
+
+    viewer.state.layers[1].zorder = 0.5
+
+    app.data_collection.new_subset_group(label='subset1', subset_state=data1.id['x'] > 2)
+
+    return viewer.figure
+
+
 def test_reset_limits():
 
     data1 = Data(x=np.arange(1000), y=np.arange(1000) + 1000, label='data')
