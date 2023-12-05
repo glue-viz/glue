@@ -6,6 +6,7 @@ from glue.tests.visual.helpers import visual_test
 from glue.viewers.scatter.viewer import SimpleScatterViewer
 from glue.core.application_base import Application
 from glue.core.data import Data
+from glue.core.link_helpers import LinkSame
 
 
 @visual_test
@@ -30,7 +31,7 @@ def test_simple_viewer():
 
 
 @visual_test
-def test_density_map():
+def test_scatter_density_map():
 
     # Make sure the simple viewer can be instantiated
 
@@ -48,8 +49,8 @@ def test_density_map():
 
     data2 = app.add_data(a={"x": xx, "y": yy})[0]
 
-    app.add_link(data1, 'x', data2, 'x')
-    app.add_link(data1, 'y', data2, 'y')
+    app.data_collection.add_link(LinkSame(data1.id['x'], data1.id['x']))
+    app.data_collection.add_link(LinkSame(data2.id['x'], data2.id['x']))
 
     viewer = app.new_data_viewer(SimpleScatterViewer)
     viewer.add_data(data1)
