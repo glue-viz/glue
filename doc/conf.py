@@ -33,6 +33,7 @@ nitpick_ignore = [
     ("py:class", "glue.viewers.image.layer_artist.ImageLayerBase"),
     ("py:class", "glue.viewers.image.layer_artist.RGBImageLayerBase"),
     ("py:class", "glue.viewers.image.state.BaseImageLayerState"),
+    ("py:class", "glue.viewers.common.stretch_state_mixin.StretchStateMixin")
 ]
 
 viewcode_follow_imported_members = False
