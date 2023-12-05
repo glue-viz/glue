@@ -329,6 +329,7 @@ class ScatterLayerState(MatplotlibLayerState, StretchStateMixin):
         ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
 
         self.setup_stretch_callback()
+        self.stretch = 'log'
 
         if self.viewer_state is not None:
             self.viewer_state.add_callback('x_att', self._on_xy_change, priority=10000)
