@@ -51,8 +51,8 @@ def test_scatter_density_map():
 
     data2 = app.add_data(a={"x": xx, "y": yy})[0]
 
-    app.data_collection.add_link(LinkSame(data1.id['x'], data1.id['x']))
-    app.data_collection.add_link(LinkSame(data2.id['x'], data2.id['x']))
+    app.data_collection.add_link(LinkSame(data1.id['x'], data2.id['x']))
+    app.data_collection.add_link(LinkSame(data1.id['y'], data2.id['y']))
 
     viewer = app.new_data_viewer(SimpleScatterViewer)
     viewer.add_data(data1)
