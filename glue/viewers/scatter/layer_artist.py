@@ -642,6 +642,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                      (not data.linked_to_center_comp(self._viewer_state.x_att_world))):
                 raise IncompatibleAttribute
             x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+            xx = ensure_numerical(data[data.center_x_id].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
@@ -655,6 +656,7 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                       (not data.linked_to_center_comp(self._viewer_state.y_att_world))):
                 raise IncompatibleAttribute
             y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+            yy = ensure_numerical(data[data.center_y_id].ravel())
         except (IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
@@ -662,7 +664,31 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         else:
             self.enable()
 
+        # We need to make sure that x and y viewer attributes are
+        # really the center_x and center_y attributes of the underlying
+        # data, so we compare the values on the centroids using the
+        # glue data access machinery.
+
         regions = self.layer[region_att]
+
+        def flip_xy(g):
+            return transform(lambda x, y: (y, x), g)
+
+        x_no_match = False
+        if np.array_equal(y, yy):
+            if np.array_equal(x, xx):
+                self.enable()
+            else:
+                x_no_match = True
+        else:
+            if np.array_equal(y, xx) and np.array_equal(x, yy):  # This means x and y have been swapped
+                regions = [flip_xy(g) for g in regions]
+                self.enable()
+            else:
+                self.disable_invalid_attributes(self._viewer_state.y_att)
+                if x_no_match:
+                    self.disable_invalid_attributes(self._viewer_state.x_att)
+                return
 
         # If we are using world coordinates (i.e. the regions are specified in world coordinates)
         # we need to transform the geometries of the regions into pixel coordinates for display
@@ -670,15 +696,23 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         # to accomodate glue WCS objects
         if self._viewer_state._display_world:
             # First, convert to world coordinates
-            tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
-            regions = np.array([transform(tfunc, g) for g in regions])
+            try:
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                regions = np.array([transform(tfunc, g) for g in regions])
 
-            # Then convert to pixels for display
-            world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
-            regions = np.array([transform_shapely(world2pix, g) for g in regions])
+                # Then convert to pixels for display
+                world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+                regions = np.array([transform_shapely(world2pix, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                return
         else:
-            tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
-            regions = np.array([transform(tfunc, g) for g in regions])
+            try:
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
+                regions = np.array([transform(tfunc, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att, self._viewer_state.y_att])
+                return
 
         # decompose GeometryCollections
         geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
@@ -753,8 +787,16 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
         full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
         change_from_limits = full_sphere and len(changed & LIMIT_PROPERTIES) > 0
         if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
-            self._update_data()
-            force = True
+            # This is the signature of flipping the x and y axis of an image in the UI
+            # We must *not* run update_data right away, or it will return an error
+            # The delay_callback wrapper on state._on_xatt_world_change() and
+            # state._on_yatt_world_change() is not properly deferring the callback
+            # until after x and y have been fully swapped, so we need to do it manually.
+            if changed == {'x_att_world', 'x_att', 'y_att_world'} or changed == {'y_att_world', 'y_att', 'x_att_world'}:
+                pass
+            else:
+                self._update_data()
+                force = True
 
         if force or len(changed & VISUAL_PROPERTIES) > 0:
             self._update_visual_attributes(changed, force=force)
