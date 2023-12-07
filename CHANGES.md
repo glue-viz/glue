@@ -1,5 +1,21 @@
 # Full changelog
 
+## v1.17.1 - 2023-12-07
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix default stretch density by @astrofrog in https://github.com/glue-viz/glue/pull/2467
+* Provide stronger checking for region display. Fix x/y flip. by @jfoster17 in https://github.com/glue-viz/glue/pull/2465
+
+#### Other Changes
+
+* Fix documentation build by @astrofrog in https://github.com/glue-viz/glue/pull/2466
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.17.0...v1.17.1
+
 ## v1.17.0 - 2023-12-05
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
