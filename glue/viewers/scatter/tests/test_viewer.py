@@ -35,7 +35,9 @@ def test_simple_viewer():
 @visual_test
 def test_scatter_density_map():
 
-    # Make sure the simple viewer can be instantiated
+    # Test the scatter density map
+
+    np.random.seed(12345)
 
     app = Application()
 
