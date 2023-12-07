@@ -4,5 +4,5 @@
   "glue.viewers.image.tests.test_viewer.test_region_layer": "b54088d1f31562d309d35c5e90c0a382c7ba4c16cc0db8134e9532f71f047076",
   "glue.viewers.profile.tests.test_viewer.test_simple_viewer": "f68a21be5080fec513388b2d2b220512e7b0df5498e2489da54e58708de435b3",
   "glue.viewers.scatter.tests.test_viewer.test_simple_viewer": "1020a7bd3abe40510b9e03047c3b423b75c3c64ac18e6dcd6257173cec1ed53f",
-  "glue.viewers.scatter.tests.test_viewer.test_scatter_density_map": "38d2b837b51c7e39570dee8428dd15463952880e959163de104c2abab55a14fb"
+  "glue.viewers.scatter.tests.test_viewer.test_scatter_density_map": "3379d655262769a6ccbdbaf1970bffa9237adbec23a93d3ab75da51b9a3e7f8b"
 }
