@@ -312,6 +312,21 @@ def test_astropy_units():
     unit2 = clone(unit)
     assert unit2 is unit
 
+    unit = u.km
+    unit2 = clone(unit)
+    assert unit2 is unit
+
+
+@requires_astropy
+def test_astropy_compound_units():
+    import astropy.units as u
+    unit = u.m / u.s
+    unit2 = clone(unit)
+    assert unit2 == unit
+    unit = u.W / u.m**2 / u.nm
+    unit2 = clone(unit)
+    assert unit2 == unit
+
 
 class DummyClass(object):
     pass

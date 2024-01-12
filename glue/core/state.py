@@ -65,7 +65,7 @@ from inspect import isgeneratorfunction
 import numpy as np
 from matplotlib.colors import Colormap
 from matplotlib import cm
-from astropy.units import NamedUnit, Unit
+from astropy.units import UnitBase, Unit
 from astropy.wcs import WCS
 import shapely
 
@@ -622,14 +622,14 @@ def _load_slice(rec, context):
     return slice(rec['start'], rec['stop'], rec['step'])
 
 
-@saver(NamedUnit)
-def _save_named_unit(unit, context):
-    return dict(named_unit=unit.to_string())
+@saver(UnitBase)
+def _save_unit_base(unit, context):
+    return dict(unit_base=unit.to_string())
 
 
-@loader(NamedUnit)
-def _load_named_unit(rec, context):
-    return Unit(rec["named_unit"])
+@loader(UnitBase)
+def _load_unit_base(rec, context):
+    return Unit(rec["unit_base"])
 
 
 @saver(WCS)
