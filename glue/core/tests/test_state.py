@@ -305,6 +305,14 @@ def test_datetime_component():
     assert isinstance(c2.data[0], np.datetime64)
 
 
+@requires_astropy
+def test_astropy_units():
+    import astropy.units as u
+    unit = u.m
+    unit2 = clone(unit)
+    assert unit2 is unit
+
+
 class DummyClass(object):
     pass
 
