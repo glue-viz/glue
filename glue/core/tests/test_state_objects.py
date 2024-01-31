@@ -95,11 +95,13 @@ class TestStateAttributeLimitsHelper():
             upper = CallbackProperty()
             log = CallbackProperty(False)
             scale = CallbackProperty(100)
+            subset_state = CallbackProperty()
 
         self.state = SimpleState()
 
         self.helper = StateAttributeLimitsHelper(self.state, attribute='comp',
                                                  lower='lower', upper='upper',
+                                                 subset_state='subset_state',
                                                  percentile='scale', log='log')
         self.state.data = self.data
         self.state.comp = self.data.id['x']
@@ -185,10 +187,9 @@ class TestStateAttributeLimitsHelper():
 
     def test_subset(self):
 
-        # Set subset to compute limits from
+        # Directly set subset to compute limits from
+        assert self.helper.percentile == 100
         self.helper.subset_state = SliceSubsetState(self.helper.data, [slice(6000)])
-        self.helper.percentile = 100
-        # self.helper.update_values()
         assert_allclose(self.helper.lower, -100)
         assert_allclose(self.helper.upper, 19.992)
         self.helper.percentile = 90
@@ -199,8 +200,8 @@ class TestStateAttributeLimitsHelper():
 
         # Set subset to compute limits from slice
         self.helper.set_slice([slice(2000, 8000)])
-        self.helper.percentile = 100
-        # self.helper.update_values()
+        assert self.helper.percentile == 100
+        assert self.helper.subset_state.slices == [slice(2000, 8000)]
         assert_allclose(self.helper.lower, -59.996)
         assert_allclose(self.helper.upper, 59.996)
         self.helper.percentile = 90

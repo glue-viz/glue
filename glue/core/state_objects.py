@@ -303,7 +303,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
         self.subset_state = None
 
         if self.attribute is not None:
-
             if (self.lower is not None and self.upper is not None and getattr(self, 'percentile', None) is None):
                 # If the lower and upper limits are already set, we need to make
                 # sure we don't override them, so we set the percentile mode to
@@ -316,7 +315,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
     def update_values(self, force=False, use_default_modifiers=False, **properties):
 
-        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log', 'display_units')):
+        if not force and not any(prop in properties for prop in ('attribute', ) + self.modifiers_names):
             self.set(percentile='Custom')
             return
 
@@ -358,11 +357,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             return
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
-
             self.set(percentile=percentile, log=log)
-
         else:
-
             # Shortcut if the component ID is a pixel component ID
             if isinstance(self.component_id, PixelComponentID) and percentile == 100 and not log:
                 lower = -0.5
@@ -394,7 +390,6 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if not isinstance(lower, np.datetime64) and np.isnan(lower):
                 lower, upper = 0, 1
             else:
-
                 if self.data.get_kind(self.component_id) == 'categorical':
                     lower = np.floor(lower - 0.5) + 0.5
                     upper = np.ceil(upper + 0.5) - 0.5
@@ -422,6 +417,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
     def set_slice(self, slices):
         self.set(subset_state=None if slices is None else SliceSubsetState(self.data, slices))
+        self.update_values(force=True)
 
 
 class StateAttributeSingleValueHelper(StateAttributeCacheHelper):
