@@ -8,6 +8,7 @@ from glue.core import Subset
 from echo import (delay_callback, CallbackProperty,
                                 HasCallbackProperties, CallbackList)
 from glue.core.state import saver, loader
+from glue.core.subset import SliceSubsetState
 from glue.core.component_id import PixelComponentID
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.units import UnitConverter
@@ -291,7 +292,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     """
 
     values_names = ('lower', 'upper')
-    modifiers_names = ('log', 'percentile', 'display_units')
+    modifiers_names = ('log', 'percentile', 'display_units', 'subset_state')
 
     def __init__(self, state, attribute, random_subset=10000, margin=0, **kwargs):
 
@@ -299,7 +300,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
         self.margin = margin
         self.random_subset = random_subset
-        self.subset_indices = None
+        self.subset_state = None
 
         if self.attribute is not None:
 
@@ -374,16 +375,20 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if percentile == 100:
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
+                                                    subset_state=self.subset_state,
                                                     random_subset=self.random_subset)
                 upper = self.data.compute_statistic('maximum', cid=self.component_id,
                                                     finite=True, positive=log,
+                                                    subset_state=self.subset_state,
                                                     random_subset=self.random_subset)
             else:
                 lower = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=exclude, positive=log,
+                                                    subset_state=self.subset_state,
                                                     random_subset=self.random_subset)
                 upper = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=100 - exclude, positive=log,
+                                                    subset_state=self.subset_state,
                                                     random_subset=self.random_subset)
 
             if not isinstance(lower, np.datetime64) and np.isnan(lower):
@@ -414,6 +419,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
     def flip_limits(self):
         self.set(lower=self.upper, upper=self.lower)
+
+    def set_slice(self, slices):
+        self.set(subset_state=None if slices is None else SliceSubsetState(self.data, slices))
 
 
 class StateAttributeSingleValueHelper(StateAttributeCacheHelper):

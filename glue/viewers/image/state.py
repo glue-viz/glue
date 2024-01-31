@@ -587,6 +587,19 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
         """
         self.attribute_lim_helper.flip_limits()
 
+    def set_slice(self, slices):
+        """
+        Select a subset slice for determining image levels.
+
+        Parameters
+        ----------
+        slices : iterable of :class:`slice` or `None`
+            An iterable containing :class:`slice` objects that can instantiate
+            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
+            with the shape of `self.data`; `None` to unslice.
+        """
+        self.attribute_lim_helper.set_slice(slices)
+
     def reset_contrast_bias(self):
         with delay_callback(self, 'contrast', 'bias'):
             self.contrast = 1
