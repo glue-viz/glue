@@ -169,7 +169,7 @@ class CompositeArray(object):
                 # Check what the smallest colormap alpha value for this layer is
                 # - if it is 1 then this colormap does not change transparency,
                 # and this allows us to speed things up a little.
-                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and bad_alpha == 1:
+                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and (not self._allow_bad_alpha or bad_alpha == 1):
                     if layer['alpha'] == 1:
                         img[...] = 0
                     else:
