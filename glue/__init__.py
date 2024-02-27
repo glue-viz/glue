@@ -1,6 +1,6 @@
 # Set up configuration variables
 
-__all__ = ['custom_viewer', 'qglue', 'test']
+__all__ = ['custom_viewer', 'test']
 
 import os
 
