@@ -21,13 +21,6 @@ from glue.utils.error import GlueDeprecationWarning
 from .config import load_configuration
 env = load_configuration()
 
-
-def qglue(*args, **kwargs):
-    warnings.warn('glue.qglue is deprecated, import qglue from the glue_qt module instead', GlueDeprecationWarning)
-    from glue_qt import qglue
-    return qglue(*args, **kwargs)
-
-
 from .main import load_plugins  # noqa
 
 
