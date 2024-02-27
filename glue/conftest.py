@@ -1,18 +1,7 @@
 import os
 import sys
-import warnings
-
-import pytest
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
-
-try:
-    import objgraph
-except ImportError:
-    OBJGRAPH_INSTALLED = False
-else:
-    OBJGRAPH_INSTALLED = True
-
 
 STDERR_ORIGINAL = sys.stderr
 

@@ -5,7 +5,6 @@ __all__ = ['custom_viewer', 'qglue', 'test']
 import os
 
 import sys
-import warnings
 
 import importlib.metadata
 
@@ -15,7 +14,6 @@ from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
 
 from glue.viewers.custom.helper import custom_viewer
-from glue.utils.error import GlueDeprecationWarning
 
 # Load user's configuration file
 from .config import load_configuration
