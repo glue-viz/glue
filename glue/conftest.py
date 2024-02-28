@@ -1,23 +1,7 @@
 import os
 import sys
-import warnings
-
-import pytest
-
-try:
-    from qtpy import PYSIDE2
-except Exception:
-    PYSIDE2 = False
 
 from glue.config import CFG_DIR as CFG_DIR_ORIG
-
-try:
-    import objgraph
-except ImportError:
-    OBJGRAPH_INSTALLED = False
-else:
-    OBJGRAPH_INSTALLED = True
-
 
 STDERR_ORIGINAL = sys.stderr
 
@@ -73,61 +57,3 @@ def pytest_unconfigure(config):
     # Reset configuration directory to original one
     from glue import config
     config.CFG_DIR = CFG_DIR_ORIG
-
-    # Remove reference to QApplication to prevent segmentation fault on PySide
-    try:
-        from glue.utils.qt import app
-        app.qapp = None
-    except Exception:  # for when we run the tests without the qt directories
-        # Note that we catch any exception, not just ImportError, because
-        # QtPy can raise a PythonQtError.
-        pass
-
-    if OBJGRAPH_INSTALLED and not ON_APPVEYOR:
-
-        # Make sure there are no lingering references to GlueApplication
-        obj = objgraph.by_type('GlueApplication')
-        if len(obj) > 0:
-            objgraph.show_backrefs(objgraph.by_type('GlueApplication'))
-            warnings.warn('There are {0} remaining references to GlueApplication'.format(len(obj)))
-
-        # Uncomment when checking for memory leaks
-        # objgraph.show_most_common_types(limit=100)
-
-
-# With PySide2, tests can fail in a non-deterministic way on a teardown error
-# or with the following error:
-#
-#   AttributeError: 'PySide2.QtGui.QStandardItem' object has no attribute '...'
-#
-# Until this can be properly debugged and fixed, we xfail any test that fails
-# with one of these exceptions.
-
-if PYSIDE2:
-    QTSTANDARD_EXC = "QtGui.QStandardItem' object has no attribute "
-    QTSTANDARD_ATTRS = ["'connect'", "'item'", "'triggered'"]
-
-    @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_setup():
-        try:
-            outcome = yield
-            return outcome.get_result()
-        except AttributeError:
-            exc = str(outcome.excinfo[1])
-            for attr in QTSTANDARD_ATTRS:
-                if QTSTANDARD_EXC + attr in exc:
-                    pytest.xfail(f'Known issue {exc}')
-
-    @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_call():
-        try:
-            outcome = yield
-            return outcome.get_result()
-        # excinfo seems only to be preserved through a single hook
-        except (AttributeError, ValueError):
-            exc = str(outcome.excinfo[1])
-            if "No net viewers should be created in tests" in exc:
-                pytest.xfail(f'Known issue {exc}')
-            for attr in QTSTANDARD_ATTRS:
-                if QTSTANDARD_EXC + attr in exc:
-                    pytest.xfail(f'Known issue {exc}')

@@ -4,7 +4,7 @@ import numpy as np
 
 class MatplotlibBackendSetter(object):
     """
-    Import hook to make sure the proper Qt backend is set when importing
+    Import hook to make sure the proper backend is set when importing
     Matplotlib.
     """
 
