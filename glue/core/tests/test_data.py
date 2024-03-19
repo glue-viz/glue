@@ -1132,3 +1132,56 @@ def test_compute_histogram_dask_mixed():
 
     result = data.compute_histogram([data.id['y'], data.id['x']], range=[[-0.5, 11.25], [-0.5, 11.25]], bins=[2, 3], subset_state=data.id['x'] > 4.5)
     assert_allclose(result, [[0, 1, 0], [0, 2, 2]])
+
+
+def test_compute_histogram_random_subset():
+
+    # Make sure that compute_histogram works with the random_subset option
+
+    with NumpyRNGContext(12345):
+
+        data = Data(x=np.random.uniform(0, 10, 1024**2), y=np.ones(1024 ** 2))
+
+        result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], random_subset=10_000_000)
+        assert_allclose(result, [178437., 230277., 230631., 230821., 178410.])
+
+        result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], random_subset=10_000)
+        assert_allclose(result, [171756.7488, 239180.1856, 231420.7232, 228799.2832, 177419.0592])
+
+        result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], subset_state=data.id['x'] > 4.5, random_subset=10_000)
+        assert_allclose(result, [0., 0., 168148.277, 228024.0614, 180665.6616])
+
+        # Also check the 2D case and the case with weights. Note that the values
+        # now change compared to above because the random indices got reset when
+        # computing the subset. In a way this is a check that this is happening
+        # correctly.
+
+        result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], random_subset=10_000)
+        assert_allclose(result[:, 0], [175741.3376, 230477.0048, 234881.024, 231525.5808, 175951.0528])
+
+        result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], weights=data.id['y'], random_subset=10_000)
+        assert_allclose(result[:, 0], [175741.3376, 230477.0048, 234881.024, 231525.5808, 175951.0528])
+
+
+def test_compute_histogram_random_subset_dask():
+
+    # Make sure that compute_histogram works with the random_subset option (dask mode)
+
+    da = pytest.importorskip('dask.array')
+
+    data = Data(x=da.random.uniform(0, 10, 1024**2).rechunk((1024,)),
+                y=da.ones(1024 ** 2).rechunk((1024,)))
+
+    result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], random_subset=10_000_000)
+    assert_allclose(result, [178535., 230694., 229997., 231215., 178135.], atol=10_000)
+
+    result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], subset_state=data.id['x'] > 4.5, random_subset=100_000)
+    assert_allclose(result, [0., 0., 168079., 230673., 178745.], atol=10_000)
+
+    # Also check the 2D case and the case with weights.
+
+    result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], random_subset=100_000)
+    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=10_000)
+
+    result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], weights=data.id['y'], random_subset=100_000)
+    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=10_000)
