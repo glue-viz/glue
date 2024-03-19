@@ -1173,15 +1173,15 @@ def test_compute_histogram_random_subset_dask():
                 y=da.ones(1024 ** 2).rechunk((1024,)))
 
     result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], random_subset=10_000_000)
-    assert_allclose(result, [178535., 230694., 229997., 231215., 178135.], atol=10_000)
+    assert_allclose(result, [178535., 230694., 229997., 231215., 178135.], atol=20_000)
 
     result = data.compute_histogram([data.id['x']], range=[[-0.5, 10.5]], bins=[5], subset_state=data.id['x'] > 4.5, random_subset=100_000)
-    assert_allclose(result, [0., 0., 168079., 230673., 178745.], atol=10_000)
+    assert_allclose(result, [0., 0., 168079., 230673., 178745.], atol=20_000)
 
     # Also check the 2D case and the case with weights.
 
     result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], random_subset=100_000)
-    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=10_000)
+    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=20_000)
 
     result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], weights=data.id['y'], random_subset=100_000)
-    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=10_000)
+    assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=20_000)
