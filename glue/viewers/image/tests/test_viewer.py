@@ -216,7 +216,6 @@ class TestWCSRegionDisplay(object):
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled
 
-
     @visual_test
     def test_wcs_viewer(self):
         self.viewer.add_data(self.image1)
