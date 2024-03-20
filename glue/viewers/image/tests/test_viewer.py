@@ -184,6 +184,39 @@ class TestWCSRegionDisplay(object):
 
         self.viewer = self.application.new_data_viewer(SimpleImageViewer)
 
+    def test_wcs_viewer_bad_link(self):
+        self.viewer.add_data(self.image1)
+
+        link1 = LinkSame(self.region_data.id['color'], self.image1.world_component_ids[1])
+        link2 = LinkSame(self.region_data.id['area'], self.image1.world_component_ids[0])
+
+        self.application.data_collection.add_link(link1)
+        self.application.data_collection.add_link(link2)
+
+        self.viewer.add_data(self.region_data)
+
+        assert self.viewer.state._display_world is True
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled
+        assert not self.viewer.layers[1].enabled
+
+    def test_wcs_viewer_good_link(self):
+        self.viewer.add_data(self.image1)
+
+        link1 = LinkSame(self.region_data.center_x_id, self.image1.world_component_ids[1])
+        link2 = LinkSame(self.region_data.center_y_id, self.image1.world_component_ids[0])
+
+        self.application.data_collection.add_link(link1)
+        self.application.data_collection.add_link(link2)
+
+        self.viewer.add_data(self.region_data)
+
+        assert self.viewer.state._display_world is True
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
+
+
     @visual_test
     def test_wcs_viewer(self):
         self.viewer.add_data(self.image1)
