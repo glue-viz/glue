@@ -43,24 +43,82 @@ def test_region_layer():
     polygons = MultiPolygon([poly_3, poly_4])
 
     geoms = np.array([poly_1, poly_2, polygons])
-    values = np.array([1, 2, 3])
-    region_data = RegionData(regions=geoms, values=values)
+    a_values = np.array([1, 2, 3])
+    b_values = np.array([1, 2, 3])
+
+    region_data = RegionData(regions=geoms, a=a_values, b=b_values)
 
     image_data = Data(x=np.arange(10000).reshape((100, 100)), label='data1')
     app = Application()
     app.data_collection.append(image_data)
     app.data_collection.append(region_data)
 
+    viewer = app.new_data_viewer(SimpleImageViewer)
+    viewer.add_data(image_data)
+    viewer.add_data(region_data)
+
+    # Link to region data components that are the not the x,y coordinates
+    link1 = LinkSame(region_data.id['a'], image_data.pixel_component_ids[0])
+    link2 = LinkSame(region_data.id['b'], image_data.pixel_component_ids[1])
+    app.data_collection.add_link(link1)
+    app.data_collection.add_link(link2)
+
+    app.data_collection.remove_link(link1)
+    app.data_collection.remove_link(link2)
+
     link1 = LinkSame(region_data.center_x_id, image_data.pixel_component_ids[0])
     link2 = LinkSame(region_data.center_y_id, image_data.pixel_component_ids[1])
     app.data_collection.add_link(link1)
     app.data_collection.add_link(link2)
 
+    return viewer.figure
+
+
+def test_region_layer_logic():
+    poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
+    poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
+    poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
+    poly_4 = Polygon([(10, 20), (15, 20), (15, 30), (10, 30), (12, 25)])
+
+    polygons = MultiPolygon([poly_3, poly_4])
+
+    geoms = np.array([poly_1, poly_2, polygons])
+    a_values = np.array([1, 2, 3])
+    b_values = np.array([1, 2, 3])
+
+    region_data = RegionData(regions=geoms, a=a_values, b=b_values)
+
+    image_data = Data(x=np.arange(10000).reshape((100, 100)), label='data1')
+    app = Application()
+    app.data_collection.append(image_data)
+    app.data_collection.append(region_data)
+
     viewer = app.new_data_viewer(SimpleImageViewer)
     viewer.add_data(image_data)
     viewer.add_data(region_data)
 
-    return viewer.figure
+    assert viewer.layers[0].enabled  # image
+    assert not viewer.layers[1].enabled  # regions
+
+    # Link to region data components that are the not the x,y coordinates
+    link1 = LinkSame(region_data.id['a'], image_data.pixel_component_ids[0])
+    link2 = LinkSame(region_data.id['b'], image_data.pixel_component_ids[1])
+    app.data_collection.add_link(link1)
+    app.data_collection.add_link(link2)
+
+    assert viewer.layers[0].enabled  # image
+    assert not viewer.layers[1].enabled  # regions
+
+    app.data_collection.remove_link(link1)
+    app.data_collection.remove_link(link2)
+
+    link1 = LinkSame(region_data.center_x_id, image_data.pixel_component_ids[0])
+    link2 = LinkSame(region_data.center_y_id, image_data.pixel_component_ids[1])
+    app.data_collection.add_link(link1)
+    app.data_collection.add_link(link2)
+
+    assert viewer.layers[0].enabled  # image
+    assert viewer.layers[1].enabled  # regions
 
 
 @visual_test
@@ -106,18 +164,19 @@ class TestWCSRegionDisplay(object):
 
         wcs1 = WCS(naxis=2)
         wcs1.wcs.ctype = 'RA---TAN', 'DEC--TAN'
-        wcs1.wcs.crpix = -3, 5
+        wcs1.wcs.crpix = 15, 15
         wcs1.wcs.cd = [[2, -1], [1, 2]]
 
         wcs1.wcs.set()
 
-        self.image1 = Data(label='image1', a=[[3, 3], [2, 2]], b=[[4, 4], [3, 2]],
-                            coords=wcs1)
-        SHAPELY_CIRCLE_ARRAY = np.array([Point(1.5, 2.5).buffer(1), Polygon([(1, 1), (2, 2), (2, 3), (1, 3)])])
+        np.random.seed(2)
+        self.image1 = Data(label='image1', a=np.random.rand(30, 30), coords=wcs1)
+        SHAPELY_ARRAY = np.array([Point(1.5, 2.5).buffer(4),
+                                  Polygon([(10, 10), (10, 15), (20, 15), (20, 10)])])
         self.region_data = RegionData(label='My Regions',
                                       color=np.array(['red', 'blue']),
-                                      area=shapely.area(SHAPELY_CIRCLE_ARRAY),
-                                      boundary=SHAPELY_CIRCLE_ARRAY)
+                                      area=shapely.area(SHAPELY_ARRAY),
+                                      boundary=SHAPELY_ARRAY)
         self.application = Application()
 
         self.application.data_collection.append(self.image1)
@@ -125,7 +184,27 @@ class TestWCSRegionDisplay(object):
 
         self.viewer = self.application.new_data_viewer(SimpleImageViewer)
 
-    def test_flipped_viewer(self):
+    @visual_test
+    def test_wcs_viewer(self):
+        self.viewer.add_data(self.image1)
+
+        link1 = LinkSame(self.region_data.center_x_id, self.image1.world_component_ids[1])
+        link2 = LinkSame(self.region_data.center_y_id, self.image1.world_component_ids[0])
+
+        self.application.data_collection.add_link(link1)
+        self.application.data_collection.add_link(link2)
+
+        self.viewer.add_data(self.region_data)
+
+        assert self.viewer.state._display_world is True
+        assert len(self.viewer.state.layers) == 2
+        assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
+
+        return self.viewer.figure
+
+    @visual_test
+    def test_flipped_wcs_viewer(self):
         self.viewer.add_data(self.image1)
 
         link1 = LinkSame(self.region_data.center_x_id, self.image1.world_component_ids[1])
@@ -152,3 +231,5 @@ class TestWCSRegionDisplay(object):
 
         # Because we have flipped the viewer, the patches should have changed
         assert np.array_equal(original_path_patch, np.flip(new_path_patch, axis=1))
+
+        return self.viewer.figure
