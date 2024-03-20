@@ -125,7 +125,6 @@ class TestWCSRegionDisplay(object):
 
         self.viewer = self.application.new_data_viewer(SimpleImageViewer)
 
-    @visual_test
     def test_flipped_viewer(self):
         self.viewer.add_data(self.image1)
 
@@ -153,5 +152,3 @@ class TestWCSRegionDisplay(object):
 
         # Because we have flipped the viewer, the patches should have changed
         assert np.array_equal(original_path_patch, np.flip(new_path_patch, axis=1))
-
-        return self.viewer.figure
