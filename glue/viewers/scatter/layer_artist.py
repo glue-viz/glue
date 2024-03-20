@@ -636,41 +636,84 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                 data = self.layer.data
             region_att = data.extended_component_id
 
+        # In order to display a region we need to check that the representative
+        # points (center_x_id and center_y_id) are linked to the viewer x and y
+        # attributes. While we check this we also get the _values_ of the center
+        # attributes (x,y) and the _values_ for the viewer x and y attributes
+        # (xx,yy). We can compare these to figure out if the regions need to be
+        # flipped x,y <-> y,x. For now, if the image is displayed in world coordinates,
+        # the regions must be specified in world coordinates as well.
+
         try:
-            # These must be special attributes that are linked to a region_att
-            if ((not data.linked_to_center_comp(self._viewer_state.x_att)) and
-                     (not data.linked_to_center_comp(self._viewer_state.x_att_world))):
-                raise IncompatibleAttribute
-            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
-            xx = ensure_numerical(data[data.center_x_id].ravel())
+            # These must be attributes that are linked to center_x_id
+            if self._viewer_state._display_world:
+                if not data.linked_to_center_comp(self._viewer_state.x_att_world):
+                    raise IncompatibleAttribute
+                else:
+                    xx = ensure_numerical(self.layer[self._viewer_state.x_att_world].ravel())
+            else:
+                if not data.linked_to_center_comp(self._viewer_state.x_att):
+                    raise IncompatibleAttribute
+                else:
+                    xx = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+            x = ensure_numerical(self.layer[data.center_x_id].ravel())
         except (IncompatibleAttribute, IndexError):
-            # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.x_att)
             return
         else:
             self.enable()
 
         try:
-            # These must be special attributes that are linked to a region_att
-            if ((not data.linked_to_center_comp(self._viewer_state.y_att)) and
-                      (not data.linked_to_center_comp(self._viewer_state.y_att_world))):
-                raise IncompatibleAttribute
-            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
-            yy = ensure_numerical(data[data.center_y_id].ravel())
+            # These must be attributes that are linked to center_y_id
+            if self._viewer_state._display_world:
+                if not data.linked_to_center_comp(self._viewer_state.y_att_world):
+                    raise IncompatibleAttribute
+                else:
+                    yy = ensure_numerical(self.layer[self._viewer_state.y_att_world].ravel())
+            else:
+                if not data.linked_to_center_comp(self._viewer_state.y_att):
+                    raise IncompatibleAttribute
+                else:
+                    yy = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+
+            y = ensure_numerical(self.layer[data.center_y_id].ravel())
         except (IncompatibleAttribute, IndexError):
-            # The following includes a call to self.clear()
             self.disable_invalid_attributes(self._viewer_state.y_att)
             return
         else:
             self.enable()
 
-        # We need to make sure that x and y viewer attributes are
-        # really the center_x and center_y attributes of the underlying
-        # data, so we compare the values on the centroids using the
-        # glue data access machinery.
-
         regions = self.layer[region_att]
 
+        if self._viewer_state._display_world:
+            # If we are using world coordinates (i.e. the regions are specified in world coordinates)
+            # we need to transform the geometries of the regions into pixel coordinates for display
+            # Note that this calls a custom version of the transform function from shapely
+            # to accomodate glue WCS objects
+
+            try:
+                # First, convert regions to world coordinates (relevant if there are multiple links or a
+                # transform is needed to get to world coordinates)
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                regions = np.array([transform(tfunc, g) for g in regions])
+
+                # Then convert to pixels for display
+                world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+                regions = np.array([transform_shapely(world2pix, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                return
+        else:
+            # If the image is just in pixels we just lookup how to transform the points in the region
+            try:
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
+                regions = np.array([transform(tfunc, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att, self._viewer_state.y_att])
+                return
+
+        # Now we flip the x and y coordinates of each point in the regions if necessary.
+        # This has to happen after the transform into pixel coordinates.
         def flip_xy(g):
             return transform(lambda x, y: (y, x), g)
 
@@ -682,36 +725,12 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                 x_no_match = True
         else:
             if np.array_equal(y, xx) and np.array_equal(x, yy):  # This means x and y have been swapped
-                regions = [flip_xy(g) for g in regions]
+                regions = np.array([flip_xy(g) for g in regions])
                 self.enable()
             else:
                 self.disable_invalid_attributes(self._viewer_state.y_att)
                 if x_no_match:
                     self.disable_invalid_attributes(self._viewer_state.x_att)
-                return
-
-        # If we are using world coordinates (i.e. the regions are specified in world coordinates)
-        # we need to transform the geometries of the regions into pixel coordinates for display
-        # Note that this calls a custom version of the transform function from shapely
-        # to accomodate glue WCS objects
-        if self._viewer_state._display_world:
-            # First, convert to world coordinates
-            try:
-                tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
-                regions = np.array([transform(tfunc, g) for g in regions])
-
-                # Then convert to pixels for display
-                world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
-                regions = np.array([transform_shapely(world2pix, g) for g in regions])
-            except ValueError:
-                self.disable_invalid_attributes([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
-                return
-        else:
-            try:
-                tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
-                regions = np.array([transform(tfunc, g) for g in regions])
-            except ValueError:
-                self.disable_invalid_attributes([self._viewer_state.x_att, self._viewer_state.y_att])
                 return
 
         # decompose GeometryCollections
