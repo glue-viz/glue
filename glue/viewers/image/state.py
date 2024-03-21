@@ -94,6 +94,9 @@ class ImageViewerState(MatplotlibDataViewerState):
                                            'a single color (``One color per layer``)')
 
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
+    global_limits = DDCProperty(True, docstring='Calculate automatic levels on statistics '
+                                                'over the entire data cube or only the '
+                                                'current layer')
 
     def __init__(self, **kwargs):
 
@@ -121,6 +124,8 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
+
+        self.add_callback('global_limits', self._set_global_limits, priority=0)
 
         aspect_display = {'equal': 'Square Pixels', 'auto': 'Automatic'}
         ImageViewerState.aspect.set_choices(self, ['equal', 'auto'])
@@ -315,6 +320,28 @@ class ImageViewerState(MatplotlibDataViewerState):
             self.slices = ()
         else:
             self.slices = (0,) * self.reference_data.ndim
+
+    def _set_global_limits(self, global_limits=True):
+        layer_state = self.layers[-1]
+        if global_limits:
+            self.remove_callback('slices', self._update_slice_subset)
+            layer_state.attribute_lim_helper.set_slice(None)
+        else:
+            self.add_callback('slices', self._update_slice_subset)
+            layer_state.attribute_lim_helper.set_slice(self.numpy_slice_aggregation_transpose[0])
+
+    def _update_slice_subset(self, slices):
+        """
+        Select a subset slice for determining image levels.
+
+        Parameters
+        ----------
+        slices : iterable of :class:`slice` or `None`
+            An iterable containing :class:`slice` objects that can instantiate
+            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
+            with the shape of `self.data`; `None` to unslice.
+        """
+        self.layers[-1].attribute_lim_helper.set_slice(self.numpy_slice_aggregation_transpose[0])
 
     @property
     def numpy_slice_aggregation_transpose(self):
@@ -586,19 +613,6 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
         Flip the image levels.
         """
         self.attribute_lim_helper.flip_limits()
-
-    def set_slice(self, slices):
-        """
-        Select a subset slice for determining image levels.
-
-        Parameters
-        ----------
-        slices : iterable of :class:`slice` or `None`
-            An iterable containing :class:`slice` objects that can instantiate
-            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
-            with the shape of `self.data`; `None` to unslice.
-        """
-        self.attribute_lim_helper.set_slice(slices)
 
     def reset_contrast_bias(self):
         with delay_callback(self, 'contrast', 'bias'):
