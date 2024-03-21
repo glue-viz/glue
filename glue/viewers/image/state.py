@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw, view_shape
-from echo import delay_callback
+from echo import callback_property, delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
@@ -94,9 +94,6 @@ class ImageViewerState(MatplotlibDataViewerState):
                                            'a single color (``One color per layer``)')
 
     dpi = DDCProperty(72, docstring='The resolution (in dots per inch) of density maps, if present')
-    global_limits = DDCProperty(True, docstring='Calculate automatic levels on statistics '
-                                                'over the entire data cube or only the '
-                                                'current layer')
 
     def __init__(self, **kwargs):
 
@@ -124,8 +121,6 @@ class ImageViewerState(MatplotlibDataViewerState):
 
         self.add_callback('x_att_world', self._on_xatt_world_change, priority=1000)
         self.add_callback('y_att_world', self._on_yatt_world_change, priority=1000)
-
-        self.add_callback('global_limits', self._set_global_limits, priority=0)
 
         aspect_display = {'equal': 'Square Pixels', 'auto': 'Automatic'}
         ImageViewerState.aspect.set_choices(self, ['equal', 'auto'])
@@ -321,28 +316,6 @@ class ImageViewerState(MatplotlibDataViewerState):
         else:
             self.slices = (0,) * self.reference_data.ndim
 
-    def _set_global_limits(self, global_limits=True):
-        layer_state = self.layers[-1]
-        if global_limits:
-            self.remove_callback('slices', self._update_slice_subset)
-            layer_state.attribute_lim_helper.set_slice(None)
-        else:
-            self.add_callback('slices', self._update_slice_subset)
-            layer_state.attribute_lim_helper.set_slice(self.numpy_slice_aggregation_transpose[0])
-
-    def _update_slice_subset(self, slices):
-        """
-        Select a subset slice for determining image levels.
-
-        Parameters
-        ----------
-        slices : iterable of :class:`slice` or `None`
-            An iterable containing :class:`slice` objects that can instantiate
-            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
-            with the shape of `self.data`; `None` to unslice.
-        """
-        self.layers[-1].attribute_lim_helper.set_slice(self.numpy_slice_aggregation_transpose[0])
-
     @property
     def numpy_slice_aggregation_transpose(self):
         """
@@ -528,6 +501,9 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     global_sync = DDCProperty(False, docstring='Whether the color and transparency '
                                                'should be synced with the global '
                                                'color and transparency for the data')
+    global_limits = DDCProperty(True, docstring='Calculate automatic levels on statistics '
+                                                'over the entire data cube or only the '
+                                                'current layer (slice)')
 
     def __init__(self, layer=None, viewer_state=None, **kwargs):
 
@@ -569,6 +545,7 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
+        self.add_callback('global_limits', self._set_global_limits, priority=0)
 
         self._update_syncing()
 
@@ -607,6 +584,52 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
     def _get_image(self, view=None):
         return self.layer[self.attribute, view]
+
+    def _set_global_limits(self, global_limits=True):
+        if global_limits:
+            self.remove_callback('slice_subset_state', self._update_slice_subset)
+            self.attribute_lim_helper.set_slice(None)
+        else:
+            self.add_callback('slice_subset_state', self._update_slice_subset)
+            slices = [slice(s) if s is None else s for s in self.slice_subset_state]
+            self.attribute_lim_helper.set_slice(slices)
+
+    def _update_slice_subset(self, slice_subset_state):
+        """
+        Select a subset slice for determining image levels.
+
+        Parameters
+        ----------
+        slice_subset_state : iterable of :class:`slice` or `None`
+            An iterable containing :class:`slice` objects that can instantiate
+            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
+            with the shape of `self.data`; `None` to unslice.
+        """
+        slices = [slice(s) if s is None else s for s in slice_subset_state]
+        self.attribute_lim_helper.set_slice(slices)
+
+    @callback_property
+    def slice_subset_state(self):
+        """
+        Returns slicing information usable by :class:`~glue.core.subset.SliceSubsetState`.
+
+        slice_subset_state = DDCProperty(docstring='Slices iterable describing the current '
+                                               'slice along all dimensions as subset')
+        """
+        # Need a safety check here if self.viewer_state is already fully initialised.
+        if self.viewer_state.reference_data is None or self.viewer_state.x_att is None:
+            return None
+        else:
+            slices = []
+            for i in range(self.viewer_state.reference_data.ndim):
+                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
+                    slices.append(None)
+                else:
+                    if isinstance(self.viewer_state.slices[i], AggregateSlice):
+                        slices.append(self.viewer_state.slices[i].slice)
+                    else:
+                        slices.append(self.viewer_state.slices[i])
+            return slices  # self.viewer_state.numpy_slice_aggregation_transpose[0]
 
     def flip_limits(self):
         """
