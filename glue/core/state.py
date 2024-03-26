@@ -65,6 +65,8 @@ from inspect import isgeneratorfunction
 import numpy as np
 from matplotlib.colors import Colormap
 from matplotlib import cm
+import astropy.units as u
+from astropy.units import UnitBase, Unit
 from astropy.wcs import WCS
 import shapely
 
@@ -619,6 +621,23 @@ def _save_slice(slc, context):
 @loader(slice)
 def _load_slice(rec, context):
     return slice(rec['start'], rec['stop'], rec['step'])
+
+
+@saver(UnitBase)
+def _save_unit_base(unit, context):
+    unit_str = unit.to_string()
+    # Check that unit can be parsed back with default enabled systems
+    try:
+        with u.set_enabled_units([u.si, u.cgs, u.astrophys]):
+            _ = u.Unit(unit_str)
+    except ValueError:
+        raise GlueSerializeError(f"Serializing units of '{unit}' is not yet supported")
+    return dict(unit_base=unit_str)
+
+
+@loader(UnitBase)
+def _load_unit_base(rec, context):
+    return Unit(rec["unit_base"])
 
 
 @saver(WCS)
