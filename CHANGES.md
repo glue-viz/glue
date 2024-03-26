@@ -1,5 +1,20 @@
 # Full changelog
 
+## v1.18.0 - 2024-03-26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Preserve alpha while compositing with cmap.set_bad by @bmorris3 in https://github.com/glue-viz/glue/pull/2468
+
+#### Other Changes
+
+* Remove deprecated Qt-related code (and `glue.qglue`) by @astrofrog in https://github.com/glue-viz/glue/pull/2477
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.17.1...v1.18.0
+
 ## v1.17.1 - 2023-12-07
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
