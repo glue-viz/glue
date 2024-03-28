@@ -3,7 +3,11 @@ import numpy as np
 from glue.core.units import UnitConverter
 from glue.core.subset import roi_to_subset_state
 
-__all__ = ['MatplotlibProfileMixin']
+from glue.viewers.matplotlib.viewer import SimpleMatplotlibViewer
+from glue.viewers.profile.state import ProfileViewerState
+from glue.viewers.profile.layer_artist import ProfileLayerArtist
+
+__all__ = ['MatplotlibProfileMixin', 'SimpleProfileViewer']
 
 
 class MatplotlibProfileMixin(object):
@@ -55,3 +59,14 @@ class MatplotlibProfileMixin(object):
 
         subset_state = roi_to_subset_state(roi, x_att=self.state.x_att)
         self.apply_subset_state(subset_state, override_mode=override_mode)
+
+
+class SimpleProfileViewer(MatplotlibProfileMixin, SimpleMatplotlibViewer):
+
+    _state_cls = ProfileViewerState
+    _data_artist_cls = ProfileLayerArtist
+    _subset_artist_cls = ProfileLayerArtist
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        MatplotlibProfileMixin.setup_callbacks(self)

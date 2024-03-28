@@ -1,0 +1,92 @@
+version: 2.1
+
+jobs:
+
+  # The following job is to run any visual comparison test, and runs on any branch
+  # or in any pull request. It will generate a summary page for each tox environment
+  # being run which is accessible through the CircleCI artifacts.
+
+  visual:
+    parameters:
+      jobname:
+        type: string
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TOXENV: << parameters.jobname >>
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            pip install pip tox --upgrade
+      - run:
+          name: Run tests
+          command: tox -v
+      - store_artifacts:
+          path: results
+      - run:
+          name: "Image comparison page is available at: "
+          command: echo "${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/results/fig_comparison.html"
+
+  # The following job runs only on main - and its main purpose is to update the
+  # reference images in the glue-core-visual-tests repository. This job needs
+  # a deploy key. To produce this, go to the glue-core-visual-tests
+  # repository settings and go to SSH keys, then add your public SSH key.
+  deploy-reference-images:
+    parameters:
+      jobname:
+        type: string
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      TOXENV: << parameters.jobname >>
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            pip install pip tox --upgrade
+      - run: ssh-add -D
+      - add_ssh_keys:
+          fingerprints: "44:09:69:d7:c6:77:25:e9:46:da:f1:22:7d:d4:38:29"
+      - run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - run: git config --global user.email "glue@circleci" && git config --global user.name "Glue Circle CI"
+      - run: git clone git@github.com:glue-viz/glue-core-visual-tests.git --depth 1 ~/glue-core-visual-tests/
+      - run:
+          name: Generate reference images
+          command: tox -v -- --mpl-generate-path=/home/circleci/glue-core-visual-tests/images/$TOXENV
+      - run: |
+          cd ~/glue-core-visual-tests/
+          git pull
+          git status
+          git add .
+          git commit -m "Update reference images from ${CIRCLE_BRANCH}" || echo "No changes to reference images to deploy"
+          git push
+
+workflows:
+  version: 2
+
+  visual-tests:
+    jobs:
+      - visual:
+          name: << matrix.jobname >>
+          matrix:
+            parameters:
+              jobname:
+                - "py311-test-visual"
+
+      - deploy-reference-images:
+          name: baseline-<< matrix.jobname >>
+          matrix:
+            parameters:
+              jobname:
+                - "py311-test-visual"
+          requires:
+            - << matrix.jobname >>
+          filters:
+            branches:
+              only:
+                - main

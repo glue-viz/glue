@@ -1,11 +1,10 @@
 # Set up configuration variables
 
-__all__ = ['custom_viewer', 'qglue', 'test']
+__all__ = ['custom_viewer', 'test']
 
 import os
 
 import sys
-import warnings
 
 import importlib.metadata
 
@@ -15,18 +14,10 @@ from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
 
 from glue.viewers.custom.helper import custom_viewer
-from glue.utils.error import GlueDeprecationWarning
 
 # Load user's configuration file
 from .config import load_configuration
 env = load_configuration()
-
-
-def qglue(*args, **kwargs):
-    warnings.warn('glue.qglue is deprecated, import qglue from the glue_qt module instead', GlueDeprecationWarning)
-    from glue_qt import qglue
-    return qglue(*args, **kwargs)
-
 
 from .main import load_plugins  # noqa
 

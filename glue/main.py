@@ -57,7 +57,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
     else:
         n_plugins = len(plugins_to_use)
 
-    for i_plugins, item in enumerate(list(iter_plugin_entry_points())):
+    for i_plugin, item in enumerate(list(iter_plugin_entry_points())):
         if item.value.replace(':setup', '') in plugins_to_use:
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
@@ -103,7 +103,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
             _loaded_plugins.add(item.module)
 
         if splash is not None:
-            splash.set_progress(100. * iplugin / float(n_plugins))
+            splash.set_progress(100. * i_plugin / float(n_plugins))
 
     try:
         config.save()

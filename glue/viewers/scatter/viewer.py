@@ -5,9 +5,11 @@ from glue.core.roi_pretransforms import FullSphereLongitudeTransform, Projection
 from glue.utils import mpl_to_datetime64
 from glue.viewers.scatter.compat import update_scatter_viewer_state
 from glue.viewers.matplotlib.mpl_axes import init_mpl
+from glue.viewers.matplotlib.viewer import SimpleMatplotlibViewer
+from glue.viewers.scatter.state import ScatterViewerState
+from glue.viewers.scatter.layer_artist import ScatterLayerArtist
 
-
-__all__ = ['MatplotlibScatterMixin']
+__all__ = ['MatplotlibScatterMixin', 'SimpleScatterViewer']
 
 
 class MatplotlibScatterMixin(object):
@@ -179,3 +181,14 @@ class MatplotlibScatterMixin(object):
     @staticmethod
     def update_viewer_state(rec, context):
         return update_scatter_viewer_state(rec, context)
+
+
+class SimpleScatterViewer(MatplotlibScatterMixin, SimpleMatplotlibViewer):
+
+    _state_cls = ScatterViewerState
+    _data_artist_cls = ScatterLayerArtist
+    _subset_artist_cls = ScatterLayerArtist
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        MatplotlibScatterMixin.setup_callbacks(self)

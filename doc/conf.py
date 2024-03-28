@@ -33,6 +33,7 @@ nitpick_ignore = [
     ("py:class", "glue.viewers.image.layer_artist.ImageLayerBase"),
     ("py:class", "glue.viewers.image.layer_artist.RGBImageLayerBase"),
     ("py:class", "glue.viewers.image.state.BaseImageLayerState"),
+    ("py:class", "glue.viewers.common.stretch_state_mixin.StretchStateMixin")
 ]
 
 viewcode_follow_imported_members = False
@@ -53,6 +54,7 @@ intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "echo": ("https://echo.readthedocs.io/en/latest/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "shapely": ("https://shapely.readthedocs.io/en/stable/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -61,3 +63,4 @@ intersphinx_mapping = {
 html_theme = "sphinx_book_theme"
 html_static_path = ["_static"]
 html_logo = "_static/logo.png"
+html_theme_options = {'navigation_with_keys': False}

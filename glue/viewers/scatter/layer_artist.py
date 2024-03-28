@@ -10,21 +10,28 @@ from astropy.visualization import ImageNormalize
 
 from glue.config import stretches
 from glue.utils import defer_draw, ensure_numerical, datetime64_to_mpl
-from glue.viewers.scatter.state import ScatterLayerState
+from glue.viewers.scatter.state import ScatterLayerState, ScatterRegionLayerState
 from glue.viewers.scatter.python_export import python_export_scatter_layer
+from glue.viewers.scatter.plot_polygons import (UpdateableRegionCollection,
+                                                get_geometry_type,
+                                                _sanitize_geoms,
+                                                _PolygonPatch,
+                                                transform_shapely)
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.data import BaseData
 
 from matplotlib.lines import Line2D
+from shapely.ops import transform
 
 # We keep the following so that scripts exported with previous versions of glue
 # continue to work, as they imported STRETCHES from here.
-STRETCHES = stretches.members
+STRETCHES = {key: value() for key, value in stretches.members.items()}
 
 CMAP_PROPERTIES = set(['cmap_mode', 'cmap_att', 'cmap_vmin', 'cmap_vmax', 'cmap'])
 MARKER_PROPERTIES = set(['size_mode', 'size_att', 'size_vmin', 'size_vmax', 'size_scaling', 'size', 'fill'])
 LINE_PROPERTIES = set(['linewidth', 'linestyle'])
-DENSITY_PROPERTIES = set(['dpi', 'stretch', 'density_contrast'])
+DENSITY_PROPERTIES = set(['dpi', 'stretch', 'stretch_parameters', 'density_contrast'])
 VISUAL_PROPERTIES = (CMAP_PROPERTIES | MARKER_PROPERTIES | DENSITY_PROPERTIES |
                      LINE_PROPERTIES | set(['color', 'alpha', 'zorder', 'visible']))
 
@@ -364,8 +371,8 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                     c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
                     set_mpl_artist_cmap(self.density_artist, c, self.state)
 
-                if force or 'stretch' in changed:
-                    self.density_artist.set_norm(ImageNormalize(stretch=stretches.members[self.state.stretch]))
+                if force or 'stretch' in changed or 'stretch_parameters' in changed:
+                    self.density_artist.set_norm(ImageNormalize(stretch=self.state.stretch_object))
 
                 if force or 'dpi' in changed:
                     self.density_artist.set_dpi(self._viewer_state.dpi)
@@ -594,3 +601,214 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
         res = self.state.cmap_mode == 'Fixed' and self.state.size_mode == 'Fixed'
         return res and (not hasattr(self._viewer_state, 'plot_mode') or
                         not self._viewer_state.plot_mode == 'polar')
+
+
+class ScatterRegionLayerArtist(MatplotlibLayerArtist):
+
+    _layer_state_cls = ScatterRegionLayerState
+    #  _python_exporter = python_export_scatter_layer #  TODO: Update this to work with regions
+
+    def __init__(self, axes, viewer_state, layer_state=None, layer=None):
+
+        super().__init__(axes, viewer_state,
+                            layer_state=layer_state, layer=layer)
+        self._viewer_state.add_global_callback(self._update_scatter_region)
+        self.state.add_global_callback(self._update_scatter_region)
+        self._set_axes(axes)
+
+    def _set_axes(self, axes):
+        self.axes = axes
+        self.region_collection = UpdateableRegionCollection([])
+        self.axes.add_collection(self.region_collection)
+        #  This is a little unnecessary, but keeps code more parallel
+        self.mpl_artists = [self.region_collection]
+
+    @defer_draw
+    def _update_data(self):
+        # Layer artist has been cleared already
+        if len(self.mpl_artists) == 0:
+            return
+
+        if self.layer is not None:
+            if isinstance(self.layer, BaseData):
+                data = self.layer
+            else:
+                data = self.layer.data
+            region_att = data.extended_component_id
+
+        try:
+            # These must be special attributes that are linked to a region_att
+            if ((not data.linked_to_center_comp(self._viewer_state.x_att)) and
+                     (not data.linked_to_center_comp(self._viewer_state.x_att_world))):
+                raise IncompatibleAttribute
+            x = ensure_numerical(self.layer[self._viewer_state.x_att].ravel())
+            xx = ensure_numerical(data[data.center_x_id].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.x_att)
+            return
+        else:
+            self.enable()
+
+        try:
+            # These must be special attributes that are linked to a region_att
+            if ((not data.linked_to_center_comp(self._viewer_state.y_att)) and
+                      (not data.linked_to_center_comp(self._viewer_state.y_att_world))):
+                raise IncompatibleAttribute
+            y = ensure_numerical(self.layer[self._viewer_state.y_att].ravel())
+            yy = ensure_numerical(data[data.center_y_id].ravel())
+        except (IncompatibleAttribute, IndexError):
+            # The following includes a call to self.clear()
+            self.disable_invalid_attributes(self._viewer_state.y_att)
+            return
+        else:
+            self.enable()
+
+        # We need to make sure that x and y viewer attributes are
+        # really the center_x and center_y attributes of the underlying
+        # data, so we compare the values on the centroids using the
+        # glue data access machinery.
+
+        regions = self.layer[region_att]
+
+        def flip_xy(g):
+            return transform(lambda x, y: (y, x), g)
+
+        x_no_match = False
+        if np.array_equal(y, yy):
+            if np.array_equal(x, xx):
+                self.enable()
+            else:
+                x_no_match = True
+        else:
+            if np.array_equal(y, xx) and np.array_equal(x, yy):  # This means x and y have been swapped
+                regions = [flip_xy(g) for g in regions]
+                self.enable()
+            else:
+                self.disable_invalid_attributes(self._viewer_state.y_att)
+                if x_no_match:
+                    self.disable_invalid_attributes(self._viewer_state.x_att)
+                return
+
+        # If we are using world coordinates (i.e. the regions are specified in world coordinates)
+        # we need to transform the geometries of the regions into pixel coordinates for display
+        # Note that this calls a custom version of the transform function from shapely
+        # to accomodate glue WCS objects
+        if self._viewer_state._display_world:
+            # First, convert to world coordinates
+            try:
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                regions = np.array([transform(tfunc, g) for g in regions])
+
+                # Then convert to pixels for display
+                world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+                regions = np.array([transform_shapely(world2pix, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
+                return
+        else:
+            try:
+                tfunc = data.get_transform_to_cids([self._viewer_state.x_att, self._viewer_state.y_att])
+                regions = np.array([transform(tfunc, g) for g in regions])
+            except ValueError:
+                self.disable_invalid_attributes([self._viewer_state.x_att, self._viewer_state.y_att])
+                return
+
+        # decompose GeometryCollections
+        geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")
+        self.multiindex_geometry = multiindex
+
+        geom_types = get_geometry_type(geoms)
+        poly_idx = np.asarray((geom_types == "Polygon") | (geom_types == "MultiPolygon"))
+        polys = geoms[poly_idx]
+
+        # decompose MultiPolygons
+        geoms, multiindex = _sanitize_geoms(polys, prefix="Multi")
+        self.region_collection.patches = [_PolygonPatch(poly) for poly in geoms]
+
+        self.geoms = geoms
+        self.multiindex = multiindex
+
+    @defer_draw
+    def _update_visual_attributes(self, changed, force=False):
+
+        if not self.enabled:
+            return
+
+        if self.state.cmap_mode == 'Fixed':
+            if force or 'color' in changed or 'cmap_mode' in changed or 'fill' in changed:
+                self.region_collection.set_array(None)
+                if self.state.fill:
+                    self.region_collection.set_facecolors(self.state.color)
+                    self.region_collection.set_edgecolors('none')
+                else:
+                    self.region_collection.set_facecolors('none')
+                    self.region_collection.set_edgecolors(self.state.color)
+        elif force or any(prop in changed for prop in CMAP_PROPERTIES) or 'fill' in changed:
+            self.region_collection.set_edgecolors(None)
+            self.region_collection.set_facecolors(None)
+            c = ensure_numerical(self.layer[self.state.cmap_att].ravel())
+            c_values = np.take(c, self.multiindex_geometry, axis=0)  # Decompose Geoms
+            c_values = np.take(c_values, self.multiindex, axis=0)  # Decompose MultiPolys
+            set_mpl_artist_cmap(self.region_collection, c_values, self.state)
+            if self.state.fill:
+                self.region_collection.set_edgecolors('none')
+            else:
+                self.region_collection.set_facecolors('none')
+
+        for artist in [self.region_collection]:
+
+            if artist is None:
+                continue
+
+            if force or 'alpha' in changed:
+                artist.set_alpha(self.state.alpha)
+
+            if force or 'zorder' in changed:
+                artist.set_zorder(self.state.zorder)
+
+            if force or 'visible' in changed:
+                artist.set_visible(self.state.visible)
+
+        self.redraw()
+
+    @defer_draw
+    def _update_scatter_region(self, force=False, **kwargs):
+
+        if (self._viewer_state.x_att is None or
+            self._viewer_state.y_att is None or
+                self.state.layer is None):
+            return
+
+        # NOTE: we need to evaluate this even if force=True so that the cache
+        # of updated properties is up to date after this method has been called.
+        changed = self.pop_changed_properties()
+
+        full_sphere = getattr(self._viewer_state, 'using_full_sphere', False)
+        change_from_limits = full_sphere and len(changed & LIMIT_PROPERTIES) > 0
+        if force or change_from_limits or len(changed & DATA_PROPERTIES) > 0:
+            # This is the signature of flipping the x and y axis of an image in the UI
+            # We must *not* run update_data right away, or it will return an error
+            # The delay_callback wrapper on state._on_xatt_world_change() and
+            # state._on_yatt_world_change() is not properly deferring the callback
+            # until after x and y have been fully swapped, so we need to do it manually.
+            if changed == {'x_att_world', 'x_att', 'y_att_world'} or changed == {'y_att_world', 'y_att', 'x_att_world'}:
+                pass
+            else:
+                self._update_data()
+                force = True
+
+        if force or len(changed & VISUAL_PROPERTIES) > 0:
+            self._update_visual_attributes(changed, force=force)
+
+    @defer_draw
+    def update(self):
+        self._update_scatter_region(force=True)
+        self.redraw()
+
+    @defer_draw
+    def _on_components_changed(self, components_changed):
+        for limit_helper in [self.state.cmap_lim_helper]:
+            if limit_helper.attribute in components_changed:
+                limit_helper.update_values('attribute')
+        self.redraw()

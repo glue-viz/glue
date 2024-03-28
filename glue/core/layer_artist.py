@@ -228,6 +228,12 @@ class LayerArtistBase(PropertySetMixin, metaclass=ABCMeta):
             self._changed = True
             self._state = state
 
+    def _on_components_changed(self, components_changed):
+        """
+        React to a change to one or more of the components in this layer.
+        """
+        pass
+
     def __str__(self):
         return "%s for %s" % (self.__class__.__name__, self.layer.label)
 

@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools",
+            "setuptools_scm",
+            "wheel"]
+build-backend = 'setuptools.build_meta'
+
+[tool.gilesbot]
+[tool.gilesbot.circleci_artifacts]
+enabled = true
+
+[tool.gilesbot.circleci_artifacts.figure_report]
+url = "results/fig_comparison.html"
+message = "Click details to see the image test comparisons, for py311-test-visual"
+report_on_fail = true

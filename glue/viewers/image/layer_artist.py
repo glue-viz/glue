@@ -169,7 +169,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
                            contrast=self.state.contrast,
                            bias=self.state.bias,
                            alpha=self.state.alpha,
-                           stretch=self.state.stretch)
+                           stretch=self.state.stretch_object)
 
         self.composite_image.invalidate_cache()
 
@@ -193,7 +193,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast',
                                                      'bias', 'alpha', 'color_mode',
                                                      'cmap', 'color', 'zorder',
-                                                     'visible', 'stretch')):
+                                                     'visible', 'stretch', 'stretch_parameters')):
             self._update_visual_attributes()
 
     @defer_draw
@@ -238,17 +238,19 @@ class ImageSubsetArray(object):
         if (self.layer_artist is None or
                 self.layer_state is None or
                 self.viewer_state is None):
-            return np.broadcast_to(np.nan, self.shape)
+            return None
 
         # We should compute the mask even if the layer is not visible as we need
         # the layer to show up properly when it is made visible (which doesn't
-        # trigger __getitem__)
+        # trigger __getitem__). However, if the layer is disabled, then we will
+        # call this method when it is enabled, so in this case we just return
+        # an empty mask.
 
         try:
             mask = self.layer_state.get_sliced_data(bounds=bounds)
         except IncompatibleAttribute:
             self.layer_artist.disable_incompatible_subset()
-            return np.broadcast_to(np.nan, self.shape)
+            return None
         else:
             self.layer_artist.enable(redraw=False)
 

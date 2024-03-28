@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+import shapely
 
 from glue.core.coordinate_helpers import dependent_axes, pixel2world_single_axis
 from glue.utils import shape_to_string, coerce_numeric, categorical_ndarray
@@ -13,7 +14,7 @@ except ImportError:
     DASK_INSTALLED = False
 
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
-           'CoordinateComponent', 'DateTimeComponent']
+           'CoordinateComponent', 'DateTimeComponent', 'ExtendedComponent']
 
 
 class Component(object):
@@ -104,6 +105,13 @@ class Component(object):
     def datetime(self):
         """
         Whether or not or not the datatype is a date/time
+        """
+        return False
+
+    @property
+    def extended(self):
+        """
+        Whether or not or not the datatype represents an extended region
         """
         return False
 
@@ -548,4 +556,99 @@ class DaskComponent(Component):
 
     @property
     def datetime(self):
+        return False
+
+
+class ExtendedComponent(Component):
+    """
+    A data component representing an extent or a region.
+
+    This component can be used when a dataset describes regions or ranges
+    and is typically used with a `RegionData` object, since that object
+    provides helper functions to display regions on viewers. For example,
+    a `RegionData` object might provide properties of geographic
+    regions, and the boundaries of these regions would be an ExtendedComponent.
+
+    Data loaders are required to know how to convert regions to a list
+    of Shapely objects which can be used to initialize an ExtendedComponent.
+
+    A circular region can be represented as:
+
+        >>> circle = shapely.Point(x, y).buffer(rad)
+
+    A range in one dimension can be represented as:
+
+        >>> range = shapely.LineString([[x0,0],[x1,0]])
+
+    (This is a bit of an odd representation, since we are forced to specify a y
+    coordinate for this line. We adopt a convention of y == 0.)
+
+    ExtendedComponents are NOT used directly in linking. Instead, ExtendedComponents
+    always have corresponding ComponentIDs that represent the x (and y) coordinates
+    over which the regions are defined. If not specified otherwise, a
+    `RegionData` object will create 'representative points'
+    for each region, representing a point near the center of the reigon that is
+    guaranteed to be inside the region.
+
+    NOTE: that this implementation does not support regions in more than
+    two dimensions. (Shapely has limited support for 3D shapes, but not more).
+
+    Parameters
+    ----------
+    data : list of `shapely.Geometry`` objects
+        The data to store.
+    center_comp_ids : list of :class:`glue.core.component_id.ComponentID` objects
+        The ComponentIDs of the `center` of the extended region. These do not
+        have to be the literal center of the region, but they must be in the x (and y)
+        coordinates of the regions. These ComponentIDs are used in the linking
+        framework to allow an ExtendedComponent to be linked to other components.
+    units : `str`, optional
+        Unit description.
+
+    Attributes
+    ----------
+    x : ComponentID
+        The ComponentID of the x coordinate at the center of the extended region.
+    y : ComponentID
+        The ComponentID of the y coordinate at the center of the extended region.
+
+    Raises
+    ------
+    TypeError
+        If data is not a list of ``shapely.Geometry`` objects
+    ValueError
+        If center_comp_ids is not a list of length 1 or 2
+    """
+    def __init__(self, data, center_comp_ids, units=None):
+        if not all(isinstance(s, shapely.Geometry) for s in data):
+            raise TypeError(
+                "Input data for a ExtendedComponent should be a list of shapely.Geometry objects"
+            )
+        if len(center_comp_ids) == 2:
+            self.x = center_comp_ids[0]
+            self.y = center_comp_ids[1]
+        elif len(center_comp_ids) == 1:
+            self.x = center_comp_ids[0]
+            self.y = None
+        else:
+            raise ValueError(
+                "ExtendedComponent must be initialized with one or two ComponentIDs"
+            )
+        self.units = units
+        self._data = data
+
+    @property
+    def extended(self):
+        return True
+
+    @property
+    def numeric(self):
+        return False
+
+    @property
+    def datetime(self):
+        return False
+
+    @property
+    def categorical(self):
         return False
