@@ -328,7 +328,31 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             log = getattr(self, 'log', None) or False
             display_units = getattr(self, 'display_units', None) or None
 
-        print('display_units', repr(display_units))
+        previous_units = getattr(self, '_previous_units', '') or ''
+
+        self._previous_units = display_units
+
+        if set(properties) == {'display_units'}:
+
+            converter = UnitConverter()
+
+            current_limits = np.hstack([self.lower, self.upper])
+
+            if previous_units == '':
+                limits_native = current_limits
+            else:
+                limits_native = converter.to_native(self.data,
+                                                    self.component_id,
+                                                    current_limits,
+                                                    previous_units)
+
+            lower, upper = converter.to_unit(self.data,
+                                             self.component_id,
+                                             limits_native,
+                                             display_units)
+
+            self.set(lower=lower, upper=upper)
+            return
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
 
