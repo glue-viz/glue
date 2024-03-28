@@ -13,6 +13,7 @@ from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
+from glue.core.units import find_unit_choices
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 
@@ -490,6 +491,7 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     attribute = DDSCProperty(docstring='The attribute shown in the layer')
     v_min = DDCProperty(docstring='The lower level shown')
     v_max = DDCProperty(docstring='The upper level shown')
+    attribute_display_unit = DDSCProperty(docstring='The units to use to define the levels')
     percentile = DDSCProperty(docstring='The percentile value used to '
                                         'automatically calculate levels')
     contrast = DDCProperty(1, docstring='The contrast of the layer')
@@ -508,7 +510,8 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
         self.attribute_lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
                                                                percentile='percentile',
-                                                               lower='v_min', upper='v_max')
+                                                               lower='v_min', upper='v_max',
+                                                               display_units='attribute_display_unit')
 
         self.attribute_att_helper = ComponentIDComboHelper(self, 'attribute',
                                                            numeric=True, categorical=False)
@@ -524,6 +527,19 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
         ImageLayerState.percentile.set_display_func(self, percentile_display.get)
 
         self.setup_stretch_callback()
+
+        def format_unit(unit):
+            if unit is None:
+                return 'Native units'
+            else:
+                return unit
+
+        ImageLayerState.attribute_display_unit.set_display_func(self, format_unit)
+
+        self.add_callback('attribute', self._update_attribute_display_unit_choices)
+        # self.add_callback('attribute_display_unit', self._convert_attribute_limits_units, echo_old=True)
+
+        self._update_attribute_display_unit_choices()
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
@@ -576,6 +592,20 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
         with delay_callback(self, 'contrast', 'bias'):
             self.contrast = 1
             self.bias = 0.5
+
+    def _update_attribute_display_unit_choices(self, *args):
+
+        if self.layer is None or self.attribute is None:
+            ImageLayerState.attribute_display_unit.set_choices(self, [])
+            return
+
+        component = self.layer.get_component(self.attribute)
+        if component.units:
+            c_choices = find_unit_choices([(self.layer, self.attribute, component.units)])
+        else:
+            c_choices = ['']
+        ImageLayerState.attribute_display_unit.set_choices(self, c_choices)
+        self.attribute_display_unit = component.units
 
 
 class ImageSubsetLayerState(BaseImageLayerState):

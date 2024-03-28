@@ -21,6 +21,7 @@ from glue.core.message import (ComponentsChangedMessage,
                                PixelAlignedDataChangedMessage)
 from glue.viewers.image.frb_artist import imshow
 from glue.core.fixed_resolution_buffer import ARRAY_CACHE, PIXEL_CACHE
+from glue.core.units import UnitConverter
 
 
 class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
@@ -160,8 +161,18 @@ class ImageLayerArtist(BaseImageLayerArtist):
         else:
             self.composite.mode = 'color'
 
+        # As the levels may be specified in a different unit we should convert
+        # them to the native data units.
+
+        converter = UnitConverter()
+
+        clim = tuple(converter.to_native(self.state.layer,
+                                         self.state.attribute,
+                                         np.hstack([self.state.v_min, self.state.v_max]),
+                                         self.state.attribute_display_unit))
+
         self.composite.set(self.uuid,
-                           clim=(self.state.v_min, self.state.v_max),
+                           clim=clim,
                            visible=self.state.visible,
                            zorder=self.state.zorder,
                            color=self.state.color,

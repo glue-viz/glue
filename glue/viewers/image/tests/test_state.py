@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_allclose
 
 from glue.core import Data, DataCollection
 from glue.core.coordinates import Coordinates, IdentityCoordinates
@@ -370,3 +370,51 @@ def test_update_x_att_and_y_att():
     viewer_state.reference_data = data2
     assert viewer_state.x_att is data2.pixel_component_ids[2]
     assert viewer_state.y_att is data2.pixel_component_ids[1]
+
+
+def test_attribute_units():
+
+    # Unit test to make sure that the unit conversion works correctly for
+    # v_min/v_max.
+
+    viewer_state = ImageViewerState()
+
+    data1 = Data(x=np.arange(100).reshape((10, 10)))
+    data1.get_component('x').units = 'km'
+
+    layer_state1 = ImageLayerState(layer=data1, viewer_state=viewer_state)
+    viewer_state.layers.append(layer_state1)
+
+    assert layer_state1.percentile == 100
+    assert layer_state1.v_min == 0
+    assert layer_state1.v_max == 99
+
+    layer_state1.attribute_display_unit = 'm'
+
+    assert layer_state1.v_min == 0
+    assert layer_state1.v_max == 99000
+
+    assert layer_state1.percentile == 100
+
+    layer_state1.percentile = 95
+
+    assert_allclose(layer_state1.v_min, 2475)
+    assert_allclose(layer_state1.v_max, 96525)
+
+    assert layer_state1.percentile == 95
+
+    layer_state1.attribute_display_unit = 'km'
+
+    assert_allclose(layer_state1.v_min, 2.475)
+    assert_allclose(layer_state1.v_max, 96.525)
+
+    layer_state1.attribute_display_unit = 'm'
+
+    layer_state1.v_max = 50000
+
+    assert layer_state1.percentile == 'Custom'
+
+    layer_state1.attribute_display_unit = 'km'
+
+    assert_allclose(layer_state1.v_min, 2.475)
+    assert_allclose(layer_state1.v_max, 50)
