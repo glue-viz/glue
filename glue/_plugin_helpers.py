@@ -16,6 +16,19 @@ else:
     from importlib_metadata import entry_points
 
 
+REQUIRED_PLUGINS = ['glue.plugins.coordinate_helpers',
+                    'glue.core.data_exporters',
+                    'glue.io.formats.fits']
+
+
+REQUIRED_PLUGINS_QT = ['glue_qt.plugins.tools.pv_slicer',
+                       'glue_qt.viewers.image',
+                       'glue_qt.viewers.scatter',
+                       'glue_qt.viewers.histogram',
+                       'glue_qt.viewers.profile',
+                       'glue_qt.viewers.table']
+
+
 def iter_plugin_entry_points():
     return iter(entry_points(group='glue.plugins'))
 

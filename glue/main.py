@@ -3,25 +3,29 @@
 from importlib import import_module
 
 from glue.logger import logger
+from glue._plugin_helpers import REQUIRED_PLUGINS, REQUIRED_PLUGINS_QT
 
 
 _loaded_plugins = set()
 _installed_plugins = set()
 
-REQUIRED_PLUGINS = ['glue.plugins.coordinate_helpers',
-                    'glue.core.data_exporters',
-                    'glue.io.formats.fits']
 
+def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
+    """
 
-REQUIRED_PLUGINS_QT = ['glue.plugins.tools.pv_slicer.qt',
-                       'glue.viewers.image.qt',
-                       'glue.viewers.scatter.qt',
-                       'glue.viewers.histogram.qt',
-                       'glue.viewers.profile.qt',
-                       'glue.viewers.table.qt']
+    Parameters
+    ----------
+    splash : default: None
+        instance of splash http rendering service
+    require_qt_plugins : boolean default: False
+        whether to use qt plugins defined in constant REQUIRED_PLUGINS_QT
+    plugins_to_use : list
+        desired valid plugin strings
 
+    Returns
+    -------
 
-def load_plugins(splash=None, require_qt_plugins=False):
+    """
 
     # Search for plugins installed via entry_points. Basically, any package can
     # define plugins for glue, and needs to define an entry point using the
@@ -45,17 +49,26 @@ def load_plugins(splash=None, require_qt_plugins=False):
     config = PluginConfig.load()
 
     n_plugins = len(list(iter_plugin_entry_points()))
+    if plugins_to_use is None:
+        if require_qt_plugins:
+            plugins_to_use = [*REQUIRED_PLUGINS, *REQUIRED_PLUGINS_QT]
+        else:
+            plugins_to_use = REQUIRED_PLUGINS
+    else:
+        n_plugins = len(plugins_to_use)
 
-    for iplugin, item in enumerate(iter_plugin_entry_points()):
-        if item.module not in _installed_plugins:
-            _installed_plugins.add(item.name)
+    for i_plugins, item in enumerate(list(iter_plugin_entry_points())):
+        if item.value.replace(':setup', '') in plugins_to_use:
+            if item.module not in _installed_plugins:
+                _installed_plugins.add(item.name)
 
-        if item.module in _loaded_plugins:
-            logger.info("Plugin {0} already loaded".format(item.name))
-            continue
+            if item.module in _loaded_plugins:
+                logger.info("Plugin {0} already loaded".format(item.name))
+                continue
 
-        if not config.plugins[item.name]:
-            continue
+            # loads all plugins, want to make this more customisable
+            if not config.plugins[item.name]:
+                continue
 
         # We don't use item.load() because that then checks requirements of all
         # the imported packages, which can lead to errors like this one that
@@ -68,7 +81,7 @@ def load_plugins(splash=None, require_qt_plugins=False):
         # old version of a package in the environment, but this can confuse
         # users as importing astropy directly would work (as setuptools then
         # doesn't do a stringent test of dependency versions). Often this kind
-        # of error can occur if there is a conda version of a package and and
+        # of error can occur if there is a conda version of a package and an
         # older pip version.
 
         try:
