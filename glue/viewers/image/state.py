@@ -1,8 +1,6 @@
 import uuid
 from collections import defaultdict
 
-import numpy as np
-
 from glue.core import BaseData
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -15,7 +13,7 @@ from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
-from glue.core.units import find_unit_choices, UnitConverter
+from glue.core.units import find_unit_choices
 
 __all__ = ['ImageViewerState', 'ImageLayerState', 'ImageSubsetLayerState', 'AggregateSlice']
 

@@ -372,7 +372,6 @@ def test_update_x_att_and_y_att():
     assert viewer_state.y_att is data2.pixel_component_ids[1]
 
 
-
 def test_attribute_units():
 
     # Unit test to make sure that the unit conversion works correctly for
