@@ -518,7 +518,8 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
+    def compute_histogram(self, cids, weights=None, range=None, bins=None,
+                          log=None, subset_state=None, random_subset=None):
         """
         Compute an n-dimensional histogram with regularly spaced bins.
 
@@ -537,6 +538,9 @@ class BaseCartesianData(BaseData, metaclass=abc.ABCMeta):
         subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the histogram will only take into account values in
             the subset state.
+        random_subset : `int`, optional
+            If specified, this should be an integer giving the number of values
+            to use for the statistic.
         """
         raise NotImplementedError()
 
@@ -1877,7 +1881,8 @@ class Data(BaseCartesianData):
             full_result[result_slices] = result
             return full_result
 
-    def compute_histogram(self, cids, weights=None, range=None, bins=None, log=None, subset_state=None):
+    def compute_histogram(self, cids, weights=None, range=None, bins=None,
+                          log=None, subset_state=None, random_subset=None):
         """
         Compute an n-dimensional histogram with regularly spaced bins.
 
@@ -1898,6 +1903,9 @@ class Data(BaseCartesianData):
         subset_state : :class:`~glue.core.subset.SubsetState`, optional
             If specified, the histogram will only take into account values in
             the subset state.
+        random_subset : `int`, optional
+            If specified, this should be an integer giving the number of values
+            to use for the statistic.
         """
 
         if len(cids) > 2:
@@ -1946,6 +1954,38 @@ class Data(BaseCartesianData):
                     w = w[da.asarray(mask)]
                 else:
                     w = w[mask]
+
+        # TODO: avoid duplication of the following code block with compute_statistic
+
+        if random_subset and x.size > random_subset:
+
+            original_size = x.size
+
+            if DASK_INSTALLED and isinstance(x, da.Array):
+                # We shouldn't cache _random_subset_indices_dask here because
+                # it might be different for different dask arrays
+                random_subset_indices_dask = (x.size, random_views_for_dask_array(x, random_subset, n_chunks=10))
+                x = da.hstack([x[slices].ravel() for slices in random_subset_indices_dask[1]])
+                if ndim > 1:
+                    y = da.hstack([y[slices].ravel() for slices in random_subset_indices_dask[1]])
+                if w is not None:
+                    w = da.hstack([w[slices].ravel() for slices in random_subset_indices_dask[1]])
+            else:
+                if not hasattr(self, '_random_subset_histogram_indices') or self._random_subset_histogram_indices[0] != x.size:
+                    self._random_subset_histogram_indices = (x.size, np.random.randint(0, x.size, random_subset))
+                x = x.ravel(order="K")[self._random_subset_histogram_indices[1]]
+                if ndim > 1:
+                    y = y.ravel(order="K")[self._random_subset_histogram_indices[1]]
+                if w is not None:
+                    w = w.ravel(order="K")[self._random_subset_histogram_indices[1]]
+
+            # Determine correction factor by which to scale the histogram so
+            # that it still has the right order of magnitude
+            correction = original_size / x.size
+
+        else:
+
+            correction = 1.
 
         if ndim == 1:
             xmin, xmax = range[0]
@@ -2020,10 +2060,10 @@ class Data(BaseCartesianData):
 
         if ndim == 1:
             range = (xmin, xmax)
-            return histogram1d(x, range=range, bins=bins[0], weights=w)
+            return histogram1d(x, range=range, bins=bins[0], weights=w) * correction
         elif ndim > 1:
             range = [(xmin, xmax), (ymin, ymax)]
-            return histogram2d(x, y, range=range, bins=bins, weights=w)
+            return histogram2d(x, y, range=range, bins=bins, weights=w) * correction
 
     def compute_fixed_resolution_buffer(self, *args, **kwargs):
         from .fixed_resolution_buffer import compute_fixed_resolution_buffer

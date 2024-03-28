@@ -42,6 +42,11 @@ class HistogramViewerState(MatplotlibDataViewerState):
 
     update_bins_on_reset_limits = DDCProperty(True, docstring="Whether to update the bins to match the view when resetting limits")
 
+    random_subset = DDCProperty(None, docstring='The maximum number of elements to use '
+                                                'when computing the histogram. If the data '
+                                                'is larger than this, a random subset of '
+                                                'the data will be used.')
+
     def __init__(self, **kwargs):
 
         super(HistogramViewerState, self).__init__()
@@ -260,7 +265,8 @@ class HistogramLayerState(MatplotlibLayerState):
                                              range=[range],
                                              bins=[self._viewer_state.hist_n_bin],
                                              log=[self._viewer_state.x_log],
-                                             subset_state=subset_state)
+                                             subset_state=subset_state,
+                                             random_subset=self._viewer_state.random_subset)
 
         # TODO: determine whether this belongs here or in the layer artist
         if isinstance(range[0], np.datetime64):

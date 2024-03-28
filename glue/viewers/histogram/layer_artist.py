@@ -167,7 +167,7 @@ class HistogramLayerArtist(MatplotlibLayerArtist):
         # of updated properties is up to date after this method has been called.
         changed = self.pop_changed_properties()
 
-        if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'x_log', 'y_log', 'normalize', 'cumulative')):
+        if force or any(prop in changed for prop in ('layer', 'x_att', 'hist_x_min', 'hist_x_max', 'hist_n_bin', 'x_log', 'y_log', 'normalize', 'cumulative', 'random_subset')):
             self._calculate_histogram(reset=force)
 
         if force or any(prop in changed for prop in ('alpha', 'color', 'zorder', 'visible')):
