@@ -10,7 +10,7 @@ _loaded_plugins = set()
 _installed_plugins = set()
 
 
-def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
+def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     """
 
     Parameters
@@ -19,7 +19,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
         instance of splash http rendering service
     require_qt_plugins : boolean default: False
         whether to use qt plugins defined in constant REQUIRED_PLUGINS_QT
-    plugins_to_use : list
+    plugins_to_load : list
         desired valid plugin strings
 
     Returns
@@ -48,17 +48,18 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
     from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
 
-    n_plugins = len(list(iter_plugin_entry_points()))
-    if plugins_to_use is None:
+    if plugins_to_load is None:
+        plugins_to_load = [i.value for i in list(iter_plugin_entry_points())]
         if require_qt_plugins:
-            plugins_to_use = [*REQUIRED_PLUGINS, *REQUIRED_PLUGINS_QT]
+            plugins_to_require = [*REQUIRED_PLUGINS, *REQUIRED_PLUGINS_QT]
         else:
-            plugins_to_use = REQUIRED_PLUGINS
+            plugins_to_require = REQUIRED_PLUGINS
     else:
-        n_plugins = len(plugins_to_use)
+        plugins_to_require = plugins_to_load
+    n_plugins = len(plugins_to_require)
 
     for i_plugin, item in enumerate(list(iter_plugin_entry_points())):
-        if item.value.replace(':setup', '') in plugins_to_use:
+        if item.value.replace(':setup', '') in plugins_to_load:
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
 
@@ -91,9 +92,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_use=None):
         except Exception as exc:
             # Here we check that some of the 'core' plugins load well and
             # raise an actual exception if not.
-            if item.module in REQUIRED_PLUGINS:
-                raise
-            elif item.module in REQUIRED_PLUGINS_QT and require_qt_plugins:
+            if item.module in plugins_to_require:
                 raise
             else:
                 logger.info("Loading plugin {0} failed "
