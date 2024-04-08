@@ -356,7 +356,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             self.set(lower=lower, upper=upper)
             return
 
-        if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
+        if percentile == 'Custom' or (not force and getattr(self, 'data', None) is None):
             self.set(percentile=percentile, log=log)
         else:
             # Shortcut if the component ID is a pixel component ID
@@ -416,8 +416,12 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
         self.set(lower=self.upper, upper=self.lower)
 
     def set_slice(self, slices):
+        """Set subset for compute_statistic to current slice or global"""
+
         self.set(subset_state=None if slices is None else SliceSubsetState(self.data, slices))
-        self.update_values(force=True)
+        # Force update if percentile not set to 'Custom'.
+        if isinstance(self.percentile, (int, float)):
+            self.update_values(force=True)
 
 
 class StateAttributeSingleValueHelper(StateAttributeCacheHelper):

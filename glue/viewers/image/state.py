@@ -9,7 +9,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.utils import defer_draw, view_shape
-from echo import callback_property, delay_callback
+from echo import delay_callback
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.core.exceptions import IncompatibleDataException
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
@@ -587,49 +587,25 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
     def _set_global_limits(self, global_limits=True):
         if global_limits:
-            self.remove_callback('slice_subset_state', self._update_slice_subset)
+            self.viewer_state.remove_callback('slices', self._update_slice_subset)
             self.attribute_lim_helper.set_slice(None)
         else:
-            self.add_callback('slice_subset_state', self._update_slice_subset)
-            slices = [slice(s) if s is None else s for s in self.slice_subset_state]
-            self.attribute_lim_helper.set_slice(slices)
+            self.viewer_state.add_callback('slices', self._update_slice_subset)
+            self.attribute_lim_helper.set_slice(self.viewer_state.numpy_slice_aggregation_transpose[0])
 
-    def _update_slice_subset(self, slice_subset_state):
+    def _update_slice_subset(self, slices):
         """
         Select a subset slice for determining image levels.
 
         Parameters
         ----------
-        slice_subset_state : iterable of :class:`slice` or `None`
+        slices : iterable of :class:`slice` or `None`
             An iterable containing :class:`slice` objects that can instantiate
             a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
-            with the shape of `self.data`; `None` to unslice.
+            with the shape of `self.data`; `None` to unslice
+            - will be used via helper property.
         """
-        slices = [slice(s) if s is None else s for s in slice_subset_state]
-        self.attribute_lim_helper.set_slice(slices)
-
-    @callback_property
-    def slice_subset_state(self):
-        """
-        Returns slicing information usable by :class:`~glue.core.subset.SliceSubsetState`.
-
-        slice_subset_state = DDCProperty(docstring='Slices iterable describing the current '
-                                               'slice along all dimensions as subset')
-        """
-        # Need a safety check here if self.viewer_state is already fully initialised.
-        if self.viewer_state.reference_data is None or self.viewer_state.x_att is None:
-            return None
-        else:
-            slices = []
-            for i in range(self.viewer_state.reference_data.ndim):
-                if i == self.viewer_state.x_att.axis or i == self.viewer_state.y_att.axis:
-                    slices.append(None)
-                else:
-                    if isinstance(self.viewer_state.slices[i], AggregateSlice):
-                        slices.append(self.viewer_state.slices[i].slice)
-                    else:
-                        slices.append(self.viewer_state.slices[i])
-            return slices  # self.viewer_state.numpy_slice_aggregation_transpose[0]
+        self.attribute_lim_helper.set_slice(self.viewer_state.numpy_slice_aggregation_transpose[0])
 
     def flip_limits(self):
         """
