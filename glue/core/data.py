@@ -29,7 +29,8 @@ from glue.core.joins import get_mask_with_key_joins
 from glue.config import settings, data_translator, subset_state_translator
 from glue.utils import (compute_statistic, unbroadcast, iterate_chunks,
                         datetime64_to_mpl, categorical_ndarray,
-                        format_choices, random_views_for_dask_array)
+                        format_choices, random_views_for_dask_array,
+                        random_indices_for_array)
 from glue.core.coordinate_helpers import axis_label
 
 
@@ -1849,11 +1850,11 @@ class Data(BaseCartesianData):
                 if mask is not None:
                     mask = da.hstack([mask[slices].ravel() for slices in random_subset_indices_dask[1]])
             else:
-                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.size:
-                    self._random_subset_indices = (data.size, np.random.randint(0, data.size, random_subset))
-                data = data.ravel(order="K")[self._random_subset_indices[1]]
+                if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.shape:
+                    self._random_subset_indices = (data.shape, random_indices_for_array(data, random_subset))
+                data = data[*self._random_subset_indices[1]]
                 if mask is not None:
-                    mask = mask.ravel(order="K")[self._random_subset_indices[1]]
+                    mask = mask[*self._random_subset_indices[1]]
 
         result = compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                    positive=positive, percentile=percentile)
@@ -1971,13 +1972,13 @@ class Data(BaseCartesianData):
                 if w is not None:
                     w = da.hstack([w[slices].ravel() for slices in random_subset_indices_dask[1]])
             else:
-                if not hasattr(self, '_random_subset_histogram_indices') or self._random_subset_histogram_indices[0] != x.size:
-                    self._random_subset_histogram_indices = (x.size, np.random.randint(0, x.size, random_subset))
-                x = x.ravel(order="K")[self._random_subset_histogram_indices[1]]
+                if not hasattr(self, '_random_subset_histogram_indices') or self._random_subset_histogram_indices[0] != x.shape:
+                    self._random_subset_histogram_indices = (x.shape, random_indices_for_array(x, random_subset))
+                x = x[*self._random_subset_histogram_indices[1]]
                 if ndim > 1:
-                    y = y.ravel(order="K")[self._random_subset_histogram_indices[1]]
+                    y = y[*self._random_subset_histogram_indices[1]]
                 if w is not None:
-                    w = w.ravel(order="K")[self._random_subset_histogram_indices[1]]
+                    w = w[*self._random_subset_histogram_indices[1]]
 
             # Determine correction factor by which to scale the histogram so
             # that it still has the right order of magnitude
