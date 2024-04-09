@@ -1852,9 +1852,9 @@ class Data(BaseCartesianData):
             else:
                 if not hasattr(self, '_random_subset_indices') or self._random_subset_indices[0] != data.shape:
                     self._random_subset_indices = (data.shape, random_indices_for_array(data, random_subset))
-                data = data[*self._random_subset_indices[1]]
+                data = data[self._random_subset_indices[1]]
                 if mask is not None:
-                    mask = mask[*self._random_subset_indices[1]]
+                    mask = mask[self._random_subset_indices[1]]
 
         result = compute_statistic(statistic, data, mask=mask, axis=axis, finite=finite,
                                    positive=positive, percentile=percentile)
@@ -1974,11 +1974,11 @@ class Data(BaseCartesianData):
             else:
                 if not hasattr(self, '_random_subset_histogram_indices') or self._random_subset_histogram_indices[0] != x.shape:
                     self._random_subset_histogram_indices = (x.shape, random_indices_for_array(x, random_subset))
-                x = x[*self._random_subset_histogram_indices[1]]
+                x = x[self._random_subset_histogram_indices[1]]
                 if ndim > 1:
-                    y = y[*self._random_subset_histogram_indices[1]]
+                    y = y[self._random_subset_histogram_indices[1]]
                 if w is not None:
-                    w = w[*self._random_subset_histogram_indices[1]]
+                    w = w[self._random_subset_histogram_indices[1]]
 
             # Determine correction factor by which to scale the histogram so
             # that it still has the right order of magnitude
