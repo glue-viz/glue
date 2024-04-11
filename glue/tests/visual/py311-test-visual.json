@@ -5,5 +5,7 @@
   "glue.viewers.image.tests.test_viewer.test_region_layer_flip": "a142142f34961aba7e98188ad43abafe0e6e5b82e13e8cdab5131d297ed5832c",
   "glue.viewers.profile.tests.test_viewer.test_simple_viewer": "f68a21be5080fec513388b2d2b220512e7b0df5498e2489da54e58708de435b3",
   "glue.viewers.scatter.tests.test_viewer.test_simple_viewer": "1020a7bd3abe40510b9e03047c3b423b75c3c64ac18e6dcd6257173cec1ed53f",
-  "glue.viewers.scatter.tests.test_viewer.test_scatter_density_map": "3379d655262769a6ccbdbaf1970bffa9237adbec23a93d3ab75da51b9a3e7f8b"
+  "glue.viewers.scatter.tests.test_viewer.test_scatter_density_map": "3379d655262769a6ccbdbaf1970bffa9237adbec23a93d3ab75da51b9a3e7f8b",
+  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_wcs_viewer": "651e0d954c6b77becb7064de24f5101b9f2882adabc1d5aedbc183b9762c59b1",
+  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_flipped_wcs_viewer": "fcc18a1398d1f3f61b6989a722402cde9365a34483eedf8eac222647e20eb8ab"
 }
