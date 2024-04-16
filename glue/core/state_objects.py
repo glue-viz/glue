@@ -332,11 +332,9 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
         self._previous_units = display_units
 
-        if (
-                set(properties) == {'display_units'} and
+        if (set(properties) == {'display_units'} and
                 self.lower is not None and
-                self.upper is not None
-            ):
+                self.upper is not None):
 
             converter = UnitConverter()
 
