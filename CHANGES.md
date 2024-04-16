@@ -1,5 +1,27 @@
 # Full changelog
 
+## v1.19.0 - 2024-04-16
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Adds custom list of plugins to be passed on load by @CyclingNinja in https://github.com/glue-viz/glue/pull/2481
+* Add the ability to specify a random subset size for computing histogram by @astrofrog in https://github.com/glue-viz/glue/pull/2478
+* Implement support for unit conversion in attribute limits in image viewer by @astrofrog in https://github.com/glue-viz/glue/pull/2480
+* Allow serializing and deserializing named astropy units by @Carifio24 in https://github.com/glue-viz/glue/pull/2475
+
+#### Other Changes
+
+* Fix the logic for region display when exchanging x/y world coordinates by @jfoster17 in https://github.com/glue-viz/glue/pull/2479
+
+### New Contributors
+
+* @CyclingNinja made their first contribution in https://github.com/glue-viz/glue/pull/2481
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.18.0...v1.19.0
+
 ## v1.18.0 - 2024-03-26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
