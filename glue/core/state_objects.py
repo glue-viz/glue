@@ -10,6 +10,7 @@ from echo import (delay_callback, CallbackProperty,
 from glue.core.state import saver, loader
 from glue.core.component_id import PixelComponentID
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.units import UnitConverter
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper', 'StateAttributeHistogramHelper']
@@ -273,6 +274,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     log : bool
         Whether the limits are in log mode (in which case only positive values
         are used when finding the limits)
+    units : str, optional
+        The units to compute the limits in.
 
     Notes
     -----
@@ -288,7 +291,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     """
 
     values_names = ('lower', 'upper')
-    modifiers_names = ('log', 'percentile')
+    modifiers_names = ('log', 'percentile', 'display_units')
 
     def __init__(self, state, attribute, random_subset=10000, margin=0, **kwargs):
 
@@ -312,16 +315,44 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
     def update_values(self, force=False, use_default_modifiers=False, **properties):
 
-        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log')):
+        if not force and not any(prop in properties for prop in ('attribute', 'percentile', 'log', 'display_units')):
             self.set(percentile='Custom')
             return
 
         if use_default_modifiers:
             percentile = 100
             log = False
+            display_units = None
         else:
             percentile = getattr(self, 'percentile', None) or 100
             log = getattr(self, 'log', None) or False
+            display_units = getattr(self, 'display_units', None) or None
+
+        previous_units = getattr(self, '_previous_units', '') or ''
+
+        self._previous_units = display_units
+
+        if set(properties) == {'display_units'}:
+
+            converter = UnitConverter()
+
+            current_limits = np.hstack([self.lower, self.upper])
+
+            if previous_units == '':
+                limits_native = current_limits
+            else:
+                limits_native = converter.to_native(self.data,
+                                                    self.component_id,
+                                                    current_limits,
+                                                    previous_units)
+
+            lower, upper = converter.to_unit(self.data,
+                                             self.component_id,
+                                             limits_native,
+                                             display_units)
+
+            self.set(lower=lower, upper=upper)
+            return
 
         if not force and (percentile == 'Custom' or not hasattr(self, 'data') or self.data is None):
 
@@ -360,6 +391,13 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
                 if self.data.get_kind(self.component_id) == 'categorical':
                     lower = np.floor(lower - 0.5) + 0.5
                     upper = np.ceil(upper + 0.5) - 0.5
+
+                if display_units:
+                    limits = np.hstack([lower, upper])
+                    converter = UnitConverter()
+                    lower, upper = converter.to_unit(self.data, self.component_id,
+                                                     np.hstack([lower, upper]),
+                                                     display_units)
 
                 if log:
                     value_range = np.log10(upper / lower)
