@@ -164,7 +164,7 @@ class Component(object):
         if data.dtype.kind == 'M':
             return DateTimeComponent(data)
 
-        n = coerce_numeric(data.ravel()).reshape(data.shape)
+        n = coerce_numeric(data)
 
         thresh = 0.5
         try:

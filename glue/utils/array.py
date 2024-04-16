@@ -12,7 +12,8 @@ __all__ = ['unique', 'shape_to_string', 'view_shape', 'stack_view',
            'coerce_numeric', 'check_sorted', 'unbroadcast',
            'iterate_chunks', 'combine_slices', 'format_minimal', 'compute_statistic',
            'categorical_ndarray', 'index_lookup', 'ensure_numerical',
-           'broadcast_arrays_minimal', 'random_views_for_dask_array']
+           'broadcast_arrays_minimal', 'random_views_for_dask_array',
+           'random_indices_for_array']
 
 
 def unbroadcast(array):
@@ -150,10 +151,8 @@ def coerce_numeric(arr):
         return arr.astype(int)
 
     # a string dtype, or anything else
-    try:
-        return pd.to_numeric(arr, errors='coerce')
-    except AttributeError:  # pandas < 0.19
-        return pd.Series(arr).convert_objects(convert_numeric=True).values
+    original_shape = arr.shape
+    return pd.to_numeric(arr.reshape((arr.size)), errors='coerce').reshape(original_shape)
 
 
 def check_sorted(array):
@@ -632,3 +631,11 @@ def random_views_for_dask_array(array, n_random_samples, n_chunks):
         all_slices.append(tuple(slices))
 
     return all_slices
+
+
+def random_indices_for_array(array, n_random_samples):
+    """
+    Return a tuple of arrays that can be used to index the input
+    array to obtain a random sample of values.
+    """
+    return tuple(np.random.randint(0, size, n_random_samples) for size in array.shape)
