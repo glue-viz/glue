@@ -89,11 +89,11 @@ class TestFixedResolutionBuffer():
         # Bounds are outside data along some dimensions
         ([(-5, 9, 15), (3, 5, 3), (0, 9, 10), (5, 6, 2)],
             np.pad(ARRAY[:, 3:6, :, 5:7], [(5, 4), (0, 0), (0, 2), (0, 0)],
-                   mode='constant', constant_values=-np.inf)),
+                   mode='constant', constant_values=np.nan)),
 
         # No overlap
         ([(2, 3, 2), (3, 3, 1), (-5, -4, 2), (0, 7, 8)],
-            -np.inf * np.ones((2, 1, 2, 8)))
+            np.nan * np.ones((2, 1, 2, 8)))
 
     ]
 
@@ -137,22 +137,22 @@ def test_base_cartesian_data():
                                                  target_data=data1,
                                                  bounds=[(-1, 1, 3), (0, 3, 4), 1],
                                                  target_cid=data1.main_components[0]),
-                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
+                 np.array([[np.nan, np.nan, np.nan, np.nan],
                            [1, 4, 7, 10],
-                           [-np.inf, -np.inf, -np.inf, -np.inf]]))
+                           [np.nan, np.nan, np.nan, np.nan]]))
 
     assert_equal(compute_fixed_resolution_buffer(data2,
                                                  target_data=data2,
                                                  bounds=[(-1, 1, 3), (0, 3, 4), 1],
                                                  target_cid=data2.main_components[0]),
-                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
+                 np.array([[np.nan, np.nan, np.nan, np.nan],
                            [1, 4, 7, 10],
-                           [-np.inf, -np.inf, -np.inf, -np.inf]]))
+                           [np.nan, np.nan, np.nan, np.nan]]))
 
     assert_equal(compute_fixed_resolution_buffer(data1,
                                                  target_data=data2,
                                                  bounds=[(-1, 1, 3), (0, 3, 4), 1],
                                                  target_cid=data1.main_components[0]),
-                 np.array([[-np.inf, -np.inf, -np.inf, -np.inf],
-                           [-np.inf, 2, 5, 8],
-                           [-np.inf, -np.inf, -np.inf, -np.inf]]))
+                 np.array([[np.nan, np.nan, np.nan, np.nan],
+                           [np.nan, 2, 5, 8],
+                           [np.nan, np.nan, np.nan, np.nan]]))
