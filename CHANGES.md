@@ -1,5 +1,20 @@
 # Full changelog
 
+## v1.20.0 - 2024-04-17
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Allow transparent regions in composite images when out of bounds by @bmorris3 in https://github.com/glue-viz/glue/pull/2482
+
+#### Bug Fixes
+
+* Compatibility and tests against Numpy 2.0.0rc1 by @dhomeier in https://github.com/glue-viz/glue/pull/2471
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.19.1...v1.20.0
+
 ## v1.19.1 - 2024-04-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
