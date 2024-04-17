@@ -536,8 +536,7 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
         ImageLayerState.attribute_display_unit.set_display_func(self, format_unit)
 
-        self.add_callback('attribute', self._update_attribute_display_unit_choices)
-        # self.add_callback('attribute_display_unit', self._convert_attribute_limits_units, echo_old=True)
+        self.add_callback('attribute', self._update_attribute_display_unit_choices, priority=10000)
 
         self._update_attribute_display_unit_choices()
 
