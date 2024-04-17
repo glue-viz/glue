@@ -504,6 +504,8 @@ class categorical_ndarray(np.ndarray):
 
     def __new__(cls, value, dtype=None, copy=True, order=None, subok=False,
                 ndmin=0, categories=None):
+        if not copy and np.lib.NumpyVersion(np.__version__) >= "2.0.0rc1":
+            copy = None
         result = np.array(value, dtype=dtype, copy=copy, order=order,
                           subok=True, ndmin=ndmin).view(categorical_ndarray)
         if categories is not None:

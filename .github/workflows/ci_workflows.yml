@@ -30,7 +30,7 @@ jobs:
         - linux: py39-test
         - linux: py310-test-all
         - linux: py311-test
-        - linux: py311-test-all
+        - linux: py312-test-all
 
         # Documentation build
         - linux: py38-docs
@@ -43,14 +43,21 @@ jobs:
         - macos: py39-test
         - macos: py310-test-all
         - macos: py311-test
+        - macos: py312-test-all
 
         # Test some configurations on Windows
         - windows: py38-test
-        - windows: py310-test
+        - windows: py39-test
 
         # Test against latest developer versions of some packages
         - linux: py310-test-dev-all
         - linux: py311-test-dev
+        - linux: py312-test-dev-all
+
+        - macos: py311-test-dev-all
+        - macos: py312-test-dev
+
+        - windows: py310-test-dev
 
   publish:
     needs: tests
