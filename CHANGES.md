@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.19.1 - 2024-04-17
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix bugs with attribute display units by @astrofrog in https://github.com/glue-viz/glue/pull/2484
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.19.0...v1.19.1
+
 ## v1.19.0 - 2024-04-16
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
