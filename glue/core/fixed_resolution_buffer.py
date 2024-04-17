@@ -261,7 +261,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         # Take subset_state into account, if present
         if subset_state is None:
             array = data.get_data(target_cid, view=subregion).astype(float)
-            invalid_value = -np.inf
+            invalid_value = np.nan
         else:
             array = data.get_mask(subset_state, view=subregion)
             invalid_value = False
@@ -275,7 +275,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         # Take subset_state into account, if present
         if subset_state is None:
             array = data.get_data(target_cid, view=translated_coords).astype(float)
-            invalid_value = -np.inf
+            invalid_value = np.nan
         else:
             array = data.get_mask(subset_state, view=translated_coords)
             invalid_value = False
