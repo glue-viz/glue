@@ -47,14 +47,17 @@ jobs:
 
         # Test some configurations on Windows
         - windows: py38-test
-        - windows: py310-test
-        - windows: py311-test
-        - windows: py312-test
+        - windows: py39-test
 
         # Test against latest developer versions of some packages
         - linux: py310-test-dev-all
         - linux: py311-test-dev
         - linux: py312-test-dev-all
+
+        - macos: py311-test-dev-all
+        - macos: py312-test-dev
+
+        - windows: py310-test-dev
 
   publish:
     needs: tests
