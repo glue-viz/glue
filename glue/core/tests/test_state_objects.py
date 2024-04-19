@@ -182,6 +182,28 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.upper == 234
         assert self.helper.log
 
+    def test_set_slice(self):
+
+        # Set subset to compute limits from slice
+        self.helper.set_slice([slice(2000, 8000)])
+
+        assert self.helper.percentile == 100
+
+        assert_allclose(self.helper.lower, -59.996)
+        assert_allclose(self.helper.upper, 59.996)
+
+        self.helper.percentile = 90
+
+        assert_allclose(self.helper.lower, -53.9964)
+        assert_allclose(self.helper.upper, 53.9964)
+
+        self.helper.set_slice(None)
+
+        self.helper.percentile = 95
+
+        assert_allclose(self.helper.lower, -95)
+        assert_allclose(self.helper.upper, 95)
+
 
 class TestStateAttributeSingleValueHelper():
 

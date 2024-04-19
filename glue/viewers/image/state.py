@@ -492,8 +492,8 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     v_min = DDCProperty(docstring='The lower level shown')
     v_max = DDCProperty(docstring='The upper level shown')
     attribute_display_unit = DDSCProperty(docstring='The units to use to define the levels')
-    percentile = DDSCProperty(docstring='The percentile value used to '
-                                        'automatically calculate levels')
+    percentile = DDSCProperty(docstring='The percentile value used to automatically '
+                                        'calculate levels; "Custom" for manually set levels')
     contrast = DDCProperty(1, docstring='The contrast of the layer')
     bias = DDCProperty(0.5, docstring='A constant value that is added to the '
                                       'layer before rendering')
@@ -501,6 +501,9 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     global_sync = DDCProperty(False, docstring='Whether the color and transparency '
                                                'should be synced with the global '
                                                'color and transparency for the data')
+    stretch_global = DDCProperty(True, docstring='Calculate automatic levels for rendering '
+                                                 'stretch from the full data cube or only the '
+                                                 'current layer (slice)')
 
     def __init__(self, layer=None, viewer_state=None, **kwargs):
 
@@ -542,6 +545,7 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
         self.add_callback('global_sync', self._update_syncing)
         self.add_callback('layer', self._update_attribute)
+        self.add_callback('stretch_global', self._set_global_stretch, priority=0)
 
         self._update_syncing()
 
@@ -580,6 +584,28 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
     def _get_image(self, view=None):
         return self.layer[self.attribute, view]
+
+    def _set_global_stretch(self, stretch_global=True):
+        if stretch_global:
+            self.viewer_state.remove_callback('slices', self._update_slice_subset)
+            self.attribute_lim_helper.set_slice(None)
+        else:
+            self.viewer_state.add_callback('slices', self._update_slice_subset)
+            self.attribute_lim_helper.set_slice(self.viewer_state.numpy_slice_aggregation_transpose[0])
+
+    def _update_slice_subset(self, slices):
+        """
+        Select a subset slice for determining image levels.
+
+        Parameters
+        ----------
+        slices : iterable of :class:`slice` or `None`
+            An iterable containing :class:`slice` objects that can instantiate
+            a :class:`~glue.core.subset.SliceSubsetState` and has to be consistent
+            with the shape of `self.data`; `None` to unslice
+            - will be used via helper property.
+        """
+        self.attribute_lim_helper.set_slice(self.viewer_state.numpy_slice_aggregation_transpose[0])
 
     def flip_limits(self):
         """
