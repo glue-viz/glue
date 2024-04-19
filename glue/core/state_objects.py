@@ -292,7 +292,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     """
 
     values_names = ('lower', 'upper')
-    modifiers_names = ('log', 'percentile', 'display_units', 'subset_state')
+    modifiers_names = ('log', 'percentile', 'display_units')
 
     def __init__(self, state, attribute, random_subset=10000, margin=0, **kwargs):
 
@@ -300,7 +300,7 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
 
         self.margin = margin
         self.random_subset = random_subset
-        self.subset_state = None
+        self._subset_state = None
 
         if self.attribute is not None:
             if (self.lower is not None and self.upper is not None and getattr(self, 'percentile', None) is None):
@@ -371,20 +371,20 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
             if percentile == 100:
                 lower = self.data.compute_statistic('minimum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    subset_state=self.subset_state,
+                                                    subset_state=self._subset_state,
                                                     random_subset=self.random_subset)
                 upper = self.data.compute_statistic('maximum', cid=self.component_id,
                                                     finite=True, positive=log,
-                                                    subset_state=self.subset_state,
+                                                    subset_state=self._subset_state,
                                                     random_subset=self.random_subset)
             else:
                 lower = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=exclude, positive=log,
-                                                    subset_state=self.subset_state,
+                                                    subset_state=self._subset_state,
                                                     random_subset=self.random_subset)
                 upper = self.data.compute_statistic('percentile', cid=self.component_id,
                                                     percentile=100 - exclude, positive=log,
-                                                    subset_state=self.subset_state,
+                                                    subset_state=self._subset_state,
                                                     random_subset=self.random_subset)
 
             if not isinstance(lower, np.datetime64) and np.isnan(lower):
@@ -418,7 +418,8 @@ class StateAttributeLimitsHelper(StateAttributeCacheHelper):
     def set_slice(self, slices):
         """Set subset for compute_statistic to current slice or global"""
 
-        self.set(subset_state=None if slices is None else SliceSubsetState(self.data, slices))
+        self._subset_state = None if slices is None else SliceSubsetState(self.data, slices)
+
         # Force update if percentile not set to 'Custom'.
         if isinstance(self.percentile, (int, float)):
             self.update_values(force=True)

@@ -418,3 +418,43 @@ def test_attribute_units():
 
     assert_allclose(layer_state1.v_min, 2.475)
     assert_allclose(layer_state1.v_max, 50)
+
+
+def test_stretch_global():
+
+    # Test the option of using global vs per-slice stretch
+
+    viewer_state = ImageViewerState()
+
+    data1 = Data(x=np.arange(1000).reshape((10, 10, 10)))
+
+    layer_state = ImageLayerState(layer=data1, viewer_state=viewer_state)
+    viewer_state.layers.append(layer_state)
+
+    assert layer_state.stretch_global is True
+
+    assert layer_state.percentile == 100
+    assert layer_state.v_min == 0
+    assert layer_state.v_max == 999
+
+    assert viewer_state.slices == (0, 0, 0)
+
+    layer_state.stretch_global = False
+
+    assert layer_state.v_min == 0
+    assert layer_state.v_max == 99
+
+    viewer_state.slices = (9, 0, 0)
+
+    assert layer_state.v_min == 900
+    assert layer_state.v_max == 999
+
+    layer_state.percentile = 90
+
+    assert layer_state.v_min == 904.95
+    assert layer_state.v_max == 994.05
+
+    layer_state.stretch_global = True
+
+    assert layer_state.v_min == 49.95
+    assert layer_state.v_max == 949.05

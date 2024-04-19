@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 from echo import CallbackProperty, ListCallbackProperty
 from glue.core import Data, DataCollection
-from glue.core.subset import SliceSubsetState
 
 from .test_state import clone
 from ..state_objects import (State, StateAttributeLimitsHelper,
@@ -95,13 +94,11 @@ class TestStateAttributeLimitsHelper():
             upper = CallbackProperty()
             log = CallbackProperty(False)
             scale = CallbackProperty(100)
-            subset_state = CallbackProperty()
 
         self.state = SimpleState()
 
         self.helper = StateAttributeLimitsHelper(self.state, attribute='comp',
                                                  lower='lower', upper='upper',
-                                                 subset_state='subset_state',
                                                  percentile='scale', log='log')
         self.state.data = self.data
         self.state.comp = self.data.id['x']
@@ -185,31 +182,25 @@ class TestStateAttributeLimitsHelper():
         assert self.helper.upper == 234
         assert self.helper.log
 
-    def test_subset(self):
-
-        # Directly set subset to compute limits from
-        assert self.helper.percentile == 100
-        self.helper.subset_state = SliceSubsetState(self.helper.data, [slice(6000)])
-        assert_allclose(self.helper.lower, -100)
-        assert_allclose(self.helper.upper, 19.992)
-        self.helper.percentile = 90
-        assert_allclose(self.helper.lower, -94.0004)
-        assert_allclose(self.helper.upper, 13.9924)
-
-    def test_slice(self):
+    def test_set_slice(self):
 
         # Set subset to compute limits from slice
         self.helper.set_slice([slice(2000, 8000)])
+
         assert self.helper.percentile == 100
-        assert self.helper.subset_state.slices == [slice(2000, 8000)]
+
         assert_allclose(self.helper.lower, -59.996)
         assert_allclose(self.helper.upper, 59.996)
+
         self.helper.percentile = 90
+
         assert_allclose(self.helper.lower, -53.9964)
         assert_allclose(self.helper.upper, 53.9964)
 
         self.helper.set_slice(None)
+
         self.helper.percentile = 95
+
         assert_allclose(self.helper.lower, -95)
         assert_allclose(self.helper.upper, 95)
 
