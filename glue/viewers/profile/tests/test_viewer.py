@@ -165,3 +165,9 @@ def test_unit_conversion():
     assert_allclose(viewer.state.x_max, (0.5 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
     assert_allclose(viewer.state.y_min, 0.5)
     assert_allclose(viewer.state.y_max, 3.5)
+
+    # Regression test for a bug that caused unit changes to not work on y axis
+    # if reference data was not first layer
+
+    viewer.state.reference_data = d2
+    viewer.state.y_display_unit = 'mJy'
