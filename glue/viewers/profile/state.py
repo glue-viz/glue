@@ -146,7 +146,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
                                                 layer_state.attribute, limits,
                                                 old_unit)
 
-            limits_new = converter.to_unit(self.reference_data,
+            limits_new = converter.to_unit(data,
                                            layer_state.attribute, limits_native,
                                            new_unit)
 

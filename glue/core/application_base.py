@@ -54,6 +54,7 @@ class Application(HubListener):
 
         self._hub = self._session.hub
         self._cmds = self._session.command_stack
+
         self._cmds.add_callback(self._update_undo_redo_enabled)
 
         self._settings = {}
@@ -275,8 +276,8 @@ class Application(HubListener):
         except RuntimeError:
             pass
 
-    def _update_undo_redo_enabled(self):
-        raise NotImplementedError()
+    def _update_undo_redo_enabled(self, *args):
+        pass
 
     def add_datasets(self, *args, **kwargs):
         """
