@@ -1,5 +1,20 @@
 # Full changelog
 
+## v1.21.0 - 2024-04-26
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Allow setting slices or `subset_state` for determining min/max levels in `StateAttributeLimitsHelper` by @dhomeier in https://github.com/glue-viz/glue/pull/2476
+
+#### Bug Fixes
+
+* Fix bug that caused IncompatibleAttribute error when trying to change limits by @astrofrog in https://github.com/glue-viz/glue/pull/2486
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.20.0...v1.21.0
+
 ## v1.20.0 - 2024-04-17
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
