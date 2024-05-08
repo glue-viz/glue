@@ -6,7 +6,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from astropy.tests.helper import assert_quantity_allclose
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -249,10 +248,16 @@ def test_mixin_columns(tmp_path):
 
     assert len(d.main_components) == 6
 
-    assert_quantity_allclose(d['coords.ra'], [1, 2, 3] * u.deg)
-    assert_quantity_allclose(d['coords.dec'], [4, 5, 6] * u.deg)
-    assert_quantity_allclose(d['coords.distance'], [1, 1, 1])
+    assert_array_equal(d['coords.l'], [1, 2, 3])
+    assert d.get_component('coords.l').units == 'deg'
+    assert_array_equal(d['coords.b'], [4, 5, 6])
+    assert d.get_component('coords.b').units == 'deg'
+    assert_array_equal(d['coords.distance'], [1, 1, 1])
+    assert d.get_component('coords.distance').units == ''
 
-    assert_quantity_allclose(d['coords_with_distance.ra'], [1, 2, 3] * u.deg)
-    assert_quantity_allclose(d['coords_with_distance.dec'], [4, 5, 6] * u.deg)
-    assert_quantity_allclose(d['coords_with_distance.distance'], [7, 8, 9] * u.kpc)
+    assert_array_equal(d['coords_with_distance.ra'], [1, 2, 3])
+    assert d.get_component('coords_with_distance.ra').units == 'deg'
+    assert_array_equal(d['coords_with_distance.dec'], [4, 5, 6])
+    assert d.get_component('coords_with_distance.dec').units == 'deg'
+    assert_array_equal(d['coords_with_distance.distance'], [7, 8, 9])
+    assert d.get_component('coords_with_distance.distance').units == 'kpc'
