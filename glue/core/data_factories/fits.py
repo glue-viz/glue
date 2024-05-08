@@ -2,7 +2,7 @@ import gzip
 import warnings
 from os.path import basename
 from collections import OrderedDict
-
+from astropy.coordinates import SkyCoord
 from glue.core.coordinates import coordinates_from_header, WCSCoordinates
 from glue.core.data import Component, Data
 from glue.config import data_factory, cli_parser
@@ -151,9 +151,16 @@ def fits_reader(source, auto_merge=False, exclude_exts=None, label=None):
                     if column.ndim != 1:
                         warnings.warn("Dropping column '{0}' since it is not 1-dimensional".format(column_name))
                         continue
-                    component = Component.autotyped(column, units=column.unit)
-                    data.add_component(component=component,
-                                       label=column_name)
+                    if isinstance(column, SkyCoord):
+                        for attribute_name in column.get_representation_component_names():
+                            values = getattr(column, attribute_name)
+                            component = Component.autotyped(values, units=values.unit)
+                            data.add_component(component=component,
+                                               label=f"{column_name}.{attribute_name}")
+                    else:
+                        component = Component.autotyped(column, units=column.unit)
+                        data.add_component(component=component,
+                                           label=column_name)
 
     if close_hdulist:
         hdulist.close()
