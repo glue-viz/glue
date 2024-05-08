@@ -6,6 +6,10 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from astropy.table import Table
+from astropy.coordinates import SkyCoord
+from astropy import units as u
+
 from glue.core import data_factories as df
 
 from glue.tests.helpers import requires_astropy, make_file
@@ -229,3 +233,31 @@ def test_coordinate_component_units():
     assert d.get_component(wid[2]).units == 'deg'
     assert wid[3].label == 'Right Ascension'
     assert d.get_component(wid[3]).units == 'deg'
+
+
+@requires_astropy
+def test_mixin_columns(tmp_path):
+
+    t = Table()
+    t['coords'] = SkyCoord([1, 2, 3] * u.deg, [4, 5, 6] * u.deg, frame='galactic')
+    t['coords_with_distance'] = SkyCoord([1, 2, 3] * u.deg, [4, 5, 6] * u.deg, [7, 8, 9] * u.kpc, frame='fk5')
+
+    t.write(tmp_path / 'table.fits', format='fits')
+
+    d = fits_reader(tmp_path / 'table.fits')[0]
+
+    assert len(d.main_components) == 6
+
+    assert_array_equal(d['coords.l'], [1, 2, 3])
+    assert d.get_component('coords.l').units == 'deg'
+    assert_array_equal(d['coords.b'], [4, 5, 6])
+    assert d.get_component('coords.b').units == 'deg'
+    assert_array_equal(d['coords.distance'], [1, 1, 1])
+    assert d.get_component('coords.distance').units == ''
+
+    assert_array_equal(d['coords_with_distance.ra'], [1, 2, 3])
+    assert d.get_component('coords_with_distance.ra').units == 'deg'
+    assert_array_equal(d['coords_with_distance.dec'], [4, 5, 6])
+    assert d.get_component('coords_with_distance.dec').units == 'deg'
+    assert_array_equal(d['coords_with_distance.distance'], [7, 8, 9])
+    assert d.get_component('coords_with_distance.distance').units == 'kpc'
