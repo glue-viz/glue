@@ -49,7 +49,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     config = PluginConfig.load()
 
     if plugins_to_load is None:
-        plugins_to_load = [i.value for i in list(iter_plugin_entry_points())]
+        plugins_to_load = [i.module for i in list(iter_plugin_entry_points())]
         if require_qt_plugins:
             plugins_to_require = [*REQUIRED_PLUGINS, *REQUIRED_PLUGINS_QT]
         else:
@@ -59,7 +59,8 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     n_plugins = len(plugins_to_require)
 
     for i_plugin, item in enumerate(list(iter_plugin_entry_points())):
-        if item.value.replace(':setup', '') in plugins_to_load:
+
+        if item.module in plugins_to_load:
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
 
