@@ -246,6 +246,9 @@ class WCSLink(MultiLink):
 
         For now this will only work for datasets in which two pixel coordinates
         are linked.
+
+        The deviation to be compared to the tolerance is measured in the frame
+        of reference of the second dataset.
         """
 
         if len(self.cids1) != 2 or len(self.cids2) != 2:
@@ -277,11 +280,7 @@ class WCSLink(MultiLink):
             pixel1_tr = pixel1[0] - offsets[0], pixel1[1] - offsets[1]
             return np.hypot(pixel2[0] - pixel1_tr[0], pixel2[1] - pixel1_tr[1])
 
-        best, status = leastsq(transform_offset, (0, 0))
-
-        if status not in [1, 2, 3, 4]:
-            raise NoAffineApproximation(f'Could not find a good affine approximation to '
-                                        f'WCSLink with tolerance={tolerance}, as fitting failed')
+        best, _ = leastsq(transform_offset, (0, 0))
 
         max_deviation = np.max(transform_offset(best))
 
