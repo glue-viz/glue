@@ -591,3 +591,29 @@ def test_wcs_no_approximation():
 
     with pytest.raises(NoAffineApproximation):
         link.as_affine_link(tolerance=0.1)
+
+
+def test_no_wcs_overlap():
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = 'RA---TAN', 'DEC--TAN'
+    wcs1.wcs.crval = 10, 20
+    wcs1.wcs.set()
+
+    data1 = Data(label='Data 1')
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype = 'RA---TAN', 'DEC--TAN'
+    wcs2.wcs.crval = 190, -20
+    wcs2.wcs.set()
+
+    data2 = Data(label='Data 2')
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+
+    link = WCSLink(data1, data2)
+
+    with pytest.raises(NoAffineApproximation, match='no overlap'):
+        link.as_affine_link()
