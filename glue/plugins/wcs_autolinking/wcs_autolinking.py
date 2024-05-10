@@ -260,13 +260,28 @@ class WCSLink(MultiLink):
         # Convert to pixel positions in data2
         pixel2 = self.forwards(*pixel1)
 
+        keep = np.ones(n_samples, dtype=bool)
+        for p in pixel1 + pixel2:
+            keep[np.isnan(p)] = False
+
+        if not np.any(keep):
+            raise NoAffineApproximation(f'Could not find a good affine approximation to '
+                                        f'WCSLink with tolerance={tolerance}, as no overlap')
+
+        pixel1 = [p[keep] for p in pixel1]
+        pixel2 = [p[keep] for p in pixel2]
+
         # First try simple offset
 
         def transform_offset(offsets):
             pixel1_tr = pixel1[0] - offsets[0], pixel1[1] - offsets[1]
             return np.hypot(pixel2[0] - pixel1_tr[0], pixel2[1] - pixel1_tr[1])
 
-        best, _ = leastsq(transform_offset, (0, 0))
+        best, status = leastsq(transform_offset, (0, 0))
+
+        if status not in [1, 2, 3, 4]:
+            raise NoAffineApproximation(f'Could not find a good affine approximation to '
+                                        f'WCSLink with tolerance={tolerance}, as fitting failed')
 
         max_deviation = np.max(transform_offset(best))
 
