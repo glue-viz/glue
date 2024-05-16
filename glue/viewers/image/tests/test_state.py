@@ -458,3 +458,16 @@ def test_stretch_global():
 
     assert layer_state.v_min == 49.95
     assert layer_state.v_max == 949.05
+
+
+def test_attribute_units_invalid():
+
+    # Regression test for a bug that caused a crash if a dataset had an
+    # unrecognized unit
+
+    viewer_state = ImageViewerState()
+
+    data = Data(x=np.arange(100).reshape((10, 10)))
+    data.get_component('x').units = 'banana'
+
+    ImageLayerState(layer=data, viewer_state=viewer_state)
