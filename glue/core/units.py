@@ -27,19 +27,19 @@ class UnitConverter:
         if target_units is None:
             return values
         original_units = self._get_units(data, cid)
-        if original_units:
-            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
-        else:
+        if original_units == target_units or not original_units:
             return values
+        else:
+            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
 
     def to_native(self, data, cid, values, original_units):
         if original_units is None:
             return values
         target_units = self._get_units(data, cid)
-        if target_units:
-            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
-        else:
+        if original_units == target_units or not target_units:
             return values
+        else:
+            return self.converter_helper.to_unit(data, cid, values, original_units, target_units)
 
     def _get_units(self, data, cid):
         data = data.data if isinstance(data, Subset) else data
