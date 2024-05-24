@@ -17,7 +17,6 @@ def test_load_plugins(capsys):
     assert False
 
 
-
 def test_no_duplicate_loading(capsys):
     """
     Regression test for duplicated loading of plugins
