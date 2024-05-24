@@ -101,6 +101,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     from glue._settings_helpers import load_settings
     load_settings()
 
+
 def list_plugins():
     """
     Function to list all plugins that are currently loaded
