@@ -13,8 +13,13 @@ def test_load_plugins(capsys):
     with patch.object(logger, 'info') as info:
         load_plugins()
 
-    plugin = [call[0][0] for call in info.call_args_list]
-    assert False
+    # plugins = [call[0][0] for call in info.call_args_list if ('succeeded' or 'loaded') in call[0][0]]
+    plugins = []
+    for acall in info.call_args_list:
+        if ('loaded' or 'succeeded') in acall[0][0]:
+            plugins.append(acall[0][0])
+
+    assert len(plugins) == 5
 
 
 def test_no_duplicate_loading(capsys):
@@ -41,4 +46,4 @@ def test_list_plugins():
     load_plugins(require_qt_plugins=False)
     plugins = list_plugins()
     assert isinstance(plugins, list)
-    assert len(plugins) == 14
+    assert len(plugins) == 5

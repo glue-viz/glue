@@ -57,7 +57,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     n_plugins = len(plugins_to_require)
 
     for i_plugin, item in enumerate(list(iter_plugin_entry_points())):
-        if item.module in plugins_to_require:
+        if item.module in plugins_to_load:
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
 
