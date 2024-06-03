@@ -3,7 +3,7 @@
 from importlib import import_module
 
 from glue.logger import logger
-from glue._plugin_helpers import REQUIRED_PLUGINS, REQUIRED_PLUGINS_QT
+from glue._plugin_helpers import REQUIRED_PLUGINS
 
 
 _loaded_plugins = set()
@@ -48,8 +48,8 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
 
     if plugins_to_load is None:
         plugins_to_load = [i.module for i in list(iter_plugin_entry_points())]
-        if require_qt_plugins:
-            plugins_to_require = [*REQUIRED_PLUGINS, *REQUIRED_PLUGINS_QT]
+        if plugins_to_load:
+            plugins_to_require = [*REQUIRED_PLUGINS]
         else:
             plugins_to_require = REQUIRED_PLUGINS
     else:
@@ -102,8 +102,18 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     load_settings()
 
 
-def list_plugins():
+def list_loaded_plugins():
     """
     Function to list all plugins that are currently loaded
     """
     return sorted(_loaded_plugins)
+
+
+def list_available_plugins():
+    """
+    Function to list all available plugins
+    """
+    from glue._plugin_helpers import iter_plugin_entry_points
+
+    plugins_load_list = [i.module for i in list(iter_plugin_entry_points())]
+    return plugins_load_list

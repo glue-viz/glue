@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
-from glue.main import load_plugins
-from glue.main import list_plugins
+from glue.main import load_plugins, list_loaded_plugins, list_available_plugins
 
 
 def test_load_plugins(capsys):
@@ -17,9 +16,10 @@ def test_load_plugins(capsys):
     plugins = []
     for acall in info.call_args_list:
         if ('loaded' or 'succeeded') in acall[0][0]:
-            plugins.append(acall[0][0])
+            plugins.append(acall[0][0].split(' ')[1])
 
     assert len(plugins) == 5
+    assert 'coordinate_helpers' in plugins
 
 
 def test_no_duplicate_loading(capsys):
@@ -39,11 +39,22 @@ def test_no_duplicate_loading(capsys):
             assert 'failed' in acall[0][0]
 
 
-def test_list_plugins():
+def test_list_loaded_plugins():
     """
     Regression test for retrieving the list of currently loaded plugins
     """
     load_plugins(require_qt_plugins=False)
-    plugins = list_plugins()
+    plugins = list_loaded_plugins()
     assert isinstance(plugins, list)
     assert len(plugins) == 5
+
+
+def test_list_available_plugins():
+    """
+    Regression test for retrieving the list of currently available plugins
+    """
+    available_plugins = list_available_plugins()
+    assert isinstance(available_plugins, list)
+    assert len(available_plugins) == 7
+    assert 'casa_formats_io.glue_factory' in available_plugins
+    assert 'glue.plugins.wcs_autolinking' in available_plugins
