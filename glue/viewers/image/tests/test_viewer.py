@@ -6,6 +6,7 @@ from glue.core.application_base import Application
 from glue.core.data import Data
 from glue.core.link_helpers import LinkSame
 from glue.core.data_region import RegionData
+from glue.core.data_derived import IndexedData
 from astropy.wcs import WCS
 
 from shapely.geometry import Polygon, MultiPolygon, Point
@@ -265,3 +266,32 @@ class TestWCSRegionDisplay(object):
         assert np.array_equal(original_path_patch, np.flip(new_path_patch, axis=1))
 
         return self.viewer.figure
+
+
+def test_indexed_data():
+
+    # Make sure that the image viewer works properly with IndexedData objects
+
+    data_4d = Data(label='hypercube_wcs',
+                   x=np.random.random((3, 5, 4, 3)),
+                   coords=WCS(naxis=4))
+
+    data_2d = IndexedData(data_4d, (2, None, 3, None))
+
+    application = Application()
+
+    session = application.session
+
+    hub = session.hub
+
+    data_collection = session.data_collection
+    data_collection.append(data_4d)
+    data_collection.append(data_2d)
+
+    viewer = application.new_data_viewer(SimpleImageViewer)
+    viewer.add_data(data_2d)
+
+    assert viewer.state.x_att is data_2d.pixel_component_ids[1]
+    assert viewer.state.y_att is data_2d.pixel_component_ids[0]
+    assert viewer.state.x_att_world is data_2d.world_component_ids[1]
+    assert viewer.state.y_att_world is data_2d.world_component_ids[0]
