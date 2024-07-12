@@ -3,7 +3,7 @@ from glue.core.hub import HubListener
 
 import numpy as np
 
-from glue.core import Subset
+from glue.core import Subset, Data
 from echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -11,7 +11,6 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, avoid_circular
-from glue.core.data import BaseData
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
 from glue.core.exceptions import IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
@@ -264,7 +263,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     def _update_x_display_unit_choices(self):
 
-        if self.reference_data is None:
+        # NOTE: only Data and its subclasses support specifying units
+        if self.reference_data is None or not isinstance(self.reference_data, Data):
             ProfileViewerState.x_display_unit.set_choices(self, [])
             return
 
@@ -280,7 +280,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         component_units = set()
         for layer_state in self.layers:
-            if isinstance(layer_state.layer, BaseData):
+            # NOTE: only Data and its subclasses support specifying units
+            if isinstance(layer_state.layer, Data):
                 component = layer_state.layer.get_component(layer_state.attribute)
                 if component.units:
                     component_units.add((layer_state.layer, layer_state.attribute, component.units))
