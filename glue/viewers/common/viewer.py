@@ -457,6 +457,10 @@ class Viewer(BaseViewer):
 
         imports = ['from glue.core.state import load']
 
+        # Always include Numpy because as of Numpy 2.0, scalars are sometimes
+        # represented in string form as e.g. np.float64(...)
+        imports += ['import numpy as np']
+
         imports_header, header = self._script_header()
         imports.extend(imports_header)
 
