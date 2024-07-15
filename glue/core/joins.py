@@ -56,7 +56,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
 
             key_left = data.get_data(cid1[0], view=view)
             key_right = other.get_data(cid2[0], view=mask_right)
-            mask = np.in1d(key_left.ravel(), key_right.ravel())
+            mask = np.isin(key_left.ravel(), key_right.ravel())
 
             return mask.reshape(key_left.shape)
 
@@ -72,7 +72,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
             key_left_all = concatenate_arrays(*key_left_all)
             key_right_all = concatenate_arrays(*key_right_all)
 
-            mask = np.in1d(key_left_all, key_right_all)
+            mask = np.isin(key_left_all, key_right_all)
 
             return mask.reshape(data.get_data(cid1_i, view=view).shape)
 
@@ -82,7 +82,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
             mask = np.zeros_like(key_left, dtype=bool)
             for cid2_i in cid2:
                 key_right = other.get_data(cid2_i, view=mask_right).ravel()
-                mask |= np.in1d(key_left, key_right)
+                mask |= np.isin(key_left, key_right)
 
             return mask.reshape(data.get_data(cid1[0], view=view).shape)
 
@@ -92,7 +92,7 @@ def get_mask_with_key_joins(data, key_joins, subset_state, view=None):
             mask = np.zeros_like(data.get_data(cid1[0], view=view).ravel(), dtype=bool)
             for cid1_i in cid1:
                 key_left = data.get_data(cid1_i, view=view).ravel()
-                mask |= np.in1d(key_left, key_right)
+                mask |= np.isin(key_left, key_right)
 
             return mask.reshape(data.get_data(cid1[0], view=view).shape)
 

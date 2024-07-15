@@ -1486,7 +1486,7 @@ class CategorySubsetState(SubsetState):
         vals = data[self._att, view]
         if isinstance(vals, categorical_ndarray):
             vals = vals.codes
-        result = np.in1d(vals.ravel(), self._categories)
+        result = np.isin(vals.ravel(), self._categories)
         return result.reshape(vals.shape)
 
     def copy(self):
