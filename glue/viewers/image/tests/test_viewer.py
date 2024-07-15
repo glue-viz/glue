@@ -14,7 +14,7 @@ import shapely
 
 
 @visual_test
-def test_simple_viewer():
+def test_simple_image_viewer():
 
     # Make sure the simple viewer can be instantiated
 
@@ -35,7 +35,7 @@ def test_simple_viewer():
 
 
 @visual_test
-def test_region_layer():
+def test_image_region_layer():
     poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
     poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
     poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
@@ -123,7 +123,7 @@ def test_region_layer_logic():
 
 
 @visual_test
-def test_region_layer_flip():
+def test_image_region_layer_flip():
     poly_1 = Polygon([(20, 20), (60, 20), (60, 40), (20, 40)])
     poly_2 = Polygon([(60, 50), (60, 70), (80, 70), (80, 50)])
     poly_3 = Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
@@ -218,7 +218,7 @@ class TestWCSRegionDisplay(object):
         assert self.viewer.layers[1].enabled
 
     @visual_test
-    def test_wcs_viewer(self):
+    def test_image_wcs_viewer(self):
         self.viewer.add_data(self.image1)
 
         link1 = LinkSame(self.region_data.center_x_id, self.image1.world_component_ids[1])
@@ -237,7 +237,7 @@ class TestWCSRegionDisplay(object):
         return self.viewer.figure
 
     @visual_test
-    def test_flipped_wcs_viewer(self):
+    def test_image_flipped_wcs_viewer(self):
         self.viewer.add_data(self.image1)
 
         link1 = LinkSame(self.region_data.center_x_id, self.image1.world_component_ids[1])
