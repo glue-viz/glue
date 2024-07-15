@@ -39,13 +39,16 @@ class TestStretchStateMixin:
             self.state.stretch_parameters["foo"] = 1
 
     def test_set_parameter(self):
+
+        pytest.importorskip('astropy', minversion='6.0')
+
         self.state.stretch = "log"
 
-        assert self.state.stretch_object.exp == 1000
+        assert self.state.stretch_object.a == 1000
 
         # Setting the stretch parameter 'exp' is synced with the stretch object attribute
-        self.state.stretch_parameters["exp"] = 200
-        assert self.state.stretch_object.exp == 200
+        self.state.stretch_parameters["a"] = 200
+        assert self.state.stretch_object.a == 200
 
         # Changing stretch resets the stretch parameter dictionary
         self.state.stretch = "linear"
@@ -53,4 +56,4 @@ class TestStretchStateMixin:
 
         # And there is no memory of previous parameters
         self.state.stretch = "log"
-        assert self.state.stretch_object.exp == 1000
+        assert self.state.stretch_object.a == 1000

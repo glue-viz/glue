@@ -11,6 +11,7 @@ from glue.core.data import Data
 from glue.config import settings, unit_converter
 from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
 from glue.core.roi import XRangeROI
+from glue.core.data_derived import IndexedData
 
 
 @visual_test
@@ -171,3 +172,29 @@ def test_unit_conversion():
 
     viewer.state.reference_data = d2
     viewer.state.y_display_unit = 'mJy'
+
+
+def test_indexed_data():
+
+    # Make sure that the profile viewer works properly with IndexedData objects
+
+    data_4d = Data(label='hypercube_wcs',
+                   x=np.random.random((3, 5, 4, 3)),
+                   coords=WCS(naxis=4))
+
+    data_2d = IndexedData(data_4d, (2, None, 3, None))
+
+    application = Application()
+
+    session = application.session
+
+    hub = session.hub
+
+    data_collection = session.data_collection
+    data_collection.append(data_4d)
+    data_collection.append(data_2d)
+
+    viewer = application.new_data_viewer(SimpleProfileViewer)
+    viewer.add_data(data_2d)
+
+    assert viewer.state.x_att is data_2d.world_component_ids[0]

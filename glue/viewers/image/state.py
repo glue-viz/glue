@@ -1,7 +1,7 @@
 import uuid
 from collections import defaultdict
 
-from glue.core import BaseData
+from glue.core import BaseData, Data
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -620,7 +620,8 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
 
     def _update_attribute_display_unit_choices(self, *args):
 
-        if self.layer is None or self.attribute is None:
+        # NOTE: only Data and its subclasses support specifying units
+        if self.layer is None or self.attribute is None or not isinstance(self.layer, Data):
             ImageLayerState.attribute_display_unit.set_choices(self, [])
             return
 

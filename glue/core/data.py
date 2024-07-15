@@ -71,6 +71,8 @@ class BaseData(object, metaclass=abc.ABCMeta):
 
         self.style = VisualAttributes(parent=self)
 
+        self.uuid = str(uuid.uuid4())
+
     @property
     def label(self):
         """
@@ -772,11 +774,6 @@ class Data(BaseCartesianData):
             self.add_component(data, lbl)
 
         self._key_joins = {}
-
-        # To avoid circular references when saving objects with references to
-        # the data, we make sure that all Data objects have a UUID that can
-        # uniquely identify them.
-        self.uuid = str(uuid.uuid4())
 
     @property
     def coords(self):
