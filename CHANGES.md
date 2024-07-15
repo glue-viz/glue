@@ -1,5 +1,27 @@
 # Full changelog
 
+## v1.21.1 - 2024-07-15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix reading of FITS files with SkyCoord columns by @astrofrog in https://github.com/glue-viz/glue/pull/2488
+* Prevents duplicate loading of plugins by @CyclingNinja in https://github.com/glue-viz/glue/pull/2490
+* Make WCSLink.as_affine_link more robust to NaN values and raise an error if no overlap by @astrofrog in https://github.com/glue-viz/glue/pull/2491
+* Make sure that we don't do any unit parsing if the original and target unit are the same by @astrofrog in https://github.com/glue-viz/glue/pull/2493
+* Fix compatibility with Numpy 2.0 and fix compatibility of viewers with generic BaseData subclasses by @astrofrog in https://github.com/glue-viz/glue/pull/2500
+
+#### Other Changes
+
+* Remove unnecessary check of fitting status and clarify docstring by @astrofrog in https://github.com/glue-viz/glue/pull/2492
+* Remove pvextractor from dependencies by @Carifio24 in https://github.com/glue-viz/glue/pull/2497
+* Fix visual tests by @astrofrog in https://github.com/glue-viz/glue/pull/2501
+* Update figure hashes by @astrofrog in https://github.com/glue-viz/glue/pull/2502
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.21.0...v1.21.1
+
 ## v1.21.0 - 2024-04-26
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
