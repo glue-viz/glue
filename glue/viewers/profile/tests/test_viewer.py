@@ -15,7 +15,7 @@ from glue.core.data_derived import IndexedData
 
 
 @visual_test
-def test_simple_viewer():
+def test_simple_profile_viewer():
 
     # Make sure the simple viewer can be instantiated
 
