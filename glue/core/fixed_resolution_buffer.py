@@ -123,8 +123,6 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         dimension, otherwise an error will be raised.
     """
 
-    print('compute_fixed_resolution_buffer', data.uuid, bounds, target_data.uuid if target_data is not None else None, target_cid.label if target_cid is not None else None, subset_state, broadcast, cache_id)
-
     if target_data is None:
         target_data = data
 
