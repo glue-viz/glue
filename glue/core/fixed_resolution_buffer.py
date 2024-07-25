@@ -158,12 +158,6 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
             if ARRAY_CACHE[cache_id]['hash'] == current_array_hash:
                 return ARRAY_CACHE[cache_id]['array']
 
-        # To save time later, if the pixel cache doesn't match at the level of the
-        # data and target_data, we just reset the cache.
-        # if cache_id in PIXEL_CACHE:
-        #     if PIXEL_CACHE[cache_id]['hash'] != current_pixel_hash:
-        #         PIXEL_CACHE.pop(cache_id)
-
         # For pixel transformations, we don't necessarily need the cache_id to match, as coordinate
         # transformations can be the same for different callers - for instance, layer artists for
         # subsets might need the same transformations over all subsets and the same as for the actual
