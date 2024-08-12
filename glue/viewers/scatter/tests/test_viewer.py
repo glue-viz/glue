@@ -219,86 +219,26 @@ def test_unit_conversion():
     roi = RectangularROI(0.5e-3, 2.5e-3, 1.5e3, 4.5e3)
     viewer.apply_roi(roi)
 
-    # d1 and d2 will be as above, but d3 will now work correctly while d4 should
-    # not be shown.
+    # Results are as above - the display units do not result in any changes to
+    # the actual content of the axes and does not deal with automatic conversion
+    # of different units between different datasets - LinkSameWithUnits should
+    # deal with that already.
 
-    assert_equal(d1.subsets[1].to_mask(), [1, 1, 0])
-    assert_equal(d2.subsets[1].to_mask(), [0, 1, 0])
-    assert_equal(d3.subsets[1].to_mask(), [0, 0, 0])
-    assert_equal(d4.subsets[1].to_mask(), [0, 1, 0])
+    assert_equal(d1.subsets[0].to_mask(), [1, 1, 0])
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0])
+    assert_equal(d4.subsets[0].to_mask(), [0, 1, 0])
 
+    # Change the limits to make sure they are always converted
+    viewer.state.x_min = 0.0001
+    viewer.state.x_max = 0.005
+    viewer.state.y_min = 200
+    viewer.state.y_max = 7000
 
-    # # Change the limits to make sure they are always converted
-    # viewer.state.x_min = 5e8
-    # viewer.state.x_max = 4e9
-    # viewer.state.y_min = 0.5
-    # viewer.state.y_max = 3.5
+    viewer.state.x_display_unit = 'm'
+    viewer.state.y_display_unit = 's'
 
-    # roi = XRangeROI(1.4e9, 2.1e9)
-    # viewer.apply_roi(roi)
-
-    # assert len(d1.subsets) == 1
-    # assert_equal(d1.subsets[0].to_mask(), [0, 1, 0])
-
-    # assert len(d2.subsets) == 1
-    # assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
-
-    # viewer.state.x_display_unit = 'GHz'
-    # viewer.state.y_display_unit = 'mJy'
-
-    # x, y = viewer.state.layers[0].profile
-    # assert_allclose(x, [1, 2, 3])
-    # assert_allclose(y, [1000, 2000, 3000])
-
-    # x, y = viewer.state.layers[1].profile
-    # assert_allclose(x, 2.99792458 / np.array([1, 2, 3]))
-    # assert_allclose(y, [2000, 1000, 3000])
-
-    # assert viewer.state.x_min == 0.5
-    # assert viewer.state.x_max == 4.
-
-    # # Units get reset because they were originally 'native' and 'native' to a
-    # # specific unit always trigger resetting the limits since different datasets
-    # # might be converted in different ways.
-    # assert viewer.state.y_min == 1000.
-    # assert viewer.state.y_max == 3000.
-
-    # # Now set the limits explicitly again and make sure in future they are converted
-    # viewer.state.y_min = 500.
-    # viewer.state.y_max = 3500.
-
-    # roi = XRangeROI(0.5, 1.2)
-    # viewer.apply_roi(roi)
-
-    # assert len(d1.subsets) == 1
-    # assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
-
-    # assert len(d2.subsets) == 1
-    # assert_equal(d2.subsets[0].to_mask(), [0, 0, 1])
-
-    # viewer.state.x_display_unit = 'cm'
-    # viewer.state.y_display_unit = 'Jy'
-
-    # roi = XRangeROI(15, 35)
-    # viewer.apply_roi(roi)
-
-    # assert len(d1.subsets) == 1
-    # assert_equal(d1.subsets[0].to_mask(), [1, 0, 0])
-
-    # assert len(d2.subsets) == 1
-    # assert_equal(d2.subsets[0].to_mask(), [0, 1, 1])
-
-    # assert_allclose(viewer.state.x_min, (4 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
-    # assert_allclose(viewer.state.x_max, (0.5 * u.GHz).to_value(u.cm, equivalencies=u.spectral()))
-    # assert_allclose(viewer.state.y_min, 0.5)
-    # assert_allclose(viewer.state.y_max, 3.5)
-
-    # # Regression test for a bug that caused unit changes to not work on y axis
-    # # if reference data was not first layer
-
-    # viewer.state.reference_data = d2
-    # viewer.state.y_display_unit = 'mJy'
-
-
-    # data_collection.add_link(LinkSame(d1.id['a'], d2.id['e']))
-    # data_collection.add_link(LinkSame(d1.id['b'], d2.id['f']))
+    assert viewer.state.x_min == 0.1
+    assert viewer.state.x_max == 5
+    assert viewer.state.y_min == 0.2
+    assert viewer.state.y_max == 7
