@@ -350,3 +350,18 @@ class Application(HubListener):
         for data in self.data_collection:
             data.style.color = color
             data.style.alpha = alpha
+
+    def __gluestate__(self, context):
+        data = self.session.data_collection
+        from glue.main import _loaded_plugins
+        return dict(session=context.id(self.session),
+                    data=context.id(data),
+                    plugins=_loaded_plugins)
+
+    @classmethod
+    def __setgluestate__(cls, rec, context):
+        self = cls(data_collection=context.object(rec['data']))
+        # manually register the newly-created session, which
+        # the viewers need
+        context.register_object(rec['session'], self.session)
+        return self
