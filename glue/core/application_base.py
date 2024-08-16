@@ -352,11 +352,11 @@ class Application(HubListener):
             data.style.alpha = alpha
 
     def __gluestate__(self, context):
-        viewers = [list(map(context.id, tab)) for tab in self.viewers]
         data = self.session.data_collection
         from glue.main import _loaded_plugins
-        return dict(session=context.id(self.session), viewers=viewers,
-                    data=context.id(data), plugins=_loaded_plugins)
+        return dict(session=context.id(self.session),
+                    data=context.id(data),
+                    plugins=_loaded_plugins)
 
     @classmethod
     def __setgluestate__(cls, rec, context):
@@ -364,10 +364,4 @@ class Application(HubListener):
         # manually register the newly-created session, which
         # the viewers need
         context.register_object(rec['session'], self.session)
-        for i, tab in enumerate(rec['viewers']):
-            if self.tab(i) is None:
-                self.new_tab()
-            for v in tab:
-                viewer = context.object(v)
-                self.add_widget(viewer, tab=i, hold_position=True)
         return self
