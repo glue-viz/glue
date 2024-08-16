@@ -390,7 +390,7 @@ class ColormapRegistry(Registry):
 
     def name_from_cmap(self, cmap_desired):
         for name, cmap in self.members:
-            if cmap is cmap_desired:
+            if cmap is cmap_desired or cmap.name == cmap_desired.name:
                 return name
         raise ValueError("Could not find name for colormap")
 
