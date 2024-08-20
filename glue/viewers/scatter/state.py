@@ -14,7 +14,7 @@ from echo import keep_in_sync, delay_callback
 from glue.core.data_combo_helper import ComponentIDComboHelper, ComboHelper
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
-from glue.core.units import find_unit_choices, UnitConverter
+from glue.core.units import find_unit_choices
 
 from matplotlib.projections import get_projection_names
 
@@ -235,6 +235,7 @@ class ScatterViewerState(MatplotlibDataViewerState):
             y_choices = ['']
         ScatterViewerState.y_display_unit.set_choices(self, y_choices)
         self.y_display_unit = component.units
+
 
 def display_func_slow(x):
     if x == 'Linear':
