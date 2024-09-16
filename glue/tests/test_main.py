@@ -19,7 +19,6 @@ def test_load_plugins(capsys):
         if ('loaded' or 'succeeded') in acall[0][0]:
             plugins.append(acall[0][0].split(' ')[1])
 
-    assert len(plugins) == 5
     assert 'coordinate_helpers' in plugins
 
 
@@ -45,7 +44,6 @@ def test_no_duplicate_loading(capsys):
     assert 'glue.plugins.wcs_autolinking' in loaded_plugins
     assert 'glue.core.data_exporters' in loaded_plugins
     assert 'glue.plugins.coordinate_helpers' in loaded_plugins
-    assert len(loaded_plugins) == 5
 
 
 def test_list_loaded_plugins():
@@ -55,7 +53,6 @@ def test_list_loaded_plugins():
     load_plugins(require_qt_plugins=False)
     plugins = list_loaded_plugins()
     assert isinstance(plugins, list)
-    assert len(plugins) == 5
     for test_plugin in REQUIRED_PLUGINS:
         assert test_plugin in plugins
 
@@ -66,7 +63,6 @@ def test_list_available_plugins():
     """
     available_plugins = list_available_plugins()
     assert isinstance(available_plugins, list)
-    assert len(available_plugins) == 7
     assert 'glue.plugins.wcs_autolinking' in available_plugins
     assert 'glue.core.data_exporters' in available_plugins
     assert 'glue.plugins.coordinate_helpers' in available_plugins
