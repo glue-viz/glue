@@ -25,29 +25,25 @@ jobs:
       coverage: codecov
 
       envs: |
-        # Linux builds
-        - linux: py38-test-lts-all
-        - linux: py39-test
+        # Linux build
         - linux: py310-test-all
         - linux: py311-test
         - linux: py312-test-all
 
         # Documentation build
-        - linux: py38-docs
+        - linux: py310-docs
           coverage: false
         - macos: py311-docs
           coverage: false
 
         # Test a few configurations on macOS
-        - macos: py38-test-all
-        - macos: py39-test
         - macos: py310-test-all
         - macos: py311-test
         - macos: py312-test-all
 
         # Test some configurations on Windows
-        - windows: py38-test
-        - windows: py39-test
+        - windows: py310-test
+        - windows: py311-test-all
 
         # Test against latest developer versions of some packages
         - linux: py310-test-dev-all
