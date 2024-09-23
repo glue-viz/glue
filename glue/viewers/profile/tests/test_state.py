@@ -191,5 +191,5 @@ def test_limits_profile_y_one():
     viewer_state.layers.append(layer_state)
     viewer_state.function = 'mean'
 
-    assert viewer_state.y_min == -0.1
-    assert viewer_state.y_max == 0.1
+    assert viewer_state.y_min == 0.9
+    assert viewer_state.y_max == 1.1
