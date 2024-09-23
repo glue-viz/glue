@@ -149,7 +149,7 @@ class TestProfileViewerState:
 
         assert self.viewer_state.x_min == -0.5
         assert self.viewer_state.x_max == 2.5
-    
+
     def test_visible(self):
 
         self.layer_state.visible = False
