@@ -1,5 +1,6 @@
 from glue.core.data_collection import DataCollection
 import numpy as np
+import pytest
 
 from numpy.testing import assert_allclose
 
@@ -163,10 +164,14 @@ class TestProfileViewerState:
         assert_allclose(y, [3.5, 11.5, 19.5])
 
 
-def test_limits_profile_y_zero():
+@pytest.mark.parametrize(('value', 'limits'),
+                         [(0, (-1e-30, 1e-30)),
+                          (1, (0.9, 1.1)),
+                          (-0.1, (-0.11, -0.09))])
+def test_limits_profile_y_constant(value, limits):
     data = Data(label='d1')
     data.coords = SimpleCoordinates()
-    data['x'] = np.zeros(24).reshape((3, 4, 2)).astype(float)
+    data['x'] = np.ones(24).reshape((3, 4, 2)).astype(float) * value
 
     data_collection = DataCollection([data])
 
@@ -175,21 +180,4 @@ def test_limits_profile_y_zero():
     viewer_state.layers.append(layer_state)
     viewer_state.function = 'mean'
 
-    assert viewer_state.y_min == -1e-30
-    assert viewer_state.y_max == 1e-30
-
-
-def test_limits_profile_y_one():
-    data = Data(label='d1')
-    data.coords = SimpleCoordinates()
-    data['x'] = np.ones(24).reshape((3, 4, 2)).astype(float)
-
-    data_collection = DataCollection([data])
-
-    viewer_state = ProfileViewerState()
-    layer_state = ProfileLayerState(viewer_state=viewer_state, layer=data)
-    viewer_state.layers.append(layer_state)
-    viewer_state.function = 'mean'
-
-    assert viewer_state.y_min == 0.9
-    assert viewer_state.y_max == 1.1
+    assert_allclose((viewer_state.y_min, viewer_state.y_max), limits)
