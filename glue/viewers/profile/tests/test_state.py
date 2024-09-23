@@ -149,7 +149,7 @@ class TestProfileViewerState:
 
         assert self.viewer_state.x_min == -0.5
         assert self.viewer_state.x_max == 2.5
-
+    
     def test_visible(self):
 
         self.layer_state.visible = False
@@ -161,3 +161,35 @@ class TestProfileViewerState:
         x, y = self.layer_state.profile
         assert_allclose(x, [0, 2, 4])
         assert_allclose(y, [3.5, 11.5, 19.5])
+
+
+def test_limits_profile_y_zero():
+    data = Data(label='d1')
+    data.coords = SimpleCoordinates()
+    data['x'] = np.zeros(24).reshape((3, 4, 2)).astype(float)
+
+    data_collection = DataCollection([data])
+
+    viewer_state = ProfileViewerState()
+    layer_state = ProfileLayerState(viewer_state=viewer_state, layer=data)
+    viewer_state.layers.append(layer_state)
+    viewer_state.function = 'mean'
+
+    assert viewer_state.y_min == -1e-30
+    assert viewer_state.y_max == 1e-30
+
+
+def test_limits_profile_y_one():
+    data = Data(label='d1')
+    data.coords = SimpleCoordinates()
+    data['x'] = np.ones(24).reshape((3, 4, 2)).astype(float)
+
+    data_collection = DataCollection([data])
+
+    viewer_state = ProfileViewerState()
+    layer_state = ProfileLayerState(viewer_state=viewer_state, layer=data)
+    viewer_state.layers.append(layer_state)
+    viewer_state.function = 'mean'
+
+    assert viewer_state.y_min == -0.1
+    assert viewer_state.y_max == 0.1
