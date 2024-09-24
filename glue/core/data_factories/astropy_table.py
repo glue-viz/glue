@@ -54,7 +54,7 @@ def astropy_table_read(*args, **kwargs):
             pass
 
     # If the above didn't work, attempt to read with no specified format
-    return Table.read(*args, encoding=encoding, **kwargs)
+    return Table.read(*args, **kwargs)
 
 
 @data_factory(label="Catalog (astropy.table parser)",
