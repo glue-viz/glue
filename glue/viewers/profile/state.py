@@ -230,6 +230,13 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 if y_max > y_min:
                     self.y_min = y_min
                     self.y_max = y_max
+                elif np.allclose(y_min, y_max):
+                    if y_min == 0.0:
+                        dy = np.finfo(y_min).resolution**2
+                    else:
+                        dy = abs(0.1 * y_min)
+                    self.y_min = y_min - dy
+                    self.y_max = y_max + dy
                 else:
                     self.y_min = 0
                     self.y_max = 1
