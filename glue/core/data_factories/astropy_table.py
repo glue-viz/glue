@@ -29,6 +29,12 @@ def is_readable_by_astropy(filename, **kwargs):
 
 def astropy_table_read(*args, **kwargs):
 
+    # We need to specify the encoding because otherwise on Windows the default
+    # encoding might be cp1252 which seems to be able to read in most binary
+    # files, which is an issue since it will start recognizing e.g. PNGs as
+    # valid tables.
+    encoding = 'utf-8'
+
     from astropy.table import Table
 
     # In Python 3, as of Astropy 0.4, if the format is not specified, the
@@ -40,7 +46,7 @@ def astropy_table_read(*args, **kwargs):
     # also more generally, we should first try the ASCII readers.
     if 'format' not in kwargs:
         try:
-            t = Table.read(*args, format='ascii', **kwargs)
+            t = Table.read(*args, format='ascii', encoding=encoding, **kwargs)
             # Double-check for certain FITS files that may be read in as ASCII in Python 3.11
             if not (len(t) == 1 and [c.value[0] for c in t.itercols()][:3] == ['SIMPLE', '=', 'T']):
                 return t
