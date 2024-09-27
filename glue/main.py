@@ -41,9 +41,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     # where ``setup`` is a function that does whatever is needed to set up the
     # plugin, such as add items to various registries.
 
-    import setuptools
-    logger.info("Loading external plugins using "
-                "setuptools=={0}".format(setuptools.__version__))
+    logger.info("Loading external plugins")
 
     from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
