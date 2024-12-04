@@ -193,6 +193,7 @@ class SimpleScatterViewer(MatplotlibScatterMixin, SimpleMatplotlibViewer):
     _data_artist_cls = ScatterLayerArtist
     _subset_artist_cls = ScatterLayerArtist
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, session, parent=None, state=None):
+        proj = None if not state or not state.plot_mode else state.plot_mode
+        SimpleMatplotlibViewer.__init__(self, session, parent=parent, state=state, projection=proj)
         MatplotlibScatterMixin.setup_callbacks(self)
