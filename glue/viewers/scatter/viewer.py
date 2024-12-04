@@ -30,6 +30,12 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('y_axislabel', self._update_polar_ticks)
         self._update_axes()
 
+    def limits_to_mpl(self, *args):
+        # These projections throw errors if we try to set the limits
+        if self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+            return
+        super().limits_to_mpl(*args)
+
     def _update_ticks(self, *args):
         radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
         if self.state.x_att is not None:
@@ -63,8 +69,6 @@ class MatplotlibScatterMixin(object):
     def _update_projection(self, *args):
         self.figure.delaxes(self.axes)
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
-        self.remove_all_toolbars()
-        self.initialize_toolbar()
         for layer in self.layers:
             layer._set_axes(self.axes)
             layer.state.vector_mode = 'Cartesian'
