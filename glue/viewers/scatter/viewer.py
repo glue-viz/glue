@@ -1,3 +1,5 @@
+from echo import delay_callback
+
 from glue.core.subset import roi_to_subset_state
 from glue.core.util import update_ticks
 from glue.core.roi_pretransforms import FullSphereLongitudeTransform, ProjectionMplTransform, RadianTransform
@@ -29,12 +31,6 @@ class MatplotlibScatterMixin(object):
         self.state.add_callback('x_axislabel', self._update_polar_ticks)
         self.state.add_callback('y_axislabel', self._update_polar_ticks)
         self._update_axes()
-
-    def limits_to_mpl(self, *args):
-        # These projections throw errors if we try to set the limits
-        if self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']:
-            return
-        super().limits_to_mpl(*args)
 
     def _update_ticks(self, *args):
         radians = hasattr(self.state, 'angle_unit') and self.state.angle_unit == 'radians'
@@ -71,9 +67,10 @@ class MatplotlibScatterMixin(object):
         _, self.axes = init_mpl(self.figure, projection=self.state.plot_mode)
         for layer in self.layers:
             layer._set_axes(self.axes)
-            layer.state.vector_mode = 'Cartesian'
-            layer.state._update_points_mode()
-            layer.update()
+            with delay_callback(layer.state, 'vector_mode'):
+                layer.state.vector_mode = 'Cartesian'
+                layer.state._update_points_mode()
+                layer.update()
         self.axes.callbacks.connect('xlim_changed', self.limits_from_mpl)
         self.axes.callbacks.connect('ylim_changed', self.limits_from_mpl)
         self.update_x_axislabel()
@@ -197,3 +194,9 @@ class SimpleScatterViewer(MatplotlibScatterMixin, SimpleMatplotlibViewer):
         proj = None if not state or not state.plot_mode else state.plot_mode
         SimpleMatplotlibViewer.__init__(self, session, parent=parent, state=state, projection=proj)
         MatplotlibScatterMixin.setup_callbacks(self)
+
+    def limits_to_mpl(self, *args):
+        # These projections throw errors if we try to set the limits
+        if self.state.plot_mode in ['aitoff', 'hammer', 'lambert', 'mollweide']:
+            return
+        super().limits_to_mpl(*args)
