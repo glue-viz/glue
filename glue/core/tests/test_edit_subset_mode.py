@@ -131,3 +131,34 @@ def test_no_double_messaging():
     assert message.subset.subset_state.left is data.id['x']
     assert message.subset.subset_state.operator is operator.ge
     assert message.subset.subset_state.right == 3
+
+
+def test_message_once_all_subsets_exist():
+
+    # Make sure that when we create a new subset via EditSubsetMode, we don't
+    # get two separate messages for creation and updating, but instead just a
+    # single create message with the right subset state.
+
+    app = Application()
+
+    class Listener(HubListener):
+        pass
+
+    listener = Listener()
+
+    data1 = Data(x=[1, 2, 3, 4, 5])
+    app.data_collection.append(data1)
+
+    data2 = Data(x=[1, 2, 3, 4, 5])
+    app.data_collection.append(data2)
+
+    def handler(msg):
+        assert len(data1.subsets) == len(data2.subsets)
+
+    app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+
+    cmd = ApplySubsetState(data_collection=app.data_collection,
+                           subset_state=data1.id['x'] >= 3,
+                           override_mode=ReplaceMode)
+
+    app.session.command_stack.do(cmd)
