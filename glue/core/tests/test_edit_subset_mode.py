@@ -133,6 +133,45 @@ def test_no_double_messaging():
     assert message.subset.subset_state.right == 3
 
 
+def test_broadcast_to_collection():
+    """A data collection input works on each data component"""
+
+    handler = MagicMock()
+
+    app = Application()
+
+    class Listener(HubListener):
+        pass
+
+    listener = Listener()
+
+    app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+    app.session.hub.subscribe(listener, SubsetUpdateMessage, handler=handler)
+
+    data = Data(x=[1, 2, 3, 4, 5])
+    data2 = Data(x=[2, 3, 4, 5, 6])
+
+    app.data_collection.append(data)
+    app.data_collection.append(data2)
+
+    cmd = ApplySubsetState(data_collection=app.data_collection,
+                           subset_state=data.id['x'] >= 3,
+                           override_mode=ReplaceMode)
+
+    app.session.command_stack.do(cmd)
+
+    assert len(data2.subsets) == 1
+    assert data2.subsets[0].label == 'Subset 1'
+    # fails with `IncompatibleAttribute` exception
+    # assert data2.get_subset_object(subset_id='Subset 1', cls=NDDataArray)
+
+    assert handler.call_count == 2
+
+    assert data2.subsets[0].subset_state.left is data.id['x']
+    assert data2.subsets[0].subset_state.operator is operator.ge
+    assert data2.subsets[0].subset_state.right == 3
+
+
 def test_message_once_all_subsets_exist():
 
     # Make sure that when we create a new subset via EditSubsetMode, we don't
