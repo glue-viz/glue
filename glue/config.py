@@ -932,6 +932,7 @@ settings.add('FONT_SIZE', -1.0, validator=float)
 settings.add('AUTOLINK', {}, validator=dict)
 settings.add('AUTO_COMPUTE_COORDS_LINKS', True, validator=bool)
 
+
 def check_unit_converter(value):
     if value != 'default' and value not in unit_converter.members:
         raise KeyError(f'Unit converter {value} is not defined')
