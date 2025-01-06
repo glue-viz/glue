@@ -269,7 +269,6 @@ class DataCollection(HubListener):
         self._sg_count += 1
         label = label or 'Subset %i' % self._sg_count
 
-
         # We delay callbacks so that SubsetCreateMessages are only emitted once
         # the subset exists in all datasets.
         with self.hub.delay_callbacks():
