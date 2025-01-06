@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 from astropy.utils import NumpyRNGContext
 
 from glue import core
+from glue.config import settings
 
 from ..component import Component, DerivedComponent, CategoricalComponent, DateTimeComponent
 from ..component_id import ComponentID
@@ -1185,3 +1186,20 @@ def test_compute_histogram_random_subset_dask():
 
     result = data.compute_histogram([data.id['x'], data.id['y']], range=[[-0.5, 10.5], [-0.5, 1.5]], bins=[5, 1], weights=data.id['y'], random_subset=100_000)
     assert_allclose(result[:, 0], [178535., 230694., 229997., 231215., 178135.], atol=20_000)
+
+
+def test_disable_auto_links():
+
+    settings.AUTO_COMPUTE_COORDS_LINKS = False
+
+    data1 = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1',
+                 coords=IdentityCoordinates(n_dim=1))
+
+    assert len(data1.links) == 0
+
+    settings.AUTO_COMPUTE_COORDS_LINKS = True
+
+    data2 = Data(a=[1, 2, 3], b=[2, 3, 4], label='data1',
+                 coords=IdentityCoordinates(n_dim=1))
+
+    assert len(data2.links) == 2

@@ -1179,7 +1179,8 @@ class Data(BaseCartesianData):
                     label = axis_label(self.coords, i)
                     cid = self.add_component(comp, label)
                     self._world_component_ids.append(cid)
-                self._set_up_coordinate_component_links(ndim)
+                if settings.AUTO_COMPUTE_COORDS_LINKS:
+                    self._set_up_coordinate_component_links(ndim)
 
     def _set_up_coordinate_component_links(self, ndim):
 
