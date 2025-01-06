@@ -41,9 +41,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     # where ``setup`` is a function that does whatever is needed to set up the
     # plugin, such as add items to various registries.
 
-    import setuptools
-    logger.info("Loading external plugins using "
-                "setuptools=={0}".format(setuptools.__version__))
+    logger.info("Loading external plugins")
 
     from glue._plugin_helpers import iter_plugin_entry_points, PluginConfig
     config = PluginConfig.load()
@@ -72,21 +70,9 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
             if not config.plugins[item.name]:
                 continue
 
-        # We don't use item.load() because that then checks requirements of all
-        # the imported packages, which can lead to errors like this one that
-        # don't really matter:
-        #
-        # Exception: (pytest 2.6.0 (/Users/tom/miniconda3/envs/py27/lib/python2.7/site-packages),
-        #             Requirement.parse('pytest>=2.8'), set(['astropy']))
-        #
-        # Just to be clear, this kind of error does indicate that there is an
-        # old version of a package in the environment, but this can confuse
-        # users as importing astropy directly would work (as setuptools then
-        # doesn't do a stringent test of dependency versions). Often this kind
-        # of error can occur if there is a conda version of a package and an
-        # older pip version.
-
         try:
+            # item.load() (importlib.metadata.EntryPoint.load) doesn't *always*
+            # return a module, so,  using import_module is safer here.
             module = import_module(item.module)
             function = getattr(module, item.attr)
             function()
