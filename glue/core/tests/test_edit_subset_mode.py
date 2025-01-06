@@ -7,7 +7,7 @@ import numpy as np
 
 from ..application_base import Application
 from ..hub import HubListener
-from ..message import SubsetCreateMessage, SubsetUpdateMessage
+from ..message import SubsetCreateMessage, SubsetUpdateMessage, SubsetDeleteMessage
 from ..command import ApplySubsetState
 from ..data import Component, Data
 from ..data_collection import DataCollection
@@ -152,13 +152,23 @@ def test_message_once_all_subsets_exist():
     data2 = Data(x=[1, 2, 3, 4, 5])
     app.data_collection.append(data2)
 
+    count = [0]
+
     def handler(msg):
         assert len(data1.subsets) == len(data2.subsets)
+        count[0] += 1
 
     app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+    app.session.hub.subscribe(listener, SubsetDeleteMessage, handler=handler)
 
     cmd = ApplySubsetState(data_collection=app.data_collection,
                            subset_state=data1.id['x'] >= 3,
                            override_mode=ReplaceMode)
 
     app.session.command_stack.do(cmd)
+
+    assert count[0] == 2
+
+    app.data_collection.remove_subset_group(app.data_collection.subset_groups[0])
+
+    assert count[0] == 4

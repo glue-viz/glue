@@ -269,9 +269,13 @@ class DataCollection(HubListener):
         self._sg_count += 1
         label = label or 'Subset %i' % self._sg_count
 
-        result = SubsetGroup(label=label, subset_state=subset_state, **kwargs)
-        self._subset_groups.append(result)
-        result.register(self)
+
+        # We delay callbacks so that SubsetCreateMessages are only emitted once
+        # the subset exists in all datasets.
+        with self.hub.delay_callbacks():
+            result = SubsetGroup(label=label, subset_state=subset_state, **kwargs)
+            self._subset_groups.append(result)
+            result.register(self)
         return result
 
     def remove_subset_group(self, subset_grp):
@@ -281,12 +285,13 @@ class DataCollection(HubListener):
         if subset_grp not in self._subset_groups:
             return
 
-        # remove from list first, so that group appears deleted
-        # by the time the first SubsetDelete message is broadcast
-        self._subset_groups.remove(subset_grp)
-        for s in subset_grp.subsets:
-            s.delete()
-        subset_grp.unregister(self.hub)
+        # We delay callbacks so that SubsetDelteMessages are only emitted once
+        # the subset exists in all datasets.
+        with self.hub.delay_callbacks():
+            self._subset_groups.remove(subset_grp)
+            for s in subset_grp.subsets:
+                s.delete()
+            subset_grp.unregister(self.hub)
 
     def suggest_merge_label(self, *data):
         """
