@@ -18,7 +18,7 @@ class TestExportPython(BaseTestExportPython):
         with NumpyRNGContext(12345):
             self.data = Data(cube=np.random.random((30, 50, 20)))
         # Create data versions with WCS and affine coordinates
-        matrix = np.array([[2, 3, 0, -1], [1, 2, 0, 2], [0, 0, 1, -2], [0, 0, 0, 1]])
+        matrix = np.array([[2, 0, 0, -1], [0, 2, 1, 2], [0, 3, 1, -2], [0, 0, 0, 1]])
         affine = AffineCoordinates(matrix, units=['Mm', 'Mm', 'km'], labels=['xw', 'yw', 'zw'])
 
         self.data_wcs = Data(label='cube', cube=self.data['cube'], coords=WCS(naxis=3))
