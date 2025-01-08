@@ -195,7 +195,8 @@ def test_message_once_all_subsets_exist():
 
     def handler(msg):
         assert len(data1.subsets) == len(data2.subsets)
-        assert data2.subsets[0].subset_state is data1.subsets[0].subset_state
+        for i in range(len(data1.subsets)):
+            assert data2.subsets[i].subset_state is data1.subsets[i].subset_state
         count[0] += 1
 
     app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
