@@ -209,6 +209,10 @@ class AffineCoordinates(Coordinates):
                    units=rec['units'],
                    labels=rec['labels'])
 
+    @property
+    def axis_correlation_matrix(self):
+        return self._matrix[:-1, :-1] != 0
+
 
 # Kept for backward-compatibility
 WCSCoordinates = WCS

@@ -257,7 +257,7 @@ class ImageViewerState(MatplotlibDataViewerState):
                 self.y_att_world = self.y_att
 
     @defer_draw
-    def _on_xatt_world_change(self, *args):
+    def _on_xatt_world_change(self, *args, forced=False):
 
         if self.x_att_world is not None:
 
@@ -279,8 +279,11 @@ class ImageViewerState(MatplotlibDataViewerState):
                 else:
                     self.x_att = self.x_att_world
 
+                if not forced:
+                    self._on_yatt_world_change(forced=True)
+
     @defer_draw
-    def _on_yatt_world_change(self, *args):
+    def _on_yatt_world_change(self, *args, forced=False):
 
         if self.y_att_world is not None:
 
@@ -301,6 +304,9 @@ class ImageViewerState(MatplotlibDataViewerState):
                     self.y_att = self.reference_data.pixel_component_ids[index]
                 else:
                     self.y_att = self.y_att_world
+
+            if not forced:
+                self._on_xatt_world_change(forced=True)
 
     def _set_reference_data(self):
         if self.reference_data is None:
