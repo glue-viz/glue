@@ -1,12 +1,19 @@
 # pylint: disable=I0011,W0613,W0201,W0212,E1101,E1103
 
+import operator
+from unittest.mock import MagicMock
+
 import numpy as np
 
+from ..application_base import Application
+from ..hub import HubListener
+from ..message import SubsetCreateMessage, SubsetUpdateMessage, SubsetDeleteMessage
+from ..command import ApplySubsetState
 from ..data import Component, Data
 from ..data_collection import DataCollection
 from ..edit_subset_mode import (EditSubsetMode, ReplaceMode, OrMode, AndMode,
                                 XorMode, AndNotMode)
-from ..subset import ElementSubsetState
+from ..subset import ElementSubsetState, InequalitySubsetState
 
 
 class TestEditSubsetMode(object):
@@ -87,3 +94,122 @@ class TestEditSubsetMode(object):
         self.edit_mode.edit_subset = self.data.new_subset()
         self.edit_mode.update(self.data, self.state2)
         assert self.edit_mode.edit_subset.subset_state is not self.state2
+
+
+def test_no_double_messaging():
+
+    # Make sure that when we create a new subset via EditSubsetMode, we don't
+    # get two separate messages for creation and updating, but instead just a
+    # single create message with the right subset state.
+
+    handler = MagicMock()
+
+    app = Application()
+
+    class Listener(HubListener):
+        pass
+
+    listener = Listener()
+
+    app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+    app.session.hub.subscribe(listener, SubsetUpdateMessage, handler=handler)
+
+    data = Data(x=[1, 2, 3, 4, 5])
+
+    app.data_collection.append(data)
+
+    cmd = ApplySubsetState(data_collection=app.data_collection,
+                           subset_state=data.id['x'] >= 3,
+                           override_mode=ReplaceMode)
+
+    app.session.command_stack.do(cmd)
+
+    assert handler.call_count == 1
+    message = handler.call_args[0][0]
+    assert isinstance(message, SubsetCreateMessage)
+    assert isinstance(message.subset.subset_state, InequalitySubsetState)
+    assert message.subset.subset_state.left is data.id['x']
+    assert message.subset.subset_state.operator is operator.ge
+    assert message.subset.subset_state.right == 3
+
+
+def test_broadcast_to_collection():
+    """A data collection input works on each data component"""
+
+    handler = MagicMock()
+
+    app = Application()
+
+    class Listener(HubListener):
+        pass
+
+    listener = Listener()
+
+    app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+    app.session.hub.subscribe(listener, SubsetUpdateMessage, handler=handler)
+
+    data = Data(x=[1, 2, 3, 4, 5])
+    data2 = Data(x=[2, 3, 4, 5, 6])
+
+    app.data_collection.append(data)
+    app.data_collection.append(data2)
+
+    cmd = ApplySubsetState(data_collection=app.data_collection,
+                           subset_state=data.id['x'] >= 3,
+                           override_mode=ReplaceMode)
+
+    app.session.command_stack.do(cmd)
+
+    assert len(data2.subsets) == 1
+    assert data2.subsets[0].label == 'Subset 1'
+    # fails with `IncompatibleAttribute` exception
+    # assert data2.get_subset_object(subset_id='Subset 1', cls=NDDataArray)
+
+    assert handler.call_count == 2
+
+    assert data2.subsets[0].subset_state.left is data.id['x']
+    assert data2.subsets[0].subset_state.operator is operator.ge
+    assert data2.subsets[0].subset_state.right == 3
+
+
+def test_message_once_all_subsets_exist():
+
+    # Make sure that when we create a new subset via EditSubsetMode, we don't
+    # get two separate messages for creation and updating, but instead just a
+    # single create message with the right subset state.
+
+    app = Application()
+
+    class Listener(HubListener):
+        pass
+
+    listener = Listener()
+
+    data1 = Data(x=[1, 2, 3, 4, 5])
+    app.data_collection.append(data1)
+
+    data2 = Data(x=[1, 2, 3, 4, 5])
+    app.data_collection.append(data2)
+
+    count = [0]
+
+    def handler(msg):
+        assert len(data1.subsets) == len(data2.subsets)
+        for i in range(len(data1.subsets)):
+            assert data2.subsets[i].subset_state is data1.subsets[i].subset_state
+        count[0] += 1
+
+    app.session.hub.subscribe(listener, SubsetCreateMessage, handler=handler)
+    app.session.hub.subscribe(listener, SubsetDeleteMessage, handler=handler)
+
+    cmd = ApplySubsetState(data_collection=app.data_collection,
+                           subset_state=data1.id['x'] >= 3,
+                           override_mode=ReplaceMode)
+
+    app.session.command_stack.do(cmd)
+
+    assert count[0] == 2
+
+    app.data_collection.remove_subset_group(app.data_collection.subset_groups[0])
+
+    assert count[0] == 4
