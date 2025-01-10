@@ -57,7 +57,6 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     n_plugins = len(plugins_to_require)
 
     for i_plugin, item in enumerate(list(iter_plugin_entry_points())):
-
         if item.module in plugins_to_load:
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
@@ -101,3 +100,20 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
     # that were previously read.
     from glue._settings_helpers import load_settings
     load_settings()
+
+
+def list_loaded_plugins():
+    """
+    Function to list all plugins that are currently loaded
+    """
+    return sorted(_loaded_plugins)
+
+
+def list_available_plugins():
+    """
+    Function to list all available plugins
+    """
+    from glue._plugin_helpers import iter_plugin_entry_points
+
+    plugins_load_list = [i.module for i in list(iter_plugin_entry_points())]
+    return plugins_load_list

@@ -19,7 +19,7 @@ from glue.viewers.custom.helper import custom_viewer
 from .config import load_configuration
 env = load_configuration()
 
-from .main import load_plugins  # noqa
+from .main import load_plugins, list_loaded_plugins, list_available_plugins  # noqa
 
 
 def test(no_optional_skip=False):
