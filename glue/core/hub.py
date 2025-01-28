@@ -225,8 +225,6 @@ class Hub(object):
         else:
             logging.getLogger(__name__).info("Broadcasting %s", message)
             for subscriber, handler in self._find_handlers(message):
-                if isinstance(message, SubsetCreateMessage):
-                    print(f"Calling handler: {handler}")
                 handler(message)
 
     def __getstate__(self):
