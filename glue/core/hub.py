@@ -3,9 +3,10 @@ from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from inspect import getmro
 from collections import Counter
+import numpy as np
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
-from glue.core.message import Message
+from glue.core.message import Message, SubsetCreateMessage
 from glue.core.hub_callback_container import HubCallbackContainer
 
 __all__ = ['Hub', 'HubListener']
@@ -68,7 +69,8 @@ class Hub(object):
 
     def subscribe(self, subscriber, message_class,
                   handler=None,
-                  filter=lambda x: True):
+                  filter=lambda x: True,
+                  priority=10):
         """Subscribe an object to a type of message class.
 
         :param subscriber: The subscribing object
@@ -87,6 +89,11 @@ class Hub(object):
            An optional function of the form filter(message). Messages
            are only passed to the subscriber if filter(message) == True.
            The default is to always pass messages.
+
+        :param priority:
+           An optional integer to set the priority of the handler. Handlers
+           are sorted such that lower integer priority handlers get called
+           first when broadcasting a message.
 
 
         Raises:
@@ -113,7 +120,7 @@ class Hub(object):
         if subscriber not in self._subscriptions:
             self._subscriptions[subscriber] = HubCallbackContainer()
 
-        self._subscriptions[subscriber][message_class] = handler, filter
+        self._subscriptions[subscriber][message_class] = handler, filter, priority
 
     def is_subscribed(self, subscriber, message):
         """
@@ -160,9 +167,11 @@ class Hub(object):
         """Yields all (subscriber, handler) pairs that should receive a message
         """
         # self._subscriptions:
-        # subscriber => { message type => (filter, handler)}
+        # subscriber => { message type => (filter, handler, priority)}
 
         # loop over subscribed objects
+        priorities = []
+        prioritized_handlers = []
         for subscriber, subscriptions in list(self._subscriptions.items()):
 
             # subscriptions to message or its superclasses
@@ -175,9 +184,13 @@ class Hub(object):
             # narrow to the most-specific message
             candidate = max(messages, key=_mro_count)
 
-            handler, test = subscriptions[candidate]
+            handler, test, priority = subscriptions[candidate]
             if test(message):
-                yield subscriber, handler
+                priorities.append(priority)
+                prioritized_handlers.append((subscriber, handler))
+
+            for i in np.argsort(priorities):
+                yield prioritized_handlers[i]
 
     @contextmanager
     def ignore_callbacks(self, ignore_type):
@@ -212,6 +225,8 @@ class Hub(object):
         else:
             logging.getLogger(__name__).info("Broadcasting %s", message)
             for subscriber, handler in self._find_handlers(message):
+                if isinstance(message, SubsetCreateMessage):
+                    print(f"Calling handler: {handler}")
                 handler(message)
 
     def __getstate__(self):
