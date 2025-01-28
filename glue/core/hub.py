@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
-from glue.core.message import Message, SubsetCreateMessage
+from glue.core.message import Message
 from glue.core.hub_callback_container import HubCallbackContainer
 
 __all__ = ['Hub', 'HubListener']
