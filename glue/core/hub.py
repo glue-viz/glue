@@ -186,8 +186,8 @@ class Hub(object):
             if test(message):
                 prioritized_handlers.append((subscriber, handler, priority))
 
-            for subscriber, handler, _ in sorted(prioritized_handlers, key=lambda x: x[2], reverse=True):
-                yield subscriber, handler
+        for subscriber, handler, _ in sorted(prioritized_handlers, key=lambda x: x[2], reverse=True):
+            yield subscriber, handler
 
     @contextmanager
     def ignore_callbacks(self, ignore_type):
