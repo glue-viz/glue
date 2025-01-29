@@ -189,8 +189,8 @@ class Hub(object):
                 priorities.append(priority)
                 prioritized_handlers.append((subscriber, handler))
 
-            for i in np.argsort(priorities):
-                yield prioritized_handlers[i]
+            for subscriber, handler, _ in sorted(prioritized_handlers, key=lambda x: x[2], reverse=True):
+                yield subscriber, handler
 
     @contextmanager
     def ignore_callbacks(self, ignore_type):
