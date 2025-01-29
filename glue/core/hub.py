@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from weakref import WeakKeyDictionary
 from inspect import getmro
 from collections import Counter
-import numpy as np
 
 from glue.core.exceptions import InvalidSubscriber, InvalidMessage
 from glue.core.message import Message
@@ -170,7 +169,6 @@ class Hub(object):
         # subscriber => { message type => (filter, handler, priority)}
 
         # loop over subscribed objects
-        priorities = []
         prioritized_handlers = []
         for subscriber, subscriptions in list(self._subscriptions.items()):
 
@@ -186,8 +184,7 @@ class Hub(object):
 
             handler, test, priority = subscriptions[candidate]
             if test(message):
-                priorities.append(priority)
-                prioritized_handlers.append((subscriber, handler))
+                prioritized_handlers.append((subscriber, handler, priority))
 
             for subscriber, handler, _ in sorted(prioritized_handlers, key=lambda x: x[2], reverse=True):
                 yield subscriber, handler
