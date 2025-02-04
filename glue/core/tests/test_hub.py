@@ -165,6 +165,44 @@ class TestHub(object):
         assert exc.value.args[0] == ("Inputs must be HubListener, data, "
                                      "subset, or data collection objects")
 
+    @pytest.mark.parametrize('priorities', (False, True))
+    def test_handler_priorities(self, priorities):
+            msg, _, subscriber1 = self.get_subscription()
+            _, _, subscriber2 = self.get_subscription()
+            _, _, subscriber3 = self.get_subscription()
+
+            class Handlers:
+
+                def __init__(self):
+                    self.priority_test_val = 0
+
+                def handler1(self, msg):
+                    self.priority_test_val += 10
+
+                def handler2(self, msg):
+                    global priority_test_val
+                    self.priority_test_val *= 2
+
+                def handler3(self, msg):
+                    self.priority_test_val = 18
+
+            handlers = Handlers()
+
+            if priorities:
+                self.hub.subscribe(subscriber1, msg, handlers.handler1, priority=100)
+                self.hub.subscribe(subscriber2, msg, handlers.handler2)
+                self.hub.subscribe(subscriber3, msg, handlers.handler3, priority=200)
+            else:
+                self.hub.subscribe(subscriber1, msg, handlers.handler1)
+                self.hub.subscribe(subscriber2, msg, handlers.handler2)
+                self.hub.subscribe(subscriber3, msg, handlers.handler3)
+
+            msg_instance = msg("Test")
+
+            self.hub.broadcast(msg_instance)
+
+            assert handlers.priority_test_val == (56 if priorities else 18)
+
 
 class TestHubListener(object):
     """This is a dumb test, I know. Fixated on code coverage"""
