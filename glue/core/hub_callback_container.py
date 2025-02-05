@@ -19,7 +19,7 @@ class HubCallbackContainer(object):
     def __init__(self):
         self.callbacks = {}
 
-    def _wrap(self, handler, filter):
+    def _wrap(self, handler, filter, priority):
         """
         Given a function/method, this will automatically wrap a method using
         weakref to avoid circular references.
@@ -57,6 +57,8 @@ class HubCallbackContainer(object):
 
             value += (filter, None)
 
+        value += (priority,)
+
         return value
 
     def _auto_remove(self, method_instance):
@@ -91,6 +93,9 @@ class HubCallbackContainer(object):
             inst = callback[3]()
             result += (partial(func, inst),)
 
+        # Add priority
+        result += (callback[4],)
+
         return result
 
     def __iter__(self):
@@ -108,8 +113,8 @@ class HubCallbackContainer(object):
         return hasattr(func, '__func__') and getattr(func, '__self__', None) is not None
 
     def __setitem__(self, message_class, value):
-        handler, filter = value
-        self.callbacks[message_class] = self._wrap(handler, filter)
+        handler, filter, priority = value
+        self.callbacks[message_class] = self._wrap(handler, filter, priority)
 
     def pop(self, message_class):
         return self.callbacks.pop(message_class)
