@@ -167,6 +167,10 @@ class TestHub(object):
 
     @pytest.mark.parametrize('priorities', (False, True))
     def test_handler_priorities(self, priorities):
+        """
+        Test that handlers are called in order of descending priority, if set,
+        in order subscribed to otherwise.
+        """
         msg, _, subscriber1 = self.get_subscription()
         _, _, subscriber2 = self.get_subscription()
         _, _, subscriber3 = self.get_subscription()

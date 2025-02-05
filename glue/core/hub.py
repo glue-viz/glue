@@ -91,8 +91,8 @@ class Hub(object):
 
         :param priority:
            An optional integer to set the priority of the handler. Handlers
-           are sorted such that lower integer priority handlers get called
-           first when broadcasting a message.
+           are sorted such that higher priority handlers get called first
+           when broadcasting a message.
 
 
         Raises:
