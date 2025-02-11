@@ -1,5 +1,36 @@
 # Full changelog
 
+## v1.22.0 - 2025-02-11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Add placeholder close method to BaseViewer by @iisakkirotko in https://github.com/glue-viz/glue/pull/2520
+* Provide a way to avoid creating world<->pixel links in datasets by @astrofrog in https://github.com/glue-viz/glue/pull/2526
+* Add list plugins method and tests by @CyclingNinja in https://github.com/glue-viz/glue/pull/2496
+* Implement hub callback priorities by @rosteen in https://github.com/glue-viz/glue/pull/2530
+
+#### Bug Fixes
+
+* Remove viewer-specific code from **gluestate** and **setgluestate** on base Application class and fix a bug on restoring colormaps by @astrofrog in https://github.com/glue-viz/glue/pull/2510
+* Correct y limits in ProfileViewerState when min same as max by @pllim in https://github.com/glue-viz/glue/pull/2513
+* Fix an issue that caused the astropy table reader on Windows to behave differently to other platforms by @astrofrog in https://github.com/glue-viz/glue/pull/2519
+* Avoid double messaging on subset creation by @astrofrog in https://github.com/glue-viz/glue/pull/2515
+
+#### Other Changes
+
+* Drop support for Python 3.8 and 3.9 by @CyclingNinja in https://github.com/glue-viz/glue/pull/2514
+* DEP: drop runtime dependency on `setuptools` by @neutrinoceros in https://github.com/glue-viz/glue/pull/2511
+* Move Python export tests from glue-qt to here by @astrofrog in https://github.com/glue-viz/glue/pull/2524
+
+### New Contributors
+
+* @iisakkirotko made their first contribution in https://github.com/glue-viz/glue/pull/2520
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.21.1...v1.22.0
+
 ## v1.21.1 - 2024-07-15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
