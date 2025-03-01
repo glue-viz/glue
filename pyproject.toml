@@ -12,3 +12,36 @@ enabled = true
 url = "results/fig_comparison.html"
 message = "Click details to see the image test comparisons, for py311-test-visual"
 report_on_fail = true
+
+[tool.ruff]
+# ruff check: pycodestyle, Pyflakes, McCabe, flake8-bugbear, flake8-simplify
+lint.select = ["E", "F", "C90", "B", "SIM"]
+exclude=[
+    "glue/external/*",
+    "*_parsetab.py",
+    "*_lextab.py"
+]
+lint.ignore = [  # NOTE: non-permanent exclusions should be added to `.ruff.toml` instead.
+    # pycodestyle (E, W)
+    "E711",  # NoneComparison  (see unfixable)
+    "E741",  # AmbiguousVariableName. Physics variables are often poor code variables
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"glue/config.py" = ["E402"]      # Imports are done as needed.
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = true
+mypy-init-return = true
+
+[tool.ruff.lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+[tool.ruff.lint.flake8-type-checking]
+exempt-modules = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["glue", "glue_core"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

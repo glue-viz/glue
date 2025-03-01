@@ -1,0 +1,72 @@
+extend = "pyproject.toml"
+lint.ignore = [
+    # NOTE: to find a good code to fix, run:
+    # ruff --select="ALL" --statistics glue/<subpackage>
+
+    # flake8-bugbear (B)
+    "B006",  # MutableArgumentDefault
+    "B007",  # UnusedLoopControlVariable
+    "B018",  # Found useless expression
+    "B028",  # No-explicit-stacklevel
+    "B904",  # RaiseWithoutFromInsideExcept
+
+    # mccabe (C90) : code complexity
+    # TODO: configure maximum allowed complexity.
+    "C901",  # McCabeComplexity
+
+    # pycodestyle (E, W)
+    "E501",  # line-too-long
+    "E731",  # lambda-assignment
+
+    # Pyflakes (F)
+    "F841",  # unused-variable
+
+    # flake8-simplify (SIM)
+    "SIM102",  # NestedIfStatements
+    "SIM105",  # UseContextlibSuppress
+    "SIM108",  # UseTernaryOperator
+    "SIM114",  # if-with-same-arms
+    "SIM115",  # OpenFileWithContextHandler
+    "SIM117",  # MultipleWithStatements
+    "SIM118",  # KeyInDict
+    "SIM201",  # NegateEqualOp
+    "SIM300",  # yoda condition
+]
+lint.unfixable = [
+    "E711"  # NoneComparison. Hard to fix b/c numpy has it's own None.
+]
+
+[lint.extend-per-file-ignores]
+"__init__.py" = ["E402", "F401", "F403"]
+"glue/core/state.py" = [
+    "SIM401",  # Use `rec.get('pretransform', None)` instead of an `if` block
+    "B009",    # Do not call `getattr` with a constant attribute value.
+]
+"glue/core/subset.py" = [
+    "SIM401",  # Use `rec.get('pretransform', None)` instead of an `if` block
+    "SIM910",  # Use `kwargs.get("label")` instead of `kwargs.get("label", None)`
+]
+"glue/core/tests/test_data_region.py" = [
+    "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+]
+
+"glue/core/contracts.py" = ["B004"]  # Using `hasattr(x, "__call__")` to test if x is callable is unreliable
+"glue/dialogs/link_editor/state.py" = ["B010"]    # Do not call `setattr` with a constant attribute value
+
+"glue/plugins/coordinate_helpers/tests/test_link_helpers.py" = ["E402"]  # Module level import not at top of file
+"glue/core/tests/test_link_manager.py" = ["E713"]  # Test for membership should be `not in`
+"glue/core/tests/test_roi.py" = ["E721"]  # Do not compare types, use `isinstance()`
+
+"glue/tests/test_main.py" = ["SIM222"]    # Use `'loaded'` instead of `'loaded' or ...`
+"glue/core/component_id.py" = ["SIM110"]  # Use `return any(cid in link for link in self)` instead of `for` loop
+"glue/core/link_helpers.py" = ["SIM110"]  # Use `return any(cid in link for link in self)` instead of `for` loop
+
+# TODO: fix these, on a per-subpackage basis.
+# When a general exclusion is being fixed, but it affects many subpackages, it
+# is better to fix for subpackages individually. The general exclusion should be
+# copied to these subpackage sections and fixed there.
+"glue/core/*" = ["SIM101"]  # Multiple `isinstance` calls for `value`, merge into a single call
+
+"glue/utils/*" = ["B015"]   # Pointless comparison at end of function scope
+
+"doc/*" = []
