@@ -118,6 +118,7 @@ lint.ignore = [
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-args
     "PLR0915",  # too-many-statements
+    "PLR1701",  # Merge `isinstance` calls: `{expression}`
     "PLR1704",  # Redefining argument with the local name `{name}`
     "PLR1711",  # Useless `return` statement at end of function
     "PLR1714",  # Consider merging multiple comparisons
@@ -210,6 +211,7 @@ lint.ignore = [
     "UP009",  # UTF-8 encoding declaration is unnecessary
     "UP015",  # Unnecessary mode argument
     "UP024",  # Replace aliased errors with `OSError`
+    "UP027",  # Replace unpacked list comprehension with a generator expression
     "UP028",  # Replace `yield` over for loop with `yield from`
     "UP030",  # Use implicit references for positional format fields
     "UP031",  # Use format specifiers instead of percent format
