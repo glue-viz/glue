@@ -118,11 +118,11 @@ def test_csv_pandas_factory():
     assert isinstance(d.get_component(cat_comp), CategoricalComponent)
 
 
-def test_dtype_int():
+def test_dtype_int64():
     data = b'# a, b\n1, 1 \n2, 2 \n3, 3'
     with make_file(data, '.csv') as fname:
         d = df.load_data(fname)
-    assert d['a'].dtype == int
+    assert d['a'].dtype == np.int64
 
 
 def test_dtype_float():
