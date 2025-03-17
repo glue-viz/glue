@@ -11,7 +11,7 @@ from glue.core.data import ComponentID
 # character that is not curly brackets (i.e. [^\{\}]) and has to start and
 # end with a character that is not a curly bracket or a space. The component
 # name can be surrounded by spaces, e.g. '{ a }'
-TAG_RE = re.compile('\{\s*(?P<tag>[^\s\{\}]+([^\{\}]*[^\s\{\}]+)?)\s*\}')
+TAG_RE = re.compile(r'\{\s*(?P<tag>[^\s\{\}]+([^\{\}]*[^\s\{\}]+)?)\s*\}')
 
 __all__ = ['ParsedCommand', 'ParsedSubsetState']
 
