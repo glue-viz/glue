@@ -12,3 +12,98 @@ enabled = true
 url = "results/fig_comparison.html"
 message = "Click details to see the image test comparisons, for py311-test-visual"
 report_on_fail = true
+
+[tool.ruff]
+# ruff check: pycodestyle, Pyflakes, McCabe, flake8-bugbear, flake8-simplify
+lint.select = ["ALL"]
+exclude=[
+    "glue/external/*",
+    "*_parsetab.py",
+    "*_lextab.py"
+]
+lint.ignore = [  # NOTE: non-permanent exclusions should be added to `.ruff.toml` instead.
+
+    # flake8-builtins (A) : shadowing a Python built-in.
+    # New ones should be avoided and is up to maintainers to enforce.
+    "A00",
+
+    # flake8-commas (COM)
+    "COM812",  # TrailingCommaMissing
+    "COM819",  # TrailingCommaProhibited
+
+    # pydocstyle (D)
+    # Missing Docstrings
+    "D102",  # Missing docstring in public method. Don't check b/c docstring inheritance.
+    "D105",  # Missing docstring in magic method. Don't check b/c class docstring.
+    # Whitespace Issues
+    "D200",  # FitsOnOneLine
+    # Docstring Content Issues
+    "D410",  # BlankLineAfterSection. Using D412 instead.
+    "D400",  # EndsInPeriod.  NOTE: might want to revisit this.
+
+    # pycodestyle (E, W)
+    "E711",  # NoneComparison  (see unfixable)
+    "E741",  # AmbiguousVariableName. Physics variables are often poor code variables
+
+    # flake8-fixme (FIX)
+    "FIX002",  # Line contains TODO | notes for improvements are OK iff the code works
+
+    # ISC001 shouldn't be used with ruff format
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "ISC001",
+
+    # pep8-naming (N)
+    "N803",  # invalid-argument-name. Physics variables are often poor code variables
+    "N806",  # non-lowercase-variable-in-function. Physics variables are often poor code variables
+
+    # pandas-vet (PD)
+    "PD",
+
+    # flake8-self (SLF)
+    "SLF001", # private member access
+
+    # flake8-todos (TD)
+    "TD002",  # Missing author in TODO
+
+    # Ruff-specific rules (RUF)
+    "RUF001",  # ambiguous-unicode-character-string
+    "RUF002",  # ambiguous-unicode-character-docstring
+    "RUF005",  # unpack-instead-of-concatenating-to-collection-literal -- it's not clearly faster.
+    "RUF010",  # use conversion in f-string
+    "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
+    "RUF015",  # Prefer `next(iter(datasets.keys()))` over single element slice
+    "RUF021",  # Parenthesize `a and b` expressions when chaining `and` and `or` together
+    "RUF022",  # `__all__` is not sorted
+    "RUF100",  # Unused blanket `noqa` directive
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"setup.py" = ["INP001"]  # Part of configuration, not a package.
+".github/workflows/*.py" = ["INP001"]
+"test_*.py" = [
+    "ANN201",  # Public function without return type annotation
+    "B018",  # UselessExpression
+    "D",  # pydocstyle
+    "S101",  # Use of assert detected
+]
+"glue/config.py" = ["E402"]      # Imports are done as needed.
+"glue/conftest.py" = ["INP001"]  # Part of configuration, not a package.
+"doc/*.py" = [
+    "INP001",  # implicit-namespace-package. The examples are not a package.
+]
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = true
+mypy-init-return = true
+
+[tool.ruff.lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+[tool.ruff.lint.flake8-type-checking]
+exempt-modules = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["glue", "glue_core"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
