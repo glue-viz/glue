@@ -165,15 +165,15 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
         # still use cache_id because we still want to make sure we save results from different layers
         # to the cache in case any layers get removed or changed.
         matching_pixel_cache = {}
-        for chid in PIXEL_CACHE:
-            if PIXEL_CACHE[chid]['hash'] == current_pixel_hash:
+        for chid, i_cache in PIXEL_CACHE.items():
+            if i_cache['hash'] == current_pixel_hash:
                 for ipix, pix in enumerate(data.pixel_component_ids):
                     if (
                             ipix not in matching_pixel_cache and
-                            ipix in PIXEL_CACHE[chid] and
-                            PIXEL_CACHE[chid][ipix]['bounds'] == bounds
+                            ipix in i_cache and
+                            i_cache[ipix]['bounds'] == bounds
                     ):
-                        matching_pixel_cache[ipix] = PIXEL_CACHE[chid][ipix]
+                        matching_pixel_cache[ipix] = i_cache[ipix]
 
     else:
 
