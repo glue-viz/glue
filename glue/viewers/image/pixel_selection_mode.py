@@ -16,7 +16,7 @@ class PixelSelectionTool(ToolbarModeBase):
     """
 
     icon = "glue_crosshair"
-    tool_id = 'image:point_selection'
+    tool_id = 'image:selection_mode'
     action_text = 'Pixel'
     tool_tip = 'Select a single pixel based on mouse location'
     status_tip = 'CLICK to select a point, CLICK and DRAG to update the selection in real time'
