@@ -18,6 +18,8 @@ from glue.utils.misc import DeferredMethod
 MATPLOTLIB_GE_30 = Version(__version__) >= Version('3')
 MATPLOTLIB_GE_36 = Version(__version__) >= Version('3.6')
 
+logger = logging.getLogger(__name__)
+
 
 __all__ = ['all_artists', 'new_artists', 'remove_artists',
            'get_extent', 'view_cascade', 'fast_limits', 'defer_draw',
@@ -97,7 +99,7 @@ def view_cascade(data, view):
     """
     shp = data.shape
     v2 = list(view)
-    logging.debug("image shape: %s, view: %s", shp, view)
+    logger.debug("image shape: %s, view: %s", shp, view)
 
     # choose stride length that roughly samples entire image
     # at roughly the same pixel count
