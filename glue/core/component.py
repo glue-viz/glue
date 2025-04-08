@@ -16,6 +16,8 @@ except ImportError:
 __all__ = ['Component', 'DerivedComponent', 'CategoricalComponent',
            'CoordinateComponent', 'DateTimeComponent', 'ExtendedComponent']
 
+logger = logging.getLogger(__name__)
+
 
 class Component(object):
 
@@ -80,7 +82,7 @@ class Component(object):
         return len(self._data.shape)
 
     def __getitem__(self, key):
-        logging.debug("Using %s to index data of shape %s", key, self.shape)
+        logger.debug("Using %s to index data of shape %s", key, self.shape)
         return self._data[key]
 
     @property

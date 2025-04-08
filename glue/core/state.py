@@ -92,6 +92,8 @@ from glue.utils.matplotlib import MATPLOTLIB_GE_36
 if MATPLOTLIB_GE_36:
     from matplotlib import colormaps
 
+logger = logging.getLogger(__name__)
+
 literals = tuple([type(None), float, int, bytes, bool])
 literals += tuple(s for s in np.ScalarType if s not in (np.datetime64, np.timedelta64))
 
@@ -312,7 +314,7 @@ class GlueSerializer(object):
         name = self._label(obj)
         assert name not in self._objs
 
-        logging.debug("Registering %r as %s", obj, name)
+        logger.debug("Registering %r as %s", obj, name)
         self._objs[name] = obj
         self._names[oid] = name
 
@@ -354,7 +356,7 @@ class GlueSerializer(object):
         self._working.add(oid)
 
         fun, version = self._dispatch(obj)
-        logging.debug("Serializing %s with %s", obj, fun)
+        logger.debug("Serializing %s with %s", obj, fun)
         result = fun(obj, self)
 
         if isinstance(obj, types.FunctionType):
