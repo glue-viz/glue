@@ -1,5 +1,26 @@
 # Full changelog
 
+## v1.22.1 - 2025-04-15
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix regexp for command parser by @olebole in https://github.com/glue-viz/glue/pull/2532
+* Fix int dtype test by @olebole in https://github.com/glue-viz/glue/pull/2533
+* fix: support relative paths for icons by @maartenbreddels in https://github.com/glue-viz/glue/pull/2536
+
+#### Other Changes
+
+* Add pre-commit and Ruff setup with flake8 and other codestyle checks by @dhomeier in https://github.com/glue-viz/glue/pull/2531
+
+### New Contributors
+
+* @olebole made their first contribution in https://github.com/glue-viz/glue/pull/2532
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.22.0...v1.22.1
+
 ## v1.22.0 - 2025-02-11
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
