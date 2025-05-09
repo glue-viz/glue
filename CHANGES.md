@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.22.2 - 2025-05-09
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Other Changes
+
+* Switch back to installing h5py by default by @astrofrog in https://github.com/glue-viz/glue/pull/2538
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.22.1...v1.22.2
+
 ## v1.22.1 - 2025-04-15
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
