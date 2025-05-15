@@ -63,4 +63,3 @@ class PixelSelectionTool(ToolbarModeBase):
                                subset_state=subset_state,
                                override_mode=None)
         self.viewer._session.command_stack.do(cmd)
-
