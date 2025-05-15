@@ -29,6 +29,9 @@ def icon_path(icon_name, icon_format='png'):
     icon_name += '.{0}'.format(icon_format)
 
     icon_file = importlib_resources.files("glue") / "icons" / icon_name
+    # when running on pyinstaller, the path might include ..
+    # so we need to convert it to an absolute path
+    icon_file = icon_file.resolve()
     if icon_file.is_file():
         return str(icon_file)
     else:
