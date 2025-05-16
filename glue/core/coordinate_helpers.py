@@ -189,7 +189,7 @@ def axis_label(wcs, axis):
         return wcs.world_axis_names[wcs.world_n_dim - 1 - axis].title()
 
     if isinstance(wcs, WCS):
-        header = wcs.to_header()
+        header = wcs.to_header(relax=True)
         num = _get_ndim(header) - axis  # number orientation reversed
         ax = header.get('CTYPE%i' % num)
         if ax is not None:
