@@ -61,7 +61,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
             if item.module not in _installed_plugins:
                 _installed_plugins.add(item.name)
 
-            if item.module in _loaded_plugins:
+            if item.name in _loaded_plugins:
                 logger.info("Plugin {0} already loaded".format(item.name))
                 continue
 
@@ -85,7 +85,7 @@ def load_plugins(splash=None, require_qt_plugins=False, plugins_to_load=None):
                             "(Exception: {1})".format(item.name, exc))
         else:
             logger.info("Loading plugin {0} succeeded".format(item.name))
-            _loaded_plugins.add(item.module)
+            _loaded_plugins.add(item.name)
 
         if splash is not None:
             splash.set_progress(100. * i_plugin / float(n_plugins))
