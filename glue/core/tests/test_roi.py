@@ -1216,7 +1216,7 @@ class TestPolyMpl(TestMpl):
         return MplPolygonalROI(self.axes)
 
     def test_proper_roi(self):
-        return isinstance(self.roi._roi, PolygonalROI)
+        assert isinstance(self.roi._roi, PolygonalROI)
 
     def send_events(self):
         ev0 = DummyEvent(5, 5, inaxes=self.axes)
@@ -1271,7 +1271,7 @@ class TestPickMpl(TestMpl):
         return MplPickROI(self.axes)
 
     def test_proper_roi(self):
-        return isinstance(self.roi._roi, PointROI)
+        assert isinstance(self.roi._roi, PointROI)
 
     def test_start_ignored_if_not_inaxes(self):
         ev = DummyEvent(0, 0, inaxes=None)
