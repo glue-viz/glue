@@ -1,6 +1,7 @@
 from textwrap import indent
 
 from collections import defaultdict
+from contextlib import contextmanager
 
 import numpy as np
 
@@ -12,7 +13,6 @@ from glue.core.subset import SliceSubsetState
 from glue.core.component_id import PixelComponentID
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.units import UnitConverter
-from glue.config import STATE_DEFAULTS
 
 
 __all__ = ['State', 'StateAttributeCacheHelper',
@@ -29,6 +29,36 @@ def _load_callback_list(rec, context):
     return [context.object(obj) for obj in rec['values']]
 
 
+_state_default_picker = None
+
+
+def set_state_default_picker(func):
+    """
+    This function can be used to set a function that will be used
+    to override default values in state classes.
+
+    The function will be called whenever a state class is being
+    initialized, and will be given the instance of the class being
+    created. The function is then free to modify any of the callback
+    properties.
+    """
+
+    global _state_default_picker
+    _state_default_picker = func
+
+
+@contextmanager
+def with_state_default_picker(func):
+    """
+    Context manager version of `set_state_default_picker`.
+    """
+
+    global _state_default_picker
+    _state_default_picker = func
+    yield
+    _state_default_picker = None
+
+
 class State(HasCallbackProperties):
     """
     A class to represent the state of a UI element. Initially this doesn't add
@@ -38,10 +68,9 @@ class State(HasCallbackProperties):
 
     def __init__(self, **kwargs):
         super(State, self).__init__()
-        if self.__class__ in STATE_DEFAULTS:
-            for name, value in STATE_DEFAULTS[self.__class__].items():
-                setattr(self, name, value)
         self.update_from_dict(kwargs)
+        if _state_default_picker is not None:
+            _state_default_picker(self)
 
     def update_from_state(self, state):
         """

@@ -956,8 +956,3 @@ try:
                                 KeyboardShortcut, keyboard_shortcut)
 except ImportError:
     pass
-
-# The following is a global dictionary which can be used to set default
-# values on state classes as soon as the state class is initialized, avoiding
-# any callbacks.
-STATE_DEFAULTS = defaultdict(dict)

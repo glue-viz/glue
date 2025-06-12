@@ -8,7 +8,8 @@ from glue.core import Data, DataCollection
 from .test_state import clone
 from ..state_objects import (State, StateAttributeLimitsHelper,
                              StateAttributeSingleValueHelper,
-                             StateAttributeHistogramHelper)
+                             StateAttributeHistogramHelper,
+                             with_state_default_picker)
 
 
 class SimpleTestState(State):
@@ -532,3 +533,14 @@ def test_percentile_no_log():
                                         percentile='scale')
 
     state.scale = 90
+
+
+def default_picker(state):
+    if isinstance(state, SimpleTestState):
+        state.a = 5
+
+
+def test_set_state_default_picker():
+    with with_state_default_picker(default_picker):
+        state = SimpleTestState()
+        assert state.a == 5
