@@ -3,7 +3,7 @@ from importlib.machinery import SourceFileLoader
 import sys
 import types
 import warnings
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 
 from glue.utils import format_choices
 
