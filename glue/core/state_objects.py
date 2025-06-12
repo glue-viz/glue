@@ -12,6 +12,8 @@ from glue.core.subset import SliceSubsetState
 from glue.core.component_id import PixelComponentID
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.units import UnitConverter
+from glue.config import STATE_DEFAULTS
+
 
 __all__ = ['State', 'StateAttributeCacheHelper',
            'StateAttributeLimitsHelper', 'StateAttributeSingleValueHelper', 'StateAttributeHistogramHelper']
@@ -36,6 +38,9 @@ class State(HasCallbackProperties):
 
     def __init__(self, **kwargs):
         super(State, self).__init__()
+        if self.__class__ in STATE_DEFAULTS:
+            for name, value in STATE_DEFAULTS[self.__class__].items():
+                setattr(self, name, value)
         self.update_from_dict(kwargs)
 
     def update_from_state(self, state):
