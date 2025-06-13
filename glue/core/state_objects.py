@@ -40,7 +40,7 @@ def set_state_default_picker(func):
     The function will be called whenever a state class is being
     initialized, and will be given the instance of the class being
     created. The function is then free to modify any of the callback
-    properties.
+    properties, before any of the callbacks are set up.
     """
 
     global _state_default_picker
