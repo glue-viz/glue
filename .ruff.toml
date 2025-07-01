@@ -1,7 +1,7 @@
 extend = "pyproject.toml"
 lint.ignore = [
     # NOTE: to find a good code to fix, run:
-    # ruff --select="ALL" --statistics glue/<subpackage>
+    # ruff check --select="ALL" --statistics glue/<subpackage>
 
     # flake8-unused-arguments (ARG)
     "ARG001",  # unused-function-argument
