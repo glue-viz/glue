@@ -207,10 +207,10 @@ class TestSubsetGroup(object):
             if attr == 'preferred_cmap':
                 if MATPLOTLIB_GE_36:
                     from matplotlib import colormaps
-                    va_cmap = colormaps[visual_attributes[attr]]
+                    va_cmap = colormaps[value]
                 else:
                     from matplotlib.cm import get_cmap
-                    va_cmap = get_cmap(visual_attributes[attr])
+                    va_cmap = get_cmap(value)
                 assert sg.style.preferred_cmap == va_cmap
             else:
                 assert getattr(sg.style, attr, None) == value
