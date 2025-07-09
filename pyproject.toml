@@ -59,8 +59,11 @@ lint.ignore = [  # NOTE: non-permanent exclusions should be added to `.ruff.toml
     # pandas-vet (PD)
     "PD",
 
+    # Pylint (PLC, PLE, PLR, PLW)
+    "PLC0415",  # `import` should be at the top-level of a file
+
     # flake8-self (SLF)
-    "SLF001", # private member access
+    "SLF001",  # private member access
 
     # flake8-todos (TD)
     "TD002",  # Missing author in TODO
@@ -86,6 +89,7 @@ lint.ignore = [  # NOTE: non-permanent exclusions should be added to `.ruff.toml
     "D",  # pydocstyle
     "S101",  # Use of assert detected
 ]
+"glue/__init__.py" = ["PT028"]   # Test function with default parameter - `test` is not a standard unit test function here.
 "glue/config.py" = ["E402"]      # Imports are done as needed.
 "glue/conftest.py" = ["INP001"]  # Part of configuration, not a package.
 "doc/*.py" = [
