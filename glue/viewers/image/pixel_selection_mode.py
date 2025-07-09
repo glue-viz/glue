@@ -16,7 +16,7 @@ class PixelSelectionTool(ToolbarModeBase):
     """
 
     icon = "glue_crosshair"
-    tool_id = 'image:selection_mode'
+    tool_id = 'image:point_selection'
     action_text = 'Pixel'
     tool_tip = 'Select a single pixel based on mouse location'
     status_tip = 'CLICK to select a point, CLICK and DRAG to update the selection in real time'
@@ -50,8 +50,8 @@ class PixelSelectionTool(ToolbarModeBase):
         if x is None or y is None:
             return None
 
-        x = int(round(x))
-        y = int(round(y))
+        x = round(x)
+        y = round(y)
 
         slices = [slice(None)] * self.viewer.state.reference_data.ndim
         slices[self.viewer.state.x_att.axis] = slice(x, x + 1)
