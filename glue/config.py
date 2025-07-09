@@ -511,7 +511,11 @@ class DataTranslatorRegistry(Registry):
 
     def get_handler_for(self, data_or_class):
         for translator in self:
-            if isinstance(data_or_class, translator.target_cls) or data_or_class is translator.target_cls:
+            if data_or_class is translator.target_cls or type(data_or_class) is translator.target_cls:
+                handler = translator.handler
+                preferred = translator.target_cls
+                break
+            if isinstance(data_or_class, translator.target_cls):
                 handler = translator.handler
                 preferred = translator.target_cls
                 break
