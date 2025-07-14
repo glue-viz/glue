@@ -38,5 +38,3 @@ def test_pixel_selection_mode():
                       PixelSubsetState)
     assert isinstance(data2.subsets[0].subset_state,
                       PixelSubsetState)
-
-    return viewer.figure
