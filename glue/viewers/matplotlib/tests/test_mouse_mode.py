@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 from ..mouse_mode import MouseMode
 from ..toolbar_mode import RectangleMode, CircleMode, PolyMode
-from ....viewers.image.pixel_selection_mode import PixelSelectionTool
 
 
 class Event(object):
@@ -200,10 +199,6 @@ class TestPolyMode(TestClickRoiMode):
     def mode_factory(self):
         return PolyMode
 
-class TestPointSelectMode(TestClickRoiMode):
-
-    def mode_factory(self):
-        return PixelSelectionTool
 
 del TestRoiMode  # prevents test discovery from running abstract test
 del TestClickRoiMode
