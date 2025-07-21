@@ -40,6 +40,22 @@ def test_wcs_autolink_emptywcs():
     links = wcs_autolink(dc)
     assert len(links) == 0
 
+def test_wcs_autolink_2D_emptywcs():
+
+    # No links should be found because the WCS don't actually have well defined
+    # physical types.
+
+    data1 = Data()
+    data1.coords = WCS(naxis=2)
+    data1['x'] = [[1, 2, 3]]
+
+    data2 = Data()
+    data2.coords = WCS(naxis=2)
+    data2['x'] = [[4, 5, 6]]
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 0
 
 def test_wcs_autolink_spectral_cube():
 
