@@ -111,6 +111,11 @@ class WCSLink(MultiLink):
 
         wcs1, wcs2 = data1.coords, data2.coords
 
+        if (wcs1.world_axis_physical_types.count(None) == wcs1.world_n_dim or
+            wcs2.world_axis_physical_types.count(None) == wcs2.world_n_dim):
+            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
+
+
         forwards = backwards = None
         if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
             if (wcs1.world_axis_physical_types.count(None) == 0 and
@@ -127,6 +132,8 @@ class WCSLink(MultiLink):
 
                 self._physical_types_1 = wcs1.world_axis_physical_types
                 self._physical_types_2 = wcs2.world_axis_physical_types
+
+
 
         if not forwards or not backwards:
             # A generalized APE 14-compatible way
