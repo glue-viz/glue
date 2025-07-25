@@ -113,7 +113,7 @@ class WCSLink(MultiLink):
 
         if (wcs1.world_axis_physical_types.count(None) == wcs1.world_n_dim or
             wcs2.world_axis_physical_types.count(None) == wcs2.world_n_dim):
-            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
+            raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
 
         forwards = backwards = None
@@ -215,7 +215,7 @@ class WCSLink(MultiLink):
             self._physical_types_2 = wcs2_sliced_physical_types
 
         if pixel_cids1 is None:
-            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
+            raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
         super(WCSLink, self).__init__(pixel_cids1, pixel_cids2,
                                       forwards=forwards, backwards=backwards)
