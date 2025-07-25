@@ -196,6 +196,35 @@ def test_link_editor():
     assert link2.data2.label == 'Data 2'
 
 
+@pytest.mark.parametrize('physical_types', [[['WAVE', 'TIME'], ['SPAM', 'EGGS']],
+                                            [['SPAM', 'EGGS'], ['', '']],
+                                            [['', ''], ['', '']]
+                                            ])
+def test_physical_type_handling(physical_types):
+
+    wcs1 = WCS(naxis=2)
+    wcs1.wcs.ctype = physical_types[0]
+    wcs1.wcs.set()
+
+    data1 = Data()
+    data1.coords = wcs1
+    data1['x'] = np.ones((2, 3))
+    px1, py1 = data1.pixel_component_ids
+
+    wcs2 = WCS(naxis=2)
+    wcs2.wcs.ctype =physical_types[1]
+    wcs2.wcs.set()
+
+    data2 = Data()
+    data2.coords = wcs2
+    data2['x'] = np.ones((2, 3))
+    px2, py2 = data2.pixel_component_ids
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 0
+
+
 def test_celestial_with_unknown_axes():
 
     # Regression test for a bug that caused n-d datasets with celestial axes
