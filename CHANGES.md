@@ -1,5 +1,26 @@
 # Full changelog
 
+## v1.23.0 - 2025-07-29
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Allow initial values to be customized for state classes by @astrofrog in https://github.com/glue-viz/glue/pull/2544
+
+#### Bug Fixes
+
+* Use relax=True in WCS->FITS header in coordinate helper by @bmorris3 in https://github.com/glue-viz/glue/pull/2540
+* Empty WCS autolink handle by @CyclingNinja in https://github.com/glue-viz/glue/pull/2551
+* Fix incorrect autolinking of axes of unknown physical types in presence of celestial axes by @dhomeier in https://github.com/glue-viz/glue/pull/2552
+
+#### Other Changes
+
+* Point select refactor by @CyclingNinja in https://github.com/glue-viz/glue/pull/2534
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.22.2...v1.23.0
+
 ## v1.22.2 - 2025-05-09
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
