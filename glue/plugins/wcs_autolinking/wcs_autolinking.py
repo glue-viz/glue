@@ -113,8 +113,7 @@ class WCSLink(MultiLink):
 
         if (wcs1.world_axis_physical_types.count(None) == wcs1.world_n_dim or
             wcs2.world_axis_physical_types.count(None) == wcs2.world_n_dim):
-            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
-
+            raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
         forwards = backwards = None
         if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
@@ -132,8 +131,6 @@ class WCSLink(MultiLink):
 
                 self._physical_types_1 = wcs1.world_axis_physical_types
                 self._physical_types_2 = wcs2.world_axis_physical_types
-
-
 
         if not forwards or not backwards:
             # A generalized APE 14-compatible way
@@ -173,14 +170,15 @@ class WCSLink(MultiLink):
                 wcs2_sliced_physical_types = wcs2_celestial_physical_types
 
             for i, physical_type1 in enumerate(wcs1.world_axis_physical_types):
-                for j, physical_type2 in enumerate(wcs2.world_axis_physical_types):
-                    if physical_type1 == physical_type2:
-                        if physical_type1 not in wcs1_sliced_physical_types:
-                            slicing_axes1.append(wcs1.world_n_dim - i - 1)
-                            wcs1_sliced_physical_types.append(physical_type1)
-                        if physical_type2 not in wcs2_sliced_physical_types:
-                            slicing_axes2.append(wcs2.world_n_dim - j - 1)
-                            wcs2_sliced_physical_types.append(physical_type2)
+                if physical_type1 is not None:
+                    for j, physical_type2 in enumerate(wcs2.world_axis_physical_types):
+                        if physical_type1 == physical_type2:
+                            if physical_type1 not in wcs1_sliced_physical_types:
+                                slicing_axes1.append(wcs1.world_n_dim - i - 1)
+                                wcs1_sliced_physical_types.append(physical_type1)
+                            if physical_type2 not in wcs2_sliced_physical_types:
+                                slicing_axes2.append(wcs2.world_n_dim - j - 1)
+                                wcs2_sliced_physical_types.append(physical_type2)
 
             slicing_axes1 = sorted(slicing_axes1, key=str, reverse=True)
             slicing_axes2 = sorted(slicing_axes2, key=str, reverse=True)
@@ -215,7 +213,7 @@ class WCSLink(MultiLink):
             self._physical_types_2 = wcs2_sliced_physical_types
 
         if pixel_cids1 is None:
-            raise IncompatibleWCS("Can't create WCS link between {0} and {1}".format(data1.label, data2.label))
+            raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
         super(WCSLink, self).__init__(pixel_cids1, pixel_cids2,
                                       forwards=forwards, backwards=backwards)
@@ -243,8 +241,7 @@ class WCSLink(MultiLink):
                 'two datasets using the World Coordinate System (WCS) '
                 'coordinates defined in the files.<br><br>The physical types '
                 'of the coordinates linked in the first dataset are: '
-                '<ul>{0}</ul>and in the second dataset:<ul>{1}</ul>'
-                .format(types1, types2))
+                f'<ul>{types1}</ul>and in the second dataset:<ul>{types2}</ul>')
 
     def as_affine_link(self, n_samples=1000, tolerance=1):
         """

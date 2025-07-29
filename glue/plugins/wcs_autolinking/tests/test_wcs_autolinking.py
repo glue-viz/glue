@@ -40,6 +40,7 @@ def test_wcs_autolink_emptywcs():
     links = wcs_autolink(dc)
     assert len(links) == 0
 
+
 def test_wcs_autolink_2D_emptywcs():
 
     # No links should be found because the WCS don't actually have well defined
@@ -56,6 +57,7 @@ def test_wcs_autolink_2D_emptywcs():
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
     assert len(links) == 0
+
 
 def test_wcs_autolink_spectral_cube():
 
@@ -196,14 +198,17 @@ def test_link_editor():
     assert link2.data2.label == 'Data 2'
 
 
-def test_celestial_with_unknown_axes():
+@pytest.mark.parametrize('physical_types',
+                         [['SPAM', 'FREQ'], ['SPAM', 'EGGS'], ['WAVE', ''], ['', '']])
+def test_celestial_with_unknown_axes(physical_types):
 
     # Regression test for a bug that caused n-d datasets with celestial axes
     # and axes with unknown physical types to not even be linked by celestial
-    # axes.
+    # axes. Also testing various corner cases with one or both datasets having
+    # unknown or no physical type.
 
     wcs1 = WCS(naxis=3)
-    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN', 'SPAM'
+    wcs1.wcs.ctype = 'DEC--TAN', 'RA---TAN', physical_types[0]
     wcs1.wcs.set()
 
     data1 = Data()
@@ -212,7 +217,7 @@ def test_celestial_with_unknown_axes():
     pz1, py1, px1 = data1.pixel_component_ids
 
     wcs2 = WCS(naxis=3)
-    wcs2.wcs.ctype = 'GLON-CAR', 'FREQ', 'GLAT-CAR'
+    wcs2.wcs.ctype = 'GLON-CAR', physical_types[1], 'GLAT-CAR'
     wcs2.wcs.set()
 
     data2 = Data()
