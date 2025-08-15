@@ -79,7 +79,8 @@ def translate_pixel(data, pixel_coords, target_cid):
     return result, sorted(set(dimensions_all))
 
 
-class AnyScalar(object):
+# Ignore eq-without-hash, having __hash__ set to None is intended here
+class AnyScalar(object):  # noqa: PLW1641
     def __eq__(self, other):
         return np.isscalar(other)
 
