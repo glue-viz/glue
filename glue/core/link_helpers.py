@@ -497,7 +497,9 @@ def functional_link_collection(function, labels1=None, labels2=None,
 
 
 @link_helper(category="Join")
-class JoinLink(LinkCollection):
+# Ignore eq-without-hash: __eq__ is based on mutable objects, so this class
+# should not implement __hash__ (set to None).
+class JoinLink(LinkCollection):  # noqa: PLW1641
     cid_independent = False
 
     display = "Join on ID"
