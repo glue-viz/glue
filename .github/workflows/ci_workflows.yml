@@ -28,7 +28,8 @@ jobs:
         # Linux build
         - linux: py310-test-all
         - linux: py311-test
-        - linux: py312-test-all
+        - linux: py313-test-all
+        - linux: py314-test-all
 
         # Documentation build
         - linux: py310-docs
@@ -37,24 +38,26 @@ jobs:
           coverage: false
 
         # Test a few configurations on macOS
-        - macos: py310-test-all
-        - macos: py311-test
-        - macos: py312-test-all
+        - macos: py311-test-all
+        - macos: py312-test
+        - macos: py313-test-all
 
         # Test some configurations on Windows
         - windows: py310-test
         - windows: py312-test-all
+        - windows: py314-test
 
         # Test against latest developer versions of some packages
         - linux: py311-test-dev-all
         - linux: py312-test-dev
         - linux: py313-test-dev-all
+        - linux: py314-test-dev
 
-        - macos: py311-test-dev
-        - macos: py312-test-dev-all
+        - macos: py310-test-dev
         - macos: py313-test-dev
+        - macos: py314-test-dev-all
 
-        - windows: py311-test-dev-all
+        - windows: py312-test-dev-all
         - windows: py313-test-dev
 
   publish:
