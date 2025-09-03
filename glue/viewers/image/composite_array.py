@@ -15,7 +15,7 @@ __all__ = ['CompositeArray']
 
 COLOR_CONVERTER = ColorConverter()
 
-CMAP_SAMPLING = np.linspace(0, 1, 256)
+CMAP_SAMPLING = np.concatenate([[np.nan], np.linspace(0, 1, 256)])
 
 
 class CompositeArray(object):
@@ -29,11 +29,21 @@ class CompositeArray(object):
 
         self._first = True
         self._mode = 'color'
-        self._allow_bad_alpha = False
+        self._cmap_bad_alpha = None
 
     @property
     def mode(self):
         return self._mode
+
+    @property
+    def cmap_bad_alpha(self):
+        return self._cmap_bad_alpha
+
+    @cmap_bad_alpha.setter
+    def cmap_bad_alpha(self, value):
+        if not (value is None or 0 <= value <= 1):
+            raise ValueError("cmap_bad_alpha should be None, or between 0 and 1 inclusive")
+        self._cmap_bad_alpha = value
 
     @mode.setter
     def mode(self, value):
@@ -48,6 +58,7 @@ class CompositeArray(object):
                              'shape': None,
                              'color': '0.5',
                              'cmap': colormaps.members[0][1],
+                             'cmap_bad_alpha': self.cmap_bad_alpha,
                              'alpha': 1,
                              'clim': (0, 1),
                              'contrast': 1,
@@ -147,15 +158,10 @@ class CompositeArray(object):
                 # ensure "bad" values have the same alpha as the
                 # rest of the layer:
                 if hasattr(layer['cmap'], 'get_bad'):
-                    bad_rgba = layer['cmap'].get_bad().tolist()
+                    bad_rgba = layer['cmap'].get_bad()
                     bad_color = bad_rgba[:3]
-                    bad_alpha = bad_rgba[3:]
-
-                    if self._allow_bad_alpha:
-                        bad_rgba = bad_color + bad_alpha
-                    else:
-                        bad_rgba = bad_color + [layer['alpha']]
-
+                    bad_alpha = bad_rgba[-1] if self.cmap_bad_alpha is None else self.cmap_bad_alpha
+                    bad_rgba = bad_color + (bad_alpha,)
                     layer_cmap = layer['cmap'].with_extremes(bad=bad_rgba)
                 else:
                     layer_cmap = layer['cmap']
@@ -169,7 +175,7 @@ class CompositeArray(object):
                 # Check what the smallest colormap alpha value for this layer is
                 # - if it is 1 then this colormap does not change transparency,
                 # and this allows us to speed things up a little.
-                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and (not self._allow_bad_alpha or bad_alpha == 1):
+                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and (self.cmap_bad_alpha in [None, 1]):
                     if layer['alpha'] == 1:
                         img[...] = 0
                     else:
@@ -177,13 +183,13 @@ class CompositeArray(object):
                         img *= (1 - layer['alpha'])
 
                 else:
-
                     # Use traditional alpha compositing
                     alpha_plane = layer['alpha'] * plane[:, :, 3]
 
-                    if self._allow_bad_alpha:
-                        # ensure "bad" alpha is preserved:
-                        alpha_plane[~np.isfinite(data)] *= bad_alpha
+                    # ensure "bad" alpha is preserved:
+                    if hasattr(layer['cmap'], 'get_bad') and bad_alpha != 1:
+                        non_finite = ~np.isfinite(data)
+                        alpha_plane[non_finite] *= bad_alpha
 
                     plane[:, :, 0] = plane[:, :, 0] * alpha_plane
                     plane[:, :, 1] = plane[:, :, 1] * alpha_plane
