@@ -35,16 +35,6 @@ class CompositeArray(object):
     def mode(self):
         return self._mode
 
-    @property
-    def cmap_bad_alpha(self):
-        return self._cmap_bad_alpha
-
-    @cmap_bad_alpha.setter
-    def cmap_bad_alpha(self, value):
-        if not (value is None or 0 <= value <= 1):
-            raise ValueError("cmap_bad_alpha should be None, or between 0 and 1 inclusive")
-        self._cmap_bad_alpha = value
-
     @mode.setter
     def mode(self, value):
         if value not in ['color', 'colormap']:
@@ -157,7 +147,8 @@ class CompositeArray(object):
 
                 # ensure "bad" values have the same alpha as the
                 # rest of the layer:
-                if hasattr(layer['cmap'], 'get_bad'):
+                cmap_has_bad = hasattr(layer['cmap'], 'get_bad')
+                if cmap_has_bad:
                     bad_rgba = layer['cmap'].get_bad()
                     bad_color = bad_rgba[:3]
                     bad_alpha = bad_rgba[-1] if self.cmap_bad_alpha is None else self.cmap_bad_alpha
@@ -175,7 +166,7 @@ class CompositeArray(object):
                 # Check what the smallest colormap alpha value for this layer is
                 # - if it is 1 then this colormap does not change transparency,
                 # and this allows us to speed things up a little.
-                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and (self.cmap_bad_alpha in [None, 1]):
+                if layer_cmap(CMAP_SAMPLING)[:, 3].min() == 1 and self.cmap_bad_alpha is None:
                     if layer['alpha'] == 1:
                         img[...] = 0
                     else:
@@ -187,9 +178,8 @@ class CompositeArray(object):
                     alpha_plane = layer['alpha'] * plane[:, :, 3]
 
                     # ensure "bad" alpha is preserved:
-                    if hasattr(layer['cmap'], 'get_bad') and bad_alpha != 1:
-                        non_finite = ~np.isfinite(data)
-                        alpha_plane[non_finite] *= bad_alpha
+                    if cmap_has_bad:
+                        alpha_plane[~np.isfinite(data)] = bad_alpha
 
                     plane[:, :, 0] = plane[:, :, 0] * alpha_plane
                     plane[:, :, 1] = plane[:, :, 1] * alpha_plane
@@ -246,3 +236,13 @@ class CompositeArray(object):
 
     def __contains__(self, item):
         return item in self.layers
+
+    @property
+    def cmap_bad_alpha(self):
+        return self._cmap_bad_alpha
+
+    @cmap_bad_alpha.setter
+    def cmap_bad_alpha(self, value):
+        if not (value is None or 0 <= value <= 1):
+            raise ValueError("cmap_bad_alpha should be None, or between 0 and 1 inclusive")
+        self._cmap_bad_alpha = value

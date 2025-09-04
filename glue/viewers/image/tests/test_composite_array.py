@@ -66,12 +66,15 @@ class TestCompositeArray(object):
         expected_a = np.array([[cm.Blues(1.), cm.Blues(0.5)],
                                [cm.Blues(0.), cm.Blues(0.)]])
 
-        bad_value = cm.Reds.with_extremes(
-            # set "bad" to the default color and alpha=1
-            bad=cm.Reds.get_bad().tolist()[:3] + [1.]
-        )(np.nan)
+        if self.composite.cmap_bad_alpha is None:
+            # default masked values are opaque black
+            bad_rgba = (0, 0, 0, 1)
+        else:
+            # otherwise, apply cmap_bad_alpha:
+            bad_rgba = cm.Reds.get_bad()[:3] + (self.composite.cmap_bad_alpha,)
+
         expected_b = np.array(
-            [[bad_value, cm.Reds(1.)],
+            [[bad_rgba, cm.Reds(1.)],
              [cm.Reds(0.), cm.Reds(0.)]]
         )
 
@@ -218,3 +221,39 @@ class TestCompositeArray(object):
         self.composite.set('a', array=array, visible=False)
 
         assert self.composite() is None
+
+    def test_cmap_bad_alpha(self):
+        self.composite.mode = 'colormap'
+
+        self.composite.allocate('a')
+        self.composite.allocate('b')
+        cmap_a = cm.viridis
+        cmap_b = cm.Grays
+
+        self.composite.set('a', zorder=0, visible=True, array=self.array1,
+                           cmap=cmap_a, clim=(0, 2))
+
+        composite_arr_a = self.composite(bounds=self.default_bounds)
+        self.composite.set('b', zorder=1, visible=True, array=self.array2 * np.nan,
+                           cmap=cmap_b, clim=(0, 1))
+
+        shape = self.array2.shape
+        bad_color = tuple(cmap_b.get_bad()[:3])
+        bad_alpha_expected = {
+            # masked pixels are opaque black - this is the glue
+            # default behavior.
+            None: np.broadcast_to((0, 0, 0, 1,), (*shape, 4)),
+
+            # masked pixels are totally transparent, the composite
+            # image is simply the lower layer:
+            0: composite_arr_a,
+
+            # masked pixels are set to opaque white
+            1: np.broadcast_to((1, 1, 1, 1), (*shape, 4)),
+        }
+
+        for cmap_bad_alpha, expected in bad_alpha_expected.items():
+            self.composite.cmap_bad_alpha = cmap_bad_alpha
+            self.composite.set('b', cmap_bad_alpha=cmap_bad_alpha)
+            actual = self.composite(bounds=self.default_bounds)
+            assert_allclose(actual, expected)
