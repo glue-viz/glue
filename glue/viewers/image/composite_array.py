@@ -152,7 +152,7 @@ class CompositeArray(object):
                     bad_rgba = layer['cmap'].get_bad()
                     bad_color = bad_rgba[:3]
                     bad_alpha = bad_rgba[-1] if self.cmap_bad_alpha is None else self.cmap_bad_alpha
-                    bad_rgba = bad_color + (bad_alpha,)
+                    bad_rgba = tuple(bad_color) + (bad_alpha,)
                     layer_cmap = layer['cmap'].with_extremes(bad=bad_rgba)
                 else:
                     layer_cmap = layer['cmap']
