@@ -504,6 +504,8 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
     bias = DDCProperty(0.5, docstring='A constant value that is added to the '
                                       'layer before rendering')
     cmap = DDCProperty(docstring='The colormap used to render the layer')
+    cmap_bad_alpha = DDCProperty(None, docstring='Set this `cmap`\'s "bad" colormap opacity, '
+                                                 'to `alpha`, if not `None`.')
     global_sync = DDCProperty(False, docstring='Whether the color and transparency '
                                                'should be synced with the global '
                                                'color and transparency for the data')
@@ -638,6 +640,9 @@ class ImageLayerState(BaseImageLayerState, StretchStateMixin):
             c_choices = ['']
         ImageLayerState.attribute_display_unit.set_choices(self, c_choices)
         self.attribute_display_unit = component.units
+
+    def reset_cmap_bad_alpha(self):
+        self.cmap_bad_alpha = None
 
 
 class ImageSubsetLayerState(BaseImageLayerState):
