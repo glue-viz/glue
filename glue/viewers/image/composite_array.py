@@ -151,7 +151,14 @@ class CompositeArray(object):
                 if cmap_has_bad:
                     bad_rgba = layer['cmap'].get_bad()
                     bad_color = bad_rgba[:3]
-                    bad_alpha = bad_rgba[-1] if self.cmap_bad_alpha is None else self.cmap_bad_alpha
+                    if self.cmap_bad_alpha is None:
+                        # glue default for backwards compatibility:
+                        # if `cmap_bad_alpha` is not set, render
+                        # masked values as opaque pixels
+                        bad_alpha = 1
+                    else:
+                        bad_alpha = self.cmap_bad_alpha
+
                     bad_rgba = tuple(bad_color) + (bad_alpha,)
                     layer_cmap = layer['cmap'].with_extremes(bad=bad_rgba)
                 else:
@@ -179,7 +186,7 @@ class CompositeArray(object):
 
                     # ensure "bad" alpha is preserved:
                     if cmap_has_bad:
-                        alpha_plane[~np.isfinite(data)] = bad_alpha
+                        alpha_plane[~np.isfinite(data)] *= bad_alpha
 
                     plane[:, :, 0] = plane[:, :, 0] * alpha_plane
                     plane[:, :, 1] = plane[:, :, 1] * alpha_plane

@@ -248,8 +248,8 @@ class TestCompositeArray(object):
             # image is simply the lower layer:
             0: composite_arr_a,
 
-            # masked pixels are set to opaque white
-            1: np.broadcast_to((1, 1, 1, 1), (*shape, 4)),
+            # masked pixels are set to the "bad" color with alpha==1
+            1: np.broadcast_to(bad_color + (1,), (*shape, 4)),
         }
 
         for cmap_bad_alpha, expected in bad_alpha_expected.items():
