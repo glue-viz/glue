@@ -66,7 +66,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         super(ImageLayerArtist, self).__init__(axes, viewer_state,
                                                layer_state=layer_state, layer=layer)
-        self.state.add_callback('cmap_bad_alpha', self._set_cmap_bad_alpha)
+        self.state.add_callback('cmap_bad', self._set_cmap_bad)
 
         # We use a custom object to deal with the compositing of images, and we
         # store it as a private attribute of the axes to make sure it is
@@ -77,7 +77,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.composite.set(self.uuid, array=self.get_image_data,
                            shape=self.get_image_shape)
         self.composite_image = self.axes._composite_image
-        self.cmap_bad_alpha = self.composite.cmap_bad_alpha
+        self.cmap_bad = self.composite.cmap_bad
 
     @property
     def label(self):
@@ -216,8 +216,8 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.redraw()
 
     @defer_draw
-    def _set_cmap_bad_alpha(self, *args):
-        self.composite.cmap_bad_alpha = self.state.cmap_bad_alpha
+    def _set_cmap_bad(self, *args):
+        self.composite.cmap_bad = self.state.cmap_bad
         self.force_update()
 
 

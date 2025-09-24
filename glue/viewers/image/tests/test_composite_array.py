@@ -66,7 +66,7 @@ class TestCompositeArray(object):
         expected_a = np.array([[cm.Blues(1.), cm.Blues(0.5)],
                                [cm.Blues(0.), cm.Blues(0.)]])
 
-        if self.composite.cmap_bad_alpha is None:
+        if self.composite.cmap_bad is None:
             # default masked values are opaque black
             bad_rgba = (0, 0, 0, 1)
         else:
@@ -222,7 +222,7 @@ class TestCompositeArray(object):
 
         assert self.composite() is None
 
-    def test_cmap_bad_alpha(self):
+    def test_cmap_bad(self):
         self.composite.mode = 'colormap'
 
         self.composite.allocate('a')
@@ -239,21 +239,21 @@ class TestCompositeArray(object):
 
         shape = self.array2.shape
         bad_color = tuple(cmap_b.get_bad()[:3])
-        bad_alpha_expected = {
+        bad_expected = {
             # masked pixels are opaque black - this is the glue
             # default behavior.
             None: np.broadcast_to((0, 0, 0, 1,), (*shape, 4)),
 
             # masked pixels are totally transparent, the composite
             # image is simply the lower layer:
-            0: composite_arr_a,
+            (0, 0, 0, 0): composite_arr_a,
 
             # masked pixels are set to the "bad" color with alpha==1
-            1: np.broadcast_to(bad_color + (1,), (*shape, 4)),
+            (0, 0, 0, 1): np.broadcast_to(bad_color + (1,), (*shape, 4)),
         }
 
-        for cmap_bad_alpha, expected in bad_alpha_expected.items():
-            self.composite.cmap_bad_alpha = cmap_bad_alpha
-            self.composite.set('b', cmap_bad_alpha=cmap_bad_alpha)
+        for cmap_bad, expected in bad_expected.items():
+            self.composite.cmap_bad = cmap_bad
+            self.composite.set('b', cmap_bad=cmap_bad)
             actual = self.composite(bounds=self.default_bounds)
             assert_allclose(actual, expected)
