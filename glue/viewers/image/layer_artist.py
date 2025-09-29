@@ -35,7 +35,6 @@ class BaseImageLayerArtist(MatplotlibLayerArtist, HubListener):
         # layers to be redrawn
         self._viewer_state.add_global_callback(self._update_image)
         self.state.add_global_callback(self._update_image)
-
         self.layer.hub.subscribe(self, ComponentsChangedMessage,
                                  handler=self.update,
                                  filter=self._is_data_object)
@@ -67,6 +66,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         super(ImageLayerArtist, self).__init__(axes, viewer_state,
                                                layer_state=layer_state, layer=layer)
+        self.state.add_callback('cmap_bad', self._set_cmap_bad)
 
         # We use a custom object to deal with the compositing of images, and we
         # store it as a private attribute of the axes to make sure it is
@@ -77,6 +77,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
         self.composite.set(self.uuid, array=self.get_image_data,
                            shape=self.get_image_shape)
         self.composite_image = self.axes._composite_image
+        self.cmap_bad = self.composite.cmap_bad
 
     @property
     def label(self):
@@ -203,7 +204,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         if force or any(prop in changed for prop in ('v_min', 'v_max', 'contrast',
                                                      'bias', 'alpha', 'color_mode',
-                                                     'cmap', 'color', 'zorder',
+                                                     'cmap', 'cmap_bad_alpha', 'color', 'zorder',
                                                      'visible', 'stretch', 'stretch_parameters')):
             self._update_visual_attributes()
 
@@ -213,6 +214,11 @@ class ImageLayerArtist(BaseImageLayerArtist):
         PIXEL_CACHE.pop(self.state.uuid, None)
         self._update_image(force=True)
         self.redraw()
+
+    @defer_draw
+    def _set_cmap_bad(self, *args):
+        self.composite.cmap_bad = self.state.cmap_bad
+        self.force_update()
 
 
 class ImageSubsetArray(object):
