@@ -1,5 +1,24 @@
 # Full changelog
 
+## v1.24.0 - 2025-09-30
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Public image layer attributes for colormap 'bad' value by @bmorris3 in https://github.com/glue-viz/glue/pull/2556
+
+#### Other Changes
+
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci[bot] in https://github.com/glue-viz/glue/pull/2546
+
+### New Contributors
+
+* @pre-commit-ci[bot] made their first contribution in https://github.com/glue-viz/glue/pull/2546
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.23.0...v1.24.0
+
 ## v1.23.0 - 2025-07-29
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
