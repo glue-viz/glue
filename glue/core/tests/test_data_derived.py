@@ -51,6 +51,9 @@ class TestIndexedData:
         assert_equal(derived.compute_fixed_resolution_buffer(bounds=bounds, target_cid=self.x_id),
                      self.data.compute_fixed_resolution_buffer(bounds=bounds, target_cid=self.x_id))
 
+        assert_equal(derived.compute_fixed_resolution_buffer(bounds=bounds, subset_state=self.subset_state),
+                     self.data.compute_fixed_resolution_buffer(bounds=bounds, subset_state=self.subset_state))
+
         assert_equal(derived.compute_statistic('mean', self.x_id),
                      self.data.compute_statistic('mean', self.x_id))
 
