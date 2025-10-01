@@ -252,7 +252,7 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     # when we apply subset_state.
 
     target_cid_is_dask = target_cid is not None and isinstance(data, Data) and isinstance(data.get_component(target_cid), DaskComponent)
-    subset_over_dask_data = subset_state is not None and any([isinstance(data.get_component(comp), DaskComponent) for comp in data.main_components])
+    subset_over_dask_data = subset_state is not None and isinstance(data, Data) and any([isinstance(data.get_component(comp), DaskComponent) for comp in data.main_components])
 
     if target_cid_is_dask or subset_over_dask_data:
 
