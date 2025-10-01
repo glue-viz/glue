@@ -1,5 +1,16 @@
 # Full changelog
 
+## v1.24.1 - 2025-10-01
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Bug Fixes
+
+* Fix bug in fixed resolution buffer that occured when dealing with subclasses of BaseCartesianData by @astrofrog in https://github.com/glue-viz/glue/pull/2557
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.24.0...v1.24.1
+
 ## v1.24.0 - 2025-09-30
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
