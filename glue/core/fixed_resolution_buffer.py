@@ -144,24 +144,41 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
     if cache_id is not None:
 
         if subset_state is None:
-            # Use uuid for component ID since otherwise component IDs don't return
+            # Use uuid for data and component ID since otherwise component IDs don't return
             # False when comparing two different CIDs (instead they return a subset state).
             # For bounds we use a special wrapper that can identify wildcards.
-            current_array_hash = (data, bounds, target_data, target_cid.uuid, broadcast)
+            current_array_hash = (data.uuid, bounds, target_data.uuid, target_cid.uuid, broadcast)
         else:
-            current_array_hash = (data, bounds, target_data, subset_state, broadcast)
+            current_array_hash = (data.uuid, bounds, target_data.uuid, subset_state, broadcast)
 
-        current_pixel_hash = (data, target_data)
+        current_pixel_hash = (data.uuid, target_data.uuid)
 
         if cache_id in ARRAY_CACHE:
             if ARRAY_CACHE[cache_id]['hash'] == current_array_hash:
                 return ARRAY_CACHE[cache_id]['array']
 
-        # To save time later, if the pixel cache doesn't match at the level of the
-        # data and target_data, we just reset the cache.
-        if cache_id in PIXEL_CACHE:
-            if PIXEL_CACHE[cache_id]['hash'] != current_pixel_hash:
-                PIXEL_CACHE.pop(cache_id)
+        # For pixel transformations, we don't necessarily need the cache_id to match, as coordinate
+        # transformations can be the same for different callers - for instance, layer artists for
+        # subsets might need the same transformations over all subsets and the same as for the actual
+        # data. Therefore, instead of extracting the cache_id entry from PIXEL_CACHE, we instead loop
+        # over PIXEL_CACHE, and for each pixel component ID, we find the first entry that matches the
+        # hash and the bounds, since that should uniquely identify the transformation. Note that we
+        # still use cache_id because we still want to make sure we save results from different layers
+        # to the cache in case any layers get removed or changed.
+        matching_pixel_cache = {}
+        for chid, i_cache in PIXEL_CACHE.items():
+            if i_cache['hash'] == current_pixel_hash:
+                for ipix, pix in enumerate(data.pixel_component_ids):
+                    if (
+                            ipix not in matching_pixel_cache and
+                            ipix in i_cache and
+                            i_cache[ipix]['bounds'] == bounds
+                    ):
+                        matching_pixel_cache[ipix] = i_cache[ipix]
+
+    else:
+
+        matching_pixel_cache = None
 
     # Start off by generating arrays of coordinates in the original dataset
     pixel_coords = [np.linspace(*bound) if isinstance(bound, tuple) else bound for bound in bounds]
@@ -180,17 +197,11 @@ def compute_fixed_resolution_buffer(data, bounds, target_data=None, target_cid=N
 
     for ipix, pix in enumerate(data.pixel_component_ids):
 
-        # At this point, if cache_id is in PIXEL_CACHE, we know that data and
-        # target_data match so we just check the bounds. Note that the bounds
-        # include the AnyScalar wildcard for any dimensions that don't impact
-        # the pixel coordinates here. We do this so that we don't have to
-        # recompute the pixel coordinates when e.g. slicing through cubes.
+        if matching_pixel_cache is not None and ipix in matching_pixel_cache:
 
-        if cache_id in PIXEL_CACHE and ipix in PIXEL_CACHE[cache_id] and PIXEL_CACHE[cache_id][ipix]['bounds'] == bounds:
-
-            translated_coord = PIXEL_CACHE[cache_id][ipix]['translated_coord']
-            dimensions = PIXEL_CACHE[cache_id][ipix]['dimensions']
-            invalid = PIXEL_CACHE[cache_id][ipix]['invalid']
+            translated_coord = matching_pixel_cache[ipix]['translated_coord']
+            dimensions = matching_pixel_cache[ipix]['dimensions']
+            invalid = matching_pixel_cache[ipix]['invalid']
 
         else:
 
