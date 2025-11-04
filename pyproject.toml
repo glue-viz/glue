@@ -1,8 +1,164 @@
+[project]
+name = "glue-core"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "License :: OSI Approved :: BSD License",
+]
+
+description = "Core library for the glue multidimensional data visualization project"
+readme = "README.rst"
+requires-python = ">=3.10"
+dynamic = [ "version",]
+
+authors = [
+    {name = "Thomas Robitaille", email = "glueviz@gmail.com"},
+    {name = "Chris Beaumont"},
+]
+
+dependencies = [
+    "numpy>=1.17",
+    "matplotlib>=3.2",
+    "scipy>=1.1",
+    "pandas>=1.2",
+    "astropy>=4.0",
+    "echo>=0.6",
+    "fast_histogram>=0.12",
+    "ipython>=4.0",
+    "dill>=0.2",
+    "h5py>=2.10",
+    "xlrd>=1.2",
+    "openpyxl>=3.0",
+    "mpl-scatter-density>=0.8",
+    "shapely>=2.0",
+]
+
+[project.urls]
+Homepage = "http://glueviz.org"
+
+[project.optional-dependencies]
+recommended = [ "scikit-image"]
+
+all = [
+    "scipy",
+    "scikit-image",
+    "PyAVM",
+    "astrodendro",
+    "spectral-cube",
+    "pillow!=7.1.0",
+]
+
+astronomy = [
+    "PyAVM",
+    "astrodendro",
+    "spectral-cube",
+]
+
+docs = [
+    "sphinx<7",
+    "sphinx-automodapi",
+    "sphinxcontrib-spelling",
+    "numpydoc",
+    "sphinx-book-theme",
+]
+
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-faulthandler",
+    "pytest-flake8",
+    "h5py>=2.10; platform_system=='Linux'",
+    "objgraph",
+]
+
+visualtest = [ "pytest-mpl"]
+
+[project.scripts]
+glue-config = "glue.config_gen:main"
+
 [build-system]
-requires = ["setuptools",
+requires = ["setuptools>=61.2",
             "setuptools_scm",
             "wheel"]
 build-backend = 'setuptools.build_meta'
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = false
+
+[project.entry-points."glue.plugins"]
+coordinate_helpers = "glue.plugins.coordinate_helpers:setup"
+wcs_autolinking = "glue.plugins.wcs_autolinking:setup"
+dendro_factory = "glue.plugins.dendro_viewer:setup"
+data_exporters = "glue.core.data_exporters:setup"
+fits_format = "glue.io.formats.fits:setup"
+export_python = "glue.plugins.tools:setup"
+
+[tool.setuptools.package-data]
+"*" = [ "*.png", "*.ui", "*.glu", "*.hdf5", "*.fits", "*.xlsx", "*.txt", "*.csv", "*.svg", "*.vot",]
+"glue.core.data_factories.tests" = [ "data/*.jpg",]
+
+[tool.pytest.ini_options]
+addopts = "-p no:logging"
+# Legacy ignores?
+# E402, E741 (permanently) in ruff lint.ignore
+# E402, E501, E731, F841, W605 (temporarily) in .ruff.toml
+flake8-ignore = "E226,E501,E731,F841,E127,E741,E402,W504,W605"
+filterwarnings = [
+    "ignore::PendingDeprecationWarning:xlrd",
+    "ignore:Session._key_changed is deprecated",
+    "ignore:zmq.* is deprecated",
+    "ignore:can't be aliased because it is another magic command",
+    "ignore:DragAndDropTerminal._style_sheet_changed is deprecated",
+    "ignore:::ipykernel",
+    "ignore:Accessing zmq Socket attribute",
+]
+
+[tool.coverage.run]
+omit = [
+    "glue/tests/*",
+    "glue/*/tests/*",
+    "glue/*/*/tests/*",
+    "glue/*/*/*/tests/*",
+    "glue/external/*",
+    "*/glue/tests/*",
+    "*/glue/*/tests/*",
+    "*/glue/*/*/tests/*",
+    "*/glue/*/*/*/tests/*",
+    "*/glue/external/*",
+]
+
+[tool.coverage.paths]
+source = [
+    "glue/",
+    "*/site-packages/glue",
+    "*\\site-packages\\glue",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except ImportError",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "def main\\(.*\\):",
+    "pragma: py{ignore_python_version}",
+    "def _ipython_key_completions_",
+]
+
+[tool.setuptools.packages.find]
+namespaces = false
+
+[tool.setuptools_scm]
+version_file = "glue/_version.py"
 
 [tool.gilesbot]
 [tool.gilesbot.circleci_artifacts]
