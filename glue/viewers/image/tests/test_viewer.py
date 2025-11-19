@@ -282,8 +282,6 @@ def test_indexed_data():
 
     session = application.session
 
-    hub = session.hub
-
     data_collection = session.data_collection
     data_collection.append(data_4d)
     data_collection.append(data_2d)
@@ -295,3 +293,31 @@ def test_indexed_data():
     assert viewer.state.y_att is data_2d.pixel_component_ids[0]
     assert viewer.state.x_att_world is data_2d.world_component_ids[1]
     assert viewer.state.y_att_world is data_2d.world_component_ids[0]
+
+
+def test_2d_3d_linking_exception():
+
+    # This is a regression test for a bug that caused an exception under
+    # certain linking conditions. The issue was that the FRB machinery
+    # was raising an IncompatibleDataException but we were not catching this
+    # in the layer artist.
+
+    data1 = Data(x=np.random.random((3, 4)), label='2D')
+    data2 = Data(x=np.random.random((3, 4, 5)), label='3D')
+
+    app = Application()
+
+    app.data_collection.append(data1)
+    app.data_collection.append(data2)
+
+    app.data_collection.add_link(LinkSame(data1.pixel_component_ids[0],
+                                          data2.pixel_component_ids[0]))
+    app.data_collection.add_link(LinkSame(data1.pixel_component_ids[1],
+                                          data2.pixel_component_ids[1]))
+
+    viewer = app.new_data_viewer(SimpleImageViewer)
+    viewer.add_data(data2)
+    viewer.add_data(data1)
+
+    assert viewer.layers[0].enabled
+    assert not viewer.layers[1].enabled
