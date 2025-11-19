@@ -12,7 +12,7 @@ from glue.viewers.image.state import ImageLayerState, ImageSubsetLayerState
 from glue.viewers.image.python_export import python_export_image_layer, python_export_image_subset_layer
 from glue.viewers.image.pixel_selection_subset_state import PixelSubsetState
 from glue.viewers.matplotlib.layer_artist import MatplotlibLayerArtist
-from glue.core.exceptions import IncompatibleAttribute
+from glue.core.exceptions import IncompatibleDataException, IncompatibleAttribute
 from glue.utils import color2rgb
 from glue.utils.matplotlib import ColormapPatchHandler
 from glue.core import BaseData, HubListener
@@ -138,7 +138,7 @@ class ImageLayerArtist(BaseImageLayerArtist):
 
         try:
             image = self.state.get_sliced_data(bounds=bounds)
-        except (IncompatibleAttribute, IndexError):
+        except (IncompatibleDataException, IncompatibleAttribute, IndexError):
             # The following includes a call to self.clear()
             self.disable_invalid_attributes(self.state.attribute)
             return None
