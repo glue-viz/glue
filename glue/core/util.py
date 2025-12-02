@@ -346,7 +346,7 @@ def sample_colormap(nsamples, cmap, lo=0, hi=1):
 
     samples = []
     for color in rgbas:
-        r, g, b, a = color
+        r, g, b, _a = color
         r = int(255 * r)
         g = int(255 * g)
         b = int(255 * b)

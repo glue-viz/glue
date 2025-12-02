@@ -27,8 +27,8 @@ jobs:
       envs: |
         # Linux build
         - linux: py310-test-all
-        - linux: py311-test
-        - linux: py313-test-all
+        - linux: py313-test
+        - linux: py314-test-all
 
         # Test a few configurations on macOS
         - macos: py311-test-all
@@ -38,14 +38,15 @@ jobs:
         # Test some configurations on Windows
         - windows: py310-test
         - windows: py312-test-all
+        - windows: py314-test
 
         # Test against latest developer versions of some packages
         - linux: py311-test-dev-all
-        - linux: py312-test-dev
         - linux: py313-test-dev-all
+        - linux: py314-test-dev
 
         - macos: py310-test-dev
-        - macos: py313-test-dev
+        - macos: py314-test-dev-all
 
         - windows: py312-test-dev-all
         - windows: py313-test-dev
@@ -58,17 +59,14 @@ jobs:
 
   allowed_failures:
     # Test on pre-release Python versions here as nightly wheels may sometimes fail to build
+    if: false
     needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
     with:
       coverage: codecov
 
       envs: |
-        - linux: py314-test-all
-        - windows: py314-test
-
-        - linux: py314-test-dev
-        - macos: py314-test-dev-all
+        - linux: py315-test-dev
 
   publish:
     needs: tests

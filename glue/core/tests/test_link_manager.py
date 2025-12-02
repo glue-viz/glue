@@ -325,7 +325,7 @@ def test_is_convertible_to_single_pixel_cid():
     data1 = Data()
     data1.coords = CustomCoordinates(n_dim=3)
     data1['x'] = np.ones((4, 3, 4))
-    px1, py1, pz1 = data1.pixel_component_ids
+    px1, _py1, _pz1 = data1.pixel_component_ids
     wx1, wy1, wz1 = data1.world_component_ids
     data1['a'] = px1 * 2
     data1['b'] = wx1 * 2

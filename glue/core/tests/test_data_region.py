@@ -325,7 +325,7 @@ class TestRegionData(object):
                                [viewer_x_att, viewer_y_att, viewer_z_att],
                                matrix=matrix))
 
-        with pytest.raises(ValueError, match="Can only display regions if links depend on 2 or fewer other components."):
+        with pytest.raises(ValueError, match="Can only display regions if links depend on 2 or fewer other components"):
             _ = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
 
     def test_errors_bad_link(self):
@@ -344,7 +344,7 @@ class TestRegionData(object):
                                [viewer_x_att, viewer_y_att],
                                matrix=matrix))
 
-        with pytest.raises(ValueError, match="Cannot display regions if links depend on other components."):
+        with pytest.raises(ValueError, match="Cannot display regions if links depend on other components"):
             _ = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
 
 

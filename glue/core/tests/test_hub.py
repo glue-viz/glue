@@ -112,7 +112,7 @@ class TestHub(object):
         assert handler.call_count == 0
 
     def test_broadcast_sends_to_all_subsribers(self):
-        msg, handler, subscriber = self.get_subscription()
+        _msg, handler, subscriber = self.get_subscription()
         msg, handler2, subscriber2 = self.get_subscription()
 
         self.hub.subscribe(subscriber, msg, handler)
@@ -123,7 +123,7 @@ class TestHub(object):
         handler2.assert_called_once_with(msg_instance)
 
     def test_invalid_unsubscribe_ignored(self):
-        msg, handler, subscriber = self.get_subscription()
+        _msg, handler, subscriber = self.get_subscription()
         self.hub.unsubscribe(handler, subscriber)
 
     def test_invalid_subscribe(self):
@@ -140,7 +140,7 @@ class TestHub(object):
                                             "a subclass of glue.Message")
 
     def test_default_handler(self):
-        msg, handler, subscriber = self.get_subscription()
+        msg, _handler, subscriber = self.get_subscription()
         self.hub.subscribe(subscriber, msg)
         msg_instance = msg("Test")
 

@@ -76,23 +76,23 @@ class TestProfileViewerState:
     def test_function(self):
 
         self.viewer_state.function = 'mean'
-        x, y = self.layer_state.profile
+        _x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
         self.viewer_state.function = 'minimum'
-        x, y = self.layer_state.profile
+        _x, y = self.layer_state.profile
         assert_allclose(y, [0, 8, 16])
 
         self.viewer_state.function = 'maximum'
-        x, y = self.layer_state.profile
+        _x, y = self.layer_state.profile
         assert_allclose(y, [7, 15, 23])
 
         self.viewer_state.function = 'sum'
-        x, y = self.layer_state.profile
+        _x, y = self.layer_state.profile
         assert_allclose(y, [28, 92, 156])
 
         self.viewer_state.function = 'median'
-        x, y = self.layer_state.profile
+        _x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
     def test_subset(self):

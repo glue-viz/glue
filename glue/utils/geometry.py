@@ -165,7 +165,7 @@ def floodfill(data, start_coords, threshold):
     mask = (data > value * (2 - threshold)) & (data < value * threshold)
 
     # Determine all individual chunks
-    labels, num_features = label(mask)
+    labels, _num_features = label(mask)
 
     mask = labels == labels[start_coords]
 

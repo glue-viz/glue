@@ -30,7 +30,7 @@ class TestAstropyFitter(object):
         f.fitting_cls = fitter = MagicMock()
 
         f.build_and_fit([1, 2, 3], [2, 3, 4])
-        (model, x, y), kwargs = fitter().call_args
+        (model, x, y), __kwargs = fitter().call_args
 
         assert model.amplitude == 1
         assert model.mean == 2
@@ -44,7 +44,7 @@ class TestAstropyFitter(object):
         f.fitting_cls = fitter = MagicMock()
         f.build_and_fit([1, 2, 3], [2, 3, 4], [3, 4, 5])
 
-        args, kwargs = fitter().call_args
+        _args, kwargs = fitter().call_args
         np.testing.assert_array_equal(kwargs['weights'],
                                       1. / np.array([3., 4., 5]) ** 2)
 
@@ -81,7 +81,7 @@ class TestAstropyFitter(object):
         y = np.exp(-x ** 2 / 2)
         f.set_constraint('mean', limits=[1, 2])
 
-        model, fitter = f.build_and_fit(x, y)
+        model, _fitter = f.build_and_fit(x, y)
         np.testing.assert_almost_equal(model.mean.value, 1)
 
     def test_fixed_constraints(self):
@@ -90,7 +90,7 @@ class TestAstropyFitter(object):
         y = np.exp(-x ** 2 / 2)
         f.set_constraint('amplitude', fixed=True)
 
-        model, fitter = f.build_and_fit(x, y)
+        model, _fitter = f.build_and_fit(x, y)
         np.testing.assert_almost_equal(model.amplitude.value, 1.5)
 
 
