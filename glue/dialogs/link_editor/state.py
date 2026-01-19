@@ -5,7 +5,7 @@ from inspect import getfullargspec
 from glue.config import link_function
 
 from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import LinkCollection, JoinLink, validate_link, LinkValidationError
+from glue.core.link_helpers import LinkCollection, JoinLink, validate_link
 from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper

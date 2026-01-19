@@ -4,14 +4,12 @@
 Tests for link validation functionality.
 """
 
-import warnings
 import pytest
-import numpy as np
 
 from glue.core import Data, DataCollection, ComponentID
 from glue.core.component_link import ComponentLink
 from glue.core.link_helpers import (
-    LinkSame, LinkTwoWay, MultiLink, JoinLink, LinkCollection,
+    LinkSame, LinkTwoWay, JoinLink, LinkCollection,
     validate_link, LinkValidationError
 )
 from glue.core.state import GlueSerializer, GlueUnSerializer
