@@ -174,6 +174,7 @@ report_on_fail = true
 lint.select = ["ALL"]
 exclude=[
     "glue/external/*",
+    "glue/_version.py",
     "*_parsetab.py",
     "*_lextab.py"
 ]
