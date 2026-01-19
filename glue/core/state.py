@@ -85,6 +85,7 @@ from glue.core.component_link import CoordinateComponentLink
 from glue.core.roi import Roi
 from glue.core import glue_pickle as gp
 from glue.core.subset_group import coerce_subset_groups
+from glue.core.link_helpers import validate_link
 from glue.config import session_patch
 from glue.utils import lookup_class
 from glue.utils.matplotlib import MATPLOTLIB_GE_36
@@ -802,10 +803,21 @@ def _save_data_collection_4(dc, context):
 
 @loader(DataCollection)
 def _load_data_collection(rec, context):
+    import warnings
 
     datasets = list(map(context.object, rec['data']))
 
-    links = [context.object(link) for link in rec['links']]
+    # Load links with error handling
+    links = []
+    for link_rec in rec['links']:
+        try:
+            link = context.object(link_rec)
+            if link is not None:
+                links.append(link)
+        except Exception as e:
+            warnings.warn(f"Error loading link, skipping: {e}",
+                          UserWarning, stacklevel=2)
+            continue
 
     # Filter out CoordinateComponentLinks that may have been saved in the past
     # as these are now re-generated on-the-fly.
@@ -846,7 +858,18 @@ def _load_data_collection(rec, context):
 
     dc = DataCollection(datasets)
 
-    dc.set_links(external)
+    # Validate external links before adding them
+    valid_external = []
+    for link in external:
+        is_valid, errors = validate_link(link, dc, raise_on_error=False)
+        if is_valid:
+            valid_external.append(link)
+        else:
+            error_msg = "; ".join(errors)
+            warnings.warn(f"Skipping invalid link during session load: {error_msg}",
+                          UserWarning, stacklevel=2)
+
+    dc.set_links(valid_external)
     coerce_subset_groups(dc)
     return dc
 
@@ -869,9 +892,33 @@ def _load_data_collection_3(rec, context):
 
 @loader(DataCollection, version=4)
 def _load_data_collection_4(rec, context):
+    import warnings
 
     dc = DataCollection(list(map(context.object, rec['data'])))
-    links = [context.object(link) for link in rec['links']]
+
+    # Load and validate links
+    links = []
+    for link_rec in rec['links']:
+        try:
+            link = context.object(link_rec)
+            if link is None:
+                warnings.warn(f"Skipping link that could not be deserialized: {link_rec}",
+                              UserWarning, stacklevel=2)
+                continue
+
+            # Validate the link
+            is_valid, errors = validate_link(link, dc, raise_on_error=False)
+            if is_valid:
+                links.append(link)
+            else:
+                error_msg = "; ".join(errors)
+                warnings.warn(f"Skipping invalid link during session load: {error_msg}",
+                              UserWarning, stacklevel=2)
+        except Exception as e:
+            warnings.warn(f"Error loading link, skipping: {e}",
+                          UserWarning, stacklevel=2)
+            continue
+
     dc.set_links(links)
     coerce_subset_groups(dc)
 

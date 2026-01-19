@@ -5,7 +5,7 @@ from inspect import getfullargspec
 from glue.config import link_function
 
 from glue.core.component_link import ComponentLink
-from glue.core.link_helpers import LinkCollection, JoinLink
+from glue.core.link_helpers import LinkCollection, JoinLink, validate_link, LinkValidationError
 from glue.core.state_objects import State
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from glue.core.data_combo_helper import DataCollectionComboHelper, ComponentIDComboHelper
@@ -166,9 +166,69 @@ class LinkEditorState(State):
         self.links.remove(self.current_link)
         self._on_data_change()
 
+    def validate_current_link(self):
+        """
+        Validate the currently selected link.
+
+        Returns
+        -------
+        is_valid : bool
+            True if the current link is valid.
+        errors : list of str
+            List of error messages if validation failed, empty list otherwise.
+        """
+        if self.current_link is None:
+            return False, ["No link selected"]
+        return validate_link(self.current_link.link, self.data_collection,
+                             raise_on_error=False)
+
+    def validate_all_links(self):
+        """
+        Validate all links in the editor.
+
+        Returns
+        -------
+        results : list of tuple
+            List of (link_state, is_valid, errors) tuples for each link.
+        """
+        results = []
+        for link_state in self.links:
+            is_valid, errors = validate_link(link_state.link, self.data_collection,
+                                             raise_on_error=False)
+            results.append((link_state, is_valid, errors))
+        return results
+
     def update_links_in_collection(self):
-        links = [link_state.link for link_state in self.links]
-        self.data_collection.set_links(links)
+        """
+        Update the DataCollection with the current links from the editor.
+
+        This method validates all links before adding them to the collection.
+        Invalid links are skipped with a warning.
+
+        Returns
+        -------
+        invalid_links : list of tuple
+            List of (link_state, error_message) tuples for any links that
+            failed validation and were not added.
+        """
+        import warnings
+
+        valid_links = []
+        invalid_links = []
+
+        for link_state in self.links:
+            link = link_state.link
+            is_valid, errors = validate_link(link, self.data_collection, raise_on_error=False)
+            if is_valid:
+                valid_links.append(link)
+            else:
+                error_msg = "; ".join(errors)
+                warnings.warn(f"Skipping invalid link '{link_state}': {error_msg}",
+                              UserWarning, stacklevel=2)
+                invalid_links.append((link_state, error_msg))
+
+        self.data_collection.set_links(valid_links)
+        return invalid_links
 
 
 class EditableLinkFunctionState(State):
