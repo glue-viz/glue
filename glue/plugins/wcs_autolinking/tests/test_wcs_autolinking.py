@@ -121,7 +121,7 @@ def test_wcs_autolink_image_and_spectral_cube():
     data2 = Data()
     data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
-    pz2, py2, px2 = data2.pixel_component_ids
+    pz2, _py2, px2 = data2.pixel_component_ids
 
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
@@ -214,7 +214,7 @@ def test_celestial_with_unknown_axes(physical_types):
     data1 = Data()
     data1.coords = wcs1
     data1['x'] = np.ones((2, 3, 4))
-    pz1, py1, px1 = data1.pixel_component_ids
+    _pz1, py1, px1 = data1.pixel_component_ids
 
     wcs2 = WCS(naxis=3)
     wcs2.wcs.ctype = 'GLON-CAR', physical_types[1], 'GLAT-CAR'
@@ -223,7 +223,7 @@ def test_celestial_with_unknown_axes(physical_types):
     data2 = Data()
     data2.coords = wcs2
     data2['x'] = np.ones((2, 3, 4))
-    pz2, py2, px2 = data2.pixel_component_ids
+    pz2, _py2, px2 = data2.pixel_component_ids
 
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
@@ -336,7 +336,7 @@ def test_has_celestial_with_time_and_spectral_axes():
     data1 = Data(label='Data 1')
     data1.coords = wcs1
     data1['x'] = np.ones((2, 3, 4, 5))
-    pw1, pz1, py1, px1 = data1.pixel_component_ids
+    pw1, pz1, py1, _px1 = data1.pixel_component_ids
 
     wcs2 = WCS(naxis=3)
     wcs2.wcs.ctype = 'HPLN-TAN', 'HPLT-TAN', 'TIME'
@@ -367,6 +367,7 @@ def test_has_celestial_with_time_and_spectral_axes():
     assert link[5].get_from_ids() == [px2, py2, pz2]
 
 
+# Seems only to fail under py310
 @pytest.mark.xfail
 def test_2d_and_1d_data_cubes_with_no_celestial_axes():
     """
@@ -381,7 +382,7 @@ def test_2d_and_1d_data_cubes_with_no_celestial_axes():
     data1 = Data(label='Data 1')
     data1.coords = wcs1
     data1['x'] = np.ones((2, 3))
-    py1, px1 = data1.pixel_component_ids
+    py1, _px1 = data1.pixel_component_ids
 
     wcs2 = WCS(naxis=1)
     wcs2.wcs.ctype = ['WAVE']
@@ -402,7 +403,8 @@ def test_2d_and_1d_data_cubes_with_no_celestial_axes():
     assert ' '.join(str(link[0].get_from_ids()).split()[:2]) == ' '.join(str(px2).split()[:2])
 
 
-@pytest.mark.xfail
+# Seems no longer to fail with supported Python versions (Astropy 4.1+)
+#@pytest.mark.xfail
 def test_link_of_spectral_axes_of_different_physical_types():
     """
     To check that there is no auto-link of spectral axes of two different physical types, e.g.
@@ -452,7 +454,7 @@ def test_cube_has_celestial_and_cube_without_celestial_axes_1():
     data1 = Data(label='Data 1')
     data1.coords = wcs1
     data1['x'] = np.ones((2, 3, 4))
-    pz1, py1, px1 = data1.pixel_component_ids
+    _pz1, py1, _px1 = data1.pixel_component_ids
 
     wcs2 = WCS(naxis=2)
     wcs2.wcs.ctype = 'FREQ', 'TIME'
@@ -461,7 +463,7 @@ def test_cube_has_celestial_and_cube_without_celestial_axes_1():
     data2 = Data(label='Data 2')
     data2.coords = wcs2
     data2['x'] = np.ones((4, 5))
-    py2, px2 = data2.pixel_component_ids
+    _py2, px2 = data2.pixel_component_ids
 
     dc = DataCollection([data1, data2])
     links = wcs_autolink(dc)
@@ -540,7 +542,7 @@ def test_wcs_offset_approximation():
     assert_allclose(y2, y3, atol=1e-5)
 
     x4, y4 = link.backwards(x1, y1)
-    x5, y5 = offset_link.backwards(x1, y1)
+    x5, _y5 = offset_link.backwards(x1, y1)
 
     assert_allclose(x4, x5, atol=1e-5)
     assert_allclose(y4, y4, atol=1e-5)
@@ -583,7 +585,7 @@ def test_wcs_affine_approximation():
     assert_allclose(y2, y3, atol=1e-5)
 
     x4, y4 = link.backwards(x1, y1)
-    x5, y5 = affine_link.backwards(x1, y1)
+    x5, _y5 = affine_link.backwards(x1, y1)
 
     assert_allclose(x4, x5, atol=1e-5)
     assert_allclose(y4, y4, atol=1e-5)

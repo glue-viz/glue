@@ -295,7 +295,7 @@ class MatplotlibViewerMixin(object):
         fig_aspect = height / width
 
         # Get axes aspect ratio
-        l, b, w, h = self.axes.get_position().bounds
+        _l, _b, w, h = self.axes.get_position().bounds
         axes_ratio = fig_aspect * (h / w)
 
         return axes_ratio

@@ -25,7 +25,7 @@ class TestComponentLink(object):
         ComponentLink([ComponentID('from')], ComponentID('to'))
 
     def test_valid_init_using(self):
-        data, from_, to_ = self.toy_data()
+        _data, _from, _to = self.toy_data()
         using = lambda x: x
         ComponentLink([ComponentID('from')], ComponentID('to'), using)
 
@@ -42,7 +42,7 @@ class TestComponentLink(object):
         assert exc.value.args[0].startswith("comp_from must be a list")
 
     def test_compute_direct(self):
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
@@ -52,7 +52,7 @@ class TestComponentLink(object):
         assert_array_equal(result, expected)
 
     def test_compute_using(self):
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
         using = lambda x: 3 * x
@@ -63,7 +63,7 @@ class TestComponentLink(object):
         assert_array_equal(result, expected)
 
     def test_getters(self):
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
         using = lambda x: 3 * x
@@ -75,7 +75,7 @@ class TestComponentLink(object):
 
     def test_str(self):
         """ str method returns without error """
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
@@ -85,7 +85,7 @@ class TestComponentLink(object):
 
     def test_repr(self):
         """ repr method returns without error """
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
         link = ComponentLink([from_id], to_id)
@@ -114,7 +114,7 @@ class TestComponentLink(object):
         # scalars rather than Numpy objects if a scalar is passed in, so we need
         # to make sure that works properly.
 
-        data, from_, to_ = self.toy_data()
+        data, from_, _to = self.toy_data()
         from_id = data.add_component(from_, 'from_label')
         to_id = ComponentID('to_label')
 

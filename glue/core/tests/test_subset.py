@@ -363,7 +363,7 @@ class TestSubsetIo(object):
 
     @requires_astropy
     def test_write(self):
-        fobj, tmp = tempfile.mkstemp()
+        _fobj, tmp = tempfile.mkstemp()
 
         self.subset.write_mask(tmp)
         from astropy.io import fits
@@ -377,7 +377,7 @@ class TestSubsetIo(object):
 
     @requires_astropy
     def test_read(self):
-        fobj, tmp = tempfile.mkstemp()
+        _fobj, tmp = tempfile.mkstemp()
 
         self.subset.write_mask(tmp)
         sub2 = Subset(self.data)

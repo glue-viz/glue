@@ -222,7 +222,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
                 except Exception:  # e.g. incompatible subset
                     continue
                 if profile is not None:
-                    x, y = profile
+                    _x, y = profile
                     if len(y) > 0:
                         y_min = min(y_min, np.nanmin(y))
                         y_max = max(y_max, np.nanmax(y))

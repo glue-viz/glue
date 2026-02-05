@@ -304,7 +304,7 @@ class BasicGaussianFitter(BaseFitter1D):
         init_values = [init_values[p] for p in ['amplitude', 'mean', 'stddev']]
         farg = (x, y, dy)
         dfunc = None
-        fitparams, status, dinfo, mess, ierr = optimize.leastsq(
+        fitparams, _status, _dinfo, _mess, _ierr = optimize.leastsq(
             self._errorfunc, init_values, args=farg, Dfun=dfunc,
             full_output=True)
         return fitparams

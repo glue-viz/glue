@@ -254,7 +254,7 @@ class MatplotlibImageMixin(object):
         return imports, script
 
     def _script_footer(self):
-        imports, script = super(MatplotlibImageMixin, self)._script_footer()
+        _imports, script = super(MatplotlibImageMixin, self)._script_footer()
         options = dict(x_att_axis=0 if self.state.x_att is None else self.state.reference_data.ndim - self.state.x_att.axis - 1,
                        y_att_axis=1 if self.state.y_att is None else self.state.reference_data.ndim - self.state.y_att.axis - 1,
                        x_ticklabel_size=self.state.x_ticklabel_size,

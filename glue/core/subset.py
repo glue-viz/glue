@@ -300,7 +300,7 @@ class Subset(object):
         view : object
             View of the data. See ``data.__getitem__`` for details.
         """
-        c, v = split_component_view(view)
+        _, v = split_component_view(view)
         ma = self.to_mask(v)
         return self.data[view][ma]
 

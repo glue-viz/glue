@@ -28,11 +28,11 @@ def test_unique_dtype():
     # get an object array back from the unique function
 
     array = np.array(['a', 'b', 'c'])
-    U, I = unique(array)
+    U, _I = unique(array)
     assert U.dtype.kind in 'SU'
 
     li = ['a', 'b', 'c']
-    U, I = unique(li)
+    U, _I = unique(li)
     assert U.dtype.kind in 'SU'
 
 

@@ -11,12 +11,12 @@ import pytest
 
 def test_VA_preferred_cmap():
     # Not a real CMAP array - errors
-    with pytest.raises(TypeError, match="`preferred_cmap` must be a string or an instance of "
+    with pytest.raises(TypeError, match=r"`preferred_cmap` must be a string or an instance of "
                        "a matplotlib.colors.Colormap"):
         VisualAttributes(preferred_cmap=1)
 
     # Not a valid string / known key [mpl 3.6+] for a CMAP - errors
-    with pytest.raises(ValueError, match="not_a_cmap is not a valid colormap name."):
+    with pytest.raises(ValueError, match=r"not_a_cmap is not a valid colormap name."):
         VisualAttributes(preferred_cmap="not_a_cmap")
 
     viridis_cmap = colormaps["viridis"] if MATPLOTLIB_GE_36 else get_cmap("viridis")

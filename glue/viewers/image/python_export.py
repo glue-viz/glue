@@ -10,7 +10,7 @@ def python_export_image_layer(layer, *args):
     imports = ["from glue.viewers.image.state import get_sliced_data_maker"]
     imports += ["import matplotlib.patches as mpatches"]
 
-    slices, agg_func, transpose = layer._viewer_state.numpy_slice_aggregation_transpose
+    slices, _agg_func, transpose = layer._viewer_state.numpy_slice_aggregation_transpose
 
     # TODO: implement aggregation, ignore for now
 
@@ -75,7 +75,7 @@ def python_export_image_subset_layer(layer, *args):
     script = ""
     imports = ["from glue.viewers.image.state import get_sliced_data_maker"]
 
-    slices, agg_func, transpose = layer._viewer_state.numpy_slice_aggregation_transpose
+    slices, _agg_func, transpose = layer._viewer_state.numpy_slice_aggregation_transpose
 
     # TODO: implement aggregation, ignore for now
 

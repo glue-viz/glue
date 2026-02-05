@@ -444,12 +444,12 @@ class TestExtendedComponent(object):
         assert self.ranges.y is None
 
     def test_incorrect_inputs(self):
-        with pytest.raises(TypeError, match='Input data for a ExtendedComponent should be a list of shapely.Geometry objects'):
+        with pytest.raises(TypeError, match=r'Input data for a ExtendedComponent should be a list of shapely.Geometry objects'):
             bad_data = np.array([1, 2, 3])
             bad_data_comp = ExtendedComponent(bad_data, center_comp_ids=[self.cen_x_id, self.cen_y_id])
 
-        with pytest.raises(ValueError, match='ExtendedComponent must be initialized with one or two ComponentIDs'):
+        with pytest.raises(ValueError, match=r'ExtendedComponent must be initialized with one or two ComponentIDs'):
             no_center_ids_comp = ExtendedComponent(self.polys, center_comp_ids=[])
 
-        with pytest.raises(ValueError, match='ExtendedComponent must be initialized with one or two ComponentIDs'):
+        with pytest.raises(ValueError, match=r'ExtendedComponent must be initialized with one or two ComponentIDs'):
             no_center_ids_comp = ExtendedComponent(self.polys, center_comp_ids=[self.cen_x_id, self.cen_y_id, self.cen_x_id])

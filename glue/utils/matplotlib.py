@@ -242,7 +242,7 @@ def point_contour(x, y, data):
     inten = data[y, x]
 
     # Find all 'islands' above this intensity
-    labeled, nr_objects = label(data >= inten)
+    labeled, _nr_objects = label(data >= inten)
 
     # Pick the object we clicked on
     z = (labeled == labeled[y, x])
