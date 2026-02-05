@@ -470,7 +470,8 @@ class CategoricalComponent(Component):
         """
         Convert into a pandas.Series object.
 
-        This will be converted as a dtype=np.object!
+        When not explicitly specifying dtype, this will be converted as an
+        np.object for pandas < 3, but default to string (pd.StringDtype) for >= 3!
 
         Parameters
         ----------
@@ -482,7 +483,7 @@ class CategoricalComponent(Component):
         :class:`pandas.Series`
         """
 
-        return pd.Series(self.labels, dtype=object, **kwargs)
+        return pd.Series(self.labels, **kwargs)
 
 
 class DateTimeComponent(Component):
