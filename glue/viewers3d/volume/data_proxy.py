@@ -1,8 +1,10 @@
 import weakref
 
+import numpy as np
+
 from glue.core.data import Subset
-from glue.core.exceptions import IncompatibleAttribute
-from glue.utils import broadcast_to
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
+from glue.core.link_manager import pixel_cid_to_pixel_cid_matrix
 
 
 class DataProxy(object):
