@@ -122,3 +122,41 @@ class ScatterLayerState(LayerState3D):
 
     def flip_cmap(self):
         self.cmap_lim_helper.flip_limits()
+
+    @property
+    def point_sizes(self):
+        if self.state.size_mode is None:
+            pass
+        elif self.state.size_mode == 'Fixed':
+            self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
+        else:
+            data = self.layer[self.state.size_attribute].ravel()
+            if isinstance(data, categorical_ndarray):
+                data = data.codes
+            if self.state.size_vmax == self.state.size_vmin:
+                size = np.ones(data.shape) * 10
+            else:
+                size = (20 * (data - self.state.size_vmin) /
+                        (self.state.size_vmax - self.state.size_vmin))
+            size_data = size * self.state.size_scaling
+            size_data[np.isnan(data)] = 0.
+            self._multiscat.set_size(self.id, size_data)
+
+    @property
+    def point_colors(self):
+        if self.state.color_mode is None:
+            pass
+        elif self.state.color_mode == 'Fixed':
+            self._multiscat.set_color(self.id, self.state.color)
+        else:
+            data = self.layer[self.state.cmap_attribute].ravel()
+            if isinstance(data, categorical_ndarray):
+                data = data.codes
+            if self.state.cmap_vmax == self.state.cmap_vmin:
+                cmap_data = np.ones(data.shape) * 0.5
+            else:
+                cmap_data = ((data - self.state.cmap_vmin) /
+                             (self.state.cmap_vmax - self.state.cmap_vmin))
+            cmap_data = self.state.cmap(cmap_data)
+            cmap_data[:, 3][np.isnan(data)] = 0.
+            self._multiscat.set_color(self.id, cmap_data)
