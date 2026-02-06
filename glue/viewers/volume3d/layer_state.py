@@ -5,7 +5,7 @@ from echo import (CallbackProperty, SelectionCallbackProperty,
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
-from ..common.layer_state import LayerState3D
+from ..common3d.layer_state import LayerState3D
 
 __all__ = ['VolumeLayerState']
 

@@ -5,7 +5,7 @@ from glue.utils import categorical_ndarray
 from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
-from ..common.layer_state import LayerState3D
+from ..common3d.layer_state import LayerState3D
 
 __all__ = ['ScatterLayerState']
 
