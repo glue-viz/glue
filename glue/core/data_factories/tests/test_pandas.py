@@ -30,7 +30,7 @@ def test_translator_data_roundtrip():
     assert_equal(list(df2.columns), ['a', 'b', 'c'])
     assert_equal(df2['a'].values, [3, 5, 6, 7])
     assert_equal(df2['b'].values, [1.5, 2.2, 1.3, 3.3])
-    assert_equal(df2['c'].values, ['r', 'd', 'w', 'q'])
+    assert_equal(df2['c'].to_numpy(), ['r', 'd', 'w', 'q'])
 
 
 def test_translator_from_data():
@@ -52,7 +52,7 @@ def test_translator_from_data():
     assert_equal(list(df.columns), ['a', 'b', 'c'])
     assert_equal(df['a'].values, [3, 5, 6, 7])
     assert_equal(df['b'].values, [1.5, 2.2, 1.3, 3.3])
-    assert_equal(df['c'].values, ['r', 'd', 'w', 'q'])
+    assert_equal(df['c'].to_numpy(), ['r', 'd', 'w', 'q'])
 
 
 def test_translator_from_subset():
@@ -71,7 +71,7 @@ def test_translator_from_subset():
     assert_equal(list(df.columns), ['a', 'b', 'c'])
     assert_equal(df['a'].values, [5, 7])
     assert_equal(df['b'].values, [2.2, 3.3])
-    assert_equal(df['c'].values, ['d', 'q'])
+    assert_equal(df['c'].to_numpy(), ['d', 'q'])
 
 
 def test_translator_from_data_with_derived():
