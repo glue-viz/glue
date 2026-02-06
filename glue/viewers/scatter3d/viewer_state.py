@@ -1,5 +1,5 @@
 from glue.core.data_combo_helper import ComponentIDComboHelper
-from glue.viewers3d.common.viewer_state import ViewerState3D
+from glue.viewers.common3d.viewer_state import ViewerState3D
 
 __all__ = ['ScatterViewerState3D']
 

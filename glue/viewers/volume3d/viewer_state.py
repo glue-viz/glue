@@ -1,7 +1,7 @@
 from glue.core.data import BaseData
 from echo import CallbackProperty, SelectionCallbackProperty, delay_callback
 from numpy import argsort
-from glue.viewers3d.common.viewer_state import ViewerState3D
+from glue.viewers.common3d.viewer_state import ViewerState3D
 from glue.core.data_combo_helper import ManualDataComboHelper
 
 from glue.viewers.image.state import AggregateSlice
