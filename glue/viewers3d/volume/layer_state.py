@@ -1,3 +1,4 @@
+from glue.config import colormaps
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
                   delay_callback)
@@ -62,7 +63,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
             else:
                 self.att_helper.set_multiple_data([self.layer])
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1
 
     def flip_limits(self):
