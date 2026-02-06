@@ -6,7 +6,7 @@ from glue.core.data_combo_helper import ManualDataComboHelper
 
 from glue.viewers.image.state import AggregateSlice
 
-__all__ = ['Vispy3DVolumeViewerState']
+__all__ = ['VolumeViewerState3D']
 
 
 class VolumeViewerState3D(ViewerState3D):
