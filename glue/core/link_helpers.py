@@ -19,7 +19,7 @@ from inspect import getfullargspec
 
 __all__ = ['LinkCollection', 'LinkSame', 'LinkTwoWay', 'MultiLink',
            'LinkAligned', 'BaseMultiLink', 'ManualLinkCollection',
-           'JoinLink']
+           'JoinLink', 'validate_link', 'LinkValidationError']
 
 
 @link_function("Link conceptually identical components",
@@ -547,3 +547,226 @@ rows/items across two datasets."
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class LinkValidationError(Exception):
+    """Exception raised when link validation fails."""
+    pass
+
+
+def validate_link(link, data_collection=None, raise_on_error=True):
+    """
+    Validate a ComponentLink or LinkCollection for structural and contextual correctness.
+
+    This function checks that a link is well-formed and, optionally, that
+    all ComponentIDs it references exist in a given DataCollection.
+
+    Parameters
+    ----------
+    link : `~glue.core.component_link.ComponentLink` or `~glue.core.link_helpers.LinkCollection`
+        The link to validate.
+    data_collection : `~glue.core.data_collection.DataCollection`, optional
+        If provided, validates that all ComponentIDs referenced by the link
+        exist in datasets within the collection.
+    raise_on_error : bool, optional
+        If True (default), raises `LinkValidationError` on validation failure.
+        If False, returns a tuple of (is_valid, error_messages).
+
+    Returns
+    -------
+    is_valid : bool
+        Only returned if ``raise_on_error=False``. True if the link is valid.
+    errors : list of str
+        Only returned if ``raise_on_error=False``. List of error messages
+        describing validation failures.
+
+    Raises
+    ------
+    LinkValidationError
+        If ``raise_on_error=True`` and validation fails.
+
+    Examples
+    --------
+    Basic structural validation::
+
+        >>> from glue.core import Data, ComponentID
+        >>> from glue.core.component_link import ComponentLink
+        >>> from glue.core.link_helpers import validate_link
+        >>> d = Data(x=[1, 2, 3])
+        >>> link = ComponentLink([d.id['x']], ComponentID('y'))
+        >>> validate_link(link)  # Returns True if valid
+
+    Contextual validation with DataCollection::
+
+        >>> from glue.core import DataCollection
+        >>> dc = DataCollection([d])
+        >>> validate_link(link, data_collection=dc)
+
+    Non-raising mode for graceful handling::
+
+        >>> is_valid, errors = validate_link(link, raise_on_error=False)
+        >>> if not is_valid:
+        ...     print("Validation errors:", errors)
+    """
+    errors = []
+
+    # Handle LinkCollection (which contains multiple ComponentLinks)
+    if isinstance(link, LinkCollection):
+        # Validate the LinkCollection structure
+        errors.extend(_validate_link_collection_structure(link))
+
+        # Validate each contained ComponentLink
+        for contained_link in link:
+            contained_errors = _validate_component_link(contained_link, data_collection)
+            errors.extend(contained_errors)
+    elif isinstance(link, ComponentLink):
+        errors.extend(_validate_component_link(link, data_collection))
+    else:
+        errors.append(f"Expected ComponentLink or LinkCollection, got {type(link).__name__}")
+
+    if errors:
+        if raise_on_error:
+            raise LinkValidationError("; ".join(errors))
+        return False, errors
+
+    if raise_on_error:
+        return True
+    return True, []
+
+
+def _validate_link_collection_structure(link_collection):
+    """
+    Validate the structure of a LinkCollection.
+
+    Parameters
+    ----------
+    link_collection : `~glue.core.link_helpers.LinkCollection`
+        The link collection to validate.
+
+    Returns
+    -------
+    errors : list of str
+        List of error messages for any validation failures.
+    """
+    errors = []
+
+    # Check data1 and data2 are set if cids are provided
+    if link_collection.cids1 and link_collection.data1 is None:
+        errors.append("LinkCollection has cids1 but data1 is None")
+    if link_collection.cids2 and link_collection.data2 is None:
+        errors.append("LinkCollection has cids2 but data2 is None")
+
+    # Validate that cids belong to their respective data objects
+    for i, cid in enumerate(link_collection.cids1):
+        if not isinstance(cid, ComponentID):
+            errors.append(f"cids1[{i}] is not a ComponentID: {type(cid).__name__}")
+        elif link_collection.data1 is not None and cid.parent is not link_collection.data1:
+            # Only warn if parent is set and doesn't match - parent can be None for new CIDs
+            if cid.parent is not None:
+                errors.append(f"cids1[{i}] ({cid}) belongs to {cid.parent.label if cid.parent else 'None'}, "
+                              f"not data1 ({link_collection.data1.label})")
+
+    for i, cid in enumerate(link_collection.cids2):
+        if not isinstance(cid, ComponentID):
+            errors.append(f"cids2[{i}] is not a ComponentID: {type(cid).__name__}")
+        elif link_collection.data2 is not None and cid.parent is not link_collection.data2:
+            if cid.parent is not None:
+                errors.append(f"cids2[{i}] ({cid}) belongs to {cid.parent.label if cid.parent else 'None'}, "
+                              f"not data2 ({link_collection.data2.label})")
+
+    return errors
+
+
+def _validate_component_link(link, data_collection=None):
+    """
+    Validate a single ComponentLink.
+
+    Parameters
+    ----------
+    link : `~glue.core.component_link.ComponentLink`
+        The link to validate.
+    data_collection : `~glue.core.data_collection.DataCollection`, optional
+        If provided, validates that ComponentIDs exist in the collection.
+
+    Returns
+    -------
+    errors : list of str
+        List of error messages for any validation failures.
+    """
+    errors = []
+
+    # Structural validation
+    from_ids = link.get_from_ids()
+    to_id = link.get_to_id()
+
+    # Check from_ids
+    if not isinstance(from_ids, list):
+        errors.append(f"get_from_ids() should return a list, got {type(from_ids).__name__}")
+    elif len(from_ids) == 0:
+        errors.append("Link has no input ComponentIDs (comp_from is empty)")
+    else:
+        for i, cid in enumerate(from_ids):
+            if not isinstance(cid, ComponentID):
+                errors.append(f"comp_from[{i}] is not a ComponentID: {type(cid).__name__}")
+
+    # Check to_id
+    if to_id is None:
+        errors.append("Link has no target ComponentID (comp_to is None)")
+    elif not isinstance(to_id, ComponentID):
+        errors.append(f"comp_to is not a ComponentID: {type(to_id).__name__}")
+
+    # Check using function
+    using = link.get_using()
+    if using is not None and not callable(using):
+        errors.append(f"'using' function is not callable: {type(using).__name__}")
+
+    # Check inverse function (if present)
+    inverse = link.get_inverse()
+    if inverse is not None and not callable(inverse):
+        errors.append(f"'inverse' function is not callable: {type(inverse).__name__}")
+
+    # Contextual validation (if data_collection provided)
+    if data_collection is not None and not errors:
+        errors.extend(_validate_link_in_collection(link, data_collection))
+
+    return errors
+
+
+def _validate_link_in_collection(link, data_collection):
+    """
+    Validate that a link's ComponentIDs exist in a DataCollection.
+
+    Parameters
+    ----------
+    link : `~glue.core.component_link.ComponentLink`
+        The link to validate.
+    data_collection : `~glue.core.data_collection.DataCollection`
+        The data collection to validate against.
+
+    Returns
+    -------
+    errors : list of str
+        List of error messages for any validation failures.
+    """
+    errors = []
+
+    # Build a set of all valid ComponentIDs in the collection
+    all_cids = set()
+    for data in data_collection:
+        all_cids.update(data.component_ids())
+
+    # Check from_ids
+    for cid in link.get_from_ids():
+        if cid not in all_cids:
+            parent_info = f" (parent: {cid.parent.label})" if cid.parent else ""
+            errors.append(f"ComponentID '{cid}'{parent_info} not found in DataCollection")
+
+    # Check to_id - it's okay if to_id doesn't exist yet (it will be created as a derived component)
+    # But we should check that its parent data exists in the collection if parent is set
+    to_id = link.get_to_id()
+    if to_id.parent is not None:
+        if to_id.parent not in data_collection:
+            errors.append(f"Target ComponentID's parent data '{to_id.parent.label}' "
+                          "not found in DataCollection")
+
+    return errors

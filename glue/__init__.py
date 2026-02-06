@@ -8,7 +8,14 @@ import sys
 
 import importlib.metadata
 
-__version__ = importlib.metadata.version('glue-core')
+try:
+    __version__ = importlib.metadata.version('glue-core')
+except importlib.metadata.PackageNotFoundError:
+    # Fallback for development mode when package is not installed
+    try:
+        from ._version import __version__
+    except ImportError:
+        __version__ = "0.0.0.dev"
 
 from ._mpl_backend import MatplotlibBackendSetter
 sys.meta_path.append(MatplotlibBackendSetter())
