@@ -18,7 +18,7 @@ def set_foreground_color(axes, color):
         for coord in axes.coords:
             coord.set_ticks(color=color)
             coord.set_ticklabel(color=color)
-            coord.axislabels.set_color(color)
+            coord.set_axislabel(coord.get_axislabel(), color=color)
     else:
         for spine in axes.spines.values():
             spine.set_color(color)
