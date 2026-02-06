@@ -1,4 +1,7 @@
+import numpy as np
+
 from glue.config import colormaps
+from glue.utils import categorical_ndarray
 from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
@@ -125,38 +128,38 @@ class ScatterLayerState(LayerState3D):
 
     @property
     def point_sizes(self):
-        if self.state.size_mode is None:
-            pass
-        elif self.state.size_mode == 'Fixed':
-            self._multiscat.set_size(self.id, self.state.size * self.state.size_scaling)
+        if self.size_mode is None:
+            return None
+        elif self.size_mode == 'Fixed':
+            return self.size * self.size_scaling
         else:
-            data = self.layer[self.state.size_attribute].ravel()
+            data = self.layer[self.size_attribute].ravel()
             if isinstance(data, categorical_ndarray):
                 data = data.codes
-            if self.state.size_vmax == self.state.size_vmin:
+            if self.size_vmax == self.size_vmin:
                 size = np.ones(data.shape) * 10
             else:
-                size = (20 * (data - self.state.size_vmin) /
-                        (self.state.size_vmax - self.state.size_vmin))
-            size_data = size * self.state.size_scaling
+                size = (20 * (data - self.size_vmin) /
+                        (self.size_vmax - self.size_vmin))
+            size_data = size * self.size_scaling
             size_data[np.isnan(data)] = 0.
-            self._multiscat.set_size(self.id, size_data)
+            return size_data
 
     @property
     def point_colors(self):
-        if self.state.color_mode is None:
-            pass
-        elif self.state.color_mode == 'Fixed':
-            self._multiscat.set_color(self.id, self.state.color)
+        if self.color_mode is None:
+            return None
+        elif self.color_mode == 'Fixed':
+            return self.color
         else:
-            data = self.layer[self.state.cmap_attribute].ravel()
+            data = self.layer[self.cmap_attribute].ravel()
             if isinstance(data, categorical_ndarray):
                 data = data.codes
-            if self.state.cmap_vmax == self.state.cmap_vmin:
+            if self.cmap_vmax == self.cmap_vmin:
                 cmap_data = np.ones(data.shape) * 0.5
             else:
-                cmap_data = ((data - self.state.cmap_vmin) /
-                             (self.state.cmap_vmax - self.state.cmap_vmin))
-            cmap_data = self.state.cmap(cmap_data)
+                cmap_data = ((data - self.cmap_vmin) /
+                             (self.cmap_vmax - self.cmap_vmin))
+            cmap_data = self.cmap(cmap_data)
             cmap_data[:, 3][np.isnan(data)] = 0.
-            self._multiscat.set_color(self.id, cmap_data)
+            return cmap_data
