@@ -106,7 +106,7 @@ class ScatterLayerState(LayerState3D):
                 for helper in helpers:
                     helper.set_multiple_data([self.layer])
 
-    def update_priority(self, name):
+    def _update_priority(self, name):
         return 0 if name.endswith(('vmin', 'vmax')) else 1
 
     def _layer_changed(self):
