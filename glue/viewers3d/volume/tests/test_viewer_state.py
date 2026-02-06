@@ -101,3 +101,39 @@ class TestVolumeViewerState3D:
         assert new_state.x_max == 5
         assert new_state.visible_axes is False
         assert new_state.perspective_view is True
+
+    def test_numpy_slice_permutation_no_reference_data(self):
+        slices, perm = self.state.numpy_slice_permutation
+        assert slices is None
+        assert perm is None
+
+    def test_numpy_slice_permutation_3d_default_axes(self):
+        data = Data(label='cube')
+        data['x'] = np.arange(24).reshape((2, 3, 4))
+        self.state.layers.append(MockLayerState(data))
+        pixel_ids = data.pixel_component_ids
+        # Set axes: x=axis2, y=axis1, z=axis0
+        self.state.x_att = pixel_ids[2]
+        self.state.y_att = pixel_ids[1]
+        self.state.z_att = pixel_ids[0]
+
+        slices, perm = self.state.numpy_slice_permutation
+        # All 3 axes are coordinate axes, so all should be slice(None)
+        assert slices == [slice(None), slice(None), slice(None)]
+        # With x=2, y=1, z=0, axes are already in order so perm should be identity
+        assert perm == [0, 1, 2]
+
+    def test_numpy_slice_permutation_swapped_axes(self):
+        data = Data(label='cube')
+        data['x'] = np.arange(24).reshape((2, 3, 4))
+        self.state.layers.append(MockLayerState(data))
+        pixel_ids = data.pixel_component_ids
+        # Set axes: x=axis0, y=axis1, z=axis2 (reversed from typical)
+        self.state.x_att = pixel_ids[0]
+        self.state.y_att = pixel_ids[1]
+        self.state.z_att = pixel_ids[2]
+
+        slices, perm = self.state.numpy_slice_permutation
+        assert slices == [slice(None), slice(None), slice(None)]
+        # With x=0, y=1, z=2, need to reverse the order
+        assert perm == [2, 1, 0]

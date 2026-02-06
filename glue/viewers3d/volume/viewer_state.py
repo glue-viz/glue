@@ -89,6 +89,22 @@ class VolumeViewerState3D(ViewerState3D):
 
     @property
     def numpy_slice_permutation(self):
+        """
+        Return slices and axis permutation for extracting 3D data from the reference data.
+
+        Returns
+        -------
+        slices : list or None
+            A list of slice objects or indices for each dimension of the reference data.
+            Coordinate axes (x, y, z) get ``slice(None)`` to include all values,
+            while other dimensions get their current slice index.
+        perm : list or None
+            A permutation list to reorder the sliced array axes into (z, y, x) order
+            for rendering. For example, ``[2, 1, 0]`` means the first axis of the
+            sliced array maps to z, second to y, third to x.
+
+        If no reference data is set, returns ``(None, None)``.
+        """
         if self.reference_data is None:
             return None, None
 
