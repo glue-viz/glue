@@ -116,6 +116,8 @@ filterwarnings = [
     "ignore:DragAndDropTerminal._style_sheet_changed is deprecated",
     "ignore:::ipykernel",
     "ignore:Accessing zmq Socket attribute",
+    "ignore:Unknown extension is not supported:UserWarning:openpyxl",
+    "ignore:Attempting to set identical:UserWarning",
 ]
 
 [tool.coverage.run]
