@@ -12,6 +12,9 @@ def pytest_runtest_teardown(item, nextitem):
     sys.stderr = STDERR_ORIGINAL
     global start_dir
     os.chdir(start_dir)
+    # Close any matplotlib figures to avoid "More than 20 figures" warning
+    import matplotlib.pyplot as plt
+    plt.close('all')
 
 
 def pytest_addoption(parser):

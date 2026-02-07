@@ -134,7 +134,7 @@ def test_load_data(tmpdir):
     assert isinstance(data, Data)
 
     app2 = Application()
-    datasets = app2.load_data(['data1.csv', 'data2.csv'], skip_merge=True)
+    datasets = app2.load_data(['data1.csv', 'data2.csv'])
 
     assert len(app2.data_collection) == 2
     assert len(datasets) == 2
