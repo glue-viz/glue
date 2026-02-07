@@ -12,33 +12,33 @@ __all__ = ['ScatterLayerState']
 
 class ScatterLayerState(LayerState3D):
     """
-    A state object for volume layers
+    A state object for scatter layers
     """
 
     size_mode = SelectionCallbackProperty()
     size = CallbackProperty()
-    size_attribute = SelectionCallbackProperty()
+    size_att = SelectionCallbackProperty()
     size_vmin = CallbackProperty()
     size_vmax = CallbackProperty()
     size_scaling = CallbackProperty(1)
 
-    color_mode = SelectionCallbackProperty()
-    cmap_attribute = SelectionCallbackProperty()
+    cmap_mode = SelectionCallbackProperty()
+    cmap_att = SelectionCallbackProperty()
     cmap_vmin = CallbackProperty()
     cmap_vmax = CallbackProperty()
     cmap = CallbackProperty()
 
     xerr_visible = CallbackProperty(False)
-    xerr_attribute = SelectionCallbackProperty()
+    xerr_att = SelectionCallbackProperty()
     yerr_visible = CallbackProperty(False)
-    yerr_attribute = SelectionCallbackProperty()
+    yerr_att = SelectionCallbackProperty()
     zerr_visible = CallbackProperty(False)
-    zerr_attribute = SelectionCallbackProperty()
+    zerr_att = SelectionCallbackProperty()
 
     vector_visible = CallbackProperty(False)
-    vx_attribute = SelectionCallbackProperty()
-    vy_attribute = SelectionCallbackProperty()
-    vz_attribute = SelectionCallbackProperty()
+    vx_att = SelectionCallbackProperty()
+    vy_att = SelectionCallbackProperty()
+    vz_att = SelectionCallbackProperty()
     vector_scaling = CallbackProperty(1)
     vector_origin = SelectionCallbackProperty(default_index=1)
     vector_arrowhead = CallbackProperty()
@@ -58,24 +58,24 @@ class ScatterLayerState(LayerState3D):
             self.size = self.layer.style.markersize
             self.alpha = self.layer.style.alpha
 
-        ScatterLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
 
-        self.size_att_helper = ComponentIDComboHelper(self, 'size_attribute')
-        self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_attribute')
-        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_attribute', categorical=False)
-        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_attribute', categorical=False)
-        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_attribute', categorical=False)
+        self.size_att_helper = ComponentIDComboHelper(self, 'size_att')
+        self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att')
+        self.xerr_att_helper = ComponentIDComboHelper(self, 'xerr_att', categorical=False)
+        self.yerr_att_helper = ComponentIDComboHelper(self, 'yerr_att', categorical=False)
+        self.zerr_att_helper = ComponentIDComboHelper(self, 'zerr_att', categorical=False)
 
-        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_attribute', categorical=False)
-        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_attribute', categorical=False)
-        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_attribute', categorical=False)
+        self.vx_att_helper = ComponentIDComboHelper(self, 'vx_att', categorical=False)
+        self.vy_att_helper = ComponentIDComboHelper(self, 'vy_att', categorical=False)
+        self.vz_att_helper = ComponentIDComboHelper(self, 'vz_att', categorical=False)
 
-        self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_attribute',
+        self.size_lim_helper = StateAttributeLimitsHelper(self, attribute='size_att',
                                                           lower='size_vmin', upper='size_vmax',
                                                           cache=self._size_limits_cache)
 
-        self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_attribute',
+        self.cmap_lim_helper = StateAttributeLimitsHelper(self, attribute='cmap_att',
                                                           lower='cmap_vmin', upper='cmap_vmax',
                                                           cache=self._cmap_limits_cache)
 
@@ -133,7 +133,7 @@ class ScatterLayerState(LayerState3D):
         elif self.size_mode == 'Fixed':
             return self.size * self.size_scaling
         else:
-            data = self.layer[self.size_attribute].ravel()
+            data = self.layer[self.size_att].ravel()
             if isinstance(data, categorical_ndarray):
                 data = data.codes
             if self.size_vmax == self.size_vmin:
@@ -147,12 +147,12 @@ class ScatterLayerState(LayerState3D):
 
     @property
     def point_colors(self):
-        if self.color_mode is None:
+        if self.cmap_mode is None:
             return None
-        elif self.color_mode == 'Fixed':
+        elif self.cmap_mode == 'Fixed':
             return self.color
         else:
-            data = self.layer[self.cmap_attribute].ravel()
+            data = self.layer[self.cmap_att].ravel()
             if isinstance(data, categorical_ndarray):
                 data = data.codes
             if self.cmap_vmax == self.cmap_vmin:
