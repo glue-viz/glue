@@ -10,7 +10,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            DeferredDrawCallbackProperty as DDCProperty,
                                            DeferredDrawSelectionCallbackProperty as DDSCProperty)
 from glue.core.state_objects import StateAttributeLimitsHelper
-from echo import keep_in_sync, delay_callback
+from echo import keep_in_sync, delay_callback, CallbackPropertyAlias
 from glue.core.data_combo_helper import ComponentIDComboHelper, ComboHelper
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
@@ -212,7 +212,8 @@ class ScatterLayerState(MatplotlibLayerState, StretchStateMixin):
 
     # Color
 
-    cmap_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
+    color_mode = DDSCProperty(docstring="Whether to use color to encode an attribute")
+    cmap_mode = CallbackPropertyAlias('color_mode')
     cmap_att = DDSCProperty(docstring="The attribute to use for the color")
     cmap_vmin = DDCProperty(docstring="The lower level for the colormap")
     cmap_vmax = DDCProperty(docstring="The upper level for the colormap")

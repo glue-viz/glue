@@ -30,7 +30,7 @@ dependencies = [
     "scipy>=1.1",
     "pandas>=1.2",
     "astropy>=4.0",
-    "echo>=0.6",
+    "echo @ git+https://github.com/glue-viz/echo",
     "fast_histogram>=0.12",
     "ipython>=4.0",
     "dill>=0.2",
