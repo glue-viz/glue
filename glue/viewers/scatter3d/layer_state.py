@@ -2,7 +2,7 @@ import numpy as np
 
 from glue.config import colormaps
 from glue.utils import categorical_ndarray
-from echo import CallbackProperty, SelectionCallbackProperty, keep_in_sync, delay_callback
+from echo import CallbackProperty, SelectionCallbackProperty, CallbackPropertyAlias, keep_in_sync, delay_callback
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from ..common3d.layer_state import LayerState3D
@@ -45,6 +45,17 @@ class ScatterLayerState(LayerState3D):
 
     _size_limits_cache = CallbackProperty({})
     _cmap_limits_cache = CallbackProperty({})
+
+    # Aliases for backwards compatibility with old attribute names
+    size_attribute = CallbackPropertyAlias('size_att')
+    color_mode = CallbackPropertyAlias('cmap_mode')
+    cmap_attribute = CallbackPropertyAlias('cmap_att')
+    xerr_attribute = CallbackPropertyAlias('xerr_att')
+    yerr_attribute = CallbackPropertyAlias('yerr_att')
+    zerr_attribute = CallbackPropertyAlias('zerr_att')
+    vx_attribute = CallbackPropertyAlias('vx_att')
+    vy_attribute = CallbackPropertyAlias('vy_att')
+    vz_attribute = CallbackPropertyAlias('vz_att')
 
     def __init__(self, layer=None, **kwargs):
 

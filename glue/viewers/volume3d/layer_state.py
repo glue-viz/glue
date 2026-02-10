@@ -1,7 +1,7 @@
 from glue.config import colormaps
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
-                  delay_callback)
+                  CallbackPropertyAlias, delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
@@ -22,6 +22,11 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
     cmap = CallbackProperty()
     subset_mode = CallbackProperty('data')
     _limits_cache = CallbackProperty({})
+
+    # Aliases for backwards compatibility with old attribute names
+    vmin = CallbackPropertyAlias('v_min')
+    vmax = CallbackPropertyAlias('v_max')
+    color_mode = CallbackPropertyAlias('cmap_mode')
 
     def __init__(self, layer=None, **kwargs):
 
