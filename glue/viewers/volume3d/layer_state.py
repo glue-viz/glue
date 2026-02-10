@@ -18,7 +18,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
     attribute = SelectionCallbackProperty()
     v_min = CallbackProperty()
     v_max = CallbackProperty()
-    cmap_mode = SelectionCallbackProperty()
+    color_mode = SelectionCallbackProperty()
     cmap = CallbackProperty()
     subset_mode = CallbackProperty('data')
     _limits_cache = CallbackProperty({})
@@ -26,7 +26,6 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
     # Aliases for backwards compatibility with old attribute names
     vmin = CallbackPropertyAlias('v_min')
     vmax = CallbackPropertyAlias('v_max')
-    color_mode = CallbackPropertyAlias('cmap_mode')
 
     def __init__(self, layer=None, **kwargs):
 
@@ -43,7 +42,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
                                                      lower='v_min', upper='v_max',
                                                      cache=self._limits_cache)
 
-        VolumeLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
+        VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
 
         self.setup_stretch_callback()
 

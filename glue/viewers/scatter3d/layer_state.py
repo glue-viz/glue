@@ -22,7 +22,7 @@ class ScatterLayerState(LayerState3D):
     size_vmax = CallbackProperty()
     size_scaling = CallbackProperty(1)
 
-    cmap_mode = SelectionCallbackProperty()
+    color_mode = SelectionCallbackProperty()
     cmap_att = SelectionCallbackProperty()
     cmap_vmin = CallbackProperty()
     cmap_vmax = CallbackProperty()
@@ -48,7 +48,6 @@ class ScatterLayerState(LayerState3D):
 
     # Aliases for backwards compatibility with old attribute names
     size_attribute = CallbackPropertyAlias('size_att')
-    color_mode = CallbackPropertyAlias('cmap_mode')
     cmap_attribute = CallbackPropertyAlias('cmap_att')
     xerr_attribute = CallbackPropertyAlias('xerr_att')
     yerr_attribute = CallbackPropertyAlias('yerr_att')
@@ -69,7 +68,7 @@ class ScatterLayerState(LayerState3D):
             self.size = self.layer.style.markersize
             self.alpha = self.layer.style.alpha
 
-        ScatterLayerState.cmap_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
         ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_att')
@@ -158,9 +157,9 @@ class ScatterLayerState(LayerState3D):
 
     @property
     def point_colors(self):
-        if self.cmap_mode is None:
+        if self.color_mode is None:
             return None
-        elif self.cmap_mode == 'Fixed':
+        elif self.color_mode == 'Fixed':
             return self.color
         else:
             data = self.layer[self.cmap_att].ravel()
