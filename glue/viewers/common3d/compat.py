@@ -1,10 +1,10 @@
 import uuid
 
-from ..scatter3d.layer_state import ScatterLayerState
+from ..scatter3d.layer_state import ScatterLayerState3D
 from ..volume3d.layer_state import VolumeLayerState3D
 
 STATE_CLASS = {}
-STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
+STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState3D
 STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState3D
 
 
