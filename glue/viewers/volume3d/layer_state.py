@@ -72,3 +72,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
 
     def flip_limits(self):
         self.lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)

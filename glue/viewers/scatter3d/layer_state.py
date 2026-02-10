@@ -137,6 +137,10 @@ class ScatterLayerState3D(LayerState3D):
         self.cmap_lim_helper.flip_limits()
 
     @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)
+
+    @property
     def point_sizes(self):
         if self.size_mode is None:
             return None
