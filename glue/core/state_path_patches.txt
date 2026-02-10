@@ -87,6 +87,6 @@ glue.viewers.table.qt.data_viewer.TableLayerArtist -> glue_qt.viewers.table.data
 glue.viewers.table.qt.data_viewer.TableViewer -> glue_qt.viewers.table.data_viewer.TableViewer
 glue.viewers.table.qt.TableLayerArtist -> glue_qt.viewers.table.TableLayerArtist
 glue.viewers.table.qt.TableViewer -> glue_qt.viewers.table.TableViewer
-glue_vispy_viewers.volume.layer_state.VolumeLayerState -> glue.viewers.volume3d.layer_state.VolumeLayerState
-glue_vispy_viewers.scatter.layer_state.ScatterLayerState -> glue.viewers.scatter3d.layer_state.ScatterLayerState
+glue_vispy_viewers.volume.layer_state.VolumeLayerState -> glue.viewers.volume3d.layer_state.VolumeLayerState3D
+glue_vispy_viewers.scatter.layer_state.ScatterLayerState -> glue.viewers.scatter3d.layer_state.ScatterLayerState3D
 glue_vispy_viewers.common.layer_state.VispyLayerState -> glue.viewers.common3d.layer_state.LayerState3D

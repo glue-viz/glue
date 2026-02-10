@@ -3,16 +3,16 @@ import numpy as np
 from glue.core import Data, DataCollection
 from glue.core.tests.test_state import clone
 
-from ..layer_state import VolumeLayerState
+from ..layer_state import VolumeLayerState3D
 
 
-class TestVolumeLayerState:
+class TestVolumeLayerState3D:
 
     def setup_method(self, method):
         self.data = Data(label='test_cube')
         self.data['x'] = np.arange(24).reshape((2, 3, 4))
         self.data_collection = DataCollection([self.data])
-        self.state = VolumeLayerState(layer=self.data)
+        self.state = VolumeLayerState3D(layer=self.data)
 
     def test_flip_limits(self):
         self.state.attribute = self.data.id['x']
@@ -25,7 +25,7 @@ class TestVolumeLayerState:
     def test_subset_has_fixed_vmin_vmax(self):
         subset = self.data.new_subset()
         subset.subset_state = self.data.id['x'] > 10
-        state = VolumeLayerState(layer=subset)
+        state = VolumeLayerState3D(layer=subset)
 
         assert state.vmin == 0
         assert state.vmax == 1

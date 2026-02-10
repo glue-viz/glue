@@ -1,11 +1,11 @@
 import uuid
 
 from ..scatter3d.layer_state import ScatterLayerState
-from ..volume3d.layer_state import VolumeLayerState
+from ..volume3d.layer_state import VolumeLayerState3D
 
 STATE_CLASS = {}
 STATE_CLASS['ScatterLayerArtist'] = ScatterLayerState
-STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState
+STATE_CLASS['VolumeLayerArtist'] = VolumeLayerState3D
 
 
 def update_3d_viewer_state(rec, context):
