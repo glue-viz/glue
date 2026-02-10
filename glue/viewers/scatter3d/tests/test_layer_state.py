@@ -3,15 +3,15 @@ from numpy.testing import assert_allclose
 from glue.core import Data, DataCollection
 from glue.core.tests.test_state import clone
 
-from ..layer_state import ScatterLayerState
+from ..layer_state import ScatterLayerState3D
 
 
-class TestScatterLayerState:
+class TestScatterLayerState3D:
 
     def setup_method(self, method):
         self.data = Data(x=[1, 2, 3, 4, 5], label='test_data')
         self.data_collection = DataCollection([self.data])
-        self.state = ScatterLayerState(layer=self.data)
+        self.state = ScatterLayerState3D(layer=self.data)
 
     def test_size_syncs_to_layer_markersize(self):
         self.state.size = 15

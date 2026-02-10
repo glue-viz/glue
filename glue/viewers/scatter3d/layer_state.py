@@ -7,10 +7,10 @@ from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from ..common3d.layer_state import LayerState3D
 
-__all__ = ['ScatterLayerState']
+__all__ = ['ScatterLayerState3D']
 
 
-class ScatterLayerState(LayerState3D):
+class ScatterLayerState3D(LayerState3D):
     """
     A state object for scatter layers
     """
@@ -60,7 +60,7 @@ class ScatterLayerState(LayerState3D):
 
         self._sync_markersize = None
 
-        super(ScatterLayerState, self).__init__(layer=layer)
+        super(ScatterLayerState3D, self).__init__(layer=layer)
 
         if self.layer is not None:
 
@@ -68,8 +68,8 @@ class ScatterLayerState(LayerState3D):
             self.size = self.layer.style.markersize
             self.alpha = self.layer.style.alpha
 
-        ScatterLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
-        ScatterLayerState.size_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState3D.color_mode.set_choices(self, ['Fixed', 'Linear'])
+        ScatterLayerState3D.size_mode.set_choices(self, ['Fixed', 'Linear'])
 
         self.size_att_helper = ComponentIDComboHelper(self, 'size_att')
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att')
@@ -92,8 +92,8 @@ class ScatterLayerState(LayerState3D):
         vector_origin_display = {'tail': 'Tail of vector',
                                  'middle': 'Middle of vector',
                                  'tip': 'Tip of vector'}
-        ScatterLayerState.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
-        ScatterLayerState.vector_origin.set_display_func(self, vector_origin_display.get)
+        ScatterLayerState3D.vector_origin.set_choices(self, ['tail', 'middle', 'tip'])
+        ScatterLayerState3D.vector_origin.set_display_func(self, vector_origin_display.get)
 
         self.add_callback('layer', self._on_layer_change)
         if layer is not None:
@@ -121,7 +121,7 @@ class ScatterLayerState(LayerState3D):
 
     def _layer_changed(self):
 
-        super(ScatterLayerState, self)._layer_changed()
+        super(ScatterLayerState3D, self)._layer_changed()
 
         if self._sync_markersize is not None:
             self._sync_markersize.stop_syncing()
@@ -135,6 +135,10 @@ class ScatterLayerState(LayerState3D):
 
     def flip_cmap(self):
         self.cmap_lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)
 
     @property
     def point_sizes(self):

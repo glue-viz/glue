@@ -7,10 +7,10 @@ from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
 from ..common3d.layer_state import LayerState3D
 
-__all__ = ['VolumeLayerState']
+__all__ = ['VolumeLayerState3D']
 
 
-class VolumeLayerState(LayerState3D, StretchStateMixin):
+class VolumeLayerState3D(LayerState3D, StretchStateMixin):
     """
     A state object for volume layers
     """
@@ -29,7 +29,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
 
     def __init__(self, layer=None, **kwargs):
 
-        super(VolumeLayerState, self).__init__(layer=layer)
+        super(VolumeLayerState3D, self).__init__(layer=layer)
 
         if self.layer is not None:
 
@@ -42,7 +42,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
                                                      lower='v_min', upper='v_max',
                                                      cache=self._limits_cache)
 
-        VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
+        VolumeLayerState3D.color_mode.set_choices(self, ['Fixed', 'Linear'])
 
         self.setup_stretch_callback()
 
@@ -72,3 +72,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
 
     def flip_limits(self):
         self.lim_helper.flip_limits()
+
+    @property
+    def cmap_name(self):
+        return colormaps.name_from_cmap(self.cmap)

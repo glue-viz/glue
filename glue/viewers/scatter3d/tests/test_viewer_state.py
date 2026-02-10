@@ -2,7 +2,7 @@ from glue.core import Data
 from glue.core.tests.test_state import clone
 
 from ..viewer_state import ScatterViewerState3D
-from ..layer_state import ScatterLayerState
+from ..layer_state import ScatterLayerState3D
 
 
 def get_choice_labels(choices):
@@ -18,15 +18,15 @@ class TestScatterViewerState3D:
         self.state = ScatterViewerState3D()
 
     def test_adding_layer_populates_att_helpers(self):
-        layer_state = ScatterLayerState(layer=self.data1)
+        layer_state = ScatterLayerState3D(layer=self.data1)
         self.state.layers.append(layer_state)
 
         choices = set(get_choice_labels(self.state.x_att_helper.choices))
         assert 'x' in choices
 
     def test_adding_second_layer_adds_its_components(self):
-        layer_state1 = ScatterLayerState(layer=self.data1)
-        layer_state2 = ScatterLayerState(layer=self.data2)
+        layer_state1 = ScatterLayerState3D(layer=self.data1)
+        layer_state2 = ScatterLayerState3D(layer=self.data2)
         self.state.layers.append(layer_state1)
         self.state.layers.append(layer_state2)
 
@@ -36,8 +36,8 @@ class TestScatterViewerState3D:
         assert 'b' in choices
 
     def test_removing_layer_updates_att_helpers(self):
-        layer_state1 = ScatterLayerState(layer=self.data1)
-        layer_state2 = ScatterLayerState(layer=self.data2)
+        layer_state1 = ScatterLayerState3D(layer=self.data1)
+        layer_state2 = ScatterLayerState3D(layer=self.data2)
         self.state.layers.append(layer_state1)
         self.state.layers.append(layer_state2)
 
