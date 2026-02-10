@@ -1,7 +1,7 @@
 from glue.config import colormaps
 from glue.core import Subset
 from echo import (CallbackProperty, SelectionCallbackProperty,
-                  delay_callback)
+                  CallbackPropertyAlias, delay_callback)
 from glue.core.state_objects import StateAttributeLimitsHelper
 from glue.core.data_combo_helper import ComponentIDComboHelper
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
@@ -16,12 +16,16 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
     """
 
     attribute = SelectionCallbackProperty()
-    vmin = CallbackProperty()
-    vmax = CallbackProperty()
+    v_min = CallbackProperty()
+    v_max = CallbackProperty()
     color_mode = SelectionCallbackProperty()
     cmap = CallbackProperty()
     subset_mode = CallbackProperty('data')
     _limits_cache = CallbackProperty({})
+
+    # Aliases for backwards compatibility with old attribute names
+    vmin = CallbackPropertyAlias('v_min')
+    vmax = CallbackPropertyAlias('v_max')
 
     def __init__(self, layer=None, **kwargs):
 
@@ -35,7 +39,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
         self.att_helper = ComponentIDComboHelper(self, 'attribute')
 
         self.lim_helper = StateAttributeLimitsHelper(self, attribute='attribute',
-                                                     lower='vmin', upper='vmax',
+                                                     lower='v_min', upper='v_max',
                                                      cache=self._limits_cache)
 
         VolumeLayerState.color_mode.set_choices(self, ['Fixed', 'Linear'])
@@ -49,14 +53,14 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
         self.cmap = colormaps.members[0][1]
 
         if isinstance(self.layer, Subset):
-            self.vmin = 0
-            self.vmax = 1
+            self.v_min = 0
+            self.v_max = 1
 
         self.update_from_dict(kwargs)
 
     def _on_layer_change(self, layer=None):
 
-        with delay_callback(self, 'vmin', 'vmin'):
+        with delay_callback(self, 'v_min', 'v_min'):
 
             if self.layer is None:
                 self.att_helper.set_multiple_data([])
@@ -64,7 +68,7 @@ class VolumeLayerState(LayerState3D, StretchStateMixin):
                 self.att_helper.set_multiple_data([self.layer])
 
     def _update_priority(self, name):
-        return 0 if name.endswith(('vmin', 'vmax')) else 1
+        return 0 if name.endswith(('v_min', 'v_max')) else 1
 
     def flip_limits(self):
         self.lim_helper.flip_limits()
