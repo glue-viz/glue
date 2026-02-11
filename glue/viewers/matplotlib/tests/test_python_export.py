@@ -1,7 +1,6 @@
 import os
-import sys
+import runpy
 import pytest
-import subprocess
 
 from glue.config import settings
 
@@ -31,7 +30,7 @@ class BaseTestExportPython:
         self.viewer.axes.figure.savefig(expected)
 
         self.viewer.export_as_script(script)
-        subprocess.call([sys.executable, script])
+        runpy.run_path(script)
 
         msg = compare_images(expected, actual, tol=tol)
 
