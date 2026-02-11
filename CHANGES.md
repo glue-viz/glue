@@ -1,5 +1,31 @@
 # Full changelog
 
+## v1.25.0 - 2026-02-11
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Added 3D state classes to glue-core by @astrofrog in https://github.com/glue-viz/glue/pull/2559
+
+#### Bug Fixes
+
+* Fix exception that occurred under certain conditions when linking 2D and 3D data by @astrofrog in https://github.com/glue-viz/glue/pull/2561
+* Support Pandas 3 default StringDtype by @dhomeier in https://github.com/glue-viz/glue/pull/2564
+* Fix WCSAxes deprecation warning by @astrofrog in https://github.com/glue-viz/glue/pull/2565
+
+#### Other Changes
+
+* Migrate configuration to pyproject.toml by @dhomeier in https://github.com/glue-viz/glue/pull/2554
+* [pre-commit.ci] pre-commit autoupdate + fixes; update test matrix to py314 by @pre-commit-ci[bot] in https://github.com/glue-viz/glue/pull/2560
+* Patch session files for new state 3d classes location by @astrofrog in https://github.com/glue-viz/glue/pull/2567
+* Improved consistency of attribute names in 3D classes by @astrofrog in https://github.com/glue-viz/glue/pull/2568
+* Rename 3D scatter layer state and define cmap_name on state classes by @astrofrog in https://github.com/glue-viz/glue/pull/2570
+* Remove compat.py from 3D viewer state infrastructure by @astrofrog in https://github.com/glue-viz/glue/pull/2571
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.24.1...v1.25.0
+
 ## v1.24.1 - 2025-10-01
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
