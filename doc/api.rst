@@ -126,6 +126,30 @@ User Interface
    :no-inheritance-diagram:
    :inherited-members:
 
+.. automodapi:: glue.viewers.common3d.viewer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.common3d.layer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.scatter3d.viewer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.scatter3d.layer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.volume3d.viewer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
+.. automodapi:: glue.viewers.volume3d.layer_state
+  :no-inheritance-diagram:
+  :inherited-members:
+
 .. automodapi:: glue.core.application_base
    :no-inheritance-diagram:
 
