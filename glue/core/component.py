@@ -236,13 +236,15 @@ class CoordinateComponent(Component):
     @property
     def units(self):
         if self.world:
-            return self._data.coords.world_axis_units[self._data.ndim - 1 - self.axis] or ''
+            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
+            return self._data.coords.world_axis_units[world_n_dim - 1 - self.axis] or ''
         else:
             return ''
 
     def _calculate(self, view=None):
 
         if self.world:
+            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
 
             # Calculating the world coordinates can be a bottleneck if we aren't
             # careful, so we need to make sure that if not all dimensions depend
@@ -268,7 +270,7 @@ class CoordinateComponent(Component):
             # convert these straight to world coordinates since the indices
             # of the pixel coordinates are the pixel coordinates themselves.
             if isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray):
-                axis = self._data.ndim - 1 - self.axis
+                axis = world_n_dim - 1 - self.axis
                 return pixel2world_single_axis(self._data.coords, *view[::-1],
                                                world_axis=axis)
 
@@ -328,7 +330,8 @@ class CoordinateComponent(Component):
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
 
             # Finally we convert these to world coordinates
-            axis = self._data.ndim - 1 - self.axis
+            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
+            axis = world_n_dim - 1 - self.axis
             world_coords = pixel2world_single_axis(self._data.coords,
                                                    *pix_coords[::-1],
                                                    world_axis=axis)
