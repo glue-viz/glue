@@ -109,6 +109,10 @@ class TestVolumeViewerState3D:
         self.state.layers.append(MockLayerState(data2))
         assert VolumeViewerState3D.reference_data.get_choices(self.state) == [self.data, data2]
 
+        self.state.layers.pop(0)
+        assert VolumeViewerState3D.reference_data.get_choices(self.state) == [data2]
+
+
     def test_attribute_choices(self):
         self.state.layers.append(MockLayerState(self.data))
 
