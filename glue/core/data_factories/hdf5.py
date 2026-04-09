@@ -53,7 +53,7 @@ def extract_hdf5_datasets(filename, memmap=True):
                     arrays[full_path] = item[()]
                 else:
                     arrays[full_path] = dict(offset=offset, shape=item.shape, dtype=item.dtype)
-            elif item.dtype.kind in ('V',):
+            elif item.dtype.kind == 'V':
                 arrays[full_path] = Table.read(item, format='hdf5')
 
     file_handle.visititems(visitor)
