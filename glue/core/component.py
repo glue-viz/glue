@@ -260,6 +260,7 @@ class CoordinateComponent(Component):
             # To optimize this, we therefore essentially consider only the
             # dependent dimensions and then broacast the result to the full
             # array size at the very end.
+            axis = world_n_dim - 1 - self.axis
 
             # view=None actually adds a dimension which is never what we really
             # mean, at least in glue.
@@ -270,7 +271,6 @@ class CoordinateComponent(Component):
             # convert these straight to world coordinates since the indices
             # of the pixel coordinates are the pixel coordinates themselves.
             if isinstance(view, (tuple, list)) and isinstance(view[0], np.ndarray):
-                axis = world_n_dim - 1 - self.axis
                 return pixel2world_single_axis(self._data.coords, *view[::-1],
                                                world_axis=axis)
 
@@ -318,7 +318,7 @@ class CoordinateComponent(Component):
                 else:
                     final_shape.append(self._data.shape[i])
 
-                if i not in dep_coords:
+                if world_n_dim == self._data.ndim and i not in dep_coords:
                     # The axis is not dependent on this instance's axis, so we
                     # just compute the values once and broadcast along this
                     # dimension later.
@@ -330,8 +330,6 @@ class CoordinateComponent(Component):
             pix_coords = np.meshgrid(*pix_coords, indexing='ij', copy=False)
 
             # Finally we convert these to world coordinates
-            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
-            axis = world_n_dim - 1 - self.axis
             world_coords = pixel2world_single_axis(self._data.coords,
                                                    *pix_coords[::-1],
                                                    world_axis=axis)
