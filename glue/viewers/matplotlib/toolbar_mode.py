@@ -81,6 +81,13 @@ class RoiModeBase(ToolbarModeBase):
         self._roi_tool._sync_patch()
         super(RoiModeBase, self).activate()
 
+    def deactivate(self):
+        self._roi_tool.reset()
+        self.clear()
+        if self.viewer is not None:
+            self.viewer.figure.canvas.draw()
+        super(RoiModeBase, self).deactivate()
+
     def roi(self):
         """
         The ROI defined by this mouse mode
@@ -200,7 +207,7 @@ class ClickRoiMode(RoiModeBase):
         if event.button is not None and self._roi_tool.active():
             self._roi_tool.update_selection(event)
             self._last_event = event
-        super(ClickRoiMode, self).move(event)
+            super(ClickRoiMode, self).move(event)
 
     def key(self, event):
         if event.key == 'enter':
@@ -245,10 +252,10 @@ class PathMode(ClickRoiMode):
         super(PathMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPathROI(self._axes)
 
-        self._roi_tool.plot_opts.update(color='#de2d26',
+        self._roi_tool.plot_opts.update(color='#669dff',
                                         fill=False,
-                                        linewidth=3,
-                                        alpha=0.4)
+                                        linewidth=2,
+                                        alpha=0.6)
 
 
 @viewer_tool
