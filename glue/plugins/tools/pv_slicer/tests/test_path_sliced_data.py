@@ -1,5 +1,4 @@
 import inspect
-import re
 
 import numpy as np
 import pytest
@@ -53,7 +52,7 @@ class TestSamplePoints:
         assert_allclose(y[4:], [1, 2, 3, 4])
 
     def test_spacing_changes_count(self):
-        x, y = sample_points([0., 10.], [0., 0.], spacing=2.)
+        x, _ = sample_points([0., 10.], [0., 0.], spacing=2.)
         # n = floor(10 / 2) = 5 -> 6 samples
         assert x.size == 6
         assert_allclose(x, [0, 2, 4, 6, 8, 10])
