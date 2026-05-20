@@ -156,3 +156,67 @@ def test_base_cartesian_data():
                  np.array([[np.nan, np.nan, np.nan, np.nan],
                            [np.nan, 2, 5, 8],
                            [np.nan, np.nan, np.nan, np.nan]]))
+
+
+# ---------------------------------------------------------------------------
+# invalidate_cache helper
+# ---------------------------------------------------------------------------
+
+
+class TestInvalidateCache():
+
+    def setup_method(self, method):
+        from glue.core import fixed_resolution_buffer as frb_mod
+        self.frb_mod = frb_mod
+        # Stash the real caches so we can restore them.
+        self._array_backup = dict(frb_mod.ARRAY_CACHE)
+        self._pixel_backup = dict(frb_mod.PIXEL_CACHE)
+        frb_mod.ARRAY_CACHE.clear()
+        frb_mod.PIXEL_CACHE.clear()
+
+    def teardown_method(self, method):
+        self.frb_mod.ARRAY_CACHE.clear()
+        self.frb_mod.PIXEL_CACHE.clear()
+        self.frb_mod.ARRAY_CACHE.update(self._array_backup)
+        self.frb_mod.PIXEL_CACHE.update(self._pixel_backup)
+
+    def test_invalidate_specific_data(self):
+        from glue.core.fixed_resolution_buffer import invalidate_cache
+        d1 = object()
+        d2 = object()
+        self.frb_mod.ARRAY_CACHE['k1'] = {'hash': (d1, None, None, None, True),
+                                          'array': None}
+        self.frb_mod.ARRAY_CACHE['k2'] = {'hash': (d2, None, None, None, True),
+                                          'array': None}
+        self.frb_mod.PIXEL_CACHE['k1'] = {'hash': (d1, None)}
+        invalidate_cache(d1)
+        assert 'k1' not in self.frb_mod.ARRAY_CACHE
+        assert 'k1' not in self.frb_mod.PIXEL_CACHE
+        assert 'k2' in self.frb_mod.ARRAY_CACHE
+
+    def test_invalidate_target_data_slot(self):
+        from glue.core.fixed_resolution_buffer import invalidate_cache
+        d = object()
+        # `d` appears in the target_data position of the hash.
+        self.frb_mod.ARRAY_CACHE['k'] = {'hash': (object(), None, d, None, True),
+                                         'array': None}
+        invalidate_cache(d)
+        assert 'k' not in self.frb_mod.ARRAY_CACHE
+
+    def test_invalidate_all(self):
+        from glue.core.fixed_resolution_buffer import invalidate_cache
+        self.frb_mod.ARRAY_CACHE['k1'] = {'hash': (object(),), 'array': None}
+        self.frb_mod.PIXEL_CACHE['k2'] = {'hash': (object(),)}
+        invalidate_cache()
+        assert self.frb_mod.ARRAY_CACHE == {}
+        assert self.frb_mod.PIXEL_CACHE == {}
+
+    def test_invalidate_tolerates_malformed_entries(self):
+        from glue.core.fixed_resolution_buffer import invalidate_cache
+        d = object()
+        self.frb_mod.ARRAY_CACHE['no-hash'] = {'array': None}
+        self.frb_mod.ARRAY_CACHE['ok'] = {'hash': (d,), 'array': None}
+        invalidate_cache(d)
+        # Malformed entry is left alone; matched entry is dropped.
+        assert 'no-hash' in self.frb_mod.ARRAY_CACHE
+        assert 'ok' not in self.frb_mod.ARRAY_CACHE

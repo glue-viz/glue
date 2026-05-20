@@ -145,34 +145,17 @@ class PathSlicedData(DerivedData):
         spacing : float, optional
             Sample spacing in parent-pixel units. Defaults to ``1``.
         """
+        from glue.core.fixed_resolution_buffer import invalidate_cache
         x, y = sample_points(x, y, spacing=spacing)
         self.x = x
         self.y = y
-        self._invalidate_frb_caches()
+        # Cached FRB results are keyed on this dataset's identity, but the
+        # underlying path has just changed -- evict so the next draw
+        # recomputes rather than returning stale data.
+        invalidate_cache(self)
         hub = getattr(self.original_data, 'hub', None)
         if hub is not None:
             hub.broadcast(NumericalDataChangedMessage(self))
-
-    def _invalidate_frb_caches(self):
-        """
-        Drop entries in :mod:`glue.core.fixed_resolution_buffer`'s
-        ``ARRAY_CACHE``/``PIXEL_CACHE`` that reference this dataset.
-
-        Cache hits in those caches are gated on a hash tuple that
-        contains the data object by *identity*. After ``set_xy`` the
-        identity is unchanged but the underlying path has changed, so
-        a cache hit would return stale results; we proactively evict.
-        """
-        from glue.core import fixed_resolution_buffer as frb_mod
-        for cache in (frb_mod.ARRAY_CACHE, frb_mod.PIXEL_CACHE):
-            for cache_id, entry in list(cache.items()):
-                hash_tuple = entry.get('hash')
-                if hash_tuple is None:
-                    continue
-                # Use identity comparison to avoid invoking numpy's
-                # element-wise ``==`` on array members of the tuple.
-                if any(item is self for item in hash_tuple):
-                    cache.pop(cache_id, None)
 
     @property
     def label(self):
