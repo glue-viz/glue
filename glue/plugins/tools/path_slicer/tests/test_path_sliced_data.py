@@ -242,6 +242,27 @@ class TestPathSlicedDataAccessors:
         assert_array_equal(mask[:3, :], np.zeros((3, path_slice.shape[-1])))
         assert_array_equal(mask[3:, :], np.ones((3, path_slice.shape[-1])))
 
+    def test_get_mask_on_own_pixel_components(self, cube_dc):
+        # Regression: a subset drawn on the slice viewer (i.e. expressed
+        # against PathSlicedData's own pixel CIDs, not the parent
+        # cube's) used to raise IncompatibleAttribute because get_mask
+        # blindly delegated to original_data. The slice viewer's
+        # subset overlay therefore never rendered.
+        parent, _ = cube_dc
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 4.],
+                          parent.pixel_component_ids[2], [0., 0.])
+        # Range subset on the path axis: indices 1..3 inclusive.
+        path_cid = path_slice.pixel_component_ids[-1]
+        subset_state = (path_cid >= 1) & (path_cid <= 3)
+        mask = path_slice.get_mask(subset_state)
+        assert mask.shape == path_slice.shape
+        # Path axis is the last axis; the selection should be True for
+        # path indices in [1, 3] regardless of the non-path axis.
+        expected = np.zeros(path_slice.shape, dtype=bool)
+        expected[:, 1:4] = True
+        assert_array_equal(mask, expected)
+
     def test_compute_statistic_along_path(self, cube_dc):
         parent, _ = cube_dc
         path_slice = PathSlicedData(parent,

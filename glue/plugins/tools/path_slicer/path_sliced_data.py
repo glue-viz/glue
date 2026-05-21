@@ -269,6 +269,20 @@ class PathSlicedData(DerivedData):
 
     def get_mask(self, subset_state, view=None):
 
+        from glue.core.exceptions import IncompatibleAttribute
+
+        # If the subset is expressed against our own components -- e.g.
+        # an ROI drawn on the slice viewer -- evaluate it locally. This
+        # is the path that lets subsets drawn in the slice viewer
+        # actually render.
+        try:
+            return subset_state.to_mask(self, view=view)
+        except IncompatibleAttribute:
+            pass
+
+        # Otherwise the subset must be defined against the parent cube's
+        # components; project our slice grid back to parent pixel coords
+        # and evaluate there.
         pix_coords, keep, shape = self._get_pix_coords(view=view)
         result = np.zeros(shape, dtype=bool)
         result[keep] = self.original_data.get_mask(
