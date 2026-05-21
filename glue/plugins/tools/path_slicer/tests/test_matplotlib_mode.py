@@ -107,31 +107,125 @@ class TestBasePathSlicerMode:
         mode._extract_callback(roi_mode)
         mode._open_or_update.assert_called_once_with([1, 2, 3], [0, 1, 2])
 
-    def test_close_closes_slice_viewer(self):
+    def test_close_closes_slice_viewers(self):
         _, _, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class()(viewer)
-        fake_slice_viewer = MagicMock()
-        mode._slice_viewer = fake_slice_viewer
+        first = MagicMock()
+        second = MagicMock()
+        mode._slice_viewers = [first, second]
         mode.close()
-        fake_slice_viewer.close.assert_called_once()
+        first.close.assert_called_once()
+        second.close.assert_called_once()
+        assert mode._slice_viewers == []
         assert mode._slice_viewer is None
 
-    def test_close_is_safe_without_slice_viewer(self):
+    def test_close_is_safe_without_slice_viewers(self):
         _, _, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class()(viewer)
-        assert mode._slice_viewer is None
+        assert mode._slice_viewers == []
         mode.close()  # should not raise
 
     def test_open_or_update_opens_real_slice_viewer(self):
-        # Exercise the full open_or_update_slice_viewer round-trip --
-        # SimpleImageViewer is happy to be the slice viewer class.
         app, cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         assert isinstance(mode._slice_viewer, SimpleImageViewer)
-        # A PathSlicedData was created and added as a layer.
         layers = [ls.layer for ls in mode._slice_viewer.state.layers]
         assert any(isinstance(d, PathSlicedData) for d in layers)
+        # Multi-trace bookkeeping
+        assert len(mode._traces) == 1
+        assert len(mode._slice_viewers) == 1
+        # The just-traced one is the target for the next Enter, so a
+        # follow-up trace would update it in place.
+        assert mode._target_trace is mode._traces[0]
+
+    def test_consecutive_traces_with_no_target_change_updates_in_place(self):
+        # Default behaviour: after each Enter the most recent trace is
+        # the target, so re-Entering tweaks the same path.
+        app, cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        first_x = mode._traces[0][0].x.copy()
+        mode._open_or_update([0., 5., 2.], [4., 0., 3.])
+        assert len(mode._traces) == 1
+        assert len(mode._slice_viewers) == 1
+        assert not np.array_equal(first_x, mode._traces[0][0].x)
+
+    def test_set_target_none_then_trace_opens_new_slice_viewer(self):
+        # Explicit "Create new" via set_target(None) makes the next
+        # Enter spawn a fresh trace and slice viewer.
+        app, cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        first_viewer = mode._slice_viewer
+        mode.set_target(None)
+        mode._open_or_update([0., 5., 2.], [4., 0., 3.])
+        assert len(mode._traces) == 2
+        assert len(mode._slice_viewers) == 2
+        assert mode._slice_viewers[0] is first_viewer
+        assert mode._slice_viewers[1] is not first_viewer
+        # Path 1's vertices must NOT have been changed by path 2's creation.
+        # (Regression guard for the earlier identity-check helper bug.)
+        first_trace_x = mode._traces[0][0].x
+        assert first_trace_x[0] == 1.0 or first_trace_x[0] != 0.0
+
+    def test_set_target_to_existing_trace_updates_only_that_one(self):
+        app, cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        first_trace = mode._traces[0]
+        first_x = first_trace[0].x.copy()
+        mode.set_target(None)
+        mode._open_or_update([0., 5., 2.], [4., 0., 3.])
+        second_trace = mode._traces[1]
+        second_x = second_trace[0].x.copy()
+
+        mode.set_target(first_trace)
+        mode._open_or_update([3., 7., 11.], [4., 8., 12.])
+        assert not np.array_equal(first_x, first_trace[0].x)
+        assert np.array_equal(second_x, second_trace[0].x)
+        assert len(mode._slice_viewers) == 2
+
+    def test_menu_entries_reflect_traces(self):
+        app, cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        assert [label for label, _ in mode.menu_entries()] == [
+            'Create new path']
+
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        mode.set_target(None)
+        mode._open_or_update([0., 5., 2.], [4., 0., 3.])
+        labels = [label for label, _ in mode.menu_entries()]
+        assert labels == ['Create new path', 'Update path 1', 'Update path 2']
+
+    def test_hover_preview_does_not_change_committed_target(self):
+        app, cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        committed = mode._target_trace
+        mode.hover_preview(None)  # simulate hovering "Create new path"
+        # _target_trace must not have changed even though overlays
+        # were redrawn for the preview.
+        assert mode._target_trace is committed
+
+    def test_on_traces_changed_hook_fires(self):
+        # UI subclasses (Qt menu, jupyter dropdown) override this hook
+        # to refresh their listing.
+        app, cube, viewer = _make_app_with_cube_viewer()
+        calls = []
+
+        class _Hook(BasePathSlicerMode):
+            tool_id = 'test:hook'
+            slice_viewer_cls = SimpleImageViewer
+
+            def _on_traces_changed(self):
+                calls.append(len(self._traces))
+
+        mode = _Hook(viewer)
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        mode.set_target(None)
+        mode._open_or_update([0., 5., 2.], [4., 0., 3.])
+        assert calls == [1, 2]
 
 
 # ---------------------------------------------------------------------------
