@@ -3,12 +3,11 @@ Backend-agnostic helpers for the path slicer plugin.
 
 These functions are shared across the Qt and Jupyter front-ends; both
 back-ends do the same data-model work (creating/updating a
-:class:`PathSlicedData` per Data layer, wiring the link graph, and
-driving the parent viewer's slice index) and only differ in the viewer
-class they hand to ``new_data_viewer``.
+:class:`PathSlicedData` per Data layer, wiring the link graph, opening
+or refreshing the PV viewer, and driving the parent viewer's slice
+index) and only differ in the viewer class they hand to
+``new_data_viewer``.
 """
-import numpy as np
-
 from glue.core import Data
 from glue.plugins.tools.path_slicer.path_sliced_data import PathSlicedData
 from glue.plugins.tools.path_slicer.path_sliced_data_links import (
@@ -16,7 +15,8 @@ from glue.plugins.tools.path_slicer.path_sliced_data_links import (
 
 
 __all__ = ['build_or_update_pvs', 'path_link_exists',
-           'drive_parent_slice', 'find_existing_pv']
+           'drive_parent_slice', 'find_existing_pv',
+           'open_or_update_pv_viewer']
 
 
 def find_existing_pv(data_collection, parent_data):
@@ -57,8 +57,6 @@ def build_or_update_pvs(source_viewer, vx, vy):
     dc = source_viewer.session.data_collection
     x_att = source_viewer.state.x_att
     y_att = source_viewer.state.y_att
-    vx = np.asarray(vx)
-    vy = np.asarray(vy)
 
     updated = []
     for layer_state in source_viewer.state.layers:
@@ -88,6 +86,46 @@ def build_or_update_pvs(source_viewer, vx, vy):
                 link_path_sliced_pair_paths(dc, pv_a, pv_b)
 
     return updated
+
+
+def open_or_update_pv_viewer(source_viewer, current_pv_viewer, pv_viewer_cls,
+                             vx, vy):
+    """
+    Maintain the PV viewer attached to a path-slicer tool.
+
+    If ``current_pv_viewer`` is ``None``, opens a fresh viewer of
+    ``pv_viewer_cls``, materialises a :class:`PathSlicedData` per Data
+    layer of ``source_viewer``, populates it, and copies layer visual
+    state (colour, attribute, etc.) from the source viewer. Otherwise
+    just refreshes the existing PVs in place.
+
+    The visual-state copy is best-effort: a not-yet-populated
+    :class:`SelectionCallbackProperty` raises :class:`ValueError`, in
+    which case that property is left at its default.
+
+    Returns the (new or existing) PV viewer.
+    """
+    if current_pv_viewer is not None:
+        build_or_update_pvs(source_viewer, vx, vy)
+        return current_pv_viewer
+
+    pv_viewer = source_viewer.session.application.new_data_viewer(pv_viewer_cls)
+    for pv, layer_state in build_or_update_pvs(source_viewer, vx, vy):
+        pv_viewer.add_data(pv)
+        pvstate = layer_state.as_dict()
+        pvstate.pop('layer', None)
+        for new_layer_state in pv_viewer.state.layers[::-1]:
+            if new_layer_state.layer is pv:
+                try:
+                    new_layer_state.update_from_dict(pvstate)
+                except ValueError:
+                    pass
+                break
+    pv_viewer.state.aspect = 'auto'
+    if hasattr(pv_viewer.state, 'color_mode'):
+        pv_viewer.state.color_mode = source_viewer.state.color_mode
+    pv_viewer.state.reset_limits()
+    return pv_viewer
 
 
 def drive_parent_slice(pv, pv_y_value):

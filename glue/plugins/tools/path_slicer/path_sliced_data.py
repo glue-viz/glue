@@ -308,9 +308,9 @@ class PathSlicedData(DerivedData):
 
         Coordinate translation between PathSlicedData instances goes
         through glue's :class:`~glue.core.component_link.ComponentLink`
-        graph; the PV slicer tool is expected to register the
+        graph; the path slicer tool is expected to register the
         appropriate links (typically via
-        :func:`glue.plugins.tools.pv_slicer.path_sliced_data_links.link_path_sliced_group`)
+        :func:`glue.plugins.tools.path_slicer.path_sliced_data_links.link_path_sliced_group`)
         before any FRB is requested.
         """
         from glue.core.fixed_resolution_buffer import compute_fixed_resolution_buffer

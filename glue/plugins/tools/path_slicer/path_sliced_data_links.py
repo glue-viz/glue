@@ -1,16 +1,14 @@
 """
-Prototype: wire a group of :class:`PathSlicedData` instances into
-glue's ``ComponentLink`` graph so that the generic
+Wire a group of :class:`PathSlicedData` instances into glue's
+``ComponentLink`` graph so the generic
 :func:`~glue.core.fixed_resolution_buffer.compute_fixed_resolution_buffer`
-function can translate between them without
-``PathSlicedData.compute_fixed_resolution_buffer``'s override.
+function can translate between them.
 
-The realistic use case is an image viewer showing an RGB composite of
-three cubes that are linked by ``WCSLink`` (or any other cube-to-cube
-links). The user draws a single path; one :class:`PathSlicedData` is
-created per cube to expose the values along that path. To overplot
-them in a PV viewer we need glue's link graph to know how to translate
-PV-pixel coordinates between the three PVs.
+Typical use case: an image viewer showing an RGB composite of several
+cubes linked by ``WCSLink`` (or any other cube-to-cube links). The
+user draws a single path; one :class:`PathSlicedData` is created per
+cube to expose the values along it, and these helpers wire the PVs up
+so a path-slice viewer can render them together.
 
 The hookup has two parts:
 
@@ -23,17 +21,12 @@ The hookup has two parts:
 
 2. **Pairwise path links** between every pair of PVs: a
    :class:`PathRelativeLink` that maps path-axis pixel ``k`` in one PV
-   to ``k * N_other / N_self`` in the other (the same "same relative
-   offset along the path" assumption the override encodes).
+   to ``k * N_other / N_self`` in the other (the "same relative offset
+   along the path" assumption that callers are expected to enforce).
 
 Path lengths are read on every call inside :class:`PathRelativeLink`,
 so :meth:`PathSlicedData.set_xy` updates propagate without any link
 re-registration.
-
-This is exploratory code; ``PathSlicedData.compute_fixed_resolution_buffer``
-remains the working path. Use this module by calling
-:func:`link_path_sliced_group` and then invoking the generic
-``compute_fixed_resolution_buffer`` function directly.
 """
 
 import numpy as np

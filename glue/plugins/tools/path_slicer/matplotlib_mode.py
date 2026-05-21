@@ -16,7 +16,7 @@ from matplotlib.lines import Line2D
 
 from glue.viewers.matplotlib.toolbar_mode import PathMode, ToolbarModeBase
 
-from .common import build_or_update_pvs, drive_parent_slice
+from .common import drive_parent_slice, open_or_update_pv_viewer
 from .path_sliced_data import PathSlicedData
 
 
@@ -66,33 +66,8 @@ class BasePathSlicerMode(PathMode):
         self._open_or_update(vx, vy)
 
     def _open_or_update(self, vx, vy):
-        opened = self._pv_viewer is None
-        if opened:
-            self._pv_viewer = self.viewer.session.application.new_data_viewer(
-                self.pv_viewer_cls)
-
-        updated = build_or_update_pvs(self.viewer, vx, vy)
-
-        if opened:
-            for pv, layer_state in updated:
-                self._pv_viewer.add_data(pv)
-                # Best-effort: copy visual state (colour, attribute, etc.)
-                # so the PV layer reads as the same series as the cube
-                # layer. A not-yet-populated SelectionCallbackProperty
-                # raises ValueError; in that case skip.
-                pvstate = layer_state.as_dict()
-                pvstate.pop('layer', None)
-                for new_layer_state in self._pv_viewer.state.layers[::-1]:
-                    if new_layer_state.layer is pv:
-                        try:
-                            new_layer_state.update_from_dict(pvstate)
-                        except ValueError:
-                            pass
-                        break
-            self._pv_viewer.state.aspect = 'auto'
-            if hasattr(self._pv_viewer.state, 'color_mode'):
-                self._pv_viewer.state.color_mode = self.viewer.state.color_mode
-            self._pv_viewer.state.reset_limits()
+        self._pv_viewer = open_or_update_pv_viewer(
+            self.viewer, self._pv_viewer, self.pv_viewer_cls, vx, vy)
 
     def close(self):
         if self._pv_viewer is not None:
