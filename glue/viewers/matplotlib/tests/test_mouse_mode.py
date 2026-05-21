@@ -135,6 +135,21 @@ class TestRoiMode(TestMouseMode):
         self.mode.press(e)
         assert self.mode._roi_tool.abort_selection.call_count == 1
 
+    def test_deactivate_resets_roi_tool_and_redraws(self):
+        # RoiModeBase.deactivate resets the underlying ROI tool, clears
+        # the cached patch state, and triggers a redraw so the viewer
+        # drops the in-progress ROI artist.
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_called()
+        self.mode.viewer.figure.canvas.draw.assert_called()
+
+    def test_deactivate_safe_after_viewer_closed(self):
+        # Tool.close() sets self.viewer to None; deactivate must still
+        # reset the ROI tool and not try to redraw a missing viewer.
+        self.mode.viewer = None
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_called()
+
 
 class TestClickRoiMode(TestMouseMode):
 
