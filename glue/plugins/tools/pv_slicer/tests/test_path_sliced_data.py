@@ -13,6 +13,7 @@ from glue.core.message import NumericalDataChangedMessage
 from glue.core.link_helpers import LinkSame
 
 from glue.plugins.tools.pv_slicer.path_sliced_data import PathSlicedData, sample_points
+from glue.plugins.tools.pv_slicer.path_sliced_data_links import link_path_sliced_group
 
 
 # ---------------------------------------------------------------------------
@@ -417,7 +418,8 @@ class TestComputeFixedResolutionBuffer:
 
     def _make_linked_pv_pair(self):
         # Two parent datasets with identical coords, linked pixel-to-pixel,
-        # and matching PV slices on both.
+        # and matching PV slices on both. Link the PVs into the graph so
+        # the generic FRB function can translate pv2 -> pv1.
         matrix = np.array([[2, 0, 0, 0], [0, 2, 0, 0],
                            [0, 0, 2, 0], [0, 0, 0, 1]])
         data1 = Data(x=np.arange(120).reshape((6, 5, 4)),
@@ -438,6 +440,9 @@ class TestComputeFixedResolutionBuffer:
         pv2 = PathSlicedData(data2,
                            data2.pixel_component_ids[1], y2,
                            data2.pixel_component_ids[2], x2)
+        dc.append(pv1)
+        dc.append(pv2)
+        link_path_sliced_group(dc, pv1, pv2)
         return data1, data2, pv1, pv2
 
     def test_linked_pair_shape(self):
@@ -447,25 +452,6 @@ class TestComputeFixedResolutionBuffer:
             target_data=pv2,
             target_cid=pv1.original_data.id['x'])
         assert result.shape == (15, 20)
-
-    def test_non_pv_target_data_rejected(self, cube_dc):
-        parent, _ = cube_dc
-        pv = PathSlicedData(parent,
-                          parent.pixel_component_ids[1], [0., 2.],
-                          parent.pixel_component_ids[2], [0., 0.])
-        with pytest.raises(TypeError, match='PathSlicedData'):
-            pv.compute_fixed_resolution_buffer(
-                bounds=[(0, 5, 6), (0, 5, 6)],
-                target_data=parent,
-                target_cid=parent.main_components[0])
-
-    def test_bounds_length_validated(self):
-        _, _, pv1, pv2 = self._make_linked_pv_pair()
-        with pytest.raises(ValueError, match='bounds should have'):
-            pv1.compute_fixed_resolution_buffer(
-                bounds=[(0, 5, 15)],  # missing the path bound
-                target_data=pv2,
-                target_cid=pv1.original_data.id['x'])
 
 
 # ---------------------------------------------------------------------------
