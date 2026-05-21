@@ -126,7 +126,7 @@ class TestBuildOrUpdatePathSlices:
         updated = build_or_update_path_slices(
             self.viewer, [1, 2, 3], [0, 1, 2])
         assert len(updated) == 1
-        path_slice, layer_state = updated[0]
+        path_slice, _layer_state = updated[0]
         assert isinstance(path_slice, PathSlicedData)
         assert path_slice.original_data is self.cube
         assert path_slice.parent_viewer is self.viewer
@@ -255,7 +255,7 @@ class TestOpenOrUpdateSliceViewer:
 class TestDriveParentSlice:
 
     def test_writes_to_non_displayed_axis(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, cube, viewer = _make_app_with_cube_viewer()
         # The SimpleImageViewer defaults pick the two highest axes as
         # x/y, so axis 0 is the non-displayed (slice) axis here.
         path_slice = PathSlicedData(
@@ -274,7 +274,7 @@ class TestDriveParentSlice:
         assert after != before
 
     def test_truncates_float_y_to_int(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, cube, viewer = _make_app_with_cube_viewer()
         path_slice = PathSlicedData(
             cube,
             viewer.state.x_att, [0., 1., 2.],

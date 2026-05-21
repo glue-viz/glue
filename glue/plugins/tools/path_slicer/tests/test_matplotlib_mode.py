@@ -126,7 +126,7 @@ class TestBasePathSlicerMode:
         mode.close()  # should not raise
 
     def test_open_or_update_opens_real_slice_viewer(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         assert isinstance(mode._slice_viewer, SimpleImageViewer)
@@ -142,7 +142,7 @@ class TestBasePathSlicerMode:
     def test_consecutive_traces_with_no_target_change_updates_in_place(self):
         # Default behaviour: after each Enter the most recent trace is
         # the target, so re-Entering tweaks the same path.
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         first_x = mode._traces[0][0].x.copy()
@@ -154,7 +154,7 @@ class TestBasePathSlicerMode:
     def test_set_target_none_then_trace_opens_new_slice_viewer(self):
         # Explicit "Create new" via set_target(None) makes the next
         # Enter spawn a fresh trace and slice viewer.
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         first_viewer = mode._slice_viewer
@@ -170,7 +170,7 @@ class TestBasePathSlicerMode:
         assert first_trace_x[0] == 1.0 or first_trace_x[0] != 0.0
 
     def test_set_target_to_existing_trace_updates_only_that_one(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         first_trace = mode._traces[0]
@@ -187,7 +187,7 @@ class TestBasePathSlicerMode:
         assert len(mode._slice_viewers) == 2
 
     def test_menu_entries_reflect_traces(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         assert [label for label, _ in mode.menu_entries()] == [
             'Create new path']
@@ -199,7 +199,7 @@ class TestBasePathSlicerMode:
         assert labels == ['Create new path', 'Update path 1', 'Update path 2']
 
     def test_hover_preview_does_not_change_committed_target(self):
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         committed = mode._target_trace
@@ -211,7 +211,7 @@ class TestBasePathSlicerMode:
     def test_on_traces_changed_hook_fires(self):
         # UI subclasses (Qt menu, jupyter dropdown) override this hook
         # to refresh their listing.
-        app, cube, viewer = _make_app_with_cube_viewer()
+        _app, _cube, viewer = _make_app_with_cube_viewer()
         calls = []
 
         class _Hook(BasePathSlicerMode):
@@ -325,7 +325,7 @@ class TestBasePathSlicerCrosshairMode:
 
     def test_activate_then_deactivate_round_trip(self):
         app, cube, cube_viewer = _make_app_with_cube_viewer()
-        path_slice, slice_viewer = _make_path_slice_and_slice_viewer(
+        _path_slice, slice_viewer = _make_path_slice_and_slice_viewer(
             app, cube, cube_viewer)
         mode = BasePathSlicerCrosshairMode(slice_viewer)
         n_lines_before = len(cube_viewer.axes.get_lines())

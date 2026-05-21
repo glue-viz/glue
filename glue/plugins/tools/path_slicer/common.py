@@ -228,9 +228,8 @@ def update_trace(trace, vx, vy):
     ``(vx, vy)`` path. ``set_xy`` broadcasts a
     :class:`NumericalDataChangedMessage` so any viewer showing these
     PVs auto-refreshes."""
-    import numpy as _np
-    vx_arr = _np.asarray(vx, dtype=float)
-    vy_arr = _np.asarray(vy, dtype=float)
+    vx_arr = np.asarray(vx, dtype=float)
+    vy_arr = np.asarray(vy, dtype=float)
     for path in trace:
         path.set_xy(vx_arr, vy_arr)
 
