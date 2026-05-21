@@ -16,8 +16,8 @@ from matplotlib.lines import Line2D
 
 from glue.viewers.matplotlib.toolbar_mode import PathMode, ToolbarModeBase
 
-from .common import (create_trace, drive_parent_slice,
-                     open_slice_viewer_for, update_trace)
+from .common import drive_parent_slice
+from .multi_trace import MultiTracePathSlicerMixin
 from .path_sliced_data import PathSlicedData
 
 
@@ -29,30 +29,19 @@ _PATH_ALPHA_ACTIVE = 1.0
 _PATH_ALPHA_INACTIVE = 0.3
 
 
-class BasePathSlicerMode(PathMode):
+class BasePathSlicerMode(MultiTracePathSlicerMixin, PathMode):
     """
-    Base class for the path-drawing tool on a cube viewer. Each Enter
-    on the tool produces a "trace" -- one :class:`PathSlicedData` per
-    Data layer in the source viewer; the trace's PVs are added to a
-    fresh slice viewer of :attr:`slice_viewer_cls`. The tool tracks
-    every trace it produced on this source viewer (``self._traces``)
-    and remembers which trace the next Enter should refresh
-    (``self._target_trace``); set ``_target_trace`` to ``None`` to
-    create a new trace instead.
-
-    On the matplotlib axes of the source viewer the tool draws one
-    overlay line per trace, with the active trace at full opacity and
-    the others faded; :meth:`hover_preview` flips the alphas without
-    committing the selection so a UI dropdown can preview which path
-    is about to be replaced.
+    Matplotlib-backed path slicer tool. Multi-trace bookkeeping
+    (``self._traces``, ``self._target_trace``, ``self.menu_entries()``,
+    ``self.set_target()``) comes from
+    :class:`MultiTracePathSlicerMixin`; this class adds the path-
+    drawing inheritance from :class:`PathMode` and renders the per-
+    trace path overlay on the source viewer's matplotlib axes.
 
     Subclasses set :attr:`slice_viewer_cls` and :attr:`tool_id`,
     decorate themselves with ``@viewer_tool``, and may override
-    :meth:`_on_traces_changed` to refresh their backend's UI (e.g. a
-    QMenu or ipywidgets.Dropdown).
+    :meth:`_on_traces_changed` to refresh their backend's UI.
     """
-
-    slice_viewer_cls = None  # set by subclasses
 
     icon = 'glue_slice'
     action_text = 'Slice Extraction'
@@ -69,16 +58,8 @@ class BasePathSlicerMode(PathMode):
                 f"{type(self).__name__} must set 'slice_viewer_cls' "
                 "(the viewer class to open for the path slice)")
         super().__init__(viewer, **kwargs)
+        self._init_multi_trace()
         self._roi_callback = self._extract_callback
-        # Parallel lists. ``self._slice_viewer`` shadows the most recent
-        # entry of ``self._slice_viewers`` so the crosshair tool's
-        # introspection (and existing callers) still find something.
-        self._traces = []  # list[list[PathSlicedData]]
-        self._slice_viewers = []
-        self._slice_viewer = None
-        # ``None`` means "create new trace on next Enter"; otherwise one
-        # of ``self._traces``.
-        self._target_trace = None
         # Overlay artists on the source viewer's axes, keyed by trace
         # identity.
         self._overlays = {}
@@ -97,57 +78,8 @@ class BasePathSlicerMode(PathMode):
         vx, vy = mode.roi().to_polygon()
         self._open_or_update(vx, vy)
 
-    def _open_or_update(self, vx, vy):
-        if self._target_trace is None:
-            new_paths = create_trace(self.viewer, vx, vy, self._traces)
-            self._traces.append(new_paths)
-            slice_viewer = open_slice_viewer_for(
-                self.viewer, self.slice_viewer_cls, new_paths)
-            self._slice_viewers.append(slice_viewer)
-            self._slice_viewer = slice_viewer
-            # The just-created trace becomes the target for the next
-            # Enter, so consecutive Enters tweak the same path until
-            # the user picks something else from the UI dropdown.
-            self._target_trace = self._traces[-1]
-        else:
-            update_trace(self._target_trace, vx, vy)
-        self._refresh_overlays()
-        self._on_traces_changed()
-
     # ------------------------------------------------------------------
-    # Public API used by UI dropdowns
-    # ------------------------------------------------------------------
-
-    def menu_entries(self):
-        """The (label, target) pairs a dropdown UI should show. The
-        ``target`` is ``None`` for "Create new path" or a trace from
-        :attr:`_traces` for "Update path N"."""
-        entries = [('Create new path', None)]
-        for i, _trace in enumerate(self._traces, start=1):
-            entries.append((f'Update path {i}', _trace))
-        return entries
-
-    def set_target(self, target):
-        """Set the next-Enter target. ``None`` creates a new trace;
-        otherwise must be one of :attr:`_traces`."""
-        self._target_trace = target
-        self._refresh_overlays()
-
-    def hover_preview(self, target):
-        """Temporarily highlight ``target`` (or none if ``target`` is
-        ``None``) without committing the selection. UI dropdowns call
-        this on hover; :meth:`_refresh_overlays` restores the committed
-        state when the menu closes."""
-        for trace in self._traces:
-            line = self._overlays.get(id(trace))
-            if line is None:
-                continue
-            line.set_alpha(_PATH_ALPHA_ACTIVE if trace is target
-                           else _PATH_ALPHA_INACTIVE)
-        self.viewer.figure.canvas.draw_idle()
-
-    # ------------------------------------------------------------------
-    # Matplotlib overlay drawing
+    # Matplotlib overlay drawing (mixin hooks)
     # ------------------------------------------------------------------
 
     def _refresh_overlays(self):
@@ -173,22 +105,20 @@ class BasePathSlicerMode(PathMode):
                 self._overlays[key] = line
         self.viewer.figure.canvas.draw_idle()
 
-    # ------------------------------------------------------------------
-    # Hooks
-    # ------------------------------------------------------------------
-
-    def _on_traces_changed(self):
-        """Override to refresh the backend's dropdown UI after a trace
-        is added or updated. Default no-op."""
+    def hover_preview(self, target):
+        for trace in self._traces:
+            line = self._overlays.get(id(trace))
+            if line is None:
+                continue
+            line.set_alpha(_PATH_ALPHA_ACTIVE if trace is target
+                           else _PATH_ALPHA_INACTIVE)
+        self.viewer.figure.canvas.draw_idle()
 
     def close(self):
         for line in self._overlays.values():
             line.remove()
         self._overlays.clear()
-        for slice_viewer in self._slice_viewers:
-            slice_viewer.close()
-        self._slice_viewers.clear()
-        self._slice_viewer = None
+        self._close_slice_viewers()
         return super().close()
 
 
