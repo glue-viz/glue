@@ -3,11 +3,11 @@ Backend-neutral matplotlib path slicer modes.
 
 Both the Qt and Jupyter (matplotlib) image viewers expose a path-slicer
 tool that lets the user draw a path on a cube and have the values along
-that path materialised as a :class:`PathSlicedData` shown in a fresh PV
+that path materialised as a :class:`PathSlicedData` shown in a fresh slice
 image viewer. The two front-ends differ only in which viewer class
 ``new_data_viewer`` is called with; everything else is identical
 matplotlib code. This module provides two abstract base classes -- one
-for the path-drawing tool, one for the crosshair tool on the PV viewer
+for the path-drawing tool, one for the crosshair tool on the slice viewer
 -- which each front-end subclasses to set its viewer class and tool ID
 and register via ``@viewer_tool``.
 """
@@ -16,7 +16,7 @@ from matplotlib.lines import Line2D
 
 from glue.viewers.matplotlib.toolbar_mode import PathMode, ToolbarModeBase
 
-from .common import drive_parent_slice, open_or_update_pv_viewer
+from .common import drive_parent_slice, open_or_update_slice_viewer
 from .path_sliced_data import PathSlicedData
 
 
@@ -26,12 +26,12 @@ __all__ = ['BasePathSlicerMode', 'BasePathSlicerCrosshairMode']
 class BasePathSlicerMode(PathMode):
     """
     Base class for the path-drawing tool on a cube viewer. Subclasses
-    must set :attr:`pv_viewer_cls` (the viewer class to open for the PV
+    must set :attr:`slice_viewer_cls` (the viewer class to open for the slice
     slice) and :attr:`tool_id`, and decorate themselves with
     ``@viewer_tool``.
     """
 
-    pv_viewer_cls = None  # set by subclasses
+    slice_viewer_cls = None  # set by subclasses
 
     icon = 'glue_slice'
     action_text = 'Slice Extraction'
@@ -43,13 +43,13 @@ class BasePathSlicerMode(PathMode):
     shortcut = 'P'
 
     def __init__(self, viewer, **kwargs):
-        if self.pv_viewer_cls is None:
+        if self.slice_viewer_cls is None:
             raise TypeError(
-                f"{type(self).__name__} must set 'pv_viewer_cls' "
-                "(the viewer class to open for the PV slice)")
+                f"{type(self).__name__} must set 'slice_viewer_cls' "
+                "(the viewer class to open for the path slice)")
         super().__init__(viewer, **kwargs)
         self._roi_callback = self._extract_callback
-        self._pv_viewer = None
+        self._slice_viewer = None
         self.viewer.state.add_callback('reference_data',
                                        self._on_reference_data_change)
         self._on_reference_data_change()
@@ -66,22 +66,22 @@ class BasePathSlicerMode(PathMode):
         self._open_or_update(vx, vy)
 
     def _open_or_update(self, vx, vy):
-        self._pv_viewer = open_or_update_pv_viewer(
-            self.viewer, self._pv_viewer, self.pv_viewer_cls, vx, vy)
+        self._slice_viewer = open_or_update_slice_viewer(
+            self.viewer, self._slice_viewer, self.slice_viewer_cls, vx, vy)
 
     def close(self):
-        if self._pv_viewer is not None:
-            self._pv_viewer.close()
-            self._pv_viewer = None
+        if self._slice_viewer is not None:
+            self._slice_viewer.close()
+            self._slice_viewer = None
         return super().close()
 
 
 class BasePathSlicerCrosshairMode(ToolbarModeBase):
     """
-    Base class for the crosshair tool on the PV viewer. While the
+    Base class for the crosshair tool on the slice viewer. While the
     mouse is dragged, draws the path on the parent cube viewer,
     highlights the cursor's projection back to parent pixel
-    coordinates, and pushes the cursor's PV-y onto the parent viewer's
+    coordinates, and pushes the cursor's slice y onto the parent viewer's
     ``state.slices``.
 
     Subclasses set :attr:`tool_id` and decorate themselves with

@@ -12,8 +12,8 @@ from glue.core.hub import HubListener
 from glue.core.message import NumericalDataChangedMessage
 from glue.core.link_helpers import LinkSame
 
-from glue.plugins.tools.pv_slicer.path_sliced_data import PathSlicedData, sample_points
-from glue.plugins.tools.pv_slicer.path_sliced_data_links import link_path_sliced_group
+from glue.plugins.tools.path_slicer.path_sliced_data import PathSlicedData, sample_points
+from glue.plugins.tools.path_slicer.path_sliced_data_links import link_path_sliced_group
 
 
 # ---------------------------------------------------------------------------
@@ -114,46 +114,46 @@ class TestPathSlicedDataConstruction:
     def test_basic_shape(self, cube_dc):
         parent, _ = cube_dc
         # Slice axes 1 and 2 with a 3-vertex path.
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [1., 2., 3.],
                           parent.pixel_component_ids[2], [0., 2., 5.])
         # Axis 0 of parent kept; axes 1+2 replaced by the path.
-        assert pv.shape[0] == 6
-        assert pv.ndim == 2
+        assert path_slice.shape[0] == 6
+        assert path_slice.ndim == 2
         # Path is resampled by `sample_points` with default spacing=1.
         # The original path total length is hypot(1,2)+hypot(1,3) ~= 5.4
         # so n=5 -> 6 samples.
-        assert pv.shape[-1] == 6
+        assert path_slice.shape[-1] == 6
 
     def test_label_default(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [1., 2.],
                           parent.pixel_component_ids[2], [0., 3.])
-        assert pv.label == ''
+        assert path_slice.label == ''
 
     def test_label_explicit(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [1., 2.],
                           parent.pixel_component_ids[2], [0., 3.],
                           label='slice')
-        assert pv.label == 'slice'
+        assert path_slice.label == 'slice'
 
     def test_spacing_parameter(self, cube_dc):
         parent, _ = cube_dc
         # spacing=2 should halve the number of samples for the same path
         # compared to spacing=1.
-        pv1 = PathSlicedData(parent,
+        slice1 = PathSlicedData(parent,
                            parent.pixel_component_ids[1], [0., 4.],
                            parent.pixel_component_ids[2], [0., 0.],
                            spacing=1)
-        pv2 = PathSlicedData(parent,
+        slice2 = PathSlicedData(parent,
                            parent.pixel_component_ids[1], [0., 4.],
                            parent.pixel_component_ids[2], [0., 0.],
                            spacing=2)
-        assert pv1.shape[-1] == 5
-        assert pv2.shape[-1] == 3
+        assert slice1.shape[-1] == 5
+        assert slice2.shape[-1] == 3
 
     def test_same_axis_rejected(self, cube_dc):
         parent, _ = cube_dc
@@ -171,57 +171,57 @@ class TestPathSlicedDataConstruction:
 
     def test_main_components_delegates(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 2.])
-        assert pv.main_components == parent.main_components
+        assert path_slice.main_components == parent.main_components
 
     def test_get_kind_delegates(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 2.])
         cid = parent.main_components[0]
-        assert pv.get_kind(cid) == parent.get_kind(cid)
+        assert path_slice.get_kind(cid) == parent.get_kind(cid)
 
 
 class TestPathSlicedDataAccessors:
 
     @pytest.fixture
-    def pv(self, cube_dc):
+    def path_slice(self, cube_dc):
         parent, _ = cube_dc
         return PathSlicedData(parent,
                             parent.pixel_component_ids[1], [0., 4.],
                             parent.pixel_component_ids[2], [0., 0.],
                             label='slice')
 
-    def test_get_data_matches_manual_indexing(self, pv, cube_dc):
+    def test_get_data_matches_manual_indexing(self, path_slice, cube_dc):
         parent, _ = cube_dc
-        values = pv.get_data(parent.main_components[0])
+        values = path_slice.get_data(parent.main_components[0])
         # Path is along axis 1 at y=0 of parent, so for each parent axis-0
         # index, expected[i, k] == parent[i, k, 0].
-        expected = parent['x'][:, :pv.shape[-1], 0]
-        assert values.shape == pv.shape
+        expected = parent['x'][:, :path_slice.shape[-1], 0]
+        assert values.shape == path_slice.shape
         assert_array_equal(values, expected)
 
-    def test_get_data_pixel_cid_uses_super(self, pv):
+    def test_get_data_pixel_cid_uses_super(self, path_slice):
         # Pixel component IDs are auto-generated by the base class; they
         # should not go through original_data.get_data.
-        pix_cid = pv.pixel_component_ids[0]
-        pix_values = pv.get_data(pix_cid)
-        # Axis-0 pixel coords across the PV shape (6, n_path).
-        assert pix_values.shape == pv.shape
+        pix_cid = path_slice.pixel_component_ids[0]
+        pix_values = path_slice.get_data(pix_cid)
+        # Axis-0 pixel coords across the slice shape (6, n_path).
+        assert pix_values.shape == path_slice.shape
         # Constant along the path axis, increasing along axis 0.
-        assert_array_equal(pix_values[:, 0], np.arange(pv.shape[0]))
+        assert_array_equal(pix_values[:, 0], np.arange(path_slice.shape[0]))
 
     def test_get_data_out_of_bounds_filled_with_zero(self, cube_dc):
         # A path that runs off the edge of the parent should produce zero
         # for the out-of-bounds samples instead of raising.
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 8.],  # axis 1 only has size 5
                           parent.pixel_component_ids[2], [0., 0.])
-        values = pv.get_data(parent.main_components[0])
+        values = path_slice.get_data(parent.main_components[0])
         # The first samples are in range, later ones go off the edge.
         in_range = values[0, :5]
         out_of_range = values[0, 5:]
@@ -230,57 +230,57 @@ class TestPathSlicedDataAccessors:
 
     def test_get_mask(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
         # subset of parent: select where x >= 60. In flattened pixel-order
         # 120 cells, indices 60..119 satisfy.
         subset_state = parent.id['x'] >= 60
-        mask = pv.get_mask(subset_state)
-        assert mask.shape == pv.shape
+        mask = path_slice.get_mask(subset_state)
+        assert mask.shape == path_slice.shape
         # Along axis-0 indices 3..5 of parent, x>=60 (since 3*20=60).
-        assert_array_equal(mask[:3, :], np.zeros((3, pv.shape[-1])))
-        assert_array_equal(mask[3:, :], np.ones((3, pv.shape[-1])))
+        assert_array_equal(mask[:3, :], np.zeros((3, path_slice.shape[-1])))
+        assert_array_equal(mask[3:, :], np.ones((3, path_slice.shape[-1])))
 
     def test_compute_statistic_along_path(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
-        # Sum along axis 0 of pv = sum over parent axis 0 of the chosen path
+        # Sum along axis 0 of path_slice = sum over parent axis 0 of the chosen path
         # cells.
-        result = pv.compute_statistic('sum', parent.main_components[0], axis=0)
+        result = path_slice.compute_statistic('sum', parent.main_components[0], axis=0)
         # For each path sample k, the path lands on (axis1=int(round(x[k])),
         # axis2=0) of the parent. So expected[k] = sum_i parent[i, x[k], 0].
-        assert result.shape == (pv.shape[-1],)
+        assert result.shape == (path_slice.shape[-1],)
         # The path has y=0 throughout and x integer values 0..4. So:
-        x_int = np.round(pv.x).astype(int)
+        x_int = np.round(path_slice.x).astype(int)
         expected = np.array([parent['x'][:, ix, 0].sum() for ix in x_int])
         assert_array_equal(result, expected)
 
     def test_compute_statistic_scalar_no_axis(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
-        # No axis argument -> scalar reduction over the whole PV array.
-        total = pv.compute_statistic('sum', parent.main_components[0])
+        # No axis argument -> scalar reduction over the whole slice array.
+        total = path_slice.compute_statistic('sum', parent.main_components[0])
         assert np.isscalar(total) or total.shape == ()
         # Independent computation via get_data must match.
-        assert total == pv.get_data(parent.main_components[0]).sum()
+        assert total == path_slice.get_data(parent.main_components[0]).sum()
 
     def test_compute_statistic_with_subset_state(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
         # Sum, but masked to where x >= 60 on the parent.
-        result = pv.compute_statistic('sum', parent.main_components[0],
+        result = path_slice.compute_statistic('sum', parent.main_components[0],
                                       subset_state=parent.id['x'] >= 60)
-        # The first three PV rows (parent axis 0 indices 0..2) are excluded
+        # The first three slice rows (parent axis 0 indices 0..2) are excluded
         # entirely; the last three contribute fully.
-        values = pv.get_data(parent.main_components[0])
-        mask = pv.get_mask(parent.id['x'] >= 60)
+        values = path_slice.get_data(parent.main_components[0])
+        mask = path_slice.get_mask(parent.id['x'] >= 60)
         assert result == values[mask].sum()
 
     def test_get_data_with_array_view(self, cube_dc):
@@ -288,16 +288,16 @@ class TestPathSlicedDataAccessors:
         # callers pass a tuple of 1-d ndarrays (same length) and get back
         # a 1-d result. This is the path FRB uses internally.
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
-        i_view = np.array([0, 2, 5])      # along pv axis 0
+        i_view = np.array([0, 2, 5])      # along path_slice axis 0
         k_view = np.array([1, 2, 4])      # along path axis
-        values = pv.get_data(parent.main_components[0], view=(i_view, k_view))
+        values = path_slice.get_data(parent.main_components[0], view=(i_view, k_view))
         assert values.shape == (3,)
         # Each value should equal parent[i, x[k], y[k]] for the chosen pair.
-        x_int = np.round(pv.x).astype(int)
-        y_int = np.round(pv.y).astype(int)
+        x_int = np.round(path_slice.x).astype(int)
+        y_int = np.round(path_slice.y).astype(int)
         expected = np.array([parent['x'][i, x_int[k], y_int[k]]
                              for i, k in zip(i_view, k_view)])
         assert_array_equal(values, expected)
@@ -306,12 +306,12 @@ class TestPathSlicedDataAccessors:
         # compute_histogram passes through to the parent; just confirm
         # the call doesn't transform the args.
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 4.],
                           parent.pixel_component_ids[2], [0., 0.])
         cid = parent.main_components[0]
         # Compare against the parent's own histogram.
-        h_pv = pv.compute_histogram([cid], range=[(0, 120)], bins=[12])
+        h_pv = path_slice.compute_histogram([cid], range=[(0, 120)], bins=[12])
         h_parent = parent.compute_histogram([cid], range=[(0, 120)], bins=[12])
         assert_array_equal(h_pv, h_parent)
 
@@ -320,26 +320,26 @@ class TestSetXY:
 
     def test_replaces_path_and_shape(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
-        old_len = pv.shape[-1]
-        pv.set_xy([0., 4.], [0., 0.])
-        assert pv.shape[-1] != old_len
-        assert pv.shape[-1] == 5
+        old_len = path_slice.shape[-1]
+        path_slice.set_xy([0., 4.], [0., 0.])
+        assert path_slice.shape[-1] != old_len
+        assert path_slice.shape[-1] == 5
 
     def test_broadcasts_message_after_attach(self, cube_dc):
         parent, dc = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
         # Attaching to a DataCollection wires up the hub.
-        dc.append(pv)
+        dc.append(path_slice)
         recorder = _MessageRecorder()
         recorder.register_to_hub(dc.hub)
-        pv.set_xy([0., 4.], [0., 0.])
+        path_slice.set_xy([0., 4.], [0., 0.])
         senders = [m.sender for m in recorder.received]
-        assert pv in senders
+        assert path_slice in senders
 
     def test_construction_does_not_broadcast_when_unattached(self, cube_dc):
         # Constructing a PathSlicedData on a parent that has no hub must not
@@ -352,63 +352,63 @@ class TestSetXY:
 
     def test_set_xy_propagates_validation_errors(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
         with pytest.raises(ValueError, match='same shape'):
-            pv.set_xy([0., 1.], [0., 1., 2.])
+            path_slice.set_xy([0., 1.], [0., 1., 2.])
 
     def test_set_xy_invalidates_referencing_caches(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
-        # Inject a fake entry that references ``pv`` as ``data``.
-        frb_mod.ARRAY_CACHE['unit-test-pv'] = {
-            'hash': (pv, (0, 5, 6), None, None, True),
+        # Inject a fake entry that references ``path_slice`` as ``data``.
+        frb_mod.ARRAY_CACHE['unit-test-path_slice'] = {
+            'hash': (path_slice, (0, 5, 6), None, None, True),
             'array': np.zeros((6,)),
         }
-        frb_mod.PIXEL_CACHE['unit-test-pv'] = {'hash': (pv, None)}
+        frb_mod.PIXEL_CACHE['unit-test-path_slice'] = {'hash': (path_slice, None)}
         # And an unrelated entry that must survive.
         frb_mod.ARRAY_CACHE['unit-test-other'] = {
             'hash': (object(), (0, 1, 2), None, None, True),
             'array': np.zeros((1,)),
         }
         try:
-            pv.set_xy([0., 4.], [0., 0.])
-            assert 'unit-test-pv' not in frb_mod.ARRAY_CACHE
-            assert 'unit-test-pv' not in frb_mod.PIXEL_CACHE
+            path_slice.set_xy([0., 4.], [0., 0.])
+            assert 'unit-test-path_slice' not in frb_mod.ARRAY_CACHE
+            assert 'unit-test-path_slice' not in frb_mod.PIXEL_CACHE
             assert 'unit-test-other' in frb_mod.ARRAY_CACHE
         finally:
-            frb_mod.ARRAY_CACHE.pop('unit-test-pv', None)
-            frb_mod.PIXEL_CACHE.pop('unit-test-pv', None)
+            frb_mod.ARRAY_CACHE.pop('unit-test-path_slice', None)
+            frb_mod.PIXEL_CACHE.pop('unit-test-path_slice', None)
             frb_mod.ARRAY_CACHE.pop('unit-test-other', None)
 
     def test_set_xy_invalidates_when_self_is_target(self, cube_dc):
-        # Cache entries can also have ``pv`` in the target_data slot.
+        # Cache entries can also have ``path_slice`` in the target_data slot.
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
         frb_mod.ARRAY_CACHE['target-slot'] = {
-            'hash': (object(), (0, 1, 2), pv, None, True),
+            'hash': (object(), (0, 1, 2), path_slice, None, True),
             'array': np.zeros((1,)),
         }
         try:
-            pv.set_xy([0., 4.], [0., 0.])
+            path_slice.set_xy([0., 4.], [0., 0.])
             assert 'target-slot' not in frb_mod.ARRAY_CACHE
         finally:
             frb_mod.ARRAY_CACHE.pop('target-slot', None)
 
     def test_set_xy_skips_entries_without_hash(self, cube_dc):
         parent, _ = cube_dc
-        pv = PathSlicedData(parent,
+        path_slice = PathSlicedData(parent,
                           parent.pixel_component_ids[1], [0., 2.],
                           parent.pixel_component_ids[2], [0., 0.])
         # Defensive: malformed cache entries shouldn't crash invalidation.
         frb_mod.ARRAY_CACHE['no-hash'] = {'array': np.zeros((1,))}
         try:
-            pv.set_xy([0., 4.], [0., 0.])
+            path_slice.set_xy([0., 4.], [0., 0.])
             assert 'no-hash' in frb_mod.ARRAY_CACHE
         finally:
             frb_mod.ARRAY_CACHE.pop('no-hash', None)
@@ -416,10 +416,10 @@ class TestSetXY:
 
 class TestComputeFixedResolutionBuffer:
 
-    def _make_linked_pv_pair(self):
+    def _make_linked_slice_pair(self):
         # Two parent datasets with identical coords, linked pixel-to-pixel,
-        # and matching PV slices on both. Link the PVs into the graph so
-        # the generic FRB function can translate pv2 -> pv1.
+        # and matching slice slices on both. Link the slices into the graph so
+        # the generic FRB function can translate slice2 -> slice1.
         matrix = np.array([[2, 0, 0, 0], [0, 2, 0, 0],
                            [0, 0, 2, 0], [0, 0, 0, 1]])
         data1 = Data(x=np.arange(120).reshape((6, 5, 4)),
@@ -432,25 +432,25 @@ class TestComputeFixedResolutionBuffer:
                                  data2.world_component_ids[idim]))
         x1 = [0, 2, 5]
         y1 = [1, 2, 3]
-        pv1 = PathSlicedData(data1,
+        slice1 = PathSlicedData(data1,
                            data1.pixel_component_ids[1], y1,
                            data1.pixel_component_ids[2], x1)
         x2, y2, _ = data2.coords.world_to_pixel_values(
             *data1.coords.pixel_to_world_values(x1, y1, 0))
-        pv2 = PathSlicedData(data2,
+        slice2 = PathSlicedData(data2,
                            data2.pixel_component_ids[1], y2,
                            data2.pixel_component_ids[2], x2)
-        dc.append(pv1)
-        dc.append(pv2)
-        link_path_sliced_group(dc, pv1, pv2)
-        return data1, data2, pv1, pv2
+        dc.append(slice1)
+        dc.append(slice2)
+        link_path_sliced_group(dc, slice1, slice2)
+        return data1, data2, slice1, slice2
 
     def test_linked_pair_shape(self):
-        _, _, pv1, pv2 = self._make_linked_pv_pair()
-        result = pv1.compute_fixed_resolution_buffer(
+        _, _, slice1, slice2 = self._make_linked_slice_pair()
+        result = slice1.compute_fixed_resolution_buffer(
             bounds=[(0, 5, 15), (0, 6, 20)],
-            target_data=pv2,
-            target_cid=pv1.original_data.id['x'])
+            target_data=slice2,
+            target_cid=slice1.original_data.id['x'])
         assert result.shape == (15, 20)
 
 

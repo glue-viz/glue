@@ -172,21 +172,21 @@ class PathSlicedData(DerivedData):
     def _get_pix_coords(self, view=None):
         """
         Build pixel coordinates in the parent dataset that correspond to
-        each PV cell.
+        each slice cell.
 
         Returns ``(pix_coords, keep, shape)``:
 
         * ``pix_coords`` -- list of flat int arrays, one per parent axis,
-          giving the parent pixel index for every in-bounds PV cell.
+          giving the parent pixel index for every in-bounds slice cell.
           Suitable for use as ``view=`` on a glue ``Data``'s
           ``get_data``/``get_mask``/``compute_statistic`` (which then does
           combined fancy indexing).
-        * ``keep`` -- boolean mask in the *PV* coordinate frame indicating
+        * ``keep`` -- boolean mask in the slice coordinate frame indicating
           which cells projected into the parent's bounds.
-        * ``shape`` -- shape of ``keep`` (i.e. the PV frame after applying
+        * ``shape`` -- shape of ``keep`` (i.e. the slice frame after applying
           ``view``).
 
-        Note in particular that the two PV-sliced parent axes
+        Note in particular that the two sliced parent axes
         (``cid_x.axis`` and ``cid_y.axis``) are *coupled* to the same path
         index. A naive ``np.meshgrid`` over both axes independently would
         give the cross product instead, producing nonsensical output.
@@ -204,32 +204,32 @@ class PathSlicedData(DerivedData):
             path_view = view[-1]
             shape = path_view.shape
             pix_coords = []
-            pv_idim = 0
+            non_path_idx = 0
             for idim in range(self.original_data.ndim):
                 if idim == self.cid_x.axis:
                     pix = self.x[path_view]
                 elif idim == self.cid_y.axis:
                     pix = self.y[path_view]
                 else:
-                    pix = np.arange(self.original_data.shape[idim])[view[pv_idim]]
-                    pv_idim += 1
+                    pix = np.arange(self.original_data.shape[idim])[view[non_path_idx]]
+                    non_path_idx += 1
                 pix_coords.append(pix)
         else:
-            # View is a tuple of slices, applied to the PV frame.
-            # Build per-PV-axis index arrays after slicing, then meshgrid
-            # them. The path axis is the LAST PV axis.
-            pv_axis_arrays = []
-            pv_idim = 0
+            # View is a tuple of slices, applied to the slice frame.
+            # Build per-slice-axis index arrays after slicing, then meshgrid
+            # them. The path axis is the LAST slice axis.
+            slice_axis_arrays = []
+            non_path_idx = 0
             for idim in range(self.original_data.ndim):
                 if idim in self.sliced_dims:
                     continue
-                pv_axis_arrays.append(
-                    np.arange(self.original_data.shape[idim])[view[pv_idim]])
-                pv_idim += 1
-            pv_axis_arrays.append(np.arange(len(self.x))[view[-1]])
+                slice_axis_arrays.append(
+                    np.arange(self.original_data.shape[idim])[view[non_path_idx]])
+                non_path_idx += 1
+            slice_axis_arrays.append(np.arange(len(self.x))[view[-1]])
 
-            pv_meshes = np.meshgrid(*pv_axis_arrays, indexing='ij', copy=False)
-            shape = pv_meshes[0].shape
+            slice_meshes = np.meshgrid(*slice_axis_arrays, indexing='ij', copy=False)
+            shape = slice_meshes[0].shape
 
             # Map each parent axis to its meshgrid array. Both sliced
             # parent axes index into the same path mesh (the last one).
@@ -237,11 +237,11 @@ class PathSlicedData(DerivedData):
             kept_idx = 0
             for idim in range(self.original_data.ndim):
                 if idim == self.cid_x.axis:
-                    pix_coords.append(self.x[pv_meshes[-1]])
+                    pix_coords.append(self.x[slice_meshes[-1]])
                 elif idim == self.cid_y.axis:
-                    pix_coords.append(self.y[pv_meshes[-1]])
+                    pix_coords.append(self.y[slice_meshes[-1]])
                 else:
-                    pix_coords.append(pv_meshes[kept_idx])
+                    pix_coords.append(slice_meshes[kept_idx])
                     kept_idx += 1
 
         # Compute the keep mask: cells whose parent index is in bounds
@@ -280,12 +280,12 @@ class PathSlicedData(DerivedData):
                           finite=True, positive=False, percentile=None,
                           view=None, random_subset=None):
         """
-        Reduce a statistic over the PV-frame data.
+        Reduce a statistic over the slice frame data.
 
         Unlike the parent dataset, we *can't* delegate to
         ``original_data.compute_statistic`` with a fancy-indexed view
-        because the view collapses the PV shape to 1-d, which makes
-        ``axis`` meaningless. Instead we materialise the PV view of the
+        because the view collapses the slice shape to 1-d, which makes
+        ``axis`` meaningless. Instead we materialise the slice view of the
         data and reduce locally using the same helper the regular
         :class:`~glue.core.Data.compute_statistic` uses.
         """
