@@ -78,10 +78,6 @@ class BasePathSlicerMode(MultiTracePathSlicerMixin, PathMode):
         vx, vy = mode.roi().to_polygon()
         self._open_or_update(vx, vy)
 
-    # ------------------------------------------------------------------
-    # Matplotlib overlay drawing (mixin hooks)
-    # ------------------------------------------------------------------
-
     def _refresh_overlays(self):
         # Remove any artists for traces that no longer exist.
         current_keys = {id(trace) for trace in self._traces}

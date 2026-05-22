@@ -17,12 +17,9 @@ from glue.plugins.tools.path_slicer.path_sliced_data import (
 from glue.plugins.tools.path_slicer.path_sliced_data_links import link_path_sliced_group
 
 
-# ---------------------------------------------------------------------------
-# sample_points -- the pure helper. Test in isolation first.
-# ---------------------------------------------------------------------------
-
-
 class TestSamplePoints:
+    """``sample_points`` -- the pure helper, tested in isolation first."""
+
 
     def test_uniform_horizontal(self):
         # A straight horizontal path from x=0 to x=10 has length 10.
@@ -80,13 +77,6 @@ class TestSamplePoints:
     def test_path_shorter_than_spacing(self):
         with pytest.raises(ValueError, match='shorter than spacing'):
             sample_points([0., 0.5], [0., 0.], spacing=1.)
-
-
-# ---------------------------------------------------------------------------
-# PathSlicedData -- construction, basic properties, get_data, get_mask,
-# compute_statistic, set_xy invalidations and messages, spacing parameter,
-# error handling.
-# ---------------------------------------------------------------------------
 
 
 class _MessageRecorder(HubListener):
@@ -587,14 +577,10 @@ class TestComputeFixedResolutionBuffer:
         assert result.shape == (15, 20)
 
 
-# ---------------------------------------------------------------------------
-# Signature-pin tests. The PR's contract relies on cache_id being part of
-# BaseCartesianData.compute_fixed_resolution_buffer; pinning it prevents
-# silent regressions.
-# ---------------------------------------------------------------------------
-
-
 class TestBaseCartesianDataSignature:
+    """Pin the ``cache_id`` kwarg on
+    ``BaseCartesianData.compute_fixed_resolution_buffer`` so a future
+    change to glue-core doesn't silently drop it."""
 
     def test_compute_fixed_resolution_buffer_accepts_cache_id(self):
         params = inspect.signature(

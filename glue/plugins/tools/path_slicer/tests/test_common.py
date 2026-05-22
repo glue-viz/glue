@@ -42,12 +42,8 @@ def _make_app_with_cube_viewer(cube=None):
     return app, cube, viewer
 
 
-# ---------------------------------------------------------------------------
-# find_existing_path_slice (no viewer needed)
-# ---------------------------------------------------------------------------
-
-
 class TestFindExistingPathSlice:
+    """``find_existing_path_slice`` (no viewer needed)."""
 
     def setup_method(self, method):
         self.app = Application()
@@ -77,12 +73,8 @@ class TestFindExistingPathSlice:
         assert find_existing_path_slice(self.dc, self.cube) is None
 
 
-# ---------------------------------------------------------------------------
-# path_link_exists (no viewer needed)
-# ---------------------------------------------------------------------------
-
-
 class TestPathLinkExists:
+    """``path_link_exists`` (no viewer needed)."""
 
     def setup_method(self, method):
         self.app = Application()
@@ -111,12 +103,9 @@ class TestPathLinkExists:
         assert path_link_exists(self.dc, self.slice_a, self.slice_b)
 
 
-# ---------------------------------------------------------------------------
-# build_or_update_path_slices (uses SimpleImageViewer)
-# ---------------------------------------------------------------------------
-
-
 class TestBuildOrUpdatePathSlices:
+    """``build_or_update_path_slices`` (uses SimpleImageViewer)."""
+
 
     def setup_method(self, method):
         self.app, self.cube, self.viewer = _make_app_with_cube_viewer()
@@ -185,12 +174,9 @@ class TestBuildOrUpdatePathSlices:
         assert len(self.dc.external_links) == before
 
 
-# ---------------------------------------------------------------------------
-# open_or_update_slice_viewer (uses SimpleImageViewer)
-# ---------------------------------------------------------------------------
-
-
 class TestOpenOrUpdateSliceViewer:
+    """``open_or_update_slice_viewer`` (uses SimpleImageViewer)."""
+
 
     def setup_method(self, method):
         self.app, self.cube, self.viewer = _make_app_with_cube_viewer()
@@ -247,12 +233,9 @@ class TestOpenOrUpdateSliceViewer:
             SimpleImageViewer.add_data = original_add_data
 
 
-# ---------------------------------------------------------------------------
-# drive_parent_slice (uses SimpleImageViewer)
-# ---------------------------------------------------------------------------
-
-
 class TestDriveParentSlice:
+    """``drive_parent_slice`` (uses SimpleImageViewer)."""
+
 
     def test_writes_to_non_displayed_axis(self):
         _app, cube, viewer = _make_app_with_cube_viewer()
@@ -288,12 +271,8 @@ class TestDriveParentSlice:
         assert viewer.state.slices[slice_axis] == 2
 
 
-# ---------------------------------------------------------------------------
-# Validation errors that aren't reachable through the happy path
-# ---------------------------------------------------------------------------
-
-
 class TestPathRelativeLinkValidation:
+    """``PathRelativeLink`` validation errors not reachable through the happy path."""
 
     def test_init_rejects_non_path_sliced_data(self):
         from glue.plugins.tools.path_slicer.path_sliced_data_links import (
@@ -304,6 +283,7 @@ class TestPathRelativeLinkValidation:
 
 
 class TestLinkGroupValidation:
+    """``link_path_sliced_group`` validation errors."""
 
     def test_link_group_rejects_single_input(self):
         from glue.plugins.tools.path_slicer.path_sliced_data_links import (

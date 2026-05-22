@@ -242,12 +242,8 @@ class TestBasePathSlicerMode:
         assert len(fired) == 2
 
 
-# ---------------------------------------------------------------------------
-# BasePathSlicerCrosshairMode
-# ---------------------------------------------------------------------------
-
-
 class TestBasePathSlicerCrosshairMode:
+    """``BasePathSlicerCrosshairMode``."""
 
     def test_disabled_for_non_path_sliced_reference_data(self):
         _, _, viewer = _make_app_with_cube_viewer()

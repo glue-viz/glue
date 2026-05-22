@@ -154,20 +154,12 @@ def drive_parent_slice(path_slice, slice_y):
     state.slices = tuple(slc)
 
 
-# ---------------------------------------------------------------------------
-# Multi-trace helpers. A "trace" is one Enter on the path tool -- it produces
-# one PathSlicedData per Data layer in the source viewer. The functions below
-# don't manage trace lists themselves; they just create or update individual
-# traces and let the caller (a path slicer tool, which is per-source-viewer)
-# keep the trace bookkeeping. This keeps the data model independent of the
-# UI for choosing "create new" vs "update existing".
-# ---------------------------------------------------------------------------
-
-
 def create_trace(source_viewer, vx, vy, existing_traces=()):
     """
     Materialise a fresh trace: one :class:`PathSlicedData` per Data
     layer in ``source_viewer``, all sharing the path ``(vx, vy)``.
+    A "trace" is one Enter on the path tool; the caller keeps the
+    list of traces and decides between create-new vs update-existing.
 
     The new PVs are appended to ``source_viewer.session.data_collection``,
     pairwise-linked against each other and against every PV in

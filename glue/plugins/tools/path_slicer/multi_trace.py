@@ -35,10 +35,6 @@ class MultiTracePathSlicerMixin:
 
     slice_viewer_cls = None
 
-    # ------------------------------------------------------------------
-    # State
-    # ------------------------------------------------------------------
-
     def _init_multi_trace(self):
         # list[list[PathSlicedData]] -- one trace per Enter.
         self._traces = []
@@ -57,10 +53,6 @@ class MultiTracePathSlicerMixin:
         # refresh their menu rendering.
         self._menu_change_callbacks = []
 
-    # ------------------------------------------------------------------
-    # Trace orchestration
-    # ------------------------------------------------------------------
-
     def _open_or_update(self, vx, vy):
         if self._target_trace is None:
             new_paths = create_trace(self.viewer, vx, vy, self._traces)
@@ -78,10 +70,6 @@ class MultiTracePathSlicerMixin:
         self._refresh_overlays()
         self._on_traces_changed()
 
-    # ------------------------------------------------------------------
-    # Public API used by UI dropdowns
-    # ------------------------------------------------------------------
-
     def menu_entries(self):
         """The ``(label, target)`` pairs a dropdown UI should show.
         ``target`` is ``None`` for "Create new path" or a trace from
@@ -98,19 +86,11 @@ class MultiTracePathSlicerMixin:
         self._refresh_overlays()
         self._on_traces_changed()
 
-    # ------------------------------------------------------------------
-    # Cleanup
-    # ------------------------------------------------------------------
-
     def _close_slice_viewers(self):
         for slice_viewer in self._slice_viewers:
             slice_viewer.close()
         self._slice_viewers.clear()
         self._slice_viewer = None
-
-    # ------------------------------------------------------------------
-    # Overridable hooks
-    # ------------------------------------------------------------------
 
     def _refresh_overlays(self):
         """Draw / update overlay artists on the source viewer to show
