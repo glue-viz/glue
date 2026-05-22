@@ -51,6 +51,10 @@ class BasePathSlicerMode(MultiTracePathSlicerMixin, PathMode):
     status_tip = ('Draw a path then press ENTER to extract slice, '
                   'or press ESC to cancel')
     shortcut = 'P'
+    # The persistent path display is provided by per-trace Line2D
+    # overlays (see ``_refresh_overlays``); the in-progress ROI patch
+    # is cleared on finalize to avoid double-drawing.
+    persistent = False
 
     def __init__(self, viewer, **kwargs):
         if self.slice_viewer_cls is None:
@@ -58,6 +62,11 @@ class BasePathSlicerMode(MultiTracePathSlicerMixin, PathMode):
                 f"{type(self).__name__} must set 'slice_viewer_cls' "
                 "(the viewer class to open for the path slice)")
         super().__init__(viewer, **kwargs)
+        # Override PathMode's red/thick in-progress style with the
+        # blue/thin style matching the per-trace overlays.
+        self._roi_tool.plot_opts.update(color=_PATH_COLOR,
+                                        linewidth=2,
+                                        alpha=0.6)
         self._init_multi_trace()
         self._roi_callback = self._extract_callback
         # Overlay artists on the source viewer's axes, keyed by trace

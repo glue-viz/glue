@@ -82,10 +82,15 @@ class RoiModeBase(ToolbarModeBase):
         super(RoiModeBase, self).activate()
 
     def deactivate(self):
-        self._roi_tool.reset()
-        self.clear()
-        if self.viewer is not None:
-            self.viewer.figure.canvas.draw()
+        # Persistent ROIs (e.g. PathMode after extraction) keep their
+        # drawn artist visible after the user switches tools so they
+        # can still see what was selected. Non-persistent ROIs clean
+        # up their in-progress patch instead.
+        if not self.persistent:
+            self._roi_tool.reset()
+            self.clear()
+            if self.viewer is not None:
+                self.viewer.figure.canvas.draw()
         super(RoiModeBase, self).deactivate()
 
     def roi(self):
@@ -252,10 +257,10 @@ class PathMode(ClickRoiMode):
         super(PathMode, self).__init__(viewer, **kwargs)
         self._roi_tool = roi.MplPathROI(self._axes)
 
-        self._roi_tool.plot_opts.update(color='#669dff',
+        self._roi_tool.plot_opts.update(color='#de2d26',
                                         fill=False,
-                                        linewidth=2,
-                                        alpha=0.6)
+                                        linewidth=3,
+                                        alpha=0.4)
 
 
 @viewer_tool

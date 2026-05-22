@@ -150,6 +150,15 @@ class TestRoiMode(TestMouseMode):
         self.mode.deactivate()
         self.mode._roi_tool.reset.assert_called()
 
+    def test_deactivate_preserves_persistent_roi(self):
+        # Persistent ROIs (e.g. PathMode after extraction) keep their
+        # drawn artist visible across tool switches so the user can
+        # still see what was selected. deactivate must NOT reset the
+        # ROI tool in that case.
+        self.mode.persistent = True
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_not_called()
+
 
 class TestClickRoiMode(TestMouseMode):
 
