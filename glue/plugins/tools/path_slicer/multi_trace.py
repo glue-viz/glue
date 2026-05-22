@@ -51,6 +51,11 @@ class MultiTracePathSlicerMixin:
         # ``None`` means "create new on next Enter"; otherwise must be
         # one of ``self._traces``.
         self._target_trace = None
+        # Callbacks fired whenever ``menu_entries`` may have changed --
+        # i.e. on every trace add/update and every ``set_target``. UI
+        # adapters (e.g. the vuetify toolbar) register on this list to
+        # refresh their menu rendering.
+        self._menu_change_callbacks = []
 
     # ------------------------------------------------------------------
     # Trace orchestration
@@ -91,6 +96,7 @@ class MultiTracePathSlicerMixin:
         otherwise must be one of :attr:`_traces`."""
         self._target_trace = target
         self._refresh_overlays()
+        self._on_traces_changed()
 
     # ------------------------------------------------------------------
     # Cleanup
@@ -118,5 +124,11 @@ class MultiTracePathSlicerMixin:
         committed state when the menu closes. Default no-op."""
 
     def _on_traces_changed(self):
-        """Override to refresh the backend's dropdown UI after a trace
-        is added or updated. Default no-op."""
+        """Called whenever ``menu_entries()`` may have changed -- both
+        on trace additions/updates and on :meth:`set_target`. Default
+        fires every callback registered on
+        :attr:`_menu_change_callbacks`; subclasses can override to add
+        their own behaviour but should call ``super()`` to preserve
+        listener notifications."""
+        for cb in self._menu_change_callbacks:
+            cb()

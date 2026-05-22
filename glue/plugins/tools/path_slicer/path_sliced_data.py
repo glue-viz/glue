@@ -1,9 +1,102 @@
 import numpy as np
 
+from astropy.wcs.wcsapi import SlicedLowLevelWCS
+
+from glue.core.coordinates import Coordinates
 from glue.core.data_derived import DerivedData
 from glue.core.message import NumericalDataChangedMessage
 
-__all__ = ['PathSlicedData', 'sample_points']
+__all__ = ['PathSlicedCoordinates', 'PathSlicedData', 'sample_points']
+
+
+class PathSlicedCoordinates(Coordinates):
+    """
+    APE 14 coordinates for :class:`PathSlicedData`.
+
+    The path axis (WCS pixel 0, numpy axis ``ndim - 1``) is identity:
+    world values are the path index in pixels. The remaining axes
+    inherit from the parent's :attr:`coords` with the sliced parent
+    axes pinned at pixel 0 -- a fiducial choice for axes that may be
+    correlated with the collapsed spatial pair (there is no single
+    "correct" reference point along a path).
+
+    Parameters
+    ----------
+    parent_coords : APE 14 low-level WCS
+        Coordinates of the parent dataset being sliced.
+    sliced_numpy_axes : sequence of int
+        Numpy axis indices on the parent that the path collapses.
+    """
+
+    def __init__(self, parent_coords, sliced_numpy_axes):
+        parent_pix_ndim = parent_coords.pixel_n_dim
+        # SlicedLowLevelWCS takes slices in array (numpy) order, not
+        # WCS pixel order -- mirror what IndexedData does.
+        slices = [slice(None)] * parent_pix_ndim
+        for npy_axis in sliced_numpy_axes:
+            slices[npy_axis] = 0
+        self._parent_coords = parent_coords
+        self._sliced_numpy_axes = tuple(sliced_numpy_axes)
+        self._kept_numpy_axes = tuple(a for a in range(parent_pix_ndim)
+                                      if a not in set(self._sliced_numpy_axes))
+        self._parent_slice = SlicedLowLevelWCS(parent_coords, slices)
+        super().__init__(
+            pixel_n_dim=self._parent_slice.pixel_n_dim + 1,
+            world_n_dim=self._parent_slice.world_n_dim + 1,
+        )
+
+    def pixel_to_world_values(self, *pixel):
+        path = pixel[0]
+        rest = pixel[1:]
+        if self._parent_slice.pixel_n_dim == 0:
+            return path
+        rest_world = self._parent_slice.pixel_to_world_values(*rest)
+        if self._parent_slice.world_n_dim == 1:
+            rest_world = (rest_world,)
+        return (path,) + tuple(rest_world)
+
+    def world_to_pixel_values(self, *world):
+        path = world[0]
+        rest = world[1:]
+        if self._parent_slice.world_n_dim == 0:
+            return path
+        rest_pix = self._parent_slice.world_to_pixel_values(*rest)
+        if self._parent_slice.pixel_n_dim == 1:
+            rest_pix = (rest_pix,)
+        return (path,) + tuple(rest_pix)
+
+    @property
+    def world_axis_units(self):
+        return [''] + list(self._parent_slice.world_axis_units)
+
+    @property
+    def world_axis_physical_types(self):
+        return [None] + list(self._parent_slice.world_axis_physical_types)
+
+    @property
+    def world_axis_names(self):
+        # Delegate to ``axis_label`` so we inherit its fallbacks --
+        # specifically the FITS CTYPE lookup that turns the empty
+        # ``world_axis_names`` of an astropy WCS into "Vopt", "Right
+        # Ascension", etc. ``axis_label`` indexes by the data's numpy
+        # axis (slow-to-fast), but our ``world_axis_names`` is in
+        # world order (= reverse of numpy for uncorrelated WCSes), so
+        # we walk the kept parent axes in reverse numpy order.
+        from glue.core.coordinate_helpers import axis_label
+        return ['Offset'] + [axis_label(self._parent_coords, a)
+                             for a in self._kept_numpy_axes[::-1]]
+
+    @property
+    def pixel_axis_names(self):
+        return ['Offset'] + list(self._parent_slice.pixel_axis_names)
+
+    @property
+    def axis_correlation_matrix(self):
+        matrix = np.zeros((self.world_n_dim, self.pixel_n_dim), dtype=bool)
+        matrix[0, 0] = True
+        if self._parent_slice.world_n_dim > 0:
+            matrix[1:, 1:] = self._parent_slice.axis_correlation_matrix
+        return matrix
 
 
 def sample_points(x, y, spacing=1):
@@ -119,6 +212,9 @@ class PathSlicedData(DerivedData):
         self.cid_y = cid_y
         self.sliced_dims = (cid_x.axis, cid_y.axis)
         self._label = label
+        parent_coords = getattr(original_data, 'coords', None)
+        if parent_coords is not None:
+            self._coords = PathSlicedCoordinates(parent_coords, self.sliced_dims)
         # set_xy validates x/y and the spacing; assigning self.x/self.y
         # before the validation would leave the object in a broken state.
         self.set_xy(x, y, spacing=spacing)

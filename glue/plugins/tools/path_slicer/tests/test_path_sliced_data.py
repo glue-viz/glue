@@ -12,7 +12,8 @@ from glue.core.hub import HubListener
 from glue.core.message import NumericalDataChangedMessage
 from glue.core.link_helpers import LinkSame
 
-from glue.plugins.tools.path_slicer.path_sliced_data import PathSlicedData, sample_points
+from glue.plugins.tools.path_slicer.path_sliced_data import (
+    PathSlicedCoordinates, PathSlicedData, sample_points)
 from glue.plugins.tools.path_slicer.path_sliced_data_links import link_path_sliced_group
 
 
@@ -183,6 +184,117 @@ class TestPathSlicedDataConstruction:
                           parent.pixel_component_ids[2], [0., 2.])
         cid = parent.main_components[0]
         assert path_slice.get_kind(cid) == parent.get_kind(cid)
+
+
+class TestPathSlicedCoordinates:
+
+    def test_identity_parent_round_trip(self, cube_dc):
+        # IdentityCoordinates parent -> world == pixel on the surviving
+        # axis, and the path axis is its own identity.
+        parent, _ = cube_dc
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 3.],
+                          parent.pixel_component_ids[2], [0., 3.])
+        coords = path_slice.coords
+        assert isinstance(coords, PathSlicedCoordinates)
+        # PathSlicedData shape is (parent_axis_0, n_path) -> 2D coords.
+        assert coords.pixel_n_dim == 2
+        assert coords.world_n_dim == 2
+
+        # WCS pixel order is (path, parent_axis_0). For identity parent
+        # both world values equal the input pixels.
+        world = coords.pixel_to_world_values(2.0, 3.0)
+        assert_allclose(world, (2.0, 3.0))
+        pixel = coords.world_to_pixel_values(*world)
+        assert_allclose(pixel, (2.0, 3.0))
+
+    def test_inherits_parent_scaling_on_kept_axis(self):
+        # Build a parent where each numpy axis has a distinctive
+        # AffineCoordinates scale. Slicing numpy axes 1 and 2 must
+        # leave numpy axis 0's scaling on the surviving non-path axis,
+        # not one of the collapsed axes'.
+        #
+        # AffineCoordinates uses matrix order = WCS pixel order, which
+        # is the reverse of numpy. So matrix[i, i] scales WCS pixel i
+        # = numpy axis (ndim - 1 - i). For ndim=3, matrix[2, 2] is
+        # what scales numpy axis 0.
+        matrix = np.diag([1., 1., 2., 1.])  # numpy axis 0 -> scale 2
+        parent = Data(x=np.arange(120).reshape((4, 5, 6)),
+                      coords=AffineCoordinates(matrix,
+                                               units=['fast', 'mid', 'slow'],
+                                               labels=['fast', 'mid', 'slow']),
+                      label='parent')
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 4.],
+                          parent.pixel_component_ids[2], [0., 4.])
+        coords = path_slice.coords
+
+        # WCS pixel order is (path, surviving_parent_axis). The
+        # surviving axis is numpy axis 0 -> scale 2 in world.
+        path_world, kept_world = coords.pixel_to_world_values(3.0, 5.0)
+        assert_allclose(path_world, 3.0)
+        assert_allclose(kept_world, 10.0)
+
+        # Round-trip via world_to_pixel.
+        path_pix, kept_pix = coords.world_to_pixel_values(3.0, 10.0)
+        assert_allclose(path_pix, 3.0)
+        assert_allclose(kept_pix, 5.0)
+
+    def test_units_and_axis_names_propagate(self):
+        # Distinctive units and labels per axis -- the surviving axis
+        # is numpy 0 (= matrix index 2 = label 'slow'). The path axis
+        # gets the empty unit and the 'Offset' axis name (so consumers
+        # like WCSAxes don't fall back to "World 0").
+        matrix = np.eye(4)
+        parent = Data(x=np.arange(120).reshape((4, 5, 6)),
+                      coords=AffineCoordinates(matrix,
+                                               units=['fast', 'mid', 'slow'],
+                                               labels=['fast', 'mid', 'slow']),
+                      label='parent')
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 4.],
+                          parent.pixel_component_ids[2], [0., 4.])
+        coords = path_slice.coords
+        assert coords.world_axis_units == ['', 'slow']
+        # ``axis_label`` title-cases what it returns, hence 'Slow'.
+        assert coords.world_axis_names == ['Offset', 'Slow']
+        # AffineCoordinates only exposes labels as world axis names;
+        # the parent's pixel axis names are empty, so only the path
+        # axis gets a label on the pixel side.
+        assert coords.pixel_axis_names == ['Offset', '']
+
+    def test_world_axis_names_inherit_fits_ctype(self):
+        # An astropy WCS leaves ``world_axis_names`` empty and stores
+        # the labels in CTYPE; glue's ``axis_label`` already handles
+        # this fallback for the parent viewer, and the path-sliced
+        # coords should do the same so the slice viewer doesn't
+        # display "World 0" for the surviving spectral axis.
+        from astropy.wcs import WCS
+        w = WCS(naxis=3)
+        w.wcs.ctype = ['RA---SIN', 'DEC--SIN', 'VOPT']
+        w.wcs.cunit = ['deg', 'deg', 'km/s']
+        w.wcs.crval = [0., 0., 0.]
+        w.wcs.crpix = [1., 1., 1.]
+        w.wcs.cdelt = [1., 1., 1.]
+        parent = Data(x=np.arange(60).reshape((3, 4, 5)), coords=w,
+                      label='cube')
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 3.],
+                          parent.pixel_component_ids[2], [0., 3.])
+        # Surviving parent numpy axis 0 is the VOPT (spectral) axis.
+        assert path_slice.coords.world_axis_names == ['Offset', 'Vopt']
+
+    def test_no_parent_coords_means_no_path_coords(self):
+        # If the parent has no coords, the sliced data should also
+        # have no coords -- there's nothing to copy.
+        parent = Data(x=np.arange(120).reshape((6, 5, 4)), label='parent')
+        # Data assigns a default coords; force it off to mimic a
+        # truly coord-less dataset.
+        parent._coords = None
+        path_slice = PathSlicedData(parent,
+                          parent.pixel_component_ids[1], [0., 3.],
+                          parent.pixel_component_ids[2], [0., 3.])
+        assert path_slice.coords is None
 
 
 class TestPathSlicedDataAccessors:

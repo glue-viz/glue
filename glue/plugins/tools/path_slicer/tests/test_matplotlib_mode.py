@@ -219,13 +219,27 @@ class TestBasePathSlicerMode:
             slice_viewer_cls = SimpleImageViewer
 
             def _on_traces_changed(self):
-                calls.append(len(self._traces))
+                super()._on_traces_changed()
+                calls.append((len(self._traces),
+                              self._target_trace is None))
 
         mode = _Hook(viewer)
         mode._open_or_update([1., 2., 3.], [0., 1., 2.])
         mode.set_target(None)
         mode._open_or_update([0., 5., 2.], [4., 0., 3.])
-        assert calls == [1, 2]
+        # 1: trace 0 created, target = trace 0.
+        # 2: set_target(None) -> target = None.
+        # 3: trace 1 created, target = trace 1.
+        assert calls == [(1, False), (1, True), (2, False)]
+
+    def test_menu_change_callbacks_fire_via_default_hook(self):
+        _app, _cube, viewer = _make_app_with_cube_viewer()
+        mode = _fake_mode_class(slice_viewer_cls=SimpleImageViewer)(viewer)
+        fired = []
+        mode._menu_change_callbacks.append(lambda: fired.append(None))
+        mode._open_or_update([1., 2., 3.], [0., 1., 2.])
+        mode.set_target(None)
+        assert len(fired) == 2
 
 
 # ---------------------------------------------------------------------------
