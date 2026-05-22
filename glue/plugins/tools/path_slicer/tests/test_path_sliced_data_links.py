@@ -1,12 +1,11 @@
 """
-Tests for the link-based prototype of inter-PathSlicedData coordinate
-translation.
+Tests for link-based inter-PathSlicedData coordinate translation.
 
-The realistic scenario the prototype is aiming at: an RGB-style slice
-viewer that overplots ``N`` PathSlicedData instances backed by ``N``
-different cubes which are themselves linked via world coordinates (e.g.
-``WCSLink``). The tests here use ``LinkSame`` on world-component CIDs to
-stand in for a WCS link.
+The realistic scenario: an RGB-style slice viewer that overplots ``N``
+PathSlicedData instances backed by ``N`` different cubes which are
+themselves linked via world coordinates (e.g. ``WCSLink``). The tests
+here use ``LinkSame`` on world-component CIDs to stand in for a WCS
+link.
 """
 
 import numpy as np
@@ -74,10 +73,9 @@ def test_path_link_picks_up_set_xy_without_recreation():
 
 
 def test_generic_frb_via_links_across_linked_cubes():
-    # The point of the prototype: with the right links in place, the
-    # generic FRB function can walk slice_b -> cube_b -> cube_a -> slice_a
-    # entirely through the link graph, no PathSlicedData override
-    # required.
+    # With the right links in place, the generic FRB function can walk
+    # slice_b -> cube_b -> cube_a -> slice_a entirely through the link
+    # graph, no PathSlicedData override required.
     dc, cube_a, _, slice_a, slice_b = _make_slice_pair_linked_cubes()
     link_path_sliced_group(dc, slice_a, slice_b)
 
