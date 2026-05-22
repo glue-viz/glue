@@ -26,7 +26,8 @@ class VolumeViewerState3D(ViewerState3D):
         self.ref_data_helper = ManualDataComboHelper(self, 'reference_data')
         self.slices = ()
 
-        self.add_callback('layers', self._layers_changed, echo_old=True)
+        self.add_callback('layers', self._layers_changed)
+        self.add_callback('reference_data', self._reference_data_changed)
         self.add_callback('x_att', self._on_xatt_changed, echo_old=True)
         self.add_callback('y_att', self._on_yatt_changed, echo_old=True)
         self.add_callback('z_att', self._on_zatt_changed, echo_old=True)
@@ -42,29 +43,42 @@ class VolumeViewerState3D(ViewerState3D):
             if getattr(layer_state.layer, 'ndim', None) >= 3:
                 return layer_state.layer
 
-    def _layers_changed(self, old_layers, new_layers):
-        if self.reference_data is not None and old_layers == new_layers:
+    def _layers_changed(self, *args):
+
+        # By default if any of the state properties change, this triggers a
+        # callback on anything listening to changes on self.layers - but here
+        # we just want to know if any layers have been removed/added so we keep
+        # track of the UUIDs of the layers and check this before continuing.
+        current_layers = [layer_state.layer.uuid for layer_state in self.layers]
+        if not hasattr(self, '_last_layers') or self._last_layers != current_layers:
+            self._update_combo_ref_data()
+            self._set_reference_data()
+            self._last_layers = current_layers
             return
-        self._update_combo_ref_data()
-        self._set_reference_data()
-        self._update_attributes()
 
     def _update_combo_ref_data(self, *args):
         self.ref_data_helper.set_multiple_data(self.layers_data)
 
     def _set_reference_data(self, *args):
         if self.reference_data is None:
-            self.slices = ()
             for layer in self.layers:
                 if isinstance(layer.layer, BaseData):
                     self.reference_data = layer.layer
                     return
+
+    def _reference_data_changed(self, data):
+        if data is None:
+            self.slices = ()
         else:
-            self.slices = (0,) * self.reference_data.ndim
+            self.slices = (0,) * data.ndim
 
-    def _update_attributes(self, *args):
+        with delay_callback(self, "x_att", "y_att", "z_att"):
+            self._update_attributes(data)
+            self._set_up_attributes(data)
 
-        data = self._first_3d_data()
+    def _update_attributes(self, data=None):
+
+        data = data or self._first_3d_data()
 
         if data is None:
 
@@ -79,8 +93,8 @@ class VolumeViewerState3D(ViewerState3D):
                 type(self).y_att.set_choices(self, pixel_ids)
                 type(self).z_att.set_choices(self, pixel_ids)
 
-    def _set_up_attributes(self, *args):
-        data = self._first_3d_data()
+    def _set_up_attributes(self, data=None):
+        data = data or self._first_3d_data()
         if data is not None:
             pixel_ids = data.pixel_component_ids
             self.x_att = pixel_ids[2]
