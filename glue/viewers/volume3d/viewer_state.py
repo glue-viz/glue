@@ -44,8 +44,17 @@ class VolumeViewerState3D(ViewerState3D):
                 return layer_state.layer
 
     def _layers_changed(self, *args):
-        self._update_combo_ref_data()
-        self._set_reference_data()
+
+        # By default if any of the state properties change, this triggers a
+        # callback on anything listening to changes on self.layers - but here
+        # we just want to know if any layers have been removed/added so we keep
+        # track of the UUIDs of the layers and check this before continuing.
+        current_layers = [layer_state.layer.uuid for layer_state in self.layers]
+        if not hasattr(self, '_last_layers') or self._last_layers != current_layers:
+            self._update_combo_ref_data()
+            self._set_reference_data()
+            self._last_layers = current_layers
+            return
 
     def _update_combo_ref_data(self, *args):
         self.ref_data_helper.set_multiple_data(self.layers_data)
