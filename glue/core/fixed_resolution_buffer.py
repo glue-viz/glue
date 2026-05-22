@@ -7,11 +7,42 @@ from glue.utils import unbroadcast, broadcast_arrays_minimal
 
 # TODO: cache needs to be updated when links are removed/changed
 
-__all__ = ['compute_fixed_resolution_buffer']
+__all__ = ['compute_fixed_resolution_buffer', 'invalidate_cache']
 
 
 ARRAY_CACHE = {}
 PIXEL_CACHE = {}
+
+
+def invalidate_cache(data=None):
+    """
+    Drop entries from the fixed-resolution-buffer caches.
+
+    The :func:`compute_fixed_resolution_buffer` result is cached per
+    ``cache_id`` and gated on a hash tuple that contains both ``data``
+    and ``target_data`` by identity. Callers that mutate a dataset in
+    place (e.g. by re-sampling a derived dataset's path) need a way to
+    invalidate any cached results that depend on it; this is that hook.
+
+    Parameters
+    ----------
+    data : object, optional
+        If given, only cache entries whose hash references this object
+        (in either the ``data`` or ``target_data`` slot) are removed.
+        If ``None`` (the default), both caches are cleared entirely.
+    """
+    for cache in (ARRAY_CACHE, PIXEL_CACHE):
+        if data is None:
+            cache.clear()
+            continue
+        for cache_id, entry in list(cache.items()):
+            hash_tuple = entry.get('hash')
+            if hash_tuple is None:
+                continue
+            # Identity comparison so we never invoke element-wise == on
+            # numpy arrays that may be embedded in the hash.
+            if any(item is data for item in hash_tuple):
+                cache.pop(cache_id, None)
 
 
 def translate_pixel(data, pixel_coords, target_cid):

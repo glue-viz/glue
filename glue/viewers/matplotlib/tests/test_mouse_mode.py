@@ -135,6 +135,30 @@ class TestRoiMode(TestMouseMode):
         self.mode.press(e)
         assert self.mode._roi_tool.abort_selection.call_count == 1
 
+    def test_deactivate_resets_roi_tool_and_redraws(self):
+        # RoiModeBase.deactivate resets the underlying ROI tool, clears
+        # the cached patch state, and triggers a redraw so the viewer
+        # drops the in-progress ROI artist.
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_called()
+        self.mode.viewer.figure.canvas.draw.assert_called()
+
+    def test_deactivate_safe_after_viewer_closed(self):
+        # Tool.close() sets self.viewer to None; deactivate must still
+        # reset the ROI tool and not try to redraw a missing viewer.
+        self.mode.viewer = None
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_called()
+
+    def test_deactivate_preserves_persistent_roi(self):
+        # Persistent ROIs (e.g. PathMode after extraction) keep their
+        # drawn artist visible across tool switches so the user can
+        # still see what was selected. deactivate must NOT reset the
+        # ROI tool in that case.
+        self.mode.persistent = True
+        self.mode.deactivate()
+        self.mode._roi_tool.reset.assert_not_called()
+
 
 class TestClickRoiMode(TestMouseMode):
 
@@ -145,6 +169,35 @@ class TestClickRoiMode(TestMouseMode):
 
     def mode_factory(self):
         raise NotImplementedError()
+
+    def test_move_callback(self):
+        # ClickRoiMode.move only forwards to the underlying MouseMode (and
+        # so fires the move callback) when actively drawing. Override the
+        # base test to set up that precondition first.
+        self.mode._roi_tool.active.return_value = True
+        e = Event(1, 2)
+        self.mode.move(e)
+        self.move.assert_called_once_with(self.mode)
+        assert self.press.call_count == 0
+        assert self.release.call_count == 0
+
+    def test_move_log(self):
+        # Same active-state precondition as test_move_callback.
+        self.mode._roi_tool.active.return_value = True
+        e = Event(1, 2)
+        self.mode.move(e)
+        assert self.mode._event_x == 1
+        assert self.mode._event_y == 2
+
+    def test_move_when_not_drawing_does_nothing(self):
+        # Conversely, a move event with no active drawing should be a
+        # no-op: no callback, no ROI update. This is the bug PR #1663
+        # fixed -- pre-fix, move events fired even with the tool idle.
+        self.mode._roi_tool.active.return_value = False
+        e = Event(1, 2)
+        self.mode.move(e)
+        assert self.move.call_count == 0
+        assert self.mode._roi_tool.update_selection.call_count == 0
 
     def test_roi_started_on_press(self):
         e = Event(1, 2)

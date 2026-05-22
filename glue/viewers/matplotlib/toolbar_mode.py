@@ -81,6 +81,18 @@ class RoiModeBase(ToolbarModeBase):
         self._roi_tool._sync_patch()
         super(RoiModeBase, self).activate()
 
+    def deactivate(self):
+        # Persistent ROIs (e.g. PathMode after extraction) keep their
+        # drawn artist visible after the user switches tools so they
+        # can still see what was selected. Non-persistent ROIs clean
+        # up their in-progress patch instead.
+        if not self.persistent:
+            self._roi_tool.reset()
+            self.clear()
+            if self.viewer is not None:
+                self.viewer.figure.canvas.draw()
+        super(RoiModeBase, self).deactivate()
+
     def roi(self):
         """
         The ROI defined by this mouse mode
@@ -200,7 +212,7 @@ class ClickRoiMode(RoiModeBase):
         if event.button is not None and self._roi_tool.active():
             self._roi_tool.update_selection(event)
             self._last_event = event
-        super(ClickRoiMode, self).move(event)
+            super(ClickRoiMode, self).move(event)
 
     def key(self, event):
         if event.key == 'enter':

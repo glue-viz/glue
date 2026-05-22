@@ -135,4 +135,4 @@ class MouseMode(object):
         """
         for connection in self._connections:
             self._canvas.mpl_disconnect(connection)
-        self._connections = []
+        self._connections[:] = []
