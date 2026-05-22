@@ -158,12 +158,8 @@ def test_base_cartesian_data():
                            [np.nan, np.nan, np.nan, np.nan]]))
 
 
-# ---------------------------------------------------------------------------
-# invalidate_cache helper
-# ---------------------------------------------------------------------------
-
-
 class TestInvalidateCache():
+    """``invalidate_cache`` helper."""
 
     def setup_method(self, method):
         from glue.core import fixed_resolution_buffer as frb_mod
