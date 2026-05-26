@@ -230,11 +230,13 @@ class CoordinateComponent(Component):
         self.axis = axis
 
         # From issue #2574: initialize world_n_dim and error for data ndim > world ndim.
-        if self.world and self._data:
+        if hasattr(self._data, 'coords'):
             self.world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
             if self.world_n_dim < self._data.ndim:
-                raise ValueError("World must have at least the same number of "
-                                 "dimensions as data.")
+                raise ValueError(f"World[{self.world_n_dim}] must have at least the same "
+                                  "number of dimensions as data[{self._data.ndim}].")
+            else:
+                self.world_n_dim = getattr(self._data, 'ndim', 0)
 
     @property
     def data(self):
