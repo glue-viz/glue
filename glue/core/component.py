@@ -229,6 +229,13 @@ class CoordinateComponent(Component):
         self._data = data
         self.axis = axis
 
+        # From issue #2574: initialize world_n_dim and error for data ndim > world ndim.
+        if self.world and self._data:
+            self.world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
+            if self.world_n_dim < self._data.ndim:
+                raise ValueError("World must have at least the same number of "
+                                 "dimensions as data.")
+
     @property
     def data(self):
         return self._calculate()
@@ -236,15 +243,13 @@ class CoordinateComponent(Component):
     @property
     def units(self):
         if self.world:
-            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
-            return self._data.coords.world_axis_units[world_n_dim - 1 - self.axis] or ''
+            return self._data.coords.world_axis_units[self.world_n_dim - 1 - self.axis] or ''
         else:
             return ''
 
     def _calculate(self, view=None):
 
         if self.world:
-            world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
 
             # Calculating the world coordinates can be a bottleneck if we aren't
             # careful, so we need to make sure that if not all dimensions depend
@@ -260,7 +265,7 @@ class CoordinateComponent(Component):
             # To optimize this, we therefore essentially consider only the
             # dependent dimensions and then broacast the result to the full
             # array size at the very end.
-            axis = world_n_dim - 1 - self.axis
+            axis = self.world_n_dim - 1 - self.axis
 
             # view=None actually adds a dimension which is never what we really
             # mean, at least in glue.
@@ -318,7 +323,7 @@ class CoordinateComponent(Component):
                 else:
                     final_shape.append(self._data.shape[i])
 
-                if world_n_dim == self._data.ndim and i not in dep_coords:
+                if self.world_n_dim == self._data.ndim and i not in dep_coords:
                     # The axis is not dependent on this instance's axis, so we
                     # just compute the values once and broadcast along this
                     # dimension later.

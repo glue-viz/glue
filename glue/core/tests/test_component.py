@@ -418,8 +418,8 @@ def test_coordinate_component_units_when_world_n_dim_exceeds_data_ndim():
         # 2 pixel axes, 3 world axes: the third world axis is a
         # combination of the two pixel axes (stand-in for the kind of
         # dispersion/spatial-correlation WCS that triggered the bug).
-        def __init__(self):
-            super().__init__(pixel_n_dim=2, world_n_dim=3)
+        def __init__(self, pixel_n_dim, world_n_dim):
+            super().__init__(pixel_n_dim=pixel_n_dim, world_n_dim=world_n_dim)
 
         @property
         def world_axis_units(self):
@@ -442,7 +442,7 @@ def test_coordinate_component_units_when_world_n_dim_exceeds_data_ndim():
 
     data = core.Data()
     data.add_component(Component(np.zeros((3, 3))), 'test')
-    data.coords = MismatchedCoords()
+    data.coords = MismatchedCoords(pixel_n_dim=2, world_n_dim=3)
 
     # With ``world_n_dim - 1 - axis`` indexing, numpy data axis 0 maps
     # to world axis 2 and numpy data axis 1 to world axis 1. The old
@@ -466,6 +466,13 @@ def test_coordinate_component_units_when_world_n_dim_exceeds_data_ndim():
                                expected_axis0)
     np.testing.assert_allclose(CoordinateComponent(data, 1, world=True).data,
                                expected_axis1)
+
+    # Reset to check pixel_n_dim > world_n_dim
+    data = core.Data()
+    data.add_component(Component(np.zeros((3, 3, 3))), 'test')
+    with pytest.raises(ValueError, match="World must have at least the same number of "
+                                         "dimensions as data."):
+        data.coords = MismatchedCoords(pixel_n_dim=3, world_n_dim=2)
 
 
 class TestExtendedComponent(object):
