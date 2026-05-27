@@ -234,7 +234,7 @@ class CoordinateComponent(Component):
             self.world_n_dim = getattr(self._data.coords, 'world_n_dim', self._data.ndim)
             if self.world_n_dim < self._data.ndim:
                 raise ValueError(f"World[{self.world_n_dim}] must have at least the same "
-                                  "number of dimensions as data[{self._data.ndim}].")
+                                 f"number of dimensions as data[{self._data.ndim}].")
         else:
             self.world_n_dim = getattr(self._data, 'ndim', 0)
 

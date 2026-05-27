@@ -470,8 +470,8 @@ def test_coordinate_component_units_when_world_n_dim_exceeds_data_ndim():
     # Reset to check pixel_n_dim > world_n_dim
     data = core.Data()
     data.add_component(Component(np.zeros((3, 3, 3))), 'test')
-    with pytest.raises(ValueError, match=r"World must have at least the same number of "
-                                         r"dimensions as data\."):
+    with pytest.raises(ValueError, match=r"World\[2\] must have at least the same "
+                                         r"number of dimensions as data\[3\]."):
         data.coords = MismatchedCoords(pixel_n_dim=3, world_n_dim=2)
 
 
