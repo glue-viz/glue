@@ -406,6 +406,75 @@ def test_coordinate_component_1d_coord():
     np.testing.assert_equal(data['Frequency'], [1, 2, 3, 4, 5])
 
 
+def test_coordinate_component_units_when_world_n_dim_exceeds_data_ndim():
+    # Regression test for issue #2574: when ``coords.world_n_dim`` is
+    # larger than ``data.ndim`` (e.g. a 3D WCS describing a 2D dataset,
+    # as for NIRSpec 2D spectra), ``CoordinateComponent.units`` must
+    # index into ``world_axis_units`` using ``world_n_dim``, not
+    # ``data.ndim`` -- otherwise the world components get whichever
+    # units happen to live at the data-ndim-offset slot.
+
+    class MismatchedCoords(Coordinates):
+        # 2 pixel axes, 3 world axes: the third world axis is a
+        # combination of the two pixel axes (stand-in for the kind of
+        # dispersion/spatial-correlation WCS that triggered the bug).
+        def __init__(self, pixel_n_dim, world_n_dim):
+            super().__init__(pixel_n_dim=pixel_n_dim, world_n_dim=world_n_dim)
+
+        @property
+        def world_axis_units(self):
+            return ['unit_world0', 'unit_world1', 'unit_world2']
+
+        @property
+        def axis_correlation_matrix(self):
+            # (world_n_dim, pixel_n_dim) = (3, 2).
+            return np.array([[True, True],
+                             [True, False],
+                             [False, True]])
+
+        def pixel_to_world_values(self, *pixel):
+            p0, p1 = pixel
+            return (p0 + p1, 1.0 * p0, 2.0 * p1)
+
+        def world_to_pixel_values(self, *world):
+            _w0, w1, w2 = world
+            return (w1 / 1.0, w2 / 2.0)
+
+    data = core.Data()
+    data.add_component(Component(np.zeros((3, 3))), 'test')
+    data.coords = MismatchedCoords(pixel_n_dim=2, world_n_dim=3)
+
+    # With ``world_n_dim - 1 - axis`` indexing, numpy data axis 0 maps
+    # to world axis 2 and numpy data axis 1 to world axis 1. The old
+    # ``data.ndim - 1 - axis`` form mapped axis 0 -> world index 1 and
+    # axis 1 -> world index 0, picking the wrong (or "missing") units.
+    assert CoordinateComponent(data, 0, world=True).units == 'unit_world2'
+    assert CoordinateComponent(data, 1, world=True).units == 'unit_world1'
+
+    # The world-coordinate data follows the same indexing convention.
+    # Numpy axis 0 -> world axis 2, whose values are ``2.0 * p1``
+    # where ``p1`` is the numpy-axis-0 pixel index. The grid for a
+    # (3, 3) array of axis-0 pixels is [[0,0,0],[1,1,1],[2,2,2]], so
+    # world values are 2x that.
+    expected_axis0 = np.array([[0., 0., 0.],
+                               [2., 2., 2.],
+                               [4., 4., 4.]])
+    expected_axis1 = np.array([[0., 1., 2.],
+                               [0., 1., 2.],
+                               [0., 1., 2.]])
+    np.testing.assert_allclose(CoordinateComponent(data, 0, world=True).data,
+                               expected_axis0)
+    np.testing.assert_allclose(CoordinateComponent(data, 1, world=True).data,
+                               expected_axis1)
+
+    # Reset to check pixel_n_dim > world_n_dim
+    data = core.Data()
+    data.add_component(Component(np.zeros((3, 3, 3))), 'test')
+    with pytest.raises(ValueError, match=r"World\[2\] must have at least the same "
+                                         r"number of dimensions as data\[3\]."):
+        data.coords = MismatchedCoords(pixel_n_dim=3, world_n_dim=2)
+
+
 class TestExtendedComponent(object):
 
     def setup_method(self):
