@@ -1,5 +1,20 @@
 # Full changelog
 
+## v1.26.0 - 2026-06-02
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Add PathSlicedData derived data class by @astrofrog in https://github.com/glue-viz/glue/pull/2579
+
+#### Bug Fixes
+
+* Fix missing API docs for 3D states by @astrofrog in https://github.com/glue-viz/glue/pull/2572
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.25.0...v1.26.0
+
 ## v1.25.0 - 2026-02-11
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
