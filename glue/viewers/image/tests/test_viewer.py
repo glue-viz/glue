@@ -1,16 +1,49 @@
 import numpy as np
+import pytest
 from echo import delay_callback
 from glue.tests.visual.helpers import visual_test
 from glue.viewers.image.viewer import SimpleImageViewer
+from glue.viewers.image.state import AggregateSlice
 from glue.core.application_base import Application
 from glue.core.data import Data
 from glue.core.link_helpers import LinkSame
 from glue.core.data_region import RegionData
 from glue.core.data_derived import IndexedData
+from glue.core.tests.test_state import clone
 from astropy.wcs import WCS
 
 from shapely.geometry import Polygon, MultiPolygon, Point
 import shapely
+
+
+@pytest.mark.parametrize('func', [np.nansum, np.nanmean, np.nanmin,
+                                  np.nanmax, np.nanmedian])
+def test_serialize_aggregate_slice(func):
+
+    # Collapsing a cube with the profile tools stores the collapse function in
+    # an AggregateSlice on the image viewer state. Make sure such a state can
+    # be serialized even when the function (e.g. np.nansum) is an instance of
+    # numpy._ArrayFunctionDispatcher rather than a plain/builtin function.
+
+    data = Data(x=np.arange(60).reshape((3, 4, 5)), label='cube')
+
+    app = Application()
+    app.data_collection.append(data)
+
+    viewer = app.new_data_viewer(SimpleImageViewer)
+    viewer.add_data(data)
+
+    slices = list(viewer.state.slices)
+    slices[0] = AggregateSlice(slice(0, 3), 1, func)
+    viewer.state.slices = tuple(slices)
+
+    state2 = clone(viewer.state)
+
+    new_slice = state2.slices[0]
+    assert isinstance(new_slice, AggregateSlice)
+    assert new_slice.function is func
+    assert new_slice.slice == slice(0, 3)
+    assert new_slice.center == 1
 
 
 @visual_test
