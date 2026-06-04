@@ -137,6 +137,16 @@ def test_save_numpy_scalar():
     assert clone(np.float32(5)) == 5
 
 
+@pytest.mark.parametrize('func', [np.nansum, np.nanmean, np.nanmin,
+                                  np.nanmax, np.nanmedian])
+def test_save_numpy_array_function(func):
+    # numpy array functions such as np.nansum are instances of the private
+    # numpy._ArrayFunctionDispatcher and so are neither FunctionType nor
+    # BuiltinFunctionType; they should still serialize by name reference
+    # (regression test for collapse functions stored in AggregateSlice).
+    assert clone(func) is func
+
+
 @requires_astropy
 def tests_data_factory_double():
     # ensure double-cloning doesn't somehow lose lightweight references

@@ -363,6 +363,9 @@ class GlueSerializer(object):
             result['_type'] = 'types.FunctionType'
         elif isinstance(obj, types.MethodType):
             result['_type'] = 'types.MethodType'
+        elif fun is _save_named_callable:
+            # Reuse the function loader, which reconstructs from {'function': ref}
+            result['_type'] = 'types.FunctionType'
         else:
             result['_type'] = "%s.%s" % (type(obj).__module__,
                                          type(obj).__name__)
@@ -383,6 +386,13 @@ class GlueSerializer(object):
                     return self.dispatch[typ]
         except TypeError:  # no mro
             pass
+
+        # Fall back to serializing any callable that can be looked up again by
+        # its fully-qualified name. This catches callables that are neither
+        # FunctionType nor BuiltinFunctionType (e.g. numpy array functions such
+        # as np.nansum) and so match no type-keyed saver above.
+        if _is_referenceable_callable(obj):
+            return _save_named_callable, 1
 
         raise GlueSerializeError("Don't know how to serialize"
                                  " %r of type %s" % (obj, type(obj)))
@@ -1176,6 +1186,30 @@ def _load_coordinate_component_link(rec, context):
     pix2world = rec['pix2world']
     frm = list(map(context.object, rec['frm']))
     return CoordinateComponentLink(frm, to, coords, index, pix2world)
+
+
+def _is_referenceable_callable(obj):
+    """
+    Whether ``obj`` is a callable that can be reconstructed from its
+    fully-qualified ``module.name``. This covers callables that are neither
+    FunctionType nor BuiltinFunctionType, such as numpy's array functions
+    (e.g. np.nansum), which are instances of the private
+    numpy._ArrayFunctionDispatcher and so match no type-keyed saver.
+    """
+    if not callable(obj):
+        return False
+    module = getattr(obj, '__module__', None)
+    name = getattr(obj, '__name__', None)
+    if not module or not name:
+        return False
+    try:
+        return lookup_class_with_patches("%s.%s" % (module, name)) is obj
+    except Exception:
+        return False
+
+
+def _save_named_callable(obj, context):
+    return {'function': "%s.%s" % (obj.__module__, obj.__name__)}
 
 
 @saver(types.BuiltinFunctionType)
