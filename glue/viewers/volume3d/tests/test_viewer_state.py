@@ -2,6 +2,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from glue.core import Data, DataCollection
+from glue.core.link_helpers import LinkSame
 from glue.core.tests.test_state import clone
 
 from ..viewer_state import VolumeViewerState3D
@@ -84,6 +85,55 @@ class TestVolumeViewerState3D:
 
         self.state.set_limits(0, 5, 0, 2, 0, 1.5)
         assert_allclose(self.state.clip_limits_relative, [0., 0.5, 0., 0.5, 0., 0.5])
+
+    def test_initial_attributes(self):
+        self.state.layers.append(MockLayerState(self.data))
+        pixel_ids = self.data.pixel_component_ids
+        assert self.state.x_att == pixel_ids[2]
+        assert self.state.y_att == pixel_ids[1]
+        assert self.state.z_att == pixel_ids[0]
+
+    def test_reference_data_choices(self):
+        self.state.layers.append(MockLayerState(self.data))
+        assert VolumeViewerState3D.reference_data.get_choices(self.state) == [self.data]
+
+        data2 = Data(label='cube2')
+        data2['x'] = np.arange(120).reshape((3, 4, 10))
+        self.data_collection.append(data2)
+        for i in range(3):
+            link = LinkSame(
+                    cid1=self.data.pixel_component_ids[i],
+                    cid2=data2.pixel_component_ids[i])
+            self.data_collection.add_link(link)
+
+        self.state.layers.append(MockLayerState(data2))
+        assert VolumeViewerState3D.reference_data.get_choices(self.state) == [self.data, data2]
+
+        self.state.layers.pop(0)
+        assert VolumeViewerState3D.reference_data.get_choices(self.state) == [data2]
+
+
+    def test_attribute_choices(self):
+        self.state.layers.append(MockLayerState(self.data))
+
+        assert self.state.x_att.parent == self.data
+        assert self.state.y_att.parent == self.data
+        assert self.state.z_att.parent == self.data
+
+        data2 = Data(label='cube2')
+        data2['x'] = np.arange(120).reshape((3, 4, 10))
+        self.data_collection.append(data2)
+        for i in range(3):
+            link = LinkSame(
+                    cid1=self.data.pixel_component_ids[i],
+                    cid2=data2.pixel_component_ids[i])
+            self.data_collection.add_link(link)
+        self.state.layers.append(MockLayerState(data2))
+
+        self.state.reference_data = data2
+        assert self.state.x_att.parent == data2
+        assert self.state.y_att.parent == data2
+        assert self.state.z_att.parent == data2
 
     def test_serialization(self):
         self.state.downsample = False
