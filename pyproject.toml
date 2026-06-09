@@ -108,10 +108,6 @@ export_python = "glue.plugins.tools:setup"
 
 [tool.pytest.ini_options]
 addopts = "-p no:logging"
-# Legacy ignores?
-# E402, E741 (permanently) in ruff lint.ignore
-# E402, E501, E731, F841, W605 (temporarily) in .ruff.toml
-flake8-ignore = "E226,E501,E731,F841,E127,E741,E402,W504,W605"
 filterwarnings = [
     "ignore::PendingDeprecationWarning:xlrd",
     "ignore:Session._key_changed is deprecated",
@@ -120,6 +116,8 @@ filterwarnings = [
     "ignore:DragAndDropTerminal._style_sheet_changed is deprecated",
     "ignore:::ipykernel",
     "ignore:Accessing zmq Socket attribute",
+    "ignore:Unknown extension is not supported:UserWarning:openpyxl",
+    "ignore:Attempting to set identical:UserWarning",
 ]
 
 [tool.coverage.run]
