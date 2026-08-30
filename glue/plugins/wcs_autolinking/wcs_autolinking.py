@@ -1,8 +1,10 @@
 import copy
 
 import numpy as np
+from astropy.wcs import WCS
 from astropy.wcs.utils import pixel_to_pixel
-from astropy.wcs.wcsapi import BaseHighLevelWCS, SlicedLowLevelWCS, HighLevelWCSWrapper
+from astropy.wcs.wcsapi import (BaseHighLevelWCS, BaseLowLevelWCS,
+                                SlicedLowLevelWCS, HighLevelWCSWrapper)
 from scipy.optimize import leastsq
 from glue.config import autolinker, link_helper
 from glue.core.link_helpers import MultiLink
@@ -111,14 +113,36 @@ class WCSLink(MultiLink):
 
         wcs1, wcs2 = data1.coords, data2.coords
 
-        if (wcs1.world_axis_physical_types.count(None) == wcs1.world_n_dim or
-            wcs2.world_axis_physical_types.count(None) == wcs2.world_n_dim):
+        # The probe-based fast path below is only trustworthy for WCSes that
+        # natively implement the high-level API: their typed world objects
+        # (SkyCoord, SpectralCoord, ...) fail loudly for mismatched physical
+        # types, whereas wrapped bare low-level WCSes produce plain Quantities
+        # that transform positionally regardless of physical type.
+        both_high_level = (isinstance(wcs1, BaseHighLevelWCS) and
+                           isinstance(wcs2, BaseHighLevelWCS))
+
+        # The high-level API is required by pixel_to_pixel below, but coords
+        # may be a bare low-level (APE 14) WCS object, so wrap those.
+        if not isinstance(wcs1, BaseHighLevelWCS):
+            wcs1 = HighLevelWCSWrapper(wcs1)
+        if not isinstance(wcs2, BaseHighLevelWCS):
+            wcs2 = HighLevelWCSWrapper(wcs2)
+
+        wcs1_ll = wcs1.low_level_wcs
+        wcs2_ll = wcs2.low_level_wcs
+
+        if (wcs1_ll.world_axis_physical_types.count(None) == wcs1_ll.world_n_dim or
+            wcs2_ll.world_axis_physical_types.count(None) == wcs2_ll.world_n_dim):
+            raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
+
+        if data1.ndim != wcs1_ll.pixel_n_dim or data2.ndim != wcs2_ll.pixel_n_dim:
             raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
         forwards = backwards = None
-        if wcs1.pixel_n_dim == wcs2.pixel_n_dim and wcs1.world_n_dim == wcs2.world_n_dim:
-            if (wcs1.world_axis_physical_types.count(None) == 0 and
-                    wcs2.world_axis_physical_types.count(None) == 0):
+        if (both_high_level and wcs1_ll.pixel_n_dim == wcs2_ll.pixel_n_dim and
+                wcs1_ll.world_n_dim == wcs2_ll.world_n_dim):
+            if (wcs1_ll.world_axis_physical_types.count(None) == 0 and
+                    wcs2_ll.world_axis_physical_types.count(None) == 0):
 
                 # The easiest way to check if the WCSes are compatible is to simply try and
                 # see if values can be transformed for a single pixel. In future we might
@@ -129,82 +153,119 @@ class WCSLink(MultiLink):
                                                                                        data1.pixel_component_ids[::-1],
                                                                                        data2.pixel_component_ids[::-1])
 
-                self._physical_types_1 = wcs1.world_axis_physical_types
-                self._physical_types_2 = wcs2.world_axis_physical_types
+                self._physical_types_1 = wcs1_ll.world_axis_physical_types
+                self._physical_types_2 = wcs2_ll.world_axis_physical_types
 
         if not forwards or not backwards:
             # A generalized APE 14-compatible way
             # Handle also the extra-spatial axes such as those of the time and wavelength dimensions
 
-            wcs1_celestial_physical_types = wcs2_celestial_physical_types = []
+            # NOTE: these must not be aliased to a single list - each side's
+            # axes have to be collected independently.
+            wcs1_celestial_physical_types = []
+            wcs2_celestial_physical_types = []
 
-            slicing_axes1 = slicing_axes2 = []
+            slicing_axes1 = []
+            slicing_axes2 = []
 
             cids1 = data1.pixel_component_ids
             cids2 = data2.pixel_component_ids
 
-            if wcs1.has_celestial and wcs2.has_celestial:
-                wcs1_celestial_physical_types = wcs1.celestial.world_axis_physical_types
-                wcs2_celestial_physical_types = wcs2.celestial.world_axis_physical_types
+            # The celestial special case links different sky frames (e.g.
+            # galactic to equatorial) through SkyCoord, and relies on
+            # astropy.wcs.WCS-only attributes, so only take it for astropy WCS
+            # pairs. Everything else falls through to physical-type matching.
+            if (isinstance(wcs1_ll, WCS) and isinstance(wcs2_ll, WCS) and
+                    wcs1_ll.has_celestial and wcs2_ll.has_celestial):
+                wcs1_celestial_physical_types = wcs1_ll.celestial.world_axis_physical_types
+                wcs2_celestial_physical_types = wcs2_ll.celestial.world_axis_physical_types
 
-                cids1_celestial = [cids1[wcs1.wcs.naxis - wcs1.wcs.lng - 1],
-                                   cids1[wcs1.wcs.naxis - wcs1.wcs.lat - 1]]
-                cids2_celestial = [cids2[wcs2.wcs.naxis - wcs2.wcs.lng - 1],
-                                   cids2[wcs2.wcs.naxis - wcs2.wcs.lat - 1]]
+                cids1_celestial = [cids1[wcs1_ll.wcs.naxis - wcs1_ll.wcs.lng - 1],
+                                   cids1[wcs1_ll.wcs.naxis - wcs1_ll.wcs.lat - 1]]
+                cids2_celestial = [cids2[wcs2_ll.wcs.naxis - wcs2_ll.wcs.lng - 1],
+                                   cids2[wcs2_ll.wcs.naxis - wcs2_ll.wcs.lat - 1]]
 
-                if wcs1.celestial.wcs.lng > wcs1.celestial.wcs.lat:
+                if wcs1_ll.celestial.wcs.lng > wcs1_ll.celestial.wcs.lat:
                     cids1_celestial = cids1_celestial[::-1]
 
-                if wcs2.celestial.wcs.lng > wcs2.celestial.wcs.lat:
+                if wcs2_ll.celestial.wcs.lng > wcs2_ll.celestial.wcs.lat:
                     cids2_celestial = cids2_celestial[::-1]
 
                 slicing_axes1 = [cids1_celestial[0].axis, cids1_celestial[1].axis]
                 slicing_axes2 = [cids2_celestial[0].axis, cids2_celestial[1].axis]
 
-            wcs1_sliced_physical_types = wcs2_sliced_physical_types = []
+            wcs1_sliced_physical_types = list(wcs1_celestial_physical_types)
+            wcs2_sliced_physical_types = list(wcs2_celestial_physical_types)
 
-            if wcs1_celestial_physical_types is not None:
-                wcs1_sliced_physical_types = wcs1_celestial_physical_types
+            # For each pair of matching physical types, keep all the pixel
+            # axes correlated with the matched world axis - APE 14 guarantees
+            # neither a one-to-one nor a reversed world/pixel correspondence
+            # (e.g. celestial -TAB axes couple two pixel axes to each world
+            # axis). Pixel axes are in x-fastest order, hence the reversal to
+            # get numpy axes.
+            matrix1 = wcs1_ll.axis_correlation_matrix
+            matrix2 = wcs2_ll.axis_correlation_matrix
 
-            if wcs2_celestial_physical_types is not None:
-                wcs2_sliced_physical_types = wcs2_celestial_physical_types
-
-            for i, physical_type1 in enumerate(wcs1.world_axis_physical_types):
+            for i, physical_type1 in enumerate(wcs1_ll.world_axis_physical_types):
                 if physical_type1 is not None:
-                    for j, physical_type2 in enumerate(wcs2.world_axis_physical_types):
+                    for j, physical_type2 in enumerate(wcs2_ll.world_axis_physical_types):
                         if physical_type1 == physical_type2:
                             if physical_type1 not in wcs1_sliced_physical_types:
-                                slicing_axes1.append(wcs1.world_n_dim - i - 1)
+                                for pixel_axis in np.nonzero(matrix1[i])[0]:
+                                    numpy_axis = int(wcs1_ll.pixel_n_dim - 1 - pixel_axis)
+                                    if numpy_axis not in slicing_axes1:
+                                        slicing_axes1.append(numpy_axis)
                                 wcs1_sliced_physical_types.append(physical_type1)
                             if physical_type2 not in wcs2_sliced_physical_types:
-                                slicing_axes2.append(wcs2.world_n_dim - j - 1)
+                                for pixel_axis in np.nonzero(matrix2[j])[0]:
+                                    numpy_axis = int(wcs2_ll.pixel_n_dim - 1 - pixel_axis)
+                                    if numpy_axis not in slicing_axes2:
+                                        slicing_axes2.append(numpy_axis)
                                 wcs2_sliced_physical_types.append(physical_type2)
 
-            slicing_axes1 = sorted(slicing_axes1, key=str, reverse=True)
-            slicing_axes2 = sorted(slicing_axes2, key=str, reverse=True)
+            if not slicing_axes1 or not slicing_axes2:
+                raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
+
+            slicing_axes1 = sorted(slicing_axes1, reverse=True)
+            slicing_axes2 = sorted(slicing_axes2, reverse=True)
 
             # Generate slices for the wcs slicing
-            slices1 = [slice(None)] * wcs1.world_n_dim
-            slices2 = [slice(None)] * wcs2.world_n_dim
+            slices1 = [slice(None)] * wcs1_ll.pixel_n_dim
+            slices2 = [slice(None)] * wcs2_ll.pixel_n_dim
 
-            for i in range(wcs1.world_n_dim):
+            for i in range(wcs1_ll.pixel_n_dim):
                 if i not in slicing_axes1:
                     slices1[i] = 0
 
-            for j in range(wcs2.world_n_dim):
+            for j in range(wcs2_ll.pixel_n_dim):
                 if j not in slicing_axes2:
                     slices2[j] = 0
 
-            wcs1_sliced = SlicedLowLevelWCS(wcs1, tuple(slices1))
-            wcs2_sliced = SlicedLowLevelWCS(wcs2, tuple(slices2))
+            wcs1_sliced = SlicedLowLevelWCS(wcs1_ll, tuple(slices1))
+            wcs2_sliced = SlicedLowLevelWCS(wcs2_ll, tuple(slices2))
+
+            # When a wrapped low-level WCS is involved, pixel_to_pixel pairs
+            # its plain-Quantity world objects positionally, so if the matched
+            # world axes appear in different orders on the two sides the link
+            # would silently transpose them - refuse instead. Natively
+            # high-level pairs are safe: their typed world objects (e.g.
+            # SkyCoord) are matched by class, not position. Linking reordered
+            # low-level pairs would need an explicit physical-type permutation
+            # of the world values.
+            types1 = list(wcs1_sliced.world_axis_physical_types)
+            types2 = list(wcs2_sliced.world_axis_physical_types)
+            if (not both_high_level and types1 != types2 and
+                    sorted(map(str, types1)) == sorted(map(str, types2))):
+                raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label} "
+                                      f"(matched world axes are in different orders)")
+
             wcs1_final = HighLevelWCSWrapper(copy.copy(wcs1_sliced))
             wcs2_final = HighLevelWCSWrapper(copy.copy(wcs2_sliced))
 
+            # slicing_axes are sorted in descending numpy-axis order, which
+            # matches the pixel argument order of the sliced WCSes
             cids1_sliced = [cids1[x] for x in slicing_axes1]
-            cids1_sliced = sorted(cids1_sliced, key=str, reverse=True)
-
             cids2_sliced = [cids2[x] for x in slicing_axes2]
-            cids2_sliced = sorted(cids2_sliced, key=str, reverse=True)
 
             pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
                 wcs1_final, wcs2_final, cids1_sliced, cids2_sliced)
@@ -316,9 +377,11 @@ class WCSLink(MultiLink):
 @autolinker('Astronomy WCS')
 def wcs_autolink(data_collection):
 
-    # Find subset of datasets with WCS coordinates
+    # Find subset of datasets with WCS coordinates - low-level-only (APE 14)
+    # WCS objects are accepted too, and get wrapped by WCSLink.
     wcs_datasets = [data for data in data_collection
-                    if hasattr(data, 'coords') and isinstance(data.coords, BaseHighLevelWCS)]
+                    if hasattr(data, 'coords') and
+                    isinstance(data.coords, (BaseHighLevelWCS, BaseLowLevelWCS))]
 
     # Only continue if there are at least two such datasets
     if len(wcs_datasets) < 2:
