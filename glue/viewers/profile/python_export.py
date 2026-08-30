@@ -16,16 +16,32 @@ def python_export_profile_layer(layer, *args):
     if isinstance(layer.state.layer, Subset):
         script += "base_data = layer_data.data\n"
         script += "cid = base_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+    else:
+        script += "base_data = layer_data\n"
+        script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+    if layer._viewer_state.function == 'slice':
+        slices = tuple(layer._viewer_state.slices or ())
+        script += "data_view = list({0}) if base_data.ndim == {1} else [0] * base_data.ndim\n".format(slices, len(slices))
+        script += "data_view[profile_axis] = slice(None)\n"
+        script += "profile_values = base_data.get_data(cid, view=tuple(data_view))\n"
+        if isinstance(layer.state.layer, Subset):
+            script += "mask = base_data.get_mask(layer_data.subset_state, view=tuple(data_view))\n"
+            script += "profile_values = np.where(mask, profile_values, np.nan)\n"
+        script += "\n"
+    elif isinstance(layer.state.layer, Subset):
         script += "profile_values = base_data.compute_statistic('{0}', cid, axis=collapsed_axes, subset_state=layer_data.subset_state)\n\n".format(layer._viewer_state.function)
     else:
-        script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
         script += "profile_values = layer_data.compute_statistic('{0}', cid, axis=collapsed_axes)\n\n".format(layer._viewer_state.function)
 
     script += "# Extract the values for the x-axis\n"
     script += "axis_view = [0] * layer_data.ndim\n"
     script += "axis_view[profile_axis] = slice(None)\n"
     script += "profile_x_values = layer_data['{0}', tuple(axis_view)]\n".format(layer._viewer_state.x_att)
-    script += "keep = ~np.isnan(profile_values) & ~np.isnan(profile_x_values)\n\n"
+    if layer._viewer_state.function == 'slice':
+        # NaN values should produce gaps in the line, as in the live viewer
+        script += "keep = slice(None)\n\n"
+    else:
+        script += "keep = ~np.isnan(profile_values) & ~np.isnan(profile_x_values)\n\n"
 
     if layer._viewer_state.normalize:
         script += "# Normalize the profile data\n"

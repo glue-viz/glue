@@ -95,6 +95,38 @@ class TestProfileViewerState:
         _x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
+    def test_slice_function(self):
+
+        self.viewer_state.function = 'slice'
+
+        # Default slices are all zero
+        assert self.viewer_state.slices == (0, 0, 0)
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 2, 4])
+        assert_allclose(y, self.data['x'][:, 0, 0])
+
+        self.viewer_state.slices = (0, 2, 1)
+        x, y = self.layer_state.profile
+        assert_allclose(y, self.data['x'][:, 2, 1])
+
+        self.viewer_state.x_att = self.data.pixel_component_ids[1]
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 1, 2, 3])
+        assert_allclose(y, self.data['x'][0, :, 1])
+
+    def test_slice_function_subset(self):
+
+        self.viewer_state.function = 'slice'
+
+        subset = self.data.new_subset()
+        subset.subset_state = self.data.id['x'] > 10
+
+        self.layer_state.layer = subset
+
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 2, 4])
+        assert_allclose(y, [np.nan, np.nan, 16])
+
     def test_subset(self):
 
         subset = self.data.new_subset()
@@ -162,6 +194,23 @@ class TestProfileViewerState:
         x, y = self.layer_state.profile
         assert_allclose(x, [0, 2, 4])
         assert_allclose(y, [3.5, 11.5, 19.5])
+
+
+def test_slice_function_1d():
+
+    # For 1D data the slice function should just return the data itself
+
+    data = Data(y=[1., 2., 3.], label='d1')
+    DataCollection([data])
+
+    viewer_state = ProfileViewerState()
+    layer_state = ProfileLayerState(viewer_state=viewer_state, layer=data)
+    viewer_state.layers.append(layer_state)
+    viewer_state.function = 'slice'
+
+    x, y = layer_state.profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose(y, [1, 2, 3])
 
 
 @pytest.mark.parametrize(('value', 'limits'),
