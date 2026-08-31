@@ -1,5 +1,6 @@
 from glue.viewers.common.python_export import serialize_options
 from glue.core import Subset
+from glue.core.link_manager import is_convertible_to_single_pixel_cid
 
 
 def python_export_profile_layer(layer, *args):
@@ -20,12 +21,16 @@ def python_export_profile_layer(layer, *args):
         script += "base_data = layer_data\n"
         script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
     if layer._viewer_state.function == 'slice':
-        slices = tuple(layer._viewer_state.slices or ())
-        script += "data_view = list({0}) if base_data.ndim == {1} else [0] * base_data.ndim\n".format(slices, len(slices))
-        script += "data_view[profile_axis] = slice(None)\n"
-        script += "profile_values = base_data.get_data(cid, view=tuple(data_view))\n"
         if isinstance(layer.state.layer, Subset):
-            script += "mask = base_data.get_mask(layer_data.subset_state, view=tuple(data_view))\n"
+            slice_data = layer.state.layer.data
+        else:
+            slice_data = layer.state.layer
+        pix_cid = is_convertible_to_single_pixel_cid(layer.state.layer,
+                                                     layer._viewer_state.x_att_pixel)
+        script += "data_view = {0}\n".format(layer.state.slice_view(slice_data, pix_cid))
+        script += "profile_values = base_data.get_data(cid, view=data_view)\n"
+        if isinstance(layer.state.layer, Subset):
+            script += "mask = base_data.get_mask(layer_data.subset_state, view=data_view)\n"
             script += "profile_values = np.where(mask, profile_values, np.nan)\n"
         script += "\n"
     elif isinstance(layer.state.layer, Subset):
@@ -36,7 +41,9 @@ def python_export_profile_layer(layer, *args):
     script += "# Extract the values for the x-axis\n"
     script += "axis_view = [0] * layer_data.ndim\n"
     script += "axis_view[profile_axis] = slice(None)\n"
-    script += "profile_x_values = layer_data['{0}', tuple(axis_view)]\n".format(layer._viewer_state.x_att)
+    # NOTE: x values come from base_data - indexing a Subset applies the
+    # subset mask, which would give a different length than profile_values
+    script += "profile_x_values = base_data['{0}', tuple(axis_view)]\n".format(layer._viewer_state.x_att)
     if layer._viewer_state.function == 'slice':
         # NaN values should produce gaps in the line, as in the live viewer
         script += "keep = slice(None)\n\n"

@@ -68,8 +68,9 @@ class TestExportPython(BaseTestExportPython):
         self.assert_same(tmpdir)
 
     def test_slice_subset(self, tmpdir):
+        # The subset mask is deliberately partial along the profile axis
         self.viewer.state.function = 'slice'
-        self.data_collection.new_subset_group('mysubset', self.data.id['x'] > 0.25)
+        self.data_collection.new_subset_group('mysubset', self.data.pixel_component_ids[0] > 0.5)
         self.assert_same(tmpdir)
 
     def test_normalization(self, tmpdir):

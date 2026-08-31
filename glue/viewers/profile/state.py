@@ -12,7 +12,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, avoid_circular
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
 from glue.core.units import find_unit_choices, UnitConverter
 
@@ -444,6 +444,37 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         self.update_profile()
         return self._profile_cache
 
+    def slice_view(self, data, pix_cid):
+        """
+        The view used when the collapse function is 'slice': the current
+        viewer slices with `slice(None)` along the profile axis, translated
+        from the reference data's frame into ``data``'s own pixel indices.
+        """
+        ref = self.viewer_state.reference_data
+        slices = list(self.viewer_state.slices or ())
+        if len(slices) != ref.ndim:
+            slices = [0] * ref.ndim
+        if data is ref:
+            view = slices
+        else:
+            # Translate the reference-data slice point into this dataset's
+            # own pixel indices through the pixel links
+            point = tuple(np.array([s]) for s in slices)
+            view = []
+            for axis in range(data.ndim):
+                if axis == pix_cid.axis:
+                    view.append(0)
+                    continue
+                try:
+                    index = int(np.round(ref[data.pixel_component_ids[axis], point][0]))
+                except IncompatibleAttribute:
+                    raise IncompatibleDataException()
+                if index < 0 or index >= data.shape[axis]:
+                    raise IncompatibleDataException()
+                view.append(index)
+        view[pix_cid.axis] = slice(None)
+        return tuple(view)
+
     def update_profile(self, update_limits=True):
 
         if self._profile_cache is not None:
@@ -489,13 +520,10 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             subset_state = None
 
         if self.viewer_state.function == 'slice':
-            view = list(self.viewer_state.slices or ())
-            if len(view) != data.ndim:
-                view = [0] * data.ndim
-            view[pix_cid.axis] = slice(None)
-            profile_values = data.get_data(self.attribute, view=tuple(view))
+            view = self.slice_view(data, pix_cid)
+            profile_values = data.get_data(self.attribute, view=view)
             if subset_state is not None:
-                mask = data.get_mask(subset_state, view=tuple(view))
+                mask = data.get_mask(subset_state, view=view)
                 profile_values = np.where(mask, profile_values, np.nan)
         else:
             profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)

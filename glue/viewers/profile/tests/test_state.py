@@ -196,6 +196,71 @@ class TestProfileViewerState:
         assert_allclose(y, [3.5, 11.5, 19.5])
 
 
+def test_slice_function_linked():
+
+    # Slices are defined on the reference data and must be translated into
+    # the pixel frame of other linked layers
+
+    from glue.core.link_helpers import LinkSame
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(24).reshape((4, 3, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    p1 = data1.pixel_component_ids
+    p2 = data2.pixel_component_ids
+    # data2's first two axes are swapped relative to data1
+    dc.add_link(LinkSame(p1[0], p2[1]))
+    dc.add_link(LinkSame(p1[1], p2[0]))
+    dc.add_link(LinkSame(p1[2], p2[2]))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 2, 1)
+
+    _, y = layer1.profile
+    assert_allclose(y, data1['x'][:, 2, 1])
+
+    _, y = layer2.profile
+    assert_allclose(y, data2['y'][2, :, 1])
+
+
+def test_slice_function_out_of_bounds():
+
+    # A slice point that falls outside a linked layer raises
+    # IncompatibleDataException instead of silently plotting wrong values
+
+    from glue.core.exceptions import IncompatibleDataException
+    from glue.core.link_helpers import LinkSame
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(12).reshape((3, 2, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    for cid1, cid2 in zip(data1.pixel_component_ids, data2.pixel_component_ids):
+        dc.add_link(LinkSame(cid1, cid2))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 3, 1)
+
+    _, y = layer1.profile
+    assert_allclose(y, data1['x'][:, 3, 1])
+
+    with pytest.raises(IncompatibleDataException):
+        layer2.profile
+
+
 def test_slice_function_1d():
 
     # For 1D data the slice function should just return the data itself
