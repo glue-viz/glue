@@ -52,6 +52,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
     slices = DDCProperty(docstring='The current slice along all dimensions, '
                                    'used when function is ``\'slice\'``')
 
+    x_limits_pixel = DDCProperty(False, docstring='Whether x_min/x_max are in pixel '
+                                                  'coordinates (WCSAxes mode) rather '
+                                                  'than world/display values')
+
     normalize = DDCProperty(False, docstring='Whether to normalize all profiles '
                                              'to the [0:1] range')
 
@@ -272,6 +276,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
         with delay_callback(self, 'x_min', 'x_max'):
             self.x_min = x_min
             self.x_max = x_max
+
+        self.x_limits_pixel = self.wcsaxes_active
 
     def _reset_y_limits(self, *event):
         if self.normalize:

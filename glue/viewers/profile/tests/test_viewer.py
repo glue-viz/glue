@@ -246,6 +246,7 @@ def test_wcsaxes_profile():
     # A display unit override switches back to plain numeric world values
     viewer.state.x_display_unit = 'GHz'
     assert not viewer.state.wcsaxes_active
+    assert not viewer.state.x_limits_pixel
     x, y = viewer.state.layers[0].profile
     assert_allclose(x, [1, 2, 3])
     assert_allclose((viewer.state.x_min, viewer.state.x_max), (1, 3))
@@ -254,10 +255,43 @@ def test_wcsaxes_profile():
     # And going back to native units restores WCSAxes formatting
     viewer.state.x_display_unit = 'Hz'
     assert viewer.state.wcsaxes_active
+    assert viewer.state.x_limits_pixel
     x, y = viewer.state.layers[0].profile
     assert_allclose(x, [0, 1, 2])
     assert_allclose((viewer.state.x_min, viewer.state.x_max), (-0.5, 2.5))
     assert viewer.axes.wcs is d1.coords
+
+
+def test_wcsaxes_limits_mode_mismatch():
+
+    # x limits from a session saved in the other mode (e.g. world values from
+    # a plain-axes viewer restored into a WCSAxes viewer) cannot be
+    # reinterpreted and should be reset
+
+    wcs1 = WCS(naxis=1)
+    wcs1.wcs.ctype = ['FREQ']
+    wcs1.wcs.cunit = ['GHz']
+    wcs1.wcs.set()
+
+    d1 = Data(f1=[1., 2., 3.], label='d1')
+    d1.coords = wcs1
+
+    app = Application()
+    app.data_collection.append(d1)
+
+    viewer = _wcsaxes_viewer(app, d1)
+    assert viewer.state.x_limits_pixel
+
+    # Simulate a state restored from a plain-axes session, which stored
+    # world values as the x limits
+    viewer.state.x_min = 1.e9
+    viewer.state.x_max = 3.e9
+    viewer.state.x_limits_pixel = False
+
+    viewer._set_wcs()
+
+    assert viewer.state.x_limits_pixel
+    assert_allclose((viewer.state.x_min, viewer.state.x_max), (-0.5, 2.5))
 
 
 def test_wcsaxes_identity_fallback():

@@ -45,9 +45,6 @@ class MatplotlibProfileMixin(object):
 
     def _set_wcs(self, before=None, after=None):
 
-        if not self.state.wcsaxes:
-            return
-
         if self.state.reference_data is None or self.state.x_att_pixel is None:
             return
 
@@ -55,6 +52,16 @@ class MatplotlibProfileMixin(object):
         # but the actual selection doesn't - so we avoid resetting the WCS in
         # this case.
         if after is not None and before is after:
+            return
+
+        # x limits saved in the other mode (world/display values vs pixel
+        # coordinates) cannot be reinterpreted - reset them. This matters for
+        # sessions restored into a viewer whose mode differs from the one
+        # they were saved in.
+        if self.state.x_limits_pixel != self.state.wcsaxes_active:
+            self.state._reset_x_limits()
+
+        if not self.state.wcsaxes:
             return
 
         if self.state.wcsaxes_active:
