@@ -738,20 +738,26 @@ def test_wcs_autolink_low_level_disjoint_same_ndim():
         WCSLink(data1, data2)
 
 
-def test_wcs_autolink_low_level_world_order_mismatch():
+def test_wcs_autolink_low_level_world_order_permutation():
 
     # Matched world axes in different orders on the two sides would be
     # silently transposed by positional Quantity pairing, so such low-level
-    # pairs are refused.
+    # pairs are linked through explicitly type-matched world values,
+    # including unit conversion.
 
-    data1 = _low_level_data('Data 1', SimpleLowLevelWCS((1, 1), HPC_TYPES, ['arcsec'] * 2), (3, 4))
-    data2 = _low_level_data('Data 2', SimpleLowLevelWCS((1, 1), HPC_TYPES[::-1], ['arcsec'] * 2), (3, 4))
+    data1 = _low_level_data('Data 1', SimpleLowLevelWCS((1, 2), HPC_TYPES, ['arcsec'] * 2), (3, 4))
+    data2 = _low_level_data('Data 2', SimpleLowLevelWCS((1, 1), HPC_TYPES[::-1], ['arcmin'] * 2), (3, 4))
 
     dc = DataCollection([data1, data2])
-    assert wcs_autolink(dc) == []
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert len(link) == 4
 
-    with pytest.raises(IncompatibleWCS):
-        WCSLink(data1, data2)
+    # lon = pixel0 arcsec, lat = 2 * pixel1 arcsec on one side;
+    # lat, lon = pixels in arcmin on the other
+    assert_allclose(link.forwards(3.0, 6.0), (0.2, 0.05))
+    assert_allclose(link.backwards(0.2, 0.05), (3.0, 6.0))
 
 
 def test_wcs_autolink_ndim_mismatch():
@@ -804,19 +810,104 @@ def test_wcs_autolink_low_level_11d():
 
 def test_wcs_autolink_all_axes_coupled():
 
-    # A 3D WCS whose matched world axes are coupled to every pixel axis
-    # against a 2D dataset: the sliced WCSes end up with incompatible world
-    # objects, which should be skipped cleanly (regression test for an
-    # IndexError caused by slicing_axes1/slicing_axes2 aliasing one list).
+    # A 3D WCS whose matched world axes are also weakly coupled to the pixel
+    # axis of an unmatched world axis (time), against a 2D dataset: the
+    # dispensable time axis is sliced away (the link is exact at its first
+    # exposure) so that the celestial axes can be linked. This is also a
+    # regression test for an IndexError caused by slicing_axes1/slicing_axes2
+    # aliasing one list.
 
     data1 = _low_level_data('Data 1', FullyCoupledLowLevelWCS(), (2, 3, 4))
     data2 = _low_level_data('Data 2', SimpleLowLevelWCS((1, 1), HPC_TYPES, ['arcsec'] * 2), (3, 4))
 
     dc = DataCollection([data1, data2])
-    assert wcs_autolink(dc) == []
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert len(link) == 4
 
-    with pytest.raises(IncompatibleWCS):
-        WCSLink(data1, data2)
+    # The time pixel axis (numpy 2) is sliced away at index 0
+    assert [cid.axis for cid in link.cids1] == [1, 0]
+    assert [cid.axis for cid in link.cids2] == [1, 0]
+
+    # At time pixel 0: lon = p1 + p2, lat = p1 - p2, and the second dataset
+    # has world == pixel
+    assert_allclose(link.forwards(3.0, 1.0), (4.0, 2.0))
+    assert_allclose(link.backwards(4.0, 2.0), (3.0, 1.0))
+
+
+class SJILikeWCS(SimpleLowLevelWCS):
+    """3D imager: celestial world axes weakly coupled to the time axis."""
+
+    def __init__(self):
+        super().__init__((1, 1, 1),
+                         HPC_TYPES + ['time'],
+                         ['arcsec', 'arcsec', 's'])
+
+    @property
+    def axis_correlation_matrix(self):
+        return np.array([[True, False, True],
+                         [False, True, True],
+                         [False, False, True]])
+
+    def pixel_to_world_values(self, p0, p1, p2):
+        p0, p1, p2 = np.asarray(p0), np.asarray(p1), np.asarray(p2)
+        return p0 + 0.1 * p2, p1 + 0.1 * p2, p2
+
+    def world_to_pixel_values(self, lon, lat, time):
+        lon, lat, time = np.asarray(lon), np.asarray(lat), np.asarray(time)
+        return lon - 0.1 * time, lat - 0.1 * time, time
+
+
+class RasterLikeWCS(SimpleLowLevelWCS):
+    """3D spectrograph: (wavelength, lat, lon) with coupled celestial axes."""
+
+    def __init__(self):
+        super().__init__((1, 1, 1),
+                         ['em.wl'] + HPC_TYPES[::-1],
+                         ['m', 'arcsec', 'arcsec'])
+
+    @property
+    def axis_correlation_matrix(self):
+        return np.array([[True, False, False],
+                         [False, True, True],
+                         [False, True, True]])
+
+    def pixel_to_world_values(self, w0, w1, w2):
+        w0, w1, w2 = np.asarray(w0), np.asarray(w1), np.asarray(w2)
+        return 2 * w0, w1 + w2, w1 - w2
+
+    def world_to_pixel_values(self, wl, lat, lon):
+        wl, lat, lon = np.asarray(wl), np.asarray(lat), np.asarray(lon)
+        return wl / 2, (lat + lon) / 2, (lat - lon) / 2
+
+
+def test_wcs_autolink_iris_like():
+
+    # The IRIS SJI + raster shape: an imager whose celestial axes are weakly
+    # coupled to its time axis, and a spectrograph whose coupled celestial
+    # axes appear in the opposite world order. The imager's time axis must be
+    # sliced away (the link is exact at its first exposure) and the celestial
+    # values permuted by physical type rather than paired positionally.
+
+    data1 = _low_level_data('sji', SJILikeWCS(), (2, 3, 4))
+    data2 = _low_level_data('raster', RasterLikeWCS(), (2, 3, 4))
+
+    dc = DataCollection([data1, data2])
+    links = wcs_autolink(dc)
+    assert len(links) == 1
+    link = links[0]
+    assert len(link) == 4
+
+    # The imager keeps its celestial pixel axes (numpy 2 and 1), the
+    # spectrograph keeps numpy 1 and 0 (the wavelength axis is sliced away)
+    assert [cid.axis for cid in link.cids1] == [2, 1]
+    assert [cid.axis for cid in link.cids2] == [1, 0]
+
+    # At time pixel 0: lon = sji_x, lat = sji_y; on the spectrograph
+    # lat = w1 + w2 and lon = w1 - w2
+    assert_allclose(link.forwards(3.0, 1.0), (2.0, -1.0))
+    assert_allclose(link.backwards(2.0, -1.0), (3.0, 1.0))
 
 
 def test_wcs_offset_approximation():

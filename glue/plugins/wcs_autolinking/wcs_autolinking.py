@@ -1,6 +1,7 @@
 import copy
 
 import numpy as np
+from astropy import units as u
 from astropy.wcs import WCS
 from astropy.wcs.utils import pixel_to_pixel
 from astropy.wcs.wcsapi import (BaseHighLevelWCS, BaseLowLevelWCS,
@@ -78,13 +79,16 @@ class IncompatibleWCS(Exception):
     pass
 
 
-def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
+def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2,
+                           forwards=None, backwards=None):
 
-    def forwards(*pixel_input):
-        return pixel_to_pixel(wcs1, wcs2, *pixel_input)
+    if forwards is None:
+        def forwards(*pixel_input):
+            return pixel_to_pixel(wcs1, wcs2, *pixel_input)
 
-    def backwards(*pixel_input):
-        return pixel_to_pixel(wcs2, wcs1, *pixel_input)
+    if backwards is None:
+        def backwards(*pixel_input):
+            return pixel_to_pixel(wcs2, wcs1, *pixel_input)
 
     pixel_input = [0] * len(pixel_cids1)
 
@@ -97,6 +101,67 @@ def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2):
         return None, None, None, None
 
     return pixel_cids1, pixel_cids2, forwards, backwards
+
+
+def kept_numpy_axes(wcs_ll, matched_world_axes):
+    """
+    The numpy axes to keep when slicing ``wcs_ll`` down to its matched world
+    axes: every pixel axis correlated with a matched world axis, except that
+    pixel axes also driving unmatched world axes are sliced away as long as
+    every matched world axis remains supported by another pixel axis (e.g.
+    the time axis of an SJI cube, which the celestial axes are weakly
+    coupled to - the link is then exact at the first exposure).
+    """
+    matrix = wcs_ll.axis_correlation_matrix
+    keep = set()
+    for world_axis in matched_world_axes:
+        keep |= {int(pixel_axis) for pixel_axis in np.nonzero(matrix[world_axis])[0]}
+    unmatched = [w for w in range(wcs_ll.world_n_dim) if w not in matched_world_axes]
+    for pixel_axis in sorted(keep):
+        if any(matrix[w, pixel_axis] for w in unmatched):
+            trial = keep - {pixel_axis}
+            if trial and all(any(matrix[w, p] for p in trial) for w in matched_world_axes):
+                keep = trial
+    # pixel axes are in x-fastest order, numpy axes are reversed
+    return {int(wcs_ll.pixel_n_dim - 1 - pixel_axis) for pixel_axis in keep}
+
+
+def permuted_values_functions(wcs1, wcs2):
+    """
+    Pixel-to-pixel transform functions for two sliced low-level WCSes whose
+    matched world axes have the same physical types in a different order,
+    going through world *values* with an explicit type-matched permutation
+    (and unit conversion). pixel_to_pixel cannot be used for these: wrapped
+    low-level WCSes produce plain Quantity world objects, which it pairs
+    positionally, silently transposing the axes.
+    """
+    types1 = [str(t) for t in wcs1.world_axis_physical_types]
+    types2 = [str(t) for t in wcs2.world_axis_physical_types]
+    units1 = [unit or '' for unit in wcs1.world_axis_units]
+    units2 = [unit or '' for unit in wcs2.world_axis_units]
+
+    def convert(values, unit_in, unit_out):
+        if unit_in == unit_out:
+            return values
+        return (np.asarray(values) * u.Unit(unit_in)).to_value(u.Unit(unit_out))
+
+    def transform(wcs_in, wcs_out, types_in, units_in, types_out, units_out, pixel_input):
+        world_in = wcs_in.pixel_to_world_values(*pixel_input)
+        if wcs_in.world_n_dim == 1:
+            world_in = (world_in,)
+        world_out = []
+        for world_axis, physical_type in enumerate(types_out):
+            in_axis = types_in.index(physical_type)
+            world_out.append(convert(world_in[in_axis], units_in[in_axis], units_out[world_axis]))
+        return wcs_out.world_to_pixel_values(*world_out)
+
+    def forwards(*pixel_input):
+        return transform(wcs1, wcs2, types1, units1, types2, units2, pixel_input)
+
+    def backwards(*pixel_input):
+        return transform(wcs2, wcs1, types2, units2, types1, units1, pixel_input)
+
+    return forwards, backwards
 
 
 @link_helper(category='Astronomy')
@@ -165,8 +230,8 @@ class WCSLink(MultiLink):
             wcs1_celestial_physical_types = []
             wcs2_celestial_physical_types = []
 
-            slicing_axes1 = []
-            slicing_axes2 = []
+            matched_world1 = []
+            matched_world2 = []
 
             cids1 = data1.pixel_component_ids
             cids2 = data2.pixel_component_ids
@@ -179,57 +244,34 @@ class WCSLink(MultiLink):
                     wcs1_ll.has_celestial and wcs2_ll.has_celestial):
                 wcs1_celestial_physical_types = wcs1_ll.celestial.world_axis_physical_types
                 wcs2_celestial_physical_types = wcs2_ll.celestial.world_axis_physical_types
-
-                cids1_celestial = [cids1[wcs1_ll.wcs.naxis - wcs1_ll.wcs.lng - 1],
-                                   cids1[wcs1_ll.wcs.naxis - wcs1_ll.wcs.lat - 1]]
-                cids2_celestial = [cids2[wcs2_ll.wcs.naxis - wcs2_ll.wcs.lng - 1],
-                                   cids2[wcs2_ll.wcs.naxis - wcs2_ll.wcs.lat - 1]]
-
-                if wcs1_ll.celestial.wcs.lng > wcs1_ll.celestial.wcs.lat:
-                    cids1_celestial = cids1_celestial[::-1]
-
-                if wcs2_ll.celestial.wcs.lng > wcs2_ll.celestial.wcs.lat:
-                    cids2_celestial = cids2_celestial[::-1]
-
-                slicing_axes1 = [cids1_celestial[0].axis, cids1_celestial[1].axis]
-                slicing_axes2 = [cids2_celestial[0].axis, cids2_celestial[1].axis]
+                matched_world1 = [wcs1_ll.wcs.lng, wcs1_ll.wcs.lat]
+                matched_world2 = [wcs2_ll.wcs.lng, wcs2_ll.wcs.lat]
 
             wcs1_sliced_physical_types = list(wcs1_celestial_physical_types)
             wcs2_sliced_physical_types = list(wcs2_celestial_physical_types)
-
-            # For each pair of matching physical types, keep all the pixel
-            # axes correlated with the matched world axis - APE 14 guarantees
-            # neither a one-to-one nor a reversed world/pixel correspondence
-            # (e.g. celestial -TAB axes couple two pixel axes to each world
-            # axis). Pixel axes are in x-fastest order, hence the reversal to
-            # get numpy axes.
-            matrix1 = wcs1_ll.axis_correlation_matrix
-            matrix2 = wcs2_ll.axis_correlation_matrix
 
             for i, physical_type1 in enumerate(wcs1_ll.world_axis_physical_types):
                 if physical_type1 is not None:
                     for j, physical_type2 in enumerate(wcs2_ll.world_axis_physical_types):
                         if physical_type1 == physical_type2:
                             if physical_type1 not in wcs1_sliced_physical_types:
-                                for pixel_axis in np.nonzero(matrix1[i])[0]:
-                                    numpy_axis = int(wcs1_ll.pixel_n_dim - 1 - pixel_axis)
-                                    if numpy_axis not in slicing_axes1:
-                                        slicing_axes1.append(numpy_axis)
+                                matched_world1.append(i)
                                 wcs1_sliced_physical_types.append(physical_type1)
                             if physical_type2 not in wcs2_sliced_physical_types:
-                                for pixel_axis in np.nonzero(matrix2[j])[0]:
-                                    numpy_axis = int(wcs2_ll.pixel_n_dim - 1 - pixel_axis)
-                                    if numpy_axis not in slicing_axes2:
-                                        slicing_axes2.append(numpy_axis)
+                                matched_world2.append(j)
                                 wcs2_sliced_physical_types.append(physical_type2)
+
+            # For each matched world axis, keep the pixel axes it is
+            # correlated with - APE 14 guarantees neither a one-to-one nor a
+            # reversed world/pixel correspondence (e.g. celestial -TAB axes
+            # couple two pixel axes to each world axis).
+            slicing_axes1 = sorted(kept_numpy_axes(wcs1_ll, matched_world1), reverse=True)
+            slicing_axes2 = sorted(kept_numpy_axes(wcs2_ll, matched_world2), reverse=True)
 
             if not slicing_axes1 or not slicing_axes2:
                 raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
 
-            slicing_axes1 = sorted(slicing_axes1, reverse=True)
-            slicing_axes2 = sorted(slicing_axes2, reverse=True)
-
-            # Generate slices for the wcs slicing
+            # Generate slices for the wcs slicing (numpy order)
             slices1 = [slice(None)] * wcs1_ll.pixel_n_dim
             slices2 = [slice(None)] * wcs2_ll.pixel_n_dim
 
@@ -244,31 +286,35 @@ class WCSLink(MultiLink):
             wcs1_sliced = SlicedLowLevelWCS(wcs1_ll, tuple(slices1))
             wcs2_sliced = SlicedLowLevelWCS(wcs2_ll, tuple(slices2))
 
-            # When a wrapped low-level WCS is involved, pixel_to_pixel pairs
-            # its plain-Quantity world objects positionally, so if the matched
-            # world axes appear in different orders on the two sides the link
-            # would silently transpose them - refuse instead. Natively
-            # high-level pairs are safe: their typed world objects (e.g.
-            # SkyCoord) are matched by class, not position. Linking reordered
-            # low-level pairs would need an explicit physical-type permutation
-            # of the world values.
-            types1 = list(wcs1_sliced.world_axis_physical_types)
-            types2 = list(wcs2_sliced.world_axis_physical_types)
-            if (not both_high_level and types1 != types2 and
-                    sorted(map(str, types1)) == sorted(map(str, types2))):
-                raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label} "
-                                      f"(matched world axes are in different orders)")
-
-            wcs1_final = HighLevelWCSWrapper(copy.copy(wcs1_sliced))
-            wcs2_final = HighLevelWCSWrapper(copy.copy(wcs2_sliced))
-
             # slicing_axes are sorted in descending numpy-axis order, which
             # matches the pixel argument order of the sliced WCSes
             cids1_sliced = [cids1[x] for x in slicing_axes1]
             cids2_sliced = [cids2[x] for x in slicing_axes2]
 
-            pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
-                wcs1_final, wcs2_final, cids1_sliced, cids2_sliced)
+            types1 = [str(t) for t in wcs1_sliced.world_axis_physical_types]
+            types2 = [str(t) for t in wcs2_sliced.world_axis_physical_types]
+
+            if not both_high_level and types1 != types2 and sorted(types1) == sorted(types2):
+                if len(set(types1)) != len(types1) or 'None' in types1:
+                    # Duplicated or unknown physical types cannot be paired
+                    # reliably across a reordering
+                    raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
+                # Wrapped low-level WCSes produce plain-Quantity world
+                # objects, which pixel_to_pixel pairs positionally - that
+                # would silently transpose the axes here, so transform
+                # through explicitly type-matched world values instead.
+                # Natively high-level pairs don't need this: their typed
+                # world objects (e.g. SkyCoord) are matched by class.
+                forwards_permuted, backwards_permuted = permuted_values_functions(wcs1_sliced, wcs2_sliced)
+                pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
+                    None, None, cids1_sliced, cids2_sliced,
+                    forwards=forwards_permuted, backwards=backwards_permuted)
+            else:
+                wcs1_final = HighLevelWCSWrapper(copy.copy(wcs1_sliced))
+                wcs2_final = HighLevelWCSWrapper(copy.copy(wcs2_sliced))
+
+                pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
+                    wcs1_final, wcs2_final, cids1_sliced, cids2_sliced)
 
             self._physical_types_1 = wcs1_sliced_physical_types
             self._physical_types_2 = wcs2_sliced_physical_types
