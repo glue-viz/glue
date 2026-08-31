@@ -4,6 +4,7 @@ from glue.core.hub import HubListener
 import numpy as np
 
 from glue.core import Subset, Data
+from glue.core.coordinates import LegacyCoordinates
 from echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -54,6 +55,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
     normalize = DDCProperty(False, docstring='Whether to normalize all profiles '
                                              'to the [0:1] range')
 
+    #: Set to `True` by viewers whose axes are WCSAxes, enabling WCS-formatted
+    #: tick labels (see :attr:`~ProfileViewerState.wcsaxes_active`)
+    wcsaxes = False
+
     # TODO: add function to use
 
     def __init__(self, **kwargs):
@@ -96,6 +101,14 @@ class ProfileViewerState(MatplotlibDataViewerState):
             old_unit != new_unit and
             self.reference_data is not None
         ):
+
+            if self.wcsaxes and self._wcsaxes_with_unit(old_unit) != self._wcsaxes_with_unit(new_unit):
+                # Crossing into or out of WCSAxes mode switches the x axis
+                # between pixel and world coordinates, so the previous limits
+                # cannot be converted - reset them instead.
+                self._reset_x_limits()
+                self._previous_x_att = self.x_att
+                return
 
             limits = np.array([self.x_min, self.x_max])
 
@@ -169,6 +182,45 @@ class ProfileViewerState(MatplotlibDataViewerState):
     def _display_world(self):
         return getattr(self.reference_data, 'coords', None) is not None
 
+    @property
+    def wcsaxes_active(self):
+        """
+        Whether profiles are drawn in pixel coordinates, with world tick
+        labels formatted by WCSAxes. This is the case when the viewer uses
+        WCSAxes, a world component with real coordinates is shown on the x
+        axis, and no display unit override is active - a unit override needs
+        plain numeric axes.
+        """
+        return self.wcsaxes and self._wcsaxes_with_unit(self.x_display_unit)
+
+    def _wcsaxes_with_unit(self, unit):
+        coords = getattr(self.reference_data, 'coords', None)
+        if coords is None or isinstance(coords, LegacyCoordinates):
+            return False
+        if self.x_att is None or self.x_att in self.reference_data.pixel_component_ids:
+            return False
+        native = self.reference_data.get_component(self.x_att).units or ''
+        return (unit or '') == native
+
+    @property
+    def wcsaxes_slice(self):
+        """
+        Returns slicing information usable by WCSAxes - an iterable in WCS
+        axis order with ``'x'`` for the profile dimension and the current
+        slice index for the others.
+        """
+        if self.reference_data is None or self.x_att_pixel is None:
+            return None
+        slices = []
+        for i in range(self.reference_data.ndim):
+            if i == self.x_att_pixel.axis:
+                slices.append('x')
+            elif self.slices is not None and len(self.slices) == self.reference_data.ndim:
+                slices.append(self.slices[i])
+            else:
+                slices.append(0)
+        return tuple(slices[::-1])
+
     @defer_draw
     def _update_att(self, *args):
         if self.x_att is not None:
@@ -198,6 +250,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         if self.x_att in data.pixel_component_ids:
             x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
+        elif self.wcsaxes_active:
+            # Profiles are plotted in pixel coordinates when WCSAxes draws
+            # the world tick labels
+            x_min, x_max = -0.5, data.shape[self.x_att_pixel.axis] - 0.5
         else:
             axis = data.world_component_ids.index(self.x_att)
             # Use the same spine as the profile, which follows the slice
@@ -207,10 +263,11 @@ class ProfileViewerState(MatplotlibDataViewerState):
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
 
-        converter = UnitConverter()
-        x_min, x_max = converter.to_unit(self.reference_data,
-                                         self.x_att, np.array([x_min, x_max]),
-                                         self.x_display_unit)
+        if not self.wcsaxes_active:
+            converter = UnitConverter()
+            x_min, x_max = converter.to_unit(self.reference_data,
+                                             self.x_att, np.array([x_min, x_max]),
+                                             self.x_display_unit)
 
         with delay_callback(self, 'x_min', 'x_max'):
             self.x_min = x_min
@@ -537,12 +594,19 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             else:
                 axis_view = [0] * data.ndim
                 axis_view[pix_cid.axis] = slice(None)
-            axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
             converter = UnitConverter()
-            axis_values = converter.to_unit(self.viewer_state.reference_data,
-                                            self.viewer_state.x_att, axis_values,
-                                            self.viewer_state.x_display_unit)
+
+            if self.viewer_state.wcsaxes_active:
+                # WCSAxes formats world tick labels from the pixel positions,
+                # so the profile is plotted in pixel coordinates
+                axis_values = data[self.viewer_state.x_att_pixel, tuple(axis_view)]
+            else:
+                axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
+                axis_values = converter.to_unit(self.viewer_state.reference_data,
+                                                self.viewer_state.x_att, axis_values,
+                                                self.viewer_state.x_display_unit)
+
             profile_values = converter.to_unit(data, self.attribute, profile_values,
                                                self.viewer_state.y_display_unit)
 

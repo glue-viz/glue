@@ -196,6 +196,119 @@ def test_unit_conversion_slice():
     assert_allclose(y, [1000, 2000, 3000])
 
 
+def _wcsaxes_viewer(app, data):
+    viewer = SimpleProfileViewer(app.session, wcs=True)
+    viewer.register_to_hub(app.session.hub)
+    viewer.add_data(data)
+    return viewer
+
+
+def test_wcsaxes_profile():
+
+    from astropy.visualization.wcsaxes.frame import RectangularFrame1D
+
+    settings.UNIT_CONVERTER = 'test-spectral2'
+
+    wcs1 = WCS(naxis=1)
+    wcs1.wcs.ctype = ['FREQ']
+    wcs1.wcs.crval = [1]
+    wcs1.wcs.cdelt = [1]
+    wcs1.wcs.crpix = [1]
+    wcs1.wcs.cunit = ['GHz']
+
+    d1 = Data(f1=[1., 2., 3.], label='d1')
+    d1.coords = wcs1
+
+    app = Application()
+    app.data_collection.append(d1)
+
+    viewer = _wcsaxes_viewer(app, d1)
+
+    # With world coordinates in native units, WCSAxes formats the ticks and
+    # the profile is plotted in pixel coordinates
+    assert viewer.state.wcsaxes
+    assert viewer.state.wcsaxes_active
+    assert isinstance(viewer.axes.coords.frame, RectangularFrame1D)
+    assert viewer.axes.wcs is d1.coords
+
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose(y, [1, 2, 3])
+    assert_allclose((viewer.state.x_min, viewer.state.x_max), (-0.5, 2.5))
+
+    # ROIs are applied in pixel coordinates to the pixel component
+    roi = XRangeROI(0.5, 2.2)
+    viewer.apply_roi(roi)
+    assert len(d1.subsets) == 1
+    assert d1.subsets[0].subset_state.att == d1.pixel_component_ids[0]
+    assert_equal(d1.subsets[0].to_mask(), [0, 1, 1])
+
+    # A display unit override switches back to plain numeric world values
+    viewer.state.x_display_unit = 'GHz'
+    assert not viewer.state.wcsaxes_active
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [1, 2, 3])
+    assert_allclose((viewer.state.x_min, viewer.state.x_max), (1, 3))
+    assert viewer.axes.wcs is not d1.coords
+
+    # And going back to native units restores WCSAxes formatting
+    viewer.state.x_display_unit = 'Hz'
+    assert viewer.state.wcsaxes_active
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose((viewer.state.x_min, viewer.state.x_max), (-0.5, 2.5))
+    assert viewer.axes.wcs is d1.coords
+
+
+def test_wcsaxes_identity_fallback():
+
+    # Without real coords the axes fall back to an identity WCS, which
+    # behaves like a plain numeric axis
+
+    data = Data(y=[1., 2., 3.], label='d1')
+
+    app = Application()
+    app.data_collection.append(data)
+
+    viewer = _wcsaxes_viewer(app, data)
+
+    assert viewer.state.wcsaxes
+    assert not viewer.state.wcsaxes_active
+    assert viewer.axes.wcs.pixel_n_dim == 1
+
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose(y, [1, 2, 3])
+
+
+def test_wcsaxes_slices():
+
+    # For ndim > 1 the WCS is sliced along the non-profile axes
+
+    from glue.viewers.profile.tests.test_state import SimpleCoordinates
+
+    data = Data(label='d1')
+    data.coords = SimpleCoordinates()
+    data['x'] = np.arange(24).reshape((3, 4, 2)).astype(float)
+
+    app = Application()
+    app.data_collection.append(data)
+
+    viewer = _wcsaxes_viewer(app, data)
+
+    assert viewer.state.wcsaxes_active
+    assert viewer.state.wcsaxes_slice == (0, 0, 'x')
+
+    x, _ = viewer.state.layers[0].profile
+    assert_allclose(x, [0, 1, 2])
+
+    viewer.state.slices = (0, 2, 1)
+    assert viewer.state.wcsaxes_slice == (1, 2, 'x')
+
+    viewer.state.x_att = data.world_component_ids[1]
+    assert viewer.state.wcsaxes_slice == (1, 'x', 0)
+
+
 def test_indexed_data():
 
     # Make sure that the profile viewer works properly with IndexedData objects

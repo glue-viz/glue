@@ -129,3 +129,26 @@ class TestExportPython(BaseTestExportPython):
     def test_profile_att(self, tmpdir):
         self.viewer.layers[0].state.attribute = self.data.id['y']
         self.assert_same(tmpdir)
+
+
+class TestExportPythonWCSAxes(TestExportPython):
+
+    # Run all the export tests again with a WCSAxes-based viewer, where the
+    # profile is plotted in pixel coordinates and the WCS formats the ticks
+
+    def setup_method(self, method):
+
+        self.data = Data(label='d1')
+        self.data.coords = SimpleCoordinates()
+        with NumpyRNGContext(12345):
+            self.data['x'] = random_with_nan(48, 5).reshape((6, 4, 2))
+            self.data['y'] = random_with_nan(48, 12).reshape((6, 4, 2))
+        self.data_collection = DataCollection([self.data])
+        self.app = Application(self.data_collection)
+        self.viewer = SimpleProfileViewer(self.app.session, wcs=True)
+        self.viewer.register_to_hub(self.app.session.hub)
+        self.viewer.add_data(self.data)
+        # Make legend location deterministic
+        self.viewer.state.legend.location = 'lower left'
+
+        assert self.viewer.state.wcsaxes_active
