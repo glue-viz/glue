@@ -79,7 +79,7 @@ class IncompatibleWCS(Exception):
     pass
 
 
-def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2,
+def get_cids_and_functions(wcs1, wcs2, pixel_cids1, pixel_cids2, *,
                            forwards=None, backwards=None):
 
     if forwards is None:
@@ -145,7 +145,7 @@ def permuted_values_functions(wcs1, wcs2):
             return values
         return (np.asarray(values) * u.Unit(unit_in)).to_value(u.Unit(unit_out))
 
-    def transform(wcs_in, wcs_out, types_in, units_in, types_out, units_out, pixel_input):
+    def transform(wcs_in, wcs_out, pixel_input, *, types_in, units_in, types_out, units_out):
         world_in = wcs_in.pixel_to_world_values(*pixel_input)
         if wcs_in.world_n_dim == 1:
             world_in = (world_in,)
@@ -156,10 +156,12 @@ def permuted_values_functions(wcs1, wcs2):
         return wcs_out.world_to_pixel_values(*world_out)
 
     def forwards(*pixel_input):
-        return transform(wcs1, wcs2, types1, units1, types2, units2, pixel_input)
+        return transform(wcs1, wcs2, pixel_input, types_in=types1, units_in=units1,
+                         types_out=types2, units_out=units2)
 
     def backwards(*pixel_input):
-        return transform(wcs2, wcs1, types2, units2, types1, units1, pixel_input)
+        return transform(wcs2, wcs1, pixel_input, types_in=types2, units_in=units2,
+                         types_out=types1, units_out=units1)
 
     return forwards, backwards
 
