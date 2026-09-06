@@ -647,6 +647,9 @@ def test_wcs_autolink_low_level_and_fits_wcs():
     # low-level pixel p -> 2 * p Hz; astropy world = pixel + 1, so pixel = 2 * p - 1
     assert_allclose(link.forwards(3.0), 5.0)
     assert_allclose(link.backwards(5.0), 3.0)
+    pixels = np.arange(6)
+    assert_allclose(link.forwards(pixels), 2 * pixels - 1)
+    assert_allclose(link.backwards(2 * pixels - 1), pixels)
 
 
 def test_wcs_autolink_low_level_disjoint():

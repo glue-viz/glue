@@ -285,8 +285,12 @@ class WCSLink(MultiLink):
                 if j not in slicing_axes2:
                     slices2[j] = 0
 
-            wcs1_sliced = SlicedLowLevelWCS(wcs1_ll, tuple(slices1))
-            wcs2_sliced = SlicedLowLevelWCS(wcs2_ll, tuple(slices2))
+            # Avoid a no-op slice: Astropy 6's sliced wrapper cannot handle
+            # the scalar world/pixel return values of an already-1D WCS.
+            wcs1_sliced = (wcs1_ll if len(slicing_axes1) == wcs1_ll.pixel_n_dim
+                           else SlicedLowLevelWCS(wcs1_ll, tuple(slices1)))
+            wcs2_sliced = (wcs2_ll if len(slicing_axes2) == wcs2_ll.pixel_n_dim
+                           else SlicedLowLevelWCS(wcs2_ll, tuple(slices2)))
 
             # slicing_axes are sorted in descending numpy-axis order, which
             # matches the pixel argument order of the sliced WCSes
