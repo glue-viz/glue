@@ -39,8 +39,11 @@ def python_export_profile_layer(layer, *args):
         script += "profile_values = layer_data.compute_statistic('{0}', cid, axis=collapsed_axes)\n\n".format(layer._viewer_state.function)
 
     script += "# Extract the values for the x-axis\n"
-    script += "axis_view = [0] * layer_data.ndim\n"
-    script += "axis_view[profile_axis] = slice(None)\n"
+    if layer._viewer_state.function == 'slice':
+        script += "axis_view = data_view\n"
+    else:
+        script += "axis_view = [0] * layer_data.ndim\n"
+        script += "axis_view[profile_axis] = slice(None)\n"
     # NOTE: x values come from base_data - indexing a Subset applies the
     # subset mask, which would give a different length than profile_values
     script += "profile_x_values = base_data['{0}', tuple(axis_view)]\n".format(layer._viewer_state.x_att)

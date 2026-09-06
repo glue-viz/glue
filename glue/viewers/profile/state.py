@@ -531,8 +531,11 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
         else:
-            axis_view = [0] * data.ndim
-            axis_view[pix_cid.axis] = slice(None)
+            if self.viewer_state.function == 'slice':
+                axis_view = view
+            else:
+                axis_view = [0] * data.ndim
+                axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
             converter = UnitConverter()
