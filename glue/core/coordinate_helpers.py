@@ -101,7 +101,13 @@ def world2pixel_single_axis(wcs, *world, pixel_axis=None):
 
     # Now find all the world coordinates that are needed to calculate this
     # world coordinate, using the axis correlation matrix
-    world_dep = wcs.axis_correlation_matrix[:, pixel_axis]
+    matrix = wcs.axis_correlation_matrix
+    world_dep = matrix[:, pixel_axis].copy()
+    # Also keep world axes that share a pixel axis with those: they are
+    # needed to invert the requested pixel axis (e.g. the time axis of a
+    # cube whose celestial axes depend on time) - transitive closure
+    for _ in range(matrix.shape[0]):
+        world_dep |= (matrix & matrix[world_dep].any(axis=0)).any(axis=1)
 
     for iw, w in enumerate(world):
         if world_dep[iw]:
