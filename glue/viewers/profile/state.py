@@ -109,7 +109,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
             if self.wcsaxes and self._wcsaxes_with_unit(old_unit) != self._wcsaxes_with_unit(new_unit):
                 # Crossing into or out of WCSAxes mode switches the x axis
                 # between pixel and world coordinates, so the previous limits
-                # cannot be converted - reset them instead.
+                # cannot be converted: reset them (as the viewer's _set_wcs
+                # already does) instead.
                 self._reset_x_limits()
                 self._previous_x_att = self.x_att
                 return
@@ -203,7 +204,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return False
         if self.x_att is None or self.x_att in self.reference_data.pixel_component_ids:
             return False
-        native = self.reference_data.get_component(self.x_att).units or ''
+        native = ''
+        if isinstance(self.reference_data, Data):  # e.g. not for IndexedData
+            native = self.reference_data.get_component(self.x_att).units or ''
         return (unit or '') == native
 
     @property
@@ -417,7 +420,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return 2
         elif name == 'reference_data':
             return 1.5
-        elif name.endswith(('_min', '_max')):
+        elif name.endswith(('_min', '_max')) or name == 'x_limits_pixel':
+            # Restore after x_att, whose callback resets the limits
             return 0
         else:
             return 1

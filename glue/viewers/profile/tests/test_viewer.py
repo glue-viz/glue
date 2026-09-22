@@ -2,6 +2,7 @@ from astropy import units as u
 from astropy.wcs import WCS
 
 import numpy as np
+import pytest
 from numpy.testing import assert_equal, assert_allclose
 
 from glue.tests.visual.helpers import visual_test
@@ -12,6 +13,7 @@ from glue.config import settings, unit_converter
 from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
 from glue.core.roi import XRangeROI
 from glue.core.data_derived import IndexedData
+from glue.core.tests.test_state import clone
 
 
 @visual_test
@@ -230,6 +232,7 @@ def test_wcsaxes_profile():
     assert viewer.state.wcsaxes_active
     assert isinstance(viewer.axes.coords.frame, RectangularFrame1D)
     assert viewer.axes.wcs is d1.coords
+    assert viewer.axes.yaxis.get_visible()
 
     x, y = viewer.state.layers[0].profile
     assert_allclose(x, [0, 1, 2])
@@ -294,6 +297,33 @@ def test_wcsaxes_limits_mode_mismatch():
     assert_allclose((viewer.state.x_min, viewer.state.x_max), (-0.5, 2.5))
 
 
+def test_wcsaxes_limits_round_trip():
+
+    # A saved zoom survives a session round trip in WCSAxes mode also when
+    # x_att is not the default axis: x_limits_pixel has to be restored after
+    # x_att, whose callback resets the limits
+
+    wcs = WCS(naxis=2)
+    wcs.wcs.ctype = ['LINEAR', 'LINEAR']
+    wcs.wcs.cunit = ['m', 'm']
+    wcs.wcs.set()
+
+    data = Data(v=np.arange(12.).reshape((4, 3)), label='d1')
+    data.coords = wcs
+
+    app = Application()
+    app.data_collection.append(data)
+
+    viewer = _wcsaxes_viewer(app, data)
+    viewer.state.x_att = data.world_component_ids[1]
+    assert viewer.state.x_limits_pixel
+    viewer.state.x_min, viewer.state.x_max = 0.2, 1.8
+
+    state = clone(viewer.state)
+    assert state.x_limits_pixel
+    assert_allclose((state.x_min, state.x_max), (0.2, 1.8))
+
+
 def test_wcsaxes_identity_fallback():
 
     # Without real coords the axes fall back to an identity WCS, which
@@ -343,7 +373,8 @@ def test_wcsaxes_slices():
     assert viewer.state.wcsaxes_slice == (1, 'x', 0)
 
 
-def test_indexed_data():
+@pytest.mark.parametrize('wcs', [False, True])
+def test_indexed_data(wcs):
 
     # Make sure that the profile viewer works properly with IndexedData objects
 
@@ -363,7 +394,8 @@ def test_indexed_data():
     data_collection.append(data_4d)
     data_collection.append(data_2d)
 
-    viewer = application.new_data_viewer(SimpleProfileViewer)
+    viewer = SimpleProfileViewer(session, wcs=wcs)
+    viewer.register_to_hub(hub)
     viewer.add_data(data_2d)
 
     assert viewer.state.x_att is data_2d.world_component_ids[0]
