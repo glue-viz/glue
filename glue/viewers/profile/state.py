@@ -200,7 +200,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
             x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
         else:
             axis = data.world_component_ids.index(self.x_att)
-            axis_view = [0] * data.ndim
+            # Use the same spine as the profile, which follows the slice
+            # point when the collapse function is 'slice'
+            axis_view = list(self.slices) if self.function == 'slice' else [0] * data.ndim
             axis_view[axis] = slice(None)
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)

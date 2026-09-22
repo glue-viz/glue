@@ -233,6 +233,8 @@ def test_slice_world_coordinates(display_unit, linked):
         x, y = layer.profile
         assert_allclose(x, (1 + 10 * row + np.arange(4)) * scale)
         assert_allclose(y, data['flux'][row, :])
+        state.reset_limits()
+        assert_allclose([state.x_min, state.x_max], [x[0], x[-1]])
 
 
 def test_slice_function_linked():
