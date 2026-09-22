@@ -4,7 +4,12 @@ import pytest
 
 from numpy.testing import assert_allclose
 
+from astropy.wcs import WCS
+
 from glue.core import Data, Coordinates
+from glue.core.component_link import ComponentLink
+from glue.core.exceptions import IncompatibleDataException
+from glue.core.link_helpers import LinkSame
 from glue.core.tests.test_state import clone
 
 from ..state import ProfileViewerState, ProfileLayerState
@@ -199,9 +204,6 @@ class TestProfileViewerState:
 @pytest.mark.parametrize('display_unit', [None, 'cm'])
 @pytest.mark.parametrize('linked', [False, True])
 def test_slice_world_coordinates(display_unit, linked):
-    from astropy.wcs import WCS
-    from glue.core.link_helpers import LinkSame
-
     wcs = WCS(naxis=2)
     wcs.wcs.ctype = ['WAVE', 'LINEAR']
     wcs.wcs.cunit = ['m', '']
@@ -238,8 +240,6 @@ def test_slice_function_linked():
     # Slices are defined on the reference data and must be translated into
     # the pixel frame of other linked layers
 
-    from glue.core.link_helpers import LinkSame
-
     data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
     data2 = Data(y=np.arange(24).reshape((4, 3, 2)).astype(float), label='d2')
 
@@ -272,9 +272,6 @@ def test_slice_function_out_of_bounds():
     # A slice point that falls outside a linked layer raises
     # IncompatibleDataException instead of silently plotting wrong values
 
-    from glue.core.exceptions import IncompatibleDataException
-    from glue.core.link_helpers import LinkSame
-
     data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
     data2 = Data(y=np.arange(12).reshape((3, 2, 2)).astype(float), label='d2')
 
@@ -293,6 +290,40 @@ def test_slice_function_out_of_bounds():
 
     _, y = layer1.profile
     assert_allclose(y, data1['x'][:, 3, 1])
+
+    with pytest.raises(IncompatibleDataException):
+        layer2.profile
+
+    # The reference data is checked too: negative indices would otherwise
+    # wrap around silently
+    for slices in [(0, 9, 1), (0, -1, 1)]:
+        viewer_state.slices = slices
+        with pytest.raises(IncompatibleDataException):
+            layer1.profile
+
+
+def test_slice_function_nan_link():
+
+    # A link that gives NaN at the slice point disables the layer instead of
+    # failing on the conversion to an index
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(24).reshape((3, 4, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    p1, p2 = data1.pixel_component_ids, data2.pixel_component_ids
+    dc.add_link(LinkSame(p1[0], p2[0]))
+    dc.add_link(ComponentLink([p1[1]], p2[1], using=lambda x: x * np.nan))
+    dc.add_link(LinkSame(p1[2], p2[2]))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 1, 1)
 
     with pytest.raises(IncompatibleDataException):
         layer2.profile

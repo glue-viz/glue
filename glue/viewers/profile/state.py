@@ -454,25 +454,24 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         slices = list(self.viewer_state.slices or ())
         if len(slices) != ref.ndim:
             slices = [0] * ref.ndim
-        if data is ref:
-            view = slices
-        else:
-            # Translate the reference-data slice point into this dataset's
-            # own pixel indices through the pixel links
-            point = tuple(np.array([s]) for s in slices)
-            view = []
-            for axis in range(data.ndim):
-                if axis == pix_cid.axis:
-                    view.append(0)
-                    continue
+        # Translate the reference-data slice point into this dataset's own
+        # pixel indices through the pixel links
+        point = tuple(np.array([s]) for s in slices)
+        view = []
+        for axis in range(data.ndim):
+            if axis == pix_cid.axis:
+                view.append(slice(None))
+                continue
+            if data is ref:
+                index = slices[axis]
+            else:
                 try:
-                    index = int(np.round(ref[data.pixel_component_ids[axis], point][0]))
+                    index = np.round(ref[data.pixel_component_ids[axis], point][0])
                 except IncompatibleAttribute:
                     raise IncompatibleDataException()
-                if index < 0 or index >= data.shape[axis]:
-                    raise IncompatibleDataException()
-                view.append(index)
-        view[pix_cid.axis] = slice(None)
+            if not 0 <= index < data.shape[axis]:  # also False for NaN
+                raise IncompatibleDataException()
+            view.append(int(index))
         return tuple(view)
 
     def update_profile(self, update_limits=True):
