@@ -135,33 +135,24 @@ def permuted_values_functions(wcs1, wcs2):
     low-level WCSes produce plain Quantity world objects, which it pairs
     positionally, silently transposing the axes.
     """
-    types1 = [str(t) for t in wcs1.world_axis_physical_types]
-    types2 = [str(t) for t in wcs2.world_axis_physical_types]
-    units1 = [unit or '' for unit in wcs1.world_axis_units]
-    units2 = [unit or '' for unit in wcs2.world_axis_units]
 
-    def convert(values, unit_in, unit_out):
-        if unit_in == unit_out:
-            return values
-        return (np.asarray(values) * u.Unit(unit_in)).to_value(u.Unit(unit_out))
-
-    def transform(wcs_in, wcs_out, pixel_input, *, types_in, units_in, types_out, units_out):
+    def transform(wcs_in, wcs_out, pixel_input):
         world_in = wcs_in.pixel_to_world_values(*pixel_input)
-        if wcs_in.world_n_dim == 1:
-            world_in = (world_in,)
+        types_in, units_in = wcs_in.world_axis_physical_types, wcs_in.world_axis_units
         world_out = []
-        for world_axis, physical_type in enumerate(types_out):
+        for physical_type, unit_out in zip(wcs_out.world_axis_physical_types, wcs_out.world_axis_units):
             in_axis = types_in.index(physical_type)
-            world_out.append(convert(world_in[in_axis], units_in[in_axis], units_out[world_axis]))
+            value = world_in[in_axis]
+            if (units_in[in_axis] or '') != (unit_out or ''):
+                value = u.Quantity(value, units_in[in_axis]).to_value(unit_out)
+            world_out.append(value)
         return wcs_out.world_to_pixel_values(*world_out)
 
     def forwards(*pixel_input):
-        return transform(wcs1, wcs2, pixel_input, types_in=types1, units_in=units1,
-                         types_out=types2, units_out=units2)
+        return transform(wcs1, wcs2, pixel_input)
 
     def backwards(*pixel_input):
-        return transform(wcs2, wcs1, pixel_input, types_in=types2, units_in=units2,
-                         types_out=types1, units_out=units1)
+        return transform(wcs2, wcs1, pixel_input)
 
     return forwards, backwards
 
@@ -180,11 +171,10 @@ class WCSLink(MultiLink):
 
         wcs1, wcs2 = data1.coords, data2.coords
 
-        # The probe-based fast path below is only trustworthy for WCSes that
-        # natively implement the high-level API: their typed world objects
-        # (SkyCoord, SpectralCoord, ...) fail loudly for mismatched physical
-        # types, whereas wrapped bare low-level WCSes produce plain Quantities
-        # that transform positionally regardless of physical type.
+        # The pixel_to_pixel probe below is only trusted for natively
+        # high-level pairs: wrapped bare low-level WCSes give plain Quantity
+        # world objects that it pairs positionally (see
+        # permuted_values_functions).
         both_high_level = (isinstance(wcs1, BaseHighLevelWCS) and
                            isinstance(wcs2, BaseHighLevelWCS))
 
@@ -227,11 +217,8 @@ class WCSLink(MultiLink):
             # A generalized APE 14-compatible way
             # Handle also the extra-spatial axes such as those of the time and wavelength dimensions
 
-            # NOTE: these must not be aliased to a single list - each side's
-            # axes have to be collected independently.
-            wcs1_celestial_physical_types = []
-            wcs2_celestial_physical_types = []
-
+            wcs1_sliced_physical_types = []
+            wcs2_sliced_physical_types = []
             matched_world1 = []
             matched_world2 = []
 
@@ -244,13 +231,10 @@ class WCSLink(MultiLink):
             # pairs. Everything else falls through to physical-type matching.
             if (isinstance(wcs1_ll, WCS) and isinstance(wcs2_ll, WCS) and
                     wcs1_ll.has_celestial and wcs2_ll.has_celestial):
-                wcs1_celestial_physical_types = wcs1_ll.celestial.world_axis_physical_types
-                wcs2_celestial_physical_types = wcs2_ll.celestial.world_axis_physical_types
+                wcs1_sliced_physical_types = list(wcs1_ll.celestial.world_axis_physical_types)
+                wcs2_sliced_physical_types = list(wcs2_ll.celestial.world_axis_physical_types)
                 matched_world1 = [wcs1_ll.wcs.lng, wcs1_ll.wcs.lat]
                 matched_world2 = [wcs2_ll.wcs.lng, wcs2_ll.wcs.lat]
-
-            wcs1_sliced_physical_types = list(wcs1_celestial_physical_types)
-            wcs2_sliced_physical_types = list(wcs2_celestial_physical_types)
 
             for i, physical_type1 in enumerate(wcs1_ll.world_axis_physical_types):
                 if physical_type1 is not None:
@@ -285,8 +269,8 @@ class WCSLink(MultiLink):
                 if j not in slicing_axes2:
                     slices2[j] = 0
 
-            # Avoid a no-op slice: Astropy 6's sliced wrapper cannot handle
-            # the scalar world/pixel return values of an already-1D WCS.
+            # Avoid a no-op slice: before astropy 7.2 the sliced wrapper cannot
+            # handle the scalar world/pixel return values of an already-1D WCS.
             wcs1_sliced = (wcs1_ll if len(slicing_axes1) == wcs1_ll.pixel_n_dim
                            else SlicedLowLevelWCS(wcs1_ll, tuple(slices1)))
             wcs2_sliced = (wcs2_ll if len(slicing_axes2) == wcs2_ll.pixel_n_dim
@@ -305,12 +289,8 @@ class WCSLink(MultiLink):
                     # Duplicated or unknown physical types cannot be paired
                     # reliably across a reordering
                     raise IncompatibleWCS(f"Can't create WCS link between {data1.label} and {data2.label}")
-                # Wrapped low-level WCSes produce plain-Quantity world
-                # objects, which pixel_to_pixel pairs positionally - that
-                # would silently transpose the axes here, so transform
-                # through explicitly type-matched world values instead.
-                # Natively high-level pairs don't need this: their typed
-                # world objects (e.g. SkyCoord) are matched by class.
+                # pixel_to_pixel would silently transpose these axes (see
+                # permuted_values_functions)
                 forwards_permuted, backwards_permuted = permuted_values_functions(wcs1_sliced, wcs2_sliced)
                 pixel_cids1, pixel_cids2, forwards, backwards = get_cids_and_functions(
                     None, None, cids1_sliced, cids2_sliced,
