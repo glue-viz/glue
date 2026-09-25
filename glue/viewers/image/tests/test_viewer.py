@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 from echo import delay_callback
 from glue.tests.visual.helpers import visual_test
 from glue.viewers.image.viewer import SimpleImageViewer
@@ -249,6 +250,59 @@ class TestWCSRegionDisplay(object):
         assert len(self.viewer.state.layers) == 2
         assert self.viewer.layers[0].enabled
         assert self.viewer.layers[1].enabled
+
+    def test_wcs_viewer_pixel_link(self):
+
+        # Regression test for a bug where regions linked to the pixel
+        # components of an image that has a WCS raised an AttributeError and
+        # then, once that was fixed, disabled the layer.
+
+        self.viewer.add_data(self.image1)
+
+        link1 = LinkSame(self.region_data.center_x_id, self.image1.pixel_component_ids[1])
+        link2 = LinkSame(self.region_data.center_y_id, self.image1.pixel_component_ids[0])
+
+        self.application.data_collection.add_link(link1)
+        self.application.data_collection.add_link(link2)
+
+        self.viewer.add_data(self.region_data)
+
+        assert self.viewer.state._display_world is True
+        assert self.viewer.layers[0].enabled
+        assert self.viewer.layers[1].enabled
+
+        # The regions are given in pixel coordinates and the viewer displays
+        # pixel coordinates, so they should be drawn where they were defined.
+        expected = np.array(self.region_data['boundary'][1].exterior.coords)
+        drawn = self.viewer.layers[1].region_collection.patches[1].get_path().vertices
+        assert_allclose(drawn, expected, atol=1e-6)
+
+    def test_wcs_viewer_pixel_link_flipped(self):
+
+        # As above, but with the viewer axes swapped over, which means the
+        # regions should be drawn with their x and y coordinates swapped.
+
+        self.viewer.add_data(self.image1)
+
+        link1 = LinkSame(self.region_data.center_x_id, self.image1.pixel_component_ids[1])
+        link2 = LinkSame(self.region_data.center_y_id, self.image1.pixel_component_ids[0])
+
+        self.application.data_collection.add_link(link1)
+        self.application.data_collection.add_link(link2)
+
+        self.viewer.add_data(self.region_data)
+
+        with delay_callback(self.viewer.state, 'x_att_world', 'y_att_world', 'x_att', 'y_att'):
+            self.viewer.state.x_att_world = self.image1.world_component_ids[0]
+            self.viewer.state.y_att_world = self.image1.world_component_ids[1]
+            self.viewer.state.x_att = self.image1.pixel_component_ids[0]
+            self.viewer.state.y_att = self.image1.pixel_component_ids[1]
+
+        assert self.viewer.layers[1].enabled
+
+        expected = np.array(self.region_data['boundary'][1].exterior.coords)[:, ::-1]
+        drawn = self.viewer.layers[1].region_collection.patches[1].get_path().vertices
+        assert_allclose(drawn, expected, atol=1e-6)
 
     @visual_test
     def test_image_wcs_viewer(self):

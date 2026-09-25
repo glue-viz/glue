@@ -213,6 +213,13 @@ class RegionData(Data):
             raise ValueError("Can only display regions if links depend on 2 or fewer other components.")
 
         def conv_function(x, y=None):
+            # shapely.ops.transform calls us with tuples of coordinates, while
+            # the link functions require arrays (they use attributes such as
+            # .shape). shapely only retries element-by-element on TypeError, so
+            # anything else raised here escapes to the caller.
+            x = np.asarray(x)
+            if y is not None:
+                y = np.asarray(y)
             if len(linkx.get_from_ids()) == 1 and len(linky.get_from_ids()) == 1:
                 return [funcx(x), funcy(y)]
             else:
@@ -225,6 +232,10 @@ class RegionData(Data):
             other_cids = linkx.get_from_ids() + linky.get_from_ids()
         if cen_cids[0] in other_cids or cen_cids[1] in other_cids:
             if set([cen_cids[0]]+[cen_cids[1]]) == set(other_cids):
+                # The innermost function consumes the centers in the order of
+                # the links it was built from, which is not necessarily the
+                # order (center_x, center_y) that callers pass them in.
+                self._center_input_cids = list(other_cids)
                 return
             else:
                 raise ValueError("Cannot display regions if links depend on other components.")
@@ -271,18 +282,24 @@ class RegionData(Data):
         """
 
         self.list_of_functions = []
+        self._center_input_cids = [self.center_x_id, self.center_y_id]
         self._get_trans_to_cids([self.center_x_id, self.center_y_id], other_cids)
         if not self.list_of_functions:
             return None
-        elif len(self.list_of_functions) == 1:
-            return self.list_of_functions[0]
-        else:
-            def conv_function(*args):
-                # Our list of functions is built up in reverse order
-                for f in self.list_of_functions[::-1]:
-                    args = f(*args)
-                return args
-            return conv_function
+
+        # The centers are always passed in as (center_x, center_y), but the
+        # innermost function expects them in the order of the links it was
+        # built from, so swap them over when those two orders disagree.
+        swap_inputs = self._center_input_cids == [self.center_y_id, self.center_x_id]
+
+        def conv_function(*args):
+            if swap_inputs:
+                args = args[::-1]
+            # Our list of functions is built up in reverse order
+            for f in self.list_of_functions[::-1]:
+                args = f(*args)
+            return args
+        return conv_function
 
     def linked_to_center_comp(self, target_cid):
         """
