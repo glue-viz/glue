@@ -278,7 +278,10 @@ class RegionData(Data):
             The function that converts center_x_id and center_y_id to
             other_cids which can then be used to transform the
             geometries before display. Returns None if there is no
-            such valid transformation.
+            such valid transformation. It takes the values in the order
+            (center_x_id, center_y_id) and returns them in the order of
+            ``other_cids``, whichever way round the links between the two
+            happen to be.
         """
 
         self.list_of_functions = []
