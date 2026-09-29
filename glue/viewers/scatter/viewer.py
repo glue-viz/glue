@@ -10,6 +10,8 @@ from glue.viewers.matplotlib.mpl_axes import init_mpl
 from glue.viewers.matplotlib.viewer import SimpleMatplotlibViewer
 from glue.viewers.scatter.state import ScatterViewerState
 from glue.viewers.scatter.layer_artist import ScatterLayerArtist
+from glue.core.units import UnitConverter
+
 
 __all__ = ['MatplotlibScatterMixin', 'SimpleScatterViewer']
 
@@ -153,9 +155,28 @@ class MatplotlibScatterMixin(object):
         x_date = 'datetime' in self.state.x_kinds
         y_date = 'datetime' in self.state.y_kinds
 
-        if x_date or y_date:
-            roi = roi.transformed(xfunc=mpl_to_datetime64 if x_date else None,
-                                  yfunc=mpl_to_datetime64 if y_date else None)
+        converter = UnitConverter()
+
+        xfunc = None
+        if x_date:
+            xfunc = mpl_to_datetime64
+        else:
+            if self.state.x_display_unit:
+                xfunc = lambda x: converter.to_native(self.state.x_att.parent,
+                                                      self.state.x_att, x,
+                                                      self.state.x_display_unit)
+
+        yfunc = None
+        if y_date:
+            yfunc = mpl_to_datetime64
+        else:
+            if self.state.y_display_unit:
+                yfunc = lambda y: converter.to_native(self.state.y_att.parent,
+                                                      self.state.y_att, y,
+                                                      self.state.y_display_unit)
+
+        if xfunc or yfunc:
+            roi = roi.transformed(xfunc=xfunc, yfunc=yfunc)
 
         use_transform = not self.using_rectilinear()
         subset_state = roi_to_subset_state(roi,
