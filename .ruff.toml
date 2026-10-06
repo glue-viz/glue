@@ -119,6 +119,7 @@ lint.ignore = [
     "PLR0912",  # too-many-branches
     "PLR0913",  # too-many-args
     "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional-arguments
     "PLR1704",  # Redefining argument with the local name `{name}`
     "PLR1711",  # Useless `return` statement at end of function
     "PLR1714",  # Consider merging multiple comparisons
