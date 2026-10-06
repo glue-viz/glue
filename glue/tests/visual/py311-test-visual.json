@@ -3,8 +3,8 @@
   "glue.viewers.image.tests.test_viewer.test_simple_image_viewer": "eb81254e0ebe8a67745fd17b9f873a6e8a34540d71fab66ccf4a1eb9bc750bee",
   "glue.viewers.image.tests.test_viewer.test_image_region_layer": "1a7da281ce3d0964d8a795cd7f7b6255bf2fcdb5bc26183529cb55b2aeaf4453",
   "glue.viewers.image.tests.test_viewer.test_image_region_layer_flip": "5a1be1f88bb1ead3b14f8262298cad3427981b553300e9ecfff44e70788145c6",
-  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_image_wcs_viewer": "d38b1d94c81dd2f7aad5d9b1d767ffda902aecbaca9904666d335f468b0ed313",
-  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_image_flipped_wcs_viewer": "c28bda215c5e873bcf9118addf858055810278dec99658bd93e350c4225d9726",
+  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_image_wcs_viewer": "fdb0364d10e231f4c179c5120a1ca077822ad78fa60d849c96c8f33e95e12fbb",
+  "glue.viewers.image.tests.test_viewer.TestWCSRegionDisplay.test_image_flipped_wcs_viewer": "fe738d884f54063f5974959c17e4bc0010386b0dd0f9409e1c83c99708543c4f",
   "glue.viewers.profile.tests.test_viewer.test_simple_profile_viewer": "96d3a51fea89a720ea5afaae94c475061e1151317f336deaa2695746d8910466",
   "glue.viewers.scatter.tests.test_viewer.test_simple_scatter_viewer": "fc9f431132c6bd6e8b3ab458e652e636e057bf4cf273b18665d3925d8e6f3819",
   "glue.viewers.scatter.tests.test_viewer.test_scatter_density_map": "51cd7df0a7063c230d96aad6ea2f58e8b054e35008576f7776979e7b7a79cd3d"
