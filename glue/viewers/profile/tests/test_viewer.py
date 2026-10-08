@@ -174,6 +174,28 @@ def test_unit_conversion():
     viewer.state.y_display_unit = 'mJy'
 
 
+def test_unit_conversion_slice():
+
+    # The slice function should apply display unit conversion like the others
+
+    settings.UNIT_CONVERTER = 'test-spectral2'
+
+    d1 = Data(f1=[1., 2., 3.])
+    d1.get_component('f1').units = 'Jy'
+
+    app = Application()
+    app.session.data_collection.append(d1)
+
+    viewer = app.new_data_viewer(SimpleProfileViewer)
+    viewer.add_data(d1)
+    viewer.state.function = 'slice'
+    viewer.state.y_display_unit = 'mJy'
+
+    x, y = viewer.state.layers[0].profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose(y, [1000, 2000, 3000])
+
+
 def test_indexed_data():
 
     # Make sure that the profile viewer works properly with IndexedData objects

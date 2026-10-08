@@ -12,7 +12,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, avoid_circular
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
 from glue.core.units import find_unit_choices, UnitConverter
 
@@ -23,7 +23,8 @@ FUNCTIONS = OrderedDict([('maximum', 'Maximum'),
                          ('minimum', 'Minimum'),
                          ('mean', 'Mean'),
                          ('median', 'Median'),
-                         ('sum', 'Sum')])
+                         ('sum', 'Sum'),
+                         ('slice', 'Slice')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -47,6 +48,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     function = DDSCProperty(docstring='The function to use for collapsing data')
 
+    slices = DDCProperty(docstring='The current slice along all dimensions, '
+                                   'used when function is ``\'slice\'``')
+
     normalize = DDCProperty(False, docstring='Whether to normalize all profiles '
                                              'to the [0:1] range')
 
@@ -65,6 +69,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('y_display_unit', self._convert_units_y_limits, echo_old=True)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
+        self.add_callback('slices', self._reset_y_limits)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, datetime=False, categorical=False,
@@ -195,7 +200,9 @@ class ProfileViewerState(MatplotlibDataViewerState):
             x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
         else:
             axis = data.world_component_ids.index(self.x_att)
-            axis_view = [0] * data.ndim
+            # Use the same spine as the profile, which follows the slice
+            # point when the collapse function is 'slice'
+            axis_view = list(self.slices) if self.function == 'slice' else [0] * data.ndim
             axis_view[axis] = slice(None)
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
@@ -313,7 +320,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         if self.reference_data is not getattr(self, '_last_reference_data', None):
             self._last_reference_data = self.reference_data
 
-            with delay_callback(self, 'x_att'):
+            with delay_callback(self, 'x_att', 'slices'):
 
                 if self.reference_data is None:
                     self.x_att_helper.set_multiple_data([])
@@ -326,9 +333,16 @@ class ProfileViewerState(MatplotlibDataViewerState):
                         self.x_att_helper.world_coord = False
                         self.x_att = self.reference_data.pixel_component_ids[0]
 
+                self._set_default_slices()
                 self._update_att()
 
         self.reset_limits()
+
+    def _set_default_slices(self):
+        if self.reference_data is None:
+            self.slices = ()
+        else:
+            self.slices = (0,) * self.reference_data.ndim
 
     def _update_priority(self, name):
         if name == 'layers':
@@ -427,6 +441,36 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         self.update_profile()
         return self._profile_cache
 
+    def slice_view(self, data, pix_cid):
+        """
+        The view used when the collapse function is 'slice': the current
+        viewer slices with `slice(None)` along the profile axis, translated
+        from the reference data's frame into ``data``'s own pixel indices.
+        """
+        ref = self.viewer_state.reference_data
+        slices = list(self.viewer_state.slices or ())
+        if len(slices) != ref.ndim:
+            slices = [0] * ref.ndim
+        # Translate the reference-data slice point into this dataset's own
+        # pixel indices through the pixel links
+        point = tuple(np.array([s]) for s in slices)
+        view = []
+        for axis in range(data.ndim):
+            if axis == pix_cid.axis:
+                view.append(slice(None))
+                continue
+            if data is ref:
+                index = slices[axis]
+            else:
+                try:
+                    index = np.round(ref[data.pixel_component_ids[axis], point][0])
+                except IncompatibleAttribute:
+                    raise IncompatibleDataException()
+            if not 0 <= index < data.shape[axis]:  # also False for NaN
+                raise IncompatibleDataException()
+            view.append(int(index))
+        return tuple(view)
+
     def update_profile(self, update_limits=True):
 
         if self._profile_cache is not None:
@@ -440,6 +484,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             self.viewer_state.add_callback('x_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('y_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('slices', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
@@ -470,13 +515,23 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             data = self.layer
             subset_state = None
 
-        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
+        if self.viewer_state.function == 'slice':
+            view = self.slice_view(data, pix_cid)
+            profile_values = data.get_data(self.attribute, view=view)
+            if subset_state is not None:
+                mask = data.get_mask(subset_state, view=view)
+                profile_values = np.where(mask, profile_values, np.nan)
+        else:
+            profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
 
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
         else:
-            axis_view = [0] * data.ndim
-            axis_view[pix_cid.axis] = slice(None)
+            if self.viewer_state.function == 'slice':
+                axis_view = view
+            else:
+                axis_view = [0] * data.ndim
+                axis_view[pix_cid.axis] = slice(None)
             axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
 
             converter = UnitConverter()
