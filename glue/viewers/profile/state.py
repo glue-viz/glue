@@ -4,6 +4,7 @@ from glue.core.hub import HubListener
 import numpy as np
 
 from glue.core import Subset, Data
+from glue.core.coordinates import LegacyCoordinates
 from echo import delay_callback
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
                                            MatplotlibLayerState,
@@ -12,7 +13,7 @@ from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
 from glue.core.data_combo_helper import ManualDataComboHelper, ComponentIDComboHelper
 from glue.utils import defer_draw, avoid_circular
 from glue.core.link_manager import is_convertible_to_single_pixel_cid
-from glue.core.exceptions import IncompatibleDataException
+from glue.core.exceptions import IncompatibleAttribute, IncompatibleDataException
 from glue.core.message import SubsetUpdateMessage
 from glue.core.units import find_unit_choices, UnitConverter
 
@@ -23,7 +24,8 @@ FUNCTIONS = OrderedDict([('maximum', 'Maximum'),
                          ('minimum', 'Minimum'),
                          ('mean', 'Mean'),
                          ('median', 'Median'),
-                         ('sum', 'Sum')])
+                         ('sum', 'Sum'),
+                         ('slice', 'Slice')])
 
 
 class ProfileViewerState(MatplotlibDataViewerState):
@@ -47,8 +49,19 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
     function = DDSCProperty(docstring='The function to use for collapsing data')
 
+    slices = DDCProperty(docstring='The current slice along all dimensions, '
+                                   'used when function is ``\'slice\'``')
+
+    x_limits_pixel = DDCProperty(False, docstring='Whether x_min/x_max are in pixel '
+                                                  'coordinates (WCSAxes mode) rather '
+                                                  'than world/display values')
+
     normalize = DDCProperty(False, docstring='Whether to normalize all profiles '
                                              'to the [0:1] range')
+
+    #: Set to `True` by viewers whose axes are WCSAxes, enabling WCS-formatted
+    #: tick labels (see :attr:`~ProfileViewerState.wcsaxes_active`)
+    wcsaxes = False
 
     # TODO: add function to use
 
@@ -65,6 +78,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         self.add_callback('y_display_unit', self._convert_units_y_limits, echo_old=True)
         self.add_callback('normalize', self._reset_y_limits)
         self.add_callback('function', self._reset_y_limits)
+        self.add_callback('slices', self._reset_y_limits)
 
         self.x_att_helper = ComponentIDComboHelper(self, 'x_att',
                                                    numeric=False, datetime=False, categorical=False,
@@ -91,6 +105,15 @@ class ProfileViewerState(MatplotlibDataViewerState):
             old_unit != new_unit and
             self.reference_data is not None
         ):
+
+            if self.wcsaxes and self._wcsaxes_with_unit(old_unit) != self._wcsaxes_with_unit(new_unit):
+                # Crossing into or out of WCSAxes mode switches the x axis
+                # between pixel and world coordinates, so the previous limits
+                # cannot be converted: reset them (as the viewer's _set_wcs
+                # already does) instead.
+                self._reset_x_limits()
+                self._previous_x_att = self.x_att
+                return
 
             limits = np.array([self.x_min, self.x_max])
 
@@ -164,6 +187,47 @@ class ProfileViewerState(MatplotlibDataViewerState):
     def _display_world(self):
         return getattr(self.reference_data, 'coords', None) is not None
 
+    @property
+    def wcsaxes_active(self):
+        """
+        Whether profiles are drawn in pixel coordinates, with world tick
+        labels formatted by WCSAxes. This is the case when the viewer uses
+        WCSAxes, a world component with real coordinates is shown on the x
+        axis, and no display unit override is active - a unit override needs
+        plain numeric axes.
+        """
+        return self.wcsaxes and self._wcsaxes_with_unit(self.x_display_unit)
+
+    def _wcsaxes_with_unit(self, unit):
+        coords = getattr(self.reference_data, 'coords', None)
+        if coords is None or isinstance(coords, LegacyCoordinates):
+            return False
+        if self.x_att is None or self.x_att in self.reference_data.pixel_component_ids:
+            return False
+        native = ''
+        if isinstance(self.reference_data, Data):  # e.g. not for IndexedData
+            native = self.reference_data.get_component(self.x_att).units or ''
+        return (unit or '') == native
+
+    @property
+    def wcsaxes_slice(self):
+        """
+        Returns slicing information usable by WCSAxes - an iterable in WCS
+        axis order with ``'x'`` for the profile dimension and the current
+        slice index for the others.
+        """
+        if self.reference_data is None or self.x_att_pixel is None:
+            return None
+        slices = []
+        for i in range(self.reference_data.ndim):
+            if i == self.x_att_pixel.axis:
+                slices.append('x')
+            elif self.slices is not None and len(self.slices) == self.reference_data.ndim:
+                slices.append(self.slices[i])
+            else:
+                slices.append(0)
+        return tuple(slices[::-1])
+
     @defer_draw
     def _update_att(self, *args):
         if self.x_att is not None:
@@ -193,21 +257,30 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         if self.x_att in data.pixel_component_ids:
             x_min, x_max = -0.5, data.shape[self.x_att.axis] - 0.5
+        elif self.wcsaxes_active:
+            # Profiles are plotted in pixel coordinates when WCSAxes draws
+            # the world tick labels
+            x_min, x_max = -0.5, data.shape[self.x_att_pixel.axis] - 0.5
         else:
             axis = data.world_component_ids.index(self.x_att)
-            axis_view = [0] * data.ndim
+            # Use the same spine as the profile, which follows the slice
+            # point when the collapse function is 'slice'
+            axis_view = list(self.slices) if self.function == 'slice' else [0] * data.ndim
             axis_view[axis] = slice(None)
             axis_values = data[self.x_att, tuple(axis_view)]
             x_min, x_max = np.nanmin(axis_values), np.nanmax(axis_values)
 
-        converter = UnitConverter()
-        x_min, x_max = converter.to_unit(self.reference_data,
-                                         self.x_att, np.array([x_min, x_max]),
-                                         self.x_display_unit)
+        if not self.wcsaxes_active:
+            converter = UnitConverter()
+            x_min, x_max = converter.to_unit(self.reference_data,
+                                             self.x_att, np.array([x_min, x_max]),
+                                             self.x_display_unit)
 
         with delay_callback(self, 'x_min', 'x_max'):
             self.x_min = x_min
             self.x_max = x_max
+
+        self.x_limits_pixel = self.wcsaxes_active
 
     def _reset_y_limits(self, *event):
         if self.normalize:
@@ -313,7 +386,7 @@ class ProfileViewerState(MatplotlibDataViewerState):
         if self.reference_data is not getattr(self, '_last_reference_data', None):
             self._last_reference_data = self.reference_data
 
-            with delay_callback(self, 'x_att'):
+            with delay_callback(self, 'x_att', 'slices'):
 
                 if self.reference_data is None:
                     self.x_att_helper.set_multiple_data([])
@@ -326,16 +399,24 @@ class ProfileViewerState(MatplotlibDataViewerState):
                         self.x_att_helper.world_coord = False
                         self.x_att = self.reference_data.pixel_component_ids[0]
 
+                self._set_default_slices()
                 self._update_att()
 
         self.reset_limits()
+
+    def _set_default_slices(self):
+        if self.reference_data is None:
+            self.slices = ()
+        else:
+            self.slices = (0,) * self.reference_data.ndim
 
     def _update_priority(self, name):
         if name == 'layers':
             return 2
         elif name == 'reference_data':
             return 1.5
-        elif name.endswith(('_min', '_max')):
+        elif name.endswith(('_min', '_max')) or name == 'x_limits_pixel':
+            # Restore after x_att, whose callback resets the limits
             return 0
         else:
             return 1
@@ -427,6 +508,36 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
         self.update_profile()
         return self._profile_cache
 
+    def slice_view(self, data, pix_cid):
+        """
+        The view used when the collapse function is 'slice': the current
+        viewer slices with `slice(None)` along the profile axis, translated
+        from the reference data's frame into ``data``'s own pixel indices.
+        """
+        ref = self.viewer_state.reference_data
+        slices = list(self.viewer_state.slices or ())
+        if len(slices) != ref.ndim:
+            slices = [0] * ref.ndim
+        # Translate the reference-data slice point into this dataset's own
+        # pixel indices through the pixel links
+        point = tuple(np.array([s]) for s in slices)
+        view = []
+        for axis in range(data.ndim):
+            if axis == pix_cid.axis:
+                view.append(slice(None))
+                continue
+            if data is ref:
+                index = slices[axis]
+            else:
+                try:
+                    index = np.round(ref[data.pixel_component_ids[axis], point][0])
+                except IncompatibleAttribute:
+                    raise IncompatibleDataException()
+            if not 0 <= index < data.shape[axis]:  # also False for NaN
+                raise IncompatibleDataException()
+            view.append(int(index))
+        return tuple(view)
+
     def update_profile(self, update_limits=True):
 
         if self._profile_cache is not None:
@@ -440,6 +551,7 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             self.viewer_state.add_callback('x_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('y_display_unit', self.reset_cache, priority=100000)
             self.viewer_state.add_callback('function', self.reset_cache, priority=100000)
+            self.viewer_state.add_callback('slices', self.reset_cache, priority=100000)
             if self.is_callback_property('attribute'):
                 self.add_callback('attribute', self.reset_cache, priority=100000)
             self._viewer_callbacks_set = True
@@ -470,19 +582,36 @@ class ProfileLayerState(MatplotlibLayerState, HubListener):
             data = self.layer
             subset_state = None
 
-        profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
+        if self.viewer_state.function == 'slice':
+            view = self.slice_view(data, pix_cid)
+            profile_values = data.get_data(self.attribute, view=view)
+            if subset_state is not None:
+                mask = data.get_mask(subset_state, view=view)
+                profile_values = np.where(mask, profile_values, np.nan)
+        else:
+            profile_values = data.compute_statistic(self.viewer_state.function, self.attribute, axis=axes, subset_state=subset_state)
 
         if np.all(np.isnan(profile_values)):
             self._profile_cache = [], []
         else:
-            axis_view = [0] * data.ndim
-            axis_view[pix_cid.axis] = slice(None)
-            axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
+            if self.viewer_state.function == 'slice':
+                axis_view = view
+            else:
+                axis_view = [0] * data.ndim
+                axis_view[pix_cid.axis] = slice(None)
 
             converter = UnitConverter()
-            axis_values = converter.to_unit(self.viewer_state.reference_data,
-                                            self.viewer_state.x_att, axis_values,
-                                            self.viewer_state.x_display_unit)
+
+            if self.viewer_state.wcsaxes_active:
+                # WCSAxes formats world tick labels from the pixel positions,
+                # so the profile is plotted in pixel coordinates
+                axis_values = data[self.viewer_state.x_att_pixel, tuple(axis_view)]
+            else:
+                axis_values = data[self.viewer_state.x_att, tuple(axis_view)]
+                axis_values = converter.to_unit(self.viewer_state.reference_data,
+                                                self.viewer_state.x_att, axis_values,
+                                                self.viewer_state.x_display_unit)
+
             profile_values = converter.to_unit(data, self.attribute, profile_values,
                                                self.viewer_state.y_display_unit)
 

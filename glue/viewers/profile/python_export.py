@@ -1,5 +1,6 @@
 from glue.viewers.common.python_export import serialize_options
 from glue.core import Subset
+from glue.core.link_manager import is_convertible_to_single_pixel_cid
 
 
 def python_export_profile_layer(layer, *args):
@@ -16,16 +17,47 @@ def python_export_profile_layer(layer, *args):
     if isinstance(layer.state.layer, Subset):
         script += "base_data = layer_data.data\n"
         script += "cid = base_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+    else:
+        script += "base_data = layer_data\n"
+        script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
+    if layer._viewer_state.function == 'slice':
+        if isinstance(layer.state.layer, Subset):
+            slice_data = layer.state.layer.data
+        else:
+            slice_data = layer.state.layer
+        pix_cid = is_convertible_to_single_pixel_cid(layer.state.layer,
+                                                     layer._viewer_state.x_att_pixel)
+        script += "data_view = {0}\n".format(layer.state.slice_view(slice_data, pix_cid))
+        script += "profile_values = base_data.get_data(cid, view=data_view)\n"
+        if isinstance(layer.state.layer, Subset):
+            script += "mask = base_data.get_mask(layer_data.subset_state, view=data_view)\n"
+            script += "profile_values = np.where(mask, profile_values, np.nan)\n"
+        script += "\n"
+    elif isinstance(layer.state.layer, Subset):
         script += "profile_values = base_data.compute_statistic('{0}', cid, axis=collapsed_axes, subset_state=layer_data.subset_state)\n\n".format(layer._viewer_state.function)
     else:
-        script += "cid = layer_data.find_component_id('{0}')\n".format(layer.state.attribute.label)
         script += "profile_values = layer_data.compute_statistic('{0}', cid, axis=collapsed_axes)\n\n".format(layer._viewer_state.function)
 
     script += "# Extract the values for the x-axis\n"
-    script += "axis_view = [0] * layer_data.ndim\n"
-    script += "axis_view[profile_axis] = slice(None)\n"
-    script += "profile_x_values = layer_data['{0}', tuple(axis_view)]\n".format(layer._viewer_state.x_att)
-    script += "keep = ~np.isnan(profile_values) & ~np.isnan(profile_x_values)\n\n"
+    if layer._viewer_state.function == 'slice':
+        script += "axis_view = data_view\n"
+    else:
+        script += "axis_view = [0] * layer_data.ndim\n"
+        script += "axis_view[profile_axis] = slice(None)\n"
+    if layer._viewer_state.wcsaxes_active:
+        # WCSAxes formats world tick labels from the pixel positions, so the
+        # profile is plotted in pixel coordinates
+        x_att = layer._viewer_state.x_att_pixel
+    else:
+        x_att = layer._viewer_state.x_att
+    # NOTE: x values come from base_data - indexing a Subset applies the
+    # subset mask, which would give a different length than profile_values
+    script += "profile_x_values = base_data['{0}', tuple(axis_view)]\n".format(x_att)
+    if layer._viewer_state.function == 'slice':
+        # NaN values should produce gaps in the line, as in the live viewer
+        script += "keep = slice(None)\n\n"
+    else:
+        script += "keep = ~np.isnan(profile_values) & ~np.isnan(profile_x_values)\n\n"
 
     if layer._viewer_state.normalize:
         script += "# Normalize the profile data\n"
