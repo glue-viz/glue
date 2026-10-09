@@ -2,6 +2,7 @@
 
 import pytest
 import numpy as np
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.artist import Artist
@@ -183,8 +184,22 @@ def test_freeze_margins():
     np.testing.assert_allclose(bbox.y1, 0.5)
 
 
+@pytest.mark.parametrize('epoch', ['1970-01-01T00:00:00', '2000-01-01T00:00:00'])
+@pytest.mark.parametrize('scalar', [False, True])
+def test_mpl_datetime64_before_epoch(monkeypatch, epoch, scalar):
+    monkeypatch.setattr(mdates, 'get_epoch', lambda: epoch)
+    offsets = np.array([-1500, -500, 0, 500, 1500], dtype='timedelta64[ms]')
+    values = np.datetime64(epoch) + offsets
+    if scalar:
+        values = values[0]
+    np.testing.assert_array_equal(mpl_to_datetime64(datetime64_to_mpl(values)), values)
+
+
 def test_mpl_datetime64():
-    # Make sure the mpl <-> datetime64 conversion round-trips
-    mpl1 = 719313
-    mpl2 = datetime64_to_mpl(mpl_to_datetime64(mpl1))
-    assert mpl1 == mpl2
+    # Make sure the mpl <-> datetime64 conversion agrees with matplotlib's own
+    # epoch (1970-01-01 since matplotlib 3.3, configurable) and round-trips
+    dt = np.array(['2021-09-05T12:00:00'], dtype='datetime64[s]')
+    assert_allclose(datetime64_to_mpl(dt), mdates.date2num(dt))
+    np.testing.assert_array_equal(mpl_to_datetime64(mdates.date2num(dt)), dt)
+    mpl1 = 18875.5
+    assert datetime64_to_mpl(mpl_to_datetime64(mpl1)) == mpl1
