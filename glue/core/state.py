@@ -743,7 +743,12 @@ def _load_roi(roi, context):
 
 @saver(VisualAttributes)
 def _save_style(style, context):
-    return dict((a, getattr(style, a)) for a in style._atts)
+    result = dict((a, getattr(style, a)) for a in style._atts)
+    # preferred_cmap may be a Colormap object, which is not JSON-serializable
+    # (and is never restored by _load_style) - store its name instead
+    if 'preferred_cmap' in result:
+        result['preferred_cmap'] = getattr(result['preferred_cmap'], 'name', result['preferred_cmap'])
+    return result
 
 
 @loader(VisualAttributes)
@@ -1020,21 +1025,27 @@ def _load_data_4(rec, context):
         result.uuid = str(uuid.uuid4())
 
 
-@saver(Data, version=5)
-def _save_data_5(data, context):
-    result = _save_data_4(data, context)
-    result['primary_owner'] = [context.id(cid) for cid in data.components if cid.parent is data]
-    # Filter out keys/values that can't be serialized
+def _save_meta(data, context):
+    # Filter out keys/values that can't be serialized. Unknown types raise
+    # GlueSerializeError, but a saver can also fail on a value it accepts
+    # (np.save raises TypeError on a Quantity).
     meta_filtered = OrderedDict()
     for key, value in data.meta.items():
         try:
             context.do(key)
             context.do(value)
-        except GlueSerializeError:
+        except Exception as exc:
+            logger.warning("Skipping unserializable meta key %r: %s", key, exc)
             continue
-        else:
-            meta_filtered[key] = value
-    result['meta'] = context.do(meta_filtered)
+        meta_filtered[key] = value
+    return context.do(meta_filtered)
+
+
+@saver(Data, version=5)
+def _save_data_5(data, context):
+    result = _save_data_4(data, context)
+    result['primary_owner'] = [context.id(cid) for cid in data.components if cid.parent is data]
+    result['meta'] = _save_meta(data, context)
     return result
 
 
@@ -1369,17 +1380,7 @@ def _save_regiondata(data, context):
     result["primary_owner"] = [
         context.id(cid) for cid in data.components if cid.parent is data
     ]
-    # Filter out keys/values that can't be serialized
-    meta_filtered = OrderedDict()
-    for key, value in data.meta.items():
-        try:
-            context.do(key)
-            context.do(value)
-        except GlueSerializeError:
-            continue
-        else:
-            meta_filtered[key] = value
-    result["meta"] = context.do(meta_filtered)
+    result["meta"] = _save_meta(data, context)
 
     return result
 
