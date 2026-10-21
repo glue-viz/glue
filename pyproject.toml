@@ -78,7 +78,11 @@ test = [
     "objgraph",
 ]
 
-visualtest = [ "pytest-mpl"]
+visualtest = [
+    "pytest-mpl",
+    "matplotlib>=3.11.0",
+    "astropy>=8.0.1",
+]
 
 [project.scripts]
 glue-config = "glue.config_gen:main"
