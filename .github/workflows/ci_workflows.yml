@@ -22,7 +22,7 @@ jobs:
     needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
     with:
-      coverage: codecov
+      coverage: codecov-oidc
 
       envs: |
         # Linux build
@@ -63,7 +63,7 @@ jobs:
     needs: initial_checks
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
     with:
-      coverage: codecov
+      coverage: codecov-oidc
 
       envs: |
         - linux: py315-test-dev
