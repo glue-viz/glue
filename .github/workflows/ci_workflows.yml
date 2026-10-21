@@ -74,7 +74,18 @@ jobs:
       envs: |
         - linux: py315-test-dev
 
+  # On pull requests, run the sdist/wheel build check in parallel with the test matrix instead of
+  # after it. Pushes and tags keep the tests -> publish ordering, so releases still wait for tests.
+  build_check:
+    if: github.event_name == 'pull_request'
+    needs: initial_checks
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
+    with:
+      test_extras: 'test'
+      test_command: pytest --pyargs glue
+
   publish:
+    if: github.event_name != 'pull_request'
     needs: tests
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
     with:
