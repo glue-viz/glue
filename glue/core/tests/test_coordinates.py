@@ -8,7 +8,8 @@ from glue.core.tests.test_state import clone
 from glue.tests.helpers import requires_astropy
 
 from ..coordinate_helpers import (axis_label, world_axis,
-                                  pixel2world_single_axis, dependent_axes)
+                                  pixel2world_single_axis,
+                                  world2pixel_single_axis, dependent_axes)
 from ..coordinates import (coordinates_from_header, IdentityCoordinates,
                            WCSCoordinates, AffineCoordinates,
                            header_from_string)
@@ -393,6 +394,26 @@ def test_pixel2world_single_axis_affine_1d():
     assert_allclose(pixel2world_single_axis(coord, x, world_axis=0), expected)
     assert_allclose(pixel2world_single_axis(coord, x.reshape((1, 3)), world_axis=0), expected.reshape((1, 3)))
     assert_allclose(pixel2world_single_axis(coord, x.reshape((3, 1)), world_axis=0), expected.reshape((3, 1)))
+
+
+def test_world2pixel_single_axis_correlated_axes():
+
+    # Regression test for a bug in world2pixel_single_axis which collapsed
+    # every world input not directly correlated with the requested pixel axis
+    # to a scalar, even when it is needed to invert that pixel axis (e.g. the
+    # time axis of a cube whose celestial axes depend on time)
+
+    # Pixel axes (x, t): world 0 = x + 10 * t depends on both, world 1 = t
+    coord = WCSCoordinates(naxis=2)
+    coord.wcs.crpix = 1, 1
+    coord.wcs.pc = [[1, 10], [0, 1]]
+
+    lon = np.array([5., 15., 25.])
+    t = np.array([0., 1., 2.])
+
+    # All three points sit at pixel x = 5, which needs t per element
+    assert_allclose(world2pixel_single_axis(coord, lon, t, pixel_axis=0), [5, 5, 5])
+    assert_allclose(world2pixel_single_axis(coord, lon, t, pixel_axis=1), [0, 1, 2])
 
 
 def test_affine():
