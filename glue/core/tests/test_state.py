@@ -102,6 +102,37 @@ def test_data_style():
     assert d2.style.color == 'blue'
 
 
+def test_save_style_colormap_object():
+    # preferred_cmap is a Colormap object (the setter converts names to
+    # objects), which is not JSON-serializable; it is saved by name and, as
+    # before, not restored by _load_style
+    d = core.Data(x=[1, 2, 3])
+    d.style.preferred_cmap = 'viridis'
+    gs = GlueSerializer(d)
+    dump = gs.dumps()
+    assert json.loads(dump)[gs.id(d)]['style']['preferred_cmap'] == 'viridis'
+    d2 = GlueUnSerializer.loads(dump).object(gs.id(d))
+    assert d2.style.preferred_cmap is None
+
+
+@requires_astropy
+def test_save_meta_quantity():
+    # A Quantity in Data.meta reaches the np.ndarray saver, which raises a
+    # TypeError rather than GlueSerializeError; it should be dropped like any
+    # other unserializable value instead of aborting the whole save
+    import astropy.units as u
+    from shapely.geometry import Point
+    from glue.core.data_region import RegionData
+    for d in (core.Data(x=[1, 2, 3]), RegionData(regions=[Point(0, 0), Point(1, 1)])):
+        d.meta['exposure'] = 4 * u.s
+        d.meta['name'] = 'test'
+        d.meta['count'] = 3
+        d2 = clone(d)
+        assert 'exposure' not in d2.meta
+        assert d2.meta['name'] == 'test'
+        assert d2.meta['count'] == 3
+
+
 def test_user_patch_is_called():
     @session_patch()
     def a_patch(session):
