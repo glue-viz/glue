@@ -20,6 +20,9 @@ jobs:
 
   tests:
     needs: initial_checks
+    permissions:
+      contents: read
+      id-token: write
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
     with:
       coverage: codecov-oidc
@@ -61,6 +64,9 @@ jobs:
     # Test on pre-release Python versions here as nightly wheels may sometimes fail to build
     if: false
     needs: initial_checks
+    permissions:
+      contents: read
+      id-token: write
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
     with:
       coverage: codecov-oidc
