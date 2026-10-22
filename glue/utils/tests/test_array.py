@@ -11,7 +11,8 @@ from ..array import (view_shape, coerce_numeric, stack_view, unique,
                      iterate_chunks, combine_slices, nanmean, nanmedian, nansum,
                      nanmin, nanmax, format_minimal, compute_statistic, compute_histogram,
                      categorical_ndarray,
-                     index_lookup, broadcast_arrays_minimal, nansum_with_nan_for_empty)
+                     index_lookup, broadcast_arrays_minimal, nansum_with_nan_for_empty,
+                     random_views_for_dask_array)
 
 
 @pytest.mark.parametrize(('before', 'ref_after', 'ref_indices'),
@@ -405,3 +406,60 @@ def test_categorical_ndarray_slicing():
     assert_equal(subset, ['b', 'c', 'b', 'b'])
     assert_equal(subset.codes, [1, 2, 1, 1])
     assert_equal(subset.categories, ['a', 'b', 'c'])
+
+
+def test_random_views_for_dask_array():
+
+    # Regression test for a bug that caused the views to always start at the
+    # beginning of each chunk, so that any structure repeating from chunk to
+    # chunk was sampled in the same way in every chunk.
+
+    da = pytest.importorskip('dask.array')
+
+    array = da.concatenate([da.arange(4096).reshape((64, 64)).T for _ in range(32)], axis=0)
+
+    np.random.seed(12345)
+    views = random_views_for_dask_array(array, 1000, 8)
+
+    assert len(views) == 8
+    assert all(view[0].stop - view[0].start == 64 for view in views)
+    assert all(view[1].stop - view[1].start == 1 for view in views)
+    assert len({view[1].start for view in views}) > 1
+
+    values = da.hstack([array[view].ravel() for view in views]).compute()
+    assert values.max() > 63
+
+
+def test_random_views_for_dask_array_within_chunks():
+
+    da = pytest.importorskip('dask.array')
+
+    array = da.zeros((50, 30, 20), chunks=((7, 13, 30), (30,), (5, 15)))
+    boundaries = [np.cumsum((0,) + sizes) for sizes in array.chunks]
+
+    np.random.seed(12345)
+    views = random_views_for_dask_array(array, 3000, 100)
+
+    assert len(views) == 100
+    for view in views:
+        for idim, slc in enumerate(view):
+            ichunk = np.searchsorted(boundaries[idim], slc.start, side='right') - 1
+            assert boundaries[idim][ichunk] <= slc.start < slc.stop <= boundaries[idim][ichunk + 1]
+
+    # The views should not all start at the beginning of a chunk
+    assert any(view[1].start > 0 for view in views)
+
+
+def test_random_views_for_dask_array_large_chunk():
+
+    da = pytest.importorskip('dask.array')
+
+    # A single chunk longer than the int32 range, which is the default
+    # integer type of np.random.randint on some platforms
+    array = da.zeros(2**32, chunks=-1, dtype=np.uint8)
+
+    np.random.seed(12345)
+    views = random_views_for_dask_array(array, 10000, 10)
+
+    assert len(views) == 10
+    assert all(0 <= view[0].start < view[0].stop <= 2**32 for view in views)
