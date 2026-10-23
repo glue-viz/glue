@@ -4,7 +4,12 @@ import pytest
 
 from numpy.testing import assert_allclose
 
+from astropy.wcs import WCS
+
 from glue.core import Data, Coordinates
+from glue.core.component_link import ComponentLink
+from glue.core.exceptions import IncompatibleDataException
+from glue.core.link_helpers import LinkSame
 from glue.core.tests.test_state import clone
 
 from ..state import ProfileViewerState, ProfileLayerState
@@ -95,6 +100,38 @@ class TestProfileViewerState:
         _x, y = self.layer_state.profile
         assert_allclose(y, [3.5, 11.5, 19.5])
 
+    def test_slice_function(self):
+
+        self.viewer_state.function = 'slice'
+
+        # Default slices are all zero
+        assert self.viewer_state.slices == (0, 0, 0)
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 2, 4])
+        assert_allclose(y, self.data['x'][:, 0, 0])
+
+        self.viewer_state.slices = (0, 2, 1)
+        x, y = self.layer_state.profile
+        assert_allclose(y, self.data['x'][:, 2, 1])
+
+        self.viewer_state.x_att = self.data.pixel_component_ids[1]
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 1, 2, 3])
+        assert_allclose(y, self.data['x'][0, :, 1])
+
+    def test_slice_function_subset(self):
+
+        self.viewer_state.function = 'slice'
+
+        subset = self.data.new_subset()
+        subset.subset_state = self.data.id['x'] > 10
+
+        self.layer_state.layer = subset
+
+        x, y = self.layer_state.profile
+        assert_allclose(x, [0, 2, 4])
+        assert_allclose(y, [np.nan, np.nan, 16])
+
     def test_subset(self):
 
         subset = self.data.new_subset()
@@ -162,6 +199,153 @@ class TestProfileViewerState:
         x, y = self.layer_state.profile
         assert_allclose(x, [0, 2, 4])
         assert_allclose(y, [3.5, 11.5, 19.5])
+
+
+@pytest.mark.parametrize('display_unit', [None, 'cm'])
+@pytest.mark.parametrize('linked', [False, True])
+def test_slice_world_coordinates(display_unit, linked):
+    wcs = WCS(naxis=2)
+    wcs.wcs.ctype = ['WAVE', 'LINEAR']
+    wcs.wcs.cunit = ['m', '']
+    wcs.wcs.crpix = [1, 1]
+    wcs.wcs.crval = [1, 0]
+    wcs.wcs.pc = [[1, 10], [0, 1]]
+    data = Data(flux=np.arange(12).reshape(3, 4), coords=wcs)
+    dc = DataCollection([data])
+    state = ProfileViewerState()
+    layer = ProfileLayerState(viewer_state=state, layer=data)
+    state.layers.append(layer)
+    if linked:
+        target = Data(flux=data['flux'].T)
+        dc.append(target)
+        for axis in range(2):
+            dc.add_link(LinkSame(data.pixel_component_ids[axis], target.pixel_component_ids[1 - axis]))
+        layer = ProfileLayerState(viewer_state=state, layer=target)
+        state.layers.append(layer)
+    state.reference_data = data
+    state.x_att = data.world_component_ids[1]
+    state.function = 'slice'
+    state.x_display_unit = display_unit
+    scale = 100 if display_unit == 'cm' else 1
+
+    for row in (2, 1):
+        state.slices = (row, 0)
+        x, y = layer.profile
+        assert_allclose(x, (1 + 10 * row + np.arange(4)) * scale)
+        assert_allclose(y, data['flux'][row, :])
+        state.reset_limits()
+        assert_allclose([state.x_min, state.x_max], [x[0], x[-1]])
+
+
+def test_slice_function_linked():
+
+    # Slices are defined on the reference data and must be translated into
+    # the pixel frame of other linked layers
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(24).reshape((4, 3, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    p1 = data1.pixel_component_ids
+    p2 = data2.pixel_component_ids
+    # data2's first two axes are swapped relative to data1
+    dc.add_link(LinkSame(p1[0], p2[1]))
+    dc.add_link(LinkSame(p1[1], p2[0]))
+    dc.add_link(LinkSame(p1[2], p2[2]))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 2, 1)
+
+    _, y = layer1.profile
+    assert_allclose(y, data1['x'][:, 2, 1])
+
+    _, y = layer2.profile
+    assert_allclose(y, data2['y'][2, :, 1])
+
+
+def test_slice_function_out_of_bounds():
+
+    # A slice point that falls outside a linked layer raises
+    # IncompatibleDataException instead of silently plotting wrong values
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(12).reshape((3, 2, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    for cid1, cid2 in zip(data1.pixel_component_ids, data2.pixel_component_ids):
+        dc.add_link(LinkSame(cid1, cid2))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 3, 1)
+
+    _, y = layer1.profile
+    assert_allclose(y, data1['x'][:, 3, 1])
+
+    with pytest.raises(IncompatibleDataException):
+        layer2.profile
+
+    # The reference data is checked too: negative indices would otherwise
+    # wrap around silently
+    for slices in [(0, 9, 1), (0, -1, 1)]:
+        viewer_state.slices = slices
+        with pytest.raises(IncompatibleDataException):
+            layer1.profile
+
+
+def test_slice_function_nan_link():
+
+    # A link that gives NaN at the slice point disables the layer instead of
+    # failing on the conversion to an index
+
+    data1 = Data(x=np.arange(24).reshape((3, 4, 2)).astype(float), label='d1')
+    data2 = Data(y=np.arange(24).reshape((3, 4, 2)).astype(float), label='d2')
+
+    dc = DataCollection([data1, data2])
+    p1, p2 = data1.pixel_component_ids, data2.pixel_component_ids
+    dc.add_link(LinkSame(p1[0], p2[0]))
+    dc.add_link(ComponentLink([p1[1]], p2[1], using=lambda x: x * np.nan))
+    dc.add_link(LinkSame(p1[2], p2[2]))
+
+    viewer_state = ProfileViewerState()
+    layer1 = ProfileLayerState(viewer_state=viewer_state, layer=data1)
+    viewer_state.layers.append(layer1)
+    layer2 = ProfileLayerState(viewer_state=viewer_state, layer=data2)
+    viewer_state.layers.append(layer2)
+    viewer_state.reference_data = data1
+    viewer_state.function = 'slice'
+    viewer_state.slices = (0, 1, 1)
+
+    with pytest.raises(IncompatibleDataException):
+        layer2.profile
+
+
+def test_slice_function_1d():
+
+    # For 1D data the slice function should just return the data itself
+
+    data = Data(y=[1., 2., 3.], label='d1')
+    DataCollection([data])
+
+    viewer_state = ProfileViewerState()
+    layer_state = ProfileLayerState(viewer_state=viewer_state, layer=data)
+    viewer_state.layers.append(layer_state)
+    viewer_state.function = 'slice'
+
+    x, y = layer_state.profile
+    assert_allclose(x, [0, 1, 2])
+    assert_allclose(y, [1, 2, 3])
 
 
 @pytest.mark.parametrize(('value', 'limits'),
