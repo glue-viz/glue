@@ -263,7 +263,10 @@ class ProfileViewerState(MatplotlibDataViewerState):
             self._last_layers = current_layers
             return
 
-        current_attributes = [id(layer_state.attribute) for layer_state in self.layers]
+        # Not all layer state classes have an attribute property, e.g. layers
+        # added via custom layer artists from the layer_artist_maker registry.
+        current_attributes = [id(getattr(layer_state, 'attribute', None))
+                              for layer_state in self.layers]
         if not hasattr(self, '_last_attributes') or self._last_attributes != current_attributes:
             self._update_y_display_unit_choices()
             self._last_attributes = current_attributes
@@ -287,11 +290,12 @@ class ProfileViewerState(MatplotlibDataViewerState):
 
         component_units = set()
         for layer_state in self.layers:
+            attribute = getattr(layer_state, 'attribute', None)
             # NOTE: only Data and its subclasses support specifying units
-            if isinstance(layer_state.layer, Data):
-                component = layer_state.layer.get_component(layer_state.attribute)
+            if attribute is not None and isinstance(layer_state.layer, Data):
+                component = layer_state.layer.get_component(attribute)
                 if component.units:
-                    component_units.add((layer_state.layer, layer_state.attribute, component.units))
+                    component_units.add((layer_state.layer, attribute, component.units))
         y_choices = [None] + find_unit_choices(component_units)
         ProfileViewerState.y_display_unit.set_choices(self, y_choices)
 
@@ -305,7 +309,8 @@ class ProfileViewerState(MatplotlibDataViewerState):
             return
 
         for layer in self.layers:
-            layer.reset_cache()
+            if hasattr(layer, 'reset_cache'):
+                layer.reset_cache()
 
         # This signal can get emitted if just the choices but not the actual
         # reference data change, so we check here that the reference data has

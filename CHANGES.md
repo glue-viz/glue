@@ -1,5 +1,28 @@
 # Full changelog
 
+## v1.28.0 - 2026-10-21
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### New Features
+
+* Add layer artists for vertical and horizontal lines in viewers by @astrofrog in https://github.com/glue-viz/glue/pull/2603
+
+#### Bug Fixes
+
+* Check if reference data before updating volume attributes by @Carifio24 in https://github.com/glue-viz/glue/pull/2588
+* Write the plugins config file atomically and tolerate duplicate options when reading it by @astrofrog in https://github.com/glue-viz/glue/pull/2587
+* Add ndim check for image viewer by @MatthewPortman in https://github.com/glue-viz/glue/pull/2594
+
+#### Other Changes
+
+* Pass viewer state through to superclass in 3D layer states by @Carifio24 in https://github.com/glue-viz/glue/pull/2589
+* Remove VisPy volume layer state patch by @Carifio24 in https://github.com/glue-viz/glue/pull/2591
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci[bot] in https://github.com/glue-viz/glue/pull/2593
+
+**Full Changelog**: https://github.com/glue-viz/glue/compare/v1.27.0...v1.28.0
+
 ## v1.27.0 - 2026-06-25
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
