@@ -11,7 +11,7 @@ on:
 jobs:
   initial_checks:
     # Mandatory checks before CI tests
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1 # v3.2.1
     with:
       coverage: false
       envs: |
@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1 # v3.2.1
     with:
       coverage: codecov-oidc
 
@@ -67,7 +67,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1 # v3.2.1
     with:
       coverage: codecov-oidc
 
@@ -75,7 +75,7 @@ jobs:
         - linux: py315-test-dev
 
   build:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@e25a8c5d18e2499bdc4381670917b73e3107dca1 # v3.1.1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/publish_pure_python.yml@8d5ad7efc8e84a051639373f6ea0d10441eafee1 # v3.2.1
     with:
       python-version: '3.14'
       test_extras: 'test'
@@ -96,7 +96,7 @@ jobs:
       name: pypi
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           pattern: dist-*
