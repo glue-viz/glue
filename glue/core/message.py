@@ -127,10 +127,18 @@ class DataMessage(Message):
 
 
 class DataRenameComponentMessage(DataMessage):
+    """
+    Message sent when a component is renamed.
 
-    def __init__(self, sender, component_id, tag=None):
+    The ``component_id`` attribute is the renamed component, whose ``label``
+    is already the new label, and ``old_label`` is the label it had before the
+    rename (or `None` if not known).
+    """
+
+    def __init__(self, sender, component_id, tag=None, old_label=None):
         super(DataRenameComponentMessage, self).__init__(sender, tag=tag)
         self.component_id = component_id
+        self.old_label = old_label
 
 
 class DataAddComponentMessage(DataMessage):

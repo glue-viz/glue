@@ -83,9 +83,10 @@ class ComponentID(object):
             Label changes are not currently tracked by client classes.
             Labels should only be changd before creating other client objects.
         """
+        old_label = self._label
         self._label = str(value)
         if self.parent is not None and self.parent.hub:
-            msg = DataRenameComponentMessage(self.parent, self)
+            msg = DataRenameComponentMessage(self.parent, self, old_label=old_label)
             self.parent.hub.broadcast(msg)
 
     def __str__(self):
