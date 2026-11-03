@@ -377,6 +377,33 @@ def test_rename_cid_used_in_derived():
     np.testing.assert_equal(data['b'], [4, 5, 2])
 
 
+def test_rename_cid_message():
+    # The rename message should give the label from before the rename, since
+    # by the time it is received the component ID already has the new label
+    data = Data(a=[3, 4, 1])
+    dc = DataCollection([data])
+
+    class Listener(core.hub.HubListener):
+
+        def __init__(self):
+            self.messages = []
+
+        def receive(self, message):
+            self.messages.append(message)
+
+    listener = Listener()
+    dc.hub.subscribe(listener, core.message.DataRenameComponentMessage,
+                     handler=listener.receive)
+
+    data.id['a'].label = 'x'
+
+    assert len(listener.messages) == 1
+    message = listener.messages[0]
+    assert message.data is data
+    assert message.component_id is data.id['x']
+    assert message.old_label == 'a'
+
+
 @pytest.mark.xfail
 def test_update_cid_used_in_derived():
     # Unit test to make sure expressions still work when updating the component
