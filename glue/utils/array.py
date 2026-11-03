@@ -725,7 +725,8 @@ def random_views_for_dask_array(array, n_random_samples, n_chunks):
     Return a list of views to extract random values from a dask array in an
     efficient way taking into account the chunk layout. This will return
     n_chunks views such that all views together add up to approximately
-    n_random_samples samples.
+    n_random_samples samples. Each view is placed at a random position
+    inside a randomly selected chunk.
     """
 
     # Find the indices of the chunks to extract
@@ -744,6 +745,11 @@ def random_views_for_dask_array(array, n_random_samples, n_chunks):
             start = chunk_indices[idim][indices[idim][ichunk]]
             stop = chunk_indices[idim][indices[idim][ichunk] + 1]
             if stop - start > remaining_size:
+                # Pick a random position for the view inside the chunk rather
+                # than always using the start of the chunk, otherwise any
+                # structure that repeats from one chunk to the next would be
+                # sampled in the same way in every chunk.
+                start += np.random.randint(stop - start - remaining_size + 1, dtype=np.int64)
                 stop = start + remaining_size
             slices.append(slice(start, stop))
             remaining_size //= (stop - start)
