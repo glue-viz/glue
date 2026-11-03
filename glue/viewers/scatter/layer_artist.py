@@ -685,6 +685,9 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
 
         regions = self.layer[region_att]
 
+        def flip_xy(g):
+            return transform(lambda x, y: (y, x), g)
+
         if self._viewer_state._display_world:
             # If we are using world coordinates (i.e. the regions are specified in world coordinates)
             # we need to transform the geometries of the regions into pixel coordinates for display
@@ -697,9 +700,23 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                 tfunc = data.get_transform_to_cids([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
                 regions = np.array([transform(tfunc, g) for g in regions])
 
+                # The regions are now in the order (x_att_world, y_att_world),
+                # but world_to_pixel_values takes and returns coordinates in WCS
+                # order, which is the reverse of the numpy ordering used by
+                # world_component_ids. When the viewer shows those two axes the
+                # other way round we therefore swap the coordinates over for the
+                # conversion and swap the resulting pixel coordinates back.
+                world_cids = list(self._viewer_state.reference_data.world_component_ids)
+                axes_swapped = (world_cids.index(self._viewer_state.x_att_world) <
+                                world_cids.index(self._viewer_state.y_att_world))
+
                 # Then convert to pixels for display
                 world2pix = self._viewer_state.reference_data.coords.world_to_pixel_values
+                if axes_swapped:
+                    regions = np.array([flip_xy(g) for g in regions])
                 regions = np.array([transform_shapely(world2pix, g) for g in regions])
+                if axes_swapped:
+                    regions = np.array([flip_xy(g) for g in regions])
             except ValueError:
                 self.disable_invalid_attributes([self._viewer_state.x_att_world, self._viewer_state.y_att_world])
                 return
@@ -712,26 +729,22 @@ class ScatterRegionLayerArtist(MatplotlibLayerArtist):
                 self.disable_invalid_attributes([self._viewer_state.x_att, self._viewer_state.y_att])
                 return
 
-        # Now we flip the x and y coordinates of each point in the regions if necessary.
-        # This has to happen after the transform into pixel coordinates.
-        def flip_xy(g):
-            return transform(lambda x, y: (y, x), g)
-
-        x_no_match = False
-        if np.array_equal(y, yy):
-            if np.array_equal(x, xx):
-                self.enable()
-            else:
-                x_no_match = True
+        # The transform above maps the region centers onto the attributes shown
+        # in the viewer, so it also tells us which viewer attribute each center
+        # ends up as, including when x and y are swapped over. Check that it
+        # agrees with the values the viewer reports for those attributes; if it
+        # does not then the links do not describe a transformation we can draw.
+        if tfunc is None:
+            x_trans, y_trans = x, y
         else:
-            if np.array_equal(y, xx) and np.array_equal(x, yy):  # This means x and y have been swapped
-                regions = np.array([flip_xy(g) for g in regions])
-                self.enable()
-            else:
-                self.disable_invalid_attributes(self._viewer_state.y_att)
-                if x_no_match:
-                    self.disable_invalid_attributes(self._viewer_state.x_att)
-                return
+            x_trans, y_trans = tfunc(x, y)
+
+        if np.array_equal(x_trans, xx) and np.array_equal(y_trans, yy):
+            self.enable()
+        else:
+            self.disable_invalid_attributes(self._viewer_state.x_att,
+                                            self._viewer_state.y_att)
+            return
 
         # decompose GeometryCollections
         geoms, multiindex = _sanitize_geoms(regions, prefix="Geom")

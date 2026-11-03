@@ -296,6 +296,28 @@ class TestRegionData(object):
         assert_array_equal(translation_func(x_data, y_data),
                            [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
 
+    def test_get_transformation_to_crossed_cids(self):
+
+        # Regression test for a bug where the transformation fed the centers to
+        # the links in the order (center_x, center_y) regardless of which center
+        # each link actually takes, so crossed links gave the wrong values.
+
+        dc = DataCollection([self.region_data, self.other_data])
+        viewer_x_att = self.other_data.id['x']
+        viewer_y_att = self.other_data.id['y']
+
+        dc.add_link(LinkTwoWay(self.region_data.center_y_id, viewer_x_att, forwards, backwards))
+        dc.add_link(LinkTwoWay(self.region_data.center_x_id, viewer_y_att, shift, unshift))
+
+        translation_func = self.region_data.get_transform_to_cids([viewer_x_att, viewer_y_att])
+        x_data = self.region_data[self.region_data.center_x_id]
+        y_data = self.region_data[self.region_data.center_y_id]
+
+        assert_array_equal(translation_func(x_data, y_data),
+                           [forwards(y_data), shift(x_data)])
+        assert_array_equal(translation_func(x_data, y_data),
+                           [self.region_data[viewer_x_att], self.region_data[viewer_y_att]])
+
     def test_errors_too_many_viewer_comps(self):
         dc = DataCollection([self.region_data, self.other_data, self.mid_data])
         self.other_data.add_component(np.array([4, 5, 6]), label='z')
