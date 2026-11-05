@@ -435,3 +435,149 @@ class TestVersionedDict(object):
         d = VersionedDict()
         with pytest.raises(ValueError) as exc:
             d['key', 'bad'] = 4
+
+
+def _tampered_clone(obj, modify):
+    """
+    Serialize ``obj``, apply ``modify`` to every record in the session
+    (including nested ones), and load the session again.
+    """
+
+    gs = GlueSerializer(obj)
+    oid = gs.id(obj)
+    session = json.loads(gs.dumps())
+
+    def walk(item):
+        if isinstance(item, dict):
+            modify(item)
+            for value in item.values():
+                walk(value)
+        elif isinstance(item, list):
+            for value in item:
+                walk(value)
+
+    walk(session)
+
+    return GlueUnSerializer.loads(json.dumps(session)).object(oid)
+
+
+def _identity_link():
+    from glue.core.link_helpers import identity
+    data = core.Data(x=[1, 2, 3], label='data')
+    return core.ComponentLink([data.id['x']], core.ComponentID('y'), using=identity)
+
+
+def _replace_function(name):
+    def modify(rec):
+        if 'function' in rec:
+            rec['function'] = name
+    return modify
+
+
+def test_session_function_allowed():
+    link = _tampered_clone(_identity_link(), _replace_function('numpy.sqrt'))
+    assert link.get_using() is np.sqrt
+
+
+@pytest.mark.parametrize('name', ['glue.utils.misc.lookup_class',
+                                  'glue.config.load_configuration',
+                                  'numpy.load',
+                                  'os.getcwd',
+                                  'builtins.print'])
+def test_session_function_not_allowed(name):
+    from glue.core.state import UntrustedSessionError
+    with pytest.raises(UntrustedSessionError, match='GLUE_TRUSTED_SESSIONS'):
+        _tampered_clone(_identity_link(), _replace_function(name))
+
+
+def test_session_function_trusted(monkeypatch):
+    from glue.utils.misc import lookup_class
+    monkeypatch.setenv('GLUE_TRUSTED_SESSIONS', '1')
+    link = _tampered_clone(_identity_link(), _replace_function('glue.utils.misc.lookup_class'))
+    assert link.get_using() is lookup_class
+
+
+def test_session_config_function(monkeypatch):
+
+    # Functions defined in the user's config.py can be loaded
+
+    import glue
+
+    def config_func(x):
+        return x
+
+    config_func.__module__ = glue.env.__name__
+    monkeypatch.setattr(glue.env, 'config_func', config_func, raising=False)
+    monkeypatch.setitem(__import__('sys').modules, glue.env.__name__, glue.env)
+
+    link = _tampered_clone(_identity_link(),
+                           _replace_function(glue.env.__name__ + '.config_func'))
+    assert link.get_using() is config_func
+
+
+@pytest.mark.parametrize('name', ['glue_nonexistent_package.Data',
+                                  'glue.__main__.Data'])
+def test_session_type_not_allowed(name):
+    from glue.core.state import UntrustedSessionError
+
+    def modify(rec):
+        if rec.get('_type') == 'glue.core.component_link.ComponentLink':
+            rec['_type'] = name
+
+    with pytest.raises(UntrustedSessionError):
+        _tampered_clone(_identity_link(), modify)
+
+
+def test_session_python2_builtin_type():
+    from glue.core.state import _lookup_session_object
+    assert _lookup_session_object('__builtin__.dict') is dict
+
+
+def test_session_pickled_function_not_allowed():
+    from glue.core.state import GlueSerializeError
+
+    def modify(rec):
+        if 'function' in rec:
+            del rec['function']
+            rec['pickle'] = 'abc'
+
+    with pytest.raises(GlueSerializeError, match='pickled functions'):
+        _tampered_clone(_identity_link(), modify)
+
+
+def test_session_method_not_allowed():
+
+    # Methods can only be loaded for link collections
+
+    from glue.core.state import UntrustedSessionError
+
+    data = core.Data(x=[1, 2, 3], label='data')
+    link = core.ComponentLink([data.id['x']], core.ComponentID('y'),
+                              using=data.get_component)
+
+    with pytest.raises(UntrustedSessionError, match='get_component'):
+        _tampered_clone(link, lambda rec: None)
+
+
+def test_session_parsed_link_expression():
+
+    # Expressions in derived components are not evaluated with eval
+
+    from glue.core.parse import ParsedCommand, ParsedComponentLink
+    from glue.core.safe_expression import UnsafeExpressionError
+
+    data = core.Data(x=[1, 2, 3], label='data')
+    link = ParsedComponentLink(core.ComponentID('y'),
+                               ParsedCommand('{x} + 1', {'x': data.id['x']}))
+    data.add_component_link(link)
+
+    assert_equal(clone(data)['y'], [2, 3, 4])
+
+    def modify(rec):
+        if 'cmd' in rec:
+            rec['cmd'] = "__import__('math').sqrt(4)"
+
+    data2 = _tampered_clone(data, modify)
+
+    with pytest.raises(UnsafeExpressionError):
+        data2['y']

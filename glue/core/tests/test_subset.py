@@ -897,7 +897,10 @@ class TestCloneSubsetStates():
 
         assert_equal(data_clone.subsets[0].to_mask(), [0, 1, 0, 0])
 
-    def test_roi_subset_state_with_pretransform(self):
+    def test_roi_subset_state_with_pretransform(self, monkeypatch):
+        # example_transform is not a function that glue loads from untrusted
+        # session files, so we mark sessions as trusted here.
+        monkeypatch.setenv('GLUE_TRUSTED_SESSIONS', '1')
         roi = RectangularROI(xmin=2, xmax=4, ymin=0, ymax=1)
         subset = self.data.new_subset()
         subset.subset_state = RoiSubsetState(xatt=self.data.id['a'], yatt=self.data.id['c'],

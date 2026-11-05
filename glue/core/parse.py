@@ -1,9 +1,12 @@
 import re
 import random
 
+import numpy as np
+
 from glue.core.component_link import ComponentLink
 from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
+from glue.core.safe_expression import build_namespace, evaluate_expression
 
 
 # The following expression matches substrings surrounded by curly brackets
@@ -103,27 +106,6 @@ def _dereference(cmd, references):
     return TAG_RE.sub(sub_func, cmd)
 
 
-def _dereference_random(cmd):
-    """
-    Dereference references in the template command, to refer
-    to random floating-point values. This is used to quickly test that the
-    command evaluates without errors.
-
-    Parameters
-    ----------
-    cmd : str
-        Command string
-
-    Returns
-    -------
-    A new command, where all the tags have been subsituted by floating point values
-    """
-    def sub_func(match):
-        tag = match.group('tag')
-        return str(random.random())
-    return TAG_RE.sub(sub_func, cmd)
-
-
 class InvalidTagError(ValueError):
     def __init__(self, tag, references):
         msg = ("Tag %s not in reference mapping: %s" %
@@ -189,57 +171,48 @@ class ParsedCommand(object):
     def reference_list(self):
         return _reference_list(self._cmd, self._references)
 
-    def evaluate(self, data, view=None):
+    def _evaluate(self, values):
+        """
+        Evaluate the command, given a function that returns the value to use
+        for each reference.
+        """
 
         from glue import env
 
-        # pylint: disable=W0613, W0612
-        references = self._references
-        cmd = _dereference(self._cmd, self._references)
+        namespace = build_namespace(env)
+        names = {}
 
-        scope = vars(env)
-        scope['__view'] = view
+        def sub_func(match):
+            tag = match.group('tag')
+            if tag not in names:
+                names[tag] = '_glue_ref_%i' % len(names)
+                namespace[names[tag]] = values(self._references[tag])
+            return names[tag]
 
-        global_variables = vars(env)
+        return evaluate_expression(TAG_RE.sub(sub_func, self._cmd), namespace)
 
-        # We now import math modules if not already defined in local or
-        # global variables
-        if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy  # noqa
-        if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np  # noqa
-        if 'math' not in global_variables and 'math' not in locals():
-            import math  # noqa
+    def evaluate(self, data, view=None):
 
-        result = eval(cmd, global_variables, locals())  # careful!
+        def values(reference):
+            if isinstance(reference, ComponentID):
+                return data[reference, view]
+            elif isinstance(reference, Subset):
+                return reference.to_mask(view)
+            else:
+                raise TypeError("Reference %s maps to unrecognized type: %s" %
+                                (reference, type(reference)))
 
-        # At this point, np may have been defined in the globals but not the
-        # locals so we import it manually to avoid any issues.
-        import numpy as np  # noqa
+        result = self._evaluate(values)
+
         if data is not None and np.isscalar(result):
             result = np.ones(data.shape) * result
 
         return result
 
     def evaluate_test(self, view=None):
-        from glue import env
-        cmd = _dereference_random(self._cmd)
-
-        scope = vars(env)
-        scope['__view'] = view
-
-        global_variables = vars(env)
-
-        # We now import math modules if not already defined in local or
-        # global variables
-        if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy  # noqa
-        if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np  # noqa
-        if 'math' not in global_variables and 'math' not in locals():
-            import math  # noqa
-
-        return eval(cmd, global_variables, locals())  # careful!
+        # Substitute random floating-point values for the references, to
+        # quickly test that the command evaluates without errors.
+        return self._evaluate(lambda reference: random.random())
 
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,
