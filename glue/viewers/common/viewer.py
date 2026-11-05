@@ -406,7 +406,7 @@ class Viewer(BaseViewer):
         # callback here.
         with viewer._layer_artist_container.ignore_callbacks():
             for l in rec['layers']:
-                cls = _lookup_session_object(l.pop('_type'))
+                cls = _lookup_session_object(l.pop('_type'), trusted=context.trusted)
                 if not (isinstance(cls, type) and issubclass(cls, LayerArtist)):
                     raise GlueSerializeError(f"{cls} is not a layer artist class")
                 layer_state = context.object(l['state'])

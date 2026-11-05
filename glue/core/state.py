@@ -126,9 +126,9 @@ def save(filename, obj):
         s.dump(f)
 
 
-def load(filename):
+def load(filename, trusted=False):
     with open(filename, 'r') as f:
-        s = GlueUnSerializer.load(f)
+        s = GlueUnSerializer.load(f, trusted=trusted)
     return s.object('__main__')
 
 
@@ -152,16 +152,18 @@ class UntrustedSessionError(GlueSerializeError):
     not load from session files by default.
     """
 
-    def __init__(self, message):
-        super().__init__(message + ". If you trust this session file, you can set the "
-                         "GLUE_TRUSTED_SESSIONS environment variable to 1 to load it anyway.")
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__(reason + ". If you trust this session file, you can load it with "
+                         "trusted=True or set the GLUE_TRUSTED_SESSIONS environment "
+                         "variable to 1.")
 
 
 def _trusted_sessions():
     return os.environ.get('GLUE_TRUSTED_SESSIONS', '0').lower() in ('1', 'true', 'yes')
 
 
-def _lookup_session_object(name):
+def _lookup_session_object(name, trusted=False):
     """
     Look up a class or function referred to by name in a session file.
 
@@ -175,7 +177,7 @@ def _lookup_session_object(name):
         name = PATH_PATCHES[name]
     if name.startswith('__builtin__.'):  # Python 2 sessions
         name = 'builtins.' + name[len('__builtin__.'):]
-    if not _trusted_sessions():
+    if not trusted:
         parts = name.split('.')
         if any(part.startswith('__') for part in parts):
             raise UntrustedSessionError(f"Session file refers to {name}, which is not allowed")
@@ -220,9 +222,9 @@ def _is_session_function(function):
             getattr(env, name, None) is function)
 
 
-def _lookup_session_function(name):
-    function = _lookup_session_object(name)
-    if not _trusted_sessions() and not _is_session_function(function):
+def _lookup_session_function(name, trusted=False):
+    function = _lookup_session_object(name, trusted=trusted)
+    if not trusted and not _is_session_function(function):
         raise UntrustedSessionError(f"Session file refers to function {name}, which "
                                     "is not a registered data factory or link function")
     return function
@@ -532,9 +534,12 @@ class GlueSerializer(object):
 class GlueUnSerializer(object):
     dispatch = VersionedDict()
 
-    def __init__(self, string=None, fobj=None):
+    def __init__(self, string=None, fobj=None, trusted=False):
         if string is None and fobj is None:
             raise ValueError("Most provide either a string or a file")
+        # Whether to allow the session to refer to any class or function,
+        # rather than only those that glue loads from session files by default
+        self.trusted = trusted or _trusted_sessions()
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
@@ -548,12 +553,12 @@ class GlueUnSerializer(object):
             patcher.function(self._rec)
 
     @classmethod
-    def loads(cls, string):
-        return cls(string=string)
+    def loads(cls, string, trusted=False):
+        return cls(string=string, trusted=trusted)
 
     @classmethod
-    def load(cls, fobj):
-        return cls(fobj=fobj)
+    def load(cls, fobj, trusted=False):
+        return cls(fobj=fobj, trusted=trusted)
 
     @classmethod
     def unserializes(cls, obj, version=1):
@@ -564,7 +569,7 @@ class GlueUnSerializer(object):
 
     def _dispatch(self, rec):
 
-        typ = _lookup_session_object(rec['_type'])
+        typ = _lookup_session_object(rec['_type'], trusted=self.trusted)
 
         if typ is None:
             raise GlueSerializeError("Unkonwn type %s" % rec['_type'])
@@ -755,7 +760,7 @@ def _save_composite_subset_state(state, context):
 
 @loader(CompositeSubsetState)
 def _load_composite_subset_state(rec, context):
-    cls = _lookup_session_object(rec['_type'])
+    cls = _lookup_session_object(rec['_type'], trusted=context.trusted)
     result = cls(context.object(rec['state1']),
                  context.object(rec['state2']))
     return result
@@ -1191,7 +1196,7 @@ def _load_component(rec, context):
     if 'log' in rec:
         return context.object(rec['log']).component(rec['log_item'])
 
-    cls = _lookup_session_object(rec['_type'])
+    cls = _lookup_session_object(rec['_type'], trusted=context.trusted)
 
     return cls(data=context.object(rec['data']),
                units=rec['units'])
@@ -1304,7 +1309,7 @@ def _save_builtin_function(function, context):
 
 @loader(types.BuiltinFunctionType)
 def _load_builtin_function(rec, context):
-    return _lookup_session_function(rec['function'])
+    return _lookup_session_function(rec['function'], trusted=context.trusted)
 
 
 @saver(types.FunctionType)
@@ -1320,7 +1325,7 @@ def _save_function(function, context):
 def _load_function(rec, context):
     if 'pickle' in rec:
         raise GlueSerializeError("Loading pickled functions from session files is not supported")
-    return _lookup_session_function(rec['function'])
+    return _lookup_session_function(rec['function'], trusted=context.trusted)
 
 
 @saver(types.MethodType)
@@ -1333,7 +1338,7 @@ def _save_method(method, context):
 def _load_method(rec, context):
     from glue.core.link_helpers import LinkCollection
     instance = context.object(rec['instance'])
-    if not _trusted_sessions() and (not isinstance(instance, LinkCollection) or
+    if not context.trusted and (not isinstance(instance, LinkCollection) or
                                     rec['method'].startswith('_')):
         raise UntrustedSessionError(f"Session file refers to method {rec['method']} of "
                                     f"{type(instance).__name__}, which is not allowed")

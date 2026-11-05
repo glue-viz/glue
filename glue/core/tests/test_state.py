@@ -437,7 +437,7 @@ class TestVersionedDict(object):
             d['key', 'bad'] = 4
 
 
-def _tampered_clone(obj, modify):
+def _tampered_clone(obj, modify, trusted=False):
     """
     Serialize ``obj``, apply ``modify`` to every record in the session
     (including nested ones), and load the session again.
@@ -458,7 +458,7 @@ def _tampered_clone(obj, modify):
 
     walk(session)
 
-    return GlueUnSerializer.loads(json.dumps(session)).object(oid)
+    return GlueUnSerializer.loads(json.dumps(session), trusted=trusted).object(oid)
 
 
 def _identity_link():
@@ -495,6 +495,47 @@ def test_session_function_trusted(monkeypatch):
     monkeypatch.setenv('GLUE_TRUSTED_SESSIONS', '1')
     link = _tampered_clone(_identity_link(), _replace_function('glue.utils.misc.lookup_class'))
     assert link.get_using() is lookup_class
+
+
+def test_session_function_trusted_argument():
+    from glue.utils.misc import lookup_class
+    link = _tampered_clone(_identity_link(), _replace_function('glue.utils.misc.lookup_class'),
+                           trusted=True)
+    assert link.get_using() is lookup_class
+
+
+def test_untrusted_session_error_reason():
+    from glue.core.state import UntrustedSessionError
+    with pytest.raises(UntrustedSessionError) as exc:
+        _tampered_clone(_identity_link(), _replace_function('os.getcwd'))
+    assert exc.value.reason == ('Session file refers to function os.getcwd, which is not '
+                                'a registered data factory or link function')
+    assert 'trusted=True' in str(exc.value)
+
+
+def test_restore_session_trusted(tmp_path):
+
+    from glue.core.application_base import Application
+    from glue.core.state import UntrustedSessionError
+
+    data1 = core.Data(x=[1, 2, 3], label='data1')
+    data2 = core.Data(y=[1, 2, 3], label='data2')
+    app = Application(data_collection=core.DataCollection([data1, data2]))
+    app.data_collection.add_link(core.ComponentLink([data1.id['x']], data2.id['y'],
+                                                    using=np.sqrt))
+    filename = str(tmp_path / 'session.glu')
+    app.save_session(filename)
+
+    with open(filename) as f:
+        session = f.read()
+    with open(filename, 'w') as f:
+        f.write(session.replace('"numpy.sqrt"', '"os.getcwd"'))
+
+    with pytest.raises(UntrustedSessionError):
+        Application.restore_session(filename)
+
+    app2 = Application.restore_session(filename, trusted=True)
+    assert len(app2.data_collection) == 2
 
 
 def test_session_config_function(monkeypatch):
