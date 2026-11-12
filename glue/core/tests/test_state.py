@@ -102,6 +102,26 @@ def test_data_style():
     assert d2.style.color == 'blue'
 
 
+def test_data_style_preferred_cmap():
+    # The preferred_cmap setter turns a name into a Colormap, which is not
+    # JSON-serializable, so it is saved and restored by name
+    d = core.Data(x=[1, 2, 3])
+    d.style.preferred_cmap = 'viridis'
+    gs = GlueSerializer(d)
+    dump = gs.dumps()
+    assert json.loads(dump)[gs.id(d)]['style']['preferred_cmap'] == 'viridis'
+    d2 = GlueUnSerializer.loads(dump).object(gs.id(d))
+    assert d2.style.preferred_cmap.name == 'viridis'
+
+
+def test_data_style_unknown_preferred_cmap():
+    # A colormap that is not registered under its name loads as None
+    from matplotlib.colors import ListedColormap
+    d = core.Data(x=[1, 2, 3])
+    d.style.preferred_cmap = ListedColormap(['red', 'blue'], name='not-registered')
+    assert clone(d).style.preferred_cmap is None
+
+
 def test_user_patch_is_called():
     @session_patch()
     def a_patch(session):
