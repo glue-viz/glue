@@ -743,16 +743,23 @@ def _load_roi(roi, context):
 
 @saver(VisualAttributes)
 def _save_style(style, context):
-    return dict((a, getattr(style, a)) for a in style._atts)
+    result = dict((a, getattr(style, a)) for a in style._atts)
+    # A Colormap is not JSON-serializable, so store its name
+    result['preferred_cmap'] = getattr(style.preferred_cmap, 'name', None)
+    return result
 
 
 @loader(VisualAttributes)
 def _load_style(rec, context):
     result = VisualAttributes()
-    if 'preferred_cmap' in result._atts:
-        result._atts.remove('preferred_cmap')
     for attr in result._atts:
-        setattr(result, attr, rec[attr])
+        if attr != 'preferred_cmap':
+            setattr(result, attr, rec[attr])
+    # Older sessions have no preferred_cmap, or None
+    try:
+        result.preferred_cmap = rec.get('preferred_cmap')
+    except ValueError:
+        logger.warning("Could not restore the preferred colormap %r", rec['preferred_cmap'])
     return result
 
 
