@@ -435,3 +435,51 @@ class TestVersionedDict(object):
         d = VersionedDict()
         with pytest.raises(ValueError) as exc:
             d['key', 'bad'] = 4
+
+
+def _tampered_clone(obj, modify):
+    """
+    Serialize ``obj``, apply ``modify`` to every record in the session
+    (including nested ones), and load the session again.
+    """
+
+    gs = GlueSerializer(obj)
+    oid = gs.id(obj)
+    session = json.loads(gs.dumps())
+
+    def walk(item):
+        if isinstance(item, dict):
+            modify(item)
+            for value in item.values():
+                walk(value)
+        elif isinstance(item, list):
+            for value in item:
+                walk(value)
+
+    walk(session)
+
+    return GlueUnSerializer.loads(json.dumps(session)).object(oid)
+
+
+def test_session_parsed_link_expression():
+
+    # Expressions in derived components are not evaluated with eval
+
+    from glue.core.parse import ParsedCommand, ParsedComponentLink
+    from glue.core.safe_expression import UnsafeExpressionError
+
+    data = core.Data(x=[1, 2, 3], label='data')
+    link = ParsedComponentLink(core.ComponentID('y'),
+                               ParsedCommand('{x} + 1', {'x': data.id['x']}))
+    data.add_component_link(link)
+
+    assert_equal(clone(data)['y'], [2, 3, 4])
+
+    def modify(rec):
+        if 'cmd' in rec:
+            rec['cmd'] = "__import__('math').sqrt(4)"
+
+    data2 = _tampered_clone(data, modify)
+
+    with pytest.raises(UnsafeExpressionError):
+        data2['y']
