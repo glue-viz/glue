@@ -151,29 +151,49 @@ def find_unsafe_expressions(filename):
     -------
     expressions : list of dict
         A list with one dictionary for each such expression, containing the
-        ``expression`` itself, the ``label`` of the attribute that the
-        expression defines (or `None` if this could not be determined), and
-        the ``reason`` why the expression is not allowed.
+        ``expression`` itself as stored in the session file (this is what
+        should be passed to ``allowed_expressions``), a ``rendered`` version
+        of the expression that is suitable for showing to users, in which
+        the identifiers of the attributes that the expression refers to
+        have been replaced by their labels, the ``label`` of the attribute
+        that the expression defines (or `None` if this could not be
+        determined), and the ``reason`` why the expression is not allowed.
     """
 
-    from glue.core.parse import unsafe_expression_reason
+    from glue.core.parse import TAG_RE, unsafe_expression_reason
 
     with open(filename, 'r') as f:
         rec = json.load(f)
 
+    if not isinstance(rec, dict):
+        raise GlueSerializeError(f"{filename} is not a valid session file")
+
     results = []
+
+    def render(cmd, references):
+
+        def sub_func(match):
+            target = references.get(match.group('tag'))
+            target = rec.get(target) if isinstance(target, str) else target
+            if isinstance(target, dict) and isinstance(target.get('label'), str):
+                return '{' + target['label'] + '}'
+            return match.group(0)
+
+        return TAG_RE.sub(sub_func, cmd)
 
     def walk(item, label=None):
         if isinstance(item, dict):
             if 'parsed' in item and isinstance(item.get('to'), str):
                 # A derived component - the label is stored in the record
                 # for the component ID that the expression defines
-                target = rec.get(item['to']) if isinstance(rec, dict) else None
+                target = rec.get(item['to'])
                 if isinstance(target, dict) and isinstance(target.get('label'), str):
                     label = target['label']
-            if isinstance(item.get('cmd'), str) and 'references' in item:
+            if isinstance(item.get('cmd'), str) and isinstance(item.get('references'), dict):
                 reason = unsafe_expression_reason(item['cmd'])
-                entry = dict(expression=item['cmd'], label=label, reason=reason)
+                entry = dict(expression=item['cmd'],
+                             rendered=render(item['cmd'], item['references']),
+                             label=label, reason=reason)
                 if reason is not None and entry not in results:
                     results.append(entry)
             for value in item.values():

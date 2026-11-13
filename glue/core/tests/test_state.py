@@ -565,7 +565,9 @@ def test_find_unsafe_expressions(tmp_path):
         json.dump(session, f)
 
     assert find_unsafe_expressions(filename) == [
-        dict(expression=expressions[0], label='y',
+        dict(expression=expressions[0],
+             rendered="__import__('math').sqrt(4) + {x} + 1",
+             label='y',
              reason='Name __import__ is not allowed in expressions')]
 
     # By default the expression is not evaluated
