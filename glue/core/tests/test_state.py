@@ -437,7 +437,7 @@ class TestVersionedDict(object):
             d['key', 'bad'] = 4
 
 
-def _tampered_clone(obj, modify):
+def _tampered_clone(obj, modify, **kwargs):
     """
     Serialize ``obj``, apply ``modify`` to every record in the session
     (including nested ones), and load the session again.
@@ -458,28 +458,121 @@ def _tampered_clone(obj, modify):
 
     walk(session)
 
-    return GlueUnSerializer.loads(json.dumps(session)).object(oid)
+    return GlueUnSerializer.loads(json.dumps(session), **kwargs).object(oid)
 
 
-def test_session_parsed_link_expression():
-
-    # Expressions in derived components are not evaluated with eval
-
+def _data_with_expression():
     from glue.core.parse import ParsedCommand, ParsedComponentLink
-    from glue.core.safe_expression import UnsafeExpressionError
-
     data = core.Data(x=[1, 2, 3], label='data')
     link = ParsedComponentLink(core.ComponentID('y'),
                                ParsedCommand('{x} + 1', {'x': data.id['x']}))
     data.add_component_link(link)
+    return data
+
+
+def _replace_expression(rec):
+    # Make the expression use something that is harmless but which is not
+    # allowed in expressions by default. Note that the references in the
+    # expressions in session files are identifiers rather than labels.
+    if 'cmd' in rec:
+        rec['cmd'] = "__import__('math').sqrt(4) + " + rec['cmd']
+
+
+def test_session_parsed_link_expression():
+
+    # Expressions in derived components that use something that is not
+    # allowed by default are not evaluated, and the component is filled with
+    # NaN values.
+
+    data = _data_with_expression()
 
     assert_equal(clone(data)['y'], [2, 3, 4])
 
-    def modify(rec):
-        if 'cmd' in rec:
-            rec['cmd'] = "__import__('math').sqrt(4)"
+    with pytest.warns(UserWarning, match="will not be evaluated: Name __import__ is not allowed"):
+        data2 = _tampered_clone(data, _replace_expression)
 
-    data2 = _tampered_clone(data, modify)
+    assert_equal(data2['y'], [np.nan, np.nan, np.nan])
+    assert_equal(data2['y', [0, 2]], [np.nan, np.nan])
 
-    with pytest.raises(UnsafeExpressionError):
-        data2['y']
+
+def test_session_parsed_link_expression_allowed():
+
+    # Expressions can be explicitly allowed, in which case they can use any
+    # name, attribute or function.
+
+    data = _data_with_expression()
+
+    # Other expressions are not affected
+    data2 = _tampered_clone(data, _replace_expression,
+                            allowed_expressions=['{x} + 2'])
+    assert_equal(data2['y'], [np.nan, np.nan, np.nan])
+
+    gs = GlueSerializer(data)
+    session = json.loads(gs.dumps())
+    expressions = []
+
+    def find(item):
+        if isinstance(item, dict):
+            if 'cmd' in item:
+                _replace_expression(item)
+                expressions.append(item['cmd'])
+            for value in item.values():
+                find(value)
+
+    find(session)
+    assert len(expressions) == 1
+
+    context = GlueUnSerializer.loads(json.dumps(session), allowed_expressions=expressions)
+    data3 = context.object(gs.id(data))
+    assert_equal(data3['y'], [4, 5, 6])
+
+
+def test_find_unsafe_expressions(tmp_path):
+
+    from glue.core.application_base import Application
+    from glue.core.state import find_unsafe_expressions
+
+    data = _data_with_expression()
+    app = Application(core.DataCollection([data]))
+
+    filename = str(tmp_path / 'session.glu')
+    app.save_session(filename, include_data=True)
+
+    assert find_unsafe_expressions(filename) == []
+
+    with open(filename) as f:
+        session = f.read()
+
+    assert '{x} + 1' not in session  # references are stored by identifier
+
+    session = json.loads(session)
+    expressions = []
+
+    def modify(item):
+        if isinstance(item, dict):
+            if isinstance(item.get('cmd'), str):
+                item['cmd'] = "__import__('math').sqrt(4) + " + item['cmd']
+                expressions.append(item['cmd'])
+            for value in item.values():
+                modify(value)
+        elif isinstance(item, list):
+            for value in item:
+                modify(value)
+
+    modify(session)
+
+    with open(filename, 'w') as f:
+        json.dump(session, f)
+
+    assert find_unsafe_expressions(filename) == [
+        dict(expression=expressions[0], label='y',
+             reason='Name __import__ is not allowed in expressions')]
+
+    # By default the expression is not evaluated
+    with pytest.warns(UserWarning, match='will not be evaluated'):
+        app2 = Application.restore_session(filename)
+    assert_equal(app2.data_collection[0]['y'], [np.nan, np.nan, np.nan])
+
+    # but it is if it is explicitly allowed
+    app3 = Application.restore_session(filename, allowed_expressions=expressions)
+    assert_equal(app3.data_collection[0]['y'], [4, 5, 6])

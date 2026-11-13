@@ -268,3 +268,38 @@ def test_is_computational_callable():
     assert not is_computational_callable(np.load)
     assert not is_computational_callable(os.system)
     assert not is_computational_callable(math.sqrt)
+
+
+def test_unrestricted():
+
+    # In unrestricted mode, which is only used for expressions that the user
+    # has explicitly chosen to trust, any name, attribute and function can
+    # be used, but the expression is still interpreted rather than being
+    # passed to eval.
+
+    import os
+
+    env = make_env(os=os, obj=Simple(), _private=3)
+
+    namespace = build_namespace(env, restricted=False)
+
+    def evaluate_unrestricted(expression):
+        return evaluate_expression(expression, dict(namespace), restricted=False)
+
+    assert evaluate_unrestricted("__import__('math').sqrt(4)") == 2
+    assert evaluate_unrestricted('os.path.join("a", "b")') == os.path.join('a', 'b')
+    assert evaluate_unrestricted('obj.method() + obj.value + _private') == 6
+    assert evaluate_unrestricted('(1).__class__') is int
+    assert evaluate_unrestricted('max(*[1, 2])') == 2
+    assert evaluate_unrestricted("'{0}'.format(1)") == '1'
+    assert evaluate_unrestricted('np.sqrt(16) + len([1])') == 5
+
+    # Unsupported syntax is still not allowed
+    for expression in ['lambda: 1', '[i for i in range(3)]']:
+        with pytest.raises(UnsafeExpressionError):
+            evaluate_unrestricted(expression)
+
+    # and none of this is available by default
+    for expression in ["__import__('math')", 'os', 'obj.value', '_private']:
+        with pytest.raises((UnsafeExpressionError, NameError)):
+            evaluate(expression, env=env)

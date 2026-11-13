@@ -1,12 +1,14 @@
 import re
 import random
+import warnings
 
 import numpy as np
 
 from glue.core.component_link import ComponentLink
 from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
-from glue.core.safe_expression import build_namespace, evaluate_expression
+from glue.core.safe_expression import (UnsafeExpressionError, build_namespace,
+                                       evaluate_expression)
 
 
 # The following expression matches substrings surrounded by curly brackets
@@ -154,6 +156,15 @@ class ParsedCommand(object):
         """
         self._cmd, self._references = _validate(cmd, references)
 
+        # Whether to check every name, attribute access and function call
+        # in the command when evaluating it. This is always the case unless
+        # the user has explicitly chosen to trust this command.
+        self.restricted = True
+
+        # For commands loaded from session files, this is set to the reason
+        # why the command is not evaluated, if this is the case.
+        self.disabled_reason = None
+
     def render(self, mapping=None):
         def sub_func(match):
             tag = match.group('tag')
@@ -179,7 +190,7 @@ class ParsedCommand(object):
 
         from glue import env
 
-        namespace = build_namespace(env)
+        namespace = build_namespace(env, restricted=self.restricted)
         names = {}
 
         def sub_func(match):
@@ -189,9 +200,13 @@ class ParsedCommand(object):
                 namespace[names[tag]] = values(self._references[tag])
             return names[tag]
 
-        return evaluate_expression(TAG_RE.sub(sub_func, self._cmd), namespace)
+        return evaluate_expression(TAG_RE.sub(sub_func, self._cmd), namespace,
+                                   restricted=self.restricted)
 
     def evaluate(self, data, view=None):
+
+        if self.disabled_reason is not None:
+            raise UnsafeExpressionError(self.disabled_reason)
 
         def values(reference):
             if isinstance(reference, ComponentID):
@@ -224,7 +239,61 @@ class ParsedCommand(object):
         cmd = rec['cmd']
         ref = dict((k, context.object(v))
                    for k, v in rec['references'].items())
-        return cls(cmd, ref)
+        self = cls(cmd, ref)
+        if cmd in (getattr(context, 'allowed_expressions', None) or ()):
+            # The user has explicitly chosen to trust this expression
+            self.restricted = False
+        else:
+            self.disabled_reason = unsafe_expression_reason(cmd)
+            if self.disabled_reason is not None:
+                warnings.warn(f"The expression '{cmd}' from the session file will not "
+                              f"be evaluated: {self.disabled_reason}")
+        return self
+
+
+def unsafe_expression_reason(cmd):
+    """
+    Check whether an expression can be evaluated with only the names,
+    attributes and functions that are allowed by default.
+
+    This is done by evaluating the expression in restricted mode with small
+    arrays in place of the references, so nothing that is not allowed gets
+    called.
+
+    Parameters
+    ----------
+    cmd : str
+        The expression, which can include references in curly brackets.
+
+    Returns
+    -------
+    reason : str or None
+        `None` if the expression only uses what is allowed by default, and
+        otherwise a description of what is not allowed.
+    """
+
+    from glue import env
+
+    namespace = build_namespace(env)
+    names = {}
+
+    def sub_func(match):
+        tag = match.group('tag')
+        if tag not in names:
+            names[tag] = '_glue_ref_%i' % len(names)
+            namespace[names[tag]] = np.ones(2)
+        return names[tag]
+
+    try:
+        evaluate_expression(TAG_RE.sub(sub_func, cmd), namespace)
+    except (UnsafeExpressionError, NameError, SyntaxError) as exc:
+        return str(exc) or type(exc).__name__
+    except Exception:
+        # Any other error is due to the placeholder values used here rather
+        # than to the expression using something that is not allowed.
+        pass
+
+    return None
 
 
 class ParsedComponentLink(ComponentLink):
@@ -245,6 +314,16 @@ class ParsedComponentLink(ComponentLink):
         self._parsed = parsed
 
     def compute(self, data, view=None):
+        if self._parsed.disabled_reason is not None:
+            # The expression was loaded from a session file and uses
+            # something that is not allowed by default, so we return an
+            # array of NaN values with the right shape rather than failing.
+            if self._from:
+                shape = np.shape(data[self._from[0], view])
+            else:
+                shape = np.shape(np.empty(data.shape)[view] if view is not None
+                                 else np.empty(data.shape))
+            return np.full(shape, np.nan)
         return self._parsed.evaluate(data, view)
 
     def __gluestate__(self, context):

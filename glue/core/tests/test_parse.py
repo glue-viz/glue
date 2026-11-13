@@ -5,6 +5,7 @@ import numpy as np
 from unittest.mock import MagicMock, patch
 
 from .. import parse
+from ..safe_expression import UnsafeExpressionError
 from ..data import ComponentID, Component, Data
 from ..subset import Subset
 
@@ -247,3 +248,34 @@ class TestParsedSubsetState(object):
         expected = np.array([0, 1, 0, 0], dtype=bool)
 
         np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize(('cmd', 'reason'), [
+    ('{a} + 1', None),
+    ('np.sqrt({a}) + {b}.sum() + math.pi', None),
+    ('{a}[{a} > 0].mean()', None),
+    # Errors that are due to the placeholder values are ignored
+    ('{a}[1000]', None),
+    ('{a}.reshape((3, 4, 5))', None),
+    ("__import__('os').system('true')", 'Name __import__ is not allowed in expressions'),
+    ('{a}.tofile("x")', 'Array method tofile is not allowed in expressions'),
+    ("np.load('x.npy')", 'numpy.load is not allowed in expressions'),
+    ('undefined_function({a})', "name 'undefined_function' is not defined"),
+    ('lambda: 1', 'Lambda is not allowed in expressions'),
+])
+def test_unsafe_expression_reason(cmd, reason, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    assert parse.unsafe_expression_reason(cmd) == reason
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_parsed_command_unrestricted():
+
+    data = Data(x=[1, 2, 3])
+    pc = parse.ParsedCommand("__import__('math').sqrt(4) + {x}", {'x': data.id['x']})
+
+    with pytest.raises(UnsafeExpressionError):
+        pc.evaluate(data)
+
+    pc.restricted = False
+    np.testing.assert_array_equal(pc.evaluate(data), [3, 4, 5])

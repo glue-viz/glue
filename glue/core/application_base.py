@@ -130,7 +130,7 @@ class Application(HubListener):
             out.write(state)
 
     @staticmethod
-    def restore_session(path):
+    def restore_session(path, allowed_expressions=None):
         """
         Reload a previously-saved session
 
@@ -138,6 +138,17 @@ class Application(HubListener):
         ----------
         path : `str`
             Path to the file to load.
+        allowed_expressions : iterable of str, optional
+            By default, the expressions that define derived attributes in
+            the session can only use a restricted set of names,
+            attributes and functions, and any expression that uses something
+            else is not evaluated (the attribute is filled with NaN values
+            and a warning is emitted). The expressions given here are
+            evaluated without these restrictions, which should only be done
+            for session files from trusted sources since such expressions
+            can run arbitrary code. The expressions in a session file that
+            are affected can be found with
+            :func:`glue.core.state.find_unsafe_expressions`.
 
         Returns
         -------
@@ -157,7 +168,7 @@ class Application(HubListener):
         try:
             os.chdir(session_dir)
             with open(session_file) as infile:
-                state = GlueUnSerializer.load(infile)
+                state = GlueUnSerializer.load(infile, allowed_expressions=allowed_expressions)
             return state.object('__main__')
         finally:
             os.chdir(start_dir)

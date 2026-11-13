@@ -259,11 +259,22 @@ def _is_config_value(value, env_name):
     return module_name == env_name and _root_package(module_name) not in _BLOCKED_PACKAGES
 
 
-def build_namespace(env=None):
+def build_namespace(env=None, restricted=True):
     """
     Build the namespace of names available in expressions, given the user
     configuration module ``env``.
+
+    If ``restricted`` is `False`, all the names in ``env`` and all builtins
+    are made available, which should only be used for expressions that the
+    user has explicitly chosen to trust.
     """
+
+    if not restricted:
+        namespace = dict(vars(builtins))
+        namespace.update(np=np, numpy=np, math=math)
+        if env is not None:
+            namespace.update(vars(env))
+        return namespace
 
     namespace = {}
 
@@ -281,8 +292,12 @@ def build_namespace(env=None):
 
 class _Evaluator:
 
-    def __init__(self, namespace):
+    def __init__(self, namespace, restricted=True):
         self.namespace = namespace
+        # If restricted is False, names, attributes and calls are not
+        # checked, but the expression is still interpreted here rather than
+        # being passed to eval, so the supported syntax is the same.
+        self.restricted = restricted
 
     def visit(self, node):
         method = getattr(self, 'visit_' + type(node).__name__, None)
@@ -299,7 +314,7 @@ class _Evaluator:
         return node.value
 
     def visit_Name(self, node):
-        if node.id.startswith('_') and node.id not in self.namespace:
+        if self.restricted and node.id.startswith('_') and node.id not in self.namespace:
             raise UnsafeExpressionError(f"Name {node.id} is not allowed in expressions")
         try:
             return self.namespace[node.id]
@@ -307,6 +322,8 @@ class _Evaluator:
             raise NameError(f"name '{node.id}' is not defined")
 
     def visit_Attribute(self, node):
+        if not self.restricted:
+            return getattr(self.visit(node.value), node.attr)
         if node.attr.startswith('_'):
             raise UnsafeExpressionError(f"Attribute {node.attr} is not allowed in expressions")
         owner = self.visit(node.value)
@@ -325,13 +342,19 @@ class _Evaluator:
         args = []
         for arg in node.args:
             if isinstance(arg, ast.Starred):
-                raise UnsafeExpressionError("Starred arguments are not allowed in expressions")
-            args.append(self.visit(arg))
+                if self.restricted:
+                    raise UnsafeExpressionError("Starred arguments are not allowed in expressions")
+                args.extend(self.visit(arg.value))
+            else:
+                args.append(self.visit(arg))
         kwargs = {}
         for keyword in node.keywords:
             if keyword.arg is None:
-                raise UnsafeExpressionError("** arguments are not allowed in expressions")
-            kwargs[keyword.arg] = self.visit(keyword.value)
+                if self.restricted:
+                    raise UnsafeExpressionError("** arguments are not allowed in expressions")
+                kwargs.update(self.visit(keyword.value))
+            else:
+                kwargs[keyword.arg] = self.visit(keyword.value)
         return func(*args, **kwargs)
 
     def visit_BinOp(self, node):
@@ -390,7 +413,7 @@ class _Evaluator:
         return [self.visit(elt) for elt in node.elts]
 
 
-def evaluate_expression(expression, namespace):
+def evaluate_expression(expression, namespace, restricted=True):
     """
     Evaluate an expression with only the given names available.
 
@@ -401,6 +424,12 @@ def evaluate_expression(expression, namespace):
     namespace : dict
         Names available in the expression, typically built with
         :func:`build_namespace` and updated with the component references.
+    restricted : bool, optional
+        Whether to check every name lookup, attribute access and call (the
+        default). If `False`, the expression can access any attribute and
+        call anything that is reachable from the namespace, which should
+        only be used for expressions that the user has explicitly chosen to
+        trust.
     """
     tree = ast.parse(expression.strip(), mode='eval')
-    return _Evaluator(namespace).visit(tree)
+    return _Evaluator(namespace, restricted=restricted).visit(tree)

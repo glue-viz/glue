@@ -124,10 +124,67 @@ def save(filename, obj):
         s.dump(f)
 
 
-def load(filename):
+def load(filename, allowed_expressions=None):
     with open(filename, 'r') as f:
-        s = GlueUnSerializer.load(f)
+        s = GlueUnSerializer.load(f, allowed_expressions=allowed_expressions)
     return s.object('__main__')
+
+
+def find_unsafe_expressions(filename):
+    """
+    Find the expressions in a session file that will not be evaluated when
+    the session is loaded, because they use names, attributes or functions
+    that are not allowed in expressions by default.
+
+    The session is not loaded and the expressions are not evaluated. The
+    expressions returned here can be passed as ``allowed_expressions`` to
+    :func:`load` or to
+    :meth:`~glue.core.application_base.Application.restore_session` if the
+    session file is from a trusted source.
+
+    Parameters
+    ----------
+    filename : str
+        The session file.
+
+    Returns
+    -------
+    expressions : list of dict
+        A list with one dictionary for each such expression, containing the
+        ``expression`` itself, the ``label`` of the attribute that the
+        expression defines (or `None` if this could not be determined), and
+        the ``reason`` why the expression is not allowed.
+    """
+
+    from glue.core.parse import unsafe_expression_reason
+
+    with open(filename, 'r') as f:
+        rec = json.load(f)
+
+    results = []
+
+    def walk(item, label=None):
+        if isinstance(item, dict):
+            if 'parsed' in item and isinstance(item.get('to'), str):
+                # A derived component - the label is stored in the record
+                # for the component ID that the expression defines
+                target = rec.get(item['to']) if isinstance(rec, dict) else None
+                if isinstance(target, dict) and isinstance(target.get('label'), str):
+                    label = target['label']
+            if isinstance(item.get('cmd'), str) and 'references' in item:
+                reason = unsafe_expression_reason(item['cmd'])
+                entry = dict(expression=item['cmd'], label=label, reason=reason)
+                if reason is not None and entry not in results:
+                    results.append(entry)
+            for value in item.values():
+                walk(value, label=label)
+        elif isinstance(item, list):
+            for value in item:
+                walk(value, label=label)
+
+    walk(rec)
+
+    return results
 
 
 def lookup_class_with_patches(name):
@@ -448,9 +505,12 @@ class GlueSerializer(object):
 class GlueUnSerializer(object):
     dispatch = VersionedDict()
 
-    def __init__(self, string=None, fobj=None):
+    def __init__(self, string=None, fobj=None, allowed_expressions=None):
         if string is None and fobj is None:
             raise ValueError("Most provide either a string or a file")
+        # Expressions which the user has explicitly chosen to trust, and
+        # which can therefore use any name, attribute or function
+        self.allowed_expressions = set(allowed_expressions or ())
         self._names = {}  # map id(object) -> name
         self._objs = {}   # map name -> object
         self._working = set()
@@ -464,12 +524,12 @@ class GlueUnSerializer(object):
             patcher.function(self._rec)
 
     @classmethod
-    def loads(cls, string):
-        return cls(string=string)
+    def loads(cls, string, allowed_expressions=None):
+        return cls(string=string, allowed_expressions=allowed_expressions)
 
     @classmethod
-    def load(cls, fobj):
-        return cls(fobj=fobj)
+    def load(cls, fobj, allowed_expressions=None):
+        return cls(fobj=fobj, allowed_expressions=allowed_expressions)
 
     @classmethod
     def unserializes(cls, obj, version=1):
