@@ -84,27 +84,29 @@ _SAFE_BUILTINS = {
                  'int', 'len', 'max', 'min', 'pow', 'round', 'sum']
 }
 
-# Functions available from the top-level numpy namespace, in addition to
-# ufuncs (which are always allowed). Anything performing I/O or able to wrap
-# or import other code is deliberately left out.
+# Functions available from the top-level numpy namespace. Ufuncs (including
+# generalized ufuncs such as matmul) are always allowed and so do not need
+# to be listed here - this is the list of the other functions that are
+# allowed. Anything performing I/O or able to wrap or import other code is
+# deliberately left out.
 _NUMPY_FUNCTIONS = {
-    'abs', 'all', 'allclose', 'amax', 'amin', 'angle', 'any', 'append',
-    'arange', 'argmax', 'argmin', 'argsort', 'around', 'array', 'array_equal',
-    'asarray', 'atleast_1d', 'atleast_2d', 'atleast_3d', 'average', 'broadcast_to',
-    'ceil', 'clip', 'column_stack', 'concatenate', 'convolve', 'copy', 'corrcoef',
-    'count_nonzero', 'cov', 'cross', 'cumprod', 'cumsum', 'deg2rad', 'degrees',
-    'diag', 'diff', 'digitize', 'dot', 'dstack', 'einsum', 'empty_like', 'expand_dims',
-    'flip', 'fliplr', 'flipud', 'full', 'full_like', 'gradient', 'histogram',
-    'hstack', 'hypot', 'interp', 'isclose', 'isin', 'linspace', 'logspace',
-    'max', 'mean', 'median', 'meshgrid', 'min', 'moveaxis', 'nan_to_num',
-    'nanargmax', 'nanargmin', 'nancumprod', 'nancumsum', 'nanmax', 'nanmean',
-    'nanmedian', 'nanmin', 'nanpercentile', 'nanprod', 'nanquantile', 'nanstd',
-    'nansum', 'nanvar', 'ones', 'ones_like', 'outer', 'percentile', 'prod',
-    'ptp', 'quantile', 'rad2deg', 'radians', 'ravel', 'repeat', 'reshape', 'roll',
-    'rot90', 'round', 'searchsorted', 'select', 'shape', 'sign', 'sinc', 'size',
-    'sort', 'squeeze', 'stack', 'std', 'sum', 'swapaxes', 'take', 'tile', 'trace',
-    'transpose', 'trapezoid', 'tril', 'triu', 'trunc', 'unique', 'unwrap', 'var',
-    'vstack', 'where', 'zeros', 'zeros_like',
+    'all', 'allclose', 'amax', 'amin', 'angle', 'any', 'append', 'arange',
+    'argmax', 'argmin', 'argsort', 'around', 'array', 'array_equal', 'asarray',
+    'atleast_1d', 'atleast_2d', 'atleast_3d', 'average', 'broadcast_to',
+    'clip', 'column_stack', 'concatenate', 'convolve', 'copy', 'corrcoef',
+    'count_nonzero', 'cov', 'cross', 'cumprod', 'cumsum', 'diag', 'diff',
+    'digitize', 'dot', 'dstack', 'einsum', 'empty_like', 'expand_dims', 'flip',
+    'fliplr', 'flipud', 'full', 'full_like', 'gradient', 'histogram', 'hstack',
+    'interp', 'isclose', 'isin', 'linspace', 'logspace', 'max', 'mean',
+    'median', 'meshgrid', 'min', 'moveaxis', 'nan_to_num', 'nanargmax',
+    'nanargmin', 'nancumprod', 'nancumsum', 'nanmax', 'nanmean', 'nanmedian',
+    'nanmin', 'nanpercentile', 'nanprod', 'nanquantile', 'nanstd', 'nansum',
+    'nanvar', 'ones', 'ones_like', 'outer', 'percentile', 'prod', 'ptp',
+    'quantile', 'ravel', 'repeat', 'reshape', 'roll', 'rot90', 'round',
+    'searchsorted', 'select', 'shape', 'sinc', 'size', 'sort', 'squeeze',
+    'stack', 'std', 'sum', 'swapaxes', 'take', 'tile', 'trace', 'transpose',
+    'trapezoid', 'tril', 'triu', 'unique', 'unwrap', 'var', 'vstack', 'where',
+    'zeros', 'zeros_like',
     # dtypes and scalar types
     'bool_', 'complex64', 'complex128', 'float16', 'float32', 'float64',
     'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64',
