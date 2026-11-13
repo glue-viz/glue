@@ -11,11 +11,16 @@ against what is explicitly made available:
 * the component and subset references in the expression;
 * ``np``/``numpy`` and ``math``, restricted to computational functions;
 * a few pure builtins such as ``abs``, ``min`` and ``max``;
-* public names defined in the user's ``config.py`` (``glue.env``), since the
-  user wrote that file and chose to expose them. Modules and callables from
-  the standard library or from glue itself are not exposed even if they
-  appear in ``config.py``, since those are typically imported there for
-  other purposes.
+* functions, classes and values defined in the user's ``config.py``
+  (``glue.env``), since the user wrote that file. Modules and functions that
+  are merely imported into ``config.py`` are not exposed, since those are
+  typically imported there for other purposes and may be able to read or
+  write files or run code, with the exception of ufuncs and of the
+  computational numpy functions mentioned above.
+
+Attributes can only be accessed on numpy and math, and on arrays, numpy
+scalars, dtypes, ufuncs and Python numbers. To use anything else in an
+expression, define a function that wraps it in ``config.py``.
 """
 
 import ast
@@ -118,8 +123,15 @@ _ARRAY_METHODS = {
     'trace', 'transpose', 'var',
 }
 
-# Top-level packages whose modules and callables are never exposed, even if
-# they are present in the user's config.py namespace.
+# Methods that can be called on ufuncs. The at method is excluded since it
+# modifies its argument in place.
+_UFUNC_METHODS = {'accumulate', 'outer', 'reduce', 'reduceat'}
+
+# Attributes and methods that can be used on Python numbers.
+_NUMBER_ATTRIBUTES = {'bit_length', 'conjugate', 'imag', 'is_integer', 'real'}
+
+# Top-level packages whose callables are never exposed, even if they are
+# defined in the user's config.py namespace.
 _BLOCKED_PACKAGES = (set(sys.stdlib_module_names) - {'math', 'cmath'}) | {'glue'}
 
 
@@ -160,40 +172,89 @@ def _check_numpy_value(value, name, owner):
     if isinstance(value, np.ufunc):
         return value
     if owner is not None and getattr(owner, '__name__', None) in _NUMPY_SUBMODULES:
+        # The test attribute of numpy modules runs pytest, which can be made
+        # to run code from arbitrary files.
+        if name == 'test' or type(value).__module__ == 'numpy._pytesttester':
+            raise UnsafeExpressionError(f"{owner.__name__}.{name} is not allowed in expressions")
         return value
     if name in _NUMPY_FUNCTIONS or not callable(value):
         return value
     raise UnsafeExpressionError(f"numpy.{name} is not allowed in expressions")
 
 
-def _check_value(value, name, owner=None):
+def _is_number(value):
+    return isinstance(value, (int, float, complex)) and not isinstance(value, type)
+
+
+def _check_attribute_owner(owner):
     """
-    Check whether a value obtained by name or attribute lookup can be used.
+    Check whether attributes of ``owner`` can be accessed at all.
     """
 
-    if owner is not None and isinstance(owner, (np.ndarray, np.generic)):
+    if isinstance(owner, types.ModuleType):
+        if (owner is math or owner.__name__ == 'numpy' or owner.__name__ in _NUMPY_SUBMODULES):
+            return
+        raise UnsafeExpressionError(f"Access to module {owner.__name__} is not allowed")
+
+    if isinstance(owner, (np.ndarray, np.generic, np.ufunc, np.dtype)) or _is_number(owner):
+        return
+
+    raise UnsafeExpressionError(f"Attributes of {type(owner).__name__} objects are not allowed "
+                                "in expressions (to use these, define a function in your "
+                                "config.py file)")
+
+
+def _check_attribute(owner, name, value):
+    """
+    Check whether the attribute ``name`` of ``owner``, which has the value
+    ``value``, can be used.
+    """
+
+    if isinstance(owner, types.ModuleType):
+        if owner is math:
+            return value
+        return _check_numpy_value(value, name, owner)
+
+    if isinstance(owner, (np.ndarray, np.generic)):
         if callable(value) and name not in _ARRAY_METHODS:
             raise UnsafeExpressionError(f"Array method {name} is not allowed in expressions")
         return value
 
-    if isinstance(value, types.ModuleType):
-        module_name = value.__name__
-    elif callable(value):
-        module_name = getattr(value, '__module__', None)
-    else:
+    if isinstance(owner, np.ufunc):
+        if not callable(value) or name in _UFUNC_METHODS:
+            return value
+        raise UnsafeExpressionError(f"ufunc method {name} is not allowed in expressions")
+
+    if isinstance(owner, np.dtype):
+        if not callable(value):
+            return value
+        raise UnsafeExpressionError(f"dtype method {name} is not allowed in expressions")
+
+    if name in _NUMBER_ATTRIBUTES:
         return value
 
-    root = _root_package(module_name)
+    raise UnsafeExpressionError(f"Attribute {name} of numbers is not allowed in expressions")
 
-    if root == 'numpy':
-        return _check_numpy_value(value, name, owner)
 
-    if root in _BLOCKED_PACKAGES:
-        if isinstance(value, types.ModuleType):
-            raise UnsafeExpressionError(f"Access to module {module_name} is not allowed")
-        raise UnsafeExpressionError(f"{name} (from {module_name}) is not allowed in expressions")
+def _is_config_value(value, env_name):
+    """
+    Whether a value from the namespace of the user's config.py file can be
+    used in expressions.
+    """
 
-    return value
+    if isinstance(value, types.ModuleType):
+        return False
+
+    if isinstance(value, np.ufunc) or not callable(value):
+        return True
+
+    module_name = getattr(value, '__module__', None)
+
+    if _root_package(module_name) == 'numpy':
+        return is_computational_callable(value)
+
+    # Functions and classes defined in config.py itself
+    return module_name == env_name and _root_package(module_name) not in _BLOCKED_PACKAGES
 
 
 def build_namespace(env=None):
@@ -202,17 +263,16 @@ def build_namespace(env=None):
     configuration module ``env``.
     """
 
-    namespace = dict(_SAFE_BUILTINS)
-    namespace.update(np=np, numpy=np, math=math)
+    namespace = {}
 
     if env is not None:
-        for name, value in vars(env).items():
-            if name.startswith('_'):
-                continue
-            try:
-                namespace[name] = _check_value(value, name)
-            except UnsafeExpressionError:
-                continue
+        env_name = getattr(env, '__name__', None)
+        namespace.update({name: value for name, value in vars(env).items()
+                          if not name.startswith('_') and _is_config_value(value, env_name)})
+
+    # These are set last so that they cannot be replaced by config.py
+    namespace.update(_SAFE_BUILTINS)
+    namespace.update(np=np, numpy=np, math=math)
 
     return namespace
 
@@ -250,8 +310,11 @@ class _Evaluator:
         owner = self.visit(node.value)
         if isinstance(owner, (str, bytes)):
             raise UnsafeExpressionError("String attributes are not allowed in expressions")
+        # The type of the owner is checked before the attribute is accessed,
+        # since accessing an attribute can run code (e.g. for properties).
+        _check_attribute_owner(owner)
         value = getattr(owner, node.attr)
-        return _check_value(value, node.attr, owner=owner)
+        return _check_attribute(owner, node.attr, value)
 
     def visit_Call(self, node):
         func = self.visit(node.func)

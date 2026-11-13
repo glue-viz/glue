@@ -114,46 +114,149 @@ def test_config_names():
 
     triple.__module__ = 'config'
 
+    class Scale:
+        factor = 2
+
+        def __call__(self, x):
+            return self.factor * x
+
+    Scale.__module__ = 'config'
+
     import os
     import subprocess
     import glue.config
 
-    env = make_env(triple=triple, scale=2.5, os=os, system=os.system,
+    def helper(x):
+        return x
+
+    helper.__module__ = 'somepackage.helpers'
+
+    env = make_env(triple=triple, scale=2.5, Scale=Scale, os=os, system=os.system,
                    run=subprocess.run, glue_config=glue.config,
-                   data_factory=glue.config.data_factory, _private=1)
+                   data_factory=glue.config.data_factory, helper=helper,
+                   _private=1)
 
-    # Functions and values defined in config.py can be used
+    # Functions, classes and values defined in config.py can be used
     assert evaluate('triple(scale)', env=env) == 7.5
+    assert evaluate('Scale()(scale)', env=env) == 5
 
-    # but standard library and glue modules and functions imported into
-    # config.py are not exposed, nor are private names
-    for name in ['os', 'system', 'run', 'glue_config', 'data_factory', '_private']:
+    # but modules and functions imported into config.py are not exposed,
+    # whether they are from the standard library, glue, or other packages,
+    # and nor are private names
+    for name in ['os', 'system', 'run', 'glue_config', 'data_factory', 'helper', '_private']:
         with pytest.raises((NameError, UnsafeExpressionError)):
             evaluate(f'{name}', env=env)
 
 
-def test_config_module_attributes():
+def test_config_imported_modules():
 
-    # Third-party modules imported in config.py can be used, but attributes
-    # that lead to standard library modules or functions cannot.
-
-    import os
+    # Modules imported in config.py are not exposed, since they can contain
+    # functions that read and write files or run code (such as
+    # pandas.read_pickle), with the exception of numpy and math which are
+    # always available in restricted form.
 
     package = types.ModuleType('somepackage')
     package.compute = lambda x: x + 1
     package.compute.__module__ = 'somepackage'
-    package.os = os
-    package.system = os.system
 
-    env = make_env(somepackage=package)
+    env = make_env(somepackage=package, sp=package, xp=np, m=math)
 
-    assert evaluate('somepackage.compute(1)', env=env) == 2
+    for name in ['somepackage', 'sp', 'xp', 'm']:
+        with pytest.raises(NameError):
+            evaluate(f'{name}', env=env)
 
+    assert evaluate('np.sqrt(4) + math.sqrt(4)', env=env) == 4
+
+
+def test_config_numpy_names():
+
+    # Computational numpy functions and ufuncs imported by name into
+    # config.py can be used, including ufuncs from other packages, but other
+    # numpy functions cannot.
+
+    custom_ufunc = np.frompyfunc(lambda x: x + 1, 1, 1)
+
+    env = make_env(sqrt=np.sqrt, nansum=np.nansum, load=np.load,
+                   fromfile=np.fromfile, vectorize=np.vectorize,
+                   custom_ufunc=custom_ufunc)
+
+    assert evaluate('sqrt(nansum([8, 8]))', env=env) == 4
+    assert evaluate('custom_ufunc(1)', env=env) == 2
+
+    for name in ['load', 'fromfile', 'vectorize']:
+        with pytest.raises(NameError):
+            evaluate(f'{name}', env=env)
+
+
+def test_config_cannot_replace_builtin_names():
+
+    # The names that are always available cannot be replaced by config.py
+
+    def fake(*args):
+        return 'replaced'
+
+    fake.__module__ = 'config'
+
+    env = make_env(abs=fake, np=1, math=2)
+
+    assert evaluate('abs(-1) + np.abs(-1) + math.fabs(-1)', env=env) == 3
+
+
+class Simple:
+    value = 1
+
+    def method(self):
+        return 2
+
+
+@pytest.mark.parametrize('expression', [
+    'obj.value',
+    'obj.method()',
+    'obj.method',
+    '(1, 2).count(1)',
+    '[1, 2].append',
+    'np.typecodes.get',
+    'int.mro',
+    'float.fromhex',
+    'abs.mro',
+    'np.random.default_rng().normal',
+    'np.random.default_rng(0).bit_generator',
+    'x.dtype.type',
+    'x.dtype.newbyteorder',
+    'np.add.at',
+    '(1).to_bytes',
+    '(1.5).hex',
+])
+def test_disallowed_attribute_owners(expression):
     with pytest.raises(UnsafeExpressionError):
-        evaluate('somepackage.os', env=env)
+        evaluate(expression, obj=Simple(), x=np.arange(3))
 
+
+@pytest.mark.parametrize(('expression', 'expected'), [
+    ('np.add.reduce(x)', 3),
+    ('np.multiply.outer(x, x).shape', (3, 3)),
+    ('np.add.nin', 2),
+    ('x.dtype.kind', 'i'),
+    ('x.dtype.itemsize', 8),
+    ('(1 + 2j).real', 1),
+    ('(1 + 2j).conjugate()', 1 - 2j),
+    ('(2.0).is_integer()', True),
+    ('x.max().real', 2),
+])
+def test_allowed_attribute_owners(expression, expected):
+    assert evaluate(expression, x=np.arange(3, dtype=np.int64)) == expected
+
+
+@pytest.mark.parametrize('expression', [
+    'np.random.test',
+    'np.linalg.test',
+    'np.fft.test',
+    "np.random.test(extra_argv=['.'])",
+    'np.test',
+])
+def test_disallowed_numpy_test_runners(expression):
     with pytest.raises(UnsafeExpressionError):
-        evaluate('somepackage.system', env=env)
+        evaluate(expression)
 
 
 def test_is_computational_callable():
