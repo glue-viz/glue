@@ -130,7 +130,7 @@ class Application(HubListener):
             out.write(state)
 
     @staticmethod
-    def restore_session(path):
+    def restore_session(path, trusted=False):
         """
         Reload a previously-saved session
 
@@ -138,6 +138,15 @@ class Application(HubListener):
         ----------
         path : `str`
             Path to the file to load.
+        trusted : bool, optional
+            By default, session files can only refer to classes and functions
+            that glue loads from session files, such as registered data
+            factories and link functions, and
+            :class:`~glue.core.state.UntrustedSessionError` is raised if the
+            session refers to anything else. Set this to `True` to load any
+            class or function the session refers to, which should only be
+            done for session files from trusted sources since this can run
+            arbitrary code.
 
         Returns
         -------
@@ -157,7 +166,7 @@ class Application(HubListener):
         try:
             os.chdir(session_dir)
             with open(session_file) as infile:
-                state = GlueUnSerializer.load(infile)
+                state = GlueUnSerializer.load(infile, trusted=trusted)
             return state.object('__main__')
         finally:
             os.chdir(start_dir)

@@ -11,7 +11,7 @@ from glue.core.command import ApplySubsetState
 from glue.core.state import save
 from glue.core import message as msg
 from glue.core.exceptions import IncompatibleDataException
-from glue.core.state import lookup_class_with_patches
+from glue.core.state import _lookup_session_object, GlueSerializeError
 from echo import delay_callback, ignore_callback
 from glue.core.layer_artist import LayerArtistContainer
 
@@ -406,7 +406,9 @@ class Viewer(BaseViewer):
         # callback here.
         with viewer._layer_artist_container.ignore_callbacks():
             for l in rec['layers']:
-                cls = lookup_class_with_patches(l.pop('_type'))
+                cls = _lookup_session_object(l.pop('_type'), trusted=context.trusted)
+                if not (isinstance(cls, type) and issubclass(cls, LayerArtist)):
+                    raise GlueSerializeError(f"{cls} is not a layer artist class")
                 layer_state = context.object(l['state'])
                 layer_artist = viewer.get_layer_artist(cls, layer_state=layer_state)
                 layer_state.viewer_state = viewer.state
