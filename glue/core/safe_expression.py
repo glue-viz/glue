@@ -32,13 +32,21 @@ import types
 
 import numpy as np
 
-__all__ = ['UnsafeExpressionError', 'build_namespace', 'evaluate_expression',
+__all__ = ['UnsafeExpressionError', 'UnsupportedExpressionError',
+           'build_namespace', 'evaluate_expression',
            'is_computational_callable']
 
 
 class UnsafeExpressionError(ValueError):
     """
     Raised when an expression uses a construct that is not allowed.
+    """
+
+
+class UnsupportedExpressionError(UnsafeExpressionError):
+    """
+    Raised when an expression uses syntax that is not supported, whether or
+    not the expression is evaluated with restrictions.
     """
 
 
@@ -302,7 +310,7 @@ class _Evaluator:
     def visit(self, node):
         method = getattr(self, 'visit_' + type(node).__name__, None)
         if method is None:
-            raise UnsafeExpressionError(f"{type(node).__name__} is not allowed in expressions")
+            raise UnsupportedExpressionError(f"{type(node).__name__} is not allowed in expressions")
         return method(node)
 
     def visit_Expression(self, node):
@@ -319,7 +327,7 @@ class _Evaluator:
         try:
             return self.namespace[node.id]
         except KeyError:
-            raise NameError(f"name '{node.id}' is not defined")
+            raise NameError(f"name '{node.id}' is not defined", name=node.id)
 
     def visit_Attribute(self, node):
         if not self.restricted:
@@ -360,7 +368,7 @@ class _Evaluator:
     def visit_BinOp(self, node):
         op = _BINARY_OPERATORS.get(type(node.op))
         if op is None:
-            raise UnsafeExpressionError(f"Operator {type(node.op).__name__} is not allowed")
+            raise UnsupportedExpressionError(f"Operator {type(node.op).__name__} is not allowed")
         return op(self.visit(node.left), self.visit(node.right))
 
     def visit_UnaryOp(self, node):

@@ -157,10 +157,14 @@ def find_unsafe_expressions(filename):
         the identifiers of the attributes that the expression refers to
         have been replaced by their labels, the ``label`` of the attribute
         that the expression defines (or `None` if this could not be
-        determined), and the ``reason`` why the expression is not allowed.
+        determined), the ``reason`` why the expression is not allowed, and
+        ``can_be_allowed`` which is `False` if the expression would not be
+        evaluated even if it was passed to ``allowed_expressions``, because
+        it uses syntax that is not supported or a name that is not defined
+        (for example a function from a config.py file that is not present).
     """
 
-    from glue.core.parse import TAG_RE, unsafe_expression_reason
+    from glue.core.parse import TAG_RE, check_expression
 
     with open(filename, 'r') as f:
         rec = json.load(f)
@@ -190,10 +194,11 @@ def find_unsafe_expressions(filename):
                 if isinstance(target, dict) and isinstance(target.get('label'), str):
                     label = target['label']
             if isinstance(item.get('cmd'), str) and isinstance(item.get('references'), dict):
-                reason = unsafe_expression_reason(item['cmd'])
+                reason, can_be_allowed = check_expression(item['cmd'])
                 entry = dict(expression=item['cmd'],
                              rendered=render(item['cmd'], item['references']),
-                             label=label, reason=reason)
+                             label=label, reason=reason,
+                             can_be_allowed=can_be_allowed)
                 if reason is not None and entry not in results:
                     results.append(entry)
             for value in item.values():

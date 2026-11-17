@@ -568,7 +568,8 @@ def test_find_unsafe_expressions(tmp_path):
         dict(expression=expressions[0],
              rendered="__import__('math').sqrt(4) + {x} + 1",
              label='y',
-             reason='Name __import__ is not allowed in expressions')]
+             reason='Name __import__ is not allowed in expressions',
+             can_be_allowed=True)]
 
     # By default the expression is not evaluated
     with pytest.warns(UserWarning, match='will not be evaluated'):
@@ -578,3 +579,54 @@ def test_find_unsafe_expressions(tmp_path):
     # but it is if it is explicitly allowed
     app3 = Application.restore_session(filename, allowed_expressions=expressions)
     assert_equal(app3.data_collection[0]['y'], [4, 5, 6])
+
+
+@pytest.mark.parametrize(('cmd', 'reason'),
+                         [('some_function({x})', "name 'some_function' is not defined"),
+                          ('(lambda v: v)({x})', 'Lambda is not allowed in expressions')])
+def test_expression_that_cannot_be_allowed(tmp_path, cmd, reason):
+
+    # Expressions that use a name that is not defined anywhere (for example
+    # a function from a config.py file that is not present) or syntax that
+    # is not supported cannot be evaluated even without restrictions, so
+    # these should be reported as such and should not be evaluated even if
+    # they are explicitly allowed.
+
+    from glue.core.application_base import Application
+    from glue.core.state import find_unsafe_expressions
+
+    data = _data_with_expression()
+    app = Application(core.DataCollection([data]))
+
+    filename = str(tmp_path / 'session.glu')
+    app.save_session(filename, include_data=True)
+
+    with open(filename) as f:
+        session = json.load(f)
+
+    expressions = []
+
+    def modify(item):
+        if isinstance(item, dict):
+            if isinstance(item.get('cmd'), str):
+                tag = item['cmd'].split(' ')[0]
+                item['cmd'] = cmd.replace('{x}', tag)
+                expressions.append(item['cmd'])
+            for value in item.values():
+                modify(value)
+        elif isinstance(item, list):
+            for value in item:
+                modify(value)
+
+    modify(session)
+
+    with open(filename, 'w') as f:
+        json.dump(session, f)
+
+    assert find_unsafe_expressions(filename) == [
+        dict(expression=expressions[0], rendered=cmd, label='y',
+             reason=reason, can_be_allowed=False)]
+
+    with pytest.warns(UserWarning, match='will not be evaluated'):
+        app2 = Application.restore_session(filename, allowed_expressions=expressions)
+    assert_equal(app2.data_collection[0]['y'], [np.nan, np.nan, np.nan])

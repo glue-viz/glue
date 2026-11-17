@@ -7,8 +7,8 @@ import numpy as np
 from glue.core.component_link import ComponentLink
 from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
-from glue.core.safe_expression import (UnsafeExpressionError, build_namespace,
-                                       evaluate_expression)
+from glue.core.safe_expression import (UnsafeExpressionError, UnsupportedExpressionError,
+                                       build_namespace, evaluate_expression)
 
 
 # The following expression matches substrings surrounded by curly brackets
@@ -240,15 +240,46 @@ class ParsedCommand(object):
         ref = dict((k, context.object(v))
                    for k, v in rec['references'].items())
         self = cls(cmd, ref)
-        if cmd in (getattr(context, 'allowed_expressions', None) or ()):
-            # The user has explicitly chosen to trust this expression
-            self.restricted = False
-        else:
-            self.disabled_reason = unsafe_expression_reason(cmd)
-            if self.disabled_reason is not None:
+        reason, can_be_allowed = check_expression(cmd)
+        if reason is not None:
+            if can_be_allowed and cmd in (getattr(context, 'allowed_expressions', None) or ()):
+                # The user has explicitly chosen to trust this expression
+                self.restricted = False
+            else:
+                # Expressions that cannot be evaluated even without
+                # restrictions, for example because they use a function
+                # from a config.py file that is not present, are not
+                # evaluated even if they are in the allowed expressions.
+                self.disabled_reason = reason
                 warnings.warn(f"The expression '{cmd}' from the session file will not "
-                              f"be evaluated: {self.disabled_reason}")
+                              f"be evaluated: {reason}")
         return self
+
+
+def error_can_be_allowed(exc):
+    """
+    Given an exception raised when evaluating an expression with only what
+    is allowed by default, determine whether the expression could work if
+    it was evaluated without restrictions.
+
+    This is the case if the expression uses something that exists but that
+    is not allowed by default, but not if the expression uses syntax that is
+    not supported or a name that is not defined anywhere, for example a
+    function from a config.py file that is not present.
+    """
+
+    from glue import env
+
+    if isinstance(exc, UnsupportedExpressionError):
+        return False
+
+    if isinstance(exc, UnsafeExpressionError):
+        return True
+
+    if isinstance(exc, NameError):
+        return exc.name in build_namespace(env, restricted=False)
+
+    return False
 
 
 def unsafe_expression_reason(cmd):
@@ -271,6 +302,34 @@ def unsafe_expression_reason(cmd):
         `None` if the expression only uses what is allowed by default, and
         otherwise a description of what is not allowed.
     """
+    return check_expression(cmd)[0]
+
+
+def check_expression(cmd):
+    """
+    Check whether an expression can be evaluated with only the names,
+    attributes and functions that are allowed by default, and if not,
+    whether it could be evaluated without these restrictions.
+
+    This is done in the same way as for :func:`unsafe_expression_reason`,
+    so nothing that is not allowed gets called.
+
+    Parameters
+    ----------
+    cmd : str
+        The expression, which can include references in curly brackets.
+
+    Returns
+    -------
+    reason : str or None
+        `None` if the expression only uses what is allowed by default, and
+        otherwise a description of what is not allowed.
+    can_be_allowed : bool
+        Whether the expression could be evaluated if the user chose to allow
+        it. This is `False` if the expression uses syntax that is not
+        supported or a name that is not defined anywhere, for example a
+        function from a config.py file that is not present.
+    """
 
     from glue import env
 
@@ -287,13 +346,13 @@ def unsafe_expression_reason(cmd):
     try:
         evaluate_expression(TAG_RE.sub(sub_func, cmd), namespace)
     except (UnsafeExpressionError, NameError, SyntaxError) as exc:
-        return str(exc) or type(exc).__name__
+        return str(exc) or type(exc).__name__, error_can_be_allowed(exc)
     except Exception:
         # Any other error is due to the placeholder values used here rather
         # than to the expression using something that is not allowed.
         pass
 
-    return None
+    return None, True
 
 
 class ParsedComponentLink(ComponentLink):

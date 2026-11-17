@@ -279,3 +279,16 @@ def test_parsed_command_unrestricted():
 
     pc.restricted = False
     np.testing.assert_array_equal(pc.evaluate(data), [3, 4, 5])
+
+
+@pytest.mark.parametrize(('cmd', 'reason', 'can_be_allowed'), [
+    ('{a} + 1', None, True),
+    ("__import__('os').system('true')", 'Name __import__ is not allowed in expressions', True),
+    ("np.load('x.npy')", 'numpy.load is not allowed in expressions', True),
+    ("open('x')", "name 'open' is not defined", True),
+    ('missing_function({a})', "name 'missing_function' is not defined", False),
+    ('lambda: 1', 'Lambda is not allowed in expressions', False),
+    ('[i for i in {a}]', 'ListComp is not allowed in expressions', False),
+])
+def test_check_expression(cmd, reason, can_be_allowed):
+    assert parse.check_expression(cmd) == (reason, can_be_allowed)
