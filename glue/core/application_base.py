@@ -148,7 +148,7 @@ class Application(HubListener):
             for session files from trusted sources since such expressions
             can run arbitrary code. The expressions in a session file that
             are affected can be found with
-            :func:`glue.core.state.find_unsafe_expressions`.
+            ``glue.core.state.find_unsafe_expressions``.
 
         Returns
         -------
