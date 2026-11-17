@@ -1,9 +1,14 @@
 import re
 import random
+import warnings
+
+import numpy as np
 
 from glue.core.component_link import ComponentLink
 from glue.core.subset import Subset, SubsetState
 from glue.core.data import ComponentID
+from glue.core.safe_expression import (UnsafeExpressionError, UnsupportedExpressionError,
+                                       build_namespace, evaluate_expression)
 
 
 # The following expression matches substrings surrounded by curly brackets
@@ -103,27 +108,6 @@ def _dereference(cmd, references):
     return TAG_RE.sub(sub_func, cmd)
 
 
-def _dereference_random(cmd):
-    """
-    Dereference references in the template command, to refer
-    to random floating-point values. This is used to quickly test that the
-    command evaluates without errors.
-
-    Parameters
-    ----------
-    cmd : str
-        Command string
-
-    Returns
-    -------
-    A new command, where all the tags have been subsituted by floating point values
-    """
-    def sub_func(match):
-        tag = match.group('tag')
-        return str(random.random())
-    return TAG_RE.sub(sub_func, cmd)
-
-
 class InvalidTagError(ValueError):
     def __init__(self, tag, references):
         msg = ("Tag %s not in reference mapping: %s" %
@@ -172,6 +156,15 @@ class ParsedCommand(object):
         """
         self._cmd, self._references = _validate(cmd, references)
 
+        # Whether to check every name, attribute access and function call
+        # in the command when evaluating it. This is always the case unless
+        # the user has explicitly chosen to trust this command.
+        self.restricted = True
+
+        # For commands loaded from session files, this is set to the reason
+        # why the command is not evaluated, if this is the case.
+        self.disabled_reason = None
+
     def render(self, mapping=None):
         def sub_func(match):
             tag = match.group('tag')
@@ -189,57 +182,52 @@ class ParsedCommand(object):
     def reference_list(self):
         return _reference_list(self._cmd, self._references)
 
-    def evaluate(self, data, view=None):
+    def _evaluate(self, values):
+        """
+        Evaluate the command, given a function that returns the value to use
+        for each reference.
+        """
 
         from glue import env
 
-        # pylint: disable=W0613, W0612
-        references = self._references
-        cmd = _dereference(self._cmd, self._references)
+        namespace = build_namespace(env, restricted=self.restricted)
+        names = {}
 
-        scope = vars(env)
-        scope['__view'] = view
+        def sub_func(match):
+            tag = match.group('tag')
+            if tag not in names:
+                names[tag] = '_glue_ref_%i' % len(names)
+                namespace[names[tag]] = values(self._references[tag])
+            return names[tag]
 
-        global_variables = vars(env)
+        return evaluate_expression(TAG_RE.sub(sub_func, self._cmd), namespace,
+                                   restricted=self.restricted)
 
-        # We now import math modules if not already defined in local or
-        # global variables
-        if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy  # noqa
-        if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np  # noqa
-        if 'math' not in global_variables and 'math' not in locals():
-            import math  # noqa
+    def evaluate(self, data, view=None):
 
-        result = eval(cmd, global_variables, locals())  # careful!
+        if self.disabled_reason is not None:
+            raise UnsafeExpressionError(self.disabled_reason)
 
-        # At this point, np may have been defined in the globals but not the
-        # locals so we import it manually to avoid any issues.
-        import numpy as np  # noqa
+        def values(reference):
+            if isinstance(reference, ComponentID):
+                return data[reference, view]
+            elif isinstance(reference, Subset):
+                return reference.to_mask(view)
+            else:
+                raise TypeError("Reference %s maps to unrecognized type: %s" %
+                                (reference, type(reference)))
+
+        result = self._evaluate(values)
+
         if data is not None and np.isscalar(result):
             result = np.ones(data.shape) * result
 
         return result
 
     def evaluate_test(self, view=None):
-        from glue import env
-        cmd = _dereference_random(self._cmd)
-
-        scope = vars(env)
-        scope['__view'] = view
-
-        global_variables = vars(env)
-
-        # We now import math modules if not already defined in local or
-        # global variables
-        if 'numpy' not in global_variables and 'numpy' not in locals():
-            import numpy  # noqa
-        if 'np' not in global_variables and 'np' not in locals():
-            import numpy as np  # noqa
-        if 'math' not in global_variables and 'math' not in locals():
-            import math  # noqa
-
-        return eval(cmd, global_variables, locals())  # careful!
+        # Substitute random floating-point values for the references, to
+        # quickly test that the command evaluates without errors.
+        return self._evaluate(lambda reference: random.random())
 
     def __gluestate__(self, context):
         return dict(cmd=self._cmd,
@@ -251,7 +239,120 @@ class ParsedCommand(object):
         cmd = rec['cmd']
         ref = dict((k, context.object(v))
                    for k, v in rec['references'].items())
-        return cls(cmd, ref)
+        self = cls(cmd, ref)
+        reason, can_be_allowed = check_expression(cmd)
+        if reason is not None:
+            if can_be_allowed and cmd in (getattr(context, 'allowed_expressions', None) or ()):
+                # The user has explicitly chosen to trust this expression
+                self.restricted = False
+            else:
+                # Expressions that cannot be evaluated even without
+                # restrictions, for example because they use a function
+                # from a config.py file that is not present, are not
+                # evaluated even if they are in the allowed expressions.
+                self.disabled_reason = reason
+                warnings.warn(f"The expression '{cmd}' from the session file will not "
+                              f"be evaluated: {reason}")
+        return self
+
+
+def error_can_be_allowed(exc):
+    """
+    Given an exception raised when evaluating an expression with only what
+    is allowed by default, determine whether the expression could work if
+    it was evaluated without restrictions.
+
+    This is the case if the expression uses something that exists but that
+    is not allowed by default, but not if the expression uses syntax that is
+    not supported or a name that is not defined anywhere, for example a
+    function from a config.py file that is not present.
+    """
+
+    from glue import env
+
+    if isinstance(exc, UnsupportedExpressionError):
+        return False
+
+    if isinstance(exc, UnsafeExpressionError):
+        return True
+
+    if isinstance(exc, NameError):
+        return exc.name in build_namespace(env, restricted=False)
+
+    return False
+
+
+def unsafe_expression_reason(cmd):
+    """
+    Check whether an expression can be evaluated with only the names,
+    attributes and functions that are allowed by default.
+
+    This is done by evaluating the expression in restricted mode with small
+    arrays in place of the references, so nothing that is not allowed gets
+    called.
+
+    Parameters
+    ----------
+    cmd : str
+        The expression, which can include references in curly brackets.
+
+    Returns
+    -------
+    reason : str or None
+        `None` if the expression only uses what is allowed by default, and
+        otherwise a description of what is not allowed.
+    """
+    return check_expression(cmd)[0]
+
+
+def check_expression(cmd):
+    """
+    Check whether an expression can be evaluated with only the names,
+    attributes and functions that are allowed by default, and if not,
+    whether it could be evaluated without these restrictions.
+
+    This is done in the same way as for :func:`unsafe_expression_reason`,
+    so nothing that is not allowed gets called.
+
+    Parameters
+    ----------
+    cmd : str
+        The expression, which can include references in curly brackets.
+
+    Returns
+    -------
+    reason : str or None
+        `None` if the expression only uses what is allowed by default, and
+        otherwise a description of what is not allowed.
+    can_be_allowed : bool
+        Whether the expression could be evaluated if the user chose to allow
+        it. This is `False` if the expression uses syntax that is not
+        supported or a name that is not defined anywhere, for example a
+        function from a config.py file that is not present.
+    """
+
+    from glue import env
+
+    namespace = build_namespace(env)
+    names = {}
+
+    def sub_func(match):
+        tag = match.group('tag')
+        if tag not in names:
+            names[tag] = '_glue_ref_%i' % len(names)
+            namespace[names[tag]] = np.ones(2)
+        return names[tag]
+
+    try:
+        evaluate_expression(TAG_RE.sub(sub_func, cmd), namespace)
+    except (UnsafeExpressionError, NameError, SyntaxError) as exc:
+        return str(exc) or type(exc).__name__, error_can_be_allowed(exc)
+    except Exception:
+        # Any other error is due to the placeholder values used here rather
+        # than to the expression using something that is not allowed.
+        pass
+
+    return None, True
 
 
 class ParsedComponentLink(ComponentLink):
@@ -272,6 +373,16 @@ class ParsedComponentLink(ComponentLink):
         self._parsed = parsed
 
     def compute(self, data, view=None):
+        if self._parsed.disabled_reason is not None:
+            # The expression was loaded from a session file and uses
+            # something that is not allowed by default, so we return an
+            # array of NaN values with the right shape rather than failing.
+            if self._from:
+                shape = np.shape(data[self._from[0], view])
+            else:
+                shape = np.shape(np.empty(data.shape)[view] if view is not None
+                                 else np.empty(data.shape))
+            return np.full(shape, np.nan)
         return self._parsed.evaluate(data, view)
 
     def __gluestate__(self, context):
