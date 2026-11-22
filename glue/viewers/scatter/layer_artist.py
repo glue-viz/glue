@@ -296,6 +296,18 @@ class ScatterLayerArtist(MatplotlibLayerArtist):
                 vx = ensure_numerical(self.layer[self.state.vx_att].ravel())
                 vy = ensure_numerical(self.layer[self.state.vy_att].ravel())
 
+                # If this is being overlaid on an image viewer with a WCS,
+                # we need to check the relative orientations of the pixel/world axes
+                if getattr(self.axes, 'wcs', None) is not None:
+                    cdelt = self.axes.wcs.wcs.get_cdelt()
+                    ndim = self._viewer_state.reference_data.ndim
+                    x_index = ndim - self._viewer_state.x_att.axis - 1
+                    y_index = ndim - self._viewer_state.y_att.axis - 1
+                    if cdelt[x_index] < 0:
+                        vx = np.negative(vx)
+                    if cdelt[y_index] < 0:
+                        vy = np.negative(vy)
+
                 if self.state.vector_mode == 'Polar':
                     ang = vx
                     length = vy
