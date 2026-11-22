@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 import matplotlib.pyplot as plt
 
@@ -8,8 +8,9 @@ from glue.tests.visual.helpers import visual_test
 from glue.viewers.scatter.viewer import SimpleScatterViewer
 from glue.core.application_base import Application
 from glue.core.data import Data
-from glue.core.link_helpers import LinkSame
+from glue.core.link_helpers import LinkSame, LinkSameWithUnits
 from glue.core.data_derived import IndexedData
+from glue.core.roi import RectangularROI
 
 
 @visual_test
@@ -131,3 +132,113 @@ def test_indexed_data():
 
     assert viewer.state.x_att is data_2d.main_components[0]
     assert viewer.state.y_att is data_2d.main_components[1]
+
+
+def test_unit_conversion():
+
+    d1 = Data(a=[1, 2, 3], b=[2, 3, 4])
+    d1.get_component('a').units = 'm'
+    d1.get_component('b').units = 's'
+
+    d2 = Data(c=[2000, 1000, 3000], d=[0.001, 0.002, 0.004])
+    d2.get_component('c').units = 'mm'
+    d2.get_component('d').units = 'ks'
+
+    # d3 is the same as d2 but we will link it differently
+    d3 = Data(e=[2000, 1000, 3000], f=[0.001, 0.002, 0.004])
+    d3.get_component('e').units = 'mm'
+    d3.get_component('f').units = 'ks'
+
+    d4 = Data(g=[2, 2, 3], h=[1, 2, 1])
+    d4.get_component('g').units = 'kg'
+    d4.get_component('h').units = 'm/s'
+
+    app = Application()
+    session = app.session
+
+    data_collection = session.data_collection
+    data_collection.append(d1)
+    data_collection.append(d2)
+    data_collection.append(d3)
+    data_collection.append(d4)
+
+    data_collection.add_link(LinkSameWithUnits(d1.id['a'], d2.id['c']))
+    data_collection.add_link(LinkSameWithUnits(d1.id['b'], d2.id['d']))
+    data_collection.add_link(LinkSame(d1.id['a'], d3.id['e']))
+    data_collection.add_link(LinkSame(d1.id['b'], d3.id['f']))
+    data_collection.add_link(LinkSame(d1.id['a'], d4.id['g']))
+    data_collection.add_link(LinkSame(d1.id['b'], d4.id['h']))
+
+    viewer = app.new_data_viewer(SimpleScatterViewer)
+    viewer.add_data(d1)
+    viewer.add_data(d2)
+    viewer.add_data(d3)
+    viewer.add_data(d4)
+
+    assert viewer.layers[0].enabled
+    assert viewer.layers[1].enabled
+    assert viewer.layers[2].enabled
+    assert viewer.layers[3].enabled
+
+    assert viewer.state.x_min == 0.92
+    assert viewer.state.x_max == 3.08
+    assert viewer.state.y_min == 1.92
+    assert viewer.state.y_max == 4.08
+
+    roi = RectangularROI(0.5, 2.5, 1.5, 4.5)
+    viewer.apply_roi(roi)
+
+    assert len(d1.subsets) == 1
+    assert_equal(d1.subsets[0].to_mask(), [1, 1, 0])
+
+    # Because of the LinkSameWithUnits, the points actually appear in the right
+    # place even before we set the display units.
+    assert len(d2.subsets) == 1
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
+
+    # d3 is only linked with LinkSame not LinkSameWithUnits so currently the
+    # points are outside the visible axes
+    assert len(d3.subsets) == 1
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0])
+
+    # As we haven't set display units yet, the values for this dataset are shown
+    # on the same scale as for d1 as if the units had never been set.
+    assert len(d4.subsets) == 1
+    assert_equal(d4.subsets[0].to_mask(), [0, 1, 0])
+
+    # Now try setting the units explicitly
+
+    viewer.state.x_display_unit = 'km'
+    viewer.state.y_display_unit = 'ms'
+
+    assert_allclose(viewer.state.x_min, 0.92e-3)
+    assert_allclose(viewer.state.x_max, 3.08e-3)
+    assert_allclose(viewer.state.y_min, 1.92e3)
+    assert_allclose(viewer.state.y_max, 4.08e3)
+
+    roi = RectangularROI(0.5e-3, 2.5e-3, 1.5e3, 4.5e3)
+    viewer.apply_roi(roi)
+
+    # Results are as above - the display units do not result in any changes to
+    # the actual content of the axes and does not deal with automatic conversion
+    # of different units between different datasets - LinkSameWithUnits should
+    # deal with that already.
+
+    assert_equal(d1.subsets[0].to_mask(), [1, 1, 0])
+    assert_equal(d2.subsets[0].to_mask(), [0, 1, 0])
+    assert_equal(d3.subsets[0].to_mask(), [0, 0, 0])
+    assert_equal(d4.subsets[0].to_mask(), [0, 1, 0])
+
+    # Change the limits to make sure they are always converted
+    viewer.state.x_min = 0.0001
+    viewer.state.x_max = 0.005
+    viewer.state.y_min = 200
+    viewer.state.y_max = 7000
+
+    viewer.state.x_display_unit = 'm'
+    viewer.state.y_display_unit = 's'
+
+    assert viewer.state.x_min == 0.1
+    assert viewer.state.x_max == 5
+    assert viewer.state.y_min == 0.2
+    assert viewer.state.y_max == 7

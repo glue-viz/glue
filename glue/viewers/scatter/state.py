@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from glue.core import BaseData, Subset
+from glue.core import BaseData, Subset, Data
 
 from glue.config import colormaps
 from glue.viewers.matplotlib.state import (MatplotlibDataViewerState,
@@ -14,6 +14,7 @@ from echo import keep_in_sync, delay_callback
 from glue.core.data_combo_helper import ComponentIDComboHelper, ComboHelper
 from glue.core.exceptions import IncompatibleAttribute
 from glue.viewers.common.stretch_state_mixin import StretchStateMixin
+from glue.core.units import find_unit_choices
 
 from matplotlib.projections import get_projection_names
 
@@ -34,6 +35,9 @@ class ScatterViewerState(MatplotlibDataViewerState):
     x_limits_percentile = DDCProperty(100, docstring="Percentile to use when automatically determining x limits")
     y_limits_percentile = DDCProperty(100, docstring="Percentile to use when automatically determining y limits")
 
+    x_display_unit = DDSCProperty(docstring='The units to use to display the x-axis.')
+    y_display_unit = DDSCProperty(docstring='The units to use to display the y-axis')
+
     def __init__(self, **kwargs):
 
         super(ScatterViewerState, self).__init__()
@@ -43,11 +47,13 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.x_lim_helper = StateAttributeLimitsHelper(self, attribute='x_att',
                                                        lower='x_min', upper='x_max',
                                                        log='x_log', margin=0.04,
+                                                       display_units='x_display_unit',
                                                        limits_cache=self.limits_cache)
 
         self.y_lim_helper = StateAttributeLimitsHelper(self, attribute='y_att',
                                                        lower='y_min', upper='y_max',
                                                        log='y_log', margin=0.04,
+                                                       display_units='y_display_unit',
                                                        limits_cache=self.limits_cache)
 
         self.add_callback('layers', self._layers_changed)
@@ -67,6 +73,9 @@ class ScatterViewerState(MatplotlibDataViewerState):
 
         self.add_callback('x_log', self._reset_x_limits)
         self.add_callback('y_log', self._reset_y_limits)
+
+        self.add_callback('x_att', self._update_x_display_unit_choices)
+        self.add_callback('y_att', self._update_y_display_unit_choices)
 
         if self.using_polar:
             self.full_circle()
@@ -196,6 +205,36 @@ class ScatterViewerState(MatplotlibDataViewerState):
         self.y_att_helper.set_multiple_data(self.layers_data)
 
         self._layers_data_cache = layers_data
+
+    def _update_x_display_unit_choices(self, *args):
+
+        # NOTE: only Data and its subclasses support specifying units
+        if self.x_att is None or not isinstance(self.x_att.parent, Data):
+            ScatterViewerState.x_display_unit.set_choices(self, [])
+            return
+
+        component = self.x_att.parent.get_component(self.x_att)
+        if component.units:
+            x_choices = find_unit_choices([(self.x_att.parent, self.x_att, component.units)])
+        else:
+            x_choices = ['']
+        ScatterViewerState.x_display_unit.set_choices(self, x_choices)
+        self.x_display_unit = component.units
+
+    def _update_y_display_unit_choices(self, *args):
+
+        # NOTE: only Data and its subclasses support specifying units
+        if self.y_att is None or not isinstance(self.y_att.parent, Data):
+            ScatterViewerState.y_display_unit.set_choices(self, [])
+            return
+
+        component = self.y_att.parent.get_component(self.y_att)
+        if component.units:
+            y_choices = find_unit_choices([(self.y_att.parent, self.y_att, component.units)])
+        else:
+            y_choices = ['']
+        ScatterViewerState.y_display_unit.set_choices(self, y_choices)
+        self.y_display_unit = component.units
 
 
 def display_func_slow(x):
