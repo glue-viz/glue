@@ -23,7 +23,7 @@ def _ensure_only_component_references(cmd, references):
     Parameters
     ----------
     cmd : string. A template command
-    referenes : a mapping from tags to substitution objects
+    references : a mapping from tags to substitution objects
 
     Raises
     ------
