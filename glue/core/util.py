@@ -204,7 +204,7 @@ def facet_subsets(data_collection, cid, lo=None, hi=None, steps=5,
 
     Parameters
     ----------
-    data : :class:`glue.core.data_collection.DataCollection`
+    data_collection : :class:`glue.core.data_collection.DataCollection`
         The DataCollection object to use
     cid : :class:`glue.core.component_id.ComponentID`
          The ComponentID to facet on
@@ -511,7 +511,7 @@ def update_ticks(axes, coord, kinds, is_log, categories, projection='rectilinear
         The coordinate axis on which to update the ticks
     components : iterable
         A list of components that are plotted along this axis
-    if_log : boolean
+    is_log : boolean
         Whether the axis has a log-scale
     projection: str
         The name of the matplotlib projection for the axes object. Defaults to 'rectilinear'.

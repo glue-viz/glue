@@ -306,7 +306,7 @@ def freeze_margins(axes, margins=[1, 1, 1, 1]):
 
     Parameters
     ----------
-    ax_class : :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The axes class for which to fix the margins
     margins : iterable
         The margins, in inches. The order of the margins is
